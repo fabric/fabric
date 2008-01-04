@@ -1,0 +1,47 @@
+
+set(
+  fab_user = 'UNWIRE\\cvh',
+  # contray to 'fanout', executes commands on one host at a time:
+  fab_mode = 'rolling',
+  project = 'ldapservice',
+  rollback_dir = 'rollback-%(project)s',
+  deploy_to = '/usr/local/$(fab_host)/server/$(fab_host)',
+)
+
+def production():
+  "Configures Fabric for production environment."
+  set('env', 'production')
+  set(fab_hosts=['node1.cas.unwire.dk','node2.cas.unwire.dk'])
+
+def staging():
+  "Configures Fabric for Staging environment."
+  set('env', 'staging')
+  set(fab_hosts=['node1.cas.staging.unwire.dk','node2.cas.staging.unwire.dk'])
+
+def setup():
+  "Sets up a new host for use with Fabric."
+  require('env', provided_by=['production','staging'])
+  run(
+    'mkdir %(rollback_dir)s',
+    fail='silent' # other fail options: warn, abort
+  )
+
+def deploy():
+  "Build the project and deploy it to a specified environment."
+  require('env', provided_by=['production','staging'])
+  local('mvn clean package')
+  put('config/%(env)s/%(project)s.properties', '%(project)s.properties')
+  put('target/%(project)s.war', '%(project)s.war')
+  from datetime import datetime as dt
+  set(now = dt.now().strftime('%F_%H-%M-%S'))
+  set(rollback_prefix='%(rollback_dir)s/%(now)s/%(project)s')
+  run('mkdir %(rollback_dir)s/%(now)s')
+  run('cp %(deploy_to)s/deploy/%(project)s.war %(rollback_prefix)s.war')
+  run('cp %(deploy_to)s/conf/%(project)s.properties %(rollback_prefix)s.properties')
+  sudo('cp -f %(project)s.properties %(deploy_to)s/conf/%(project)s.properties')
+  sudo('cp -f %(project)s.war %(deploy_to)s/deploy/%(project)s.war')
+
+def tail():
+  "Tail the servers logfile."
+  run('tail -f /var/log/jboss/$(fab_host)/console.log')
+

@@ -1,0 +1,70 @@
+#!/usr/bin/env python
+
+ENV = {
+  'fab_version':'0.0.1',
+  'fab_mode':'fanout',
+}
+
+print "Fabric v. %(fab_version)s" % ENV
+
+import getpass, sys, os
+try:
+  import paramiko as ssh
+except:
+  print "ERROR: paramiko is a required module. Please install it"
+  exit(1)
+
+def set(**variables):
+  "Set a number of Fabric environment variables."
+  for k, v in variables.items():
+    ENV[k] = (v % ENV)
+
+def get(name):
+  "Get the value of a given Fabric environment variable."
+  return ENV[name]
+
+def require(variable, **kvargs):
+  "Make sure that a certain environmet variable is available."
+  pass
+
+def put(localname, remotename, **kvargs):
+  "Upload a file to the current hosts."
+  pass
+
+def run(cmd, **kvargs):
+  "Run a shell command on the current hosts."
+  pass
+
+def sudo(cmd, **kvargs):
+  "Run a sudo (root privileged) command on the current hosts."
+  pass
+
+def local(cmd, **kvargs):
+  "Run a command locally."
+  os.system(cmd)
+
+def load(filename, **kvargs):
+  "Load up the given fabfile."
+  pass
+
+def main(args):
+  # loading:
+  execfile('fabfile')
+  cmds = dict([n for n in filter(lambda n: (n[0][0] != '_') and callable(n[1]), locals().items())])
+  
+  # validation:
+  max_name_len = reduce(lambda a,b: max(a, len(b)), cmds.keys(), 0)
+  for cmd in args:
+    if not cmd in cmds:
+      print "No such command: %s" % cmd
+      print "Available commands are:"
+      for name, fn in cmds.items():
+        print '  ', name.ljust(max_name_len), ':', fn.__doc__.splitlines()[0]
+      exit(1)
+  
+  # execution:
+  for cmd in args:
+    cmds[cmd]()
+
+if __name__ == '__main__':
+  main(sys.argv[1:])
