@@ -1,70 +1,279 @@
 #!/usr/bin/env python
 
-ENV = {
-  'fab_version':'0.0.1',
-  'fab_mode':'fanout',
-}
+# Fabric - Pythonic remote deployment tool.
+# Copyright (C) 2008  Christian Vest Hansen
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-print "Fabric v. %(fab_version)s" % ENV
+import getpass
+import sys
+import os
+import os.path
+import types
+import re
+import threading
+import time
 
-import getpass, sys, os
 try:
-  import paramiko as ssh
+    import paramiko as ssh
 except:
-  print "ERROR: paramiko is a required module. Please install it"
-  exit(1)
+    print("ERROR: paramiko is a required module. Please install it")
+    exit(1)
 
+__version__ = '0.0.1'
+__author__ = 'Christian Vest Hansen'
+__license__ = '''\
+   Fabric v. %(fab_version)s, Copyright (C) 2008 %(fab_author)s.
+   Fabric comes with ABSOLUTELY NO WARRANTY; for details type `fab warranty'.
+   This is free software, and you are welcome to redistribute it
+   under certain conditions; type `fab license' for details.
+'''
+
+ENV = {
+    'fab_version':__version__,
+    'fab_author':__author__,
+    'fab_mode':'fanout',
+    'fab_port':22,
+    'fab_user':None,
+    'fab_password':None,
+    'fab_pkey':None,
+    'fab_key_filename':None,
+}
+COMMANDS = {} # populated by load() and _load_std_commands()
+CONNECTIONS = []
+
+#
+# Standard fabfile operations:
+#
 def set(**variables):
-  "Set a number of Fabric environment variables."
-  for k, v in variables.items():
-    ENV[k] = (v % ENV)
+    "Set a number of Fabric environment variables."
+    for k, v in variables.items():
+        if isinstance(v, types.StringTypes):
+            ENV[k] = (v % ENV)
+        else:
+            ENV[k] = v
 
 def get(name):
-  "Get the value of a given Fabric environment variable."
-  return ENV[name]
+    "Get the value of a given Fabric environment variable."
+    return ENV[name]
 
-def require(variable, **kvargs):
-  "Make sure that a certain environmet variable is available."
-  pass
+def require(var, **kvargs):
+    "Make sure that a certain environmet variable is available."
+    if var in ENV:
+        return
+    print(
+        ("The '%(fab_cur_command)s' requires a '" + var + "' variable.") % ENV
+    )
+    if 'provided_by' in kvargs:
+        print("Get the variable by running one of these commands:")
+        print('\t' + ('\n\t'.join(kvargs['provided_by'])))
 
-def put(localname, remotename, **kvargs):
-  "Upload a file to the current hosts."
-  pass
+def put(localpath, remotepath, **kvargs):
+    "Upload a file to the current hosts."
+    if not CONNECTIONS: _connect()
+    _on_hosts_do(_put, localpath, remotepath)
 
 def run(cmd, **kvargs):
-  "Run a shell command on the current hosts."
-  pass
+    "Run a shell command on the current hosts."
+    if not CONNECTIONS: _connect()
+    _on_hosts_do(_run, cmd)
 
 def sudo(cmd, **kvargs):
-  "Run a sudo (root privileged) command on the current hosts."
-  pass
+    "Run a sudo (root privileged) command on the current hosts."
+    if not CONNECTIONS: _connect()
+    _on_hosts_do(_sudo, cmd)
 
 def local(cmd, **kvargs):
-  "Run a command locally."
-  os.system(cmd)
+    "Run a command locally."
+    os.system(cmd)
+
+def local_per_host(cmd, **kvargs):
+    
 
 def load(filename, **kvargs):
-  "Load up the given fabfile."
-  pass
+    "Load up the given fabfile."
+    execfile(filename)
+    for name, obj in locals().items():
+        if not name.startswith('_') and isinstance(obj, types.FunctionType):
+            COMMANDS[name] = obj
+
+#
+# Standard Fabric commands:
+#
+def _help():
+    "Display usage help message to the console."
+    pass
+
+def _list():
+    "Display a list of commands with descriptions."
+    max_name_len = reduce(lambda a,b: max(a, len(b)), COMMANDS.keys(), 0)
+    print("Available commands are:")
+    for name, fn in COMMANDS.items():
+        print '  ', name.ljust(max_name_len), ':', fn.__doc__.splitlines()[0]
+
+def _license():
+    "Display the Fabric distribution license text."
+    pass
+
+def _warranty():
+    "Display warranty information for the Fabric software."
+    pass
+
+#
+# Internal plumbing:
+#
+def _pick_fabfile():
+    choise = 'fabfile'
+    alternatives = ['Fabfile', 'fabfile.py', 'Fabfile.py']
+    for alternative in alternatives:
+        if os.path.exists(alternative):
+            choise = alternative
+            break
+    return choise
+
+def _load_std_commands():
+    "Loads up the standard commands such as help, list, warranty and license."
+    global COMMANDS
+    COMMANDS['help'] = _help
+    COMMANDS['list'] = _list
+    COMMANDS['warranty'] = _warranty
+    COMMANDS['license'] = _license
+
+def _connect():
+    if 'fab_hosts' not in ENV:
+        print("Fabric requires a fab_hosts variable.")
+        print("Please set it in your fabfile.")
+        print("Example: set(fab_hosts=['node1.com', 'node2.com'])")
+        exit(1)
+    ENV['fab_password'] = getpass.getpass()
+    port = int(ENV['fab_port'])
+    username = ENV['fab_user']
+    password = ENV['fab_password']
+    pkey = ENV['fab_pkey']
+    key_filename = ENV['fab_key_filename']
+    for host in ENV['fab_hosts']:
+        client = ssh.SSHClient()
+        client.load_system_host_keys()
+        client.set_missing_host_key_policy(ssh.AutoAddPolicy())
+        client.connect(
+            host, port, username, password, pkey, key_filename
+        )
+        CONNECTIONS.append((host, client))
+    if not CONNECTIONS:
+        print("The fab_hosts list was empty.")
+        print("Please specify some hosts to connect to.")
+        exit(1)
+
+def _lazy_format(string):
+    "Do string substitution of ENV vars - both lazy and earger."
+    suber = re.compile(r'\$\((?P<var>\w+?)\)')
+    string = string % ENV # early earger
+    string = re.sub(suber, lambda m: ENV[m.group('var')], string) # lazy part
+    string = string % ENV # late earger
+    return string
+
+def _on_hosts_do(fn, *args):
+    """Invoke the given function with hostname and client parameters in
+    accord with the current fac_mode strategy.
+    
+    fn should be of type:
+        (str:hostname, paramiko.SSHClient:clinet) -> bool:success
+    
+    """
+    strategy = ENV['fab_mode']
+    if strategy == 'fanout':
+        threads = []
+        for host, client in CONNECTIONS:
+            ENV['fab_host'] = host
+            thread = threading.Thread(None, lambda: fn(host, client, *args))
+            thread.setDaemon(True)
+            thread.start()
+            threads.append(thread)
+        for thread in threads:
+            thread.join()
+    elif strategy == 'rolling':
+        for host, client in CONNECTIONS:
+            ENV['fab_host'] = host
+            fn(host, client, *args)
+    else:
+        print("Unsupported fab_mode: %s" % strategy)
+        print("Supported modes are: fanout, rolling")
+        exit(1)
+
+def _put(host, client, localpath, remotepath):
+    ftp = client.open_sftp()
+    localpath = _lazy_format(localpath)
+    remotepath = _lazy_format(remotepath)
+    print("[%s] put: %s -> %s" % (host, localpath, remotepath))
+    ftp.put(localpath, remotepath)
+
+def _run(host, client, cmd):
+    cmd = _lazy_format(cmd)
+    print("[%s] run: %s" % (host, cmd))
+    stdin, stdout, stderr = client.exec_command(cmd)
+    out_th = _start_outputter("[%s] out" % host, stdout)
+    err_th = _start_outputter("[%s] err" % host, stderr)
+    out_th.join()
+    err_th.join()
+
+def _sudo(host, client, cmd):
+    cmd = _lazy_format(cmd)
+    print("[%s] sudo: %s" % (host, cmd))
+    stdin, stdout, stderr = client.exec_command("sudo -S " + cmd)
+    stdin.write(ENV['fab_password'])
+    stdin.write('\n')
+    stdin.flush()
+    out_th = _start_outputter("[%s] out" % host, stdout)
+    err_th = _start_outputter("[%s] err" % host, stderr)
+    out_th.join()
+    err_th.join()
+
+def _start_outputter(prefix, channel):
+    def outputter():
+        line = channel.readline()
+        while line:
+            print("%s: %s" % (prefix, line)),
+            line = channel.readline()
+    thread = threading.Thread(None, outputter, prefix)
+    thread.setDaemon(True)
+    thread.start()
+    return thread
 
 def main(args):
-  # loading:
-  execfile('fabfile')
-  cmds = dict([n for n in filter(lambda n: (n[0][0] != '_') and callable(n[1]), locals().items())])
-  
-  # validation:
-  max_name_len = reduce(lambda a,b: max(a, len(b)), cmds.keys(), 0)
-  for cmd in args:
-    if not cmd in cmds:
-      print "No such command: %s" % cmd
-      print "Available commands are:"
-      for name, fn in cmds.items():
-        print '  ', name.ljust(max_name_len), ':', fn.__doc__.splitlines()[0]
-      exit(1)
-  
-  # execution:
-  for cmd in args:
-    cmds[cmd]()
+    print(__license__ % ENV)
+    _load_std_commands()
+    fabfile = _pick_fabfile()
+    load(fabfile)
+    # validation:
+    for cmd in args:
+        if not cmd in COMMANDS:
+            print("No such command: %s" % cmd)
+            _list()
+            exit(1)
+    # execution:
+    for cmd in args:
+        ENV['fab_cur_command'] = cmd
+        print('Running %s...' % cmd)
+        COMMANDS[cmd]()
+    print('Done.')
 
 if __name__ == '__main__':
-  main(sys.argv[1:])
+    try:
+        main(sys.argv[1:])
+    except:
+        sys.excepthook(*sys.exc_info())
+        # we might leave stale threads if we don't explicitly exit()
+        exit(1)
+    exit(0)
