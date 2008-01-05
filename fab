@@ -25,6 +25,7 @@ import types
 import re
 import threading
 import time
+import random
 
 try:
     import paramiko as ssh
@@ -77,6 +78,8 @@ def require(var, **kvargs):
     print(
         ("The '%(fab_cur_command)s' requires a '" + var + "' variable.") % ENV
     )
+    if 'used_for' in kvargs:
+        print("This variable is used for %s" % kvargs['used_for'])
     if 'provided_by' in kvargs:
         print("Get the variable by running one of these commands:")
         print('\t' + ('\n\t'.join(kvargs['provided_by'])))
@@ -114,6 +117,17 @@ def load(filename, **kvargs):
     for name, obj in locals().items():
         if not name.startswith('_') and isinstance(obj, types.FunctionType):
             COMMANDS[name] = obj
+
+def upload_project(**kvargs):
+    "Uploads the current project directory to the connected hosts."
+    r = random.randint(100000, 999999)
+    tar_file = "/tmp/fab.%d.tar" % r
+    cwd_name = os.getcwd().split(os.sep)[-1]
+    local("tar -czf %s ." % tar_file)
+    put(tar_file, cwd_name + ".tar.gz")
+    local("rm -f " + tar_file)
+    run("tar -xzf " + cwd_name)
+    run("rm -f " + cwd_name + ".tar.gz")
 
 #
 # Standard Fabric commands:
