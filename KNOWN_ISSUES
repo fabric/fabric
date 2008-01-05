@@ -3,3 +3,5 @@
 * fab help, license & warranty tasks' not implemented
 * README file
 * AUTHORS file?
+* fabfiles can't use global import statements
+* need something like roles in Capistrano
