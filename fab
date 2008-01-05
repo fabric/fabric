@@ -155,6 +155,7 @@ def _set(arg):
 # Internal plumbing:
 #
 def _pick_fabfile():
+    "Figure out what the fabfile is called."
     choise = 'fabfile'
     alternatives = ['Fabfile', 'fabfile.py', 'Fabfile.py']
     for alternative in alternatives:
@@ -173,6 +174,7 @@ def _load_std_commands():
     COMMANDS['set'] = _set
 
 def _check_fab_hosts():
+    "Check that we have a fab_hosts variable, and complain if it's missing."
     if 'fab_hosts' not in ENV:
         print("Fabric requires a fab_hosts variable.")
         print("Please set it in your fabfile.")
@@ -180,6 +182,7 @@ def _check_fab_hosts():
         exit(1)
 
 def _connect():
+    "Populate CONNECTIONS with (hostname, client) tuples as per fab_hosts."
     _check_fab_hosts()
     ENV['fab_password'] = getpass.getpass()
     port = int(ENV['fab_port'])
@@ -202,6 +205,7 @@ def _connect():
         exit(1)
 
 def _disconnect():
+    "Disconnect all clients."
     for host, client in CONNECTIONS:
         client.close()
 
@@ -240,7 +244,6 @@ def _on_hosts_do(fn, *args):
         print("Unsupported fab_mode: %s" % strategy)
         print("Supported modes are: fanout, rolling")
         exit(1)
-    
 
 def _put(host, client, localpath, remotepath):
     ftp = client.open_sftp()
@@ -316,6 +319,7 @@ if __name__ == '__main__':
     try:
         main(sys.argv[1:])
     except SystemExit:
+        # a number of internal functions might raise this one.
         raise
     except:
         sys.excepthook(*sys.exc_info())
