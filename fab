@@ -28,8 +28,8 @@ import time
 
 try:
     import paramiko as ssh
-except:
-    print("ERROR: paramiko is a required module. Please install it")
+except ImportError:
+    print("ERROR: paramiko is a required module. Please install it.")
     exit(1)
 
 __version__ = '0.0.1'
@@ -50,6 +50,7 @@ ENV = {
     'fab_password':None,
     'fab_pkey':None,
     'fab_key_filename':None,
+    'fab_new_host_key':'accept'
 }
 COMMANDS = {} # populated by load() and _load_std_commands()
 CONNECTIONS = []
@@ -100,7 +101,12 @@ def local(cmd, **kvargs):
     os.system(cmd)
 
 def local_per_host(cmd, **kvargs):
-    
+    "Run a command locally, for every defined host."
+    _check_fab_hosts()
+    for host in ENV['fab_hosts']:
+        ENV['fab_host'] = host
+        cur_cmd = _lazy_format(cmd)
+        os.system(cur_cmd)
 
 def load(filename, **kvargs):
     "Load up the given fabfile."
@@ -112,15 +118,18 @@ def load(filename, **kvargs):
 #
 # Standard Fabric commands:
 #
-def _help():
-    "Display usage help message to the console."
-    pass
+def _help(command=None):
+    "Display usage help message to the console, or help for a given command."
+    if command is not None and command in COMMANDS:
+        print(COMMANDS[command].__doc__)
 
 def _list():
     "Display a list of commands with descriptions."
     max_name_len = reduce(lambda a,b: max(a, len(b)), COMMANDS.keys(), 0)
     print("Available commands are:")
-    for name, fn in COMMANDS.items():
+    cmds = COMMANDS.items()
+    cmds.sort(lambda x,y: cmp(x[0], y[0]))
+    for name, fn in cmds:
         print '  ', name.ljust(max_name_len), ':', fn.__doc__.splitlines()[0]
 
 def _license():
@@ -130,6 +139,17 @@ def _license():
 def _warranty():
     "Display warranty information for the Fabric software."
     pass
+
+def _set(arg):
+    """Set a Fabric variable.
+    
+    Example:
+        $fab set:fab_user=billy,other_var=other_value
+    """
+    vars = arg.split(',')
+    for var in vars:
+        k, v = var.split('=', 1)
+        ENV[k] = (v % ENV)
 
 #
 # Internal plumbing:
@@ -150,13 +170,17 @@ def _load_std_commands():
     COMMANDS['list'] = _list
     COMMANDS['warranty'] = _warranty
     COMMANDS['license'] = _license
+    COMMANDS['set'] = _set
 
-def _connect():
+def _check_fab_hosts():
     if 'fab_hosts' not in ENV:
         print("Fabric requires a fab_hosts variable.")
         print("Please set it in your fabfile.")
         print("Example: set(fab_hosts=['node1.com', 'node2.com'])")
         exit(1)
+
+def _connect():
+    _check_fab_hosts()
     ENV['fab_password'] = getpass.getpass()
     port = int(ENV['fab_port'])
     username = ENV['fab_user']
@@ -166,7 +190,8 @@ def _connect():
     for host in ENV['fab_hosts']:
         client = ssh.SSHClient()
         client.load_system_host_keys()
-        client.set_missing_host_key_policy(ssh.AutoAddPolicy())
+        if 'fab_new_host_key' in ENV and ENV['fab_new_host_key'] == 'accept':
+            client.set_missing_host_key_policy(ssh.AutoAddPolicy())
         client.connect(
             host, port, username, password, pkey, key_filename
         )
@@ -175,6 +200,10 @@ def _connect():
         print("The fab_hosts list was empty.")
         print("Please specify some hosts to connect to.")
         exit(1)
+
+def _disconnect():
+    for host, client in CONNECTIONS:
+        client.close()
 
 def _lazy_format(string):
     "Do string substitution of ENV vars - both lazy and earger."
@@ -211,6 +240,7 @@ def _on_hosts_do(fn, *args):
         print("Unsupported fab_mode: %s" % strategy)
         print("Supported modes are: fanout, rolling")
         exit(1)
+    
 
 def _put(host, client, localpath, remotepath):
     ftp = client.open_sftp()
@@ -258,20 +288,35 @@ def main(args):
     load(fabfile)
     # validation:
     for cmd in args:
+        if cmd.find(':') != -1:
+            cmd = cmd.split(':', 1)[0]
         if not cmd in COMMANDS:
             print("No such command: %s" % cmd)
             _list()
             exit(1)
     # execution:
+    if not args:
+        print("No commands given.")
+        _list()
     for cmd in args:
-        ENV['fab_cur_command'] = cmd
+        cmd_name = cmd
+        cmd_args = None
+        if cmd.find(':') != -1:
+            cmd_name, cmd_args = cmd.split(':', 1)
+        ENV['fab_cur_command'] = cmd_name
         print('Running %s...' % cmd)
-        COMMANDS[cmd]()
+        if cmd_args is not None:
+            COMMANDS[cmd_name](cmd_args)
+        else:
+            COMMANDS[cmd]()
+    _disconnect()
     print('Done.')
 
 if __name__ == '__main__':
     try:
         main(sys.argv[1:])
+    except SystemExit:
+        raise
     except:
         sys.excepthook(*sys.exc_info())
         # we might leave stale threads if we don't explicitly exit()

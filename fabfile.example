@@ -59,12 +59,12 @@ def deploy():
     sudo('cp -f %(project)s.war %(deploy_to)s/deploy/%(project)s.war')
 
 def tail():
-    require('env', provided_by=['production','staging'])
     "Tail the servers logfile."
+    require('env', provided_by=['production','staging'])
     run('tail -f /var/log/jboss/$(fab_host)/console.log')
 
 def restart():
-    require('env', provided_by=['production','staging'])
     "Restarts the application servers."
+    require('env', provided_by=['production','staging'])
     sudo("$(fab_host) restart")
 
