@@ -55,6 +55,7 @@ ENV = {
 }
 COMMANDS = {} # populated by load() and _load_std_commands()
 CONNECTIONS = []
+OPERATIONS = {} # populated by _load_operations_helper_map()
 
 #
 # Standard fabfile operations:
@@ -132,19 +133,24 @@ def upload_project(**kvargs):
 #
 # Standard Fabric commands:
 #
-def _help(command=None):
+def _help(**kvargs):
     "Display usage help message to the console, or help for a given command."
-    if command is not None and command in COMMANDS:
-        print(COMMANDS[command].__doc__)
+    if kvargs:
+        if not OPERATIONS:
+            _load_operations_helper_map()
+        for k, v in kvargs.items():
+            if k in COMMANDS:
+                _print_help_for(k, COMMANDS[k].__doc__)
+            elif k in OPERATIONS:
+                _print_help_for(k, OPERATIONS[k].__doc__)
+            elif k in ['ops', 'operations']:
+                print("Available operations:")
+                _list_objs(OPERATIONS)
 
-def _list():
+def _list_commands():
     "Display a list of commands with descriptions."
-    max_name_len = reduce(lambda a,b: max(a, len(b)), COMMANDS.keys(), 0)
     print("Available commands are:")
-    cmds = COMMANDS.items()
-    cmds.sort(lambda x,y: cmp(x[0], y[0]))
-    for name, fn in cmds:
-        print '  ', name.ljust(max_name_len), ':', fn.__doc__.splitlines()[0]
+    _list_objs(COMMANDS)
 
 def _license():
     "Display the Fabric distribution license text."
@@ -154,15 +160,13 @@ def _warranty():
     "Display warranty information for the Fabric software."
     pass
 
-def _set(arg):
+def _set(**kvargs):
     """Set a Fabric variable.
     
     Example:
         $fab set:fab_user=billy,other_var=other_value
     """
-    vars = arg.split(',')
-    for var in vars:
-        k, v = var.split('=', 1)
+    for k, v in kvargs:
         ENV[k] = (v % ENV)
 
 #
@@ -180,12 +184,39 @@ def _pick_fabfile():
 
 def _load_std_commands():
     "Loads up the standard commands such as help, list, warranty and license."
-    global COMMANDS
     COMMANDS['help'] = _help
-    COMMANDS['list'] = _list
+    COMMANDS['list'] = _list_commands
     COMMANDS['warranty'] = _warranty
     COMMANDS['license'] = _license
     COMMANDS['set'] = _set
+
+def _load_operations_helper_map():
+    "Loads up the standard operations in OPERATIONS so 'help' can query them."
+    OPERATIONS['set'] = set
+    OPERATIONS['get'] = get
+    OPERATIONS['put'] = put
+    OPERATIONS['run'] = run
+    OPERATIONS['sudo'] = sudo
+    OPERATIONS['require'] = require
+    OPERATIONS['local'] = local
+    OPERATIONS['local_per_host'] = local_per_host
+    OPERATIONS['load'] = load
+    OPERATIONS['upload_project'] = upload_project
+
+def _indent(text):
+    "Indent all lines in text with four spaces."
+    return '\n'.join(('    ' + line for line in text.splitlines()))
+
+def _print_help_for(name, doc):
+    "Output a pretty-printed help text for the given name & doc"
+    print("Help for '%s':\n%s" % (name, _indent(doc)))
+
+def _list_objs(objs):
+    max_name_len = reduce(lambda a,b: max(a, len(b)), objs.keys(), 0)
+    cmds = objs.items()
+    cmds.sort(lambda x,y: cmp(x[0], y[0]))
+    for name, fn in cmds:
+        print '  ', name.ljust(max_name_len), ':', fn.__doc__.splitlines()[0]
 
 def _check_fab_hosts():
     "Check that we have a fab_hosts variable, and complain if it's missing."
@@ -309,21 +340,24 @@ def main(args):
             cmd = cmd.split(':', 1)[0]
         if not cmd in COMMANDS:
             print("No such command: %s" % cmd)
-            _list()
+            _list_commands()
             exit(1)
     # execution:
     if not args:
         print("No commands given.")
-        _list()
+        _list_commands()
     for cmd in args:
         cmd_name = cmd
         cmd_args = None
         if cmd.find(':') != -1:
             cmd_name, cmd_args = cmd.split(':', 1)
         ENV['fab_cur_command'] = cmd_name
-        print('Running %s...' % cmd)
         if cmd_args is not None:
-            COMMANDS[cmd_name](cmd_args)
+            cmd_arg_kvs = {}
+            for cmd_arg_kv in cmd_args.split(','):
+                k, _, v = cmd_arg_kv.partition('=')
+                cmd_arg_kvs[k] = (v % ENV)
+            COMMANDS[cmd_name](**cmd_arg_kvs)
         else:
             COMMANDS[cmd]()
     print('Done.')
