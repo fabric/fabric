@@ -4,3 +4,4 @@ fabc
 *.pyo
 build
 dist
+*.tar.gz
