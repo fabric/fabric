@@ -1,5 +1,5 @@
 * Ctrl-C dosn't quite work... especially not with the tail example
-* run, put, sudo et al. dosn't repsect the 'fail' kvarg
+* run, put, sudo et al. doesn't respect the 'fail' kvarg
 * fab help, license & warranty tasks' not implemented
 * README file
 * AUTHORS file?

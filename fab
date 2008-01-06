@@ -35,6 +35,8 @@ except ImportError:
 
 __version__ = '0.0.1'
 __author__ = 'Christian Vest Hansen'
+__author_email__ = 'karmazilla@gmail.com'
+__url__ = 'https://savannah.nongnu.org/projects/fab/'
 __license__ = '''\
    Fabric v. %(fab_version)s, Copyright (C) 2008 %(fab_author)s.
    Fabric comes with ABSOLUTELY NO WARRANTY; for details type `fab warranty'.
