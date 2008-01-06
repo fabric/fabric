@@ -326,12 +326,14 @@ def main(args):
             COMMANDS[cmd_name](cmd_args)
         else:
             COMMANDS[cmd]()
-    _disconnect()
     print('Done.')
 
 if __name__ == '__main__':
     try:
-        main(sys.argv[1:])
+        try:
+            main(sys.argv[1:])
+        finally:
+            _disconnect()
     except SystemExit:
         # a number of internal functions might raise this one.
         raise
