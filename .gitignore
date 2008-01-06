@@ -2,3 +2,5 @@
 fabc
 *.pyc
 *.pyo
+build
+dist

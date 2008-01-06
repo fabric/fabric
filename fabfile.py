@@ -18,9 +18,14 @@
 
 def clean():
     "Recurse the directory tree and remove all files matched by .gitignore."
-    local('cat .gitignore|xargs -I PATTERN '
-        + 'find . -name PATTERN -not -path "./.git/*" -delete')
+    # passing -delete to find doesn't work for directories, hence xargs rm -r
+    local('cat .gitignore | xargs -I PATTERN '
+        + 'find . -name PATTERN -not -path "./.git/*" | xargs rm -r')
 
 def release():
     "Create a new release of Fabric, and upload it to our various services."
-    pass
+    set('prefix', 'fab-%(fab_version)s')
+    local('git tag -s -m "Fabric v. %(fab_version)s" %(fab_version)s HEAD')
+    local('git archive --format=tar --prefix=%(prefix)s '
+        + '%(fab_version)s | gzip >%(prefix)s.tar.gz')
+    
