@@ -104,7 +104,7 @@ def sudo(cmd, **kvargs):
 
 def local(cmd, **kvargs):
     "Run a command locally."
-    os.system(cmd)
+    os.system(_lazy_format(cmd))
 
 def local_per_host(cmd, **kvargs):
     "Run a command locally, for every defined host."

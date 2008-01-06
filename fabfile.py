@@ -24,7 +24,7 @@ def clean():
 
 def release():
     "Create a new release of Fabric, and upload it to our various services."
-    set('prefix', 'fab-%(fab_version)s')
+    set(prefix='fab-%(fab_version)s')
     local('git tag -s -m "Fabric v. %(fab_version)s" %(fab_version)s HEAD')
     local('git archive --format=tar --prefix=%(prefix)s '
         + '%(fab_version)s | gzip >%(prefix)s.tar.gz')
