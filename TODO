@@ -5,3 +5,5 @@
 * AUTHORS file?
 * fabfiles can't use global import statements
 * need something like roles in Capistrano
+* implement the release command in our fabfile so $fab clean release is all it
+  takes

@@ -354,6 +354,7 @@ def main(args):
         if cmd.find(':') != -1:
             cmd_name, cmd_args = cmd.split(':', 1)
         ENV['fab_cur_command'] = cmd_name
+        print("Running %s..." % cmd_name)
         if cmd_args is not None:
             cmd_arg_kvs = {}
             for cmd_arg_kv in cmd_args.split(','):
