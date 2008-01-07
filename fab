@@ -18,14 +18,15 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 import getpass
-import sys
 import os
 import os.path
-import types
+import random
 import re
+import signal
+import sys
 import threading
 import time
-import random
+import types
 
 try:
     import paramiko as ssh
@@ -249,6 +250,7 @@ def _check_fab_hosts():
 def _connect():
     "Populate CONNECTIONS with (hostname, client) tuples as per fab_hosts."
     _check_fab_hosts()
+    signal.signal(signal.SIGINT, _trap_sigint)
     ENV['fab_password'] = getpass.getpass()
     port = int(ENV['fab_port'])
     username = ENV['fab_user']
@@ -273,6 +275,11 @@ def _disconnect():
     "Disconnect all clients."
     for host, client in CONNECTIONS:
         client.close()
+
+def _trap_sigint(signal, frame):
+    "Trap ctrl-c and make sure we disconnect everything."
+    _disconnect()
+    exit(0)
 
 def _lazy_format(string):
     "Do string substitution of ENV vars - both lazy and earger."
@@ -381,7 +388,6 @@ def main(args):
             COMMANDS[cmd_name](**cmd_arg_kvs)
         else:
             COMMANDS[cmd]()
-    print('Done.')
 
 if __name__ == '__main__':
     try:
@@ -389,6 +395,7 @@ if __name__ == '__main__':
             main(sys.argv[1:])
         finally:
             _disconnect()
+            print('Done.')
     except SystemExit:
         # a number of internal functions might raise this one.
         raise
