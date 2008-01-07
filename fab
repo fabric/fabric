@@ -183,8 +183,8 @@ def _shell(**kvargs):
     for line in lines():
         if line == 'exit':
             break
-        elif line.startswith('sudo'):
-            sudo(line[4:])
+        elif line.startswith('sudo '):
+            sudo(line[5:])
         else:
             run(line)
 
