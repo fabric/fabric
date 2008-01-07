@@ -171,6 +171,23 @@ def _set(**kvargs):
     for k, v in kvargs:
         ENV[k] = (v % ENV)
 
+def _shell(**kvargs):
+    "Start an interactive shell connection to the specified hosts."
+    def lines():
+        try:
+            while True:
+                yield raw_input("fab> ")
+        except EOFError:
+            # user pressed ctrl-d
+            print
+    for line in lines():
+        if line == 'exit':
+            break
+        elif line.startswith('sudo'):
+            sudo(line[4:])
+        else:
+            run(line)
+
 #
 # Internal plumbing:
 #
@@ -191,6 +208,7 @@ def _load_std_commands():
     COMMANDS['warranty'] = _warranty
     COMMANDS['license'] = _license
     COMMANDS['set'] = _set
+    COMMANDS['shell'] = _shell
 
 def _load_operations_helper_map():
     "Loads up the standard operations in OPERATIONS so 'help' can query them."
