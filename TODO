@@ -7,3 +7,4 @@
 * need something like roles in Capistrano
 * implement the release command in our fabfile so $fab clean release is all it
   takes
+* make fanout mode work
