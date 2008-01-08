@@ -237,7 +237,11 @@ def _list_objs(objs):
     cmds = objs.items()
     cmds.sort(lambda x,y: cmp(x[0], y[0]))
     for name, fn in cmds:
-        print '  ', name.ljust(max_name_len), ':', fn.__doc__.splitlines()[0]
+        print '  ', name.ljust(max_name_len),
+        if fn.__doc__:
+            print ':', fn.__doc__.splitlines()[0]
+        else:
+            print
 
 def _check_fab_hosts():
     "Check that we have a fab_hosts variable, and complain if it's missing."
