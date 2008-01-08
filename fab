@@ -230,7 +230,8 @@ def _indent(text):
 
 def _print_help_for(name, doc):
     "Output a pretty-printed help text for the given name & doc"
-    print("Help for '%s':\n%s" % (name, _indent(doc)))
+    default_help_msg = '* No help-text found.'
+    print("Help for '%s':\n%s" % (name, _indent(doc or default_help_msg)))
 
 def _list_objs(objs):
     max_name_len = reduce(lambda a,b: max(a, len(b)), objs.keys(), 0)
