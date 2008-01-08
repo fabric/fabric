@@ -54,7 +54,8 @@ ENV = {
     'fab_password':None,
     'fab_pkey':None,
     'fab_key_filename':None,
-    'fab_new_host_key':'accept'
+    'fab_new_host_key':'accept',
+    'fab_shell':'/bin/bash -l -c "%s"',
 }
 COMMANDS = {} # populated by load() and _load_std_commands()
 CONNECTIONS = []
@@ -290,16 +291,16 @@ def _trap_sigint(signal, frame):
     _disconnect()
     exit(0)
 
-def _lazy_format(string):
+def _lazy_format(string, env=ENV):
     "Do recursive string substitution of ENV vars - both lazy and earger."
     suber = re.compile(r'\$\((?P<var>\w+?)\)')
     def replacer_fn(match):
         var = match.group('var')
-        if var in ENV:
-            return _lazy_format(ENV[var] % ENV)
+        if var in env:
+            return _lazy_format(env[var] % env, env)
         else:
             return match.group(0)
-    return re.sub(suber, replacer_fn, string % ENV)
+    return re.sub(suber, replacer_fn, string % env)
 
 def _on_hosts_do(fn, *args):
     """Invoke the given function with hostname and client parameters in
@@ -313,8 +314,9 @@ def _on_hosts_do(fn, *args):
     if strategy == 'fanout':
         threads = []
         for host, client in CONNECTIONS:
-            ENV['fab_host'] = host
-            thread = threading.Thread(None, lambda: fn(host, client, *args))
+            env = dict(ENV)
+            env['fab_host'] = host
+            thread = threading.Thread(None, lambda: fn(host, client, env, *args))
             thread.setDaemon(True)
             thread.start()
             threads.append(thread)
@@ -322,34 +324,37 @@ def _on_hosts_do(fn, *args):
             thread.join()
     elif strategy == 'rolling':
         for host, client in CONNECTIONS:
-            ENV['fab_host'] = host
-            fn(host, client, *args)
+            env = dict(ENV)
+            env['fab_host'] = host
+            fn(host, client, env, *args)
     else:
         print("Unsupported fab_mode: %s" % strategy)
         print("Supported modes are: fanout, rolling")
         exit(1)
 
-def _put(host, client, localpath, remotepath):
+def _put(host, client, env, localpath, remotepath):
     ftp = client.open_sftp()
-    localpath = _lazy_format(localpath)
-    remotepath = _lazy_format(remotepath)
+    localpath = _lazy_format(localpath, env)
+    remotepath = _lazy_format(remotepath, env)
     print("[%s] put: %s -> %s" % (host, localpath, remotepath))
     ftp.put(localpath, remotepath)
 
-def _run(host, client, cmd):
-    cmd = _lazy_format(cmd)
+def _run(host, client, env, cmd):
+    cmd = _lazy_format(cmd, env)
     print("[%s] run: %s" % (host, cmd))
+    cmd = env['fab_shell'] % cmd.replace('"', '\\"')
     stdin, stdout, stderr = client.exec_command(cmd)
     out_th = _start_outputter("[%s] out" % host, stdout)
     err_th = _start_outputter("[%s] err" % host, stderr)
     out_th.join()
     err_th.join()
 
-def _sudo(host, client, cmd):
-    cmd = _lazy_format(cmd)
+def _sudo(host, client, env, cmd):
+    cmd = _lazy_format(cmd, env)
     print("[%s] sudo: %s" % (host, cmd))
-    stdin, stdout, stderr = client.exec_command("sudo -S " + cmd)
-    stdin.write(ENV['fab_password'])
+    cmd = env['fab_shell'] % "sudo -S " + cmd.replace('"', '\\"')
+    stdin, stdout, stderr = client.exec_command(cmd)
+    stdin.write(env['fab_password'])
     stdin.write('\n')
     stdin.flush()
     out_th = _start_outputter("[%s] out" % host, stdout)
