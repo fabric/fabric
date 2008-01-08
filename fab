@@ -80,13 +80,15 @@ def require(var, **kvargs):
     if var in ENV:
         return
     print(
-        ("The '%(fab_cur_command)s' requires a '" + var + "' variable.") % ENV
+        ("The '%(fab_cur_command)s' command requires a '" + var
+        + "' variable.") % ENV
     )
     if 'used_for' in kvargs:
         print("This variable is used for %s" % kvargs['used_for'])
     if 'provided_by' in kvargs:
         print("Get the variable by running one of these commands:")
         print('\t' + ('\n\t'.join(kvargs['provided_by'])))
+    exit(1)
 
 def put(localpath, remotepath, **kvargs):
     "Upload a file to the current hosts."
@@ -171,7 +173,7 @@ def _set(**kvargs):
     Example:
         $fab set:fab_user=billy,other_var=other_value
     """
-    for k, v in kvargs:
+    for k, v in kvargs.items():
         ENV[k] = (v % ENV)
 
 def _shell(**kvargs):
@@ -289,12 +291,15 @@ def _trap_sigint(signal, frame):
     exit(0)
 
 def _lazy_format(string):
-    "Do string substitution of ENV vars - both lazy and earger."
+    "Do recursive string substitution of ENV vars - both lazy and earger."
     suber = re.compile(r'\$\((?P<var>\w+?)\)')
-    string = string % ENV # early earger
-    string = re.sub(suber, lambda m: ENV[m.group('var')], string) # lazy part
-    string = string % ENV # late earger
-    return string
+    def replacer_fn(match):
+        var = match.group('var')
+        if var in ENV:
+            return _lazy_format(ENV[var] % ENV)
+        else:
+            return match.group(0)
+    return re.sub(suber, replacer_fn, string % ENV)
 
 def _on_hosts_do(fn, *args):
     """Invoke the given function with hostname and client parameters in
