@@ -149,6 +149,8 @@ def _help(**kvargs):
             elif k in ['ops', 'operations']:
                 print("Available operations:")
                 _list_objs(OPERATIONS)
+            else:
+                _print_help_for(k, None)
 
 def _list_commands():
     "Display a list of commands with descriptions."
