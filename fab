@@ -90,11 +90,33 @@ def set(**variables):
             ENV[k] = v
 
 def get(name):
-    "Get the value of a given Fabric environment variable."
-    return ENV[name]
+    """Get the value of a given Fabric environment variable.
+    
+    If the variable isn't found, then this operation returns None.
+    
+    """
+    return name in ENV and ENV[name] or None
 
 def require(var, **kvargs):
-    "Make sure that a certain environmet variable is available."
+    """Make sure that a certain environmet variable is available.
+    
+    The 'var' parameter is a string that names the variable to check for.
+    Two other optional kvargs are supported:
+     - 'used_for' is a string that gets injected into, and then printed, as
+       something like this string: "This variable is used for %s".
+     - 'provided_by' is a list of strings that name commands which the user
+       can run in order to satisfy the requirement.
+    
+    If the required variable is not found in the current environment, then the
+    operation is stopped and Fabric halts.
+    
+    Example:
+        require('project_name',
+            used_for='finding the target deployment dir.',
+            provided_by=['staging', 'production'],
+        )
+    
+    """
     if var in ENV:
         return
     print(
