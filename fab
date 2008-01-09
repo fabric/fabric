@@ -59,6 +59,7 @@ ENV = {
     'fab_shell':'/bin/bash -l -c "%s"',
     # TODO: make fab_timestamp UTC
     'fab_timestamp':datetime.datetime.now().strftime('%F_%H-%M-%S'),
+    'fab_debug':False,
 }
 COMMANDS = {} # populated by load() and _load_std_commands()
 CONNECTIONS = []
@@ -127,6 +128,8 @@ def load(filename, **kvargs):
     for name, obj in locals().items():
         if not name.startswith('_') and isinstance(obj, types.FunctionType):
             COMMANDS[name] = obj
+        if not name.startswith('_'):
+            setattr(__builtins__, name, obj)
 
 def upload_project(**kvargs):
     "Uploads the current project directory to the connected hosts."
@@ -344,9 +347,9 @@ def _put(host, client, env, localpath, remotepath):
 
 def _run(host, client, env, cmd):
     cmd = _lazy_format(cmd, env)
-    print("[%s] run: %s" % (host, cmd))
-    cmd = env['fab_shell'] % cmd.replace('"', '\\"')
-    stdin, stdout, stderr = client.exec_command(cmd)
+    real_cmd = env['fab_shell'] % cmd.replace('"', '\\"')
+    print("[%s] run: %s" % (host, (env['fab_debug'] and real_cmd or cmd)))
+    stdin, stdout, stderr = client.exec_command(real_cmd)
     out_th = _start_outputter("[%s] out" % host, stdout)
     err_th = _start_outputter("[%s] err" % host, stderr)
     out_th.join()
@@ -354,9 +357,9 @@ def _run(host, client, env, cmd):
 
 def _sudo(host, client, env, cmd):
     cmd = _lazy_format(cmd, env)
-    print("[%s] sudo: %s" % (host, cmd))
-    cmd = env['fab_shell'] % "sudo -S " + cmd.replace('"', '\\"')
-    stdin, stdout, stderr = client.exec_command(cmd)
+    real_cmd = env['fab_shell'] % ("sudo -S " + cmd.replace('"', '\\"'))
+    print("[%s] sudo: %s" % (host, (env['fab_debug'] and real_cmd or cmd)))
+    stdin, stdout, stderr = client.exec_command(real_cmd)
     stdin.write(env['fab_password'])
     stdin.write('\n')
     stdin.flush()
