@@ -18,11 +18,11 @@
 
 set(
     fab_user = 'UNWIRE\\cvh',
-    # contray to 'fanout', executes commands on one host at a time:
     fab_mode = 'rolling',
     project = 'ldapservice',
     rollback_dir = 'rollback-%(project)s',
     deploy_to = '/usr/local/$(fab_host)/server/$(fab_host)',
+    fab_debug = True,
 )
 
 def production():
@@ -43,28 +43,49 @@ def setup():
         fail='silent' # other fail options: warn, abort
     )
 
+def build():
+    local('mvn clean package')
+
+def upload():
+    require('env', provided_by=['production','staging'])
+    put('src/%(project)s.%(env)s.properties', '%(project)s.properties')
+    put('target/%(project)s.war', '%(project)s.war')
+    set(uploaded = True)
+
 def deploy():
     "Build the project and deploy it to a specified environment."
     require('env', provided_by=['production','staging'])
-    local('mvn clean package')
-    put('config/%(project)s.%(env)s.properties', '%(project)s.properties')
-    put('target/%(project)s.war', '%(project)s.war')
-    from datetime import datetime as dt
-    set(now = dt.now().strftime('%F_%H-%M-%S'))
-    set(rollback_prefix='%(rollback_dir)s/%(now)s/%(project)s')
-    run('mkdir %(rollback_dir)s/%(now)s')
+    build()
+    upload()
+    backup_existing()
+    deploy_files()
+
+def backup_existing():
+    set(rollback_prefix='%(rollback_dir)s/%(fab_timestamp)s/%(project)s')
+    run('mkdir %(rollback_dir)s/%(fab_timestamp)s')
     run('cp %(deploy_to)s/deploy/%(project)s.war %(rollback_prefix)s.war')
     run('cp %(deploy_to)s/conf/%(project)s.properties %(rollback_prefix)s.properties')
-    sudo('cp -f %(project)s.properties %(deploy_to)s/conf/%(project)s.properties')
-    sudo('cp -f %(project)s.war %(deploy_to)s/deploy/%(project)s.war')
+
+def deploy_files():
+    require('env', provided_by=['production','staging'])
+    sudo('cp %(project)s.properties %(deploy_to)s/conf/%(project)s.properties')
+    sudo('cp %(project)s.war %(deploy_to)s/deploy/%(project)s.war')
 
 def tail():
     "Tail the servers logfile."
-    require('env', provided_by=['production','staging'])
     run('tail -f /var/log/jboss/$(fab_host)/console.log')
 
 def restart():
-    "Restarts the application servers."
-    require('env', provided_by=['production','staging'])
     sudo("$(fab_host) restart")
 
+def rollback():
+    """Undo last deployment, reverting the servers state to that of prior to
+    current deployment.
+    
+    """
+    sudo(
+        "export PREV=$(ls -1 rollback-ldapservice|tail -1);" +
+        "cp %(rollback_dir)s/$PREV/%(project)s.properties %(deploy_to)s/conf/%(project)s.properties;" +
+        "cp %(rollback_dir)s/$PREV/%(project)s.war %(deploy_to)s/deploy/%(project)s.war;" +
+        "rm -r %(rollback_dir)s/$PREV"
+    )
