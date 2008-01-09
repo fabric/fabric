@@ -20,7 +20,6 @@
 import getpass
 import os
 import os.path
-import random
 import re
 import signal
 import sys
@@ -147,8 +146,7 @@ def load(filename, **kvargs):
 
 def upload_project(**kvargs):
     "Uploads the current project directory to the connected hosts."
-    r = random.randint(100000, 999999)
-    tar_file = "/tmp/fab.%d.tar" % r
+    tar_file = "/tmp/fab.%(fab_timestamp)s.tar" % ENV
     cwd_name = os.getcwd().split(os.sep)[-1]
     local("tar -czf %s ." % tar_file)
     put(tar_file, cwd_name + ".tar.gz")
