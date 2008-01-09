@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 
 from distutils.core import setup
-import imp
-
-fab = imp.load_source('fab', 'fab')
+import fab
 
 setup(
     name='Fabric',
