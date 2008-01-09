@@ -68,7 +68,21 @@ OPERATIONS = {} # populated by _load_operations_helper_map()
 # Standard fabfile operations:
 #
 def set(**variables):
-    "Set a number of Fabric environment variables."
+    """Set a number of Fabric environment variables.
+    
+    Set takes a number of keyword arguments, and defines or updates the
+    variables that corrosponds to each keyword with the respective value.
+    
+    The values can be of any type, but strings are used for most variables.
+    If the value is a string and contain any eager variable references, such as
+    %(fab_user)s, then these will be expanded to their corrosponding value.
+    Lazy references, those beginning with a $ rather than a %, will not be
+    expanded.
+    
+    Example:
+        set(fab_user='joe.shmoe', fab_mode='rolling')
+    
+    """
     for k, v in variables.items():
         if isinstance(v, types.StringTypes):
             ENV[k] = (v % ENV)
@@ -149,12 +163,14 @@ def _help(**kvargs):
             _load_operations_helper_map()
         for k, v in kvargs.items():
             if k in COMMANDS:
-                _print_help_for(k, COMMANDS[k].__doc__)
+                _print_help_for_in(k, COMMANDS)
             elif k in OPERATIONS:
-                _print_help_for(k, OPERATIONS[k].__doc__)
+                _print_help_for_(k, OPERATIONS)
             elif k in ['ops', 'operations']:
                 print("Available operations:")
                 _list_objs(OPERATIONS)
+            elif k in ['op', 'operation']:
+                _print_help_for_in(kvargs[k], OPERATIONS)
             else:
                 _print_help_for(k, None)
 
@@ -240,6 +256,13 @@ def _print_help_for(name, doc):
     "Output a pretty-printed help text for the given name & doc"
     default_help_msg = '* No help-text found.'
     print("Help for '%s':\n%s" % (name, _indent(doc or default_help_msg)))
+
+def _print_help_for_in(name, dictionary):
+    "Print a pretty help text for the named function in the dict."
+    if name in dictionary:
+        _print_help_for(name, dictionary[name].__doc__)
+    else:
+        _print_help_for(name, None)
 
 def _list_objs(objs):
     max_name_len = reduce(lambda a,b: max(a, len(b)), objs.keys(), 0)
