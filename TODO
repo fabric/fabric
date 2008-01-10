@@ -8,4 +8,6 @@
 * implement the release command in our fabfile so 'fab clean release' is all it
   takes
 * make fanout mode work
-* when an operation fails, fabric doesn't break and exit.
+* when an operation fails, fabric doesn't break and exit
+* add built-in help for built-in variables
+* allow run & sudo to save the output of stdout and stderr in variables
