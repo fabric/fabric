@@ -132,7 +132,18 @@ def require(var, **kvargs):
     exit(1)
 
 def put(localpath, remotepath, **kvargs):
-    "Upload a file to the current hosts."
+    """Upload a file to the current hosts.
+    
+    The 'localpath' parameter is the relative or absolute path to the file on
+    your localhost that you wish to upload to the fab_hosts.
+    The 'remotepath' parameter is the destination path on the individual
+    fab_hosts, and relative paths are relative to the fab_user's home
+    directory.
+    
+    Example:
+        put('bin/project.zip', '/tmp/project.zip')
+    
+    """
     if not CONNECTIONS: _connect()
     _on_hosts_do(_put, localpath, remotepath)
 
