@@ -148,7 +148,15 @@ def put(localpath, remotepath, **kvargs):
     _on_hosts_do(_put, localpath, remotepath)
 
 def run(cmd, **kvargs):
-    "Run a shell command on the current hosts."
+    """Run a shell command on the current fab_hosts.
+    
+    The provided command is executed with the permisions of fab_user, and the
+    exact execution environ is determined by the fab_shell variable.
+    
+    Example:
+        run("ls")
+    
+    """
     if not CONNECTIONS: _connect()
     _on_hosts_do(_run, cmd)
 
@@ -539,7 +547,12 @@ def _connect():
     "Populate CONNECTIONS with (hostname, client) tuples as per fab_hosts."
     _check_fab_hosts()
     signal.signal(signal.SIGINT, _trap_sigint)
-    ENV['fab_password'] = getpass.getpass()
+    if 'fab_password' not in ENV:
+        print(_lazy_format("Logging into the following hosts as $(fab_user):"))
+        print(_indent('\n'.join(ENV['fab_hosts'])))
+        ENV['fab_password'] = getpass.getpass()
+    else:
+        print("WARNING: Putting your password in a fabfile is a bad idea.")
     port = int(ENV['fab_port'])
     username = ENV['fab_user']
     password = ENV['fab_password']
@@ -563,6 +576,7 @@ def _disconnect():
     "Disconnect all clients."
     for host, client in CONNECTIONS:
         client.close()
+    CONNECTIONS = []
 
 def _trap_sigint(signal, frame):
     "Trap ctrl-c and make sure we disconnect everything."
