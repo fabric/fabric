@@ -1,10 +1,11 @@
 * Ctrl-C dosn't quite work... especially not with the tail example
 * run, put, sudo et al. doesn't respect the 'fail' kvarg
-* fab help, license & warranty tasks' not implemented
+* fab help, license & warranty commands not implemented
 * README file
 * AUTHORS file?
 * fabfiles can't use global import statements
 * need something like roles in Capistrano
-* implement the release command in our fabfile so $fab clean release is all it
+* implement the release command in our fabfile so 'fab clean release' is all it
   takes
 * make fanout mode work
+* when an operation fails, fabric doesn't break and exit.
