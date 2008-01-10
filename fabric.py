@@ -423,39 +423,43 @@ def _start_outputter(prefix, channel):
     thread.start()
     return thread
 
+def _validate_commands(args):
+    for cmd in args:
+        if cmd.find(':') != -1:
+            cmd = cmd.split(':', 1)[0]
+        if not cmd in COMMANDS:
+            print("No such command: %s" % cmd)
+            _list_commands()
+            exit(1)
+    if not args:
+        print("No commands given.")
+        _list_commands()
+
+def _execute_commands(args):
+    for cmd in args:
+        cmd_name = cmd
+        cmd_args = None
+        if cmd.find(':') != -1:
+            cmd_name, cmd_args = cmd.split(':', 1)
+        ENV['fab_cur_command'] = cmd_name
+        print("Running %s..." % cmd_name)
+        if cmd_args is not None:
+            cmd_arg_kvs = {}
+            for cmd_arg_kv in cmd_args.split(','):
+                k, _, v = cmd_arg_kv.partition('=')
+                cmd_arg_kvs[k] = (v % ENV)
+            COMMANDS[cmd_name](**cmd_arg_kvs)
+        else:
+            COMMANDS[cmd]()
+
 def main(args):
     try:
         print(__greeter__ % ENV)
         _load_std_commands()
         fabfile = _pick_fabfile()
         load(fabfile)
-        # validation:
-        for cmd in args:
-            if cmd.find(':') != -1:
-                cmd = cmd.split(':', 1)[0]
-            if not cmd in COMMANDS:
-                print("No such command: %s" % cmd)
-                _list_commands()
-                exit(1)
-        # execution:
-        if not args:
-            print("No commands given.")
-            _list_commands()
-        for cmd in args:
-            cmd_name = cmd
-            cmd_args = None
-            if cmd.find(':') != -1:
-                cmd_name, cmd_args = cmd.split(':', 1)
-            ENV['fab_cur_command'] = cmd_name
-            print("Running %s..." % cmd_name)
-            if cmd_args is not None:
-                cmd_arg_kvs = {}
-                for cmd_arg_kv in cmd_args.split(','):
-                    k, _, v = cmd_arg_kv.partition('=')
-                    cmd_arg_kvs[k] = (v % ENV)
-                COMMANDS[cmd_name](**cmd_arg_kvs)
-            else:
-                COMMANDS[cmd]()
+        _validate_commands(args)
+        _execute_commands(args)
     finally:
         _disconnect()
         print("Done.")
