@@ -161,7 +161,17 @@ def run(cmd, **kvargs):
     _on_hosts_do(_run, cmd)
 
 def sudo(cmd, **kvargs):
-    "Run a sudo (root privileged) command on the current hosts."
+    """Run a sudo (root privileged) command on the current hosts.
+    
+    The provided command is executed with root permisions, provided that
+    fab_user is in the sudoers file in the remote host. The exact execution
+    environ is determined by the fab_shell variable - the 'sudo' part is
+    injected into this variable.
+    
+    Example:
+        sudo("install_script.py")
+    
+    """
     if not CONNECTIONS: _connect()
     _on_hosts_do(_sudo, cmd)
 
@@ -508,9 +518,9 @@ def _load_operations_helper_map():
     OPERATIONS['load'] = load
     OPERATIONS['upload_project'] = upload_project
 
-def _indent(text):
-    "Indent all lines in text with four spaces."
-    return '\n'.join(('    ' + line for line in text.splitlines()))
+def _indent(text, level=4):
+    "Indent all lines in text with 'level' number of spaces, default 4."
+    return '\n'.join(((' ' * level) + line for line in text.splitlines()))
 
 def _print_help_for(name, doc):
     "Output a pretty-printed help text for the given name & doc"
