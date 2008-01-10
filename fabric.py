@@ -38,7 +38,8 @@ __version__ = '0.0.1'
 __author__ = 'Christian Vest Hansen'
 __author_email__ = 'karmazilla@gmail.com'
 __url__ = 'https://savannah.nongnu.org/projects/fab/'
-__license__ = '''\
+__license__ = 'GPL-2'
+__greeter__ = '''\
    Fabric v. %(fab_version)s, Copyright (C) 2008 %(fab_author)s.
    Fabric comes with ABSOLUTELY NO WARRANTY; for details type `fab warranty'.
    This is free software, and you are welcome to redistribute it
@@ -157,14 +158,14 @@ def local_per_host(cmd, **kvargs):
         cur_cmd = _lazy_format(cmd)
         os.system(cur_cmd)
 
-def load(filename, **kvargs):
+def load(filename):
     "Load up the given fabfile."
     execfile(filename)
     for name, obj in locals().items():
         if not name.startswith('_') and isinstance(obj, types.FunctionType):
             COMMANDS[name] = obj
         if not name.startswith('_'):
-            setattr(__builtins__, name, obj)
+            __builtins__[name] = obj
 
 def upload_project(**kvargs):
     "Uploads the current project directory to the connected hosts."
@@ -423,50 +424,39 @@ def _start_outputter(prefix, channel):
     return thread
 
 def main(args):
-    print(__license__ % ENV)
-    _load_std_commands()
-    fabfile = _pick_fabfile()
-    load(fabfile)
-    # validation:
-    for cmd in args:
-        if cmd.find(':') != -1:
-            cmd = cmd.split(':', 1)[0]
-        if not cmd in COMMANDS:
-            print("No such command: %s" % cmd)
-            _list_commands()
-            exit(1)
-    # execution:
-    if not args:
-        print("No commands given.")
-        _list_commands()
-    for cmd in args:
-        cmd_name = cmd
-        cmd_args = None
-        if cmd.find(':') != -1:
-            cmd_name, cmd_args = cmd.split(':', 1)
-        ENV['fab_cur_command'] = cmd_name
-        print("Running %s..." % cmd_name)
-        if cmd_args is not None:
-            cmd_arg_kvs = {}
-            for cmd_arg_kv in cmd_args.split(','):
-                k, _, v = cmd_arg_kv.partition('=')
-                cmd_arg_kvs[k] = (v % ENV)
-            COMMANDS[cmd_name](**cmd_arg_kvs)
-        else:
-            COMMANDS[cmd]()
-
-if __name__ == '__main__':
     try:
-        try:
-            main(sys.argv[1:])
-        finally:
-            _disconnect()
-            print('Done.')
-    except SystemExit:
-        # a number of internal functions might raise this one.
-        raise
-    except:
-        sys.excepthook(*sys.exc_info())
-        # we might leave stale threads if we don't explicitly exit()
-        exit(1)
-    exit(0)
+        print(__greeter__ % ENV)
+        _load_std_commands()
+        fabfile = _pick_fabfile()
+        load(fabfile)
+        # validation:
+        for cmd in args:
+            if cmd.find(':') != -1:
+                cmd = cmd.split(':', 1)[0]
+            if not cmd in COMMANDS:
+                print("No such command: %s" % cmd)
+                _list_commands()
+                exit(1)
+        # execution:
+        if not args:
+            print("No commands given.")
+            _list_commands()
+        for cmd in args:
+            cmd_name = cmd
+            cmd_args = None
+            if cmd.find(':') != -1:
+                cmd_name, cmd_args = cmd.split(':', 1)
+            ENV['fab_cur_command'] = cmd_name
+            print("Running %s..." % cmd_name)
+            if cmd_args is not None:
+                cmd_arg_kvs = {}
+                for cmd_arg_kv in cmd_args.split(','):
+                    k, _, v = cmd_arg_kv.partition('=')
+                    cmd_arg_kvs[k] = (v % ENV)
+                COMMANDS[cmd_name](**cmd_arg_kvs)
+            else:
+                COMMANDS[cmd]()
+    finally:
+        _disconnect()
+        print("Done.")
+
