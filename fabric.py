@@ -176,11 +176,28 @@ def sudo(cmd, **kvargs):
     _on_hosts_do(_sudo, cmd)
 
 def local(cmd, **kvargs):
-    "Run a command locally."
+    """Run a command locally.
+    
+    This operation is essentially 'os.system()' except that variables are
+    expanded prior to running.
+    
+    Example:
+        local("make clean dist")
+    
+    """
     os.system(_lazy_format(cmd))
 
 def local_per_host(cmd, **kvargs):
-    "Run a command locally, for every defined host."
+    """Run a command locally, for every defined host.
+    
+    Like the local() operation, this is pretty similar to 'os.system()', but
+    with this operation, the command is executed (and have its variables
+    expanded) for each host in fab_hosts.
+    
+    Example:
+        local_per_host("scp -i login.key stuff.zip $(fab_host):stuff.zip")
+    
+    """
     _check_fab_hosts()
     for host in ENV['fab_hosts']:
         ENV['fab_host'] = host
@@ -188,7 +205,16 @@ def local_per_host(cmd, **kvargs):
         os.system(cur_cmd)
 
 def load(filename):
-    "Load up the given fabfile."
+    """Load up the given fabfile.
+    
+    This loads the fabfile specified by the 'filename' parameter into fabric
+    and make its commands and other functions available in the scope of the 
+    current fabfile.
+    
+    Example:
+        load("conf/production-settings.py")
+    
+    """
     execfile(filename)
     for name, obj in locals().items():
         if not name.startswith('_') and isinstance(obj, types.FunctionType):
@@ -197,7 +223,20 @@ def load(filename):
             __builtins__[name] = obj
 
 def upload_project(**kvargs):
-    "Uploads the current project directory to the connected hosts."
+    """Uploads the current project directory to the connected hosts.
+    
+    This is a higher-level convenience operation that basically 'tar' up the
+    directory that contains your fabfile (presumably it is your project
+    directory), uploads it to the fab_hosts and 'untar' it.
+    
+    This operation expects the tar command-line utility to be available on your
+    local machine, and it also expects your system to have a /tmp directory
+    that is writeable.
+    
+    Unless something fails half-way through, this operation will make sure to
+    delete the temporary files it creates.
+    
+    """
     tar_file = "/tmp/fab.%(fab_timestamp)s.tar" % ENV
     cwd_name = os.getcwd().split(os.sep)[-1]
     local("tar -czf %s ." % tar_file)
