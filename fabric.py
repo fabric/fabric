@@ -257,19 +257,33 @@ def _help(**kvargs):
             if k in COMMANDS:
                 _print_help_for_in(k, COMMANDS)
             elif k in OPERATIONS:
-                _print_help_for_(k, OPERATIONS)
-            elif k in ['ops', 'operations']:
-                print("Available operations:")
-                _list_objs(OPERATIONS)
+                _print_help_for_in(k, OPERATIONS)
             elif k in ['op', 'operation']:
                 _print_help_for_in(kvargs[k], OPERATIONS)
             else:
                 _print_help_for(k, None)
 
-def _list_commands():
+def _list_commands(**kvargs):
     "Display a list of commands with descriptions."
-    print("Available commands are:")
-    _list_objs(COMMANDS)
+    if kvargs:
+        for k, v in kvargs.items():
+            if k in ['cmds', 'commands']:
+                print("Available commands are:")
+                _list_objs(COMMANDS)
+            elif k in ['ops', 'operations']:
+                print("Available operations:")
+                _list_objs(OPERATIONS)
+            else:
+                print("Don't know how to list '%s'." % k)
+                print("Try one of these instead:")
+                print(_indent('\n'.join([
+                    'cmds', 'commands',
+                    'ops', 'operations',
+                ])))
+                exit(1)
+    else:
+        print("Available commands are:")
+        _list_objs(COMMANDS)
 
 def _license():
     "Display the Fabric distribution license text."
@@ -623,6 +637,7 @@ def _connect():
 
 def _disconnect():
     "Disconnect all clients."
+    global CONNECTIONS
     for host, client in CONNECTIONS:
         client.close()
     CONNECTIONS = []
