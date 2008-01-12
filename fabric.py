@@ -249,7 +249,19 @@ def upload_project(**kvargs):
 # Standard Fabric commands:
 #
 def _help(**kvargs):
-    "Display usage help message to the console, or help for a given command."
+    """Display usage help message to the console, or help for a given command.
+    
+    You can provide help with a parameter and get more detailed help for a
+    specific command. For instance, to learn more about the list command, you
+    could run 'fab help:list'.
+    
+    If you are developing your own fabfile, then you might also be interested
+    in learning more about operations. You can do this by running help with the
+    'op' parameter set to the name of the operation you would like to learn
+    more about. For instance, to learn more about the 'run' operation, you
+    could run 'fab help:op=run'.
+    
+    """
     if kvargs:
         if not OPERATIONS:
             _load_operations_helper_map()
@@ -262,9 +274,24 @@ def _help(**kvargs):
                 _print_help_for_in(kvargs[k], OPERATIONS)
             else:
                 _print_help_for(k, None)
+    else:
+        print("""Fabric is a simple pythonic remote deployment tool.
+        
+        Type 'fab list' to get a list of available commands.
+        Type 'fab help:help' to get more information on how to use the built in
+        help.
+        
+        """)
 
 def _list_commands(**kvargs):
-    "Display a list of commands with descriptions."
+    """Display a list of commands with descriptions.
+    
+    By default, the list command prints a list of available commands, with a
+    short description (if one is available). However, the list command can also
+    print a list of available operaions if you provide it with the 'ops' or
+    'operations' parameter: 'fab list:ops'.
+    
+    """
     if kvargs:
         for k, v in kvargs.items():
             if k in ['cmds', 'commands']:
