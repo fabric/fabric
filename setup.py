@@ -25,7 +25,7 @@ bound to any specific framework.
     py_modules=['fabric'],
     scripts=['fab'],
     classifiers=[
-          'Development Status :: 2 - Pre-Alpha',
+          'Development Status :: 3 - Alpha',
           'Environment :: Console',
           'Intended Audience :: Developers',
           'Intended Audience :: System Administrators',

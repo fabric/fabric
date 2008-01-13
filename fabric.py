@@ -34,7 +34,7 @@ except ImportError:
     print("ERROR: paramiko is a required module. Please install it.")
     exit(1)
 
-__version__ = '0.0.1'
+__version__ = '0.0.2'
 __author__ = 'Christian Vest Hansen'
 __author_email__ = 'karmazilla@gmail.com'
 __url__ = 'https://savannah.nongnu.org/projects/fab/'
