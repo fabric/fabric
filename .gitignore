@@ -2,6 +2,7 @@
 fabc
 *.pyc
 *.pyo
+*.tar.gz
+.DS_Store
 build
 dist
-*.tar.gz
