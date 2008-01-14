@@ -22,3 +22,4 @@
 17  a web site for the project with online documentation
 18  make local_per_host() adhere to the provided fab_mode
     - preferably by using _on_hosts_do, or something
+19  fab list:ops doesn't work
