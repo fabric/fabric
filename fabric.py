@@ -52,7 +52,6 @@ ENV = {
     'fab_mode':'fanout',
     'fab_port':22,
     'fab_user':None,
-    'fab_password':None,
     'fab_pkey':None,
     'fab_key_filename':None,
     'fab_new_host_key':'accept',
@@ -146,6 +145,26 @@ def put(localpath, remotepath, **kvargs):
     """
     if not CONNECTIONS: _connect()
     _on_hosts_do(_put, localpath, remotepath)
+
+def download(remotepath, localpath, **kvargs):
+    """Download a file from the remote hosts.
+    
+    The 'remotepath' parameter is the relative or absolute path to the files
+    to download from the fab_hosts. The 'localpath' parameter will be suffixed
+    with the individual hostname from which they were downloaded, and the
+    downloaded files will then be stored in those respective paths.
+    
+    Example:
+        set(fab_hosts=['node1.cluster.com','node2.cluster.com'])
+        download('/var/log/server.log', 'server.log')
+    
+    The above code will produce two files on your local system, called
+    "server.log.node1.cluster.com" and "server.log.node2.cluster.com"
+    respectively.
+    
+    """
+    if not CONNECTIONS: _connect()
+    _on_hosts_do(_download, remotepath, localpath)
 
 def run(cmd, **kvargs):
     """Run a shell command on the current fab_hosts.
@@ -594,6 +613,7 @@ def _load_operations_helper_map():
     OPERATIONS['set'] = set
     OPERATIONS['get'] = get
     OPERATIONS['put'] = put
+    OPERATIONS['download'] = download
     OPERATIONS['run'] = run
     OPERATIONS['sudo'] = sudo
     OPERATIONS['require'] = require
@@ -725,6 +745,13 @@ def _put(host, client, env, localpath, remotepath):
     remotepath = _lazy_format(remotepath, env)
     print("[%s] put: %s -> %s" % (host, localpath, remotepath))
     ftp.put(localpath, remotepath)
+
+def _download(host, client, env, remotepath, localpath):
+    ftp = client.open_sftp()
+    localpath = _lazy_format(localpath) + '.' + host
+    remotepath = _lazy_format(remotepath)
+    print("[%s] download: %s <- %s" % (host, localpath, remotepath))
+    ftp.get(remotepath, localpath)
 
 def _run(host, client, env, cmd):
     cmd = _lazy_format(cmd, env)
