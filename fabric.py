@@ -204,7 +204,7 @@ def local_per_host(cmd, **kvargs):
         cur_cmd = _lazy_format(cmd)
         os.system(cur_cmd)
 
-def load(filename):
+def load(filename, **kvargs):
     """Load up the given fabfile.
     
     This loads the fabfile specified by the 'filename' parameter into fabric
@@ -215,12 +215,18 @@ def load(filename):
         load("conf/production-settings.py")
     
     """
-    execfile(filename)
-    for name, obj in locals().items():
-        if not name.startswith('_') and isinstance(obj, types.FunctionType):
-            COMMANDS[name] = obj
-        if not name.startswith('_'):
-            __builtins__[name] = obj
+    if os.path.exists(filename):
+        execfile(filename)
+        for name, obj in locals().items():
+            if not name.startswith('_') and isinstance(obj, types.FunctionType):
+                COMMANDS[name] = obj
+            if not name.startswith('_'):
+                __builtins__[name] = obj
+    else:
+        print("Warning: Cannot load file '%s'." % filename)
+        print("No such file in your current directory.")
+        if 'if_not_found' in kvargs and kvargs['if_not_found'] == 'exit':
+            exit(1)
 
 def upload_project(**kvargs):
     """Uploads the current project directory to the connected hosts.
