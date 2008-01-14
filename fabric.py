@@ -263,8 +263,6 @@ def _help(**kvargs):
     
     """
     if kvargs:
-        if not OPERATIONS:
-            _load_operations_helper_map()
         for k, v in kvargs.items():
             if k in COMMANDS:
                 _print_help_for_in(k, COMMANDS)
@@ -789,6 +787,7 @@ def main(args):
     try:
         print(__greeter__ % ENV)
         _load_std_commands()
+        _load_operations_helper_map()
         fabfile = _pick_fabfile()
         load(fabfile)
         _validate_commands(args)
