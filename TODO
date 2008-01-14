@@ -22,3 +22,5 @@
 17  a web site for the project with online documentation
 18  make local_per_host() adhere to the provided fab_mode
     - preferably by using _on_hosts_do, or something
+20  print a helpful text instead of a stack trace when fabfile is missing
+21  *
