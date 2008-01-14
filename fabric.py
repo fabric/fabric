@@ -52,7 +52,6 @@ ENV = {
     'fab_mode':'fanout',
     'fab_port':22,
     'fab_user':None,
-    'fab_password':None,
     'fab_pkey':None,
     'fab_key_filename':None,
     'fab_new_host_key':'accept',
