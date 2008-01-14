@@ -1,15 +1,11 @@
 1   Ctrl-C dosn't quite work... especially not with the tail example
 2   run, put, sudo et al. doesn't respect the 'fail' kvarg
-3   fab help, the standard default help message
-4   README file
 5   AUTHORS file?
 6   fabfiles can't use global import statements
     - some work has been done on this... needs testing
 7   need something like roles in Capistrano
     - I'm thinking the ability to work with variable environments as first class
       objects
-8   implement the release command in our fabfile so 'fab clean release' is all it
-    takes
 9   make fanout mode work
 10  when an operation fails, fabric doesn't break and exit
 11  add built-in help for built-in variables
