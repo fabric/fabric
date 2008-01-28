@@ -40,7 +40,7 @@ def setup():
     require('env', provided_by=['production','staging'])
     run(
         'mkdir %(rollback_dir)s',
-        fail='silent' # other fail options: warn, abort
+        fail='ignore' # other fail options: warn, abort
     )
 
 def build():

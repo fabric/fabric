@@ -29,10 +29,20 @@ import time
 import types
 import datetime
 
+import_error = False
 try:
     import paramiko as ssh
 except ImportError:
-    print("ERROR: paramiko is a required module. Please install it.")
+    print("Error: paramiko is a required module. Please install it:")
+    print("  $ sudo easy_install paramiko")
+    import_error = True
+try:
+    from decorator import decorator
+except ImportError:
+    print("Error: decorator is a required module. Please install it:")
+    print("  $ sudo easy_install decorator")
+    import_error = True
+if import_error:
     exit(1)
 
 __version__ = '0.0.2'
@@ -64,6 +74,7 @@ ENV = {
 COMMANDS = {}
 CONNECTIONS = []
 OPERATIONS = {}
+_LAZY_FORMAT_SUBSTITUTER = re.compile(r'\$\((?P<var>\w+?)\)')
 
 #
 # Helper decorators
@@ -375,12 +386,12 @@ def _help(**kvargs):
                 _print_help_for(k, None)
     else:
         print("""Fabric is a simple pythonic remote deployment tool.
-        
-        Type 'fab list' to get a list of available commands.
-        Type 'fab help:help' to get more information on how to use the built in
-        help.
-        
-        """)
+    
+    Type 'fab list' to get a list of available commands.
+    Type 'fab help:help' to get more information on how to use the built in
+    help.
+    
+    """)
 
 @command("list")
 def _list_commands(**kvargs):
@@ -398,7 +409,7 @@ def _list_commands(**kvargs):
                 print("Available commands are:")
                 _list_objs(COMMANDS)
             elif k in ['ops', 'operations']:
-                print("Available operations:")
+                print("Available operations are:")
                 _list_objs(OPERATIONS)
             else:
                 print("Don't know how to list '%s'." % k)
@@ -670,16 +681,6 @@ def _shell(**kvargs):
 #
 # Internal plumbing:
 #
-def _pick_fabfile():
-    "Figure out what the fabfile is called."
-    choise = 'fabfile'
-    alternatives = ['Fabfile', 'fabfile.py', 'Fabfile.py']
-    for alternative in alternatives:
-        if os.path.exists(alternative):
-            choise = alternative
-            break
-    return choise
-
 def _indent(text, level=4):
     "Indent all lines in text with 'level' number of spaces, default 4."
     return '\n'.join(((' ' * level) + line for line in text.splitlines()))
@@ -718,13 +719,13 @@ def _check_fab_hosts():
 def _connect():
     "Populate CONNECTIONS with (hostname, client) tuples as per fab_hosts."
     _check_fab_hosts()
-    signal.signal(signal.SIGINT, _trap_sigint)
+    signal.signal(signal.SIGINT, lambda: _disconnect() and exit(0))
     if 'fab_password' not in ENV:
         print(_lazy_format("Logging into the following hosts as $(fab_user):"))
         print(_indent('\n'.join(ENV['fab_hosts'])))
         ENV['fab_password'] = getpass.getpass()
     else:
-        print("WARNING: Putting your password in a fabfile is a bad idea.")
+        print("Warning: Putting your password in a fabfile is a bad idea.")
     port = int(ENV['fab_port'])
     username = ENV['fab_user']
     password = ENV['fab_password']
@@ -751,21 +752,15 @@ def _disconnect():
         client.close()
     CONNECTIONS = []
 
-def _trap_sigint(signal, frame):
-    "Trap ctrl-c and make sure we disconnect everything."
-    _disconnect()
-    exit(0)
-
 def _lazy_format(string, env=ENV):
     "Do recursive string substitution of ENV vars - both lazy and earger."
-    suber = re.compile(r'\$\((?P<var>\w+?)\)')
     def replacer_fn(match):
         var = match.group('var')
         if var in env:
             return _lazy_format(env[var] % env, env)
         else:
             return match.group(0)
-    return re.sub(suber, replacer_fn, string % env)
+    return re.sub(_LAZY_FORMAT_SUBSTITUTER, replacer_fn, string % env)
 
 def _on_hosts_do(fn, *args, **kvargs):
     """Invoke the given function with hostname and client parameters in
@@ -856,6 +851,15 @@ def _start_outputter(prefix, channel):
     thread.setDaemon(True)
     thread.start()
     return thread
+
+def _pick_fabfile():
+    "Figure out what the fabfile is called."
+    guesses = ['fabfile','Fabfile', 'fabfile.py', 'Fabfile.py']
+    options = filter(os.path.exists, guesses)
+    if options:
+        return options[0]
+    else:
+        return guesses[0] # load() will barf for us...
 
 def _validate_commands(args):
     for cmd in args:
