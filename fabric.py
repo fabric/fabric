@@ -66,8 +66,28 @@ CONNECTIONS = []
 OPERATIONS = {} # populated by _load_operations_helper_map()
 
 #
+# Helper decorators
+#
+
+def new_registering_decorator(registry):
+    def registering_decorator(first_arg=None):
+        if callable(first_arg):
+            registry[first_arg.__name__] = first_arg
+            return first_arg
+        else:
+            def sub_decorator(f):
+                registry[first_arg] = f
+                return f
+            return sub_decorator
+    return registering_decorator
+command = new_registering_decorator(COMMANDS)
+operation = new_registering_decorator(OPERATIONS)
+
+
+#
 # Standard fabfile operations:
 #
+@operation
 def set(**variables):
     """Set a number of Fabric environment variables.
     
@@ -90,6 +110,7 @@ def set(**variables):
         else:
             ENV[k] = v
 
+@operation
 def get(name):
     """Get the value of a given Fabric environment variable.
     
@@ -98,6 +119,7 @@ def get(name):
     """
     return name in ENV and ENV[name] or None
 
+@operation
 def require(var, **kvargs):
     """Make sure that a certain environmet variable is available.
     
@@ -131,6 +153,7 @@ def require(var, **kvargs):
         print('\t' + ('\n\t'.join(kvargs['provided_by'])))
     exit(1)
 
+@operation
 def put(localpath, remotepath, **kvargs):
     """Upload a file to the current hosts.
     
@@ -153,6 +176,7 @@ def put(localpath, remotepath, **kvargs):
         _connect()
     _on_hosts_do(_put, localpath, remotepath, **kvargs)
 
+@operation
 def download(remotepath, localpath, **kvargs):
     """Download a file from the remote hosts.
     
@@ -179,6 +203,7 @@ def download(remotepath, localpath, **kvargs):
         _connect()
     _on_hosts_do(_download, remotepath, localpath, **kvargs)
 
+@operation
 def run(cmd, **kvargs):
     """Run a shell command on the current fab_hosts.
     
@@ -198,6 +223,7 @@ def run(cmd, **kvargs):
         _connect()
     _on_hosts_do(_run, cmd, **kvargs)
 
+@operation
 def sudo(cmd, **kvargs):
     """Run a sudo (root privileged) command on the current hosts.
     
@@ -219,6 +245,7 @@ def sudo(cmd, **kvargs):
         _connect()
     _on_hosts_do(_sudo, cmd, **kvargs)
 
+@operation
 def local(cmd, **kvargs):
     """Run a command locally.
     
@@ -244,6 +271,7 @@ def local(cmd, **kvargs):
         if failcode > 2:
             exit(1)
 
+@operation
 def local_per_host(cmd, **kvargs):
     """Run a command locally, for every defined host.
     
@@ -262,6 +290,7 @@ def local_per_host(cmd, **kvargs):
         ENV['fab_host'] = host
         local(cmd, **kvargs)
 
+@operation
 def load(filename, **kvargs):
     """Load up the given fabfile.
     
@@ -292,6 +321,7 @@ def load(filename, **kvargs):
         if failcode > 2:
             exit(1)
 
+@operation
 def upload_project(**kvargs):
     """Uploads the current project directory to the connected hosts.
     
@@ -318,6 +348,7 @@ def upload_project(**kvargs):
 #
 # Standard Fabric commands:
 #
+@command("help")
 def _help(**kvargs):
     """Display usage help message to the console, or help for a given command.
     
@@ -351,6 +382,7 @@ def _help(**kvargs):
         
         """)
 
+@command("list")
 def _list_commands(**kvargs):
     """Display a list of commands with descriptions.
     
@@ -380,6 +412,7 @@ def _list_commands(**kvargs):
         print("Available commands are:")
         _list_objs(COMMANDS)
 
+@command("license")
 def _license():
     "Display the Fabric distribution license text."
     print """		    GNU GENERAL PUBLIC LICENSE
@@ -581,6 +614,7 @@ make exceptions for this.  Our decision will be guided by the two goals
 of preserving the free status of all derivatives of our free software and
 of promoting the sharing and reuse of software generally."""
 
+@command("warranty")
 def _warranty():
     "Display warranty information for the Fabric software."
     print """			    NO WARRANTY
@@ -605,6 +639,7 @@ YOU OR THIRD PARTIES OR A FAILURE OF THE PROGRAM TO OPERATE WITH ANY OTHER
 PROGRAMS), EVEN IF SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGES."""
 
+@command("set")
 def _set(**kvargs):
     """Set a Fabric variable.
     
@@ -614,6 +649,7 @@ def _set(**kvargs):
     for k, v in kvargs.items():
         ENV[k] = (v % ENV)
 
+@command("shell")
 def _shell(**kvargs):
     "Start an interactive shell connection to the specified hosts."
     def lines():
@@ -643,29 +679,6 @@ def _pick_fabfile():
             choise = alternative
             break
     return choise
-
-def _load_std_commands():
-    "Loads up the standard commands such as help, list, warranty and license."
-    COMMANDS['help'] = _help
-    COMMANDS['list'] = _list_commands
-    COMMANDS['warranty'] = _warranty
-    COMMANDS['license'] = _license
-    COMMANDS['set'] = _set
-    COMMANDS['shell'] = _shell
-
-def _load_operations_helper_map():
-    "Loads up the standard operations in OPERATIONS so 'help' can query them."
-    OPERATIONS['set'] = set
-    OPERATIONS['get'] = get
-    OPERATIONS['put'] = put
-    OPERATIONS['download'] = download
-    OPERATIONS['run'] = run
-    OPERATIONS['sudo'] = sudo
-    OPERATIONS['require'] = require
-    OPERATIONS['local'] = local
-    OPERATIONS['local_per_host'] = local_per_host
-    OPERATIONS['load'] = load
-    OPERATIONS['upload_project'] = upload_project
 
 def _indent(text, level=4):
     "Indent all lines in text with 'level' number of spaces, default 4."
@@ -876,8 +889,6 @@ def _execute_commands(args):
 def main(args):
     try:
         print(__greeter__ % ENV)
-        _load_std_commands()
-        _load_operations_helper_map()
         fabfile = _pick_fabfile()
         load(fabfile)
         _validate_commands(args)
