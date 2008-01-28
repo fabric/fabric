@@ -22,6 +22,7 @@ import os
 import os.path
 import re
 import signal
+import subprocess
 import sys
 import threading
 import time
@@ -139,12 +140,18 @@ def put(localpath, remotepath, **kvargs):
     fab_hosts, and relative paths are relative to the fab_user's home
     directory.
     
+    May take an additional 'fail' keyword argument with one of these values:
+        * ignore - do nothing on failure
+        * warn - print warning on failure
+        * abort - terminate fabric on failure
+    
     Example:
         put('bin/project.zip', '/tmp/project.zip')
     
     """
-    if not CONNECTIONS: _connect()
-    _on_hosts_do(_put, localpath, remotepath)
+    if not CONNECTIONS:
+        _connect()
+    _on_hosts_do(_put, localpath, remotepath, **kvargs)
 
 def download(remotepath, localpath, **kvargs):
     """Download a file from the remote hosts.
@@ -153,6 +160,11 @@ def download(remotepath, localpath, **kvargs):
     to download from the fab_hosts. The 'localpath' parameter will be suffixed
     with the individual hostname from which they were downloaded, and the
     downloaded files will then be stored in those respective paths.
+    
+    May take an additional 'fail' keyword argument with one of these values:
+        * ignore - do nothing on failure
+        * warn - print warning on failure
+        * abort - terminate fabric on failure
     
     Example:
         set(fab_hosts=['node1.cluster.com','node2.cluster.com'])
@@ -163,8 +175,9 @@ def download(remotepath, localpath, **kvargs):
     respectively.
     
     """
-    if not CONNECTIONS: _connect()
-    _on_hosts_do(_download, remotepath, localpath)
+    if not CONNECTIONS:
+        _connect()
+    _on_hosts_do(_download, remotepath, localpath, **kvargs)
 
 def run(cmd, **kvargs):
     """Run a shell command on the current fab_hosts.
@@ -172,12 +185,18 @@ def run(cmd, **kvargs):
     The provided command is executed with the permisions of fab_user, and the
     exact execution environ is determined by the fab_shell variable.
     
+    May take an additional 'fail' keyword argument with one of these values:
+        * ignore - do nothing on failure
+        * warn - print warning on failure
+        * abort - terminate fabric on failure
+    
     Example:
         run("ls")
     
     """
-    if not CONNECTIONS: _connect()
-    _on_hosts_do(_run, cmd)
+    if not CONNECTIONS:
+        _connect()
+    _on_hosts_do(_run, cmd, **kvargs)
 
 def sudo(cmd, **kvargs):
     """Run a sudo (root privileged) command on the current hosts.
@@ -187,12 +206,18 @@ def sudo(cmd, **kvargs):
     environ is determined by the fab_shell variable - the 'sudo' part is
     injected into this variable.
     
+    May take an additional 'fail' keyword argument with one of these values:
+        * ignore - do nothing on failure
+        * warn - print warning on failure
+        * abort - terminate fabric on failure
+    
     Example:
         sudo("install_script.py")
     
     """
-    if not CONNECTIONS: _connect()
-    _on_hosts_do(_sudo, cmd)
+    if not CONNECTIONS:
+        _connect()
+    _on_hosts_do(_sudo, cmd, **kvargs)
 
 def local(cmd, **kvargs):
     """Run a command locally.
@@ -200,11 +225,24 @@ def local(cmd, **kvargs):
     This operation is essentially 'os.system()' except that variables are
     expanded prior to running.
     
+    May take an additional 'fail' keyword argument with one of these values:
+        * ignore - do nothing on failure
+        * warn - print warning on failure
+        * abort - terminate fabric on failure
+    
     Example:
         local("make clean dist")
     
     """
-    os.system(_lazy_format(cmd))
+    final_cmd = _lazy_format(cmd)
+    retcode = subprocess.call(final_cmd, shell=True)
+    if retcode != 0:
+        failcode = _get_failcode(kvargs)
+        if failcode > 1:
+            print("Warning: failed to execute command:")
+            print("\t" + final_cmd)
+        if failcode > 2:
+            exit(1)
 
 def local_per_host(cmd, **kvargs):
     """Run a command locally, for every defined host.
@@ -213,6 +251,8 @@ def local_per_host(cmd, **kvargs):
     with this operation, the command is executed (and have its variables
     expanded) for each host in fab_hosts.
     
+    This operation is defined to take the same keyword arguments as local().
+    
     Example:
         local_per_host("scp -i login.key stuff.zip $(fab_host):stuff.zip")
     
@@ -220,8 +260,7 @@ def local_per_host(cmd, **kvargs):
     _check_fab_hosts()
     for host in ENV['fab_hosts']:
         ENV['fab_host'] = host
-        cur_cmd = _lazy_format(cmd)
-        os.system(cur_cmd)
+        local(cmd, **kvargs)
 
 def load(filename, **kvargs):
     """Load up the given fabfile.
@@ -230,10 +269,16 @@ def load(filename, **kvargs):
     and make its commands and other functions available in the scope of the 
     current fabfile.
     
+    May take an additional 'fail' keyword argument with one of these values:
+        * ignore - do nothing on failure
+        * warn - print warning on failure
+        * abort - terminate fabric on failure
+    
     Example:
         load("conf/production-settings.py")
     
     """
+    failcode = _get_failcode(kvargs)
     if os.path.exists(filename):
         execfile(filename)
         for name, obj in locals().items():
@@ -241,10 +286,10 @@ def load(filename, **kvargs):
                 COMMANDS[name] = obj
             if not name.startswith('_'):
                 __builtins__[name] = obj
-    else:
+    elif failcode > 1:
         print("Warning: Cannot load file '%s'." % filename)
         print("No such file in your current directory.")
-        if 'if_not_found' in kvargs and kvargs['if_not_found'] == 'exit':
+        if failcode > 2:
             exit(1)
 
 def upload_project(**kvargs):
@@ -264,11 +309,11 @@ def upload_project(**kvargs):
     """
     tar_file = "/tmp/fab.%(fab_timestamp)s.tar" % ENV
     cwd_name = os.getcwd().split(os.sep)[-1]
-    local("tar -czf %s ." % tar_file)
-    put(tar_file, cwd_name + ".tar.gz")
-    local("rm -f " + tar_file)
-    run("tar -xzf " + cwd_name)
-    run("rm -f " + cwd_name + ".tar.gz")
+    local("tar -czf %s ." % tar_file, **kvargs)
+    put(tar_file, cwd_name + ".tar.gz", **kvargs)
+    local("rm -f " + tar_file, **kvargs)
+    run("tar -xzf " + cwd_name, **kvargs)
+    run("rm -f " + cwd_name + ".tar.gz", **kvargs)
 
 #
 # Standard Fabric commands:
@@ -709,7 +754,7 @@ def _lazy_format(string, env=ENV):
             return match.group(0)
     return re.sub(suber, replacer_fn, string % env)
 
-def _on_hosts_do(fn, *args):
+def _on_hosts_do(fn, *args, **kvargs):
     """Invoke the given function with hostname and client parameters in
     accord with the current fac_mode strategy.
     
@@ -723,7 +768,8 @@ def _on_hosts_do(fn, *args):
         for host, client in CONNECTIONS:
             env = dict(ENV)
             env['fab_host'] = host
-            thread = threading.Thread(None, lambda: fn(host, client, env, *args))
+            functor = lambda: fn(host, client, env, *args, **kvargs)
+            thread = threading.Thread(None, functor)
             thread.setDaemon(True)
             thread.start()
             threads.append(thread)
@@ -739,21 +785,21 @@ def _on_hosts_do(fn, *args):
         print("Supported modes are: fanout, rolling")
         exit(1)
 
-def _put(host, client, env, localpath, remotepath):
+def _put(host, client, env, localpath, remotepath, **kvargs):
     ftp = client.open_sftp()
     localpath = _lazy_format(localpath, env)
     remotepath = _lazy_format(remotepath, env)
     print("[%s] put: %s -> %s" % (host, localpath, remotepath))
     ftp.put(localpath, remotepath)
 
-def _download(host, client, env, remotepath, localpath):
+def _download(host, client, env, remotepath, localpath, **kvargs):
     ftp = client.open_sftp()
     localpath = _lazy_format(localpath) + '.' + host
     remotepath = _lazy_format(remotepath)
     print("[%s] download: %s <- %s" % (host, localpath, remotepath))
     ftp.get(remotepath, localpath)
 
-def _run(host, client, env, cmd):
+def _run(host, client, env, cmd, **kvargs):
     cmd = _lazy_format(cmd, env)
     real_cmd = env['fab_shell'] % cmd.replace('"', '\\"')
     print("[%s] run: %s" % (host, (env['fab_debug'] and real_cmd or cmd)))
@@ -763,7 +809,7 @@ def _run(host, client, env, cmd):
     out_th.join()
     err_th.join()
 
-def _sudo(host, client, env, cmd):
+def _sudo(host, client, env, cmd, **kvargs):
     cmd = _lazy_format(cmd, env)
     real_cmd = env['fab_shell'] % ("sudo -S " + cmd.replace('"', '\\"'))
     print("[%s] sudo: %s" % (host, (env['fab_debug'] and real_cmd or cmd)))
@@ -775,6 +821,17 @@ def _sudo(host, client, env, cmd):
     err_th = _start_outputter("[%s] err" % host, stderr)
     out_th.join()
     err_th.join()
+
+def _get_failcode(kvarg_map):
+    codes = {
+        'ignore': 1,
+        'warn': 2,
+        'abort': 3,
+    }
+    if 'fail' in kvarg_map:
+        return codes[kvarg_map['fail']]
+    else:
+        return codes['abort']
 
 def _start_outputter(prefix, channel):
     def outputter():
