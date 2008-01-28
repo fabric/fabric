@@ -61,9 +61,9 @@ ENV = {
     'fab_timestamp':datetime.datetime.now().strftime('%F_%H-%M-%S'),
     'fab_debug':False,
 }
-COMMANDS = {} # populated by load() and _load_std_commands()
+COMMANDS = {}
 CONNECTIONS = []
-OPERATIONS = {} # populated by _load_operations_helper_map()
+OPERATIONS = {}
 
 #
 # Helper decorators
