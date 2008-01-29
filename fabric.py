@@ -273,6 +273,7 @@ def local(cmd, **kvargs):
     
     """
     final_cmd = _lazy_format(cmd)
+    print("[localhost] run: " + final_cmd)
     retcode = subprocess.call(final_cmd, shell=True)
     if retcode != 0:
         failcode = _get_failcode(kvargs)
