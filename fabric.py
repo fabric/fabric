@@ -45,7 +45,7 @@ except ImportError:
 if import_error:
     exit(1)
 
-__version__ = '0.0.2'
+__version__ = '0.0.3'
 __author__ = 'Christian Vest Hansen'
 __author_email__ = 'karmazilla@gmail.com'
 __url__ = 'https://savannah.nongnu.org/projects/fab/'
@@ -67,8 +67,7 @@ ENV = {
     'fab_key_filename':None,
     'fab_new_host_key':'accept',
     'fab_shell':'/bin/bash -l -c "%s"',
-    # TODO: make fab_timestamp UTC
-    'fab_timestamp':datetime.datetime.now().strftime('%F_%H-%M-%S'),
+    'fab_timestamp':datetime.datetime.utcnow().strftime('%F_%H-%M-%S'),
     'fab_debug':False,
 }
 COMMANDS = {}
