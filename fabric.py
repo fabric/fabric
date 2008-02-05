@@ -836,11 +836,14 @@ def _on_hosts_do(fn, *args, **kvargs):
         exit(1)
 
 def _put(host, client, env, localpath, remotepath, **kvargs):
-    ftp = client.open_sftp()
     localpath = _lazy_format(localpath, env)
     remotepath = _lazy_format(remotepath, env)
+    if not os.path.exists(localpath):
+        return False
+    ftp = client.open_sftp()
     print("[%s] put: %s -> %s" % (host, localpath, remotepath))
     ftp.put(localpath, remotepath)
+    return True
 
 def _download(host, client, env, remotepath, localpath, **kvargs):
     ftp = client.open_sftp()
@@ -848,6 +851,7 @@ def _download(host, client, env, remotepath, localpath, **kvargs):
     remotepath = _lazy_format(remotepath)
     print("[%s] download: %s <- %s" % (host, localpath, remotepath))
     ftp.get(remotepath, localpath)
+    return True
 
 def _run(host, client, env, cmd, **kvargs):
     cmd = _lazy_format(cmd, env)
@@ -858,6 +862,7 @@ def _run(host, client, env, cmd, **kvargs):
     err_th = _start_outputter("[%s] err" % host, stderr)
     out_th.join()
     err_th.join()
+    return True
 
 def _sudo(host, client, env, cmd, **kvargs):
     cmd = _lazy_format(cmd, env)
@@ -871,6 +876,7 @@ def _sudo(host, client, env, cmd, **kvargs):
     err_th = _start_outputter("[%s] err" % host, stderr)
     out_th.join()
     err_th.join()
+    return True
 
 def _get_failcode(kvarg_map):
     codes = {
