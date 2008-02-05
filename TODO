@@ -8,6 +8,7 @@
       objects
 9   make fanout mode work
 10  when an operation fails, fabric doesn't break and exit
+    - no longer true for local operations
 11  add built-in help for built-in variables
 12  allow run & sudo to save the output of stdout and stderr in variables
 13  reduce print & exit() statements to as few functions as possible

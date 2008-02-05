@@ -36,16 +36,16 @@ except ImportError:
     print("Error: paramiko is a required module. Please install it:")
     print("  $ sudo easy_install paramiko")
     import_error = True
-try:
-    from decorator import decorator
-except ImportError:
-    print("Error: decorator is a required module. Please install it:")
-    print("  $ sudo easy_install decorator")
-    import_error = True
+#try:
+#    from decorator import decorator
+#except ImportError:
+#    print("Error: decorator is a required module. Please install it:")
+#    print("  $ sudo easy_install decorator")
+#    import_error = True
 if import_error:
     exit(1)
 
-__version__ = '0.0.2'
+__version__ = '0.0.3'
 __author__ = 'Christian Vest Hansen'
 __author_email__ = 'karmazilla@gmail.com'
 __url__ = 'https://savannah.nongnu.org/projects/fab/'
@@ -67,19 +67,19 @@ ENV = {
     'fab_key_filename':None,
     'fab_new_host_key':'accept',
     'fab_shell':'/bin/bash -l -c "%s"',
-    # TODO: make fab_timestamp UTC
-    'fab_timestamp':datetime.datetime.now().strftime('%F_%H-%M-%S'),
+    'fab_timestamp':datetime.datetime.utcnow().strftime('%F_%H-%M-%S'),
     'fab_debug':False,
 }
-COMMANDS = {}
+
 CONNECTIONS = []
+COMMANDS = {}
 OPERATIONS = {}
+STRATEGIES = {}
 _LAZY_FORMAT_SUBSTITUTER = re.compile(r'\$\((?P<var>\w+?)\)')
 
 #
 # Helper decorators
 #
-
 def new_registering_decorator(registry):
     def registering_decorator(first_arg=None):
         if callable(first_arg):
@@ -93,6 +93,7 @@ def new_registering_decorator(registry):
     return registering_decorator
 command = new_registering_decorator(COMMANDS)
 operation = new_registering_decorator(OPERATIONS)
+strategy = new_registering_decorator(STRATEGIES)
 
 
 #
@@ -122,13 +123,14 @@ def set(**variables):
             ENV[k] = v
 
 @operation
-def get(name):
+def get(name, otherwise=None):
     """Get the value of a given Fabric environment variable.
     
-    If the variable isn't found, then this operation returns None.
+    If the variable isn't found, then this operation returns the
+    value of the 'otherwise' parameter, which is None unless set.
     
     """
-    return name in ENV and ENV[name] or None
+    return name in ENV and ENV[name] or otherwise
 
 @operation
 def require(var, **kvargs):
@@ -136,10 +138,10 @@ def require(var, **kvargs):
     
     The 'var' parameter is a string that names the variable to check for.
     Two other optional kvargs are supported:
-     - 'used_for' is a string that gets injected into, and then printed, as
-       something like this string: "This variable is used for %s".
-     - 'provided_by' is a list of strings that name commands which the user
-       can run in order to satisfy the requirement.
+        * 'used_for' is a string that gets injected into, and then printed, as
+          something like this string: "This variable is used for %s".
+        * 'provided_by' is a list of strings that name commands which the user
+          can run in order to satisfy the requirement.
     
     If the required variable is not found in the current environment, then the
     operation is stopped and Fabric halts.
@@ -374,6 +376,9 @@ def _help(**kvargs):
     more about. For instance, to learn more about the 'run' operation, you
     could run 'fab help:op=run'.
     
+    Lastly, you can also learn more about a certain strategy with the 'strg'
+    and 'strategy' parameters: 'fab help:strg=rolling'.
+    
     """
     if kvargs:
         for k, v in kvargs.items():
@@ -383,6 +388,8 @@ def _help(**kvargs):
                 _print_help_for_in(k, OPERATIONS)
             elif k in ['op', 'operation']:
                 _print_help_for_in(kvargs[k], OPERATIONS)
+            elif k in ['strg', 'strategy']:
+                _print_help_for_in(kvargs[k], STRATEGIES)
             else:
                 _print_help_for(k, None)
     else:
@@ -401,7 +408,8 @@ def _list_commands(**kvargs):
     By default, the list command prints a list of available commands, with a
     short description (if one is available). However, the list command can also
     print a list of available operaions if you provide it with the 'ops' or
-    'operations' parameter: 'fab list:ops'.
+    'operations' parameters, or it can print strategies with the 'strgs' and
+    'strategies' parameters.
     
     """
     if kvargs:
@@ -412,12 +420,16 @@ def _list_commands(**kvargs):
             elif k in ['ops', 'operations']:
                 print("Available operations are:")
                 _list_objs(OPERATIONS)
+            elif k in ['strgs', 'strategies']:
+                print("Available strategies are:")
+                _list_objs(STRATEGIES)
             else:
                 print("Don't know how to list '%s'." % k)
                 print("Try one of these instead:")
                 print(_indent('\n'.join([
                     'cmds', 'commands',
                     'ops', 'operations',
+                    'strgs', 'strategies',
                 ])))
                 exit(1)
     else:
@@ -427,7 +439,7 @@ def _list_commands(**kvargs):
 @command("license")
 def _license():
     "Display the Fabric distribution license text."
-    print """		    GNU GENERAL PUBLIC LICENSE
+    print("""		    GNU GENERAL PUBLIC LICENSE
    TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
 
   0. This License applies to any program or other work which contains
@@ -624,12 +636,12 @@ to ask for permission.  For software which is copyrighted by the Free
 Software Foundation, write to the Free Software Foundation; we sometimes
 make exceptions for this.  Our decision will be guided by the two goals
 of preserving the free status of all derivatives of our free software and
-of promoting the sharing and reuse of software generally."""
+of promoting the sharing and reuse of software generally.""")
 
 @command("warranty")
 def _warranty():
     "Display warranty information for the Fabric software."
-    print """			    NO WARRANTY
+    print("""			    NO WARRANTY
 
   BECAUSE THE PROGRAM IS LICENSED FREE OF CHARGE, THERE IS NO WARRANTY
 FOR THE PROGRAM, TO THE EXTENT PERMITTED BY APPLICABLE LAW.  EXCEPT WHEN
@@ -649,7 +661,7 @@ OUT OF THE USE OR INABILITY TO USE THE PROGRAM (INCLUDING BUT NOT LIMITED
 TO LOSS OF DATA OR DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY
 YOU OR THIRD PARTIES OR A FAILURE OF THE PROGRAM TO OPERATE WITH ANY OTHER
 PROGRAMS), EVEN IF SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE
-POSSIBILITY OF SUCH DAMAGES."""
+POSSIBILITY OF SUCH DAMAGES.""")
 
 @command("set")
 def _set(**kvargs):
@@ -678,6 +690,41 @@ def _shell(**kvargs):
             sudo(line[5:])
         else:
             run(line)
+
+#
+# Standard strategies:
+#
+@strategy("fanout")
+def _fanout_strategy():
+    """A strategy that executes on all hosts in parallel.
+    
+    THIS STRATEGY IS CURRENTLY BROKEN!
+    
+    """
+    threads = []
+    success = True
+    for host, client in CONNECTIONS:
+        env = dict(ENV)
+        env['fab_host'] = host
+        def functor():
+            success = success and fn(host, client, env, *args, **kvargs)
+        thread = threading.Thread(None, functor)
+        thread.setDaemon(True)
+        thread.start()
+        threads.append(thread)
+    for thread in threads:
+        thread.join()
+    return success
+
+@strategy("rolling")
+def _rolling_strategy():
+    """One-at-a-time fail-fast strategy."""
+    for host, client in CONNECTIONS:
+        env = dict(ENV)
+        env['fab_host'] = host
+        if not fn(host, client, env, *args, **kvargs):
+            return False
+    return True
 
 #
 # Internal plumbing:
@@ -767,28 +814,20 @@ def _on_hosts_do(fn, *args, **kvargs):
     """Invoke the given function with hostname and client parameters in
     accord with the current fac_mode strategy.
     
-    fn should be of type:
-        (str:hostname, paramiko.SSHClient:clinet) -> bool:success
+    fn should be a callable taking these parameters:
+        hostname : str
+        client : paramiko.SSHClient
+        *args
+        **kvargs
     
     """
     strategy = ENV['fab_mode']
-    if strategy == 'fanout':
-        threads = []
-        for host, client in CONNECTIONS:
-            env = dict(ENV)
-            env['fab_host'] = host
-            functor = lambda: fn(host, client, env, *args, **kvargs)
-            thread = threading.Thread(None, functor)
-            thread.setDaemon(True)
-            thread.start()
-            threads.append(thread)
-        for thread in threads:
-            thread.join()
-    elif strategy == 'rolling':
-        for host, client in CONNECTIONS:
-            env = dict(ENV)
-            env['fab_host'] = host
-            fn(host, client, env, *args)
+    if strategy in STRATEGIES:
+        strategy_fn = STRATEGIES[strategy]
+        successful = strategy_fn(fn, *args, **kvargs)
+        if not successful:
+            print("Operation failed: " + fn.__name__)
+            exit(1)
     else:
         print("Unsupported fab_mode: %s" % strategy)
         print("Supported modes are: fanout, rolling")
