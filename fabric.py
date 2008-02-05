@@ -160,7 +160,7 @@ def require(var, **kvargs):
         + "' variable.") % ENV
     )
     if 'used_for' in kvargs:
-        print("This variable is used for %s" % kvargs['used_for'])
+        print("This variable is used for %s" % _lazy_format(kvargs['used_for']))
     if 'provided_by' in kvargs:
         print("Get the variable by running one of these commands:")
         to_s = lambda obj: getattr(obj, '__name__', str(obj))
