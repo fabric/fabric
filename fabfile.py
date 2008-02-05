@@ -21,6 +21,7 @@ def clean():
     # passing -delete to find doesn't work for directories, hence xargs rm -r
     local('cat .gitignore | xargs -I PATTERN '
         + 'find . -name PATTERN -not -path "./.git/*" | xargs rm -r')
+    local('git gc --prune')
 
 def ready_files():
     local('mkdir dist')
