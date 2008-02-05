@@ -163,7 +163,9 @@ def require(var, **kvargs):
         print("This variable is used for %s" % kvargs['used_for'])
     if 'provided_by' in kvargs:
         print("Get the variable by running one of these commands:")
-        print('\t' + ('\n\t'.join(kvargs['provided_by'])))
+        to_s = lambda obj: getattr(obj, '__name__', str(obj))
+        provided_by = [to_s(obj) for obj in kvargs['provided_by']]
+        print('\t' + ('\n\t'.join(provided_by)))
     exit(1)
 
 @operation
