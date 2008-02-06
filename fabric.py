@@ -95,6 +95,12 @@ command = new_registering_decorator(COMMANDS)
 operation = new_registering_decorator(OPERATIONS)
 strategy = new_registering_decorator(STRATEGIES)
 
+def run_per_host(op_fn):
+    def wrapper(*args, **kvargs):
+        if not CONNECTIONS:
+            _connect()
+        _on_hosts_do(op_fn, *args, **kvargs)
+    return wrapper
 
 #
 # Standard fabfile operations:
@@ -169,7 +175,8 @@ def require(var, **kvargs):
     exit(1)
 
 @operation
-def put(localpath, remotepath, **kvargs):
+@run_per_host
+def put(host, client, env, localpath, remotepath, **kvargs):
     """Upload a file to the current hosts.
     
     The 'localpath' parameter is the relative or absolute path to the file on
@@ -187,9 +194,14 @@ def put(localpath, remotepath, **kvargs):
         put('bin/project.zip', '/tmp/project.zip')
     
     """
-    if not CONNECTIONS:
-        _connect()
-    _on_hosts_do(_put, localpath, remotepath, **kvargs)
+    localpath = _lazy_format(localpath, env)
+    remotepath = _lazy_format(remotepath, env)
+    if not os.path.exists(localpath):
+        return False
+    ftp = client.open_sftp()
+    print("[%s] put: %s -> %s" % (host, localpath, remotepath))
+    ftp.put(localpath, remotepath)
+    return True
 
 @operation
 def download(remotepath, localpath, **kvargs):
@@ -834,16 +846,6 @@ def _on_hosts_do(fn, *args, **kvargs):
         print("Unsupported fab_mode: %s" % strategy)
         print("Supported modes are: fanout, rolling")
         exit(1)
-
-def _put(host, client, env, localpath, remotepath, **kvargs):
-    localpath = _lazy_format(localpath, env)
-    remotepath = _lazy_format(remotepath, env)
-    if not os.path.exists(localpath):
-        return False
-    ftp = client.open_sftp()
-    print("[%s] put: %s -> %s" % (host, localpath, remotepath))
-    ftp.put(localpath, remotepath)
-    return True
 
 def _download(host, client, env, remotepath, localpath, **kvargs):
     ftp = client.open_sftp()
