@@ -29,21 +29,17 @@ import time
 import types
 import datetime
 
-import_error = False
 try:
     import paramiko as ssh
 except ImportError:
     print("Error: paramiko is a required module. Please install it:")
     print("  $ sudo easy_install paramiko")
-    import_error = True
-#try:
-#    from decorator import decorator
-#except ImportError:
-#    print("Error: decorator is a required module. Please install it:")
-#    print("  $ sudo easy_install decorator")
-#    import_error = True
-if import_error:
     exit(1)
+try:
+    from decorator import decorator
+except ImportError:
+    print("Warning: decorator module not found.")
+    decorator = lambda f: f;
 
 __version__ = '0.0.3'
 __author__ = 'Christian Vest Hansen'
@@ -86,6 +82,7 @@ def new_registering_decorator(registry):
             registry[first_arg.__name__] = first_arg
             return first_arg
         else:
+            @decorator
             def sub_decorator(f):
                 registry[first_arg] = f
                 return f
@@ -95,6 +92,7 @@ command = new_registering_decorator(COMMANDS)
 operation = new_registering_decorator(OPERATIONS)
 strategy = new_registering_decorator(STRATEGIES)
 
+@decorator
 def run_per_host(op_fn):
     def wrapper(*args, **kvargs):
         if not CONNECTIONS:
