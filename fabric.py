@@ -235,7 +235,8 @@ def download(host, client, env, remotepath, localpath, **kvargs):
     return True
 
 @operation
-def run(cmd, **kvargs):
+@run_per_host
+def run(host, client, env, cmd, **kvargs):
     """Run a shell command on the current fab_hosts.
     
     The provided command is executed with the permisions of fab_user, and the
@@ -250,9 +251,16 @@ def run(cmd, **kvargs):
         run("ls")
     
     """
-    if not CONNECTIONS:
-        _connect()
-    _on_hosts_do(_run, cmd, **kvargs)
+    cmd = env['fab_shell'] % _lazy_format(cmd, env).replace('"', '\\"')
+    if not _confirm_proceed('run', host, kvargs):
+        return False # TODO: should we return False in fail??
+    print("[%s] run: %s" % (host, cmd))
+    stdin, stdout, stderr = client.exec_command(cmd)
+    out_th = _start_outputter("[%s] out" % host, stdout)
+    err_th = _start_outputter("[%s] err" % host, stderr)
+    out_th.join()
+    err_th.join()
+    return True
 
 @operation
 def sudo(cmd, **kvargs):
@@ -850,18 +858,6 @@ def _on_hosts_do(fn, *args, **kvargs):
         print("Unsupported fab_mode: %s" % strategy)
         print("Supported modes are: fanout, rolling")
         exit(1)
-
-def _run(host, client, env, cmd, **kvargs):
-    cmd = env['fab_shell'] % _lazy_format(cmd, env).replace('"', '\\"')
-    if not _confirm_proceed('run', host, kvargs):
-        return False # TODO: should we return False in fail??
-    print("[%s] run: %s" % (host, cmd))
-    stdin, stdout, stderr = client.exec_command(cmd)
-    out_th = _start_outputter("[%s] out" % host, stdout)
-    err_th = _start_outputter("[%s] err" % host, stderr)
-    out_th.join()
-    err_th.join()
-    return True
 
 def _sudo(host, client, env, cmd, **kvargs):
     cmd = _lazy_format(cmd, env)
