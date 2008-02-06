@@ -855,9 +855,9 @@ def _download(host, client, env, remotepath, localpath, **kvargs):
 
 def _run(host, client, env, cmd, **kvargs):
     cmd = env['fab_shell'] % _lazy_format(cmd, env).replace('"', '\\"')
-    if not _confirm_proceed('run', cmd, kvargs):
+    if not _confirm_proceed('run', kvargs):
         return False # TODO: should we return False in fail??
-    print("[%s] run: %s" % (host, cmd)))
+    print("[%s] run: %s" % (host, cmd))
     stdin, stdout, stderr = client.exec_command(cmd)
     out_th = _start_outputter("[%s] out" % host, stdout)
     err_th = _start_outputter("[%s] err" % host, stderr)
@@ -869,7 +869,7 @@ def _sudo(host, client, env, cmd, **kvargs):
     cmd = _lazy_format(cmd, env)
     real_cmd = env['fab_shell'] % ("sudo -S " + cmd.replace('"', '\\"'))
     cmd = env['fab_debug'] and real_cmd or cmd
-    if not _confirm_proceed('sudo', cmd, kvargs):
+    if not _confirm_proceed('sudo', kvargs):
         return False # TODO: should we return False in fail??
     print("[%s] sudo: %s" % (host, cmd))
     stdin, stdout, stderr = client.exec_command(real_cmd)
@@ -882,9 +882,10 @@ def _sudo(host, client, env, cmd, **kvargs):
     err_th.join()
     return True
 
-def _confirm_proceed(exec_type, cmd, kvargs):
+def _confirm_proceed(exec_type, kvargs):
     if 'confirm' in kvargs:
-        question = "Confirm %s for host %s: %s [yN] " % (exec_type, host, cmd)
+        infotuple = (exec_type, host, _lazy_format(kvargs['confirm']))
+        question = "Confirm %s for host %s: %s [yN] " % infotuple
         answer = raw_input(question)
         return answer in 'yY'
     return True

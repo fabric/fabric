@@ -13,3 +13,4 @@ Unlike Capistrano, Fabric want's to stay small, light, easy to change and not
 bound to any specific framework.
 
 Once installed, you can run 'fab help' to learn more about how to use Fabric.
+
