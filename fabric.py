@@ -366,7 +366,7 @@ def upload_project(**kvargs):
 #
 @command("help")
 def _help(**kvargs):
-    """Display usage help message to the console, or help for a given command.
+    """Display Fabric usage help, or help for a given command.
     
     You can provide help with a parameter and get more detailed help for a
     specific command. For instance, to learn more about the list command, you
@@ -697,7 +697,7 @@ def _shell(**kvargs):
 # Standard strategies:
 #
 @strategy("fanout")
-def _fanout_strategy():
+def _fanout_strategy(fn, *args, **kvargs):
     """A strategy that executes on all hosts in parallel.
     
     THIS STRATEGY IS CURRENTLY BROKEN!
@@ -719,7 +719,7 @@ def _fanout_strategy():
     return success
 
 @strategy("rolling")
-def _rolling_strategy():
+def _rolling_strategy(fn, *args, **kvargs):
     """One-at-a-time fail-fast strategy."""
     for host, client in CONNECTIONS:
         env = dict(ENV)
