@@ -204,7 +204,8 @@ def put(host, client, env, localpath, remotepath, **kvargs):
     return True
 
 @operation
-def download(remotepath, localpath, **kvargs):
+@run_per_host
+def download(host, client, env, remotepath, localpath, **kvargs):
     """Download a file from the remote hosts.
     
     The 'remotepath' parameter is the relative or absolute path to the files
@@ -226,9 +227,12 @@ def download(remotepath, localpath, **kvargs):
     respectively.
     
     """
-    if not CONNECTIONS:
-        _connect()
-    _on_hosts_do(_download, remotepath, localpath, **kvargs)
+    ftp = client.open_sftp()
+    localpath = _lazy_format(localpath) + '.' + host
+    remotepath = _lazy_format(remotepath)
+    print("[%s] download: %s <- %s" % (host, localpath, remotepath))
+    ftp.get(remotepath, localpath)
+    return True
 
 @operation
 def run(cmd, **kvargs):
@@ -846,14 +850,6 @@ def _on_hosts_do(fn, *args, **kvargs):
         print("Unsupported fab_mode: %s" % strategy)
         print("Supported modes are: fanout, rolling")
         exit(1)
-
-def _download(host, client, env, remotepath, localpath, **kvargs):
-    ftp = client.open_sftp()
-    localpath = _lazy_format(localpath) + '.' + host
-    remotepath = _lazy_format(remotepath)
-    print("[%s] download: %s <- %s" % (host, localpath, remotepath))
-    ftp.get(remotepath, localpath)
-    return True
 
 def _run(host, client, env, cmd, **kvargs):
     cmd = env['fab_shell'] % _lazy_format(cmd, env).replace('"', '\\"')
