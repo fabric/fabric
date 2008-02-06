@@ -263,7 +263,8 @@ def run(host, client, env, cmd, **kvargs):
     return True
 
 @operation
-def sudo(cmd, **kvargs):
+@run_per_host
+def sudo(host, client, env, cmd, **kvargs):
     """Run a sudo (root privileged) command on the current hosts.
     
     The provided command is executed with root permisions, provided that
@@ -280,9 +281,21 @@ def sudo(cmd, **kvargs):
         sudo("install_script.py")
     
     """
-    if not CONNECTIONS:
-        _connect()
-    _on_hosts_do(_sudo, cmd, **kvargs)
+    cmd = _lazy_format(cmd, env)
+    real_cmd = env['fab_shell'] % ("sudo -S " + cmd.replace('"', '\\"'))
+    cmd = env['fab_debug'] and real_cmd or cmd
+    if not _confirm_proceed('sudo', host, kvargs):
+        return False # TODO: should we return False in fail??
+    print("[%s] sudo: %s" % (host, cmd))
+    stdin, stdout, stderr = client.exec_command(real_cmd)
+    stdin.write(env['fab_password'])
+    stdin.write('\n')
+    stdin.flush()
+    out_th = _start_outputter("[%s] out" % host, stdout)
+    err_th = _start_outputter("[%s] err" % host, stderr)
+    out_th.join()
+    err_th.join()
+    return True
 
 @operation
 def local(cmd, **kvargs):
@@ -858,23 +871,6 @@ def _on_hosts_do(fn, *args, **kvargs):
         print("Unsupported fab_mode: %s" % strategy)
         print("Supported modes are: fanout, rolling")
         exit(1)
-
-def _sudo(host, client, env, cmd, **kvargs):
-    cmd = _lazy_format(cmd, env)
-    real_cmd = env['fab_shell'] % ("sudo -S " + cmd.replace('"', '\\"'))
-    cmd = env['fab_debug'] and real_cmd or cmd
-    if not _confirm_proceed('sudo', host, kvargs):
-        return False # TODO: should we return False in fail??
-    print("[%s] sudo: %s" % (host, cmd))
-    stdin, stdout, stderr = client.exec_command(real_cmd)
-    stdin.write(env['fab_password'])
-    stdin.write('\n')
-    stdin.flush()
-    out_th = _start_outputter("[%s] out" % host, stdout)
-    err_th = _start_outputter("[%s] err" % host, stderr)
-    out_th.join()
-    err_th.join()
-    return True
 
 def _confirm_proceed(exec_type, host, kvargs):
     if 'confirm' in kvargs:
