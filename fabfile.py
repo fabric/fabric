@@ -20,7 +20,7 @@ def clean():
     "Recurse the directory tree and remove all files matched by .gitignore."
     # passing -delete to find doesn't work for directories, hence xargs rm -r
     local('cat .gitignore | xargs -I PATTERN '
-        + 'find . -name PATTERN -not -path "./.git/*" | xargs rm -r')
+        + 'find . -name PATTERN -not -path "./.git/*" | (xargs rm -r || true)')
     local('git gc --prune')
 
 def ready_files():
@@ -59,5 +59,31 @@ def release(**kvargs):
         distutil_cmd += ' --dry-run'
     local(distutil_cmd)
 
+def install(**kvargs):
+    "Install Fabric locally."
+    if 'notest' not in kvargs:
+        test()
+    local('python setup.py build')
+    local('sudo python setup.py install')
+
+def layout(**kvargs):
+    """Print a layout-overview of fabric.py to the console.
+    
+    Optionally append an argument to the underlying grep call.
+    
+    Examples:
+        fab layout
+        fab layout:-n
+        fab layout:-n,--color=always
+    
+    """
+    options = ' '.join(['='.join(filter(None,i)) for i in kvargs.items()])
+    local(r'grep %s \\\(^#\ .*:$\\\)\\\|.*def\ .* fabric.py|' % options
+            + 'perl -p -e "s/def /   def /"')
+
+def test():
+    "Run all unit tests."
+    local("cd test && ./gen_tests.py")
+    local("python test/alltests.pyt")
 
 
