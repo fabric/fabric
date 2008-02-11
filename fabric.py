@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python -i
 
 # Fabric - Pythonic remote deployment tool.
 # Copyright (C) 2008  Christian Vest Hansen
@@ -35,11 +35,6 @@ except ImportError:
     print("Error: paramiko is a required module. Please install it:")
     print("  $ sudo easy_install paramiko")
     exit(1)
-try:
-    from decorator import decorator
-except ImportError:
-    print("Warning: decorator module not found.")
-    decorator = lambda f: f;
 
 __version__ = '0.0.3'
 __author__ = 'Christian Vest Hansen'
@@ -74,7 +69,7 @@ STRATEGIES = {}
 _LAZY_FORMAT_SUBSTITUTER = re.compile(r'\$\((?P<var>\w+?)\)')
 
 #
-# Helper decorators
+# Helper decorators:
 #
 def new_registering_decorator(registry):
     def registering_decorator(first_arg=None):
@@ -82,7 +77,6 @@ def new_registering_decorator(registry):
             registry[first_arg.__name__] = first_arg
             return first_arg
         else:
-            @decorator
             def sub_decorator(f):
                 registry[first_arg] = f
                 return f
@@ -92,7 +86,6 @@ command = new_registering_decorator(COMMANDS)
 operation = new_registering_decorator(OPERATIONS)
 strategy = new_registering_decorator(STRATEGIES)
 
-@decorator
 def run_per_host(op_fn):
     def wrapper(*args, **kvargs):
         if not CONNECTIONS:
@@ -878,7 +871,7 @@ def _confirm_proceed(exec_type, host, kvargs):
         return answer in 'yY'
     return True
 
-def _get_failcode(kvarg_map):
+def _get_failcode(kvarg_map, default='abort'):
     codes = {
         'ignore': 1,
         'warn': 2,
@@ -887,7 +880,7 @@ def _get_failcode(kvarg_map):
     if 'fail' in kvarg_map:
         return codes[kvarg_map['fail']]
     else:
-        return codes['abort']
+        return codes[default]
 
 def _start_outputter(prefix, channel):
     def outputter():
@@ -908,6 +901,22 @@ def _pick_fabfile():
         return options[0]
     else:
         return guesses[0] # load() will barf for us...
+
+def _parse_args(args):
+    cmds = []
+    for cmd in args:
+        cmd_name = cmd
+        cmd_args = None
+        if cmd.find(':') != -1:
+            cmd_name, cmd_args = cmd.split(':', 1)
+        if cmd_args is not None:
+            cmd_arg_kvs = {}
+            for cmd_arg_kv in cmd_args.split(','):
+                k, _, v = cmd_arg_kv.partition('=')
+                cmd_arg_kvs[k] = (v % ENV)
+            cmd_args = cmd_arg_kvs
+        cmds.append((cmd_name, cmd_args))
+    return cmds
 
 def _validate_commands(args):
     for cmd in args:
