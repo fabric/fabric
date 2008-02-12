@@ -832,6 +832,8 @@ def _disconnect():
 
 def _lazy_format(string, env=ENV):
     "Do recursive string substitution of ENV vars - both lazy and earger."
+    if string is None:
+        return None
     def replacer_fn(match):
         var = match.group('var')
         if var in env:
@@ -905,55 +907,41 @@ def _pick_fabfile():
 def _parse_args(args):
     cmds = []
     for cmd in args:
-        cmd_name = cmd
-        cmd_args = None
-        if cmd.find(':') != -1:
-            cmd_name, cmd_args = cmd.split(':', 1)
-        if cmd_args is not None:
-            cmd_arg_kvs = {}
-            for cmd_arg_kv in cmd_args.split(','):
+        cmd_args = {}
+        if ':' in cmd:
+            cmd, cmd_str_args = cmd.split(':', 1)
+            for cmd_arg_kv in cmd_str_args.split(','):
                 k, _, v = cmd_arg_kv.partition('=')
-                cmd_arg_kvs[k] = (v % ENV)
-            cmd_args = cmd_arg_kvs
-        cmds.append((cmd_name, cmd_args))
+                cmd_args[k] = (v % ENV)
+        cmds.append((cmd, cmd_args))
     return cmds
 
-def _validate_commands(args):
-    for cmd in args:
-        if cmd.find(':') != -1:
-            cmd = cmd.split(':', 1)[0]
-        if not cmd in COMMANDS:
-            print("No such command: %s" % cmd)
-            _list_commands()
-            exit(1)
-    if not args:
+def _validate_commands(cmds):
+    if not cmds:
         print("No commands given.")
         _list_commands()
+    else:
+        for cmd in cmds:
+            if not cmd[0] in COMMANDS:
+                print("No such command: %s" % cmd[0])
+                exit(1)
 
-def _execute_commands(args):
-    for cmd in args:
-        cmd_name = cmd
-        cmd_args = None
-        if cmd.find(':') != -1:
-            cmd_name, cmd_args = cmd.split(':', 1)
-        ENV['fab_cur_command'] = cmd_name
-        print("Running %s..." % cmd_name)
-        if cmd_args is not None:
-            cmd_arg_kvs = {}
-            for cmd_arg_kv in cmd_args.split(','):
-                k, _, v = cmd_arg_kv.partition('=')
-                cmd_arg_kvs[k] = (v % ENV)
-            COMMANDS[cmd_name](**cmd_arg_kvs)
-        else:
-            COMMANDS[cmd]()
+def _execute_commands(cmds):
+    for cmd, args in cmds:
+        ENV['fab_cur_command'] = cmd
+        print("Running %s..." % cmd)
+        if args is not None:
+            args = dict(zip(args.keys(), map(_lazy_format, args.values())))
+        COMMANDS[cmd](**(args and args or {}))
 
 def main(args):
     try:
         print(__greeter__ % ENV)
         fabfile = _pick_fabfile()
         load(fabfile)
-        _validate_commands(args)
-        _execute_commands(args)
+        commands = _parse_args(args)
+        _validate_commands(commands)
+        _execute_commands(commands)
     finally:
         _disconnect()
         print("Done.")
