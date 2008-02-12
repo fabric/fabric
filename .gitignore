@@ -3,6 +3,8 @@ fabc
 *.pyc
 *.pyo
 *.tar.gz
+*.pyt
+*.pytc
 .DS_Store
 build
 dist
