@@ -782,7 +782,7 @@ def _list_objs(objs):
     for name, fn in cmds:
         print '  ', name.ljust(max_name_len),
         if fn.__doc__:
-            print ':', fn.__doc__.splitlines()[0]
+            print ':', filter(None, fn.__doc__.splitlines())[0].strip()
         else:
             print
 

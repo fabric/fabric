@@ -67,7 +67,8 @@ def install(**kvargs):
     local('sudo python setup.py install')
 
 def layout(**kvargs):
-    """Print a layout-overview of fabric.py to the console.
+    """
+    Print a layout-overview of fabric.py to the console.
     
     Optionally append an argument to the underlying grep call.
     
