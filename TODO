@@ -21,5 +21,6 @@
     - preferably by using _on_hosts_do, or something
 21  automated test suite
 22  find alternative to the deprecated 'execfile()'
-23  *
+23  warn instead of failure when no fabfile is found in current dir
+24  *
 
