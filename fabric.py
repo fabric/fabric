@@ -938,7 +938,7 @@ def main(args):
     try:
         print(__greeter__ % ENV)
         fabfile = _pick_fabfile()
-        load(fabfile)
+        load(fabfile, fail='warn')
         commands = _parse_args(args)
         _validate_commands(commands)
         _execute_commands(commands)
