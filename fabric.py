@@ -91,6 +91,8 @@ def run_per_host(op_fn):
         if not CONNECTIONS:
             _connect()
         _on_hosts_do(op_fn, *args, **kvargs)
+    wrapper.__doc__ = op_fn.__doc__
+    wrapper.__name__ = op_fn.__name__
     return wrapper
 
 #
