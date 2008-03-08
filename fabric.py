@@ -51,7 +51,7 @@ __greeter__ = '''\
 ENV = {
     'fab_version':__version__,
     'fab_author':__author__,
-    'fab_mode':'fanout',
+    'fab_mode':'rolling',
     'fab_port':22,
     'fab_user':None,
     'fab_pkey':None,
