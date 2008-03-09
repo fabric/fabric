@@ -59,7 +59,7 @@ ENV = {
     'fab_new_host_key':'accept',
     'fab_shell':'/bin/bash -l -c "%s"',
     'fab_timestamp':datetime.datetime.utcnow().strftime('%F_%H-%M-%S'),
-    'fab_debug':False,
+    'fab_print_real_sudo':False,
 }
 
 CONNECTIONS = []
@@ -276,7 +276,7 @@ def sudo(host, client, env, cmd, **kvargs):
     """
     cmd = _lazy_format(cmd, env)
     real_cmd = env['fab_shell'] % ("sudo -S " + cmd.replace('"', '\\"'))
-    cmd = env['fab_debug'] and real_cmd or cmd
+    cmd = env['fab_print_real_sudo'] and real_cmd or cmd
     if not _confirm_proceed('sudo', host, kvargs):
         return False # TODO: should we return False in fail??
     print("[%s] sudo: %s" % (host, cmd))
