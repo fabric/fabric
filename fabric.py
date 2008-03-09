@@ -806,18 +806,20 @@ def _connect():
         ENV['fab_password'] = getpass.getpass()
     else:
         print("Warning: Putting your password in a fabfile is a bad idea.")
-    port = int(ENV['fab_port'])
+    def_port = ENV['fab_port']
     username = ENV['fab_user']
     password = ENV['fab_password']
     pkey = ENV['fab_pkey']
     key_filename = ENV['fab_key_filename']
     for host in ENV['fab_hosts']:
+        host, _, port = host.partition(':')
+        portnr = int(port or def_port)
         client = ssh.SSHClient()
         client.load_system_host_keys()
         if 'fab_new_host_key' in ENV and ENV['fab_new_host_key'] == 'accept':
             client.set_missing_host_key_policy(ssh.AutoAddPolicy())
         client.connect(
-            host, port, username, password, pkey, key_filename
+            host, portnr, username, password, pkey, key_filename
         )
         CONNECTIONS.append((host, client))
     if not CONNECTIONS:
