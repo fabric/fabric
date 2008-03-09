@@ -906,6 +906,17 @@ def _pick_fabfile():
     else:
         return guesses[0] # load() will barf for us...
 
+def _load_default_settings():
+    "Load user-default fabric settings from ~/.fabric"
+    # TODO: http://mail.python.org/pipermail/python-list/2006-July/393819.html
+    cfg = os.path.expanduser("~/.fabric")
+    if os.path.exists(cfg):
+        comments = lambda s: s and not s.startswith("#")
+        settings = filter(comments, open(cfg, 'r'))
+        settings = [(k.strip(),v.strip()) for k,_,v in
+            [s.partition('=') for s in settings]]
+        ENV.update(settings)
+
 def _parse_args(args):
     cmds = []
     for cmd in args:
@@ -934,12 +945,13 @@ def _execute_commands(cmds):
         print("Running %s..." % cmd)
         if args is not None:
             args = dict(zip(args.keys(), map(_lazy_format, args.values())))
-        COMMANDS[cmd](**(args and args or {}))
+        COMMANDS[cmd](**(args or {}))
 
 def main(args):
     try:
         print(__greeter__ % ENV)
         fabfile = _pick_fabfile()
+        _load_default_settings()
         load(fabfile, fail='warn')
         commands = _parse_args(args)
         _validate_commands(commands)
