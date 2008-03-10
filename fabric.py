@@ -100,7 +100,8 @@ def run_per_host(op_fn):
 #
 @operation
 def set(**variables):
-    """Set a number of Fabric environment variables.
+    """
+    Set a number of Fabric environment variables.
     
     Set takes a number of keyword arguments, and defines or updates the
     variables that corrosponds to each keyword with the respective value.
@@ -123,7 +124,8 @@ def set(**variables):
 
 @operation
 def get(name, otherwise=None):
-    """Get the value of a given Fabric environment variable.
+    """
+    Get the value of a given Fabric environment variable.
     
     If the variable isn't found, then this operation returns the
     value of the 'otherwise' parameter, which is None unless set.
@@ -133,7 +135,8 @@ def get(name, otherwise=None):
 
 @operation
 def require(var, **kvargs):
-    """Make sure that a certain environmet variable is available.
+    """
+    Make sure that a certain environmet variable is available.
     
     The 'var' parameter is a string that names the variable to check for.
     Two other optional kvargs are supported:
@@ -170,7 +173,8 @@ def require(var, **kvargs):
 @operation
 @run_per_host
 def put(host, client, env, localpath, remotepath, **kvargs):
-    """Upload a file to the current hosts.
+    """
+    Upload a file to the current hosts.
     
     The 'localpath' parameter is the relative or absolute path to the file on
     your localhost that you wish to upload to the fab_hosts.
@@ -199,7 +203,8 @@ def put(host, client, env, localpath, remotepath, **kvargs):
 @operation
 @run_per_host
 def download(host, client, env, remotepath, localpath, **kvargs):
-    """Download a file from the remote hosts.
+    """
+    Download a file from the remote hosts.
     
     The 'remotepath' parameter is the relative or absolute path to the files
     to download from the fab_hosts. The 'localpath' parameter will be suffixed
@@ -230,7 +235,8 @@ def download(host, client, env, remotepath, localpath, **kvargs):
 @operation
 @run_per_host
 def run(host, client, env, cmd, **kvargs):
-    """Run a shell command on the current fab_hosts.
+    """
+    Run a shell command on the current fab_hosts.
     
     The provided command is executed with the permisions of fab_user, and the
     exact execution environ is determined by the fab_shell variable.
@@ -258,7 +264,8 @@ def run(host, client, env, cmd, **kvargs):
 @operation
 @run_per_host
 def sudo(host, client, env, cmd, **kvargs):
-    """Run a sudo (root privileged) command on the current hosts.
+    """
+    Run a sudo (root privileged) command on the current hosts.
     
     The provided command is executed with root permisions, provided that
     fab_user is in the sudoers file in the remote host. The exact execution
@@ -292,7 +299,8 @@ def sudo(host, client, env, cmd, **kvargs):
 
 @operation
 def local(cmd, **kvargs):
-    """Run a command locally.
+    """
+    Run a command locally.
     
     This operation is essentially 'os.system()' except that variables are
     expanded prior to running.
@@ -319,7 +327,8 @@ def local(cmd, **kvargs):
 
 @operation
 def local_per_host(cmd, **kvargs):
-    """Run a command locally, for every defined host.
+    """
+    Run a command locally, for every defined host.
     
     Like the local() operation, this is pretty similar to 'os.system()', but
     with this operation, the command is executed (and have its variables
@@ -338,7 +347,8 @@ def local_per_host(cmd, **kvargs):
 
 @operation
 def load(filename, **kvargs):
-    """Load up the given fabfile.
+    """
+    Load up the given fabfile.
     
     This loads the fabfile specified by the 'filename' parameter into fabric
     and make its commands and other functions available in the scope of the 
@@ -369,7 +379,8 @@ def load(filename, **kvargs):
 
 @operation
 def upload_project(**kvargs):
-    """Uploads the current project directory to the connected hosts.
+    """
+    Uploads the current project directory to the connected hosts.
     
     This is a higher-level convenience operation that basically 'tar' up the
     directory that contains your fabfile (presumably it is your project
@@ -396,7 +407,8 @@ def upload_project(**kvargs):
 #
 @command("help")
 def _help(**kvargs):
-    """Display Fabric usage help, or help for a given command.
+    """
+    Display Fabric usage help, or help for a given command.
     
     You can provide help with a parameter and get more detailed help for a
     specific command. For instance, to learn more about the list command, you
@@ -425,7 +437,8 @@ def _help(**kvargs):
             else:
                 _print_help_for(k, None)
     else:
-        print("""Fabric is a simple pythonic remote deployment tool.
+        print("""
+    Fabric is a simple pythonic remote deployment tool.
     
     Type 'fab list' to get a list of available commands.
     Type 'fab help:help' to get more information on how to use the built in
@@ -435,7 +448,8 @@ def _help(**kvargs):
 
 @command("list")
 def _list_commands(**kvargs):
-    """Display a list of commands with descriptions.
+    """
+    Display a list of commands with descriptions.
     
     By default, the list command prints a list of available commands, with a
     short description (if one is available). However, the list command can also
@@ -697,7 +711,8 @@ POSSIBILITY OF SUCH DAMAGES.""")
 
 @command("set")
 def _set(**kvargs):
-    """Set a Fabric variable.
+    """
+    Set a Fabric variable.
     
     Example:
         $fab set:fab_user=billy,other_var=other_value
@@ -728,7 +743,8 @@ def _shell(**kvargs):
 #
 @strategy("fanout")
 def _fanout_strategy(fn, *args, **kvargs):
-    """A strategy that executes on all hosts in parallel.
+    """
+    A strategy that executes on all hosts in parallel.
     
     THIS STRATEGY IS CURRENTLY BROKEN!
     
@@ -847,7 +863,8 @@ def _lazy_format(string, env=ENV):
     return re.sub(_LAZY_FORMAT_SUBSTITUTER, replacer_fn, string % env)
 
 def _on_hosts_do(fn, *args, **kvargs):
-    """Invoke the given function with hostname and client parameters in
+    """
+    Invoke the given function with hostname and client parameters in
     accord with the current fac_mode strategy.
     
     fn should be a callable taking these parameters:
