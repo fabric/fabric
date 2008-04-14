@@ -34,7 +34,7 @@ try:
 except ImportError:
     print("Error: paramiko is a required module. Please install it:")
     print("  $ sudo easy_install paramiko")
-    exit(1)
+    sys.exit(1)
 
 __version__ = '0.0.4'
 __author__ = 'Christian Vest Hansen'
@@ -168,7 +168,7 @@ def require(var, **kvargs):
         to_s = lambda obj: getattr(obj, '__name__', str(obj))
         provided_by = [to_s(obj) for obj in kvargs['provided_by']]
         print('\t' + ('\n\t'.join(provided_by)))
-    exit(1)
+    sys.exit(1)
 
 @operation
 @run_per_host
@@ -323,7 +323,7 @@ def local(cmd, **kvargs):
             print("Warning: failed to execute command:")
             print("\t" + final_cmd)
         if failcode > 2:
-            exit(1)
+            sys.exit(1)
 
 @operation
 def local_per_host(cmd, **kvargs):
@@ -375,7 +375,7 @@ def load(filename, **kvargs):
         print("Warning: Cannot load file '%s'." % filename)
         print("No such file in your current directory.")
         if failcode > 2:
-            exit(1)
+            sys.exit(1)
 
 @operation
 def upload_project(**kvargs):
@@ -477,7 +477,7 @@ def _list_commands(**kvargs):
                     'ops', 'operations',
                     'strgs', 'strategies',
                 ])))
-                exit(1)
+                sys.exit(1)
     else:
         print("Available commands are:")
         _list_objs(COMMANDS)
@@ -810,12 +810,12 @@ def _check_fab_hosts():
         print("Fabric requires a fab_hosts variable.")
         print("Please set it in your fabfile.")
         print("Example: set(fab_hosts=['node1.com', 'node2.com'])")
-        exit(1)
+        sys.exit(1)
 
 def _connect():
     "Populate CONNECTIONS with (hostname, client) tuples as per fab_hosts."
     _check_fab_hosts()
-    signal.signal(signal.SIGINT, lambda: _disconnect() and exit(0))
+    signal.signal(signal.SIGINT, lambda: _disconnect() and sys.exit(0))
     if 'fab_password' not in ENV:
         print(_lazy_format("Logging into the following hosts as $(fab_user):"))
         print(_indent('\n'.join(ENV['fab_hosts'])))
@@ -841,7 +841,7 @@ def _connect():
     if not CONNECTIONS:
         print("The fab_hosts list was empty.")
         print("Please specify some hosts to connect to.")
-        exit(1)
+        sys.exit(1)
 
 def _disconnect():
     "Disconnect all clients."
@@ -880,11 +880,11 @@ def _on_hosts_do(fn, *args, **kvargs):
         successful = strategy_fn(fn, *args, **kvargs)
         if not successful:
             print("Operation failed: " + fn.__name__)
-            exit(1)
+            sys.exit(1)
     else:
         print("Unsupported fab_mode: %s" % strategy)
         print("Supported modes are: fanout, rolling")
-        exit(1)
+        sys.exit(1)
 
 def _confirm_proceed(exec_type, host, kvargs):
     if 'confirm' in kvargs:
@@ -956,7 +956,7 @@ def _validate_commands(cmds):
         for cmd in cmds:
             if not cmd[0] in COMMANDS:
                 print("No such command: %s" % cmd[0])
-                exit(1)
+                sys.exit(1)
 
 def _execute_commands(cmds):
     for cmd, args in cmds:
