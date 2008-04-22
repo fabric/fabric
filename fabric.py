@@ -162,13 +162,56 @@ def require(var, **kvargs):
         + "' variable.") % ENV
     )
     if 'used_for' in kvargs:
-        print("This variable is used for %s" % _lazy_format(kvargs['used_for']))
+        print("This variable is used for %s" % _lazy_format(
+            kvargs['used_for']))
     if 'provided_by' in kvargs:
         print("Get the variable by running one of these commands:")
         to_s = lambda obj: getattr(obj, '__name__', str(obj))
         provided_by = [to_s(obj) for obj in kvargs['provided_by']]
         print('\t' + ('\n\t'.join(provided_by)))
     sys.exit(1)
+
+@operation
+def prompt(varname, msg, validate=None, default=None):
+    """
+    Display a prompt to the user and store the input in the given variable.
+    If the variable already exists, then it is not prompted for again.
+    
+    The 'validate' parameter is a callable that raises an exception on invalid
+    inputs and returns the input for storage in ENV.
+    It may process the input and convert it to a different type, as in the
+    second example below.
+    
+    Example:
+        # Simplest form:
+        prompt('environment', 'Please specify target environment')
+        
+        # With default:
+        prompt('dish', 'Specify favorite dish', default='spam & eggs')
+        
+        # With validation, i.e. require integer input:
+        prompt('nice', 'Please specify process nice level', validate=int)
+    
+    """
+    if varname in ENV and ENV[varname] is not None:
+        return
+    
+    if callable(default):
+        default = default()
+    
+    try:
+        default_str = default and (" [%s]" % str(default).strip()) or ""
+        prompt_msg = _lazy_format("%s%s: " % (msg.strip(), default_str))
+        value = raw_input(prompt_msg)
+        if not value:
+            value = default
+        
+        if callable(validate):
+            value = validate(value)
+        
+        set(**{varname: value})
+    except EOFError:
+        return
 
 @operation
 @run_per_host
@@ -854,6 +897,7 @@ def _lazy_format(string, env=ENV):
     "Do recursive string substitution of ENV vars - both lazy and earger."
     if string is None:
         return None
+    env = dict([(k, str(v)) for k, v in env.items()])
     def replacer_fn(match):
         var = match.group('var')
         if var in env:
@@ -883,7 +927,7 @@ def _on_hosts_do(fn, *args, **kvargs):
             sys.exit(1)
     else:
         print("Unsupported fab_mode: %s" % strategy)
-        print("Supported modes are: fanout, rolling")
+        print("Supported modes are: %s" % (', '.join(STRATEGIES.keys())))
         sys.exit(1)
 
 def _confirm_proceed(exec_type, host, kvargs):

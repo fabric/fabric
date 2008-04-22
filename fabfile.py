@@ -87,4 +87,9 @@ def test():
     local("cd test && ./gen_tests.py")
     local("python test/alltests.pyt")
 
+def test_prompt():
+    prompt('name', "Hello! What's your name?")
+    local("echo $(name)")
+    prompt('age', 'And age?', validate=int)
+    local("echo $(age)")
 
