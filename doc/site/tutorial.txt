@@ -1,0 +1,198 @@
+h1. Tutorial
+
+Let me just first make it clear, that Fabric is alpha software and still
+very much in development. So it's a moving target, documentation wise,
+and it is to be expected that the information herein might not be entirely
+accurate.
+
+h2. The ache
+
+Here's the thing: you're developing a server deployed application, it could
+be a web application but it doesn't have to be, and you're probably
+deploying to more than one server.
+
+Even if you just have one server to deploy to, it still get tiresome in long
+run to build your project, fire up your favorite SFTP utility, upload your
+build, log in to the server with SSH, possibly stop the server, deploy the
+build, and finally start the server again.
+
+What we'd like to do, is to build, upload and deploy our application with
+a single command line.
+
+h2. Fabric: first steps
+
+Fabric is a tool that, at its core, logs into a number of hosts with SSH, and
+executes a set of commands and possibly uploads or downloads files.
+
+There are two parts to it; there's the 'fab' command line program, and there's
+the 'fabfile.' The 'fabfile' is where you describe commands and what they do.
+For instance, you might have a command called 'deploy' that builds, uploads
+and deploys your application. The 'fabfiles' are really just python scripts
+and the commands are just python functions. This python script is loaded by
+the 'fab' program and the commands are executed as specified on the command
+line.
+
+Here's what a super simple 'fabfile' might look like:
+
+bc[python]..
+def hello():
+  "Prints hello."
+  local("echo hello")
+
+p. Let's break that down line by line.
+
+First, there's the @def hello():@ line. It defines a command called 'hello'
+so that it can be run with 'fab hello', but we'll get to that part.
+
+Next comes a block of text that is indented with two spaces. It is not
+important that we use exactly two spaces, just that each line is consistently
+indented.
+
+The first line of the indented block is a doc-string. It documents the purpose
+of the command and is used in various parts of Fabric, for instance, the
+'list' command will display the first line of the doc-string next to the
+name of the command in its output.
+
+Following the doc-string is a call to a function called 'local'. In Fabric
+terminology, 'local' is an operation. In python, functions are functions,
+but Fabric destinguished between commands and operations. Commands are called
+with the 'fab' command line program, and operations are in turn called by
+commands. Since they're both just python functions, there's nothing stopping
+commands from calling other commands as if they were operations.
+
+Getting back to 'local', you're probably left wondering what it does. Well,
+maybe you already guessed it. Regardless, there's a way to know for sure. And
+it's the 'help' command. A command can take parameters when run from the
+command line, by appending a colon and then a parameter list to the end of the
+command name. For instance, if we want to invoke the 'help' command with the
+parameter 'local', we would type @fab help:local@ on the command line.
+
+Let's try doing just that:
+
+bc.. rowe:~ vest$ fab help:local
+   Fabric v. 0.0.5, Copyright (C) 2008 Christian Vest Hansen.
+   Fabric comes with ABSOLUTELY NO WARRANTY; for details type `fab warranty'.
+   This is free software, and you are welcome to redistribute it
+   under certain conditions; type `fab license' for details.
+
+Warning: Cannot load file 'fabfile'.
+No such file in your current directory.
+Running help...
+Help for 'local':
+    
+        Run a command locally.
+        
+        This operation is essentially 'os.system()' except that variables are
+        expanded prior to running.
+        
+        May take an additional 'fail' keyword argument with one of these values:
+            * ignore - do nothing on failure
+            * warn - print warning on failure
+            * abort - terminate fabric on failure
+        
+        Example:
+            local("make clean dist")
+        
+        
+Done.
+rowe:~ vest$
+
+p. First, Fabric prints a header with copyright and licensing information.
+Then, there's a warning stating that no 'fabfile' was found - which is
+understandable because we haven't created one yet. Finally, the 'help' command
+is run and it prints the built-in documentation for the 'local' operation.
+
+You can use the 'list' command to figure out what other operations are
+available. Try running @fab help:list@ to figure out how to use it.
+
+Since Fabric complains when it can't find any 'fabfile,' let's create one.
+Create a file in your current directory (of the terminal you used to run
+@fab help:local@ with above), call it 'fabfile.py', open it in your favorite
+text editor and copy-paste the example 'fabfile' above into it.
+
+Now, let's see what happens when we run @fab hello@:
+
+bc.. rowe:~ vest$ fab hello
+   Fabric v. 0.0.5, Copyright (C) 2008 Christian Vest Hansen.
+   Fabric comes with ABSOLUTELY NO WARRANTY; for details type `fab warranty'.
+   This is free software, and you are welcome to redistribute it
+   under certain conditions; type `fab license' for details.
+
+Running hello...
+[localhost] run: echo hello
+hello
+Done.
+rowe:~ vest$
+
+p. Nothing in this output should come as a surprise to anyone at this point.
+It does what we expect it to do. Note that Fabric makes a habit out of
+printing the commands it runs, the privilege level they're run with and on
+which hosts they run.
+
+h2. Getting connected
+
+We have learned how to execute shell commands on our local system with the
+'local' operation. However, that in and off itself isn't particularly useful.
+We can do that with shell scripts just fine. Instead, what we'd rely like to
+do, it to log in to a number of remote hosts and execute the commands there.
+Fabric let us do just that with these three operations:
+
+# 'put' : Uploads a file to the connected hosts.
+# 'run' : Run a shell-command on the connected hosts as a normal user.
+# 'sudo' : Run a shell-command on the connected hosts as a privileged user.
+
+These operations are the bread and butter of remote deployment in Fabric.
+But before we can use them, we need to tell Fabric which hosts to connect to.
+We do this by setting the 'fab_hosts' variable with the 'set' operation, to
+a list of strings that are our host names. We also need to specify the user
+we want to log into these hosts with.
+
+Try changing your 'fabfile' so it looks like this:
+
+bc[python].. set(
+    fab_hosts = ['127.0.0.1'],
+    fab_user = 'vest',
+)
+
+def hello():
+  "Prints hello."
+  local("echo hello")
+
+def hello_remote():
+  "Prints hello on the remote hosts."
+  run("echo hello from $(fab_host) to $(fab_user).")
+
+p. We set the variables need to connect to a host, and then we run an 'echo'
+command on the host. Note how we can access variables inside the string.
+The dollar-parenthesis syntax is special to Fabric; it means that the variables
+should be evaluated as late as possible, which in this case will be when the
+'run' command actually get executed against a connected host.
+
+Let's try running @fab hello_remote@ now and see what happens:
+
+bc.. rowe:~ vest$ fab hello_remote
+   Fabric v. 0.0.5, Copyright (C) 2008 Christian Vest Hansen.
+   Fabric comes with ABSOLUTELY NO WARRANTY; for details type `fab warranty'.
+   This is free software, and you are welcome to redistribute it
+   under certain conditions; type `fab license' for details.
+
+Running hello_remote...
+Logging into the following hosts as vest:
+    127.0.0.1
+Password: 
+[127.0.0.1] run: /bin/bash -l -c "echo hello from 127.0.0.1 to vest."
+[127.0.0.1] out: hello from 127.0.0.1 to vest.
+Done.
+rowe:~ vest$
+
+p. When we get to executing the 'run' operation, the first thing that happens
+is that Fabric makes sure that we are connected to our hosts, and if not,
+starts connecting.
+
+*TODO:*
+
+# Configuration with ~/.fabric
+# Managing environments and configuration dependencies with 'require'
+
+
+

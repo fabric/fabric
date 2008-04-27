@@ -1,0 +1,18 @@
+
+* {
+    font-family: trebuchet ms, verdana, helvetica, arial,
+        'Bitstream Vera Sans', sans-serif;
+}
+
+pre, code, code * {
+    font-family: Monaco, 'Bitstream Vera Sans Mono',
+        'Courier New', courier;
+    font-size: 10pt;
+}
+
+#bottom {
+    text-align: center;
+    font-size: 10pt;
+    color: gray;
+    padding: 1em;
+}

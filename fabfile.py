@@ -16,6 +16,10 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+set(
+    nongnu_user = 'karmazilla',
+)
+
 def clean():
     "Recurse the directory tree and remove all files matched by .gitignore."
     # passing -delete to find doesn't work for directories, hence xargs rm -r
@@ -48,7 +52,7 @@ def release(**kvargs):
     if not dry:
         local('git tag -s -m "Fabric v. %(fab_version)s" %(fab_version)s HEAD')
     ready_files()
-    scp_cmd = 'scp $(filename) karmazilla@dl.sv.nongnu.org:/releases/fab/'
+    scp_cmd = 'scp $(filename) $(nongnu_user)@dl.sv.nongnu.org:/releases/fab/'
     if not dry:
         local(scp_cmd)
         set(filename='%(filename)s.sig')
@@ -58,6 +62,7 @@ def release(**kvargs):
     if dry:
         distutil_cmd += ' --dry-run'
     local(distutil_cmd)
+    upload_website()
 
 def install(**kvargs):
     "Install Fabric locally."
@@ -87,9 +92,13 @@ def test():
     local("cd test && ./gen_tests.py")
     local("python test/alltests.pyt")
 
-def test_prompt():
-    prompt('name', "Hello! What's your name?")
-    local("echo $(name)")
-    prompt('age', 'And age?', validate=int)
-    local("echo $(age)")
+def website():
+    "Generates the Fabric website."
+    local("cd doc/site && ./generate.py")
 
+def upload_website():
+    "Generates and uploads the Fabric website to nongnu.org"
+    local("cd doc/site && export CVS_RSH=ssh && "
+        + "cvs -z3 -d:ext:$(nongnu_user)@cvs.sv.gnu.org:/webcvs/fab co fab")
+    website()
+    local("cd doc/site && cvs add * && cvs commit")

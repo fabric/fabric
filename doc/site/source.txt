@@ -1,0 +1,27 @@
+h1. Source code
+
+The Fabric source code is kept under version control by "Git":git.or.cz/.
+
+The official main-line git repository is located at
+git://git.savannah.nongnu.org/fab.git and you can browse the source online
+here: http://git.savannah.nongnu.org/gitweb/?p=fab.git.
+
+There's also a repository at Github located here:
+http://github.com/karmazilla/fabric/tree/master
+
+Changes to the master branches are mirrored between these two repositories.
+
+h2. Getting the source
+
+If you have a Github account, then you just press the 'fork' button and off
+you go.
+
+If you want to get the code from the nongnu.org repository, then you can do
+so by running this command in a terminal:
+
+bc. $ git clone git://git.savannah.nongnu.org/fab.git
+
+h2. Using Git
+
+The Internets are full documentation on how to use Git. One of my favorites
+is this one: http://www.kernel.org/pub/software/scm/git/docs/everyday.html

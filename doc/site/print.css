@@ -1,0 +1,10 @@
+
+#top {
+    display: none;
+}
+
+pre {
+    border-left: medium solid black;
+    page-break-inside: avoid;
+    padding-left: 1em;
+}

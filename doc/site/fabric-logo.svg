@@ -1,0 +1,63 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" 
+"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!--
+  fabric-logo.svg, part of:
+  Fabric - Pythonic remote deployment tool.
+  Copyright (C) 2008  Christian Vest Hansen
+  
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+  
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+  
+  You should have received a copy of the GNU General Public License along
+  with this program; if not, write to the Free Software Foundation, Inc.,
+  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+-->
+<svg width="48" height="48" style="background: #E0E0E0;"
+  version="1.1" xmlns="http://www.w3.org/2000/svg">
+  
+  <!-- The background rounded-corner rectangle -->
+  <rect x="0" y="0" rx="10" ry="10" width="48" height="48"
+    style="fill: #0A2C1E;"/>
+  
+  <!-- The upper disconnected arrow part of the 'F' -->
+  <path style="stroke: #0A2C1E; stroke-width: 1.5; fill: white;"
+    d="
+    M14 34
+    l5 0
+    l0 -10
+    c0 0 0 -10 7.5 -10
+    l0 5
+    l7.5 -7.5
+    l-7.5 -7.5
+    l0 5
+    c-2.5 0 -12.5 0 -12.5 15
+    z
+    "/>
+  
+  <!-- The lower disconnected arrow part of the 'F' -->
+  <path style="stroke: #0A2C1E; stroke-width: 1.5; fill: #FB9A4B;"
+    d="
+    M14 40
+    l5 0
+    l0 -3
+    c0 0 0 -10 7.5 -10
+    l0 5
+    l7.5 -7.5
+    l-7.5 -7.5
+    l0 5
+    c-2.5 0 -12.5 0 -12.5 15
+    z
+    "/>
+    
+    <!--
+      Hand-crafting my own SVG logo? I'm made of awesome! :)
+    -->
+</svg>
