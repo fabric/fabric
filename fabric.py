@@ -53,7 +53,7 @@ ENV = {
     'fab_author':__author__,
     'fab_mode':'rolling',
     'fab_port':22,
-    'fab_user':None,
+    'fab_user':os.getlogin(),
     'fab_pkey':None,
     'fab_key_filename':None,
     'fab_new_host_key':'accept',
