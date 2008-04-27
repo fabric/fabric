@@ -21,5 +21,6 @@
     - preferably by using _on_hosts_do, or something
 21  automated test suite
 22  find alternative to the deprecated 'execfile()'
-24  *
+24  add escaping to _lazy_format
+25  *
 
