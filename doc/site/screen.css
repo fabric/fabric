@@ -17,6 +17,7 @@ pre {
 #top {
     padding: 1em;
     border-bottom: 4px solid gray;
+    height: 52px;
 }
 
 #top #menu {
@@ -30,6 +31,7 @@ pre {
     height: 48px;
     padding-left: 1em;
     border: none;
+    float: left;
 }
 
 #content {
