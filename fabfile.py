@@ -101,4 +101,7 @@ def upload_website():
     local("cd doc/site && export CVS_RSH=ssh && "
         + "cvs -z3 -d:ext:$(nongnu_user)@cvs.sv.gnu.org:/webcvs/fab co fab")
     website()
-    local("cd doc/site && cvs add * && cvs commit")
+    prompt('website_commit_msg', 'Website commit message',
+        defaut = 'Website for version $(fab_version)')
+    local("cd doc/site/fab && "
+        + "cvs commit -m '$(website_commit_msg)'")
