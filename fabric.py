@@ -1021,5 +1021,4 @@ def main(args):
         _execute_commands(commands)
     finally:
         _disconnect()
-        print("Done.")
 
