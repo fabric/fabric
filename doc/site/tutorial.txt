@@ -69,7 +69,7 @@ parameter 'local', we would type @fab help:local@ on the command line.
 
 Let's try doing just that:
 
-bc.. rowe:~ vest$ fab help:local
+bc.. rowe:~$ fab help:local
    Fabric v. 0.0.5, Copyright (C) 2008 Christian Vest Hansen.
    Fabric comes with ABSOLUTELY NO WARRANTY; for details type `fab warranty'.
    This is free software, and you are welcome to redistribute it
@@ -95,7 +95,7 @@ Help for 'local':
         
         
 Done.
-rowe:~ vest$
+rowe:~$
 
 p. First, Fabric prints a header with copyright and licensing information.
 Then, there's a warning stating that no 'fabfile' was found - which is
@@ -112,7 +112,7 @@ text editor and copy-paste the example 'fabfile' above into it.
 
 Now, let's see what happens when we run @fab hello@:
 
-bc.. rowe:~ vest$ fab hello
+bc.. rowe:~$ fab hello
    Fabric v. 0.0.5, Copyright (C) 2008 Christian Vest Hansen.
    Fabric comes with ABSOLUTELY NO WARRANTY; for details type `fab warranty'.
    This is free software, and you are welcome to redistribute it
@@ -122,7 +122,7 @@ Running hello...
 [localhost] run: echo hello
 hello
 Done.
-rowe:~ vest$
+rowe:~$
 
 p. Nothing in this output should come as a surprise to anyone at this point.
 It does what we expect it to do. Note that Fabric makes a habit out of
@@ -170,7 +170,7 @@ should be evaluated as late as possible, which in this case will be when the
 
 Let's try running @fab hello_remote@ now and see what happens:
 
-bc.. rowe:~ vest$ fab hello_remote
+bc.. rowe:~$ fab hello_remote
    Fabric v. 0.0.5, Copyright (C) 2008 Christian Vest Hansen.
    Fabric comes with ABSOLUTELY NO WARRANTY; for details type `fab warranty'.
    This is free software, and you are welcome to redistribute it
@@ -183,7 +183,7 @@ Password:
 [127.0.0.1] run: /bin/bash -l -c "echo hello from 127.0.0.1 to vest."
 [127.0.0.1] out: hello from 127.0.0.1 to vest.
 Done.
-rowe:~ vest$
+rowe:~$
 
 p. When we get to executing the 'run' operation, the first thing that happens
 is that Fabric makes sure that we are connected to our hosts, and if not,
@@ -191,6 +191,7 @@ starts connecting.
 
 *TODO:*
 
+# Using variables
 # Configuration with ~/.fabric
 # Managing environments and configuration dependencies with 'require'
 

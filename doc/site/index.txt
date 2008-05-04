@@ -38,7 +38,7 @@ And, in the simplest form, they look like this:
 
 bc[python]..
 set(
-  project = 'ldapservice',
+  project = 'awsome-app',
   fab_hosts = ['n1.cluster.com', 'n2.cluster.com'],
 )
 
