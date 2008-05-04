@@ -189,11 +189,69 @@ p. When we get to executing the 'run' operation, the first thing that happens
 is that Fabric makes sure that we are connected to our hosts, and if not,
 starts connecting.
 
+h2. More on configuration
+
+We have seen how Fabric can connect to a set of hosts and execute an array of
+commands on them. We have also touched on the built-in help system, and how we
+can use it to learn more about the features that are available to us in our
+fabfiles. However, to get the full potential out of Fabric, we also need to
+know how to configure it.
+
+h3. Variables
+
+We saw in the "Getting connected" section above, that we can use a notation
+such as @$(fab_user)@ to interpolate the value of the 'fab_user' variable in
+a string. The standard python @%(fab_user)s%@ notation would have worked just
+as well, but there are some important differences between these two notations:
+The former notation is special to Fabric and is lazily evaluated, whereas the
+later is a general python feature, and is eagerly evaluated.
+
+This difference between eager and lazy evaluation is demonstrated in this
+example:
+
+bc[python].. def test():
+    set(var = 'a')
+    set(cmd = 'echo %(var)s $(var)')  # line 3
+    set(var = 'b')
+    local(get('cmd'))  # line 5
+
+p. If we run that as a command with Fabric, it will print out "a b". The eager
+notation will be interpolated as soon as possible, which is line 3, but the
+lazy notation will not be evaluated until it is actually needed, in line 5,
+and by that time the value of 'var' will change, resulting in the output "a b".
+
+Beyond the variables you set with the 'set' operation, Fabric provides a
+number of variables. Most are for configuring Fabric itself, but some are also
+for use in the string arguments you pass to 'run' and 'sudo' and the like.
+
+For a complete overview of the different variables and their use, I'm afraid
+you have to consult the source code. Here's a list of the most useful ones:
+
+* _fab_host_ is available in remote operations, or other operations that take
+effect on a per host basis, have access to this variable which names a
+specific host to work on.
+* _fab_hosts_ defines the list of hosts to connect to, as a list of strings.
+There's no default value for this variable so it must be specified if you
+want to execute any remove operations.
+* _fab_mode_ specifies what strategy should be used to execute commands on the
+connected hosts. The default value is "rolling" which runs the commands on one
+host at a time, without any parallelism or concurrency.
+* _fab_password_ is the password used for logging into the remote hosts, and
+to authenticate with remote 'sudo' commands. Don't set this in the fabfile
+as a password-prompt will automatically ask for it when needed.
+* _fab_port_ is the port number used to connect to the remote hosts. The
+default value is 22, which is the default SSH port number.
+* _fab_user_ is the username used to log in to the remote hosts with. The
+default value is derived from the containing shell that executes Fabric, that
+is, your currently logged in username.
+* _fab_timestamp_ is the UTC timestamp for when Fabric was started. Generally
+useful when naming backup files or the like.
+
 *TODO:*
 
-# Using variables
 # Configuration with ~/.fabric
 # Managing environments and configuration dependencies with 'require'
+# What strategies are
 
 
 
