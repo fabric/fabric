@@ -338,15 +338,18 @@ def sudo(host, client, env, cmd, **kvargs):
     
     """
     cmd = _lazy_format(cmd, env)
-    real_cmd = env['fab_shell'] % ("sudo -S " + cmd.replace('"', '\\"'))
+    passwd = get('fab_password')
+    sudo_cmd = passwd and "sudo -S " or "sudo "
+    real_cmd = env['fab_shell'] % (sudo_cmd + cmd.replace('"', '\\"'))
     cmd = env['fab_print_real_sudo'] and real_cmd or cmd
     if not _confirm_proceed('sudo', host, kvargs):
         return False # TODO: should we return False in fail??
     print("[%s] sudo: %s" % (host, cmd))
     stdin, stdout, stderr = client.exec_command(real_cmd)
-    stdin.write(env['fab_password'])
-    stdin.write('\n')
-    stdin.flush()
+    if passwd:
+        stdin.write(env['fab_password'])
+        stdin.write('\n')
+        stdin.flush()
     out_th = _start_outputter("[%s] out" % host, stdout)
     err_th = _start_outputter("[%s] err" % host, stderr)
     out_th.join()
