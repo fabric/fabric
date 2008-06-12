@@ -69,6 +69,19 @@ STRATEGIES = {}
 _LAZY_FORMAT_SUBSTITUTER = re.compile(r'\$\((?P<var>\w+?)\)')
 
 #
+# Compatibility fixes
+#
+if hasattr(str, 'partition'):
+    partition = str.partition
+else:
+    def partition(txt, sep):
+        idx = txt.find(sep)
+        if idx == -1:
+            return txt, '', ''
+        else:
+            return (txt[:idx], sep, txt[idx + len(sep):])
+
+#
 # Helper decorators:
 #
 def new_registering_decorator(registry):
@@ -871,7 +884,7 @@ def _connect():
     pkey = ENV['fab_pkey']
     key_filename = ENV['fab_key_filename']
     for host in ENV['fab_hosts']:
-        host, _, port = host.partition(':')
+        host, _, port = partition(host, ':')
         portnr = int(port or def_port)
         client = ssh.SSHClient()
         client.load_system_host_keys()
@@ -977,7 +990,7 @@ def _load_default_settings():
         comments = lambda s: s and not s.startswith("#")
         settings = filter(comments, open(cfg, 'r'))
         settings = [(k.strip(),v.strip()) for k,_,v in
-            [s.partition('=') for s in settings]]
+            [partition(s, '=') for s in settings]]
         ENV.update(settings)
 
 def _parse_args(args):
@@ -987,7 +1000,7 @@ def _parse_args(args):
         if ':' in cmd:
             cmd, cmd_str_args = cmd.split(':', 1)
             for cmd_arg_kv in cmd_str_args.split(','):
-                k, _, v = cmd_arg_kv.partition('=')
+                k, _, v = partition(cmd_arg_kv, '=')
                 cmd_args[k] = (v % ENV)
         cmds.append((cmd, cmd_args))
     return cmds
