@@ -370,7 +370,7 @@ def local(cmd, **kvargs):
         * abort - terminate fabric on failure
     
     Example:
-        local("make clean dist")
+        local("make clean dist", fail='abort')
     
     """
     final_cmd = _lazy_format(cmd)
