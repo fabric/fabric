@@ -58,7 +58,7 @@ def release(**kvargs):
         set(filename='%(filename)s.sig')
         local(scp_cmd)
     distutil_cmd = ('cd dist/%(prefix)s/ && '
-        + 'python setup.py sdist bdist upload --sign')
+        + 'python setup.py sdist upload --sign')
     if dry:
         distutil_cmd += ' --dry-run'
     local(distutil_cmd)

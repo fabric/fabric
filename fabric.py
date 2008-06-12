@@ -69,6 +69,19 @@ STRATEGIES = {}
 _LAZY_FORMAT_SUBSTITUTER = re.compile(r'\$\((?P<var>\w+?)\)')
 
 #
+# Compatibility fixes
+#
+if hasattr(str, 'partition'):
+    partition = str.partition
+else:
+    def partition(txt, sep):
+        idx = txt.find(sep)
+        if idx == -1:
+            return txt, '', ''
+        else:
+            return (txt[:idx], sep, txt[idx + len(sep):])
+
+#
 # Helper decorators:
 #
 def new_registering_decorator(registry):
@@ -325,15 +338,18 @@ def sudo(host, client, env, cmd, **kvargs):
     
     """
     cmd = _lazy_format(cmd, env)
-    real_cmd = env['fab_shell'] % ("sudo -S " + cmd.replace('"', '\\"'))
+    passwd = get('fab_password')
+    sudo_cmd = passwd and "sudo -S " or "sudo "
+    real_cmd = env['fab_shell'] % (sudo_cmd + cmd.replace('"', '\\"'))
     cmd = env['fab_print_real_sudo'] and real_cmd or cmd
     if not _confirm_proceed('sudo', host, kvargs):
         return False # TODO: should we return False in fail??
     print("[%s] sudo: %s" % (host, cmd))
     stdin, stdout, stderr = client.exec_command(real_cmd)
-    stdin.write(env['fab_password'])
-    stdin.write('\n')
-    stdin.flush()
+    if passwd:
+        stdin.write(env['fab_password'])
+        stdin.write('\n')
+        stdin.flush()
     out_th = _start_outputter("[%s] out" % host, stdout)
     err_th = _start_outputter("[%s] err" % host, stderr)
     out_th.join()
@@ -354,7 +370,7 @@ def local(cmd, **kvargs):
         * abort - terminate fabric on failure
     
     Example:
-        local("make clean dist")
+        local("make clean dist", fail='abort')
     
     """
     final_cmd = _lazy_format(cmd)
@@ -871,7 +887,7 @@ def _connect():
     pkey = ENV['fab_pkey']
     key_filename = ENV['fab_key_filename']
     for host in ENV['fab_hosts']:
-        host, _, port = host.partition(':')
+        host, _, port = partition(host, ':')
         portnr = int(port or def_port)
         client = ssh.SSHClient()
         client.load_system_host_keys()
@@ -977,7 +993,7 @@ def _load_default_settings():
         comments = lambda s: s and not s.startswith("#")
         settings = filter(comments, open(cfg, 'r'))
         settings = [(k.strip(),v.strip()) for k,_,v in
-            [s.partition('=') for s in settings]]
+            [partition(s, '=') for s in settings]]
         ENV.update(settings)
 
 def _parse_args(args):
@@ -987,7 +1003,7 @@ def _parse_args(args):
         if ':' in cmd:
             cmd, cmd_str_args = cmd.split(':', 1)
             for cmd_arg_kv in cmd_str_args.split(','):
-                k, _, v = cmd_arg_kv.partition('=')
+                k, _, v = partition(cmd_arg_kv, '=')
                 cmd_args[k] = (v % ENV)
         cmds.append((cmd, cmd_args))
     return cmds

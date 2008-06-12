@@ -11,10 +11,10 @@ Here's the thing: you're developing a server deployed application, it could
 be a web application but it doesn't have to be, and you're probably
 deploying to more than one server.
 
-Even if you just have one server to deploy to, it still get tiresome in long
-run to build your project, fire up your favorite SFTP utility, upload your
-build, log in to the server with SSH, possibly stop the server, deploy the
-build, and finally start the server again.
+Even if you just have one server to deploy to, it still get tiresome in the
+long run to build your project, fire up your favorite SFTP utility, upload
+your build, log in to the server with SSH, possibly stop the server, deploy
+the build, and finally start the server again.
 
 What we'd like to do, is to build, upload and deploy our application with
 a single command line.
@@ -22,7 +22,7 @@ a single command line.
 h2. Fabric: first steps
 
 Fabric is a tool that, at its core, logs into a number of hosts with SSH, and
-executes a set of commands and possibly uploads or downloads files.
+executes a set of commands, and possibly uploads or downloads files.
 
 There are two parts to it; there's the 'fab' command line program, and there's
 the 'fabfile.' The 'fabfile' is where you describe commands and what they do.
@@ -55,14 +55,14 @@ name of the command in its output.
 
 Following the doc-string is a call to a function called 'local'. In Fabric
 terminology, 'local' is an operation. In python, functions are functions,
-but Fabric destinguished between commands and operations. Commands are called
+but Fabric destinguishes between commands and operations. Commands are called
 with the 'fab' command line program, and operations are in turn called by
 commands. Since they're both just python functions, there's nothing stopping
 commands from calling other commands as if they were operations.
 
 Getting back to 'local', you're probably left wondering what it does. Well,
 maybe you already guessed it. Regardless, there's a way to know for sure. And
-it's the 'help' command. A command can take parameters when run from the
+that is the 'help' command. A command can take parameters when run from the
 command line, by appending a colon and then a parameter list to the end of the
 command name. For instance, if we want to invoke the 'help' command with the
 parameter 'local', we would type @fab help:local@ on the command line.
@@ -91,7 +91,7 @@ Help for 'local':
             * abort - terminate fabric on failure
         
         Example:
-            local("make clean dist")
+            local("make clean dist", fail='abort')
         
         
 Done.
@@ -134,7 +134,7 @@ h2. Getting connected
 We have learned how to execute shell commands on our local system with the
 'local' operation. However, that in and off itself isn't particularly useful.
 We can do that with shell scripts just fine. Instead, what we'd rely like to
-do, it to log in to a number of remote hosts and execute the commands there.
+do, is to log in to a number of remote hosts and execute the commands there.
 Fabric let us do just that with these three operations:
 
 # 'put' : Uploads a file to the connected hosts.
@@ -144,14 +144,16 @@ Fabric let us do just that with these three operations:
 These operations are the bread and butter of remote deployment in Fabric.
 But before we can use them, we need to tell Fabric which hosts to connect to.
 We do this by setting the 'fab_hosts' variable with the 'set' operation, to
-a list of strings that are our host names. We also need to specify the user
-we want to log into these hosts with.
+a list of strings that are our host names. We can also to specify the
+user we want to log into these hosts with by setting the 'fab_user'
+variable. By default, Fabric will log in with the username of your current
+local user - which is perfectly fine in this example, so we'll leave that
+variable out.
 
 Try changing your 'fabfile' so it looks like this:
 
 bc[python].. set(
     fab_hosts = ['127.0.0.1'],
-    fab_user = 'vest',
 )
 
 def hello():
@@ -162,7 +164,7 @@ def hello_remote():
   "Prints hello on the remote hosts."
   run("echo hello from $(fab_host) to $(fab_user).")
 
-p. We set the variables need to connect to a host, and then we run an 'echo'
+p. We set the variables needed to connect to a host, and then we run an 'echo'
 command on the host. Note how we can access variables inside the string.
 The dollar-parenthesis syntax is special to Fabric; it means that the variables
 should be evaluated as late as possible, which in this case will be when the
