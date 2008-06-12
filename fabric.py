@@ -147,6 +147,22 @@ def get(name, otherwise=None):
     return name in ENV and ENV[name] or otherwise
 
 @operation
+def getAny(*name):
+    """
+    Given a list of variable names as parameters, get the value of the first
+    of these variables that is actually defined (and does not resolve to
+    boolean False), or None.
+    
+    Example:
+        getAny('hostname', 'ipv4', 'ipv6', 'ip', 'address')
+    
+    """
+    if not name:
+        return None
+    x, xs = get(name[0]), name[1:]
+    return x and x or getAny(*xs)
+
+@operation
 def require(var, **kvargs):
     """
     Make sure that a certain environmet variable is available.
@@ -875,12 +891,11 @@ def _connect():
     "Populate CONNECTIONS with (hostname, client) tuples as per fab_hosts."
     _check_fab_hosts()
     signal.signal(signal.SIGINT, lambda: _disconnect() and sys.exit(0))
-    if 'fab_password' not in ENV:
+    if not get('fab_connected'):
         print(_lazy_format("Logging into the following hosts as $(fab_user):"))
         print(_indent('\n'.join(ENV['fab_hosts'])))
-        ENV['fab_password'] = getpass.getpass()
-    else:
-        print("Warning: Putting your password in a fabfile is a bad idea.")
+        if not getAny('fab_pkey', 'fab_key_filename', 'fab_password'):
+            ENV['fab_password'] = getpass.getpass()
     def_port = ENV['fab_port']
     username = ENV['fab_user']
     password = ENV['fab_password']
@@ -901,6 +916,7 @@ def _connect():
         print("The fab_hosts list was empty.")
         print("Please specify some hosts to connect to.")
         sys.exit(1)
+    set(fab_connected=True)
 
 def _disconnect():
     "Disconnect all clients."
