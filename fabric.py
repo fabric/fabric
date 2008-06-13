@@ -895,8 +895,6 @@ def _connect():
     if not get('fab_connected'):
         print(_lazy_format("Logging into the following hosts as $(fab_user):"))
         print(_indent('\n'.join(ENV['fab_hosts'])))
-        if not getAny('fab_pkey', 'fab_key_filename', 'fab_password'):
-            ENV['fab_password'] = getpass.getpass()
     def_port = ENV['fab_port']
     username = ENV['fab_user']
     password = ENV['fab_password']
@@ -909,9 +907,15 @@ def _connect():
         client.load_system_host_keys()
         if 'fab_new_host_key' in ENV and ENV['fab_new_host_key'] == 'accept':
             client.set_missing_host_key_policy(ssh.AutoAddPolicy())
-        client.connect(
-            host, portnr, username, password, pkey, key_filename
-        )
+        try:
+            client.connect(
+                host, portnr, username, password, pkey, key_filename
+            )
+        except ssh.AuthenticationException:
+            password = ENV['fab_password'] = getpass.getpass()
+            client.connect(
+                host, portnr, username, password, pkey, key_filename
+            )
         CONNECTIONS.append((host, client))
     if not CONNECTIONS:
         print("The fab_hosts list was empty.")
