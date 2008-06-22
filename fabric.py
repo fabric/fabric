@@ -167,7 +167,7 @@ def getAny(*names):
 @operation
 def require(var, **kvargs):
     """
-    Make sure that a certain environmet variable is available.
+    Make sure that a certain environment variable is available.
     
     The 'var' parameter is a string that names the variable to check for.
     Two other optional kvargs are supported:
@@ -312,7 +312,7 @@ def run(host, client, env, cmd, **kvargs):
     """
     Run a shell command on the current fab_hosts.
     
-    The provided command is executed with the permisions of fab_user, and the
+    The provided command is executed with the permissions of fab_user, and the
     exact execution environ is determined by the fab_shell variable.
     
     May take an additional 'fail' keyword argument with one of these values:
@@ -341,7 +341,7 @@ def sudo(host, client, env, cmd, **kvargs):
     """
     Run a sudo (root privileged) command on the current hosts.
     
-    The provided command is executed with root permisions, provided that
+    The provided command is executed with root permissions, provided that
     fab_user is in the sudoers file in the remote host. The exact execution
     environ is determined by the fab_shell variable - the 'sudo' part is
     injected into this variable.
@@ -530,7 +530,7 @@ def _list_commands(**kvargs):
     
     By default, the list command prints a list of available commands, with a
     short description (if one is available). However, the list command can also
-    print a list of available operaions if you provide it with the 'ops' or
+    print a list of available operations if you provide it with the 'ops' or
     'operations' parameters, or it can print strategies with the 'strgs' and
     'strategies' parameters.
     
@@ -932,7 +932,7 @@ def _disconnect():
     CONNECTIONS = []
 
 def _lazy_format(string, env=ENV):
-    "Do recursive string substitution of ENV vars - both lazy and earger."
+    "Do recursive string substitution of ENV vars - both lazy and eager."
     if string is None:
         return None
     env = dict([(k, str(v)) for k, v in env.items()])
