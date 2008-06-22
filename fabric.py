@@ -117,12 +117,12 @@ def set(**variables):
     """
     Set a number of Fabric environment variables.
     
-    Set takes a number of keyword arguments, and defines or updates the
-    variables that corrosponds to each keyword with the respective value.
+    set() takes a number of keyword arguments, and defines or updates the
+    variables that correspond to each keyword with the respective value.
     
     The values can be of any type, but strings are used for most variables.
     If the value is a string and contain any eager variable references, such as
-    %(fab_user)s, then these will be expanded to their corrosponding value.
+    %(fab_user)s, then these will be expanded to their corresponding value.
     Lazy references, those beginning with a $ rather than a %, will not be
     expanded.
     
