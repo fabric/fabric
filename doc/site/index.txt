@@ -18,7 +18,7 @@ h2. Installing
 
 ... is as easy as:
 
-bc. $ sudo easy_install fabric
+bc. $ sudo easy_install Fabric
 
 To get the most out of Fabric, your system needs to live up to some
 requirements:
