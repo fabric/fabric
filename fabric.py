@@ -49,18 +49,18 @@ __greeter__ = '''\
 '''
 
 ENV = {
-    'fab_version':__version__,
-    'fab_author':__author__,
-    'fab_mode':'rolling',
-    'fab_port':22,
-    'fab_user':os.getlogin(),
-    'fab_password':None,
-    'fab_pkey':None,
-    'fab_key_filename':None,
-    'fab_new_host_key':'accept',
-    'fab_shell':'/bin/bash -l -c "%s"',
-    'fab_timestamp':datetime.datetime.utcnow().strftime('%F_%H-%M-%S'),
-    'fab_print_real_sudo':False,
+    'fab_version': __version__,
+    'fab_author': __author__,
+    'fab_mode': 'rolling',
+    'fab_port': 22,
+    'fab_user': os.getlogin(),
+    'fab_password': None,
+    'fab_pkey': None,
+    'fab_key_filename': None,
+    'fab_new_host_key': 'accept',
+    'fab_shell': '/bin/bash -l -c "%s"',
+    'fab_timestamp': datetime.datetime.utcnow().strftime('%F_%H-%M-%S'),
+    'fab_print_real_sudo': False,
 }
 
 CONNECTIONS = []
@@ -290,7 +290,7 @@ def download(host, client, env, remotepath, localpath, **kvargs):
         * abort - terminate fabric on failure
     
     Example:
-        set(fab_hosts=['node1.cluster.com','node2.cluster.com'])
+        set(fab_hosts=['node1.cluster.com', 'node2.cluster.com'])
         download('/var/log/server.log', 'server.log')
     
     The above code will produce two files on your local system, called
@@ -791,7 +791,7 @@ def _set(**kvargs):
     Set a Fabric variable.
     
     Example:
-        $fab set:fab_user=billy,other_var=other_value
+        $fab set:fab_user=billy, other_var=other_value
     """
     for k, v in kvargs.items():
         ENV[k] = (v % ENV)
@@ -870,9 +870,9 @@ def _print_help_for_in(name, dictionary):
         _print_help_for(name, None)
 
 def _list_objs(objs):
-    max_name_len = reduce(lambda a,b: max(a, len(b)), objs.keys(), 0)
+    max_name_len = reduce(lambda a, b: max(a, len(b)), objs.keys(), 0)
     cmds = objs.items()
-    cmds.sort(lambda x,y: cmp(x[0], y[0]))
+    cmds.sort(lambda x, y: cmp(x[0], y[0]))
     for name, fn in cmds:
         print '  ', name.ljust(max_name_len),
         if fn.__doc__:
@@ -999,7 +999,7 @@ def _start_outputter(prefix, channel):
 
 def _pick_fabfile():
     "Figure out what the fabfile is called."
-    guesses = ['fabfile','Fabfile', 'fabfile.py', 'Fabfile.py']
+    guesses = ['fabfile', 'Fabfile', 'fabfile.py', 'Fabfile.py']
     options = filter(os.path.exists, guesses)
     if options:
         return options[0]
@@ -1013,7 +1013,7 @@ def _load_default_settings():
     if os.path.exists(cfg):
         comments = lambda s: s and not s.startswith("#")
         settings = filter(comments, open(cfg, 'r'))
-        settings = [(k.strip(),v.strip()) for k,_,v in
+        settings = [(k.strip(), v.strip()) for k, _, v in
             [partition(s, '=') for s in settings]]
         ENV.update(settings)
 

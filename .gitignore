@@ -9,3 +9,4 @@ fabc
 build
 dist
 doc/site/fab
+.*.swp
