@@ -249,6 +249,17 @@ is, your currently logged in username.
 * _fab_timestamp_ is the UTC timestamp for when Fabric was started. Generally
 useful when naming backup files or the like.
 
+h3. Key-based authentication
+
+If you have a private key that the servers will acknowledge, then Fabric will
+automatically pick it up, and if a password is required for unlocking that key,
+then Fabric will ask that password. This default behavior should work for most
+people, but if you use password-less keys, then note the caveat that Fabric
+won't ask for a password and this in turn means that the @sudo()@ operation
+won't be able to parse a password to the sudo command on the remote hosts.
+To counter this, you need to specify, on the remote hosts, the commands you
+need for deployment as sudo'able without a password.
+
 *TODO:*
 
 # Configuration with ~/.fabric
