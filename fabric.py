@@ -145,10 +145,10 @@ def get(name, otherwise=None):
     value of the 'otherwise' parameter, which is None unless set.
     
     """
-    return name in ENV and ENV[name] or otherwise
+    return ENV.get(name, otherwise)
 
 @operation
-def getAny(*name):
+def getAny(*names):
     """
     Given a list of variable names as parameters, get the value of the first
     of these variables that is actually defined (and does not resolve to
@@ -158,10 +158,11 @@ def getAny(*name):
         getAny('hostname', 'ipv4', 'ipv6', 'ip', 'address')
     
     """
-    if not name:
-        return None
-    x, xs = get(name[0]), name[1:]
-    return x and x or getAny(*xs)
+    for name in names:
+        value = ENV.get(name)
+        if value:
+            return value
+    # Implicit return value of None here if no names found.
 
 @operation
 def require(var, **kvargs):
