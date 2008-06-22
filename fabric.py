@@ -49,18 +49,18 @@ __greeter__ = '''\
 '''
 
 ENV = {
-    'fab_version':__version__,
-    'fab_author':__author__,
-    'fab_mode':'rolling',
-    'fab_port':22,
-    'fab_user':os.getlogin(),
-    'fab_password':None,
-    'fab_pkey':None,
-    'fab_key_filename':None,
-    'fab_new_host_key':'accept',
-    'fab_shell':'/bin/bash -l -c "%s"',
-    'fab_timestamp':datetime.datetime.utcnow().strftime('%F_%H-%M-%S'),
-    'fab_print_real_sudo':False,
+    'fab_version': __version__,
+    'fab_author': __author__,
+    'fab_mode': 'rolling',
+    'fab_port': 22,
+    'fab_user': os.getlogin(),
+    'fab_password': None,
+    'fab_pkey': None,
+    'fab_key_filename': None,
+    'fab_new_host_key': 'accept',
+    'fab_shell': '/bin/bash -l -c "%s"',
+    'fab_timestamp': datetime.datetime.utcnow().strftime('%F_%H-%M-%S'),
+    'fab_print_real_sudo': False,
 }
 
 CONNECTIONS = []
@@ -101,10 +101,10 @@ operation = new_registering_decorator(OPERATIONS)
 strategy = new_registering_decorator(STRATEGIES)
 
 def run_per_host(op_fn):
-    def wrapper(*args, **kvargs):
+    def wrapper(*args, **kwargs):
         if not CONNECTIONS:
             _connect()
-        _on_hosts_do(op_fn, *args, **kvargs)
+        _on_hosts_do(op_fn, *args, **kwargs)
     wrapper.__doc__ = op_fn.__doc__
     wrapper.__name__ = op_fn.__name__
     return wrapper
@@ -117,12 +117,12 @@ def set(**variables):
     """
     Set a number of Fabric environment variables.
     
-    Set takes a number of keyword arguments, and defines or updates the
-    variables that corrosponds to each keyword with the respective value.
+    set() takes a number of keyword arguments, and defines or updates the
+    variables that correspond to each keyword with the respective value.
     
     The values can be of any type, but strings are used for most variables.
     If the value is a string and contain any eager variable references, such as
-    %(fab_user)s, then these will be expanded to their corrosponding value.
+    %(fab_user)s, then these will be expanded to their corresponding value.
     Lazy references, those beginning with a $ rather than a %, will not be
     expanded.
     
@@ -145,10 +145,10 @@ def get(name, otherwise=None):
     value of the 'otherwise' parameter, which is None unless set.
     
     """
-    return name in ENV and ENV[name] or otherwise
+    return ENV.get(name, otherwise)
 
 @operation
-def getAny(*name):
+def getAny(*names):
     """
     Given a list of variable names as parameters, get the value of the first
     of these variables that is actually defined (and does not resolve to
@@ -158,18 +158,19 @@ def getAny(*name):
         getAny('hostname', 'ipv4', 'ipv6', 'ip', 'address')
     
     """
-    if not name:
-        return None
-    x, xs = get(name[0]), name[1:]
-    return x and x or getAny(*xs)
+    for name in names:
+        value = ENV.get(name)
+        if value:
+            return value
+    # Implicit return value of None here if no names found.
 
 @operation
-def require(var, **kvargs):
+def require(var, **kwargs):
     """
-    Make sure that a certain environmet variable is available.
+    Make sure that a certain environment variable is available.
     
     The 'var' parameter is a string that names the variable to check for.
-    Two other optional kvargs are supported:
+    Two other optional kwargs are supported:
         * 'used_for' is a string that gets injected into, and then printed, as
           something like this string: "This variable is used for %s".
         * 'provided_by' is a list of strings that name commands which the user
@@ -191,13 +192,13 @@ def require(var, **kvargs):
         ("The '%(fab_cur_command)s' command requires a '" + var
         + "' variable.") % ENV
     )
-    if 'used_for' in kvargs:
+    if 'used_for' in kwargs:
         print("This variable is used for %s" % _lazy_format(
-            kvargs['used_for']))
-    if 'provided_by' in kvargs:
+            kwargs['used_for']))
+    if 'provided_by' in kwargs:
         print("Get the variable by running one of these commands:")
         to_s = lambda obj: getattr(obj, '__name__', str(obj))
-        provided_by = [to_s(obj) for obj in kvargs['provided_by']]
+        provided_by = [to_s(obj) for obj in kwargs['provided_by']]
         print('\t' + ('\n\t'.join(provided_by)))
     sys.exit(1)
 
@@ -245,7 +246,7 @@ def prompt(varname, msg, validate=None, default=None):
 
 @operation
 @run_per_host
-def put(host, client, env, localpath, remotepath, **kvargs):
+def put(host, client, env, localpath, remotepath, **kwargs):
     """
     Upload a file to the current hosts.
     
@@ -275,7 +276,7 @@ def put(host, client, env, localpath, remotepath, **kvargs):
 
 @operation
 @run_per_host
-def download(host, client, env, remotepath, localpath, **kvargs):
+def download(host, client, env, remotepath, localpath, **kwargs):
     """
     Download a file from the remote hosts.
     
@@ -290,7 +291,7 @@ def download(host, client, env, remotepath, localpath, **kvargs):
         * abort - terminate fabric on failure
     
     Example:
-        set(fab_hosts=['node1.cluster.com','node2.cluster.com'])
+        set(fab_hosts=['node1.cluster.com', 'node2.cluster.com'])
         download('/var/log/server.log', 'server.log')
     
     The above code will produce two files on your local system, called
@@ -307,11 +308,11 @@ def download(host, client, env, remotepath, localpath, **kvargs):
 
 @operation
 @run_per_host
-def run(host, client, env, cmd, **kvargs):
+def run(host, client, env, cmd, **kwargs):
     """
     Run a shell command on the current fab_hosts.
     
-    The provided command is executed with the permisions of fab_user, and the
+    The provided command is executed with the permissions of fab_user, and the
     exact execution environ is determined by the fab_shell variable.
     
     May take an additional 'fail' keyword argument with one of these values:
@@ -324,7 +325,7 @@ def run(host, client, env, cmd, **kvargs):
     
     """
     cmd = env['fab_shell'] % _lazy_format(cmd, env).replace('"', '\\"')
-    if not _confirm_proceed('run', host, kvargs):
+    if not _confirm_proceed('run', host, kwargs):
         return False # TODO: should we return False in fail??
     print("[%s] run: %s" % (host, cmd))
     stdin, stdout, stderr = client.exec_command(cmd)
@@ -336,11 +337,11 @@ def run(host, client, env, cmd, **kvargs):
 
 @operation
 @run_per_host
-def sudo(host, client, env, cmd, **kvargs):
+def sudo(host, client, env, cmd, **kwargs):
     """
     Run a sudo (root privileged) command on the current hosts.
     
-    The provided command is executed with root permisions, provided that
+    The provided command is executed with root permissions, provided that
     fab_user is in the sudoers file in the remote host. The exact execution
     environ is determined by the fab_shell variable - the 'sudo' part is
     injected into this variable.
@@ -359,7 +360,7 @@ def sudo(host, client, env, cmd, **kvargs):
     sudo_cmd = passwd and "sudo -S " or "sudo "
     real_cmd = env['fab_shell'] % (sudo_cmd + cmd.replace('"', '\\"'))
     cmd = env['fab_print_real_sudo'] and real_cmd or cmd
-    if not _confirm_proceed('sudo', host, kvargs):
+    if not _confirm_proceed('sudo', host, kwargs):
         return False # TODO: should we return False in fail??
     print("[%s] sudo: %s" % (host, cmd))
     stdin, stdout, stderr = client.exec_command(real_cmd)
@@ -374,7 +375,7 @@ def sudo(host, client, env, cmd, **kvargs):
     return True
 
 @operation
-def local(cmd, **kvargs):
+def local(cmd, **kwargs):
     """
     Run a command locally.
     
@@ -394,7 +395,7 @@ def local(cmd, **kvargs):
     print("[localhost] run: " + final_cmd)
     retcode = subprocess.call(final_cmd, shell=True)
     if retcode != 0:
-        failcode = _get_failcode(kvargs)
+        failcode = _get_failcode(kwargs)
         if failcode > 1:
             print("Warning: failed to execute command:")
             print("\t" + final_cmd)
@@ -402,7 +403,7 @@ def local(cmd, **kvargs):
             sys.exit(1)
 
 @operation
-def local_per_host(cmd, **kvargs):
+def local_per_host(cmd, **kwargs):
     """
     Run a command locally, for every defined host.
     
@@ -419,10 +420,10 @@ def local_per_host(cmd, **kvargs):
     _check_fab_hosts()
     for host in ENV['fab_hosts']:
         ENV['fab_host'] = host
-        local(cmd, **kvargs)
+        local(cmd, **kwargs)
 
 @operation
-def load(filename, **kvargs):
+def load(filename, **kwargs):
     """
     Load up the given fabfile.
     
@@ -439,7 +440,7 @@ def load(filename, **kvargs):
         load("conf/production-settings.py")
     
     """
-    failcode = _get_failcode(kvargs)
+    failcode = _get_failcode(kwargs)
     if os.path.exists(filename):
         execfile(filename)
         for name, obj in locals().items():
@@ -454,7 +455,7 @@ def load(filename, **kvargs):
             sys.exit(1)
 
 @operation
-def upload_project(**kvargs):
+def upload_project(**kwargs):
     """
     Uploads the current project directory to the connected hosts.
     
@@ -472,17 +473,17 @@ def upload_project(**kvargs):
     """
     tar_file = "/tmp/fab.%(fab_timestamp)s.tar" % ENV
     cwd_name = os.getcwd().split(os.sep)[-1]
-    local("tar -czf %s ." % tar_file, **kvargs)
-    put(tar_file, cwd_name + ".tar.gz", **kvargs)
-    local("rm -f " + tar_file, **kvargs)
-    run("tar -xzf " + cwd_name, **kvargs)
-    run("rm -f " + cwd_name + ".tar.gz", **kvargs)
+    local("tar -czf %s ." % tar_file, **kwargs)
+    put(tar_file, cwd_name + ".tar.gz", **kwargs)
+    local("rm -f " + tar_file, **kwargs)
+    run("tar -xzf " + cwd_name, **kwargs)
+    run("rm -f " + cwd_name + ".tar.gz", **kwargs)
 
 #
 # Standard Fabric commands:
 #
 @command("help")
-def _help(**kvargs):
+def _help(**kwargs):
     """
     Display Fabric usage help, or help for a given command.
     
@@ -500,16 +501,16 @@ def _help(**kvargs):
     and 'strategy' parameters: 'fab help:strg=rolling'.
     
     """
-    if kvargs:
-        for k, v in kvargs.items():
+    if kwargs:
+        for k, v in kwargs.items():
             if k in COMMANDS:
                 _print_help_for_in(k, COMMANDS)
             elif k in OPERATIONS:
                 _print_help_for_in(k, OPERATIONS)
             elif k in ['op', 'operation']:
-                _print_help_for_in(kvargs[k], OPERATIONS)
+                _print_help_for_in(kwargs[k], OPERATIONS)
             elif k in ['strg', 'strategy']:
-                _print_help_for_in(kvargs[k], STRATEGIES)
+                _print_help_for_in(kwargs[k], STRATEGIES)
             else:
                 _print_help_for(k, None)
     else:
@@ -523,19 +524,19 @@ def _help(**kvargs):
     """)
 
 @command("list")
-def _list_commands(**kvargs):
+def _list_commands(**kwargs):
     """
     Display a list of commands with descriptions.
     
     By default, the list command prints a list of available commands, with a
     short description (if one is available). However, the list command can also
-    print a list of available operaions if you provide it with the 'ops' or
+    print a list of available operations if you provide it with the 'ops' or
     'operations' parameters, or it can print strategies with the 'strgs' and
     'strategies' parameters.
     
     """
-    if kvargs:
-        for k, v in kvargs.items():
+    if kwargs:
+        for k, v in kwargs.items():
             if k in ['cmds', 'commands']:
                 print("Available commands are:")
                 _list_objs(COMMANDS)
@@ -786,18 +787,18 @@ PROGRAMS), EVEN IF SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGES.""")
 
 @command("set")
-def _set(**kvargs):
+def _set(**kwargs):
     """
     Set a Fabric variable.
     
     Example:
         $fab set:fab_user=billy,other_var=other_value
     """
-    for k, v in kvargs.items():
+    for k, v in kwargs.items():
         ENV[k] = (v % ENV)
 
 @command("shell")
-def _shell(**kvargs):
+def _shell(**kwargs):
     "Start an interactive shell connection to the specified hosts."
     def lines():
         try:
@@ -818,7 +819,7 @@ def _shell(**kvargs):
 # Standard strategies:
 #
 @strategy("fanout")
-def _fanout_strategy(fn, *args, **kvargs):
+def _fanout_strategy(fn, *args, **kwargs):
     """
     A strategy that executes on all hosts in parallel.
     
@@ -831,7 +832,7 @@ def _fanout_strategy(fn, *args, **kvargs):
         env = dict(ENV)
         env['fab_host'] = host
         def functor():
-            success = success and fn(host, client, env, *args, **kvargs)
+            success = success and fn(host, client, env, *args, **kwargs)
         thread = threading.Thread(None, functor)
         thread.setDaemon(True)
         thread.start()
@@ -841,12 +842,12 @@ def _fanout_strategy(fn, *args, **kvargs):
     return success
 
 @strategy("rolling")
-def _rolling_strategy(fn, *args, **kvargs):
+def _rolling_strategy(fn, *args, **kwargs):
     """One-at-a-time fail-fast strategy."""
     for host, client in CONNECTIONS:
         env = dict(ENV)
         env['fab_host'] = host
-        if not fn(host, client, env, *args, **kvargs):
+        if not fn(host, client, env, *args, **kwargs):
             return False
     return True
 
@@ -870,9 +871,9 @@ def _print_help_for_in(name, dictionary):
         _print_help_for(name, None)
 
 def _list_objs(objs):
-    max_name_len = reduce(lambda a,b: max(a, len(b)), objs.keys(), 0)
+    max_name_len = reduce(lambda a, b: max(a, len(b)), objs.keys(), 0)
     cmds = objs.items()
-    cmds.sort(lambda x,y: cmp(x[0], y[0]))
+    cmds.sort(lambda x, y: cmp(x[0], y[0]))
     for name, fn in cmds:
         print '  ', name.ljust(max_name_len),
         if fn.__doc__:
@@ -931,7 +932,7 @@ def _disconnect():
     CONNECTIONS = []
 
 def _lazy_format(string, env=ENV):
-    "Do recursive string substitution of ENV vars - both lazy and earger."
+    "Do recursive string substitution of ENV vars - both lazy and eager."
     if string is None:
         return None
     env = dict([(k, str(v)) for k, v in env.items()])
@@ -943,7 +944,7 @@ def _lazy_format(string, env=ENV):
             return match.group(0)
     return re.sub(_LAZY_FORMAT_SUBSTITUTER, replacer_fn, string % env)
 
-def _on_hosts_do(fn, *args, **kvargs):
+def _on_hosts_do(fn, *args, **kwargs):
     """
     Invoke the given function with hostname and client parameters in
     accord with the current fac_mode strategy.
@@ -952,13 +953,13 @@ def _on_hosts_do(fn, *args, **kvargs):
         hostname : str
         client : paramiko.SSHClient
         *args
-        **kvargs
+        **kwargs
     
     """
     strategy = ENV['fab_mode']
     if strategy in STRATEGIES:
         strategy_fn = STRATEGIES[strategy]
-        successful = strategy_fn(fn, *args, **kvargs)
+        successful = strategy_fn(fn, *args, **kwargs)
         if not successful:
             print("Operation failed: " + fn.__name__)
             sys.exit(1)
@@ -967,9 +968,9 @@ def _on_hosts_do(fn, *args, **kvargs):
         print("Supported modes are: %s" % (', '.join(STRATEGIES.keys())))
         sys.exit(1)
 
-def _confirm_proceed(exec_type, host, kvargs):
-    if 'confirm' in kvargs:
-        infotuple = (exec_type, host, _lazy_format(kvargs['confirm']))
+def _confirm_proceed(exec_type, host, kwargs):
+    if 'confirm' in kwargs:
+        infotuple = (exec_type, host, _lazy_format(kwargs['confirm']))
         question = "Confirm %s for host %s: %s [yN] " % infotuple
         answer = raw_input(question)
         return answer in 'yY'
@@ -999,7 +1000,7 @@ def _start_outputter(prefix, channel):
 
 def _pick_fabfile():
     "Figure out what the fabfile is called."
-    guesses = ['fabfile','Fabfile', 'fabfile.py', 'Fabfile.py']
+    guesses = ['fabfile', 'Fabfile', 'fabfile.py', 'Fabfile.py']
     options = filter(os.path.exists, guesses)
     if options:
         return options[0]
@@ -1013,7 +1014,7 @@ def _load_default_settings():
     if os.path.exists(cfg):
         comments = lambda s: s and not s.startswith("#")
         settings = filter(comments, open(cfg, 'r'))
-        settings = [(k.strip(),v.strip()) for k,_,v in
+        settings = [(k.strip(), v.strip()) for k, _, v in
             [partition(s, '=') for s in settings]]
         ENV.update(settings)
 
