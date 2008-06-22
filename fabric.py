@@ -792,7 +792,7 @@ def _set(**kwargs):
     Set a Fabric variable.
     
     Example:
-        $fab set:fab_user=billy, other_var=other_value
+        $fab set:fab_user=billy,other_var=other_value
     """
     for k, v in kwargs.items():
         ENV[k] = (v % ENV)
