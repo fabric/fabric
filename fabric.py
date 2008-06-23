@@ -36,10 +36,10 @@ except ImportError:
     print("  $ sudo easy_install paramiko")
     sys.exit(1)
 
-__version__ = '0.0.5'
+__version__ = '0.0.6'
 __author__ = 'Christian Vest Hansen'
 __author_email__ = 'karmazilla@gmail.com'
-__url__ = 'https://savannah.nongnu.org/projects/fab/'
+__url__ = 'http://www.nongnu.org/fab/'
 __license__ = 'GPL-2'
 __greeter__ = '''\
    Fabric v. %(fab_version)s, Copyright (C) 2008 %(fab_author)s.
