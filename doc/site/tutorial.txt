@@ -203,7 +203,7 @@ h3. Variables
 
 We saw in the "Getting connected" section above, that we can use a notation
 such as @$(fab_user)@ to interpolate the value of the 'fab_user' variable in
-a string. The standard python @%(fab_user)s%@ notation would have worked just
+a string. The standard python @%(fab_user)s@ notation would have worked just
 as well, but there are some important differences between these two notations:
 The former notation is special to Fabric and is lazily evaluated, whereas the
 later is a general python feature, and is eagerly evaluated.
@@ -223,11 +223,12 @@ lazy notation will not be evaluated until it is actually needed, in line 5,
 and by that time the value of 'var' will change, resulting in the output "a b".
 
 Beyond the variables you set with the 'set' operation, Fabric provides a
-number of variables. Most are for configuring Fabric itself, but some are also
-for use in the string arguments you pass to 'run' and 'sudo' and the like.
+number of built-in variables. Most are for configuring Fabric itself, but some
+are also for use in the string arguments you pass to 'run' and 'sudo' and the
+like.
 
 For a complete overview of the different variables and their use, I'm afraid
-you have to consult the source code. Here's a list of the most useful ones:
+you have to consult the source code, but here's a list of the most useful ones:
 
 * _fab_host_ is available in remote operations, or other operations that take
 effect on a per host basis, have access to this variable which names a
@@ -239,8 +240,8 @@ want to execute any remove operations.
 connected hosts. The default value is "rolling" which runs the commands on one
 host at a time, without any parallelism or concurrency.
 * _fab_password_ is the password used for logging into the remote hosts, and
-to authenticate with remote 'sudo' commands. Don't set this in the fabfile
-as a password-prompt will automatically ask for it when needed.
+to authenticate with remote 'sudo' commands. Don't set this in the fabfile,
+because a password-prompt will automatically ask for it when needed.
 * _fab_port_ is the port number used to connect to the remote hosts. The
 default value is 22, which is the default SSH port number.
 * _fab_user_ is the username used to log in to the remote hosts with. The
@@ -248,6 +249,11 @@ default value is derived from the containing shell that executes Fabric, that
 is, your currently logged in username.
 * _fab_timestamp_ is the UTC timestamp for when Fabric was started. Generally
 useful when naming backup files or the like.
+
+Beyond these variables, it is common practice (but not required) to set a
+'project' variable to the name of your project. This variable often comes
+handy in naming build-files, backup-files and deployment directories specific
+to the project.
 
 h3. Key-based authentication
 
