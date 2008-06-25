@@ -20,12 +20,13 @@ set(
     nongnu_user = 'karmazilla',
 )
 
-def clean():
+def clean(**kwargs):
     "Recurse the directory tree and remove all files matched by .gitignore."
     # passing -delete to find doesn't work for directories, hence xargs rm -r
     local('cat .gitignore | xargs -I PATTERN '
         + 'find . -name PATTERN -not -path "./.git/*" | (xargs rm -r || true)')
-    local('git gc --prune')
+    if not "nogc" in kwargs:
+        local('git gc --prune')
 
 def ready_files():
     local('mkdir dist')
@@ -46,7 +47,7 @@ def ready_files():
             + '(cd dist && tee %(prefix)s.tar.gz | tar xzf -)')
     local('gpg -b --use-agent %(filename)s')
 
-def release(**kvargs):
+def release(**kwargs):
     "Create a new release of Fabric, and upload it to our various services."
     dry = 'dry' in kvargs
     if not dry:
@@ -64,14 +65,14 @@ def release(**kvargs):
     local(distutil_cmd)
     upload_website()
 
-def install(**kvargs):
+def install(**kwargs):
     "Install Fabric locally."
     if 'notest' not in kvargs:
         test()
     local('python setup.py build')
     local('sudo python setup.py install')
 
-def layout(**kvargs):
+def layout(**kvwrgs):
     """
     Print a layout-overview of fabric.py to the console.
     
