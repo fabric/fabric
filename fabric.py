@@ -912,7 +912,7 @@ def _connect():
             client.connect(
                 host, portnr, username, password, pkey, key_filename
             )
-        except ssh.AuthenticationException:
+        except (ssh.AuthenticationException, ssh.SSHException):
             password = ENV['fab_password'] = getpass.getpass()
             client.connect(
                 host, portnr, username, password, pkey, key_filename
