@@ -1,6 +1,5 @@
 1   Ctrl-C dosn't quite work... especially not with the tail example
 2   run, put, sudo et al. doesn't respect the 'fail' kvarg
-5   AUTHORS file?
 6   fabfiles can't use global import statements
     - some work has been done on this... needs testing
 7   need something like roles in Capistrano
