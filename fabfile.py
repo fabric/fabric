@@ -49,7 +49,7 @@ def ready_files():
 
 def release(**kwargs):
     "Create a new release of Fabric, and upload it to our various services."
-    dry = 'dry' in kvargs
+    dry = 'dry' in kwargs
     if not dry:
         local('git tag -s -m "Fabric v. %(fab_version)s" %(fab_version)s HEAD')
     ready_files()
@@ -67,7 +67,7 @@ def release(**kwargs):
 
 def install(**kwargs):
     "Install Fabric locally."
-    if 'notest' not in kvargs:
+    if 'notest' not in kwargs:
         test()
     local('python setup.py build')
     local('sudo python setup.py install')
@@ -84,7 +84,7 @@ def layout(**kvwrgs):
         fab layout:-n,--color=always
     
     """
-    options = ' '.join(['='.join(filter(None,i)) for i in kvargs.items()])
+    options = ' '.join(['='.join(filter(None,i)) for i in kwargs.items()])
     local(r'grep %s \\\(^#\ .*:$\\\)\\\|.*def\ .* fabric.py|' % options
             + 'perl -p -e "s/def /   def /"')
 
