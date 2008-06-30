@@ -36,7 +36,7 @@ except ImportError:
     print("  $ sudo easy_install paramiko")
     sys.exit(1)
 
-__version__ = '0.0.6'
+__version__ = '0.0.7'
 __author__ = 'Christian Vest Hansen'
 __author_email__ = 'karmazilla@gmail.com'
 __url__ = 'http://www.nongnu.org/fab/'
