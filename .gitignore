@@ -11,3 +11,4 @@ dist
 doc/site/fab
 .*.swp
 Fabric.egg-info
+release
