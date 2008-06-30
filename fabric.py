@@ -1048,15 +1048,30 @@ def _execute_commands(cmds):
             args = dict(zip(args.keys(), map(_lazy_format, args.values())))
         COMMANDS[cmd](**(args or {}))
 
-def main(args):
+def main():
+    args = sys.argv[1:]
     try:
-        print(__greeter__ % ENV)
-        fabfile = _pick_fabfile()
-        _load_default_settings()
-        load(fabfile, fail='warn')
-        commands = _parse_args(args)
-        _validate_commands(commands)
-        _execute_commands(commands)
-    finally:
-        _disconnect()
+        try:
+            print(__greeter__ % ENV)
+            fabfile = _pick_fabfile()
+            _load_default_settings()
+            load(fabfile, fail='warn')
+            commands = _parse_args(args)
+            _validate_commands(commands)
+            _execute_commands(commands)
+        finally:
+            _disconnect()
+        print("Done.")
+    except SystemExit:
+        # a number of internal functions might raise this one.
+        raise
+    except KeyboardInterrupt:
+        print("Stopped.")
+        sys.exit(1)
+    except:
+        sys.excepthook(*sys.exc_info())
+        # we might leave stale threads if we don't explicitly exit()
+        sys.exit(1)
+    sys.exit(0)
+    
 

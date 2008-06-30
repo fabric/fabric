@@ -25,7 +25,11 @@ bound to any specific framework.
     url = 'http://www.nongnu.org/fab/',
     requires = ['paramiko (>=1.6, <2.0)'],
     py_modules = ['fabric'],
-    scripts = ['fab'],
+    entry_points = {
+        'console_scripts': [
+            'fab = fabric:main',
+        ]
+    },
     classifiers = [
           'Development Status :: 3 - Alpha',
           'Environment :: Console',
