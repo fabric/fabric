@@ -191,6 +191,60 @@ p. When we get to executing the 'run' operation, the first thing that happens
 is that Fabric makes sure that we are connected to our hosts, and if not,
 starts connecting.
 
+h2. Managing multiple environments
+
+We have managed to open connections to multiple hosts and execute shell
+commands on them, and we know how to upload files. Basically, we have
+everything we need to perform remote deployment. However, most commercial
+software projects have their product move through a number of phases for
+various forms of testing before the production deployment. It would be really
+nice if we could have multiple environments, such as test, staging and
+production, and be able to choose which environment to deploy to.
+
+Actually, we already have all we need to do that. Consider this fabfile for
+instance:
+
+bc[python].. def test():
+  set(fab_hosts = ['localhost'])
+
+def staging():
+  set(fab_hosts = ['n1.stg.python.org', 'n2.stg.python.org'])
+
+def production():
+  set(fab_hosts = ['n1.python.org', 'n2.python.org'])
+
+def deploy():
+  'Deploy the app to the target environment'
+  local("make dist")
+  put("bin/bundle.zip", "bundle.zip")
+  sudo("./install.sh bundle.zip")
+
+p. This way, we just need to remember to run the commands in the right order,
+like @fab test deploy@. What happens if we forget to run the environment
+command first? In that case Fabric will complain about the missing fab_hosts
+variable with a generic error message. Not cool, plus we could picture a
+complex fabfile where these environment configuration commands do other things
+than setting the fab_hosts variable - we need a generic way to control the
+run-order of certain commands.
+
+This is what the 'require' operation is for. It takes a name of a variable and
+checks that it has been set, otherwise it will halt the execution.
+Additionally, it can take a 'provided_by' keyword argument with a list of those
+operations that will set the said variable.
+
+If we add a call to 'require' to the beginning of our 'deploy' command, we can
+ensure that a proper environment will always be available:
+
+bc[python].. def deploy():
+  'Deploy the app to the target environment'
+  require('fab_hosts', provided_by = [test, staging, production])
+  local("make dist")
+  put("bin/bundle.zip", "bundle.zip")
+  sudo("./install.sh bundle.zip")
+
+p. There. If we now run 'deploy' with first specifying an environment, we'll be
+duly told.
+
 h2. More on configuration
 
 We have seen how Fabric can connect to a set of hosts and execute an array of
@@ -212,10 +266,10 @@ This difference between eager and lazy evaluation is demonstrated in this
 example:
 
 bc[python].. def test():
-    set(var = 'a')
-    set(cmd = 'echo %(var)s $(var)')  # line 3
-    set(var = 'b')
-    local(get('cmd'))  # line 5
+  set(var = 'a')
+  set(cmd = 'echo %(var)s $(var)')  # line 3
+  set(var = 'b')
+  local(get('cmd'))  # line 5
 
 p. If we run that as a command with Fabric, it will print out "a b". The eager
 notation will be interpolated as soon as possible, which is line 3, but the
@@ -307,7 +361,6 @@ p. And that's basically all there is to it.
 
 *TODO:*
 
-# Managing environments and configuration dependencies with 'require'
 # What strategies are
 
 
