@@ -73,7 +73,7 @@ def install(**kwargs):
     local('python setup.py build')
     local('sudo python setup.py install')
 
-def layout(**kvwrgs):
+def layout(**kwargs):
     """
     Print a layout-overview of fabric.py to the console.
     
