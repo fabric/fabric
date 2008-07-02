@@ -17,9 +17,11 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+import datetime
 import getpass
 import os
 import os.path
+import pwd
 import re
 import signal
 import subprocess
@@ -27,7 +29,6 @@ import sys
 import threading
 import time
 import types
-import datetime
 
 try:
     import paramiko as ssh
@@ -53,7 +54,7 @@ ENV = {
     'fab_author': __author__,
     'fab_mode': 'rolling',
     'fab_port': 22,
-    'fab_user': os.getlogin(),
+    'fab_user': pwd.getpwuid(os.getuid())[0],
     'fab_password': None,
     'fab_pkey': None,
     'fab_key_filename': None,
