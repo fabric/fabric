@@ -894,31 +894,53 @@ def _connect():
     "Populate CONNECTIONS with (hostname, client) tuples as per fab_hosts."
     _check_fab_hosts()
     signal.signal(signal.SIGINT, lambda: _disconnect() and sys.exit(0))
-    if not get('fab_connected'):
-        print(_lazy_format("Logging into the following hosts as $(fab_user):"))
-        print(_indent('\n'.join(ENV['fab_hosts'])))
     def_port = ENV['fab_port']
     username = ENV['fab_user']
     password = ENV['fab_password']
     pkey = ENV['fab_pkey']
     key_filename = ENV['fab_key_filename']
+    # Group host info for nice display of host/uname breakdown
+    usernames = {}
+    hosts = []
     for host in ENV['fab_hosts']:
         host, _, port = partition(host, ':')
+        if '@' in host:
+            username, _, host = partition(host, '@')
+        else:
+            username = ENV['fab_user']
         portnr = int(port or def_port)
+        hd = {
+            'host': host,
+            'portnr': portnr,
+            'username': username
+        }
+        hosts.append(hd)
+        if username in usernames:
+            usernames[username].append(hd)
+        else:
+            usernames[username] = [hd]
+    # Display hosts
+    for uname, hds in usernames.iteritems():
+        print(_lazy_format("Logging into the following hosts as %s:" % uname))
+        print(_indent('\n'.join([x['host'] for x in hds])))
+    # Iterate over hosts in order
+    for hd in hosts:
         client = ssh.SSHClient()
         client.load_system_host_keys()
         if 'fab_new_host_key' in ENV and ENV['fab_new_host_key'] == 'accept':
             client.set_missing_host_key_policy(ssh.AutoAddPolicy())
         try:
             client.connect(
-                host, portnr, username, password, pkey, key_filename
+                hd['host'], hd['portnr'], hd['username'], password, pkey, key_filename
             )
         except (ssh.AuthenticationException, ssh.SSHException):
-            password = ENV['fab_password'] = getpass.getpass()
-            client.connect(
-                host, portnr, username, password, pkey, key_filename
+            password = ENV['fab_password'] = getpass.getpass("Password for %s@%s: " % (
+                hd['username'], hd['host'])
             )
-        CONNECTIONS.append((host, client))
+            client.connect(
+                hd['host'], hd['portnr'], hd['username'], password, pkey, key_filename
+            )
+        CONNECTIONS.append((hd['host'], client))
     if not CONNECTIONS:
         print("The fab_hosts list was empty.")
         print("Please specify some hosts to connect to.")
