@@ -970,7 +970,7 @@ def _lazy_format(string, env=ENV):
 def _on_hosts_do(fn, *args, **kwargs):
     """
     Invoke the given function with hostname and client parameters in
-    accord with the current fac_mode strategy.
+    accord with the current fab_mode strategy.
     
     fn should be a callable taking these parameters:
         hostname : str
