@@ -370,16 +370,21 @@ def sudo(host, client, env, cmd, **kwargs):
     if not _confirm_proceed('sudo', host, kwargs):
         return False # TODO: should we return False in fail??
     print("[%s] sudo: %s" % (host, cmd))
-    stdin, stdout, stderr = client.exec_command(real_cmd)
+    chan = client._transport.open_session()
+    chan.exec_command(cmd)
+    bufsize = -1
+    stdin = chan.makefile('wb', bufsize)
+    stdout = chan.makefile('rb', bufsize)
+    stderr = chan.makefile_stderr('rb', bufsize)
     if passwd:
         stdin.write(env['fab_password'])
         stdin.write('\n')
         stdin.flush()
+    
     out_th = _start_outputter("[%s] out" % host, stdout)
     err_th = _start_outputter("[%s] err" % host, stderr)
-    out_th.join()
-    err_th.join()
-    return True
+    status = chan.recv_exit_status()
+    return status == 0
 
 @operation
 def local(cmd, **kwargs):
