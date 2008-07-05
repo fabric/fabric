@@ -62,6 +62,7 @@ ENV = {
     'fab_shell': '/bin/bash -l -c "%s"',
     'fab_timestamp': datetime.datetime.utcnow().strftime('%F_%H-%M-%S'),
     'fab_print_real_sudo': False,
+    'fab_fail': 'warn',
 }
 
 CONNECTIONS = []
@@ -396,12 +397,8 @@ def local(cmd, **kwargs):
     print("[localhost] run: " + final_cmd)
     retcode = subprocess.call(final_cmd, shell=True)
     if retcode != 0:
-        failcode = _get_failcode(kwargs)
-        if failcode > 1:
-            print("Warning: failed to execute command:")
-            print("\t" + final_cmd)
-        if failcode > 2:
-            sys.exit(1)
+        _fail(kwargs, "Warning: failed to execute command:\n" +
+           _indent(final_cmd))
 
 @operation
 def local_per_host(cmd, **kwargs):
@@ -441,7 +438,6 @@ def load(filename, **kwargs):
         load("conf/production-settings.py")
     
     """
-    failcode = _get_failcode(kwargs)
     if os.path.exists(filename):
         execfile(filename)
         for name, obj in locals().items():
@@ -449,11 +445,9 @@ def load(filename, **kwargs):
                 COMMANDS[name] = obj
             if not name.startswith('_'):
                 __builtins__[name] = obj
-    elif failcode > 1:
-        print("Warning: Cannot load file '%s'." % filename)
-        print("No such file in your current directory.")
-        if failcode > 2:
-            sys.exit(1)
+    else:
+        _fail(kwargs, """Warning: Cannot load file '%s'.
+No such file in your current directory.""" % filename)
 
 @operation
 def upload_project(**kwargs):
@@ -999,16 +993,24 @@ def _confirm_proceed(exec_type, host, kwargs):
         return answer in 'yY'
     return True
 
-def _get_failcode(kwargs, default='abort'):
+def _fail(kwargs, msg):
+    # Get failure code
     codes = {
         'ignore': 1,
         'warn': 2,
         'abort': 3,
     }
+    code = codes[ENV['fab_fail']]
     if 'fail' in kwargs:
-        return codes[kwargs['fail']]
-    else:
-        return codes[default]
+        code = codes[kwargs['fail']]
+    # If warn or above, print message
+    if code > 1:
+        print(msg)
+        # If abort, also exit
+        if code > 2:
+            print("Aborting...")
+            sys.exit(1)
+
 
 def _start_outputter(prefix, channel):
     def outputter():
