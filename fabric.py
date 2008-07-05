@@ -1064,7 +1064,7 @@ def _fail(kwargs, msg, env=ENV):
     }
     code, msg_prefix = codes[env['fab_fail']]
     if 'fail' in kwargs:
-        code = codes[kwargs['fail']]
+        code, msg_prefix = codes[kwargs['fail']]
     # If warn or above, print message
     if code > 1:
         print(msg_prefix + msg)
