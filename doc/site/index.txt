@@ -24,7 +24,7 @@ To get the most out of Fabric, your system needs to live up to some
 requirements:
 
 # Python 2.5 (2.4 might work but is not tested).
-# Python Distutils (should be part of a normal python install).
+# Python Setuptools (part of most python installations).
 # Paramiko 1.6 or greater (requires pycrypto).
 # A unix environment (cygwin might work but is not tested).
 
