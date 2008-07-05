@@ -823,9 +823,10 @@ def _fanout_strategy(fn, *args, **kwargs):
     """
     threads = []
     success = True
-    for host, client in CONNECTIONS:
-        env = dict(ENV)
-        env['fab_host'] = host
+    for host_conn in CONNECTIONS:
+        env = host_conn.get_env()
+        host = env['fab_host']
+        client = host_conn.client
         def functor():
             success = success and fn(host, client, env, *args, **kwargs)
         thread = threading.Thread(None, functor)
@@ -839,9 +840,10 @@ def _fanout_strategy(fn, *args, **kwargs):
 @strategy("rolling")
 def _rolling_strategy(fn, *args, **kwargs):
     """One-at-a-time fail-fast strategy."""
-    for host, client in CONNECTIONS:
-        env = dict(ENV)
-        env['fab_host'] = host
+    for host_conn in CONNECTIONS:
+        env = host_conn.get_env()
+        host = env['fab_host']
+        client = host_conn.client
         if not fn(host, client, env, *args, **kwargs):
             return False
     return True
@@ -849,6 +851,75 @@ def _rolling_strategy(fn, *args, **kwargs):
 #
 # Internal plumbing:
 #
+
+class HostConnection(object):
+    """
+    A connection to an SSH host - wraps an SSHClient.
+    
+    Instances of this class populate the CONNECTIONS list.
+    """
+    def __init__(self, hostname, port, global_env, user_local_env):
+        self.global_env = global_env
+        self.user_local_env = user_local_env
+        self.host_local_env = {
+            'fab_host': hostname,
+            'fab_port': port,
+        }
+        self.client = None
+    def get_env(self):
+        "Create a new environment that is the union of local and global envs."
+        env = dict(self.global_env)
+        env.update(self.user_local_env)
+        env.update(self.host_local_env)
+        return env
+    def connect(self):
+        env = self.get_env()
+        new_host_key = env['fab_new_host_key']
+        client = ssh.SSHClient()
+        client.load_system_host_keys()
+        if new_host_key == 'accept':
+            client.set_missing_host_key_policy(ssh.AutoAddPolicy())
+        try:
+            self._do_connect(client, env)
+        except (ssh.AuthenticationException, ssh.SSHException):
+            PASS_PROMPT = \
+                "Password for $(fab_user)@$(fab_host)$(fab_passprompt_suffix)"
+            if 'fab_password' in env and env['fab_password']:
+                env['fab_passprompt_suffix'] = " [Enter for previous]: "
+            else:
+                env['fab_passprompt_suffix'] = ": "
+            connected = False
+            password = None
+            while not connected:
+                try:
+                    password = getpass.getpass(_lazy_format(PASS_PROMPT, env))
+                    env['fab_password'] = password
+                    self._do_connect(client, env)
+                    connected = True
+                except ssh.AuthenticationException:
+                    print("Bad password.")
+                    env['fab_passprompt_suffix'] = ": "
+                except EOFError:
+                    # ctrl-D on password prompt
+                    print
+                    sys.exit(0)
+            self.host_local_env['fab_password'] = password
+            self.user_local_env['fab_password'] = password
+        self.client = client
+    def disconnect(self):
+        if self.client:
+            self.client.close()
+    def _do_connect(self, client, env):
+        host = env['fab_host']
+        port = env['fab_port']
+        username = env['fab_user']
+        password = env['fab_password']
+        pkey = env['fab_pkey']
+        key_filename = env['fab_key_filename']
+        client.connect(host, port, username, password, pkey, key_filename)
+    def __str__(self):
+        return self.host_local_env['fab_host']
+
 def _indent(text, level=4):
     "Indent all lines in text with 'level' number of spaces, default 4."
     return '\n'.join(((' ' * level) + line for line in text.splitlines()))
@@ -883,69 +954,54 @@ def _check_fab_hosts():
         print("Please set it in your fabfile.")
         print("Example: set(fab_hosts=['node1.com', 'node2.com'])")
         sys.exit(1)
-
-def _connect():
-    "Populate CONNECTIONS with (hostname, client) tuples as per fab_hosts."
-    _check_fab_hosts()
-    signal.signal(signal.SIGINT, lambda: _disconnect() and sys.exit(0))
-    def_port = ENV['fab_port']
-    username = ENV['fab_user']
-    password = ENV['fab_password']
-    pkey = ENV['fab_pkey']
-    key_filename = ENV['fab_key_filename']
-    # Group host info for nice display of host/uname breakdown
-    usernames = {}
-    hosts = []
-    for host in ENV['fab_hosts']:
-        host, _, port = partition(host, ':')
-        if '@' in host:
-            username, _, host = partition(host, '@')
-        else:
-            username = ENV['fab_user']
-        portnr = int(port or def_port)
-        hd = {
-            'host': host,
-            'portnr': portnr,
-            'username': username
-        }
-        hosts.append(hd)
-        if username in usernames:
-            usernames[username].append(hd)
-        else:
-            usernames[username] = [hd]
-    # Display hosts
-    for uname, hds in usernames.iteritems():
-        print(_lazy_format("Logging into the following hosts as %s:" % uname))
-        print(_indent('\n'.join([x['host'] for x in hds])))
-    # Iterate over hosts in order
-    for hd in hosts:
-        client = ssh.SSHClient()
-        client.load_system_host_keys()
-        if 'fab_new_host_key' in ENV and ENV['fab_new_host_key'] == 'accept':
-            client.set_missing_host_key_policy(ssh.AutoAddPolicy())
-        try:
-            client.connect(
-                hd['host'], hd['portnr'], hd['username'], password, pkey, key_filename
-            )
-        except (ssh.AuthenticationException, ssh.SSHException):
-            password = ENV['fab_password'] = getpass.getpass("Password for %s@%s: " % (
-                hd['username'], hd['host'])
-            )
-            client.connect(
-                hd['host'], hd['portnr'], hd['username'], password, pkey, key_filename
-            )
-        CONNECTIONS.append((hd['host'], client))
-    if not CONNECTIONS:
+    if len(ENV['fab_hosts']) == 0:
         print("The fab_hosts list was empty.")
         print("Please specify some hosts to connect to.")
         sys.exit(1)
+
+def _connect():
+    "Populate CONNECTIONS with HostConnection instances as per fab_hosts."
+    _check_fab_hosts()
+    signal.signal(signal.SIGINT, lambda: _disconnect() and sys.exit(0))
+    global CONNECTIONS
+    def_port = ENV['fab_port']
+    username = ENV['fab_user']
+    fab_hosts = ENV['fab_hosts']
+    user_envs = {}
+    host_connections_by_user = {}
+    
+    # grok fab_hosts into who connects to where
+    for host in fab_hosts:
+        if '@' in host:
+            user, _, host_and_port = partition(host, '@')
+        else:
+            user, host_and_port = None, host
+        hostname, _, port = partition(host_and_port, ':')
+        user = user or username
+        port = int(port or def_port)
+        if user is not '' and user not in user_envs:
+            user_envs[user] = {'fab_user': user}
+        conn = HostConnection(hostname, port, ENV, user_envs[user])
+        if user not in host_connections_by_user:
+            host_connections_by_user[user] = [conn]
+        else:
+            host_connections_by_user[user].append(conn)
+    
+    # Print and establish connections
+    for user, host_connections in host_connections_by_user.iteritems():
+        user_env = dict(ENV)
+        user_env.update(user_envs[user])
+        print(_lazy_format("Logging into the following hosts as $(fab_user):",
+            user_env))
+        print(_indent('\n'.join(map(str, host_connections))))
+        map(HostConnection.connect, host_connections)
+        CONNECTIONS += host_connections
     set(fab_connected=True)
 
 def _disconnect():
     "Disconnect all clients."
     global CONNECTIONS
-    for host, client in CONNECTIONS:
-        client.close()
+    map(HostConnection.disconnect, CONNECTIONS)
     CONNECTIONS = []
 
 def _lazy_format(string, env=ENV):
