@@ -415,9 +415,13 @@ def local_per_host(cmd, **kwargs):
     
     """
     _check_fab_hosts()
-    for host in ENV['fab_hosts']:
-        ENV['fab_host'] = host
-        local(cmd, **kwargs)
+    for host_conn in CONNECTIONS:
+        env = host_conn.get_env()
+        final_cmd = _lazy_format(cmd, env)
+        print(_lazy_format("[localhost/$(fab_host)] run: " + final_cmd, env))
+        retcode = subprocess.call(final_cmd, shell=True)
+        if retcode != 0:
+            _fail(kwargs, "Local command failed:\n" + _indent(final_cmd))
 
 @operation
 def load(filename, **kwargs):
