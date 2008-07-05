@@ -330,12 +330,17 @@ def run(host, client, env, cmd, **kwargs):
     if not _confirm_proceed('run', host, kwargs):
         return False
     print("[%s] run: %s" % (host, cmd))
-    stdin, stdout, stderr = client.exec_command(cmd)
+    chan = client._transport.open_session()
+    chan.exec_command(cmd)
+    bufsize = -1
+    stdin = chan.makefile('wb', bufsize)
+    stdout = chan.makefile('rb', bufsize)
+    stderr = chan.makefile_stderr('rb', bufsize)
+    
     out_th = _start_outputter("[%s] out" % host, stdout)
     err_th = _start_outputter("[%s] err" % host, stderr)
-    out_th.join()
-    err_th.join()
-    return True
+    status = chan.recv_exit_status()
+    return status == 0
 
 @operation
 @run_per_host
