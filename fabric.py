@@ -326,12 +326,13 @@ def run(host, client, env, cmd, **kwargs):
         run("ls")
     
     """
-    cmd = env['fab_shell'] % _lazy_format(cmd, env).replace('"', '\\"')
+    cmd = _lazy_format(cmd, env)
+    real_cmd = env['fab_shell'] % cmd.replace('"', '\\"')
     if not _confirm_proceed('run', host, kwargs):
         return False
     print("[%s] run: %s" % (host, cmd))
     chan = client._transport.open_session()
-    chan.exec_command(cmd)
+    chan.exec_command(real_cmd)
     bufsize = -1
     stdin = chan.makefile('wb', bufsize)
     stdout = chan.makefile('rb', bufsize)
@@ -340,6 +341,7 @@ def run(host, client, env, cmd, **kwargs):
     out_th = _start_outputter("[%s] out" % host, stdout)
     err_th = _start_outputter("[%s] err" % host, stderr)
     status = chan.recv_exit_status()
+    chan.close()
     return status == 0
 
 @operation
@@ -384,6 +386,7 @@ def sudo(host, client, env, cmd, **kwargs):
     out_th = _start_outputter("[%s] out" % host, stdout)
     err_th = _start_outputter("[%s] err" % host, stderr)
     status = chan.recv_exit_status()
+    chan.close()
     return status == 0
 
 @operation
@@ -837,6 +840,7 @@ def _fanout_strategy(fn, *args, **kwargs):
     THIS STRATEGY IS CURRENTLY BROKEN!
     
     """
+    err_msg = "The $(fab_current_operation) operation failed on $(fab_host)"
     threads = []
     for host_conn in CONNECTIONS:
         env = host_conn.get_env()
@@ -844,8 +848,7 @@ def _fanout_strategy(fn, *args, **kwargs):
         host = env['fab_host']
         client = host_conn.client
         def functor():
-            if not fn(host, client, env, *args, **kwargs):
-                _fail(kwargs, err_msg, env)
+            _try_run_operation(fn, host, client, env, *args, **kwargs)
         thread = threading.Thread(None, functor)
         thread.setDaemon(True)
         threads.append(thread)
@@ -855,14 +858,13 @@ def _fanout_strategy(fn, *args, **kwargs):
 @strategy("rolling")
 def _rolling_strategy(fn, *args, **kwargs):
     """One-at-a-time fail-fast strategy."""
-    err_msg = "The $(fab_current_operation) operation failed on $(fab_host)."
+    err_msg = "The $(fab_current_operation) operation failed on $(fab_host)"
     for host_conn in CONNECTIONS:
         env = host_conn.get_env()
         env['fab_current_operation'] = fn.__name__
         host = env['fab_host']
         client = host_conn.client
-        if not fn(host, client, env, *args, **kwargs):
-            _fail(kwargs, err_msg, env)
+        _try_run_operation(fn, host, client, env, *args, **kwargs)
 
 #
 # Internal plumbing:
@@ -1053,6 +1055,22 @@ def _on_hosts_do(fn, *args, **kwargs):
         print("Unsupported fab_mode: %s" % strategy)
         print("Supported modes are: %s" % (', '.join(STRATEGIES.keys())))
         sys.exit(1)
+
+def _try_run_operation(fn, host, client, env, *args, **kwargs):
+    """
+    Used by strategies to attempt the execution of an operation, and handle
+    any failures appropreately.
+    """
+    err_msg = "The $(fab_current_operation) operation failed on $(fab_host)"
+    success = False
+    try:
+        success = fn(host, client, env, *args, **kwargs)
+    except SystemExit:
+        raise
+    except BaseException, e:
+        _fail(kwargs, err_msg + ':\n' + _indent(str(e)), env)
+    if not success:
+        _fail(kwargs, err_msg + '.', env)
 
 def _confirm_proceed(exec_type, host, kwargs):
     if 'confirm' in kwargs:
