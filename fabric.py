@@ -1064,7 +1064,7 @@ def _fail(kwargs, msg, env=ENV):
         code, msg_prefix = codes[kwargs['fail']]
     # If warn or above, print message
     if code > 1:
-        print(msg_prefix + msg)
+        print(msg_prefix + _lazy_format(msg, env))
         # If abort, also exit
         if code > 2:
             sys.exit(1)
