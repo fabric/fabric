@@ -62,7 +62,7 @@ ENV = {
     'fab_shell': '/bin/bash -l -c "%s"',
     'fab_timestamp': datetime.datetime.utcnow().strftime('%F_%H-%M-%S'),
     'fab_print_real_sudo': False,
-    'fab_fail': 'warn',
+    'fab_fail': 'abort',
 }
 
 CONNECTIONS = []
