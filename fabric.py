@@ -328,7 +328,7 @@ def run(host, client, env, cmd, **kwargs):
     """
     cmd = env['fab_shell'] % _lazy_format(cmd, env).replace('"', '\\"')
     if not _confirm_proceed('run', host, kwargs):
-        return False # TODO: should we return False in fail??
+        return False
     print("[%s] run: %s" % (host, cmd))
     stdin, stdout, stderr = client.exec_command(cmd)
     out_th = _start_outputter("[%s] out" % host, stdout)
@@ -828,31 +828,31 @@ def _fanout_strategy(fn, *args, **kwargs):
     
     """
     threads = []
-    success = True
     for host_conn in CONNECTIONS:
         env = host_conn.get_env()
+        env['fab_current_operation'] = fn.__name__
         host = env['fab_host']
         client = host_conn.client
         def functor():
-            success = success and fn(host, client, env, *args, **kwargs)
+            if not fn(host, client, env, *args, **kwargs):
+                _fail(kwargs, err_msg, env)
         thread = threading.Thread(None, functor)
         thread.setDaemon(True)
-        thread.start()
         threads.append(thread)
-    for thread in threads:
-        thread.join()
-    return success
+    map(threading.Thread.start, threads)
+    map(threading.Thread.join, threads)
 
 @strategy("rolling")
 def _rolling_strategy(fn, *args, **kwargs):
     """One-at-a-time fail-fast strategy."""
+    err_msg = "The $(fab_current_operation) operation failed on $(fab_host)."
     for host_conn in CONNECTIONS:
         env = host_conn.get_env()
+        env['fab_current_operation'] = fn.__name__
         host = env['fab_host']
         client = host_conn.client
         if not fn(host, client, env, *args, **kwargs):
-            return False
-    return True
+            _fail(kwargs, err_msg, env)
 
 #
 # Internal plumbing:
@@ -1038,10 +1038,7 @@ def _on_hosts_do(fn, *args, **kwargs):
     strategy = ENV['fab_mode']
     if strategy in STRATEGIES:
         strategy_fn = STRATEGIES[strategy]
-        successful = strategy_fn(fn, *args, **kwargs)
-        if not successful:
-            print("Operation failed: " + fn.__name__)
-            sys.exit(1)
+        strategy_fn(fn, *args, **kwargs)
     else:
         print("Unsupported fab_mode: %s" % strategy)
         print("Supported modes are: %s" % (', '.join(STRATEGIES.keys())))
