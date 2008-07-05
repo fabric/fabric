@@ -905,8 +905,8 @@ class HostConnection(object):
                 except ssh.AuthenticationException:
                     print("Bad password.")
                     env['fab_passprompt_suffix'] = ": "
-                except EOFError:
-                    # ctrl-D on password prompt
+                except (EOFError, TypeError):
+                    # ctrl-D or ctrl-C on password prompt
                     print
                     sys.exit(0)
             self.host_local_env['fab_password'] = password
