@@ -999,14 +999,14 @@ def _confirm_proceed(exec_type, host, kwargs):
         return answer in 'yY'
     return True
 
-def _get_failcode(kvarg_map, default='abort'):
+def _get_failcode(kwargs, default='abort'):
     codes = {
         'ignore': 1,
         'warn': 2,
         'abort': 3,
     }
-    if 'fail' in kvarg_map:
-        return codes[kvarg_map['fail']]
+    if 'fail' in kwargs:
+        return codes[kwargs['fail']]
     else:
         return codes[default]
 
