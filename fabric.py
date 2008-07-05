@@ -397,8 +397,7 @@ def local(cmd, **kwargs):
     print("[localhost] run: " + final_cmd)
     retcode = subprocess.call(final_cmd, shell=True)
     if retcode != 0:
-        _fail(kwargs, "Warning: failed to execute command:\n" +
-           _indent(final_cmd))
+        _fail(kwargs, "Local command failed:\n" + _indent(final_cmd))
 
 @operation
 def local_per_host(cmd, **kwargs):
@@ -446,8 +445,8 @@ def load(filename, **kwargs):
             if not name.startswith('_'):
                 __builtins__[name] = obj
     else:
-        _fail(kwargs, """Warning: Cannot load file '%s'.
-No such file in your current directory.""" % filename)
+        _fail(kwargs, "Load failed:\n" + _indent(
+            "File not found: " + filename))
 
 @operation
 def upload_project(**kwargs):
@@ -1049,22 +1048,21 @@ def _confirm_proceed(exec_type, host, kwargs):
         return answer in 'yY'
     return True
 
-def _fail(kwargs, msg):
+def _fail(kwargs, msg, env=ENV):
     # Get failure code
     codes = {
-        'ignore': 1,
-        'warn': 2,
-        'abort': 3,
+        'ignore': (1, ''),
+        'warn': (2, 'Warning: '),
+        'abort': (3, 'Error: '),
     }
-    code = codes[ENV['fab_fail']]
+    code, msg_prefix = codes[env['fab_fail']]
     if 'fail' in kwargs:
         code = codes[kwargs['fail']]
     # If warn or above, print message
     if code > 1:
-        print(msg)
+        print(msg_prefix + msg)
         # If abort, also exit
         if code > 2:
-            print("Aborting...")
             sys.exit(1)
 
 
