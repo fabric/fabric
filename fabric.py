@@ -408,7 +408,10 @@ def local_per_host(cmd, **kwargs):
     with this operation, the command is executed (and have its variables
     expanded) for each host in fab_hosts.
     
-    This operation is defined to take the same keyword arguments as local().
+    May take an additional 'fail' keyword argument with one of these values:
+        * ignore - do nothing on failure
+        * warn - print warning on failure
+        * abort - terminate fabric on failure
     
     Example:
         local_per_host("scp -i login.key stuff.zip $(fab_host):stuff.zip")
