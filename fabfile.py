@@ -96,7 +96,7 @@ def test():
 
 def website():
     "Generates the Fabric website."
-    local("cd doc/site && ./generate.py")
+    local("cd doc/site && ./bin/generate.py")
 
 def upload_website():
     "Generates and uploads the Fabric website to nongnu.org"
