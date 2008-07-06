@@ -43,12 +43,11 @@ pre {
     border-top: 4px solid gray;
 }
 
-.py-src-comment { font-style: italic; color: #49A169; }
-.py-src-constant { color: #497958; }
-.py-src-keyword { color: #96DD3B; }
-.py-src-identifier { color: #FEC758; }
-.py-src-variable { color: #FB9A4B; }
-.py-src-string { color: #91BB9E; }
-.py-src-op { color: white; }
-
-
+/* Code coloring */
+.py-src-comment, .c { font-style: italic; color: #49A169; }
+.py-src-constant, .bp { color: #497958; }
+.py-src-keyword, .k { color: #96DD3B; }
+.py-src-identifier, .nf { color: #FEC758; }
+.py-src-variable, .n { color: #FB9A4B; }
+.py-src-string, .s, .sd { color: #91BB9E; }
+.py-src-op, .p, .o { color: white; }

@@ -22,25 +22,46 @@ import os
 from os.path import exists, abspath
 from glob import glob
 from textile import textile
+from markdown2 import markdown
+
+try:
+    import pygments
+except ImportError:
+    print "Warning: Pygments is required for Markdown code coloring."
+try:
+    from twisted.python import htmlizer
+except ImportError:
+    print "Warning: Twisted is required for Textile code coloring."
 
 OUTDIR = "fab"
+FORMATS = {
+    'txt':
+        lambda txt: textile(txt).replace('<br />', ''),
+    'markdown':
+        lambda mkd: markdown(mkd, extras=['code-friendly', 'code-color']).
+            replace('<pre><code>', '<pre><code>\n').
+            replace('</code></pre>', '\n</code></pre>'),
+}
 
 def generate():
     "Generates a web site from a directory full of textile .txt files."
     if not exists(OUTDIR):
         os.mkdir(OUTDIR)
-    files = glob('*.txt')
+    files = []
+    for suffix in FORMATS.keys():
+        files += glob('*.' + suffix)
     template_file = open('template.html', 'r')
     template = template_file.read()
     template_file.close()
     for filename in files:
         print "Processing", filename
-        name, _, _ = filename.rpartition('.')
+        name, _, suffix = filename.rpartition('.')
+        convert = FORMATS[suffix]
         infile = open(filename, 'r')
         outfile = open(OUTDIR + "/" + name + '.html', 'w')
         outfile.write(template % {
             "name" : name,
-            "content" : textile(infile.read()).replace('<br />', ''),
+            "content" : convert(infile.read()),
         })
         infile.close()
         outfile.close()
