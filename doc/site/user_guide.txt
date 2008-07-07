@@ -1,4 +1,4 @@
-h1. Tutorial
+h1. User Guide
 
 Let me just first make it clear, that Fabric is alpha software and still
 very much in development. So it's a moving target, documentation wise,
