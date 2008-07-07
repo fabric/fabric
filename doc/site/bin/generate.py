@@ -39,8 +39,8 @@ FORMATS = {
         lambda txt: textile(txt).replace('<br />', ''),
     'markdown':
         lambda mkd: markdown(mkd, extras=['code-friendly', 'code-color']).
-            replace('<pre><code>', '<pre><code>\n').
-            replace('</code></pre>', '\n</code></pre>'),
+            replace(u'<pre><code>', u'<pre><code>\n').
+            replace(u'</code></pre>', u'\n</code></pre>'),
 }
 
 def generate():
@@ -58,11 +58,18 @@ def generate():
         name, _, suffix = filename.rpartition('.')
         convert = FORMATS[suffix]
         infile = open(filename, 'r')
-        outfile = open(OUTDIR + "/" + name + '.html', 'w')
-        outfile.write(template % {
-            "name" : name,
-            "content" : convert(infile.read()),
-        })
+        intext = infile.read()
+        try:
+            content = convert(intext.decode('utf-8'))
+        except UnicodeDecodeError:
+            # Textile seems unable to handle unicode.
+            content = convert(intext)
+        output = template % {
+            u"name" : name,
+            u"content" : content,
+        }
+        outfile = open(OUTDIR + "/" + name + '.html', 'wb')
+        outfile.write(output.encode('utf-8'))
         infile.close()
         outfile.close()
 
