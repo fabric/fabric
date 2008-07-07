@@ -54,6 +54,22 @@ It might be nit-picking, but that's alright. It helps keep the code clean.
 SCM history and commit policy
 -----------------------------
 
+There are two things to keep in mind when preparing a commit: Consistency and
+cohesion.
+
+**Consistency** is about not committing a broken version of Fabric. It is
+important to keep Fabric in running order, for the sake of any future
+invocation of git-bisect. It is also easier to peruse the history afterwards,
+if it can be reasonably assumed that every commit represents a running
+program.
+
+Git has several nice features for manipulating history, and their use is
+recommended when it comes to keeping consistency. The features that comes to
+mind are interactive adding, amending commits and rebasing. Just be mindful
+that you do not change history that has been pushed to a public repository.
+
+**Cohesion** is about not mixing unrelated changes in the same commit.
+
 In general, try to split things up in sensible chunks. We don't want big
 commits that changes a dozen unrelated things; CVS just called and it want its
 monolithic commits back.
@@ -76,10 +92,19 @@ PEP-8 violations on sight and often while doing something else with the file,
 and then break up the changes afterwards with interactive adding.
 
 If you are certain that you will get a better history by bending or break these
-rules in a given instance, then do so. A clean and sensible commit history is
-more important than adhering to these rules. They are just here for guidance.
+cohesion rules in a given instance, then do so. A clean and sensible commit
+history is more important than adhering to these rules. They are just here for
+guidance.
 
-Just don't put the repository in a half-broken state.
+
+Keeping in touch
+----------------
+
+The Fabric community is pretty small, and there's no point in duplicating
+effort. So if you are working on something, cool or not, then don't be afraid
+to post a message about it to the mailing list. It is also possible that people
+have ideas or comments that will be helpful when making changes to Fabric.
+
 
 [github]: http://github.com/
 [gh-repo]: http://github.com/karmazilla/fabric/tree/master
