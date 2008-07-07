@@ -47,7 +47,39 @@ Whenever possible, follow [PEP-8][]. In summery:
 * Class names are CamelCased.
 * all other names use lowercased underscore_separation.
 
+Don't be afraid to fix PEP-8 inconsistencies, spelling mistakes and grammar.
+It might be nit-picking, but that's alright. It helps keep the code clean.
 
+
+SCM history and commit policy
+-----------------------------
+
+In general, try to split things up in sensible chunks. We don't want big
+commits that changes a dozen unrelated things; CVS just called and it want its
+monolithic commits back.
+
+Following is a list of commit themes that can be used as guiding boundaries
+for how to split things up, but these are not set in stone. Common sense is
+important.
+
+* PEP-8, styling, indentation, spelling and grammar.
+* New features.
+* Bug fixes.
+* Renaming, moving and adding files, or moving existing code chunks into their
+own files.
+* Refactoring or clean-up of cohesive code chunks.
+
+If you happen to mix these changes in the same file, then you can use the
+interactive adding feature of Git (`git add -i`) to split up the chunks of
+your changes and put them in different commits. For instance, I often correct
+PEP-8 violations on sight and often while doing something else with the file,
+and then break up the changes afterwards with interactive adding.
+
+If you are certain that you will get a better history by bending or break these
+rules in a given instance, then do so. A clean and sensible commit history is
+more important than adhering to these rules. They are just here for guidance.
+
+Just don't put the repository in a half-broken state.
 
 [github]: http://github.com/
 [gh-repo]: http://github.com/karmazilla/fabric/tree/master
