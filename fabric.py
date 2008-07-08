@@ -1200,8 +1200,8 @@ def main():
     try:
         try:
             print(__greeter__ % ENV)
-            fabfile = _pick_fabfile()
             _load_default_settings()
+            fabfile = _pick_fabfile()
             load(fabfile, fail='warn')
             commands = _parse_args(args)
             _validate_commands(commands)
