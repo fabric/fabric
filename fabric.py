@@ -967,7 +967,21 @@ def _indent(text, level=4):
 def _print_help_for(name, doc):
     "Output a pretty-printed help text for the given name & doc"
     default_help_msg = '* No help-text found.'
-    print("Help for '%s':\n%s" % (name, _indent(doc or default_help_msg)))
+    msg = doc or default_help_msg
+    lines = msg.splitlines()
+    # remove leading blank lines
+    while lines and lines[0].strip() == '':
+        lines = lines[1:]
+    # remove trailing blank lines
+    while lines and lines[-1].strip() == '':
+        lines = lines[:-1]
+    if lines:
+        msg = '\n'.join(lines)
+        if not msg.startswith('    '):
+            msg = _indent(msg)
+        print("Help for '%s':\n%s" % (name, msg))
+    else:
+        print("No help message found for '%s'." % name)
 
 def _print_help_for_in(name, dictionary):
     "Print a pretty help text for the named function in the dict."
