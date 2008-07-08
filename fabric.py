@@ -813,7 +813,29 @@ def _set(**kwargs):
 
 @command("shell")
 def _shell(**kwargs):
-    "Start an interactive shell connection to the specified hosts."
+    """
+    Start an interactive shell connection to the specified hosts.
+    
+    Optionally takes a list of hostnames as arguments, if Fabric is, by
+    the time this command runs, not already connected to one or more
+    hosts. If you provide hostnames and Fabric is already connected, then
+    Fabric will, depending on fab_fail, complain and abort.
+    
+    The fab_fail variable can be overwritten with the 'set' command, or
+    by specifying an additional 'fail' argument.
+    
+    Examples:
+        $fab shell
+        $fab shell:localhost,127.0.0.1
+        $fab shell:localhost,127.0.0.1,fail=warn
+    
+    """
+    # expect every arg w/o a value to be a hostname
+    hosts = filter(lambda k: not kwargs[k], kwargs.keys())
+    if hosts:
+        if CONNECTIONS:
+            _fail(kwargs, "Already connected to predefined fab_hosts.")
+        set(fab_hosts = hosts)
     def lines():
         try:
             while True:
