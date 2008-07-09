@@ -1113,7 +1113,7 @@ def _confirm_proceed(exec_type, host, kwargs):
         infotuple = (exec_type, host, _lazy_format(kwargs['confirm']))
         question = "Confirm %s for host %s: %s [yN] " % infotuple
         answer = raw_input(question)
-        return answer in 'yY'
+        return answer and answer in 'yY'
     return True
 
 def _fail(kwargs, msg, env=ENV):
