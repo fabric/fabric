@@ -17,3 +17,25 @@ def test_remote_failures(**kwargs):
     exc('echo must print')
     exc('false 3') # default fail is abort
     exc('echo must NOT print')
+
+
+import datetime
+from StringIO import StringIO
+re = __import__('re')
+global_variables_are_available = True
+
+def test_imports():
+    assert datetime is not None
+    assert StringIO is not None
+    assert re is not None
+    global global_variables_are_available
+    assert global_variables_are_available
+    global_variables_are_available = 1
+    local("echo all good.")
+    set(test_imports_has_run=True)
+
+def test_global_assignment():
+    require('test_imports_has_run', provided_by=[test_imports])
+    global global_variables_are_available
+    assert global_variables_are_available == 1
+    local("echo all double-good.")

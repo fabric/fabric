@@ -1,6 +1,4 @@
 1   Ctrl-C dosn't quite work... especially not with the tail example
-6   fabfiles can't use global import statements
-    - some work has been done on this... needs testing
 7   need something like roles in Capistrano
     - I'm thinking the ability to work with variable environments as first class
       objects
