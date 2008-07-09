@@ -34,17 +34,24 @@ except ImportError:
     print "Warning: Twisted is required for Textile code coloring."
 
 OUTDIR = "fab"
+
+def textile_format(txt):
+    return textile(txt).replace('<br />', '')
+
+def markdown_format(mkd)
+    out = markdown(mkd, extras=['code-friendly', 'code-color'])
+    out = out.replace(u'<pre><code>', u'<pre><code>\n')
+    return out.replace(u'</code></pre>', u'\n</code></pre>')
+
 FORMATS = {
-    'txt':
-        lambda txt: textile(txt).replace('<br />', ''),
-    'markdown':
-        lambda mkd: markdown(mkd, extras=['code-friendly', 'code-color']).
-            replace(u'<pre><code>', u'<pre><code>\n').
-            replace(u'</code></pre>', u'\n</code></pre>'),
+    'txt': textile_format,
+    'textile': textile_format,
+    'markdown': markdown_format,
+    'md': markdown_format,
 }
 
 def generate():
-    "Generates a web site from a directory full of textile .txt files."
+    "Generates a web site from a directory full of textile and markdown files."
     if not exists(OUTDIR):
         os.mkdir(OUTDIR)
     files = []
