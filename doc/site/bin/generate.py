@@ -38,7 +38,7 @@ OUTDIR = "fab"
 def textile_format(txt):
     return textile(txt).replace('<br />', '')
 
-def markdown_format(mkd)
+def markdown_format(mkd):
     out = markdown(mkd, extras=['code-friendly', 'code-color'])
     out = out.replace(u'<pre><code>', u'<pre><code>\n')
     return out.replace(u'</code></pre>', u'\n</code></pre>')
