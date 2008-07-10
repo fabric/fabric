@@ -10,7 +10,7 @@ Commands and operations execute against a global *environment* specific to Fabri
 
 h2. String interpolation
 
-Throughout Fabric, there are two kinds of string interpolation, *eager* (@"%(val)s"@) and *lazy* (@"$(val)"@). While eager syntax is proper Python interpolation syntax, if it is used _without_ the interpolation operator (@string % expression@) it will be replaced with the environment value, if it exists (i.e. as if given in the form @string % ENV@). Use of the @%@ operator is not overridden, however, so you can still generate strings with that syntax normally and Fabric will not interfere.
+Throughout Fabric, there are two kinds of string interpolation, *eager* (@"&#37;(val)s"@) and *lazy* (@"$(val)"@). While eager syntax is proper Python interpolation syntax, if it is used _without_ the interpolation operator (@string % expression@) it will be replaced with the environment value, if it exists (i.e. as if given in the form @string % ENV@). Use of the @%@ operator is not overridden, however, so you can still generate strings with that syntax normally and Fabric will not interfere.
 
 In typical usage, eager and lazy are generally indistinguishable, but lazy is useful when you want to define a variable placement in a string where that variable isn't set in @ENV@ until later on. This only really applies to @set@, as other operations will perform interpolation immediately, making the distinction between eager and lazy moot.
 
