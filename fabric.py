@@ -52,7 +52,8 @@ __greeter__ = '''\
 ENV = {
     'fab_version': __version__,
     'fab_author': __author__,
-    'fab_mode': 'rolling',
+    'fab_mode': 'broad',
+    'fab_submode': 'serial',
     'fab_port': 22,
     'fab_user': pwd.getpwuid(os.getuid())[0],
     'fab_password': None,
@@ -68,7 +69,6 @@ ENV = {
 CONNECTIONS = []
 COMMANDS = {}
 OPERATIONS = {}
-STRATEGIES = {}
 _LAZY_FORMAT_SUBSTITUTER = re.compile(r'\$\((?P<var>\w+?)\)')
 
 #
@@ -100,13 +100,37 @@ def new_registering_decorator(registry):
     return registering_decorator
 command = new_registering_decorator(COMMANDS)
 operation = new_registering_decorator(OPERATIONS)
-strategy = new_registering_decorator(STRATEGIES)
 
 def run_per_host(op_fn):
     def wrapper(*args, **kwargs):
+        # Connect if necessary. Doing this here lets us delay connecting until
+        # it's absolutely necessary (only applies to broad mode).
         if not CONNECTIONS:
             _connect()
-        _on_hosts_do(op_fn, *args, **kwargs)
+        # If broad, run per host.
+        if ENV['fab_mode'] == 'broad':
+            # If serial, run on each host in order
+            if ENV['fab_submode'] == 'serial':
+                _run_serially(op_fn, *args, **kwargs)
+            # If parallel, create per-host threads
+            elif ENV['fab_submode'] == 'parallel':
+                _run_parallel(op_fn, *args, **kwargs)
+        # If deep, no need to multiplex here, just run for the current host
+        # (set farther up the stack)
+        elif ENV['fab_mode'] == 'deep':
+            # host_conn is stored in global ENV only if we're in deep mode.
+            host_conn = ENV['fab_host_conn']
+            env = host_conn.get_env()
+            env['fab_current_operation'] = op_fn.__name__
+            host = env['fab_host']
+            client = host_conn.client
+            _try_run_operation(op_fn, host, client, env, *args, **kwargs)
+        # Only broad/deep supported.
+        else:
+            print("Unsupported fab_mode: %s" % ENV['fab_mode'])
+            print("Supported modes are 'broad' or 'deep'.")
+            sys.exit(1)
+
     wrapper.__doc__ = op_fn.__doc__
     wrapper.__name__ = op_fn.__name__
     return wrapper
@@ -511,9 +535,6 @@ def _help(**kwargs):
     more about. For instance, to learn more about the 'run' operation, you
     could run 'fab help:op=run'.
     
-    Lastly, you can also learn more about a certain strategy with the 'strg'
-    and 'strategy' parameters: 'fab help:strg=rolling'.
-    
     """
     if kwargs:
         for k, v in kwargs.items():
@@ -523,8 +544,6 @@ def _help(**kwargs):
                 _print_help_for_in(k, OPERATIONS)
             elif k in ['op', 'operation']:
                 _print_help_for_in(kwargs[k], OPERATIONS)
-            elif k in ['strg', 'strategy']:
-                _print_help_for_in(kwargs[k], STRATEGIES)
             else:
                 _print_help_for(k, None)
     else:
@@ -545,8 +564,7 @@ def _list_commands(**kwargs):
     By default, the list command prints a list of available commands, with a
     short description (if one is available). However, the list command can also
     print a list of available operations if you provide it with the 'ops' or
-    'operations' parameters, or it can print strategies with the 'strgs' and
-    'strategies' parameters.
+    'operations' parameters.
     
     """
     if kwargs:
@@ -557,16 +575,12 @@ def _list_commands(**kwargs):
             elif k in ['ops', 'operations']:
                 print("Available operations are:")
                 _list_objs(OPERATIONS)
-            elif k in ['strgs', 'strategies']:
-                print("Available strategies are:")
-                _list_objs(STRATEGIES)
             else:
                 print("Don't know how to list '%s'." % k)
                 print("Try one of these instead:")
                 print(_indent('\n'.join([
                     'cmds', 'commands',
                     'ops', 'operations',
-                    'strgs', 'strategies',
                 ])))
                 sys.exit(1)
     else:
@@ -852,10 +866,9 @@ def _shell(**kwargs):
             run(line)
 
 #
-# Standard strategies:
+# Per-operation execution strategies for "broad" mode.
 #
-@strategy("fanout")
-def _fanout_strategy(fn, *args, **kwargs):
+def _run_parallel(fn, *args, **kwargs):
     """
     A strategy that executes on all hosts in parallel.
     
@@ -877,8 +890,7 @@ def _fanout_strategy(fn, *args, **kwargs):
     map(threading.Thread.start, threads)
     map(threading.Thread.join, threads)
 
-@strategy("rolling")
-def _rolling_strategy(fn, *args, **kwargs):
+def _run_serially(fn, *args, **kwargs):
     """One-at-a-time fail-fast strategy."""
     err_msg = "The $(fab_current_operation) operation failed on $(fab_host)"
     for host_conn in CONNECTIONS:
@@ -1071,31 +1083,11 @@ def _lazy_format(string, env=ENV):
             return match.group(0)
     return re.sub(_LAZY_FORMAT_SUBSTITUTER, replacer_fn, string % env)
 
-def _on_hosts_do(fn, *args, **kwargs):
-    """
-    Invoke the given function with hostname and client parameters in
-    accord with the current fab_mode strategy.
-    
-    fn should be a callable taking these parameters:
-        hostname : str
-        client : paramiko.SSHClient
-        *args
-        **kwargs
-    
-    """
-    strategy = ENV['fab_mode']
-    if strategy in STRATEGIES:
-        strategy_fn = STRATEGIES[strategy]
-        strategy_fn(fn, *args, **kwargs)
-    else:
-        print("Unsupported fab_mode: %s" % strategy)
-        print("Supported modes are: %s" % (', '.join(STRATEGIES.keys())))
-        sys.exit(1)
 
 def _try_run_operation(fn, host, client, env, *args, **kwargs):
     """
-    Used by strategies to attempt the execution of an operation, and handle
-    any failures appropreately.
+    Used to attempt the execution of an operation, and handle any failures 
+    appropreately.
     """
     err_msg = "The $(fab_current_operation) operation failed on $(fab_host)"
     success = False
@@ -1193,7 +1185,18 @@ def _execute_commands(cmds):
         print("Running %s..." % cmd)
         if args is not None:
             args = dict(zip(args.keys(), map(_lazy_format, args.values())))
-        COMMANDS[cmd](**(args or {}))
+        # Run command once, with each operation running once per host.
+        if ENV['fab_mode'] == 'broad':
+            COMMANDS[cmd](**(args or {}))
+        # Run entire command once per host.
+        elif ENV['fab_mode'] == 'deep':
+            # Connect right away, since we need to iterate over the cxns.
+            if not CONNECTIONS:
+                _connect()
+            for host_conn in CONNECTIONS:
+                ENV['fab_host_conn'] = host_conn
+                ENV['fab_host'] = host_conn.host_local_env['fab_host']
+                COMMANDS[cmd](**(args or {}))
 
 def main():
     args = sys.argv[1:]
