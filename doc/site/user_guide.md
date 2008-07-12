@@ -1,11 +1,14 @@
-h1. User Guide
+User Guide
+==========
 
 Let me just first make it clear, that Fabric is alpha software and still
 very much in development. So it's a moving target, documentation wise,
 and it is to be expected that the information herein might not be entirely
 accurate.
 
-h2. The ache
+
+The ache
+--------
 
 Here's the thing: you're developing a server deployed application, it could
 be a web application but it doesn't have to be, and you're probably
@@ -19,7 +22,9 @@ the build, and finally start the server again.
 What we'd like to do, is to build, upload and deploy our application with
 a single command line.
 
-h2. Fabric: first steps
+
+Fabric: first steps
+-------------------
 
 Fabric is a tool that, at its core, logs into a number of hosts with SSH, and
 executes a set of commands, and possibly uploads or downloads files.
@@ -34,18 +39,18 @@ line.
 
 Here's what a super simple 'fabfile' might look like:
 
-bc[python]..
-def hello():
-  "Prints hello."
-  local("echo hello")
+    :::python
+    def hello():
+        "Prints hello."
+        local("echo hello")
 
-p. Let's break that down line by line.
+Let's break that down line by line.
 
-First, there's the @def hello():@ line. It defines a command called 'hello'
+First, there's the `def hello():` line. It defines a command called 'hello'
 so that it can be run with 'fab hello', but we'll get to that part.
 
-Next comes a block of text that is indented with two spaces. It is not
-important that we use exactly two spaces, just that each line is consistently
+Next comes a block of text that is indented with four spaces. It is not
+important that we use exactly four spaces, just that each line is consistently
 indented.
 
 The first line of the indented block is a doc-string. It documents the purpose
@@ -55,7 +60,7 @@ name of the command in its output.
 
 Following the doc-string is a call to a function called 'local'. In Fabric
 terminology, 'local' is an operation. In python, functions are functions,
-but Fabric destinguishes between commands and operations. Commands are called
+but Fabric distinguishes between commands and operations. Commands are called
 with the 'fab' command line program, and operations are in turn called by
 commands. Since they're both just python functions, there's nothing stopping
 commands from calling other commands as if they were operations.
@@ -65,21 +70,20 @@ maybe you already guessed it. Regardless, there's a way to know for sure. And
 that is the 'help' command. A command can take parameters when run from the
 command line, by appending a colon and then a parameter list to the end of the
 command name. For instance, if we want to invoke the 'help' command with the
-parameter 'local', we would type @fab help:local@ on the command line.
+parameter 'local', we would type `fab help:local` on the command line.
 
 Let's try doing just that:
 
-bc.. rowe:~$ fab help:local
-   Fabric v. 0.0.5, Copyright (C) 2008 Christian Vest Hansen.
-   Fabric comes with ABSOLUTELY NO WARRANTY; for details type `fab warranty'.
-   This is free software, and you are welcome to redistribute it
-   under certain conditions; type `fab license' for details.
-
-Warning: Cannot load file 'fabfile'.
-No such file in your current directory.
-Running help...
-Help for 'local':
+    rowe:~$ fab help:local
+       Fabric v. 0.0.8, Copyright (C) 2008 Christian Vest Hansen.
+       Fabric comes with ABSOLUTELY NO WARRANTY; for details type `fab warranty'.
+       This is free software, and you are welcome to redistribute it
+       under certain conditions; type `fab license' for details.
     
+    Warning: Load failed:
+        File not found: fabfile
+    Running help...
+    Help for 'local':
         Run a command locally.
         
         This operation is essentially 'os.system()' except that variables are
@@ -92,44 +96,44 @@ Help for 'local':
         
         Example:
             local("make clean dist", fail='abort')
-        
-        
-Done.
-rowe:~$
+    Done.
+    rowe:~$
 
-p. First, Fabric prints a header with copyright and licensing information.
+First, Fabric prints a header with copyright and licensing information.
 Then, there's a warning stating that no 'fabfile' was found - which is
 understandable because we haven't created one yet. Finally, the 'help' command
 is run and it prints the built-in documentation for the 'local' operation.
 
 You can use the 'list' command to figure out what other operations are
-available. Try running @fab help:list@ to figure out how to use it.
+available. Try running `fab help:list` to figure out how to use it.
 
 Since Fabric complains when it can't find any 'fabfile,' let's create one.
 Create a file in your current directory (of the terminal you used to run
-@fab help:local@ with above), call it 'fabfile.py', open it in your favorite
+`fab help:local` with above), call it 'fabfile.py', open it in your favorite
 text editor and copy-paste the example 'fabfile' above into it.
 
-Now, let's see what happens when we run @fab hello@:
+Now, let's see what happens when we run `fab hello`:
 
-bc.. rowe:~$ fab hello
-   Fabric v. 0.0.5, Copyright (C) 2008 Christian Vest Hansen.
-   Fabric comes with ABSOLUTELY NO WARRANTY; for details type `fab warranty'.
-   This is free software, and you are welcome to redistribute it
-   under certain conditions; type `fab license' for details.
+    rowe:~$ fab hello
+       Fabric v. 0.0.8, Copyright (C) 2008 Christian Vest Hansen.
+       Fabric comes with ABSOLUTELY NO WARRANTY; for details type `fab warranty'.
+       This is free software, and you are welcome to redistribute it
+       under certain conditions; type `fab license' for details.
+    
+    Running hello...
+    [localhost] run: echo hello
+    hello
+    Done.
+    rowe:~$ 
 
-Running hello...
-[localhost] run: echo hello
-hello
-Done.
-rowe:~$
-
-p. Nothing in this output should come as a surprise to anyone at this point.
+Nothing in this output should come as a surprise to anyone at this point.
 It does what we expect it to do. Note that Fabric makes a habit out of
 printing the commands it runs, the privilege level they're run with and on
 which hosts they run.
 
-h2. Getting connected
+
+Getting connected
+-----------------
 
 We have learned how to execute shell commands on our local system with the
 'local' operation. However, that in and off itself isn't particularly useful.
@@ -137,9 +141,9 @@ We can do that with shell scripts just fine. Instead, what we'd rely like to
 do, is to log in to a number of remote hosts and execute the commands there.
 Fabric let us do just that with these three operations:
 
-# 'put' : Uploads a file to the connected hosts.
-# 'run' : Run a shell-command on the connected hosts as a normal user.
-# 'sudo' : Run a shell-command on the connected hosts as a privileged user.
+* 'put' : Uploads a file to the connected hosts.
+* 'run' : Run a shell-command on the connected hosts as a normal user.
+* 'sudo' : Run a shell-command on the connected hosts as a privileged user.
 
 These operations are the bread and butter of remote deployment in Fabric.
 But before we can use them, we need to tell Fabric which hosts to connect to.
@@ -152,46 +156,49 @@ variable out.
 
 Try changing your 'fabfile' so it looks like this:
 
-bc[python].. set(
-    fab_hosts = ['127.0.0.1'],
-)
+    :::python
+    set(
+        fab_hosts = ['127.0.0.1'],
+    )
+    
+    def hello():
+        "Prints hello."
+        local("echo hello")
+    
+    def hello_remote():
+        "Prints hello on the remote hosts."
+        run("echo hello from $(fab_host) to $(fab_user).")
 
-def hello():
-  "Prints hello."
-  local("echo hello")
-
-def hello_remote():
-  "Prints hello on the remote hosts."
-  run("echo hello from $(fab_host) to $(fab_user).")
-
-p. We set the variables needed to connect to a host, and then we run an 'echo'
+We set the variables needed to connect to a host, and then we run an 'echo'
 command on the host. Note how we can access variables inside the string.
 The dollar-parenthesis syntax is special to Fabric; it means that the variables
 should be evaluated as late as possible, which in this case will be when the
 'run' command actually get executed against a connected host.
 
-Let's try running @fab hello_remote@ now and see what happens:
+Let's try running `fab hello_remote` now and see what happens:
 
-bc.. rowe:~$ fab hello_remote
-   Fabric v. 0.0.5, Copyright (C) 2008 Christian Vest Hansen.
-   Fabric comes with ABSOLUTELY NO WARRANTY; for details type `fab warranty'.
-   This is free software, and you are welcome to redistribute it
-   under certain conditions; type `fab license' for details.
+    rowe:~$ fab hello_remote
+       Fabric v. 0.0.8, Copyright (C) 2008 Christian Vest Hansen.
+       Fabric comes with ABSOLUTELY NO WARRANTY; for details type `fab warranty'.
+       This is free software, and you are welcome to redistribute it
+       under certain conditions; type `fab license' for details.
+    
+    Running hello_remote...
+    Logging into the following hosts as vest:
+        127.0.0.1
+    Password for vest@127.0.0.1: 
+    [127.0.0.1] run: echo hello from 127.0.0.1 to vest.
+    [127.0.0.1] out: hello from 127.0.0.1 to vest.
+    Done.
+    rowe:~$ 
 
-Running hello_remote...
-Logging into the following hosts as vest:
-    127.0.0.1
-Password: 
-[127.0.0.1] run: /bin/bash -l -c "echo hello from 127.0.0.1 to vest."
-[127.0.0.1] out: hello from 127.0.0.1 to vest.
-Done.
-rowe:~$
-
-p. When we get to executing the 'run' operation, the first thing that happens
+When we get to executing the 'run' operation, the first thing that happens
 is that Fabric makes sure that we are connected to our hosts, and if not,
 starts connecting.
 
-h2. Managing multiple environments
+
+Managing multiple environments
+------------------------------
 
 We have managed to open connections to multiple hosts and execute shell
 commands on them, and we know how to upload files. Basically, we have
@@ -204,23 +211,24 @@ production, and be able to choose which environment to deploy to.
 Actually, we already have all we need to do that. Consider this fabfile for
 instance:
 
-bc[python].. def test():
-  set(fab_hosts = ['localhost'])
+    :::python
+    def test():
+        set(fab_hosts = ['localhost'])
+    
+    def staging():
+        set(fab_hosts = ['n1.stg.python.org', 'n2.stg.python.org'])
+    
+    def production():
+        set(fab_hosts = ['n1.python.org', 'n2.python.org'])
+    
+    def deploy():
+        'Deploy the app to the target environment'
+        local("make dist")
+        put("bin/bundle.zip", "bundle.zip")
+        sudo("./install.sh bundle.zip")
 
-def staging():
-  set(fab_hosts = ['n1.stg.python.org', 'n2.stg.python.org'])
-
-def production():
-  set(fab_hosts = ['n1.python.org', 'n2.python.org'])
-
-def deploy():
-  'Deploy the app to the target environment'
-  local("make dist")
-  put("bin/bundle.zip", "bundle.zip")
-  sudo("./install.sh bundle.zip")
-
-p. This way, we just need to remember to run the commands in the right order,
-like @fab test deploy@. What happens if we forget to run the environment
+This way, we just need to remember to run the commands in the right order,
+like `fab test deploy`. What happens if we forget to run the environment
 command first? In that case Fabric will complain about the missing fab_hosts
 variable with a generic error message. Not cool, plus we could picture a
 complex fabfile where these environment configuration commands do other things
@@ -235,17 +243,20 @@ operations that will set the said variable.
 If we add a call to 'require' to the beginning of our 'deploy' command, we can
 ensure that a proper environment will always be available:
 
-bc[python].. def deploy():
-  'Deploy the app to the target environment'
-  require('fab_hosts', provided_by = [test, staging, production])
-  local("make dist")
-  put("bin/bundle.zip", "bundle.zip")
-  sudo("./install.sh bundle.zip")
+    :::python
+    def deploy():
+        'Deploy the app to the target environment'
+        require('fab_hosts', provided_by = [test, staging, production])
+        local("make dist")
+        put("bin/bundle.zip", "bundle.zip")
+        sudo("./install.sh bundle.zip")
 
-p. There. If we now run 'deploy' with first specifying an environment, we'll be
+There. If we now run 'deploy' with first specifying an environment, we'll be
 duly told.
 
-h2. More on configuration
+
+More on configuration
+---------------------
 
 We have seen how Fabric can connect to a set of hosts and execute an array of
 commands on them. We have also touched on the built-in help system, and how we
@@ -253,11 +264,11 @@ can use it to learn more about the features that are available to us in our
 fabfiles. However, to get the full potential out of Fabric, we also need to
 know how to configure it.
 
-h3. Variables
+### Variables
 
 We saw in the "Getting connected" section above, that we can use a notation
-such as @$(fab_user)@ to interpolate the value of the 'fab_user' variable in
-a string. The standard python @%(fab_user)s@ notation would have worked just
+such as `$(fab_user)` to interpolate the value of the 'fab_user' variable in
+a string. The standard python `%(fab_user)s` notation would have worked just
 as well, but there are some important differences between these two notations:
 The former notation is special to Fabric and is lazily evaluated, whereas the
 later is a general python feature, and is eagerly evaluated.
@@ -265,13 +276,14 @@ later is a general python feature, and is eagerly evaluated.
 This difference between eager and lazy evaluation is demonstrated in this
 example:
 
-bc[python].. def test():
-  set(var = 'a')
-  set(cmd = 'echo %(var)s $(var)')  # line 3
-  set(var = 'b')
-  local(get('cmd'))  # line 5
+    :::python
+    def test():
+        set(var = 'a')
+        set(cmd = 'echo %(var)s $(var)')  # line 3
+        set(var = 'b')
+        local(get('cmd'))  # line 5
 
-p. If we run that as a command with Fabric, it will print out "a b". The eager
+If we run that as a command with Fabric, it will print out "a b". The eager
 notation will be interpolated as soon as possible, which is line 3, but the
 lazy notation will not be evaluated until it is actually needed, in line 5,
 and by that time the value of 'var' will change, resulting in the output "a b".
@@ -284,24 +296,24 @@ like.
 For a complete overview of the different variables and their use, I'm afraid
 you have to consult the source code, but here's a list of the most useful ones:
 
-* _fab_host_ is available in remote operations, or other operations that take
+* *fab_host* is available in remote operations, or other operations that take
 effect on a per host basis, have access to this variable which names a
 specific host to work on.
-* _fab_hosts_ defines the list of hosts to connect to, as a list of strings.
+* *fab_hosts* defines the list of hosts to connect to, as a list of strings.
 There's no default value for this variable so it must be specified if you
 want to execute any remove operations.
-* _fab_mode_ specifies what strategy should be used to execute commands on the
+* *fab_mode* specifies what strategy should be used to execute commands on the
 connected hosts. The default value is "rolling" which runs the commands on one
 host at a time, without any parallelism or concurrency.
-* _fab_password_ is the password used for logging into the remote hosts, and
+* *fab_password* is the password used for logging into the remote hosts, and
 to authenticate with remote 'sudo' commands. Don't set this in the fabfile,
 because a password-prompt will automatically ask for it when needed.
-* _fab_port_ is the port number used to connect to the remote hosts. The
+* *fab_port* is the port number used to connect to the remote hosts. The
 default value is 22, which is the default SSH port number.
-* _fab_user_ is the username used to log in to the remote hosts with. The
+* *fab_user* is the username used to log in to the remote hosts with. The
 default value is derived from the containing shell that executes Fabric, that
 is, your currently logged in username.
-* _fab_timestamp_ is the UTC timestamp for when Fabric was started. Generally
+* *fab_timestamp* is the UTC timestamp for when Fabric was started. Generally
 useful when naming backup files or the like.
 
 Beyond these variables, it is common practice (but not required) to set a
@@ -309,13 +321,13 @@ Beyond these variables, it is common practice (but not required) to set a
 handy in naming build-files, backup-files and deployment directories specific
 to the project.
 
-h3. Key-based authentication
+### Key-based authentication
 
 If you have a private key that the servers will acknowledge, then Fabric will
 automatically pick it up, and if a password is required for unlocking that key,
 then Fabric will ask that password. This default behavior should work for most
 people, but if you use password-less keys, then note the caveat that Fabric
-won't ask for a password and this in turn means that the @sudo()@ operation
+won't ask for a password and this in turn means that the `sudo()` operation
 won't be able to parse a password to the sudo command on the remote hosts.
 To counter this, you need to specify, on the remote hosts, the commands you
 need for deployment as sudo'able without a password.
@@ -323,18 +335,16 @@ need for deployment as sudo'able without a password.
 If you want to use a specific key file on your system, then that is possible
 as well by setting the 'fab_key_filename' variable to the path of your desired
 key file. If you need even more control, then you can instanciate your own
-"PKey":http://www.lag.net/paramiko/docs/paramiko.PKey-class.html instance and
-put it in the 'fab_pkey' variable - this will cause it to be parsed directly
-to the underlying call to "connect
-":http://www.lag.net/paramiko/docs/paramiko.SSHClient-class.html#connect
-without modification.
+[PKey][] instance and put it in the 'fab_pkey' variable - this will cause it
+to be parsed directly to the underlying call to [connect][] without
+modification.
 
-h3. User-local configurations and .fabric
+### User-local configurations and .fabric
 
 In the real world (at least the part I'm in), most projects are developed in
 teams. This means that more than one person might be allowed to the deploy
 any given project. This often means that we'll have some per-developer
-configuration located on his/her computer - the _username_ that is used to log
+configuration located on his/her computer - the *username* that is used to log
 into the servers are the prime example of such individualized configuration.
 
 This is where the .fabric file come in; before the fabfile is load, Fabric
@@ -345,23 +355,25 @@ fabfile.
 The format of the .fabric file is very simple. The file is line-oriented and
 every line is evaluated based on these three rules:
 
-# Lines that are empty appart from white spaces, are ignored.
-# Lines that begin with a hash '#' character, are ignored.
-# Otherwise, the line must contain a variable name, followed by an equal sign
+* Lines that are empty appart from white spaces, are ignored.
+* Lines that begin with a hash '#' character, are ignored.
+* Otherwise, the line must contain a variable name, followed by an equal sign
 and then some text for the value - both name and value will be stripped of
 leading and trailing white spaces.
 
 An example file might look like this:
 
-bc. # My default username:
-fab_user = montyp
+    # My default username:
+    fab_user = montyp
 
-p. And that's basically all there is to it.
-
-
-*TODO:*
-
-# What strategies are
+And that's basically all there is to it.
 
 
+**TODO:**
+
+* What strategies are
+
+
+[PKey]: http://www.lag.net/paramiko/docs/paramiko.PKey-class.html
+[connect]: http://www.lag.net/paramiko/docs/paramiko.SSHClient-class.html#connect
 
