@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name = 'Fabric',
-    version = '0.0.7',
+    version = '0.0.8',
     description = 'Fabric is a simple pythonic remote deployment tool.',
     long_description = """
 It is designed to upload files to, and run shell commands on, a number of
