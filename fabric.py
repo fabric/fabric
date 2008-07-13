@@ -111,10 +111,10 @@ def run_per_host(op_fn):
         if ENV['fab_mode'] == 'broad':
             # If serial, run on each host in order
             if ENV['fab_submode'] == 'serial':
-                _run_serially(op_fn, *args, **kwargs)
+                return _run_serially(op_fn, *args, **kwargs)
             # If parallel, create per-host threads
             elif ENV['fab_submode'] == 'parallel':
-                _run_parallel(op_fn, *args, **kwargs)
+                return _run_parallel(op_fn, *args, **kwargs)
         # If deep, no need to multiplex here, just run for the current host
         # (set farther up the stack)
         elif ENV['fab_mode'] == 'deep':
@@ -124,7 +124,7 @@ def run_per_host(op_fn):
             env['fab_current_operation'] = op_fn.__name__
             host = env['fab_host']
             client = host_conn.client
-            _try_run_operation(op_fn, host, client, env, *args, **kwargs)
+            return _try_run_operation(op_fn, host, client, env, *args, **kwargs)
         # Only broad/deep supported.
         else:
             print("Unsupported fab_mode: %s" % ENV['fab_mode'])
@@ -361,12 +361,12 @@ def run(host, client, env, cmd, **kwargs):
     stdin = chan.makefile('wb', bufsize)
     stdout = chan.makefile('rb', bufsize)
     stderr = chan.makefile_stderr('rb', bufsize)
-    
-    out_th = _start_outputter("[%s] out" % host, stdout)
+    capture = []
+    out_th = _start_outputter("[%s] out" % host, stdout, capture)
     err_th = _start_outputter("[%s] err" % host, stderr)
     status = chan.recv_exit_status()
     chan.close()
-    return status == 0
+    return "".join(capture).strip()
 
 @operation
 @run_per_host
@@ -893,12 +893,18 @@ def _run_parallel(fn, *args, **kwargs):
 def _run_serially(fn, *args, **kwargs):
     """One-at-a-time fail-fast strategy."""
     err_msg = "The $(fab_current_operation) operation failed on $(fab_host)"
+    # Capture the first output in case someone really wants captured output
+    # while running in broad mode.
+    result = None
     for host_conn in CONNECTIONS:
         env = host_conn.get_env()
         env['fab_current_operation'] = fn.__name__
         host = env['fab_host']
         client = host_conn.client
-        _try_run_operation(fn, host, client, env, *args, **kwargs)
+        res = _try_run_operation(fn, host, client, env, *args, **kwargs)
+        if not result:
+            result = res
+    return result
 
 #
 # Internal plumbing:
@@ -1090,15 +1096,18 @@ def _try_run_operation(fn, host, client, env, *args, **kwargs):
     appropreately.
     """
     err_msg = "The $(fab_current_operation) operation failed on $(fab_host)"
-    success = False
+    result = False
     try:
-        success = fn(host, client, env, *args, **kwargs)
+        result = fn(host, client, env, *args, **kwargs)
     except SystemExit:
         raise
     except BaseException, e:
         _fail(kwargs, err_msg + ':\n' + _indent(str(e)), env)
-    if not success:
+    # Empty string is not necessarily an error!
+    if not result and result != "":
         _fail(kwargs, err_msg + '.', env)
+    # Return any captured output
+    return result
 
 def _confirm_proceed(exec_type, host, kwargs):
     if 'confirm' in kwargs:
@@ -1126,11 +1135,13 @@ def _fail(kwargs, msg, env=ENV):
             sys.exit(1)
 
 
-def _start_outputter(prefix, channel):
+def _start_outputter(prefix, channel, capture=None):
     def outputter():
         line = channel.readline()
         while line:
             print("%s: %s" % (prefix, line)),
+            if capture is not None:
+                capture.append(line)
             line = channel.readline()
     thread = threading.Thread(None, outputter, prefix)
     thread.setDaemon(True)
