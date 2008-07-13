@@ -455,6 +455,8 @@ def local_per_host(cmd, **kwargs):
     
     """
     _check_fab_hosts()
+    if not CONNECTIONS:
+        _connect()
     for host_conn in CONNECTIONS:
         env = host_conn.get_env()
         final_cmd = _lazy_format(cmd, env)
@@ -1093,7 +1095,7 @@ def _lazy_format(string, env=ENV):
 def _try_run_operation(fn, host, client, env, *args, **kwargs):
     """
     Used to attempt the execution of an operation, and handle any failures 
-    appropreately.
+    appropriately.
     """
     err_msg = "The $(fab_current_operation) operation failed on $(fab_host)"
     result = False
