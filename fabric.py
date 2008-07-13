@@ -362,11 +362,12 @@ def run(host, client, env, cmd, **kwargs):
     stdout = chan.makefile('rb', bufsize)
     stderr = chan.makefile_stderr('rb', bufsize)
     capture = []
+
     out_th = _start_outputter("[%s] out" % host, stdout, capture)
     err_th = _start_outputter("[%s] err" % host, stderr)
     status = chan.recv_exit_status()
     chan.close()
-    # Return capture and status for better error handling.
+
     return ("".join(capture).strip(), status == 0)
 
 @operation
@@ -403,16 +404,18 @@ def sudo(host, client, env, cmd, **kwargs):
     stdin = chan.makefile('wb', bufsize)
     stdout = chan.makefile('rb', bufsize)
     stderr = chan.makefile_stderr('rb', bufsize)
+    capture = []
     if passwd:
         stdin.write(env['fab_password'])
         stdin.write('\n')
         stdin.flush()
     
-    out_th = _start_outputter("[%s] out" % host, stdout)
+    out_th = _start_outputter("[%s] out" % host, stdout, capture)
     err_th = _start_outputter("[%s] err" % host, stderr)
     status = chan.recv_exit_status()
     chan.close()
-    return status == 0
+
+    return ("".join(capture).strip(), status == 0)
 
 @operation
 def local(cmd, **kwargs):
