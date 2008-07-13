@@ -366,7 +366,8 @@ def run(host, client, env, cmd, **kwargs):
     err_th = _start_outputter("[%s] err" % host, stderr)
     status = chan.recv_exit_status()
     chan.close()
-    return "".join(capture).strip()
+    # Return capture and status for better error handling.
+    return ("".join(capture).strip(), status == 0)
 
 @operation
 @run_per_host
@@ -1105,11 +1106,17 @@ def _try_run_operation(fn, host, client, env, *args, **kwargs):
         raise
     except BaseException, e:
         _fail(kwargs, err_msg + ':\n' + _indent(str(e)), env)
-    # Empty string is not necessarily an error!
-    if not result and result != "":
+    # Check for split output + return code (tuple)
+    if isinstance(result, tuple):
+        output, success = result
+    # If not a tuple, assume just a pass/fail boolean.
+    else:
+        output = ""
+        success = result
+    if not success:
         _fail(kwargs, err_msg + '.', env)
-    # Return any captured output
-    return result
+    # Return any captured output (will execute if fail != abort)
+    return output
 
 def _confirm_proceed(exec_type, host, kwargs):
     if 'confirm' in kwargs:
