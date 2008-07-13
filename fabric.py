@@ -431,6 +431,8 @@ def local_per_host(cmd, **kwargs):
     
     """
     _check_fab_hosts()
+    if not CONNECTIONS:
+        _connect()
     for host_conn in CONNECTIONS:
         env = host_conn.get_env()
         final_cmd = _lazy_format(cmd, env)
