@@ -1097,7 +1097,7 @@ def _on_hosts_do(fn, *args, **kwargs):
 def _try_run_operation(fn, host, client, env, *args, **kwargs):
     """
     Used by strategies to attempt the execution of an operation, and handle
-    any failures appropreately.
+    any failures appropriately.
     """
     err_msg = "The $(fab_current_operation) operation failed on $(fab_host)"
     success = False
