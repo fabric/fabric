@@ -85,7 +85,7 @@ else:
             return (txt[:idx], sep, txt[idx + len(sep):])
 
 #
-# Helper decorators:
+# Helper decorators for use in Fabric itself:
 #
 def new_registering_decorator(registry):
     def registering_decorator(first_arg=None):
@@ -108,7 +108,7 @@ def run_per_host(op_fn):
         if not CONNECTIONS:
             _connect()
         # If broad, run per host.
-        if ENV['fab_mode'] == 'broad':
+        if ENV['fab_local_mode'] == 'broad':
             # If serial, run on each host in order
             if ENV['fab_submode'] == 'serial':
                 return _run_serially(op_fn, *args, **kwargs)
@@ -117,7 +117,7 @@ def run_per_host(op_fn):
                 return _run_parallel(op_fn, *args, **kwargs)
         # If deep, no need to multiplex here, just run for the current host
         # (set farther up the stack)
-        elif ENV['fab_mode'] == 'deep':
+        elif ENV['fab_local_mode'] == 'deep':
             # host_conn is stored in global ENV only if we're in deep mode.
             host_conn = ENV['fab_host_conn']
             env = host_conn.get_env()
@@ -127,13 +127,25 @@ def run_per_host(op_fn):
             return _try_run_operation(op_fn, host, client, env, *args, **kwargs)
         # Only broad/deep supported.
         else:
-            print("Unsupported fab_mode: %s" % ENV['fab_mode'])
+            print("Unsupported fab_mode: %s" % ENV['fab_local_mode'])
             print("Supported modes are 'broad' or 'deep'.")
             sys.exit(1)
 
     wrapper.__doc__ = op_fn.__doc__
     wrapper.__name__ = op_fn.__name__
     return wrapper
+
+
+#
+# Helper decorators for use in fabfiles:
+#
+def mode(mode):
+    "Tags function object with desired fab_mode to run in (checked at runtime)."
+    def decorator(fn):
+        fn.mode = mode
+        return fn
+    return decorator
+
 
 #
 # Standard fabfile operations:
@@ -526,6 +538,7 @@ def upload_project(**kwargs):
 #
 # Standard Fabric commands:
 #
+@mode("broad")
 @command("help")
 def _help(**kwargs):
     """
@@ -562,6 +575,7 @@ def _help(**kwargs):
     
     """)
 
+@mode("broad")
 @command("list")
 def _list_commands(**kwargs):
     """
@@ -593,6 +607,7 @@ def _list_commands(**kwargs):
         print("Available commands are:")
         _list_objs(COMMANDS)
 
+@mode("broad")
 @command("license")
 def _license():
     "Display the Fabric distribution license text."
@@ -795,6 +810,7 @@ make exceptions for this.  Our decision will be guided by the two goals
 of preserving the free status of all derivatives of our free software and
 of promoting the sharing and reuse of software generally.""")
 
+@mode("broad")
 @command("warranty")
 def _warranty():
     "Display warranty information for the Fabric software."
@@ -820,6 +836,7 @@ YOU OR THIRD PARTIES OR A FAILURE OF THE PROGRAM TO OPERATE WITH ANY OTHER
 PROGRAMS), EVEN IF SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGES.""")
 
+@mode("broad")
 @command("set")
 def _set(**kwargs):
     """
@@ -831,6 +848,7 @@ def _set(**kwargs):
     for k, v in kwargs.items():
         ENV[k] = (v % ENV)
 
+@mode("broad")
 @command("shell")
 def _shell(**kwargs):
     """
@@ -1208,18 +1226,21 @@ def _execute_commands(cmds):
         print("Running %s..." % cmd)
         if args is not None:
             args = dict(zip(args.keys(), map(_lazy_format, args.values())))
+        # Obtain mode to run in (and set "local" mode for this command)
+        command = COMMANDS[cmd]
+        mode = ENV['fab_local_mode'] = getattr(command, 'mode', ENV['fab_mode'])
         # Run command once, with each operation running once per host.
-        if ENV['fab_mode'] == 'broad':
-            COMMANDS[cmd](**(args or {}))
+        if mode == 'broad':
+            command(**(args or {}))
         # Run entire command once per host.
-        elif ENV['fab_mode'] == 'deep':
+        elif mode == 'deep':
             # Connect right away, since we need to iterate over the cxns.
             if not CONNECTIONS:
                 _connect()
             for host_conn in CONNECTIONS:
                 ENV['fab_host_conn'] = host_conn
                 ENV['fab_host'] = host_conn.host_local_env['fab_host']
-                COMMANDS[cmd](**(args or {}))
+                command(**(args or {}))
 
 def main():
     args = sys.argv[1:]
