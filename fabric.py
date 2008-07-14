@@ -55,6 +55,7 @@ ENV = {
     'fab_mode': 'broad',
     'fab_submode': 'serial',
     'fab_port': 22,
+    'fab_hosts': [],
     'fab_user': pwd.getpwuid(os.getuid())[0],
     'fab_password': None,
     'fab_pkey': None,
@@ -101,12 +102,8 @@ def new_registering_decorator(registry):
 command = new_registering_decorator(COMMANDS)
 operation = new_registering_decorator(OPERATIONS)
 
-def run_per_host(op_fn):
+def connects(op_fn):
     def wrapper(*args, **kwargs):
-        # Connect if necessary. Doing this here lets us delay connecting until
-        # it's absolutely necessary (only applies to broad mode).
-        if not CONNECTIONS:
-            _connect()
         # If broad, run per host.
         if ENV['fab_local_mode'] == 'broad':
             # If serial, run on each host in order
@@ -131,6 +128,9 @@ def run_per_host(op_fn):
             print("Supported modes are 'broad' or 'deep'.")
             sys.exit(1)
 
+    # Mark this operation as requiring a connection
+    wrapper.connects = True
+    # Copy over original docstring, name
     wrapper.__doc__ = op_fn.__doc__
     wrapper.__name__ = op_fn.__name__
     return wrapper
@@ -139,8 +139,15 @@ def run_per_host(op_fn):
 #
 # Helper decorators for use in fabfiles:
 #
+def hosts(*hosts):
+    "Tags function object with desired fab_hosts to run on."
+    def decorator(fn):
+        fn.hosts = hosts
+        return fn
+    return decorator
+
 def mode(mode):
-    "Tags function object with desired fab_mode to run in (checked at runtime)."
+    "Tags function object with desired fab_mode to run in."
     def decorator(fn):
         fn.mode = mode
         return fn
@@ -283,7 +290,7 @@ def prompt(varname, msg, validate=None, default=None):
         return
 
 @operation
-@run_per_host
+@connects
 def put(host, client, env, localpath, remotepath, **kwargs):
     """
     Upload a file to the current hosts.
@@ -313,7 +320,7 @@ def put(host, client, env, localpath, remotepath, **kwargs):
     return True
 
 @operation
-@run_per_host
+@connects
 def download(host, client, env, remotepath, localpath, **kwargs):
     """
     Download a file from the remote hosts.
@@ -345,7 +352,7 @@ def download(host, client, env, remotepath, localpath, **kwargs):
     return True
 
 @operation
-@run_per_host
+@connects
 def run(host, client, env, cmd, **kwargs):
     """
     Run a shell command on the current fab_hosts.
@@ -383,7 +390,7 @@ def run(host, client, env, cmd, **kwargs):
     return ("".join(capture).strip(), status == 0)
 
 @operation
-@run_per_host
+@connects
 def sudo(host, client, env, cmd, **kwargs):
     """
     Run a sudo (root privileged) command on the current hosts.
@@ -453,6 +460,7 @@ def local(cmd, **kwargs):
         _fail(kwargs, "Local command failed:\n" + _indent(final_cmd))
 
 @operation
+@connects
 def local_per_host(cmd, **kwargs):
     """
     Run a command locally, for every defined host.
@@ -470,9 +478,6 @@ def local_per_host(cmd, **kwargs):
         local_per_host("scp -i login.key stuff.zip $(fab_host):stuff.zip")
     
     """
-    _check_fab_hosts()
-    if not CONNECTIONS:
-        _connect()
     for host_conn in CONNECTIONS:
         env = host_conn.get_env()
         final_cmd = _lazy_format(cmd, env)
@@ -1045,24 +1050,24 @@ def _list_objs(objs):
 
 def _check_fab_hosts():
     "Check that we have a fab_hosts variable, and complain if it's missing."
-    if 'fab_hosts' not in ENV:
+    if 'fab_local_hosts' not in ENV:
         print("Fabric requires a fab_hosts variable.")
         print("Please set it in your fabfile.")
         print("Example: set(fab_hosts=['node1.com', 'node2.com'])")
         sys.exit(1)
-    if len(ENV['fab_hosts']) == 0:
+    if len(ENV['fab_local_hosts']) == 0:
         print("The fab_hosts list was empty.")
         print("Please specify some hosts to connect to.")
         sys.exit(1)
 
 def _connect():
-    "Populate CONNECTIONS with HostConnection instances as per fab_hosts."
+    "Populate CONNECTIONS with HostConnection instances as per current fab_local_hosts."
     _check_fab_hosts()
     signal.signal(signal.SIGINT, lambda: _disconnect() and sys.exit(0))
     global CONNECTIONS
     def_port = ENV['fab_port']
     username = ENV['fab_user']
-    fab_hosts = ENV['fab_hosts']
+    fab_hosts = ENV['fab_local_hosts']
     user_envs = {}
     host_connections_by_user = {}
     
@@ -1092,7 +1097,6 @@ def _connect():
         print(_indent('\n'.join(map(str, host_connections))))
         map(HostConnection.connect, host_connections)
         CONNECTIONS += host_connections
-    set(fab_connected=True)
 
 def _disconnect():
     "Disconnect all clients."
@@ -1222,25 +1226,38 @@ def _validate_commands(cmds):
 
 def _execute_commands(cmds):
     for cmd, args in cmds:
+        # Setup
         ENV['fab_cur_command'] = cmd
         print("Running %s..." % cmd)
         if args is not None:
             args = dict(zip(args.keys(), map(_lazy_format, args.values())))
-        # Obtain mode to run in (and set "local" mode for this command)
         command = COMMANDS[cmd]
-        mode = ENV['fab_local_mode'] = getattr(command, 'mode', ENV['fab_mode'])
+        # Obtain local command-specific mode, hosts
+        ENV['fab_local_mode'] = getattr(command, 'mode', ENV['fab_mode'])
+        ENV['fab_local_hosts'] = getattr(command, 'hosts', ENV['fab_hosts'])
+        # Determine whether we need to connect for this command, do so if so
+        for operation in command.func_code.co_names:
+            if getattr(OPERATIONS.get(operation), 'connects', False):
+                _connect()
+                break
         # Run command once, with each operation running once per host.
-        if mode == 'broad':
+        if ENV['fab_local_mode'] == 'broad':
             command(**(args or {}))
         # Run entire command once per host.
-        elif mode == 'deep':
-            # Connect right away, since we need to iterate over the cxns.
-            if not CONNECTIONS:
-                _connect()
-            for host_conn in CONNECTIONS:
-                ENV['fab_host_conn'] = host_conn
-                ENV['fab_host'] = host_conn.host_local_env['fab_host']
+        elif ENV['fab_local_mode'] == 'deep':
+            # Gracefully handle local-only commands
+            if CONNECTIONS:
+                for host_conn in CONNECTIONS:
+                    ENV['fab_host_conn'] = host_conn
+                    ENV['fab_host'] = host_conn.host_local_env['fab_host']
+                    command(**(args or {}))
+            else:
                 command(**(args or {}))
+        # Disconnect (to clear things up for next command)
+        # TODO: be intelligent, persist connections for hosts
+        # that will be used again this session.
+        _disconnect()
+
 
 def main():
     args = sys.argv[1:]
