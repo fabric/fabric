@@ -15,5 +15,7 @@
 21  automated test suite
 22  find alternative to the deprecated 'execfile()'
 24  add escaping to _lazy_format
-25  *
+25  turn fabric the module, into fabric the package
+26  fix upload_website when new files are added
+27  *
 
