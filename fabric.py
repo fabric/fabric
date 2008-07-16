@@ -1064,20 +1064,15 @@ def _list_objs(objs):
             print
 
 def _check_fab_hosts():
-    "Check that we have a fab_hosts variable, and complain if it's missing."
-    if 'fab_local_hosts' not in ENV:
-        print("Fabric requires a fab_hosts variable.")
-        print("Please set it in your fabfile.")
-        print("Example: set(fab_hosts=['node1.com', 'node2.com'])")
-        sys.exit(1)
-    if len(ENV['fab_local_hosts']) == 0:
-        print("The fab_hosts list was empty.")
-        print("Please specify some hosts to connect to.")
-        sys.exit(1)
-
+    "Check that we have a fab_hosts variable, and prompt if it's missing."
+    if not ENV.get('fab_local_hosts'):
+        prompt('fab_input_hosts', 'Please specify host or hosts to connect to (comma-separated)')
+        hosts = ENV['fab_input_hosts']
+        hosts = [x.strip() for x in hosts.split(',')]
+        ENV['fab_local_hosts'] = hosts
+    
 def _connect():
     "Populate CONNECTIONS with HostConnection instances as per current fab_local_hosts."
-    _check_fab_hosts()
     signal.signal(signal.SIGINT, lambda: _disconnect() and sys.exit(0))
     global CONNECTIONS
     def_port = ENV['fab_port']
@@ -1248,12 +1243,12 @@ def _execute_commands(cmds):
         if args is not None:
             args = dict(zip(args.keys(), map(_lazy_format, args.values())))
         command = COMMANDS[cmd]
-        # Obtain local command-specific mode, hosts
         ENV['fab_local_mode'] = getattr(command, 'mode', ENV['fab_mode'])
         ENV['fab_local_hosts'] = getattr(command, 'hosts', ENV['fab_hosts'])
         # Determine whether we need to connect for this command, do so if so
         for operation in command.func_code.co_names:
             if getattr(OPERATIONS.get(operation), 'connects', False):
+                _check_fab_hosts()
                 _connect()
                 break
         # Run command once, with each operation running once per host.
