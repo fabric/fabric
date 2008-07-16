@@ -24,6 +24,7 @@ import os.path
 import pwd
 import re
 import signal
+import socket
 import subprocess
 import sys
 import threading
@@ -1009,7 +1010,15 @@ class HostConnection(object):
         password = env['fab_password']
         pkey = env['fab_pkey']
         key_filename = env['fab_key_filename']
-        client.connect(host, port, username, password, pkey, key_filename)
+        try:
+            client.connect(host, port, username, password, pkey, key_filename,
+                timeout=10)
+        except socket.timeout:
+            print('Error: timed out trying to connect to %s' % host)
+            sys.exit(1)
+        except socket.gaierror:
+            print('Error: name lookup failed for %s' % host)
+            sys.exit(1)
     def __str__(self):
         return self.host_local_env['fab_host']
 
