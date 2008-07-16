@@ -1109,8 +1109,9 @@ def _connect():
         user_env.update(user_envs[user])
         print(_lazy_format("Logging into the following hosts as $(fab_user):",
             user_env))
-        print(_indent('\n'.join(map(str, host_connections))))
-        map(HostConnection.connect, host_connections)
+        for conn in host_connections:
+            print(_indent(str(conn)))
+            conn.connect()
         CONNECTIONS += host_connections
 
 def _disconnect():
