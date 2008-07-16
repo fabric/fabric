@@ -540,6 +540,12 @@ def upload_project(**kwargs):
     run("tar -xzf " + cwd_name, **kwargs)
     run("rm -f " + cwd_name + ".tar.gz", **kwargs)
 
+@operation
+def abort(msg):
+    "Simple way for users to have their commands abort the process."
+    print(_lazy_format('[$(fab_host)] Error: %s' % msg, ENV))
+    sys.exit(1)
+
 #
 # Standard Fabric commands:
 #
