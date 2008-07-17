@@ -59,6 +59,7 @@ ENV = {
     'fab_hosts': [],
     'fab_user': pwd.getpwuid(os.getuid())[0],
     'fab_password': None,
+    'fab_sudo_prompt': 'sudo password:',
     'fab_pkey': None,
     'fab_key_filename': None,
     'fab_new_host_key': 'accept',
@@ -377,18 +378,14 @@ def run(host, client, env, cmd, **kwargs):
     print("[%s] run: %s" % (host, cmd))
     chan = client._transport.open_session()
     chan.exec_command(real_cmd)
-    bufsize = -1
-    stdin = chan.makefile('wb', bufsize)
-    stdout = chan.makefile('rb', bufsize)
-    stderr = chan.makefile_stderr('rb', bufsize)
     capture = []
 
-    out_th = _start_outputter("[%s] out" % host, stdout, capture)
-    err_th = _start_outputter("[%s] err" % host, stderr)
+    out_th = _start_outputter("[%s] out" % host, chan, False, capture)
+    err_th = _start_outputter("[%s] err" % host, chan, True)
     status = chan.recv_exit_status()
     chan.close()
 
-    return ("".join(capture).strip(), status == 0)
+    return ("".join(capture.strip()), status == 0)
 
 @operation
 @connects
@@ -412,26 +409,20 @@ def sudo(host, client, env, cmd, **kwargs):
     """
     cmd = _lazy_format(cmd, env)
     passwd = get('fab_password')
-    sudo_cmd = passwd and "sudo -S " or "sudo "
-    real_cmd = env['fab_shell'] % (sudo_cmd + cmd.replace('"', '\\"'))
+    real_cmd = env['fab_shell'] % (
+        "sudo -S -p \"%s\"" % ENV['fab_sudo_prompt']
+        + cmd.replace('"', '\\"')
+    )
     cmd = env['fab_print_real_sudo'] and real_cmd or cmd
     if not _confirm_proceed('sudo', host, kwargs):
         return False # TODO: should we return False in fail??
     print("[%s] sudo: %s" % (host, cmd))
     chan = client._transport.open_session()
     chan.exec_command(cmd)
-    bufsize = -1
-    stdin = chan.makefile('wb', bufsize)
-    stdout = chan.makefile('rb', bufsize)
-    stderr = chan.makefile_stderr('rb', bufsize)
     capture = []
-    if passwd:
-        stdin.write(env['fab_password'])
-        stdin.write('\n')
-        stdin.flush()
-    
-    out_th = _start_outputter("[%s] out" % host, stdout, capture)
-    err_th = _start_outputter("[%s] err" % host, stderr)
+
+    out_th = _start_outputter("[%s] out" % host, chan, False, capture)
+    err_th = _start_outputter("[%s] err" % host, chan, True)
     status = chan.recv_exit_status()
     chan.close()
 
@@ -1180,14 +1171,45 @@ def _fail(kwargs, msg, env=ENV):
             sys.exit(1)
 
 
-def _start_outputter(prefix, channel, capture=None):
+def _start_outputter(prefix, chan, is_stderr=False, capture=None):
     def outputter():
-        line = channel.readline()
-        while line:
-            print("%s: %s" % (prefix, line)),
-            if capture is not None:
-                capture.append(line)
-            line = channel.readline()
+        # Read one "packet" at a time, which lets us get less-than-a-line
+        # chunks of text, such as sudo prompts. However, we still print
+        # them to the user one line at a time. (We also eat sudo prompts.)
+        leftovers = ""
+        while not chan.exit_status_ready():
+            out = None
+            if not is_stderr:
+                if chan.recv_ready():
+                    out = chan.recv(65535)
+            else:
+                if chan.recv_stderr_ready():
+                    out = chan.recv_stderr(65535)
+            if out is not None:
+                # Capture if necessary
+                if capture is not None:
+                    capture += out
+                # Handle any password prompts
+                if re.findall(r'^%s:$' % ENV['fab_sudo_prompt'], out,
+                    re.I|re.M):
+                    chan.sendall(ENV['fab_password']+'\n')
+                    out = ""
+                # Deal with line breaks, printing all lines and storing the
+                # leftovers, if any.
+                if '\n' in out:
+                    parts = out.split('\n')
+                    line = leftovers + parts.pop(0)
+                    leftovers = parts.pop()
+                    while line:
+                        sys.stdout.write("%s: %s\n" % (prefix, line)),
+                        sys.stdout.flush()
+                        if parts:
+                            line = parts.pop(0)
+                        else:
+                            line = ""
+                # If no line breaks, just keep adding to leftovers
+                else:
+                    leftovers += out
     thread = threading.Thread(None, outputter, prefix)
     thread.setDaemon(True)
     thread.start()
