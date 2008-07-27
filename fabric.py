@@ -1172,7 +1172,7 @@ def _fail(kwargs, msg, env=ENV):
 
 
 def _start_outputter(prefix, chan, is_stderr=False, capture=None):
-    def outputter():
+    def outputter(prefix, chan, is_stderr, capture):
         # Read one "packet" at a time, which lets us get less-than-a-line
         # chunks of text, such as sudo prompts. However, we still print
         # them to the user one line at a time. (We also eat sudo prompts.)
@@ -1210,7 +1210,8 @@ def _start_outputter(prefix, chan, is_stderr=False, capture=None):
                 # If no line breaks, just keep adding to leftovers
                 else:
                     leftovers += out
-    thread = threading.Thread(None, outputter, prefix)
+    thread = threading.Thread(None, outputter, prefix,
+        (prefix, chan, is_stderr, capture))
     thread.setDaemon(True)
     thread.start()
     return thread
