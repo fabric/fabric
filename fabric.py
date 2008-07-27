@@ -1063,7 +1063,8 @@ def _check_fab_hosts():
         ENV['fab_local_hosts'] = hosts
     
 def _connect():
-    "Populate CONNECTIONS with HostConnection instances as per current fab_local_hosts."
+    """Populate CONNECTIONS with HostConnection instances as per current
+    fab_local_hosts."""
     signal.signal(signal.SIGINT, lambda: _disconnect() and sys.exit(0))
     global CONNECTIONS
     def_port = ENV['fab_port']
