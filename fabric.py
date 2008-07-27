@@ -380,8 +380,8 @@ def run(host, client, env, cmd, **kwargs):
     chan.exec_command(real_cmd)
     capture = []
 
-    out_th = _start_outputter("[%s] out" % host, chan, False, env, capture)
-    err_th = _start_outputter("[%s] err" % host, chan, True, env)
+    out_th = _start_outputter("[%s] out" % host, chan, env, capture=capture)
+    err_th = _start_outputter("[%s] err" % host, chan, env, stderr=True)
     status = chan.recv_exit_status()
     chan.close()
 
@@ -421,8 +421,8 @@ def sudo(host, client, env, cmd, **kwargs):
     chan.exec_command(real_cmd)
     capture = []
 
-    out_th = _start_outputter("[%s] out" % host, chan, False, env, capture)
-    err_th = _start_outputter("[%s] err" % host, chan, True, env)
+    out_th = _start_outputter("[%s] out" % host, chan, env, capture=capture)
+    err_th = _start_outputter("[%s] err" % host, chan, env, stderr=True)
     status = chan.recv_exit_status()
     chan.close()
 
@@ -1172,15 +1172,15 @@ def _fail(kwargs, msg, env=ENV):
             sys.exit(1)
 
 
-def _start_outputter(prefix, chan, is_stderr=False, env=None, capture=None):
-    def outputter(prefix, chan, is_stderr, env, capture):
+def _start_outputter(prefix, chan, env, stderr=False, capture=None):
+    def outputter(prefix, chan, env, stderr, capture):
         # Read one "packet" at a time, which lets us get less-than-a-line
         # chunks of text, such as sudo prompts. However, we still print
         # them to the user one line at a time. (We also eat sudo prompts.)
         leftovers = ""
         while not chan.exit_status_ready():
             out = None
-            if not is_stderr:
+            if not stderr:
                 if chan.recv_ready():
                     out = chan.recv(65535)
             else:
@@ -1212,7 +1212,7 @@ def _start_outputter(prefix, chan, is_stderr=False, env=None, capture=None):
                 else:
                     leftovers += out
     thread = threading.Thread(None, outputter, prefix,
-        (prefix, chan, is_stderr, env, capture))
+        (prefix, chan, env, stderr, capture))
     thread.setDaemon(True)
     thread.start()
     return thread
