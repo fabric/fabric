@@ -385,7 +385,7 @@ def run(host, client, env, cmd, **kwargs):
     status = chan.recv_exit_status()
     chan.close()
 
-    return ("".join(capture.strip()), status == 0)
+    return ("".join(capture).strip(), status == 0)
 
 @operation
 @connects
@@ -408,7 +408,6 @@ def sudo(host, client, env, cmd, **kwargs):
     
     """
     cmd = _lazy_format(cmd, env)
-    passwd = get('fab_password')
     real_cmd = env['fab_shell'] % (
         "sudo -S -p '%s' " % ENV['fab_sudo_prompt']
         + cmd.replace('"', '\\"')
@@ -1190,11 +1189,35 @@ def _start_outputter(prefix, chan, env, stderr=False, capture=None):
                 # Capture if necessary
                 if capture is not None:
                     capture += out
+
                 # Handle any password prompts
-                if re.findall(r'^%s$' % env['fab_sudo_prompt'], out,
-                    re.I|re.M):
+                initial_prompt = re.findall(r'^%s$' % env['fab_sudo_prompt'],
+                    out, re.I|re.M)
+                again_prompt = re.findall(r'^Sorry, try again', out, re.I|re.M)
+                if initial_prompt or again_prompt:
+                    # First, get or prompt for password
+                    PASS_PROMPT = "Password for $(fab_user)@$(fab_host)$(fab_passprompt_suffix)"
+                    old_password = env.get('fab_password')
+                    if old_password:
+                        # Just set up prompt in case we're at an again prompt
+                        env['fab_passprompt_suffix'] = " [Enter for previous]: "
+                    else:
+                        # Set prompt, then ask for a password
+                        env['fab_passprompt_suffix'] = ": "
+                        # Get pass, and make sure we communicate it back to the
+                        # global ENV since that was obviously empty.
+                        ENV['fab_password'] = env['fab_password'] = \
+                            getpass.getpass(_lazy_format(PASS_PROMPT, env))
+                    # Re-prompt -- whatever we supplied last time (the
+                    # current value of env['fab_password']) was incorrect.
+                    # Don't overwrite ENV because it might not be empty.
+                    if again_prompt:
+                        env['fab_password'] = \
+                            getpass.getpass(_lazy_format(PASS_PROMPT, env))
+                    # Either way, we have a password now, so send it.
                     chan.sendall(env['fab_password']+'\n')
                     out = ""
+
                 # Deal with line breaks, printing all lines and storing the
                 # leftovers, if any.
                 if '\n' in out:
@@ -1211,6 +1234,7 @@ def _start_outputter(prefix, chan, env, stderr=False, capture=None):
                 # If no line breaks, just keep adding to leftovers
                 else:
                     leftovers += out
+
     thread = threading.Thread(None, outputter, prefix,
         (prefix, chan, env, stderr, capture))
     thread.setDaemon(True)
