@@ -380,8 +380,8 @@ def run(host, client, env, cmd, **kwargs):
     chan.exec_command(real_cmd)
     capture = []
 
-    out_th = _start_outputter("[%s] out" % host, chan, False, capture)
-    err_th = _start_outputter("[%s] err" % host, chan, True)
+    out_th = _start_outputter("[%s] out" % host, chan, False, env, capture)
+    err_th = _start_outputter("[%s] err" % host, chan, True, env)
     status = chan.recv_exit_status()
     chan.close()
 
@@ -421,8 +421,8 @@ def sudo(host, client, env, cmd, **kwargs):
     chan.exec_command(real_cmd)
     capture = []
 
-    out_th = _start_outputter("[%s] out" % host, chan, False, capture)
-    err_th = _start_outputter("[%s] err" % host, chan, True)
+    out_th = _start_outputter("[%s] out" % host, chan, False, env, capture)
+    err_th = _start_outputter("[%s] err" % host, chan, True, env)
     status = chan.recv_exit_status()
     chan.close()
 
@@ -1172,8 +1172,8 @@ def _fail(kwargs, msg, env=ENV):
             sys.exit(1)
 
 
-def _start_outputter(prefix, chan, is_stderr=False, capture=None):
-    def outputter(prefix, chan, is_stderr, capture):
+def _start_outputter(prefix, chan, is_stderr=False, env=None, capture=None):
+    def outputter(prefix, chan, is_stderr, env, capture):
         # Read one "packet" at a time, which lets us get less-than-a-line
         # chunks of text, such as sudo prompts. However, we still print
         # them to the user one line at a time. (We also eat sudo prompts.)
@@ -1191,9 +1191,9 @@ def _start_outputter(prefix, chan, is_stderr=False, capture=None):
                 if capture is not None:
                     capture += out
                 # Handle any password prompts
-                if re.findall(r'^%s:$' % ENV['fab_sudo_prompt'], out,
+                if re.findall(r'^%s$' % env['fab_sudo_prompt'], out,
                     re.I|re.M):
-                    chan.sendall(ENV['fab_password']+'\n')
+                    chan.sendall(env['fab_password']+'\n')
                     out = ""
                 # Deal with line breaks, printing all lines and storing the
                 # leftovers, if any.
@@ -1212,7 +1212,7 @@ def _start_outputter(prefix, chan, is_stderr=False, capture=None):
                 else:
                     leftovers += out
     thread = threading.Thread(None, outputter, prefix,
-        (prefix, chan, is_stderr, capture))
+        (prefix, chan, is_stderr, env, capture))
     thread.setDaemon(True)
     thread.start()
     return thread
