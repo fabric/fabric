@@ -23,6 +23,7 @@ import os
 import os.path
 import pwd
 import re
+import readline
 import signal
 import socket
 import subprocess
