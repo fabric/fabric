@@ -4,18 +4,17 @@
       objects
 9   make fanout mode work
 11  add built-in help for built-in variables
-12  allow run & sudo to save the output of stdout and stderr in variables
 13  reduce print & exit() statements to as few functions as possible
 14  also comment internal/private functions, if only a little
 15  figure out a way to do plugins
     - SCM support should be done entirely in plugins
 16  get a better shell
-18  make local_per_host() adhere to the provided fab_mode
-    - preferably by using _on_hosts_do, or something
 21  automated test suite
 22  find alternative to the deprecated 'execfile()'
 24  add escaping to _lazy_format
 25  turn fabric the module, into fabric the package
 26  fix upload_website when new files are added
-27  *
-
+27  Allow override of fab_shell (or just the shell location) per host
+    - so edge cases like stock OBSD, which lack bash, can be targeted.
+28  Grant more control over the output - e.g. hide 'run'/'sudo' lines
+29  *
