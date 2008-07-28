@@ -1181,11 +1181,9 @@ def _start_outputter(prefix, chan, env, stderr=False, capture=None):
         while not chan.exit_status_ready():
             out = None
             if not stderr:
-                if chan.recv_ready():
-                    out = chan.recv(65535)
+                out = chan.recv(65535)
             else:
-                if chan.recv_stderr_ready():
-                    out = chan.recv_stderr(65535)
+                out = chan.recv_stderr(65535)
             if out is not None:
                 # Capture if necessary
                 if capture is not None:
@@ -1225,7 +1223,7 @@ def _start_outputter(prefix, chan, env, stderr=False, capture=None):
                     parts = out.split('\n')
                     line = leftovers + parts.pop(0)
                     leftovers = parts.pop()
-                    while line:
+                    while parts or line:
                         sys.stdout.write("%s: %s\n" % (prefix, line)),
                         sys.stdout.flush()
                         if parts:
