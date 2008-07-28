@@ -68,6 +68,7 @@ ENV = {
     'fab_timestamp': datetime.datetime.utcnow().strftime('%F_%H-%M-%S'),
     'fab_print_real_sudo': False,
     'fab_fail': 'abort',
+    'fab_quiet': False,
 }
 
 CONNECTIONS = []
@@ -376,7 +377,8 @@ def run(host, client, env, cmd, **kwargs):
     real_cmd = env['fab_shell'] % cmd.replace('"', '\\"')
     if not _confirm_proceed('run', host, kwargs):
         return False
-    print("[%s] run: %s" % (host, cmd))
+    if not env['fab_quiet']:
+        print("[%s] run: %s" % (host, cmd))
     chan = client._transport.open_session()
     chan.exec_command(real_cmd)
     capture = []
@@ -416,7 +418,8 @@ def sudo(host, client, env, cmd, **kwargs):
     cmd = env['fab_print_real_sudo'] and real_cmd or cmd
     if not _confirm_proceed('sudo', host, kwargs):
         return False # TODO: should we return False in fail??
-    print("[%s] sudo: %s" % (host, cmd))
+    if not env['fab_quiet']:
+        print("[%s] sudo: %s" % (host, cmd))
     chan = client._transport.open_session()
     chan.exec_command(real_cmd)
     capture = []
@@ -1224,8 +1227,9 @@ def _start_outputter(prefix, chan, env, stderr=False, capture=None):
                     line = leftovers + parts.pop(0)
                     leftovers = parts.pop()
                     while parts or line:
-                        sys.stdout.write("%s: %s\n" % (prefix, line)),
-                        sys.stdout.flush()
+                        if not env['fab_quiet']:
+                            sys.stdout.write("%s: %s\n" % (prefix, line)),
+                            sys.stdout.flush()
                         if parts:
                             line = parts.pop(0)
                         else:
