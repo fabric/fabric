@@ -1178,7 +1178,7 @@ def _start_outputter(prefix, chan, env, stderr=False, capture=None):
         # chunks of text, such as sudo prompts. However, we still print
         # them to the user one line at a time. (We also eat sudo prompts.)
         leftovers = ""
-        while not chan.exit_status_ready():
+        while True:
             out = None
             if not stderr:
                 out = chan.recv(65535)
