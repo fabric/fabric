@@ -365,7 +365,7 @@ def sudo(host, client, env, cmd, **kwargs):
     
     """
     cmd = _lazy_format(cmd, env)
-    passwd = get('fab_password')
+    passwd = env['fab_password']
     sudo_cmd = passwd and "sudo -S " or "sudo "
     real_cmd = env['fab_shell'] % (sudo_cmd + cmd.replace('"', '\\"'))
     cmd = env['fab_print_real_sudo'] and real_cmd or cmd
@@ -373,7 +373,7 @@ def sudo(host, client, env, cmd, **kwargs):
         return False # TODO: should we return False in fail??
     print("[%s] sudo: %s" % (host, cmd))
     chan = client._transport.open_session()
-    chan.exec_command(cmd)
+    chan.exec_command(real_cmd)
     bufsize = -1
     stdin = chan.makefile('wb', bufsize)
     stdout = chan.makefile('rb', bufsize)
@@ -382,7 +382,6 @@ def sudo(host, client, env, cmd, **kwargs):
         stdin.write(env['fab_password'])
         stdin.write('\n')
         stdin.flush()
-    
     out_th = _start_outputter("[%s] out" % host, stdout)
     err_th = _start_outputter("[%s] err" % host, stderr)
     status = chan.recv_exit_status()
