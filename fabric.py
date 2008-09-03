@@ -429,7 +429,6 @@ def local_per_host(cmd, **kwargs):
         local_per_host("scp -i login.key stuff.zip $(fab_host):stuff.zip")
     
     """
-    print 1
     _check_fab_hosts()
     con_envs = [con.get_env() for con in CONNECTIONS]
     if not con_envs:
