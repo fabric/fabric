@@ -17,4 +17,5 @@
 27  Allow override of fab_shell (or just the shell location) per host
     - so edge cases like stock OBSD, which lack bash, can be targeted.
 28  Grant more control over the output - e.g. hide 'run'/'sudo' lines
-29  *
+29  Allow more interactivity -- detect remote prompts and passthru to user
+30  *
