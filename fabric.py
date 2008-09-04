@@ -37,7 +37,7 @@ except ImportError:
     print("  $ sudo easy_install paramiko")
     sys.exit(1)
 
-__version__ = '0.0.8'
+__version__ = '0.0.9'
 __author__ = 'Christian Vest Hansen'
 __author_email__ = 'karmazilla@gmail.com'
 __url__ = 'http://www.nongnu.org/fab/'
@@ -365,7 +365,7 @@ def sudo(host, client, env, cmd, **kwargs):
     
     """
     cmd = _lazy_format(cmd, env)
-    passwd = get('fab_password')
+    passwd = env['fab_password']
     sudo_cmd = passwd and "sudo -S " or "sudo "
     real_cmd = env['fab_shell'] % (sudo_cmd + cmd.replace('"', '\\"'))
     cmd = env['fab_print_real_sudo'] and real_cmd or cmd
@@ -373,7 +373,7 @@ def sudo(host, client, env, cmd, **kwargs):
         return False # TODO: should we return False in fail??
     print("[%s] sudo: %s" % (host, cmd))
     chan = client._transport.open_session()
-    chan.exec_command(cmd)
+    chan.exec_command(real_cmd)
     bufsize = -1
     stdin = chan.makefile('wb', bufsize)
     stdout = chan.makefile('rb', bufsize)
@@ -382,7 +382,6 @@ def sudo(host, client, env, cmd, **kwargs):
         stdin.write(env['fab_password'])
         stdin.write('\n')
         stdin.flush()
-    
     out_th = _start_outputter("[%s] out" % host, stdout)
     err_th = _start_outputter("[%s] err" % host, stderr)
     status = chan.recv_exit_status()
@@ -431,10 +430,15 @@ def local_per_host(cmd, **kwargs):
     
     """
     _check_fab_hosts()
-    if not CONNECTIONS:
-        _connect()
-    for host_conn in CONNECTIONS:
-        env = host_conn.get_env()
+    con_envs = [con.get_env() for con in CONNECTIONS]
+    if not con_envs:
+        # we might not have connected yet
+        for hostname in ENV['fab_hosts']:
+            env = {}
+            env.update(ENV)
+            env['fab_host'] = hostname
+            con_envs.append(env)
+    for env in con_envs:
         final_cmd = _lazy_format(cmd, env)
         print(_lazy_format("[localhost/$(fab_host)] run: " + final_cmd, env))
         retcode = subprocess.call(final_cmd, shell=True)
