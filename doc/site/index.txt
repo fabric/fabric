@@ -9,7 +9,7 @@ python functions) and specified in a 'fabfile.'
 It is a bit like a dumbed down Capistrano, except it's in Python, doesn't
 expect you to be deploying Rails applications, and the 'put' command works. 
 
-Unlike Capistrano, Fabric want's to stay small, light, easy to change and not
+Unlike Capistrano, Fabric wants to stay small, light, easy to change and not
 bound to any specific framework.
 
 Once installed, you can run 'fab help' to learn more about how to use Fabric.
