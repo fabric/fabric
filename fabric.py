@@ -375,6 +375,7 @@ def run(host, client, env, cmd, **kwargs):
     """
     cmd = _lazy_format(cmd, env)
     real_cmd = env['fab_shell'] % cmd.replace('"', '\\"')
+    real_cmd = _escape_bash_specialchars(real_cmd)
     if not _confirm_proceed('run', host, kwargs):
         return False
     if not env['fab_quiet']:
@@ -415,6 +416,7 @@ def sudo(host, client, env, cmd, **kwargs):
         "sudo -S -p '%s' " % ENV['fab_sudo_prompt']
         + cmd.replace('"', '\\"')
     )
+    real_cmd = _escape_bash_specialchars(real_cmd)
     cmd = env['fab_print_real_sudo'] and real_cmd or cmd
     if not _confirm_proceed('sudo', host, kwargs):
         return False # TODO: should we return False in fail??
@@ -1319,6 +1321,9 @@ def _execute_commands(cmds):
         # TODO: be intelligent, persist connections for hosts
         # that will be used again this session.
         _disconnect()
+
+def _escape_bash_specialchars(txt):
+    return txt.replace('$', "\\$")
 
 
 def main():
