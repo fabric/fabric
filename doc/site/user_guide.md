@@ -75,11 +75,7 @@ parameter 'local', we would type `fab help:local` on the command line.
 Let's try doing just that:
 
     rowe:~$ fab help:local
-       Fabric v. 0.0.8, Copyright (C) 2008 Christian Vest Hansen.
-       Fabric comes with ABSOLUTELY NO WARRANTY; for details type `fab warranty'.
-       This is free software, and you are welcome to redistribute it
-       under certain conditions; type `fab license' for details.
-    
+    Fabric v. 0.0.9.
     Warning: Load failed:
         File not found: fabfile
     Running help...
@@ -115,11 +111,7 @@ text editor and copy-paste the example 'fabfile' above into it.
 Now, let's see what happens when we run `fab hello`:
 
     rowe:~$ fab hello
-       Fabric v. 0.0.8, Copyright (C) 2008 Christian Vest Hansen.
-       Fabric comes with ABSOLUTELY NO WARRANTY; for details type `fab warranty'.
-       This is free software, and you are welcome to redistribute it
-       under certain conditions; type `fab license' for details.
-    
+    Fabric v. 0.0.9.
     Running hello...
     [localhost] run: echo hello
     hello
@@ -178,11 +170,7 @@ should be evaluated as late as possible, which in this case will be when the
 Let's try running `fab hello_remote` now and see what happens:
 
     rowe:~$ fab hello_remote
-       Fabric v. 0.0.8, Copyright (C) 2008 Christian Vest Hansen.
-       Fabric comes with ABSOLUTELY NO WARRANTY; for details type `fab warranty'.
-       This is free software, and you are welcome to redistribute it
-       under certain conditions; type `fab license' for details.
-    
+    Fabric v. 0.0.9.
     Running hello_remote...
     Logging into the following hosts as vest:
         127.0.0.1
