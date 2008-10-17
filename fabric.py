@@ -328,6 +328,7 @@ def run(host, client, env, cmd, **kwargs):
     """
     cmd = _lazy_format(cmd, env)
     real_cmd = env['fab_shell'] % cmd.replace('"', '\\"')
+    real_cmd = _hack_bash_variables(real_cmd)
     if not _confirm_proceed('run', host, kwargs):
         return False
     print("[%s] run: %s" % (host, cmd))
@@ -373,6 +374,7 @@ def sudo(host, client, env, cmd, **kwargs):
         return False # TODO: should we return False in fail??
     print("[%s] sudo: %s" % (host, cmd))
     chan = client._transport.open_session()
+    real_cmd = _hack_bash_variables(real_cmd)
     chan.exec_command(real_cmd)
     bufsize = -1
     stdin = chan.makefile('wb', bufsize)
@@ -405,6 +407,7 @@ def local(cmd, **kwargs):
         local("make clean dist", fail='abort')
     
     """
+    # we don't need _hack_bash_variables for local execution
     final_cmd = _lazy_format(cmd)
     print("[localhost] run: " + final_cmd)
     retcode = subprocess.call(final_cmd, shell=True)
@@ -1076,6 +1079,9 @@ def _lazy_format(string, env=ENV):
         else:
             return match.group(0)
     return re.sub(_LAZY_FORMAT_SUBSTITUTER, replacer_fn, string % env)
+
+def _hack_bash_variables(cmd):
+    return cmd.replace("$", "\\$")
 
 def _on_hosts_do(fn, *args, **kwargs):
     """
