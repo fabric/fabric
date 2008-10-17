@@ -96,6 +96,8 @@ def test():
 
 def website():
     "Generates the Fabric website."
+    # assuming we have imagemagick installed:
+    local("convert doc/site/fabric-logo.svg doc/site/fabric-logo.png", fail="warn")
     local("cd doc/site && ./bin/generate.py")
 
 def upload_website():
