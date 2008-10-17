@@ -1142,6 +1142,7 @@ def main():
     args = sys.argv[1:]
     try:
         try:
+            print("Fabric v. %(fab_version)s.")
             _load_default_settings()
             fabfile = _pick_fabfile()
             load(fabfile, fail='warn')
