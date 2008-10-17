@@ -26,10 +26,10 @@ Installing
 To get the most out of Fabric, your system needs to live up to some
 requirements:
 
- * Python 2.5 (2.4 might work but is not tested).
- * Python Setuptools (part of most python installations).
- * Paramiko 1.6 or greater (requires pycrypto).
- * A unix environment (cygwin might work but is not tested).
+ 1. Python 2.5 (2.4 might work but is not tested).
+ 2. Python Setuptools (part of most python installations).
+ 3. Paramiko 1.6 or greater (requires pycrypto).
+ 4. A unix environment (cygwin might work but is not tested).
 
 Fabfiles
 --------
