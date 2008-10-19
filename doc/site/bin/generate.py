@@ -23,6 +23,7 @@ from os.path import exists, abspath
 from glob import glob
 from textile import textile
 from markdown2 import markdown
+from StringIO import StringIO
 
 try:
     import pygments
@@ -35,19 +36,26 @@ except ImportError:
 
 OUTDIR = "fab"
 
-def textile_format(txt):
+def textile_format(txt, _=None):
     return textile(txt).replace('<br />', '')
 
-def markdown_format(mkd):
+def markdown_format(mkd, _=None):
     out = markdown(mkd, extras=['code-friendly', 'code-color'])
     out = out.replace(u'<pre><code>', u'<pre><code>\n')
     return out.replace(u'</code></pre>', u'\n</code></pre>')
+
+def python_script_output(src, filename):
+    out = StringIO()
+    script = compile(src, filename, "exec")
+    eval(script, {'out': out})
+    return out.getvalue()
 
 FORMATS = {
     'txt': textile_format,
     'textile': textile_format,
     'markdown': markdown_format,
     'md': markdown_format,
+    'py': python_script_output,
 }
 
 def generate():
@@ -67,10 +75,10 @@ def generate():
         infile = open(filename, 'r')
         intext = infile.read()
         try:
-            content = convert(intext.decode('utf-8'))
+            content = convert(intext.decode('utf-8'), filename)
         except UnicodeDecodeError:
             # Textile seems unable to handle unicode.
-            content = convert(intext)
+            content = convert(intext, filename)
         output = template % {
             u"name" : name,
             u"content" : content,
