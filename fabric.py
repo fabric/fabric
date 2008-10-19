@@ -167,32 +167,43 @@ def getAny(*names):
     # Implicit return value of None here if no names found.
 
 @operation
-def require(var, **kwargs):
+def require(*varnames, **kwargs):
     """
-    Make sure that a certain environment variable is available.
+    Make sure that certain environment variables are available.
     
-    The 'var' parameter is a string that names the variable to check for.
+    The 'varnames' parameters are one or more strings that names the variables
+    to check for.
     Two other optional kwargs are supported:
         * 'used_for' is a string that gets injected into, and then printed, as
           something like this string: "This variable is used for %s".
         * 'provided_by' is a list of strings that name commands which the user
-          can run in order to satisfy the requirement.
+          can run in order to satisfy the requirement, or references to the
+          actual command functions them selves.
     
-    If the required variable is not found in the current environment, then the
-    operation is stopped and Fabric halts.
+    If the required variables are not found in the current environment, then 
+    the operation is stopped and Fabric halts.
     
-    Example:
+    Examples:
+
+        # One variable name
         require('project_name',
             used_for='finding the target deployment dir.',
             provided_by=['staging', 'production'],
         )
     
+        # Multiple variable names
+        require('project_name', 'install_dir', provided_by=[stg, prod])
+
     """
-    if var in ENV:
+    if all([var in ENV for var in varnames]):
         return
+    if len(varnames) == 1:
+        vars_msg = "a %r variable." % varnames[0]
+    else:
+        vars_msg = "the variables %s." % ", ".join(
+                ["%r" % vn for vn in varnames])
     print(
-        ("The '%(fab_cur_command)s' command requires a '" + var
-        + "' variable.") % ENV
+        ("The '%(fab_cur_command)s' command requires " + vars_msg) % ENV
     )
     if 'used_for' in kwargs:
         print("This variable is used for %s" % _lazy_format(
