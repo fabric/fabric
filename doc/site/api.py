@@ -6,6 +6,7 @@ Not to be run directly, but rather compiled and executed by bin/generate.py
 
 import fabric
 from markdown2 import markdown
+from datetime import datetime
 
 #
 # Helper functions
@@ -82,6 +83,16 @@ def write_document(layout):
 # Main() code goes here
 #
 header(1, "Fabric API specification")
+
+out.write("""
+<p>
+    This document lists all the commands, operations and strategies that are
+    available to fabfiles.
+</p>
+<p>
+    This document was automatically generated for Fabric version %s on %s.
+</p>
+""" % (fabric.__version__, datetime.now().strftime("%A, %d of %B, %Y")))
 
 write_document([
     ('Commands', fabric.COMMANDS),
