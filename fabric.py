@@ -996,7 +996,7 @@ def _parse_args(args):
             cmd, cmd_str_args = cmd.split(':', 1)
             for cmd_arg_kv in cmd_str_args.split(','):
                 k, _, v = partition(cmd_arg_kv, '=')
-                cmd_args[k] = (v % ENV)
+                cmd_args[k] = (v % ENV) or k
         cmds.append((cmd, cmd_args))
     return cmds
 
