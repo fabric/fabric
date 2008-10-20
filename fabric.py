@@ -71,6 +71,9 @@ OPERATIONS = {}
 STRATEGIES = {}
 _LAZY_FORMAT_SUBSTITUTER = re.compile(r'\$\((?P<var>\w+?)\)')
 
+_LOADED_FABFILES = set()
+_CALLED_COMMANDS = set()
+
 #
 # Compatibility fixes
 #
@@ -477,16 +480,21 @@ def load(filename, **kwargs):
         load("conf/production-settings.py")
     
     """
-    if os.path.exists(filename):
-        execfile(filename)
-        for name, obj in locals().items():
-            if not name.startswith('_') and isinstance(obj, types.FunctionType):
-                COMMANDS[name] = obj
-            if not name.startswith('_'):
-                __builtins__[name] = obj
-    else:
+    if not os.path.exists(filename):
         _fail(kwargs, "Load failed:\n" + _indent(
             "File not found: " + filename))
+        return
+    
+    if filename in _LOADED_FABFILES:
+        return
+    _LOADED_FABFILES.add(filename)
+    
+    execfile(filename)
+    for name, obj in locals().items():
+        if not name.startswith('_') and isinstance(obj, types.FunctionType):
+            COMMANDS[name] = obj
+        if not name.startswith('_'):
+            __builtins__[name] = obj
 
 @operation
 def upload_project(**kwargs):
@@ -512,6 +520,20 @@ def upload_project(**kwargs):
     local("rm -f " + tar_file, **kwargs)
     run("tar -xzf " + cwd_name, **kwargs)
     run("rm -f " + cwd_name + ".tar.gz", **kwargs)
+
+@operation
+def call_once(command, *args, **kwargs):
+    """
+    Calls the supplied command unless it has already been called.
+    """
+    # TODO: *commands; and invoke via _execute_commands?
+    # TODO: what, if any, messages?
+    if command in _CALLED_COMMANDS:
+        print "Already invoked %s, skipping." % command.__name__
+        return
+    print "Invoking %s..." % command.__name__
+    _CALLED_COMMANDS.add(command)
+    command(*args, **kwargs)
 
 #
 # Standard Fabric commands:
