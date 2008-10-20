@@ -29,6 +29,7 @@ import sys
 import threading
 import time
 import types
+from functools import partial, wraps
 
 try:
     import paramiko as ssh
@@ -707,6 +708,23 @@ def _rolling_strategy(fn, *args, **kwargs):
         host = env['fab_host']
         client = host_conn.client
         _try_run_operation(fn, host, client, env, *args, **kwargs)
+
+#
+# Utility decorators:
+#
+# TODO: register these (for the help system).
+
+def _new_operator_decorator(operator, *use_args, **use_kwargs):
+    def decorator(command):
+        @wraps(command)
+        def decorated(*args, **kwargs):
+            operator(*use_args, **use_kwargs)
+            command(*args, **kwargs)
+        return decorated
+    return decorator
+
+requires = partial(_new_operator_decorator, require)
+depends = partial(_new_operator_decorator, call_once)
 
 #
 # Internal plumbing:
