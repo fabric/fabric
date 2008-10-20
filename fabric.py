@@ -223,14 +223,23 @@ def require(*varnames, **kwargs):
 def prompt(varname, msg, validate=None, default=None):
     """
     Display a prompt to the user and store the input in the given variable.
-    If the variable already exists, then it is not prompted for again.
+    If the variable already exists, then it is not prompted for again. (Unless
+    it doesn't validate, see below.)
     
     The 'validate' parameter is a callable that raises an exception on invalid
     inputs and returns the input for storage in ENV.
+    
     It may process the input and convert it to a different type, as in the
     second example below.
     
+    If 'validate' is instead given as a string, it will be used as a regular
+    expression against which the input must match.
+    
+    If validation fails, the exception message will be printed and prompt will
+    be called repeatedly until a valid value is given.
+    
     Example:
+    
         # Simplest form:
         prompt('environment', 'Please specify target environment')
         
@@ -239,10 +248,15 @@ def prompt(varname, msg, validate=None, default=None):
         
         # With validation, i.e. require integer input:
         prompt('nice', 'Please specify process nice level', validate=int)
+        
+        # With validation against a regular expression:
+        prompt('release', 'Please supply a release name',
+                validate=r'^\w+-\d+(\.\d+)?$')
     
     """
+    value = None
     if varname in ENV and ENV[varname] is not None:
-        return
+        value = ENV[varname]
     
     if callable(default):
         default = default()
@@ -250,12 +264,20 @@ def prompt(varname, msg, validate=None, default=None):
     try:
         default_str = default and (" [%s]" % str(default).strip()) or ""
         prompt_msg = _lazy_format("%s%s: " % (msg.strip(), default_str))
-        value = raw_input(prompt_msg)
-        if not value:
-            value = default
         
-        if callable(validate):
-            value = validate(value)
+        if isinstance(validate, types.StringTypes):
+            validate = Matcher(validate)
+        
+        while True:
+            value = value or raw_input(prompt_msg) or default
+            if callable(validate):
+                try:
+                    value = validate(value)
+                except Exception, e:
+                    value = None
+                    print e.message
+            if value:
+                break
         
         set(**{varname: value})
     except EOFError:
@@ -729,6 +751,16 @@ depends = partial(_new_operator_decorator, call_once)
 #
 # Internal plumbing:
 #
+
+class Matcher(object):
+    def __init__(self, pattern):
+        self.regexp = re.compile(pattern)
+    def __call__(self, value):
+        regexp = self.regexp
+        if value is None or not regexp.match(value):
+            raise ValueError("Malformed value %r. Must match r'%s'." %
+                    (value, regexp.pattern))
+        return value
 
 class HostConnection(object):
     """
