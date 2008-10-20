@@ -266,7 +266,7 @@ def prompt(varname, msg, validate=None, default=None):
         prompt_msg = _lazy_format("%s%s: " % (msg.strip(), default_str))
         
         if isinstance(validate, types.StringTypes):
-            validate = Matcher(validate)
+            validate = RegexpValidator(validate)
         
         while True:
             value = value or raw_input(prompt_msg) or default
@@ -752,7 +752,7 @@ depends = partial(_new_operator_decorator, call_once)
 # Internal plumbing:
 #
 
-class Matcher(object):
+class RegexpValidator(object):
     def __init__(self, pattern):
         self.regexp = re.compile(pattern)
     def __call__(self, value):
