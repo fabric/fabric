@@ -72,7 +72,11 @@ DEFAULT_ENV = {
     'fab_quiet': False,
 }
 
-class Variables(dict):
+class Configuration(dict):
+    """
+    A variable dictionary extended to be updated by being called with keyword
+    arguments. It also provides item access via dynamic attribute lookup.
+    """
     def __getattr__(self, key):
         return self[key]
     def __setattr__(self, key, value):
@@ -80,7 +84,7 @@ class Variables(dict):
     def __call__(self, **kwargs):
         self.update(kwargs)
 
-ENV = Variables(**DEFAULT_ENV)
+ENV = Configuration(**DEFAULT_ENV)
 
 CONNECTIONS = []
 COMMANDS = {}
@@ -611,7 +615,7 @@ def load(filename, **kwargs):
         return
     _LOADED_FABFILES.add(filename)
     
-    namespace = dict(var=ENV)
+    namespace = dict(config=ENV)
     for ns in (COMMANDS, OPERATIONS, DECORATORS):
         namespace.update(ns)
     captured = {}
