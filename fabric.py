@@ -31,7 +31,7 @@ import sys
 import threading
 import time
 import types
-from functools import partial, wraps
+from functools import wraps
 
 try:
     import paramiko as ssh
@@ -159,6 +159,8 @@ def connects(op_fn):
 #
 # Helper decorators for use in fabfiles:
 #
+
+@decorator
 def hosts(*hosts):
     "Tags function object with desired fab_hosts to run on."
     def decorator(fn):
@@ -166,6 +168,7 @@ def hosts(*hosts):
         return fn
     return decorator
 
+@decorator
 def mode(mode):
     "Tags function object with desired fab_mode to run in."
     def decorator(fn):
@@ -173,6 +176,31 @@ def mode(mode):
         return fn
     return decorator
 
+@decorator
+def requires(*args, **kwargs):
+    """
+    Calls `require` with the supplied arguments prior to executing the
+    decorated command.
+    """
+    return _new_operation_decorator(require, *args, **kwargs)
+
+@decorator
+def depends(*args, **kwargs):
+    """
+    Calls `invoke` with the supplied arguments prior to executing the
+    decorated command.
+    """
+    return _new_operation_decorator(invoke, *args, **kwargs)
+
+def _new_operation_decorator(operation, *use_args, **use_kwargs):
+    def decorator(command):
+        @wraps(command)
+        def decorated(*args, **kwargs):
+            operation(*use_args, **use_kwargs)
+            command(*args, **kwargs)
+        decorated._wrapped_command = command
+        return decorated
+    return decorator
 
 #
 # Standard fabfile operations:
@@ -824,36 +852,6 @@ def _run_serially(fn, *args, **kwargs):
         if not result:
             result = res
     return result
-
-#
-# Standard decorators:
-#
-
-def _new_operation_decorator(operation, *use_args, **use_kwargs):
-    def decorator(command):
-        @wraps(command)
-        def decorated(*args, **kwargs):
-            operation(*use_args, **use_kwargs)
-            command(*args, **kwargs)
-        decorated._wrapped_command = command
-        return decorated
-    return decorator
-
-@decorator
-def requires(*args, **kwargs):
-    """
-    Calls `require` with the supplied arguments prior to executing the
-    decorated command.
-    """
-    return _new_operation_decorator(require, *args, **kwargs)
-
-@decorator
-def depends(*args, **kwargs):
-    """
-    Calls `invoke` with the supplied arguments prior to executing the
-    decorated command.
-    """
-    return _new_operation_decorator(invoke, *args, **kwargs)
 
 #
 # Internal plumbing:
