@@ -916,6 +916,7 @@ def _connect():
             user_env))
         for conn in host_connections:
             print(_indent(str(conn)))
+        for conn in host_connections:
             conn.connect()
         CONNECTIONS += host_connections
 
