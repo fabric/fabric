@@ -70,10 +70,11 @@ CONNECTIONS = []
 COMMANDS = {}
 OPERATIONS = {}
 STRATEGIES = {}
+DECORATORS = {}
 _LAZY_FORMAT_SUBSTITUTER = re.compile(r'\$\((?P<var>\w+?)\)')
 
 _LOADED_FABFILES = set()
-_CALLED_COMMANDS = set()
+_EXECUTED_COMMANDS = set()
 
 #
 # Compatibility fixes
@@ -105,6 +106,7 @@ def new_registering_decorator(registry):
 command = new_registering_decorator(COMMANDS)
 operation = new_registering_decorator(OPERATIONS)
 strategy = new_registering_decorator(STRATEGIES)
+decorator = new_registering_decorator(DECORATORS)
 
 def run_per_host(op_fn):
     def wrapper(*args, **kwargs):
@@ -563,18 +565,24 @@ def upload_project(**kwargs):
     run("rm -f " + cwd_name + ".tar.gz", **kwargs)
 
 @operation
-def call_once(command, *args, **kwargs):
+def invoke(*commands):
     """
-    Calls the supplied command unless it has already been called.
+    Invokes the supplied command, unless it has already been run.
+    
+    Commands is a list of either command references, or tuples of (command,
+    kwargs) where kwargs is a dict of keyword arguments that will be applied
+    when the command is run.
+    
+    `command` may be a callable or the name of the command.
     """
-    # TODO: *commands; and invoke via _execute_commands?
-    # TODO: what, if any, messages?
-    if command in _CALLED_COMMANDS:
-        print "Already invoked %s, skipping." % command.__name__
-        return
-    print "Invoking %s..." % command.__name__
-    _CALLED_COMMANDS.add(command)
-    command(*args, **kwargs)
+    for item in commands:
+        if isinstance(item, tuple):
+            cmd, args = item
+        else:
+            cmd, args = item, None
+        if isinstance(cmd, basestring):
+            cmd = COMMANDS[item]
+        _execute_command(cmd.__name__, args)
 
 #
 # Standard Fabric commands:
@@ -593,6 +601,10 @@ def _help(**kwargs):
     `op` parameter set to the name of the operation you would like to learn
     more about. For instance, to learn more about the `run` operation, you
     could run `fab help:op=run`.
+
+    Fabric also exposes some utility decorators for use with your own commands.
+    Run help with the `dec` parameter set to the name of a decorator to learn
+    more about it.
     
     Lastly, you can also learn more about a certain strategy with the `strg`
     and `strategy` parameters: `fab help:strg=rolling`.
@@ -608,6 +620,8 @@ def _help(**kwargs):
                 _print_help_for_in(kwargs[k], OPERATIONS)
             elif k in ['strg', 'strategy']:
                 _print_help_for_in(kwargs[k], STRATEGIES)
+            elif k in ['dec', 'decorator']:
+                _print_help_for_in(kwargs[k], DECORATORS)
             else:
                 _print_help_for(k, None)
     else:
@@ -752,9 +766,8 @@ def _rolling_strategy(fn, *args, **kwargs):
         _try_run_operation(fn, host, client, env, *args, **kwargs)
 
 #
-# Utility decorators:
+# Standard decorators:
 #
-# TODO: register these (for the help system).
 
 def _new_operator_decorator(operator, *use_args, **use_kwargs):
     def decorator(command):
@@ -765,8 +778,21 @@ def _new_operator_decorator(operator, *use_args, **use_kwargs):
         return decorated
     return decorator
 
-requires = partial(_new_operator_decorator, require)
-depends = partial(_new_operator_decorator, call_once)
+@decorator
+def requires(*args, **kwargs):
+    """
+    Calls `require` with the supplied arguments prior to executing the
+    decorated command.
+    """
+    return _new_operator_decorator(require, *args, **kwargs)
+
+@decorator
+def depends(*args, **kwargs):
+    """
+    Calls `invoke` with the supplied arguments prior to executing the
+    decorated command.
+    """
+    return _new_operator_decorator(invoke, *args, **kwargs)
 
 #
 # Internal plumbing:
@@ -1081,12 +1107,21 @@ def _validate_commands(cmds):
                 sys.exit(1)
 
 def _execute_commands(cmds):
-    for cmd, args in cmds:
-        ENV['fab_cur_command'] = cmd
-        print("Running %s..." % cmd)
-        if args is not None:
-            args = dict(zip(args.keys(), map(_lazy_format, args.values())))
-        COMMANDS[cmd](**(args or {}))
+    for cmd_name, args in cmds:
+        _execute_command(cmd_name, args)
+
+def _execute_command(cmd_name, args):
+    cmd = COMMANDS[cmd_name]
+    if cmd in _EXECUTED_COMMANDS:
+        print "Skipping %s (already invoked)." % cmd_name
+        return
+    _EXECUTED_COMMANDS.add(cmd)
+    ENV['fab_cur_command'] = cmd_name
+    print("Running %s..." % cmd_name)
+    if args is not None:
+        args = dict(zip(args.keys(), map(_lazy_format, args.values())))
+    cmd(**(args or {}))
+
 
 def main():
     args = sys.argv[1:]
@@ -1113,5 +1148,5 @@ def main():
         # we might leave stale threads if we don't explicitly exit()
         sys.exit(1)
     sys.exit(0)
-    
+
 
