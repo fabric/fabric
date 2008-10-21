@@ -50,7 +50,7 @@ __about__ = '''\
    under certain conditions. Please reference full license for details.
 '''
 
-ENV = {
+DEFAULT_ENV = {
     'fab_version': __version__,
     'fab_author': __author__,
     'fab_mode': 'rolling',
@@ -65,6 +65,16 @@ ENV = {
     'fab_print_real_sudo': False,
     'fab_fail': 'abort',
 }
+
+class Variables(dict):
+    def __getattr__(self, key):
+        return self[key]
+    def __setattr__(self, key, value):
+        self[key] = value
+    def __call__(self, **kwargs):
+        self.update(kwargs)
+
+ENV = Variables(**DEFAULT_ENV)
 
 CONNECTIONS = []
 COMMANDS = {}
@@ -532,8 +542,14 @@ def load(filename, **kwargs):
         return
     _LOADED_FABFILES.add(filename)
     
-    execfile(filename)
-    for name, obj in locals().items():
+    namespace = dict(var=ENV)
+    for ns in (COMMANDS, OPERATIONS, DECORATORS):
+        namespace.update(ns)
+    captured = {}
+    
+    execfile(filename, namespace, captured)
+    
+    for name, obj in captured.items():
         if not name.startswith('_') and isinstance(obj, types.FunctionType):
             COMMANDS[name] = obj
         if not name.startswith('_'):
@@ -569,11 +585,11 @@ def invoke(*commands):
     """
     Invokes the supplied command, unless it has already been run.
     
-    Commands is a list of either command references, or tuples of (command,
+    `commands` is a list of either command references, or tuples of (command,
     kwargs) where kwargs is a dict of keyword arguments that will be applied
     when the command is run.
     
-    `command` may be a callable or the name of the command.
+    The command may be a callable or a string with the command name.
     """
     for item in commands:
         if isinstance(item, tuple):
@@ -769,11 +785,11 @@ def _rolling_strategy(fn, *args, **kwargs):
 # Standard decorators:
 #
 
-def _new_operator_decorator(operator, *use_args, **use_kwargs):
+def _new_operation_decorator(operation, *use_args, **use_kwargs):
     def decorator(command):
         @wraps(command)
         def decorated(*args, **kwargs):
-            operator(*use_args, **use_kwargs)
+            operation(*use_args, **use_kwargs)
             command(*args, **kwargs)
         return decorated
     return decorator
@@ -784,7 +800,7 @@ def requires(*args, **kwargs):
     Calls `require` with the supplied arguments prior to executing the
     decorated command.
     """
-    return _new_operator_decorator(require, *args, **kwargs)
+    return _new_operation_decorator(require, *args, **kwargs)
 
 @decorator
 def depends(*args, **kwargs):
@@ -792,7 +808,7 @@ def depends(*args, **kwargs):
     Calls `invoke` with the supplied arguments prior to executing the
     decorated command.
     """
-    return _new_operator_decorator(invoke, *args, **kwargs)
+    return _new_operation_decorator(invoke, *args, **kwargs)
 
 #
 # Internal plumbing:
