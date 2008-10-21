@@ -236,7 +236,7 @@ def prompt(varname, msg, validate=None, default=None):
     It may process the input and convert it to a different type, as in the
     second example below.
     
-    If 'validate' is instead given as a string, it will be used as a regular
+    If `validate` is instead given as a string, it will be used as a regular
     expression against which the input must match.
     
     If validation fails, the exception message will be printed and prompt will
