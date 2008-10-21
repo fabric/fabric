@@ -911,6 +911,7 @@ def _connect():
             user_env))
         for conn in host_connections:
             print(_indent(str(conn)))
+        for conn in host_connections:
             conn.connect()
         CONNECTIONS += host_connections
 
@@ -1111,6 +1112,10 @@ def _execute_commands(cmds):
                 _check_fab_hosts()
                 _connect()
                 break
+        if ENV['fab_local_mode'] in ('rolling', 'fanout'):
+            print("Warning: The 'rolling' and 'fanout' fab_modes are " +
+                  "deprecated.\n   Use 'broad' and 'deep' instead.")
+            ENV['fab_local_mode'] = 'broad'
         # Run command once, with each operation running once per host.
         if ENV['fab_local_mode'] == 'broad':
             command(**(args or {}))
@@ -1124,6 +1129,8 @@ def _execute_commands(cmds):
                     command(**(args or {}))
             else:
                 command(**(args or {}))
+        else:
+            _fail({'fail':'abort'}, "Unknown fab_mode: '$(fab_mode)'")
         # Disconnect (to clear things up for next command)
         # TODO: be intelligent, persist connections for hosts
         # that will be used again this session.

@@ -3,7 +3,7 @@ def setUp(self):
 def test_cli_arg_parsing(self):
     tests = [
         ("abc", ("abc", {})),
-        ("ab:c", ("ab", {'c':''})),
+        ("ab:c", ("ab", {'c':'c'})),
         ("a:b=c", ('a', {'b':'c'})),
         ("a:b=c,d=e", ('a', {'b':'c','d':'e'})),
     ]

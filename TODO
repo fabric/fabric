@@ -2,8 +2,9 @@
 7   need something like roles in Capistrano
     - I'm thinking the ability to work with variable environments as first class
       objects
-9   make fanout mode work
+9   make parallel submode work
 11  add built-in help for built-in variables
+    - and modes and submodes
 13  reduce print & exit() statements to as few functions as possible
 14  also comment internal/private functions, if only a little
 15  figure out a way to do plugins
@@ -11,6 +12,7 @@
 16  get a better shell
 21  automated test suite
 22  find alternative to the deprecated 'execfile()'
+    - compile() + eval() makes a combo worth considering (if it works in py3k).
 24  add escaping to _lazy_format
 25  turn fabric the module, into fabric the package
 26  fix upload_website when new files are added
