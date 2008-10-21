@@ -1134,6 +1134,8 @@ def _execute_commands(cmds):
                     command(**(args or {}))
             else:
                 command(**(args or {}))
+        else:
+            _fail({'fail':'abort'}, "Unknown fab_mode: '$(fab_mode)'")
         # Disconnect (to clear things up for next command)
         # TODO: be intelligent, persist connections for hosts
         # that will be used again this session.
