@@ -898,9 +898,9 @@ def _shell(**kwargs):
         if line == 'exit':
             break
         elif line.startswith('sudo '):
-            sudo(line[5:])
+            sudo(line[5:], fail='warn')
         else:
-            run(line)
+            run(line, fail='warn')
 
 #
 # Per-operation execution strategies for "broad" mode.
