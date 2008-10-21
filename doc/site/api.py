@@ -97,6 +97,5 @@ out.write("""
 write_document([
     ('Commands', fabric.COMMANDS),
     ('Operations', fabric.OPERATIONS),
-    ('Strategies', fabric.STRATEGIES),
 ])
 

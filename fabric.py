@@ -23,7 +23,9 @@ import os
 import os.path
 import pwd
 import re
+import readline
 import signal
+import socket
 import subprocess
 import sys
 import threading
@@ -53,10 +55,13 @@ __about__ = '''\
 DEFAULT_ENV = {
     'fab_version': __version__,
     'fab_author': __author__,
-    'fab_mode': 'rolling',
+    'fab_mode': 'broad',
+    'fab_submode': 'serial',
     'fab_port': 22,
+    'fab_hosts': [],
     'fab_user': pwd.getpwuid(os.getuid())[0],
     'fab_password': None,
+    'fab_sudo_prompt': 'sudo password:',
     'fab_pkey': None,
     'fab_key_filename': None,
     'fab_new_host_key': 'accept',
@@ -64,6 +69,7 @@ DEFAULT_ENV = {
     'fab_timestamp': datetime.datetime.utcnow().strftime('%F_%H-%M-%S'),
     'fab_print_real_sudo': False,
     'fab_fail': 'abort',
+    'fab_quiet': False,
 }
 
 class Variables(dict):
@@ -79,7 +85,6 @@ ENV = Variables(**DEFAULT_ENV)
 CONNECTIONS = []
 COMMANDS = {}
 OPERATIONS = {}
-STRATEGIES = {}
 DECORATORS = {}
 _LAZY_FORMAT_SUBSTITUTER = re.compile(r'\$\((?P<var>\w+?)\)')
 
@@ -100,7 +105,7 @@ else:
             return (txt[:idx], sep, txt[idx + len(sep):])
 
 #
-# Helper decorators:
+# Helper decorators for use in Fabric itself:
 #
 def new_registering_decorator(registry):
     def registering_decorator(first_arg=None):
@@ -115,17 +120,59 @@ def new_registering_decorator(registry):
     return registering_decorator
 command = new_registering_decorator(COMMANDS)
 operation = new_registering_decorator(OPERATIONS)
-strategy = new_registering_decorator(STRATEGIES)
 decorator = new_registering_decorator(DECORATORS)
 
-def run_per_host(op_fn):
+def connects(op_fn):
     def wrapper(*args, **kwargs):
-        if not CONNECTIONS:
-            _connect()
-        _on_hosts_do(op_fn, *args, **kwargs)
+        # If broad, run per host.
+        if ENV['fab_local_mode'] == 'broad':
+            # If serial, run on each host in order
+            if ENV['fab_submode'] == 'serial':
+                return _run_serially(op_fn, *args, **kwargs)
+            # If parallel, create per-host threads
+            elif ENV['fab_submode'] == 'parallel':
+                return _run_parallel(op_fn, *args, **kwargs)
+        # If deep, no need to multiplex here, just run for the current host
+        # (set farther up the stack)
+        elif ENV['fab_local_mode'] == 'deep':
+            # host_conn is stored in global ENV only if we're in deep mode.
+            host_conn = ENV['fab_host_conn']
+            env = host_conn.get_env()
+            env['fab_current_operation'] = op_fn.__name__
+            host = env['fab_host']
+            client = host_conn.client
+            return _try_run_operation(op_fn, host, client, env, *args, **kwargs)
+        # Only broad/deep supported.
+        else:
+            print("Unsupported fab_mode: %s" % ENV['fab_local_mode'])
+            print("Supported modes are 'broad' or 'deep'.")
+            sys.exit(1)
+
+    # Mark this operation as requiring a connection
+    wrapper.connects = True
+    # Copy over original docstring, name
     wrapper.__doc__ = op_fn.__doc__
     wrapper.__name__ = op_fn.__name__
     return wrapper
+
+
+#
+# Helper decorators for use in fabfiles:
+#
+def hosts(*hosts):
+    "Tags function object with desired fab_hosts to run on."
+    def decorator(fn):
+        fn.hosts = hosts
+        return fn
+    return decorator
+
+def mode(mode):
+    "Tags function object with desired fab_mode to run in."
+    def decorator(fn):
+        fn.mode = mode
+        return fn
+    return decorator
+
 
 #
 # Standard fabfile operations:
@@ -300,7 +347,7 @@ def prompt(varname, msg, validate=None, default=None):
         return
 
 @operation
-@run_per_host
+@connects
 def put(host, client, env, localpath, remotepath, **kwargs):
     """
     Upload a file to the current hosts.
@@ -332,7 +379,7 @@ def put(host, client, env, localpath, remotepath, **kwargs):
     return True
 
 @operation
-@run_per_host
+@connects
 def download(host, client, env, remotepath, localpath, **kwargs):
     """
     Download a file from the remote hosts.
@@ -366,7 +413,7 @@ def download(host, client, env, remotepath, localpath, **kwargs):
     return True
 
 @operation
-@run_per_host
+@connects
 def run(host, client, env, cmd, **kwargs):
     """
     Run a shell command on the current fab_hosts.
@@ -390,22 +437,21 @@ def run(host, client, env, cmd, **kwargs):
     real_cmd = _escape_bash_specialchars(real_cmd)
     if not _confirm_proceed('run', host, kwargs):
         return False
-    print("[%s] run: %s" % (host, cmd))
+    if not env['fab_quiet']:
+        print("[%s] run: %s" % (host, cmd))
     chan = client._transport.open_session()
     chan.exec_command(real_cmd)
-    bufsize = -1
-    stdin = chan.makefile('wb', bufsize)
-    stdout = chan.makefile('rb', bufsize)
-    stderr = chan.makefile_stderr('rb', bufsize)
-    
-    out_th = _start_outputter("[%s] out" % host, stdout)
-    err_th = _start_outputter("[%s] err" % host, stderr)
+    capture = []
+
+    out_th = _start_outputter("[%s] out" % host, chan, env, capture=capture)
+    err_th = _start_outputter("[%s] err" % host, chan, env, stderr=True)
     status = chan.recv_exit_status()
     chan.close()
-    return status == 0
+
+    return ("".join(capture).strip(), status == 0)
 
 @operation
-@run_per_host
+@connects
 def sudo(host, client, env, cmd, **kwargs):
     """
     Run a sudo (root privileged) command on the current hosts.
@@ -427,29 +473,26 @@ def sudo(host, client, env, cmd, **kwargs):
     
     """
     cmd = _lazy_format(cmd, env)
-    passwd = env['fab_password']
-    sudo_cmd = passwd and "sudo -S " or "sudo "
-    real_cmd = env['fab_shell'] % (sudo_cmd + cmd.replace('"', '\\"'))
+    real_cmd = env['fab_shell'] % (
+        "sudo -S -p '%s' " % ENV['fab_sudo_prompt']
+        + cmd.replace('"', '\\"')
+    )
+    real_cmd = _escape_bash_specialchars(real_cmd)
     cmd = env['fab_print_real_sudo'] and real_cmd or cmd
     if not _confirm_proceed('sudo', host, kwargs):
         return False # TODO: should we return False in fail??
-    print("[%s] sudo: %s" % (host, cmd))
+    if not env['fab_quiet']:
+        print("[%s] sudo: %s" % (host, cmd))
     chan = client._transport.open_session()
-    real_cmd = _escape_bash_specialchars(real_cmd)
     chan.exec_command(real_cmd)
-    bufsize = -1
-    stdin = chan.makefile('wb', bufsize)
-    stdout = chan.makefile('rb', bufsize)
-    stderr = chan.makefile_stderr('rb', bufsize)
-    if passwd:
-        stdin.write(env['fab_password'])
-        stdin.write('\n')
-        stdin.flush()
-    out_th = _start_outputter("[%s] out" % host, stdout)
-    err_th = _start_outputter("[%s] err" % host, stderr)
+    capture = []
+
+    out_th = _start_outputter("[%s] out" % host, chan, env, capture=capture)
+    err_th = _start_outputter("[%s] err" % host, chan, env, stderr=True)
     status = chan.recv_exit_status()
     chan.close()
-    return status == 0
+
+    return ("".join(capture).strip(), status == 0)
 
 @operation
 def local(cmd, **kwargs):
@@ -497,13 +540,11 @@ def local_per_host(cmd, **kwargs):
         local_per_host("scp -i login.key stuff.zip $(fab_host):stuff.zip")
     
     """
-    _check_fab_hosts()
     con_envs = [con.get_env() for con in CONNECTIONS]
     if not con_envs:
         # we might not have connected yet
-        for hostname in ENV['fab_hosts']:
-            env = {}
-            env.update(ENV)
+        for hostname in ENV['fab_local_hosts']:
+            env = dict(ENV)
             env['fab_host'] = hostname
             con_envs.append(env)
     for env in con_envs:
@@ -581,6 +622,12 @@ def upload_project(**kwargs):
     run("rm -f " + cwd_name + ".tar.gz", **kwargs)
 
 @operation
+def abort(msg):
+    "Simple way for users to have their commands abort the process."
+    print(_lazy_format('[$(fab_host)] Error: %s' % msg, ENV))
+    sys.exit(1)
+
+@operation
 def invoke(*commands):
     """
     Invokes the supplied command, unless it has already been run.
@@ -603,6 +650,7 @@ def invoke(*commands):
 #
 # Standard Fabric commands:
 #
+@mode("broad")
 @command("help")
 def _help(**kwargs):
     """
@@ -622,9 +670,6 @@ def _help(**kwargs):
     Run help with the `dec` parameter set to the name of a decorator to learn
     more about it.
     
-    Lastly, you can also learn more about a certain strategy with the `strg`
-    and `strategy` parameters: `fab help:strg=rolling`.
-    
     """
     if kwargs:
         for k, v in kwargs.items():
@@ -634,8 +679,6 @@ def _help(**kwargs):
                 _print_help_for_in(k, OPERATIONS)
             elif k in ['op', 'operation']:
                 _print_help_for_in(kwargs[k], OPERATIONS)
-            elif k in ['strg', 'strategy']:
-                _print_help_for_in(kwargs[k], STRATEGIES)
             elif k in ['dec', 'decorator']:
                 _print_help_for_in(kwargs[k], DECORATORS)
             else:
@@ -655,6 +698,7 @@ def _print_about(**kwargs):
     "Display Fabric version, warranty and license information"
     print(__about__ % ENV)
 
+@mode("broad")
 @command("list")
 def _list_commands(**kwargs):
     """
@@ -663,9 +707,7 @@ def _list_commands(**kwargs):
     By default, the list command prints a list of available commands, with a
     short description (if one is available). However, the list command can also
     print a list of available operations if you provide it with the `ops` or
-    `operations` parameters, or it can print strategies with the `strgs` and
-    `strategies` parameters.
-    
+    `operations` parameters.
     """
     if kwargs:
         for k, v in kwargs.items():
@@ -675,22 +717,19 @@ def _list_commands(**kwargs):
             elif k in ['ops', 'operations']:
                 print("Available operations are:")
                 _list_objs(OPERATIONS)
-            elif k in ['strgs', 'strategies']:
-                print("Available strategies are:")
-                _list_objs(STRATEGIES)
             else:
                 print("Don't know how to list '%s'." % k)
                 print("Try one of these instead:")
                 print(_indent('\n'.join([
                     'cmds', 'commands',
                     'ops', 'operations',
-                    'strgs', 'strategies',
                 ])))
                 sys.exit(1)
     else:
         print("Available commands are:")
         _list_objs(COMMANDS)
 
+@mode("broad")
 @command("set")
 def _set(**kwargs):
     """
@@ -703,6 +742,7 @@ def _set(**kwargs):
     for k, v in kwargs.items():
         ENV[k] = (v % ENV)
 
+@mode("broad")
 @command("shell")
 def _shell(**kwargs):
     """
@@ -745,10 +785,9 @@ def _shell(**kwargs):
             run(line, fail='warn')
 
 #
-# Standard strategies:
+# Per-operation execution strategies for "broad" mode.
 #
-@strategy("fanout")
-def _fanout_strategy(fn, *args, **kwargs):
+def _run_parallel(fn, *args, **kwargs):
     """
     A strategy that executes on all hosts in parallel.
     
@@ -770,16 +809,21 @@ def _fanout_strategy(fn, *args, **kwargs):
     map(threading.Thread.start, threads)
     map(threading.Thread.join, threads)
 
-@strategy("rolling")
-def _rolling_strategy(fn, *args, **kwargs):
+def _run_serially(fn, *args, **kwargs):
     """One-at-a-time fail-fast strategy."""
     err_msg = "The $(fab_current_operation) operation failed on $(fab_host)"
+    # Capture the first output in case someone really wants captured output
+    # while running in broad mode.
+    result = None
     for host_conn in CONNECTIONS:
         env = host_conn.get_env()
         env['fab_current_operation'] = fn.__name__
         host = env['fab_host']
         client = host_conn.client
-        _try_run_operation(fn, host, client, env, *args, **kwargs)
+        res = _try_run_operation(fn, host, client, env, *args, **kwargs)
+        if not result:
+            result = res
+    return result
 
 #
 # Standard decorators:
@@ -888,7 +932,15 @@ class HostConnection(object):
         password = env['fab_password']
         pkey = env['fab_pkey']
         key_filename = env['fab_key_filename']
-        client.connect(host, port, username, password, pkey, key_filename)
+        try:
+            client.connect(host, port, username, password, pkey, key_filename,
+                timeout=10)
+        except socket.timeout:
+            print('Error: timed out trying to connect to %s' % host)
+            sys.exit(1)
+        except socket.gaierror:
+            print('Error: name lookup failed for %s' % host)
+            sys.exit(1)
     def __str__(self):
         return self.host_local_env['fab_host']
 
@@ -934,25 +986,21 @@ def _list_objs(objs):
             print
 
 def _check_fab_hosts():
-    "Check that we have a fab_hosts variable, and complain if it's missing."
-    if 'fab_hosts' not in ENV:
-        print("Fabric requires a fab_hosts variable.")
-        print("Please set it in your fabfile.")
-        print("Example: set(fab_hosts=['node1.com', 'node2.com'])")
-        sys.exit(1)
-    if len(ENV['fab_hosts']) == 0:
-        print("The fab_hosts list was empty.")
-        print("Please specify some hosts to connect to.")
-        sys.exit(1)
-
+    "Check that we have a fab_hosts variable, and prompt if it's missing."
+    if not ENV.get('fab_local_hosts'):
+        prompt('fab_input_hosts', 'Please specify host or hosts to connect to (comma-separated)')
+        hosts = ENV['fab_input_hosts']
+        hosts = [x.strip() for x in hosts.split(',')]
+        ENV['fab_local_hosts'] = hosts
+    
 def _connect():
-    "Populate CONNECTIONS with HostConnection instances as per fab_hosts."
-    _check_fab_hosts()
+    """Populate CONNECTIONS with HostConnection instances as per current
+    fab_local_hosts."""
     signal.signal(signal.SIGINT, lambda: _disconnect() and sys.exit(0))
     global CONNECTIONS
     def_port = ENV['fab_port']
     username = ENV['fab_user']
-    fab_hosts = ENV['fab_hosts']
+    fab_hosts = ENV['fab_local_hosts']
     user_envs = {}
     host_connections_by_user = {}
     
@@ -979,10 +1027,11 @@ def _connect():
         user_env.update(user_envs[user])
         print(_lazy_format("Logging into the following hosts as $(fab_user):",
             user_env))
-        print(_indent('\n'.join(map(str, host_connections))))
-        map(HostConnection.connect, host_connections)
+        for conn in host_connections:
+            print(_indent(str(conn)))
+        for conn in host_connections:
+            conn.connect()
         CONNECTIONS += host_connections
-    set(fab_connected=True)
 
 def _disconnect():
     "Disconnect all clients."
@@ -1003,45 +1052,30 @@ def _lazy_format(string, env=ENV):
             return match.group(0)
     return re.sub(_LAZY_FORMAT_SUBSTITUTER, replacer_fn, string % env)
 
-def _escape_bash_specialchars(cmd):
-    return cmd.replace("$", "\\$")
-
-def _on_hosts_do(fn, *args, **kwargs):
-    """
-    Invoke the given function with hostname and client parameters in
-    accord with the current fab_mode strategy.
-    
-    fn should be a callable taking these parameters:
-        hostname : str
-        client : paramiko.SSHClient
-        *args
-        **kwargs
-    
-    """
-    strategy = ENV['fab_mode']
-    if strategy in STRATEGIES:
-        strategy_fn = STRATEGIES[strategy]
-        strategy_fn(fn, *args, **kwargs)
-    else:
-        print("Unsupported fab_mode: %s" % strategy)
-        print("Supported modes are: %s" % (', '.join(STRATEGIES.keys())))
-        sys.exit(1)
-
 def _try_run_operation(fn, host, client, env, *args, **kwargs):
     """
-    Used by strategies to attempt the execution of an operation, and handle
-    any failures appropriately.
+    Used to attempt the execution of an operation, and handle any failures 
+    appropriately.
     """
     err_msg = "The $(fab_current_operation) operation failed on $(fab_host)"
-    success = False
+    result = False
     try:
-        success = fn(host, client, env, *args, **kwargs)
+        result = fn(host, client, env, *args, **kwargs)
     except SystemExit:
         raise
     except BaseException, e:
         _fail(kwargs, err_msg + ':\n' + _indent(str(e)), env)
+    # Check for split output + return code (tuple)
+    if isinstance(result, tuple):
+        output, success = result
+    # If not a tuple, assume just a pass/fail boolean.
+    else:
+        output = ""
+        success = result
     if not success:
         _fail(kwargs, err_msg + '.', env)
+    # Return any captured output (will execute if fail != abort)
+    return output
 
 def _confirm_proceed(exec_type, host, kwargs):
     if 'confirm' in kwargs:
@@ -1069,13 +1103,71 @@ def _fail(kwargs, msg, env=ENV):
             sys.exit(1)
 
 
-def _start_outputter(prefix, channel):
-    def outputter():
-        line = channel.readline()
-        while line:
-            print("%s: %s" % (prefix, line)),
-            line = channel.readline()
-    thread = threading.Thread(None, outputter, prefix)
+def _start_outputter(prefix, chan, env, stderr=False, capture=None):
+    def outputter(prefix, chan, env, stderr, capture):
+        # Read one "packet" at a time, which lets us get less-than-a-line
+        # chunks of text, such as sudo prompts. However, we still print
+        # them to the user one line at a time. (We also eat sudo prompts.)
+        leftovers = ""
+        while True:
+            out = None
+            if not stderr:
+                out = chan.recv(65535)
+            else:
+                out = chan.recv_stderr(65535)
+            if out is not None:
+                # Capture if necessary
+                if capture is not None:
+                    capture += out
+
+                # Handle any password prompts
+                initial_prompt = re.findall(r'^%s$' % env['fab_sudo_prompt'],
+                    out, re.I|re.M)
+                again_prompt = re.findall(r'^Sorry, try again', out, re.I|re.M)
+                if initial_prompt or again_prompt:
+                    # First, get or prompt for password
+                    PASS_PROMPT = "Password for $(fab_user)@$(fab_host)$(fab_passprompt_suffix)"
+                    old_password = env.get('fab_password')
+                    if old_password:
+                        # Just set up prompt in case we're at an again prompt
+                        env['fab_passprompt_suffix'] = " [Enter for previous]: "
+                    else:
+                        # Set prompt, then ask for a password
+                        env['fab_passprompt_suffix'] = ": "
+                        # Get pass, and make sure we communicate it back to the
+                        # global ENV since that was obviously empty.
+                        ENV['fab_password'] = env['fab_password'] = \
+                            getpass.getpass(_lazy_format(PASS_PROMPT, env))
+                    # Re-prompt -- whatever we supplied last time (the
+                    # current value of env['fab_password']) was incorrect.
+                    # Don't overwrite ENV because it might not be empty.
+                    if again_prompt:
+                        env['fab_password'] = \
+                            getpass.getpass(_lazy_format(PASS_PROMPT, env))
+                    # Either way, we have a password now, so send it.
+                    chan.sendall(env['fab_password']+'\n')
+                    out = ""
+
+                # Deal with line breaks, printing all lines and storing the
+                # leftovers, if any.
+                if '\n' in out:
+                    parts = out.split('\n')
+                    line = leftovers + parts.pop(0)
+                    leftovers = parts.pop()
+                    while parts or line:
+                        if not env['fab_quiet']:
+                            sys.stdout.write("%s: %s\n" % (prefix, line)),
+                            sys.stdout.flush()
+                        if parts:
+                            line = parts.pop(0)
+                        else:
+                            line = ""
+                # If no line breaks, just keep adding to leftovers
+                else:
+                    leftovers += out
+
+    thread = threading.Thread(None, outputter, prefix,
+        (prefix, chan, env, stderr, capture))
     thread.setDaemon(True)
     thread.start()
     return thread
@@ -1123,20 +1215,54 @@ def _validate_commands(cmds):
                 sys.exit(1)
 
 def _execute_commands(cmds):
-    for cmd_name, args in cmds:
-        _execute_command(cmd_name, args)
+    for cmd, args in cmds:
+        _execute_command(cmd, args)
 
-def _execute_command(cmd_name, args):
-    cmd = COMMANDS[cmd_name]
-    if cmd in _EXECUTED_COMMANDS:
-        print "Skipping %s (already invoked)." % cmd_name
+def _execute_command(cmd, args):
+    # Setup
+    command = COMMANDS[cmd]
+    
+    if command in _EXECUTED_COMMANDS:
+        print "Skipping %s (already invoked)." % cmd
         return
-    _EXECUTED_COMMANDS.add(cmd)
-    ENV['fab_cur_command'] = cmd_name
-    print("Running %s..." % cmd_name)
+    _EXECUTED_COMMANDS.add(command)
+    
+    ENV['fab_cur_command'] = cmd
+    print("Running %s..." % cmd)
     if args is not None:
         args = dict(zip(args.keys(), map(_lazy_format, args.values())))
-    cmd(**(args or {}))
+    ENV['fab_local_mode'] = getattr(command, 'mode', ENV['fab_mode'])
+    ENV['fab_local_hosts'] = getattr(command, 'hosts', ENV['fab_hosts'])
+    # Determine whether we need to connect for this command, do so if so
+    for operation in command.func_code.co_names:
+        if getattr(OPERATIONS.get(operation), 'connects', False):
+            _check_fab_hosts()
+            _connect()
+            break
+    if ENV['fab_local_mode'] in ('rolling', 'fanout'):
+        print("Warning: The 'rolling' and 'fanout' fab_modes are " +
+                "deprecated.\n   Use 'broad' and 'deep' instead.")
+        ENV['fab_local_mode'] = 'broad'
+    # Run command once, with each operation running once per host.
+    if ENV['fab_local_mode'] == 'broad':
+        command(**(args or {}))
+    # Run entire command once per host.
+    elif ENV['fab_local_mode'] == 'deep':
+        # Gracefully handle local-only commands
+        if CONNECTIONS:
+            for host_conn in CONNECTIONS:
+                ENV['fab_host_conn'] = host_conn
+                ENV['fab_host'] = host_conn.host_local_env['fab_host']
+                command(**(args or {}))
+        else:
+            command(**(args or {}))
+    # Disconnect (to clear things up for next command)
+    # TODO: be intelligent, persist connections for hosts
+    # that will be used again this session.
+    _disconnect()
+
+def _escape_bash_specialchars(txt):
+    return txt.replace('$', "\\$")
 
 
 def main():
