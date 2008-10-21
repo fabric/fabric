@@ -457,7 +457,6 @@ def local(cmd, **kwargs):
         _fail(kwargs, "Local command failed:\n" + _indent(final_cmd))
 
 @operation
-@connects
 def local_per_host(cmd, **kwargs):
     """
     Run a command locally, for every defined host.
@@ -475,8 +474,14 @@ def local_per_host(cmd, **kwargs):
         local_per_host("scp -i login.key stuff.zip $(fab_host):stuff.zip")
     
     """
-    for host_conn in CONNECTIONS:
-        env = host_conn.get_env()
+    con_envs = [con.get_env() for con in CONNECTIONS]
+    if not con_envs:
+        # we might not have connected yet
+        for hostname in ENV['fab_local_hosts']:
+            env = dict(ENV)
+            env['fab_host'] = hostname
+            con_envs.append(env)
+    for env in con_envs:
         final_cmd = _lazy_format(cmd, env)
         print(_lazy_format("[localhost/$(fab_host)] run: " + final_cmd, env))
         retcode = subprocess.call(final_cmd, shell=True)
