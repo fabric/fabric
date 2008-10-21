@@ -835,6 +835,7 @@ def _new_operation_decorator(operation, *use_args, **use_kwargs):
         def decorated(*args, **kwargs):
             operation(*use_args, **use_kwargs)
             command(*args, **kwargs)
+        decorated._wrapped_command = command
         return decorated
     return decorator
 
@@ -1234,11 +1235,9 @@ def _execute_command(cmd, args):
     ENV['fab_local_mode'] = getattr(command, 'mode', ENV['fab_mode'])
     ENV['fab_local_hosts'] = getattr(command, 'hosts', ENV['fab_hosts'])
     # Determine whether we need to connect for this command, do so if so
-    for operation in command.func_code.co_names:
-        if getattr(OPERATIONS.get(operation), 'connects', False):
-            _check_fab_hosts()
-            _connect()
-            break
+    if _needs_connect(command):
+        _check_fab_hosts()
+        _connect()
     if ENV['fab_local_mode'] in ('rolling', 'fanout'):
         print("Warning: The 'rolling' and 'fanout' fab_modes are " +
                 "deprecated.\n   Use 'broad' and 'deep' instead.")
@@ -1260,6 +1259,12 @@ def _execute_command(cmd, args):
         # TODO: be intelligent, persist connections for hosts
         # that will be used again this session.
         _disconnect()
+
+def _needs_connect(command):
+    command = getattr(command, '_wrapped_command', command)
+    for operation in command.func_code.co_names:
+        if getattr(OPERATIONS.get(operation), 'connects', False):
+            return True
 
 def _escape_bash_specialchars(txt):
     return txt.replace('$', "\\$")
