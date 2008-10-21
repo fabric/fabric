@@ -9,9 +9,9 @@ pre {
     background-color: #0A2C1E;
     padding-left: 2em;
     border: 1px solid #0A2C1E;
-    -moz-border-radius: 10px;
-    -webkit-border-radius: 10px;
-    border-radius: 10px; /* from CSS3 working draft */
+    -moz-border-radius: 9px;
+    -webkit-border-radius: 9px;
+    border-radius: 9px; /* from CSS3 working draft */
 }
 
 #top {

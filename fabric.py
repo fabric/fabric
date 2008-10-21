@@ -119,16 +119,17 @@ def set(**variables):
     """
     Set a number of Fabric environment variables.
     
-    set() takes a number of keyword arguments, and defines or updates the
+    `set()` takes a number of keyword arguments, and defines or updates the
     variables that correspond to each keyword with the respective value.
     
     The values can be of any type, but strings are used for most variables.
     If the value is a string and contain any eager variable references, such as
-    %(fab_user)s, then these will be expanded to their corresponding value.
-    Lazy references, those beginning with a $ rather than a %, will not be
+    `%(fab_user)s`, then these will be expanded to their corresponding value.
+    Lazy references, those beginning with a `$` rather than a `%`, will not be
     expanded.
     
     Example:
+    
         set(fab_user='joe.shmoe', fab_mode='rolling')
     
     """
@@ -144,7 +145,7 @@ def get(name, otherwise=None):
     Get the value of a given Fabric environment variable.
     
     If the variable isn't found, then this operation returns the
-    value of the 'otherwise' parameter, which is None unless set.
+    value of the `otherwise` parameter, which is None unless set.
     
     """
     return ENV.get(name, otherwise)
@@ -154,9 +155,10 @@ def getAny(*names):
     """
     Given a list of variable names as parameters, get the value of the first
     of these variables that is actually defined (and does not resolve to
-    boolean False), or None.
+    boolean `False`), or `None`.
     
     Example:
+    
         getAny('hostname', 'ipv4', 'ipv6', 'ip', 'address')
     
     """
@@ -167,32 +169,45 @@ def getAny(*names):
     # Implicit return value of None here if no names found.
 
 @operation
-def require(var, **kwargs):
+def require(*varnames, **kwargs):
     """
-    Make sure that a certain environment variable is available.
+    Make sure that certain environment variables are available.
     
-    The 'var' parameter is a string that names the variable to check for.
+    The `varnames` parameters are one or more strings that names the variables
+    to check for.
+    
     Two other optional kwargs are supported:
-        * 'used_for' is a string that gets injected into, and then printed, as
-          something like this string: "This variable is used for %s".
-        * 'provided_by' is a list of strings that name commands which the user
-          can run in order to satisfy the requirement.
     
-    If the required variable is not found in the current environment, then the
-    operation is stopped and Fabric halts.
+     * `used_for` is a string that gets injected into, and then printed, as
+       something like this string: `"This variable is used for %s"`.
+     * `provided_by` is a list of strings that name commands which the user
+       can run in order to satisfy the requirement, or references to the
+       actual command functions them selves.
     
-    Example:
+    If the required variables are not found in the current environment, then 
+    the operation is stopped and Fabric halts.
+    
+    Examples:
+
+        # One variable name
         require('project_name',
             used_for='finding the target deployment dir.',
             provided_by=['staging', 'production'],
         )
     
+        # Multiple variable names
+        require('project_name', 'install_dir', provided_by=[stg, prod])
+
     """
-    if var in ENV:
+    if all([var in ENV for var in varnames]):
         return
+    if len(varnames) == 1:
+        vars_msg = "a %r variable." % varnames[0]
+    else:
+        vars_msg = "the variables %s." % ", ".join(
+                ["%r" % vn for vn in varnames])
     print(
-        ("The '%(fab_cur_command)s' command requires a '" + var
-        + "' variable.") % ENV
+        ("The '%(fab_cur_command)s' command requires " + vars_msg) % ENV
     )
     if 'used_for' in kwargs:
         print("This variable is used for %s" % _lazy_format(
@@ -210,12 +225,14 @@ def prompt(varname, msg, validate=None, default=None):
     Display a prompt to the user and store the input in the given variable.
     If the variable already exists, then it is not prompted for again.
     
-    The 'validate' parameter is a callable that raises an exception on invalid
-    inputs and returns the input for storage in ENV.
+    The `validate` parameter is a callable that raises an exception on invalid
+    inputs and returns the input for storage in `ENV`.
+    
     It may process the input and convert it to a different type, as in the
     second example below.
     
     Example:
+    
         # Simplest form:
         prompt('environment', 'Please specify target environment')
         
@@ -252,18 +269,20 @@ def put(host, client, env, localpath, remotepath, **kwargs):
     """
     Upload a file to the current hosts.
     
-    The 'localpath' parameter is the relative or absolute path to the file on
-    your localhost that you wish to upload to the fab_hosts.
-    The 'remotepath' parameter is the destination path on the individual
-    fab_hosts, and relative paths are relative to the fab_user's home
+    The `localpath` parameter is the relative or absolute path to the file on
+    your localhost that you wish to upload to the `fab_hosts`.
+    The `remotepath` parameter is the destination path on the individual
+    `fab_hosts`, and relative paths are relative to the fab_user's home
     directory.
     
-    May take an additional 'fail' keyword argument with one of these values:
-        * ignore - do nothing on failure
-        * warn - print warning on failure
-        * abort - terminate fabric on failure
+    May take an additional `fail` keyword argument with one of these values:
+    
+     * ignore - do nothing on failure
+     * warn - print warning on failure
+     * abort - terminate fabric on failure
     
     Example:
+    
         put('bin/project.zip', '/tmp/project.zip')
     
     """
@@ -282,22 +301,24 @@ def download(host, client, env, remotepath, localpath, **kwargs):
     """
     Download a file from the remote hosts.
     
-    The 'remotepath' parameter is the relative or absolute path to the files
-    to download from the fab_hosts. The 'localpath' parameter will be suffixed
-    with the individual hostname from which they were downloaded, and the
-    downloaded files will then be stored in those respective paths.
+    The `remotepath` parameter is the relative or absolute path to the files
+    to download from the `fab_hosts`. The `localpath` parameter will be
+    suffixed with the individual hostname from which they were downloaded, and
+    the downloaded files will then be stored in those respective paths.
     
-    May take an additional 'fail' keyword argument with one of these values:
-        * ignore - do nothing on failure
-        * warn - print warning on failure
-        * abort - terminate fabric on failure
+    May take an additional `fail` keyword argument with one of these values:
+    
+     * ignore - do nothing on failure
+     * warn - print warning on failure
+     * abort - terminate fabric on failure
     
     Example:
+    
         set(fab_hosts=['node1.cluster.com', 'node2.cluster.com'])
         download('/var/log/server.log', 'server.log')
     
     The above code will produce two files on your local system, called
-    "server.log.node1.cluster.com" and "server.log.node2.cluster.com"
+    `server.log.node1.cluster.com` and `server.log.node2.cluster.com`
     respectively.
     
     """
@@ -315,14 +336,16 @@ def run(host, client, env, cmd, **kwargs):
     Run a shell command on the current fab_hosts.
     
     The provided command is executed with the permissions of fab_user, and the
-    exact execution environ is determined by the fab_shell variable.
+    exact execution environ is determined by the `fab_shell` variable.
     
-    May take an additional 'fail' keyword argument with one of these values:
-        * ignore - do nothing on failure
-        * warn - print warning on failure
-        * abort - terminate fabric on failure
+    May take an additional `fail` keyword argument with one of these values:
+    
+     * ignore - do nothing on failure
+     * warn - print warning on failure
+     * abort - terminate fabric on failure
     
     Example:
+    
         run("ls")
     
     """
@@ -352,16 +375,18 @@ def sudo(host, client, env, cmd, **kwargs):
     Run a sudo (root privileged) command on the current hosts.
     
     The provided command is executed with root permissions, provided that
-    fab_user is in the sudoers file in the remote host. The exact execution
-    environ is determined by the fab_shell variable - the 'sudo' part is
+    `fab_user` is in the sudoers file in the remote host. The exact execution
+    environ is determined by the `fab_shell` variable - the `sudo` part is
     injected into this variable.
     
-    May take an additional 'fail' keyword argument with one of these values:
-        * ignore - do nothing on failure
-        * warn - print warning on failure
-        * abort - terminate fabric on failure
+    May take an additional `fail` keyword argument with one of these values:
+    
+     * ignore - do nothing on failure
+     * warn - print warning on failure
+     * abort - terminate fabric on failure
     
     Example:
+    
         sudo("install_script.py")
     
     """
@@ -395,15 +420,17 @@ def local(cmd, **kwargs):
     """
     Run a command locally.
     
-    This operation is essentially 'os.system()' except that variables are
+    This operation is essentially `os.system()` except that variables are
     expanded prior to running.
     
     May take an additional 'fail' keyword argument with one of these values:
-        * ignore - do nothing on failure
-        * warn - print warning on failure
-        * abort - terminate fabric on failure
+    
+     * ignore - do nothing on failure
+     * warn - print warning on failure
+     * abort - terminate fabric on failure
     
     Example:
+    
         local("make clean dist", fail='abort')
     
     """
@@ -419,16 +446,18 @@ def local_per_host(cmd, **kwargs):
     """
     Run a command locally, for every defined host.
     
-    Like the local() operation, this is pretty similar to 'os.system()', but
+    Like the `local()` operation, this is pretty similar to `os.system()`, but
     with this operation, the command is executed (and have its variables
-    expanded) for each host in fab_hosts.
+    expanded) for each host in `fab_hosts`.
     
-    May take an additional 'fail' keyword argument with one of these values:
-        * ignore - do nothing on failure
-        * warn - print warning on failure
-        * abort - terminate fabric on failure
+    May take an additional `fail` keyword argument with one of these values:
+    
+     * ignore - do nothing on failure
+     * warn - print warning on failure
+     * abort - terminate fabric on failure
     
     Example:
+    
         local_per_host("scp -i login.key stuff.zip $(fab_host):stuff.zip")
     
     """
@@ -453,16 +482,18 @@ def load(filename, **kwargs):
     """
     Load up the given fabfile.
     
-    This loads the fabfile specified by the 'filename' parameter into fabric
+    This loads the fabfile specified by the `filename` parameter into fabric
     and make its commands and other functions available in the scope of the 
     current fabfile.
     
-    May take an additional 'fail' keyword argument with one of these values:
-        * ignore - do nothing on failure
-        * warn - print warning on failure
-        * abort - terminate fabric on failure
+    May take an additional `fail` keyword argument with one of these values:
+    
+     * ignore - do nothing on failure
+     * warn - print warning on failure
+     * abort - terminate fabric on failure
     
     Example:
+    
         load("conf/production-settings.py")
     
     """
@@ -484,10 +515,10 @@ def upload_project(**kwargs):
     
     This is a higher-level convenience operation that basically 'tar' up the
     directory that contains your fabfile (presumably it is your project
-    directory), uploads it to the fab_hosts and 'untar' it.
+    directory), uploads it to the `fab_hosts` and 'untar' it.
     
     This operation expects the tar command-line utility to be available on your
-    local machine, and it also expects your system to have a /tmp directory
+    local machine, and it also expects your system to have a `/tmp` directory
     that is writeable.
     
     Unless something fails half-way through, this operation will make sure to
@@ -512,16 +543,16 @@ def _help(**kwargs):
     
     You can provide help with a parameter and get more detailed help for a
     specific command. For instance, to learn more about the list command, you
-    could run 'fab help:list'.
+    could run `fab help:list`.
     
     If you are developing your own fabfile, then you might also be interested
     in learning more about operations. You can do this by running help with the
-    'op' parameter set to the name of the operation you would like to learn
-    more about. For instance, to learn more about the 'run' operation, you
-    could run 'fab help:op=run'.
+    `op` parameter set to the name of the operation you would like to learn
+    more about. For instance, to learn more about the `run` operation, you
+    could run `fab help:op=run`.
     
-    Lastly, you can also learn more about a certain strategy with the 'strg'
-    and 'strategy' parameters: 'fab help:strg=rolling'.
+    Lastly, you can also learn more about a certain strategy with the `strg`
+    and `strategy` parameters: `fab help:strg=rolling`.
     
     """
     if kwargs:
@@ -540,8 +571,8 @@ def _help(**kwargs):
         print("""
     Fabric is a simple pythonic remote deployment tool.
     
-    Type 'fab list' to get a list of available commands.
-    Type 'fab help:help' to get more information on how to use the built in
+    Type `fab list` to get a list of available commands.
+    Type `fab help:help` to get more information on how to use the built in
     help.
     
     """)
@@ -558,9 +589,9 @@ def _list_commands(**kwargs):
     
     By default, the list command prints a list of available commands, with a
     short description (if one is available). However, the list command can also
-    print a list of available operations if you provide it with the 'ops' or
-    'operations' parameters, or it can print strategies with the 'strgs' and
-    'strategies' parameters.
+    print a list of available operations if you provide it with the `ops` or
+    `operations` parameters, or it can print strategies with the `strgs` and
+    `strategies` parameters.
     
     """
     if kwargs:
@@ -593,6 +624,7 @@ def _set(**kwargs):
     Set a Fabric variable.
     
     Example:
+    
         $fab set:fab_user=billy,other_var=other_value
     """
     for k, v in kwargs.items():
@@ -606,12 +638,13 @@ def _shell(**kwargs):
     Optionally takes a list of hostnames as arguments, if Fabric is, by
     the time this command runs, not already connected to one or more
     hosts. If you provide hostnames and Fabric is already connected, then
-    Fabric will, depending on fab_fail, complain and abort.
+    Fabric will, depending on `fab_fail`, complain and abort.
     
-    The fab_fail variable can be overwritten with the 'set' command, or
-    by specifying an additional 'fail' argument.
+    The `fab_fail` variable can be overwritten with the `set` command, or
+    by specifying an additional `fail` argument.
     
     Examples:
+    
         $fab shell
         $fab shell:localhost,127.0.0.1
         $fab shell:localhost,127.0.0.1,fail=warn
@@ -963,7 +996,7 @@ def _parse_args(args):
             cmd, cmd_str_args = cmd.split(':', 1)
             for cmd_arg_kv in cmd_str_args.split(','):
                 k, _, v = partition(cmd_arg_kv, '=')
-                cmd_args[k] = (v % ENV)
+                cmd_args[k] = (v % ENV) or k
         cmds.append((cmd, cmd_args))
     return cmds
 
