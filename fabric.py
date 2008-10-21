@@ -662,7 +662,8 @@ def abort(msg):
 @operation
 def invoke(*commands):
     """
-    Invokes the supplied command, unless it has already been run.
+    Invokes the supplied command only if it has not yet been run (with the
+    given arguments, if any).
     
     `commands` is a list of either command references, or tuples of (command,
     kwargs) where kwargs is a dict of keyword arguments that will be applied
@@ -677,7 +678,7 @@ def invoke(*commands):
             cmd, args = item, None
         if isinstance(cmd, basestring):
             cmd = COMMANDS[item]
-        _execute_command(cmd.__name__, args)
+        _execute_command(cmd.__name__, args, True)
 
 #
 # Standard Fabric commands:
@@ -1221,19 +1222,20 @@ def _execute_commands(cmds):
     for cmd, args in cmds:
         _execute_command(cmd, args)
 
-def _execute_command(cmd, args):
+def _execute_command(cmd, args, skip_executed=False):
     # Setup
     command = COMMANDS[cmd]
+    if args is not None:
+        args = dict(zip(args.keys(), map(_lazy_format, args.values())))
     
-    if command in _EXECUTED_COMMANDS:
-        print "Skipping %s (already invoked)." % cmd
+    if skip_executed and _has_executed(command, args):
+        args_msg = args and (" with %r" % args) or ""
+        print "Skipping %s (already invoked%s)." % (cmd, args_msg)
         return
-    _EXECUTED_COMMANDS.add(command)
+    _remember_executed(command, args)
     
     ENV['fab_cur_command'] = cmd
     print("Running %s..." % cmd)
-    if args is not None:
-        args = dict(zip(args.keys(), map(_lazy_format, args.values())))
     ENV['fab_local_mode'] = getattr(command, 'mode', ENV['fab_mode'])
     ENV['fab_local_hosts'] = getattr(command, 'hosts', ENV['fab_hosts'])
     # Determine whether we need to connect for this command, do so if so
@@ -1261,6 +1263,20 @@ def _execute_command(cmd, args):
         # TODO: be intelligent, persist connections for hosts
         # that will be used again this session.
         _disconnect()
+
+def _has_executed(command, args):
+    return (command, _args_hash(args)) in _EXECUTED_COMMANDS
+
+def _remember_executed(command, args):
+    try:
+        _EXECUTED_COMMANDS.add((command, _args_hash(args)))
+    except TypeError:
+        pass
+
+def _args_hash(args):
+    if not args:
+        return None
+    return tuple(sorted(args.items()))
 
 def _needs_connect(command):
     command = getattr(command, '_wrapped_command', command)
