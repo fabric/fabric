@@ -1255,11 +1255,11 @@ def _execute_command(cmd, args):
                 ENV['fab_host'] = host_conn.host_local_env['fab_host']
                 command(**(args or {}))
         else:
-            command(**(args or {}))
-    # Disconnect (to clear things up for next command)
-    # TODO: be intelligent, persist connections for hosts
-    # that will be used again this session.
-    _disconnect()
+            _fail({'fail':'abort'}, "Unknown fab_mode: '$(fab_mode)'")
+        # Disconnect (to clear things up for next command)
+        # TODO: be intelligent, persist connections for hosts
+        # that will be used again this session.
+        _disconnect()
 
 def _escape_bash_specialchars(txt):
     return txt.replace('$', "\\$")
