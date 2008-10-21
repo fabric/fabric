@@ -90,10 +90,17 @@ CONNECTIONS = []
 COMMANDS = {}
 OPERATIONS = {}
 DECORATORS = {}
-_LAZY_FORMAT_SUBSTITUTER = re.compile(r'\$\((?P<var>\w+?)\)')
+
+def _new_namespace():
+    namespace = dict(config=ENV)
+    for ns in (COMMANDS, OPERATIONS, DECORATORS):
+        namespace.update(ns)
+    return namespace
 
 _LOADED_FABFILES = set()
 _EXECUTED_COMMANDS = set()
+
+_LAZY_FORMAT_SUBSTITUTER = re.compile(r'\$\((?P<var>\w+?)\)')
 
 #
 # Compatibility fixes
@@ -592,8 +599,10 @@ def load(filename, **kwargs):
     Load up the given fabfile.
     
     This loads the fabfile specified by the `filename` parameter into fabric
-    and make its commands and other functions available in the scope of the 
+    and makes its commands and other functions available in the scope of the 
     current fabfile.
+    
+    If the file has already been loaded it will not be loaded again.
     
     May take an additional `fail` keyword argument with one of these values:
     
@@ -615,13 +624,8 @@ def load(filename, **kwargs):
         return
     _LOADED_FABFILES.add(filename)
     
-    namespace = dict(config=ENV)
-    for ns in (COMMANDS, OPERATIONS, DECORATORS):
-        namespace.update(ns)
     captured = {}
-    
-    execfile(filename, namespace, captured)
-    
+    execfile(filename, _new_namespace(), captured)
     for name, obj in captured.items():
         if not name.startswith('_') and isinstance(obj, types.FunctionType):
             COMMANDS[name] = obj
@@ -665,11 +669,11 @@ def invoke(*commands):
     Invokes the supplied command only if it has not yet been run (with the
     given arguments, if any).
     
-    `commands` is a list of either command references, or tuples of (command,
-    kwargs) where kwargs is a dict of keyword arguments that will be applied
-    when the command is run.
+    The arguments in `commands` should be either command references or tuples
+    of (command, kwargs) where kwargs is a dict of keyword arguments that will
+    be applied when the command is run.
     
-    The command may be a callable or a string with the command name.
+    A command reference can be a callable or a string with the command name.
     """
     for item in commands:
         if isinstance(item, tuple):
