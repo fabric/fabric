@@ -209,7 +209,8 @@ def _new_operation_decorator(operation, *use_args, **use_kwargs):
         def decorated(*args, **kwargs):
             operation(*use_args, **use_kwargs)
             command(*args, **kwargs)
-        decorated._wrapped_command = command
+        decorated._wrapped_command = getattr(
+                command, '_wrapped_command', command)
         return decorated
     return decorator
 
