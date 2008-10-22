@@ -1262,11 +1262,13 @@ def _execute_command(cmd, args, skip_executed=False):
                 ENV['fab_host'] = host_conn.host_local_env['fab_host']
                 command(**(args or {}))
         else:
-            _fail({'fail':'abort'}, "Unknown fab_mode: '$(fab_mode)'")
-        # Disconnect (to clear things up for next command)
-        # TODO: be intelligent, persist connections for hosts
-        # that will be used again this session.
-        _disconnect()
+            command(**(args or {}))
+    else:
+        _fail({'fail':'abort'}, "Unknown fab_mode: '$(fab_mode)'")
+    # Disconnect (to clear things up for next command)
+    # TODO: be intelligent, persist connections for hosts
+    # that will be used again this session.
+    _disconnect()
 
 def _has_executed(command, args):
     return (command, _args_hash(args)) in _EXECUTED_COMMANDS
@@ -1280,7 +1282,7 @@ def _remember_executed(command, args):
 def _args_hash(args):
     if not args:
         return None
-    return tuple(sorted(args.items()))
+    return hash(tuple(sorted(args.items())))
 
 def _needs_connect(command):
     command = getattr(command, '_wrapped_command', command)
