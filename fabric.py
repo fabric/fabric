@@ -890,6 +890,10 @@ class HostConnection(object):
             'fab_port': port,
         }
         self.client = None
+    def __eq__(self, other):
+        return hash(self) == hash(other)
+    def __hash__(self):
+        return hash(tuple(sorted(self.host_local_env.items())))
     def get_env(self):
         "Create a new environment that is the union of local and global envs."
         env = dict(self.global_env)
@@ -1002,8 +1006,13 @@ def _check_fab_hosts():
         ENV['fab_local_hosts'] = hosts
     
 def _connect():
-    """Populate CONNECTIONS with HostConnection instances as per current
-    fab_local_hosts."""
+    """
+    Populate `CONNECTIONS` with `HostConnection` instances as per current
+    `fab_local_hosts`.
+    
+    Returns whether or not a connect was actually made (since nested command
+    invocations may reuse existing connections).
+    """
     signal.signal(signal.SIGINT, lambda: _disconnect() and sys.exit(0))
     global CONNECTIONS
     def_port = ENV['fab_port']
@@ -1030,6 +1039,7 @@ def _connect():
             host_connections_by_user[user].append(conn)
     
     # Print and establish connections
+    did_connect = False
     for user, host_connections in host_connections_by_user.iteritems():
         user_env = dict(ENV)
         user_env.update(user_envs[user])
@@ -1038,8 +1048,11 @@ def _connect():
         for conn in host_connections:
             print(_indent(str(conn)))
         for conn in host_connections:
-            conn.connect()
-        CONNECTIONS += host_connections
+            if conn not in CONNECTIONS:
+                conn.connect()
+                CONNECTIONS.append(conn)
+                did_connect = True
+    return did_connect
 
 def _disconnect():
     "Disconnect all clients."
@@ -1243,9 +1256,10 @@ def _execute_command(cmd, args, skip_executed=False):
     ENV['fab_local_mode'] = getattr(command, 'mode', ENV['fab_mode'])
     ENV['fab_local_hosts'] = getattr(command, 'hosts', ENV['fab_hosts'])
     # Determine whether we need to connect for this command, do so if so
+    did_connect = False
     if _needs_connect(command):
         _check_fab_hosts()
-        _connect()
+        did_connect = _connect()
     if ENV['fab_local_mode'] in ('rolling', 'fanout'):
         print("Warning: The 'rolling' and 'fanout' fab_modes are " +
               "deprecated.\n   Use 'broad' and 'deep' instead.")
@@ -1268,7 +1282,8 @@ def _execute_command(cmd, args, skip_executed=False):
     # Disconnect (to clear things up for next command)
     # TODO: be intelligent, persist connections for hosts
     # that will be used again this session.
-    _disconnect()
+    if did_connect:
+        _disconnect()
 
 def _has_executed(command, args):
     return (command, _args_hash(args)) in _EXECUTED_COMMANDS
