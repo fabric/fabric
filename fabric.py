@@ -1248,7 +1248,7 @@ def _execute_command(cmd, args, skip_executed=False):
         _connect()
     if ENV['fab_local_mode'] in ('rolling', 'fanout'):
         print("Warning: The 'rolling' and 'fanout' fab_modes are " +
-                "deprecated.\n   Use 'broad' and 'deep' instead.")
+              "deprecated.\n   Use 'broad' and 'deep' instead.")
         ENV['fab_local_mode'] = 'broad'
     # Run command once, with each operation running once per host.
     if ENV['fab_local_mode'] == 'broad':
