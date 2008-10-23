@@ -31,6 +31,7 @@ import sys
 import threading
 import time
 import types
+from collections import deque
 from functools import wraps
 
 try:
@@ -134,6 +135,7 @@ operation = new_registering_decorator(OPERATIONS)
 decorator = new_registering_decorator(DECORATORS)
 
 def connects(op_fn):
+    @wraps(op_fn)
     def wrapper(*args, **kwargs):
         # If broad, run per host.
         if ENV['fab_local_mode'] == 'broad':
@@ -158,12 +160,8 @@ def connects(op_fn):
             print("Unsupported fab_mode: %s" % ENV['fab_local_mode'])
             print("Supported modes are 'broad' or 'deep'.")
             sys.exit(1)
-
     # Mark this operation as requiring a connection
     wrapper.connects = True
-    # Copy over original docstring, name
-    wrapper.__doc__ = op_fn.__doc__
-    wrapper.__name__ = op_fn.__name__
     return wrapper
 
 
@@ -193,7 +191,7 @@ def requires(*args, **kwargs):
     Calls `require` with the supplied arguments prior to executing the
     decorated command.
     """
-    return _new_operation_decorator(require, *args, **kwargs)
+    return _new_call_chain_decorator(require, *args, **kwargs)
 
 @decorator
 def depends(*args, **kwargs):
@@ -201,17 +199,17 @@ def depends(*args, **kwargs):
     Calls `invoke` with the supplied arguments prior to executing the
     decorated command.
     """
-    return _new_operation_decorator(invoke, *args, **kwargs)
+    return _new_call_chain_decorator(invoke, *args, **kwargs)
 
-def _new_operation_decorator(operation, *use_args, **use_kwargs):
+def _new_call_chain_decorator(operation, *op_args, **op_kwargs):
+    if getattr(operation, 'connects', False):
+        raise TypeError("Operation %s needs connect and cannot be chained." %
+                operation)
     def decorator(command):
-        @wraps(command)
-        def decorated(*args, **kwargs):
-            operation(*use_args, **use_kwargs)
-            command(*args, **kwargs)
-        decorated._wrapped_command = getattr(
-                command, '_wrapped_command', command)
-        return decorated
+        chain = command._call_chain = getattr(
+                command, '_call_chain', deque())
+        chain.appendleft(lambda: operation(*op_args, **op_kwargs))
+        return command
     return decorator
 
 #
@@ -1007,13 +1005,8 @@ def _check_fab_hosts():
         ENV['fab_local_hosts'] = hosts
     
 def _connect():
-    """
-    Populate `CONNECTIONS` with `HostConnection` instances as per current
-    `fab_local_hosts`.
-    
-    Returns whether or not a connect was actually made (since nested command
-    invocations may reuse existing connections).
-    """
+    """Populate CONNECTIONS with HostConnection instances as per current
+    fab_local_hosts."""
     signal.signal(signal.SIGINT, lambda: _disconnect() and sys.exit(0))
     global CONNECTIONS
     def_port = ENV['fab_port']
@@ -1040,7 +1033,6 @@ def _connect():
             host_connections_by_user[user].append(conn)
     
     # Print and establish connections
-    did_connect = False
     for user, host_connections in host_connections_by_user.iteritems():
         user_env = dict(ENV)
         user_env.update(user_envs[user])
@@ -1049,11 +1041,8 @@ def _connect():
         for conn in host_connections:
             print(_indent(str(conn)))
         for conn in host_connections:
-            if conn not in CONNECTIONS:
-                conn.connect()
-                CONNECTIONS.append(conn)
-                did_connect = True
-    return did_connect
+            conn.connect()
+        CONNECTIONS += host_connections
 
 def _disconnect():
     "Disconnect all clients."
@@ -1245,22 +1234,51 @@ def _execute_command(cmd, args, skip_executed=False):
     command = COMMANDS[cmd]
     if args is not None:
         args = dict(zip(args.keys(), map(_lazy_format, args.values())))
-    
+    # Remember executed commands. Don't run them again if skip_executed.
     if skip_executed and _has_executed(command, args):
         args_msg = args and (" with %r" % args) or ""
-        print "Skipping %s (already invoked%s)." % (cmd, args_msg)
+        print("Skipping %s (already invoked%s)." % (cmd, args_msg))
         return
     _remember_executed(command, args)
-    
+    # Invoke eventual chained calls prior to the command.
+    if ENV.get('fab_cur_command'):
+        print("Chaining %s..." % cmd)
+    else:
+        print("Running %s..." % cmd)
     ENV['fab_cur_command'] = cmd
-    print("Running %s..." % cmd)
+    call_chain = getattr(command, '_call_chain', None)
+    if call_chain:
+        for chained in call_chain:
+            chained()
+        if ENV['fab_cur_command'] != cmd:
+            print("Back in %s..." % cmd)
+            ENV['fab_cur_command'] = cmd
+    # Determine target host and execute command.
+    _execute_at_target(command, args)
+    # Done
+    ENV['fab_cur_command'] = None
+
+def _has_executed(command, args):
+    return (command, _args_hash(args)) in _EXECUTED_COMMANDS
+
+def _remember_executed(command, args):
+    try:
+        _EXECUTED_COMMANDS.add((command, _args_hash(args)))
+    except TypeError:
+        print "Warning: could not remember execution (unhashable arguments)."
+
+def _args_hash(args):
+    if not args:
+        return None
+    return hash(tuple(sorted(args.items())))
+
+def _execute_at_target(command, args):
     ENV['fab_local_mode'] = getattr(command, 'mode', ENV['fab_mode'])
     ENV['fab_local_hosts'] = getattr(command, 'hosts', ENV['fab_hosts'])
     # Determine whether we need to connect for this command, do so if so
-    did_connect = False
     if _needs_connect(command):
         _check_fab_hosts()
-        did_connect = _connect()
+        _connect()
     if ENV['fab_local_mode'] in ('rolling', 'fanout'):
         print("Warning: The 'rolling' and 'fanout' fab_modes are " +
               "deprecated.\n   Use 'broad' and 'deep' instead.")
@@ -1283,25 +1301,9 @@ def _execute_command(cmd, args, skip_executed=False):
     # Disconnect (to clear things up for next command)
     # TODO: be intelligent, persist connections for hosts
     # that will be used again this session.
-    if did_connect:
-        _disconnect()
-
-def _has_executed(command, args):
-    return (command, _args_hash(args)) in _EXECUTED_COMMANDS
-
-def _remember_executed(command, args):
-    try:
-        _EXECUTED_COMMANDS.add((command, _args_hash(args)))
-    except TypeError:
-        pass
-
-def _args_hash(args):
-    if not args:
-        return None
-    return hash(tuple(sorted(args.items())))
+    _disconnect()
 
 def _needs_connect(command):
-    command = getattr(command, '_wrapped_command', command)
     for operation in command.func_code.co_names:
         if getattr(OPERATIONS.get(operation), 'connects', False):
             return True
