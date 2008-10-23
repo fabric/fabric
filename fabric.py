@@ -155,11 +155,6 @@ def connects(op_fn):
             host = env['fab_host']
             client = host_conn.client
             return _try_run_operation(op_fn, host, client, env, *args, **kwargs)
-        # Only broad/deep supported.
-        else:
-            print("Unsupported fab_mode: %s" % ENV['fab_local_mode'])
-            print("Supported modes are 'broad' or 'deep'.")
-            sys.exit(1)
     # Mark this operation as requiring a connection
     wrapper.connects = True
     return wrapper
@@ -231,7 +226,7 @@ def set(**variables):
     
     Example:
     
-        set(fab_user='joe.shmoe', fab_mode='rolling')
+        set(fab_user='joe.shmoe', fab_mode='broad')
     
     """
     for k, v in variables.items():
