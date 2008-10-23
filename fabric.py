@@ -177,7 +177,7 @@ def set(**variables):
     
     Example:
     
-        set(fab_user='joe.shmoe', fab_mode='rolling')
+        set(fab_user='joe.shmoe', fab_mode='broad')
     
     """
     for k, v in variables.items():
