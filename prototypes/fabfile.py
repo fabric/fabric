@@ -39,3 +39,20 @@ def test_global_assignment():
     global global_variables_are_available
     assert global_variables_are_available == 1
     local("echo all double-good.")
+
+def test_prompting():
+    # Simplest form:
+    prompt('environment', 'Please specify target environment')
+    
+    # With default:
+    prompt('dish', 'Specify favorite dish', default='spam & eggs')
+    
+    # With validation, i.e. require integer input:
+    prompt('nice', 'Please specify process nice level', validate=int)
+    
+    # With validation against a regular expression:
+    prompt('release', 'Please supply a release name',
+            validate=r'^\w+-\d+(\.\d+)?$')
+
+def hello():
+    local("echo hello")
