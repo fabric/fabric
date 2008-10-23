@@ -59,7 +59,7 @@ DEFAULT_ENV = {
     'fab_mode': 'broad',
     'fab_submode': 'serial',
     'fab_port': 22,
-    'fab_hosts': [],
+#    'fab_hosts': [], # require()'ing on fab_hosts is a common idiom.
     'fab_user': pwd.getpwuid(os.getuid())[0],
     'fab_password': None,
     'fab_sudo_prompt': 'sudo password:',
@@ -1277,7 +1277,7 @@ def _args_hash(args):
 
 def _execute_at_target(command, args):
     ENV['fab_local_mode'] = getattr(command, 'mode', ENV['fab_mode'])
-    ENV['fab_local_hosts'] = getattr(command, 'hosts', ENV['fab_hosts'])
+    ENV['fab_local_hosts'] = getattr(command, 'hosts', ENV.get('fab_hosts'))
     # Determine whether we need to connect for this command, do so if so
     if _needs_connect(command):
         _check_fab_hosts()
@@ -1313,7 +1313,6 @@ def _needs_connect(command):
 
 def _escape_bash_specialchars(txt):
     return txt.replace('$', "\\$")
-
 
 def main():
     args = sys.argv[1:]
