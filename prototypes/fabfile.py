@@ -56,3 +56,24 @@ def test_prompting():
 
 def hello():
     local("echo hello")
+
+@hosts('localhost')
+def test_nested_remotes_part_2():
+    "used by test_nested_remotes"
+    run("echo 2-5 $(fab_host)")
+
+# this won't connect to 127.0.0.1 when called by test_nested_remotes()!
+@hosts('localhost', '127.0.0.1')
+def test_nested_remotes_part_4():
+    "used by test_nested_remotes"
+    run("echo 4-5 $(fab_host)")
+
+@hosts('localhost')
+def test_nested_remotes():
+    "Tests nesting of commands that require connections."
+    run("echo 1-5")
+    test_nested_remotes_part_2()
+    run("echo 3-5")
+    test_nested_remotes_part_4()
+    run("echo 5-5 and done.")
+
