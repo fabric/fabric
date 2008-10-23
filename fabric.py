@@ -739,7 +739,8 @@ def _list_commands(**kwargs):
     By default, the list command prints a list of available commands, with a
     short description (if one is available). However, the list command can also
     print a list of available operations if you provide it with the `ops` or
-    `operations` parameters.
+    `operations` parameters, or it can print a list of available decorators if
+    provided with the `dec` or `decorators` parameters.
     """
     if kwargs:
         for k, v in kwargs.items():
@@ -749,12 +750,16 @@ def _list_commands(**kwargs):
             elif k in ['ops', 'operations']:
                 print("Available operations are:")
                 _list_objs(OPERATIONS)
+            elif k in ['dec', 'decorators']:
+                print("Available decorators are:")
+                _list_objs(DECORATORS)
             else:
                 print("Don't know how to list '%s'." % k)
                 print("Try one of these instead:")
                 print(_indent('\n'.join([
                     'cmds', 'commands',
                     'ops', 'operations',
+                    'dec', 'decorators',
                 ])))
                 sys.exit(1)
     else:
