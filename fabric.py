@@ -361,13 +361,12 @@ def prompt(varname, msg, validate=None, default=None):
     
     if callable(default):
         default = default()
+    if isinstance(validate, types.StringTypes):
+        validate = RegexpValidator(validate)
     
     try:
         default_str = default and (" [%s]" % str(default).strip()) or ""
         prompt_msg = _lazy_format("%s%s: " % (msg.strip(), default_str))
-        
-        if isinstance(validate, types.StringTypes):
-            validate = RegexpValidator(validate)
         
         while True:
             value = value or raw_input(prompt_msg) or default
