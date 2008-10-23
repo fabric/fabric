@@ -154,7 +154,8 @@ def connects(op_fn):
             env['fab_current_operation'] = op_fn.__name__
             host = env['fab_host']
             client = host_conn.client
-            return _try_run_operation(op_fn, host, client, env, *args, **kwargs)
+            return _try_run_operation(
+                op_fn, host, client, env, *args, **kwargs)
     # Mark this operation as requiring a connection
     wrapper.connects = True
     return wrapper
@@ -994,7 +995,8 @@ def _list_objs(objs):
 def _check_fab_hosts():
     "Check that we have a fab_hosts variable, and prompt if it's missing."
     if not ENV.get('fab_local_hosts'):
-        prompt('fab_input_hosts', 'Please specify host or hosts to connect to (comma-separated)')
+        prompt('fab_input_hosts',
+            'Please specify host or hosts to connect to (comma-separated)')
         hosts = ENV['fab_input_hosts']
         hosts = [x.strip() for x in hosts.split(',')]
         ENV['fab_local_hosts'] = hosts
@@ -1132,7 +1134,8 @@ def _start_outputter(prefix, chan, env, stderr=False, capture=None):
                 again_prompt = re.findall(r'^Sorry, try again', out, re.I|re.M)
                 if initial_prompt or again_prompt:
                     # First, get or prompt for password
-                    PASS_PROMPT = "Password for $(fab_user)@$(fab_host)$(fab_passprompt_suffix)"
+                    PASS_PROMPT = ("Password for $(fab_user)@" +
+                        "$(fab_host)$(fab_passprompt_suffix)")
                     old_password = env.get('fab_password')
                     if old_password:
                         # Just set up prompt in case we're at an again prompt
