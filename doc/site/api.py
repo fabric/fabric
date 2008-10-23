@@ -97,5 +97,6 @@ out.write("""
 write_document([
     ('Commands', fabric.COMMANDS),
     ('Operations', fabric.OPERATIONS),
+    ('Decorators', fabric.DECORATORS),
 ])
 
