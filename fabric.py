@@ -380,8 +380,9 @@ def prompt(varname, msg, validate=None, default=None):
                 break
         
         set(**{varname: value})
-    except EOFError:
-        return
+    except (KeyboardInterrupt, EOFError):
+        print
+        raise KeyboardInterrupt
 
 @operation
 @connects
