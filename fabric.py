@@ -21,7 +21,6 @@ import datetime
 import getpass
 import os
 import os.path
-import pwd
 import re
 import readline
 import signal
@@ -34,12 +33,23 @@ import types
 from collections import deque
 from functools import wraps
 
+# Paramiko
 try:
     import paramiko as ssh
 except ImportError:
     print("Error: paramiko is a required module. Please install it:")
     print("  $ sudo easy_install paramiko")
     sys.exit(1)
+
+# Win32 compat
+win32 = sys.platform in ['win32', 'cygwin']
+
+if not win32:
+    import pwd
+    _username = pwd.getpwuid(os.getuid())[0]
+else:
+    import win32api
+    _username = win32api.GetUserName()
 
 __version__ = '0.0.9'
 __author__ = 'Christian Vest Hansen'
@@ -59,8 +69,7 @@ DEFAULT_ENV = {
     'fab_mode': 'broad',
     'fab_submode': 'serial',
     'fab_port': 22,
-#    'fab_hosts': [], # require()'ing on fab_hosts is a common idiom.
-    'fab_user': pwd.getpwuid(os.getuid())[0],
+    'fab_user': _username,
     'fab_password': None,
     'fab_sudo_prompt': 'sudo password:',
     'fab_pkey': None,
