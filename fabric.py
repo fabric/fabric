@@ -199,8 +199,8 @@ def depends(*args, **kwargs):
 
 def _new_call_chain_decorator(operation, *op_args, **op_kwargs):
     if getattr(operation, 'connects', False):
-        raise TypeError("Operation %s needs connect and cannot be chained." %
-                operation)
+        e = "Operation %s requires a connection and cannot be chained."
+        raise TypeError(e % operation)
     def decorator(command):
         chain = command._call_chain = getattr(
                 command, '_call_chain', deque())
@@ -677,7 +677,7 @@ def invoke(*commands):
             cmd, args = item, None
         if isinstance(cmd, basestring):
             cmd = COMMANDS[item]
-        _execute_command(cmd.__name__, args, True)
+        _execute_command(cmd.__name__, args, skip_executed=True)
 
 #
 # Standard Fabric commands:
