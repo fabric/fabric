@@ -20,4 +20,8 @@
     - so edge cases like stock OBSD, which lack bash, can be targeted.
 28  Grant more control over the output - e.g. hide 'run'/'sudo' lines
 29  Allow more interactivity -- detect remote prompts and passthru to user
-30  *
+30  Update commands to store "local" scope of some kind, such as underscored
+    helper methods which currently get stripped out entirely.
+31  Figure out how to deal with the use of different @hosts lists when running
+    more than one command in a single session.
+32  *

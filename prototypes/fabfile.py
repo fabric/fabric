@@ -77,3 +77,6 @@ def test_nested_remotes():
     test_nested_remotes_part_4()
     run("echo 5-5 and done.")
 
+_protected = "Yes!"
+def test_protected_names():
+    print "Do we have access to _protected names?", _protected

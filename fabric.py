@@ -21,7 +21,6 @@ import datetime
 import getpass
 import os
 import os.path
-import pwd
 import re
 import readline
 import signal
@@ -34,12 +33,25 @@ import types
 from collections import deque
 from functools import wraps
 
+# Paramiko
 try:
     import paramiko as ssh
 except ImportError:
     print("Error: paramiko is a required module. Please install it:")
     print("  $ sudo easy_install paramiko")
     sys.exit(1)
+
+# Win32 compat
+win32 = sys.platform in ['win32', 'cygwin']
+
+if not win32:
+    import pwd
+    _username = pwd.getpwuid(os.getuid())[0]
+else:
+    import win32api
+    import win32security
+    import win32profile
+    _username = win32api.GetUserName()
 
 __version__ = '0.0.9'
 __author__ = 'Christian Vest Hansen'
@@ -59,8 +71,7 @@ DEFAULT_ENV = {
     'fab_mode': 'broad',
     'fab_submode': 'serial',
     'fab_port': 22,
-#    'fab_hosts': [], # require()'ing on fab_hosts is a common idiom.
-    'fab_user': pwd.getpwuid(os.getuid())[0],
+    'fab_user': _username,
     'fab_password': None,
     'fab_sudo_prompt': 'sudo password:',
     'fab_pkey': None,
@@ -199,8 +210,8 @@ def depends(*args, **kwargs):
 
 def _new_call_chain_decorator(operation, *op_args, **op_kwargs):
     if getattr(operation, 'connects', False):
-        raise TypeError("Operation %s needs connect and cannot be chained." %
-                operation)
+        e = "Operation %s requires a connection and cannot be chained."
+        raise TypeError(e % operation)
     def decorator(command):
         chain = command._call_chain = getattr(
                 command, '_call_chain', deque())
@@ -677,7 +688,7 @@ def invoke(*commands):
             cmd, args = item, None
         if isinstance(cmd, basestring):
             cmd = COMMANDS[item]
-        _execute_command(cmd.__name__, args, True)
+        _execute_command(cmd.__name__, args, skip_executed=True)
 
 #
 # Standard Fabric commands:
@@ -1197,8 +1208,15 @@ def _pick_fabfile():
 
 def _load_default_settings():
     "Load user-default fabric settings from ~/.fabric"
-    # TODO: http://mail.python.org/pipermail/python-list/2006-July/393819.html
-    cfg = os.path.expanduser("~/.fabric")
+    if not win32:
+        cfg = os.path.expanduser("~/.fabric")
+    else:
+        PROCESS_QUERY_INFORMATION = 1024
+        pid = win32api.GetCurrentProcessId()
+        handle = win32api.OpenProcess(PROCESS_QUERY_INFORMATION, 0, pid)
+        token = win32security.OpenProcessToken(handle,
+            win32security.TOKEN_QUERY)
+        cfg = win32profile.GetUserProfileDirectory(token)
     if os.path.exists(cfg):
         comments = lambda s: s and not s.startswith("#")
         settings = filter(comments, open(cfg, 'r'))
