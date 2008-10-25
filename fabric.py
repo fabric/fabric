@@ -49,6 +49,8 @@ if not win32:
     _username = pwd.getpwuid(os.getuid())[0]
 else:
     import win32api
+    import win32security
+    import win32profile
     _username = win32api.GetUserName()
 
 __version__ = '0.0.9'
@@ -1206,8 +1208,15 @@ def _pick_fabfile():
 
 def _load_default_settings():
     "Load user-default fabric settings from ~/.fabric"
-    # TODO: http://mail.python.org/pipermail/python-list/2006-July/393819.html
-    cfg = os.path.expanduser("~/.fabric")
+    if not win32:
+        cfg = os.path.expanduser("~/.fabric")
+    else:
+        PROCESS_QUERY_INFORMATION = 1024
+        pid = win32api.GetCurrentProcessId()
+        handle = win32api.OpenProcess(PROCESS_QUERY_INFORMATION, 0, pid)
+        token = win32security.OpenProcessToken(handle,
+            win32security.TOKEN_QUERY)
+        cfg = win32profile.GetUserProfileDirectory(token)
     if os.path.exists(cfg):
         comments = lambda s: s and not s.startswith("#")
         settings = filter(comments, open(cfg, 'r'))
