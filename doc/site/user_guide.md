@@ -149,9 +149,7 @@ variable out.
 Try changing your `fabfile` so it looks like this:
 
     :::python
-    set(
-        fab_hosts = ['127.0.0.1'],
-    )
+    config.fab_hosts = ['127.0.0.1']
     
     def hello():
         "Prints hello."
@@ -201,13 +199,13 @@ instance:
 
     :::python
     def test():
-        set(fab_hosts = ['localhost'])
+        config.fab_hosts = ['localhost']
     
     def staging():
-        set(fab_hosts = ['n1.stg.python.org', 'n2.stg.python.org'])
+        config.fab_hosts = ['n1.stg.python.org', 'n2.stg.python.org']
     
     def production():
-        set(fab_hosts = ['n1.python.org', 'n2.python.org'])
+        config.fab_hosts = ['n1.python.org', 'n2.python.org']
     
     def deploy():
         'Deploy the app to the target environment'
@@ -266,17 +264,17 @@ example:
 
     :::python
     def test():
-        set(var = 'a')
-        set(cmd = 'echo %(var)s $(var)')  # line 3
-        set(var = 'b')
-        local(get('cmd'))  # line 5
+        config.var = 'a'
+        config.cmd = 'echo %(var)s $(var)'  # line 3
+        config.var = 'b'
+        local(config.cmd)  # line 5
 
 If we run that as a command with Fabric, it will print out "a b". The eager
 notation will be interpolated as soon as possible, which is line 3, but the
 lazy notation will not be evaluated until it is actually needed, in line 5,
 and by that time the value of `var` will change, resulting in the output "a b".
 
-Beyond the variables you set with the `set` operation, Fabric provides a
+Beyond the variables you set on the `config` object, Fabric provides a
 number of built-in variables. Most are for configuring Fabric itself, but some
 are also for use in the string arguments you pass to `run` and `sudo` and the
 like.

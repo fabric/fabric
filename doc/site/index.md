@@ -41,10 +41,8 @@ the commands to use and the steps to take, when you run a command with Fabric.
 And, in the simplest form, they look like this:
 
     :::python
-    set(
-        project = 'awesome-app',
-        fab_hosts = ['n1.cluster.com', 'n2.cluster.com'],
-    )
+    config.project = 'awesome-app'
+    config.fab_hosts = ['n1.cluster.com', 'n2.cluster.com']
     
     def deploy():
         "Build the project and deploy it to a specified environment."
