@@ -284,24 +284,24 @@ like.
 For a complete overview of the different variables and their use, I'm afraid
 you have to consult the source code, but here's a list of the most useful ones:
 
-* *fab_host* is available in remote operations, or other operations that take
+* `fab_host` is available in remote operations, or other operations that take
 effect on a per host basis, have access to this variable which names a
 specific host to work on.
-* *fab_hosts* defines the list of hosts to connect to, as a list of strings.
+* `fab_hosts` defines the list of hosts to connect to, as a list of strings.
 There's no default value for this variable so it must be specified if you
 want to execute any remove operations.
-* *fab_mode* specifies what strategy should be used to execute commands on the
+* `fab_mode` specifies what strategy should be used to execute commands on the
 connected hosts. The default value is "rolling" which runs the commands on one
 host at a time, without any parallelism or concurrency.
-* *fab_password* is the password used for logging into the remote hosts, and
+* `fab_password` is the password used for logging into the remote hosts, and
 to authenticate with remote `sudo` commands. Don't set this in the fabfile,
 because a password-prompt will automatically ask for it when needed.
-* *fab_port* is the port number used to connect to the remote hosts. The
+* `fab_port` is the port number used to connect to the remote hosts. The
 default value is 22, which is the default SSH port number.
-* *fab_user* is the username used to log in to the remote hosts with. The
+* `fab_user` is the username used to log in to the remote hosts with. The
 default value is derived from the containing shell that executes Fabric, that
 is, your currently logged in username.
-* *fab_timestamp* is the UTC timestamp for when Fabric was started. Generally
+* `fab_timestamp` is the UTC timestamp for when Fabric was started. Generally
 useful when naming backup files or the like.
 
 Beyond these variables, it is common practice (but not required) to set a
