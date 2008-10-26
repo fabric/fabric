@@ -359,7 +359,9 @@ And that's basically all there is to it.
 
 **TODO:**
 
-* What strategies are
+* What the different `fab_modes` do.
+* @hosts, @mode and the other decorators
+* simulating "roles" with @hosts
 
 
 [PKey]: http://www.lag.net/paramiko/docs/paramiko.PKey-class.html
