@@ -93,8 +93,13 @@ class Configuration(dict):
         return self[key]
     def __setattr__(self, key, value):
         self[key] = value
+    def __setitem__(self, key, value):
+        if isinstance(value, types.StringTypes):
+            value = (value % self)
+        dict.__setitem__(self, key, value)
     def __call__(self, **kwargs):
-        self.update(kwargs)
+        for k, v in kwargs.items():
+            self.__setitem__(k, v)
 
 ENV = Configuration(**DEFAULT_ENV)
 
