@@ -100,6 +100,11 @@ class Configuration(dict):
     def __call__(self, **kwargs):
         for k, v in kwargs.items():
             self.__setitem__(k, v)
+    def getAny(self, *names):
+        for name in names:
+            value = self.get(name)
+            if value:
+                return value
 
 ENV = Configuration(**DEFAULT_ENV)
 
@@ -227,60 +232,6 @@ def _new_call_chain_decorator(operation, *op_args, **op_kwargs):
 #
 # Standard fabfile operations:
 #
-@operation
-def set(**variables):
-    """
-    Set a number of Fabric environment variables.
-    
-    `set()` takes a number of keyword arguments, and defines or updates the
-    variables that correspond to each keyword with the respective value.
-    
-    The values can be of any type, but strings are used for most variables.
-    If the value is a string and contain any eager variable references, such as
-    `%(fab_user)s`, then these will be expanded to their corresponding value.
-    Lazy references, those beginning with a `$` rather than a `%`, will not be
-    expanded.
-    
-    Example:
-    
-        set(fab_user='joe.shmoe', fab_mode='broad')
-    
-    """
-    for k, v in variables.items():
-        if isinstance(v, types.StringTypes):
-            ENV[k] = (v % ENV)
-        else:
-            ENV[k] = v
-
-@operation
-def get(name, otherwise=None):
-    """
-    Get the value of a given Fabric environment variable.
-    
-    If the variable isn't found, then this operation returns the
-    value of the `otherwise` parameter, which is None unless set.
-    
-    """
-    return ENV.get(name, otherwise)
-
-@operation
-def getAny(*names):
-    """
-    Given a list of variable names as parameters, get the value of the first
-    of these variables that is actually defined (and does not resolve to
-    boolean `False`), or `None`.
-    
-    Example:
-    
-        getAny('hostname', 'ipv4', 'ipv6', 'ip', 'address')
-    
-    """
-    for name in names:
-        value = ENV.get(name)
-        if value:
-            return value
-    # Implicit return value of None here if no names found.
-
 @operation
 def require(*varnames, **kwargs):
     """
