@@ -250,6 +250,18 @@ can use it to learn more about the features that are available to us in our
 fabfiles. However, to get the full potential out of Fabric, we also need to
 know how to configure it.
 
+### The `@hosts` decorator
+
+So far, we have specified the hosts we intend to connect to, by setting the 
+`config.fab_hosts` variable. When we wanted to override this setting, we always
+had to define a command that proactively set that variable.
+
+This way of re-specifying the `fab_hosts` variable doesn't really scale very
+well beyond the simplest cases. As the need of switching between different set of hosts increases, it also becomes increasingly error prone to remember to run
+the right set-these-hosts commands all the time.
+
+**TBD**
+
 ### Variables
 
 We saw in the "Getting connected" section above, that we can use a notation
@@ -309,7 +321,7 @@ to the project.
 
 ### The `config` object
 
-TBD
+**TBD**
 
 ### Key-based authentication
 
