@@ -307,6 +307,10 @@ Beyond these variables, it is common practice (but not required) to set a
 handy in naming build-files, backup-files and deployment directories specific
 to the project.
 
+### The `config` object
+
+TBD
+
 ### Key-based authentication
 
 If you have a private key that the servers will acknowledge, then Fabric will
