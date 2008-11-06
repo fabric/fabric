@@ -1250,21 +1250,29 @@ def _args_hash(args):
     return hash(tuple(sorted(args.items())))
 
 def _execute_at_target(command, args):
-    ENV['fab_local_mode'] = getattr(command, 'mode', ENV['fab_mode'])
-    ENV['fab_local_hosts'] = getattr(command, 'hosts', ENV.get('fab_hosts'))
+    mode = ENV['fab_local_mode'] = getattr(command, 'mode', ENV['fab_mode'])
+    hosts = ENV['fab_local_hosts'] = getattr(
+        command, 'hosts', ENV.get('fab_hosts'))
+    if hosts and len(hosts) == 1 and isinstance(hosts[0], basestring):
+        # we allow the hosts to be a string-alias for another variable
+        # that will contain the real array of hosts to connect to.
+        host_alias = _lazy_format(hosts[0])
+        hosts = ENV.get(host_alias)
+        print "Resoling host alias", host_alias, "to", (', '.join(hosts))
+        ENV['fab_local_hosts'] = hosts
     # Determine whether we need to connect for this command, do so if so
     if _needs_connect(command):
         _check_fab_hosts()
         _connect()
-    if ENV['fab_local_mode'] in ('rolling', 'fanout'):
+    if mode in ('rolling', 'fanout'):
         print("Warning: The 'rolling' and 'fanout' fab_modes are " +
               "deprecated.\n   Use 'broad' and 'deep' instead.")
         ENV['fab_local_mode'] = 'broad'
     # Run command once, with each operation running once per host.
-    if ENV['fab_local_mode'] == 'broad':
+    if mode == 'broad':
         command(**(args or {}))
     # Run entire command once per host.
-    elif ENV['fab_local_mode'] == 'deep':
+    elif mode == 'deep':
         # Gracefully handle local-only commands
         if CONNECTIONS:
             for host_conn in CONNECTIONS:
