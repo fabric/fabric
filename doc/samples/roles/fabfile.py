@@ -11,15 +11,15 @@ def production():
 def build():
     local('echo Building project')
 
-@hosts('rdbms')
+@roles('rdbms')
 def prepare_db():
     run("echo Preparing database for deployment")
 
-@hosts('httpd')
+@roles('httpd')
 def prepare_web():
     run("echo Preparing web servers for deployment")
 
 @depends(prepare_db, prepare_web)
-@hosts('httpd')
+@roles('httpd')
 def deploy():
     run("echo Doing final deployment things to $(fab_host)")

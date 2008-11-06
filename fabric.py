@@ -195,6 +195,14 @@ def hosts(*hosts):
     return decorator
 
 @decorator
+def roles(*roles):
+    "Tags function object with desired fab_hosts to run on."
+    def decorator(fn):
+        fn.roles = roles
+        return fn
+    return decorator
+
+@decorator
 def mode(mode):
     "Tags function object with desired fab_mode to run in."
     def decorator(fn):
@@ -1251,15 +1259,13 @@ def _args_hash(args):
 
 def _execute_at_target(command, args):
     mode = ENV['fab_local_mode'] = getattr(command, 'mode', ENV['fab_mode'])
-    hosts = ENV['fab_local_hosts'] = getattr(
-        command, 'hosts', ENV.get('fab_hosts'))
-    if hosts and len(hosts) == 1 and isinstance(hosts[0], basestring):
-        # we allow the hosts to be a string-alias for another variable
-        # that will contain the real array of hosts to connect to.
-        host_alias = _lazy_format(hosts[0])
-        hosts = ENV.get(host_alias)
-        print "Resoling host alias", host_alias, "to", (', '.join(hosts))
-        ENV['fab_local_hosts'] = hosts
+    hosts = ENV['fab_local_hosts'] = set(getattr(
+        command, 'hosts', ENV.get('fab_hosts') or []))
+    roles = getattr(command, 'roles', [])
+    for role in roles:
+        role = _lazy_format(role)
+        role_hosts = ENV.get(role)
+        map(hosts.add, role_hosts)
     # Determine whether we need to connect for this command, do so if so
     if _needs_connect(command):
         _check_fab_hosts()
@@ -1267,7 +1273,7 @@ def _execute_at_target(command, args):
     if mode in ('rolling', 'fanout'):
         print("Warning: The 'rolling' and 'fanout' fab_modes are " +
               "deprecated.\n   Use 'broad' and 'deep' instead.")
-        ENV['fab_local_mode'] = 'broad'
+        mode = ENV['fab_local_mode'] = 'broad'
     # Run command once, with each operation running once per host.
     if mode == 'broad':
         command(**(args or {}))
