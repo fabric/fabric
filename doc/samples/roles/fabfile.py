@@ -5,7 +5,10 @@ httpd = ['localhost']
 
 def production():
     # this would set `rdbms` and `httpd` to prod. values.
-    pass
+    # for now we just switch them around in order to observe the effect
+    global httpd, rdbms
+    rdbms, httpd = httpd, rdbms
+    # ... except, this dosn't actually work :(
 
 def build():
     local('echo Building project')
@@ -21,4 +24,4 @@ def prepare_web():
 @depends(prepare_db, prepare_web)
 @hosts(*httpd)
 def deploy():
-    run("echo Doing final deployment things")
+    run("echo Doing final deployment things to $(fab_host)")
