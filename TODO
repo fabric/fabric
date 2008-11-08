@@ -21,4 +21,5 @@
     helper methods which currently get stripped out entirely.
 31  Figure out how to deal with the use of different @hosts lists when running
     more than one command in a single session.
-32  *
+32  Glob patterns on put() and download(), like put('*.html', 'to/some/path')
+33  *
