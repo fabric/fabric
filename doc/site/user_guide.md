@@ -286,6 +286,18 @@ notation will be interpolated as soon as possible, which is line 3, but the
 lazy notation will not be evaluated until it is actually needed, in line 5,
 and by that time the value of `var` will change, resulting in the output "a b".
 
+> **Q & A: Why two different kinds of string interpolation?**
+>
+> The main reason for the existence of the lazy interpolation notation, is that
+> some variables simply do not exist at the time that the strings are defined.
+> One such variable is `fab_host` which names the actual host that an operation
+> is executing on/against.
+>
+> Capistrano has a special string that is matched and replaced with the name of
+> the current host. When creating fabric, it was decided that such a special
+> string was too much of an easy-to-forget hack, and so the notion of lazy
+> interpolation was created instead.
+
 Beyond the variables you set on the `config` object, Fabric provides a
 number of built-in variables. Most are for configuring Fabric itself, but some
 are also for use in the string arguments you pass to `run` and `sudo` and the
