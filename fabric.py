@@ -511,7 +511,7 @@ def local(cmd, **kwargs):
     This operation is essentially `os.system()` except that variables are
     expanded prior to running.
     
-    May take an additional 'fail' keyword argument with one of these values:
+    May take an additional `fail` keyword argument with one of these values:
     
      * ignore - do nothing on failure
      * warn - print warning on failure
