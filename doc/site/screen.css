@@ -9,6 +9,16 @@ pre {
     background-color: #0A2C1E;
     padding-left: 2em;
     border: 1px solid #0A2C1E;
+    -moz-border-radius: 9px; /* exactly 9 pixels makes single-lines work */
+    -webkit-border-radius: 9px;
+    border-radius: 9px; /* from CSS3 working draft */
+}
+
+blockquote {
+    background-color: #E0E0E0;
+    border: 2px solid #AFAFAF;
+    padding-left: 1em;
+    padding-right: 1em;
     -moz-border-radius: 9px;
     -webkit-border-radius: 9px;
     border-radius: 9px; /* from CSS3 working draft */
