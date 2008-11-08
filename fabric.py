@@ -1175,7 +1175,7 @@ def _load_default_settings():
     if not win32:
         cfg = os.path.expanduser("~/.fabric")
     else:
-	    from win32com.shell.shell import SHGetSpecialFolderPath
+        from win32com.shell.shell import SHGetSpecialFolderPath
         from win32com.shell.shellcon import CSIDL_PROFILE
         cfg = SHGetSpecialFolderPath(0,CSIDL_PROFILE) + "/.fabric"
     if os.path.exists(cfg):
