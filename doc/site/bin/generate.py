@@ -21,9 +21,10 @@
 import os
 from os.path import exists, abspath
 from glob import glob
+from StringIO import StringIO
 from textile import textile
 from markdown2 import markdown
-from StringIO import StringIO
+from toc import toc
 
 try:
     import pygments
@@ -37,18 +38,22 @@ except ImportError:
 OUTDIR = "fab"
 
 def textile_format(txt, _=None):
-    return textile(txt).replace('<br />', '')
+    out = textile(txt).replace('<br />', '')
+    out = toc(out)
+    return out
 
 def markdown_format(mkd, _=None):
     out = markdown(mkd, extras=['code-friendly', 'code-color'])
     out = out.replace(u'<pre><code>', u'<pre><code>\n')
-    return out.replace(u'</code></pre>', u'\n</code></pre>')
+    out = out.replace(u'</code></pre>', u'\n</code></pre>')
+    out = toc(out)
+    return out
 
 def python_script_output(src, filename):
     out = StringIO()
     script = compile(src, filename, "exec")
     eval(script, {'out': out})
-    return out.getvalue()
+    return toc(out.getvalue())
 
 FORMATS = {
     'txt': textile_format,
