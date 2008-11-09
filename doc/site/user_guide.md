@@ -6,6 +6,8 @@ very much in development. So it's a moving target, documentation wise,
 and it is to be expected that the information herein might not be entirely
 accurate.
 
+**Table of contents:**
+
 {toc}
 
 The ache

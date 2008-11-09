@@ -12,8 +12,8 @@ import re
 
 HEADER_RE = re.compile(
     r'^<[hH](?P<lvl>\d)>(?P<headline>.*)</[hH](?P=lvl)>$', re.M)
-
 NUMB = re.compile(r'\W+')
+TOC = re.compile(r'(<(?P<tag>\w+?)(.*?)>)?{toc}(</(?P=tag)>)?')
 
 def _new_subster(headers, maxLvl, minLvl):
     def subster(match):
@@ -30,20 +30,35 @@ def _new_subster(headers, maxLvl, minLvl):
         return '<h%s><a name="%s">%s</a></h%s>' % (lvl, anchor, txt, lvl)
     return subster
 
-def _to_html_toc(headers):
-    lines = []
-    stack = [0]
-    for lvl, anchor, headline in headers:
+def _li(hi, lines, stack):
+    for lvl, anchor, headline in hi:
         if stack[-1] < lvl:
-            lines.append('<ul>')
-            stack.append(lvl)
-        while stack[-1] > lvl:
-            stack.pop()
-            lines.append('</ul>')
-        line = '<li><a href="#%s">%s</a></li>' % (anchor, headline)
-        lines.append(line)
-    for _ in stack[1:]:
-        lines.append('</ul>')
+            _ul(lvl, anchor, headline, hi, lines, stack)
+        elif stack[-1] > lvl:
+            stack.append((anchor, headline))
+            return
+        else:
+            lines.append('<li><a href="#%s">%s</a></li>' % (anchor, headline))
+
+def _ul(lvl, anchor, headline, hi, lines, stack):
+    stack.append(lvl)
+    prev = lines.pop()
+    lines.append(prev[:-5])
+    lines.append('<ul>')
+    lines.append('<li><a href="#%s">%s</a></li>' % (anchor, headline))
+    _li(hi, lines, stack)
+    lines.append('</ul>')
+    lines.append('</li>')
+    pushback = stack.pop()
+    if isinstance(pushback, tuple):
+        lines.append('<li><a href="#%s">%s</a></li>' % pushback)
+
+def _to_html_toc(headers):
+    stack = [headers[0][0]]
+    hi = iter(headers)
+    lines = ['<ul>']
+    _li(hi, lines, stack)
+    lines.append('</ul>')
     out = '\n'.join(lines)
     return out
 
@@ -56,6 +71,6 @@ def toc(html, maxLvl=2, minLvl=5, count=1):
         headers = []
         subster = _new_subster(headers, maxLvl, minLvl)
         html = re.sub(HEADER_RE, subster, html)
-        html = html.replace("{toc}", _to_html_toc(headers), count)
+        html = re.sub(TOC, _to_html_toc(headers), html, count)
     return html
 
