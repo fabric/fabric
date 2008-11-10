@@ -1271,10 +1271,6 @@ def _execute_at_target(command, args):
         role = _lazy_format(role)
         role_hosts = ENV.get(role)
         map(hosts.add, role_hosts)
-    # Determine whether we need to connect for this command, do so if so
-    if _needs_connect(command):
-        _check_fab_hosts()
-        _connect()
     if mode in ('rolling', 'fanout'):
         print("Warning: The 'rolling' and 'fanout' fab_modes are " +
               "deprecated.\n   Use 'broad' and 'deep' instead.")
@@ -1284,6 +1280,10 @@ def _execute_at_target(command, args):
         command(**(args or {}))
     # Run entire command once per host.
     elif mode == 'deep':
+        # Determine whether we need to connect for this command, do so if so
+        if _needs_connect(command):
+            _check_fab_hosts()
+            _connect()
         # Gracefully handle local-only commands
         if CONNECTIONS:
             for host_conn in CONNECTIONS:
