@@ -742,17 +742,19 @@ def _list_commands(**kwargs):
         _list_objs(COMMANDS)
 
 @mode("broad")
-@command("set")
-def _set(**kwargs):
+@command("let")
+def _let(**kwargs):
     """
     Set a Fabric variable.
     
     Example:
     
-        $fab set:fab_user=billy,other_var=other_value
+        $fab let:fab_user=billy,other_var=other_value
     """
     for k, v in kwargs.items():
-        ENV[k] = (v % ENV)
+        if isinstance(v, basestring):
+            v = (v % ENV)
+        ENV[k] = v
 
 @mode("broad")
 @command("shell")
