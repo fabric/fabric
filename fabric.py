@@ -810,6 +810,9 @@ def _run_parallel(fn, *args, **kwargs):
     """
     err_msg = "The $(fab_current_operation) operation failed on $(fab_host)"
     threads = []
+    if not CONNECTIONS:
+        _check_fab_hosts()
+        _connect()
     for host_conn in CONNECTIONS:
         env = host_conn.get_env()
         env['fab_current_operation'] = fn.__name__
@@ -829,6 +832,9 @@ def _run_serially(fn, *args, **kwargs):
     # Capture the first output in case someone really wants captured output
     # while running in broad mode.
     result = None
+    if not CONNECTIONS:
+        _check_fab_hosts()
+        _connect()
     for host_conn in CONNECTIONS:
         env = host_conn.get_env()
         env['fab_current_operation'] = fn.__name__
