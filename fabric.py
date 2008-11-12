@@ -122,7 +122,7 @@ def _new_namespace():
 _LOADED_FABFILES = set()
 _EXECUTED_COMMANDS = set()
 
-_LAZY_FORMAT_SUBSTITUTER = re.compile(r'\$\((?P<var>\w+?)\)')
+_LAZY_FORMAT_SUBSTITUTER = re.compile(r'\$\((?P<var>[\w-]+?)\)')
 
 #
 # Compatibility fixes
