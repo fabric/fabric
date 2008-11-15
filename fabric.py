@@ -1268,9 +1268,6 @@ def _args_hash(args, kwargs):
         return None
     return hash(tuple(sorted(args + kwargs.items())))
 
-def _x(command, args, kwargs):
-    command(*(args or []), **(kwargs or {}))
-
 def _execute_at_target(command, args, kwargs):
     mode = ENV['fab_local_mode'] = getattr(command, 'mode', ENV['fab_mode'])
     hosts = ENV['fab_local_hosts'] = set(getattr(
@@ -1286,7 +1283,7 @@ def _execute_at_target(command, args, kwargs):
         mode = ENV['fab_local_mode'] = 'broad'
     # Run command once, with each operation running once per host.
     if mode == 'broad':
-        _x(command, args, kwargs)
+        command(*args, **kwargs)
     # Run entire command once per host.
     elif mode == 'deep':
         # Determine whether we need to connect for this command, do so if so
@@ -1298,9 +1295,9 @@ def _execute_at_target(command, args, kwargs):
             for host_conn in CONNECTIONS:
                 ENV['fab_host_conn'] = host_conn
                 ENV['fab_host'] = host_conn.host_local_env['fab_host']
-                _x(command, args, kwargs)
+                command(*args, **kwargs)
         else:
-            _x(command, args, kwargs)
+            command(*args, **kwargs)
     else:
         _fail({'fail':'abort'}, "Unknown fab_mode: '$(fab_mode)'")
     # Disconnect (to clear things up for next command)
