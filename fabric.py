@@ -1196,13 +1196,17 @@ def _load_default_settings():
 def _parse_args(args):
     cmds = []
     for cmd in args:
-        cmd_args = {}
+        cmd_args = []
+        cmd_kwargs = {}
         if ':' in cmd:
             cmd, cmd_str_args = cmd.split(':', 1)
             for cmd_arg_kv in cmd_str_args.split(','):
                 k, _, v = partition(cmd_arg_kv, '=')
-                cmd_args[k] = (v % ENV) or k
-        cmds.append((cmd, cmd_args))
+                if v:
+                    cmd_kwargs[k] = (v % ENV) or k
+                else:
+                    cmd_args.append(k)
+        cmds.append((cmd, cmd_args, cmd_kwargs))
     return cmds
 
 def _validate_commands(cmds):
@@ -1216,20 +1220,22 @@ def _validate_commands(cmds):
                 sys.exit(1)
 
 def _execute_commands(cmds):
-    for cmd, args in cmds:
-        _execute_command(cmd, args)
+    for cmd, args, kwargs in cmds:
+        _execute_command(cmd, args, kwargs)
 
-def _execute_command(cmd, args, skip_executed=False):
+def _execute_command(cmd, args, kwargs, skip_executed=False):
     # Setup
     command = COMMANDS[cmd]
     if args is not None:
-        args = dict(zip(args.keys(), map(_lazy_format, args.values())))
+        args = map(_lazy_format, args)
+    if kwargs is not None:
+        kwargs = dict(zip(kwargs.keys(), map(_lazy_format, kwargs.values())))
     # Remember executed commands. Don't run them again if skip_executed.
-    if skip_executed and _has_executed(command, args):
-        args_msg = args and (" with %r" % args) or ""
+    if skip_executed and _has_executed(command, args, kwargs):
+        args_msg = (args or kwargs) and (" with %r, %r" % (args, kwargs)) or ""
         print("Skipping %s (already invoked%s)." % (cmd, args_msg))
         return
-    _remember_executed(command, args)
+    _remember_executed(command, args, kwargs)
     # Invoke eventual chained calls prior to the command.
     if ENV.get('fab_cur_command'):
         print("Chaining %s..." % cmd)
@@ -1244,25 +1250,28 @@ def _execute_command(cmd, args, skip_executed=False):
             print("Back in %s..." % cmd)
             ENV['fab_cur_command'] = cmd
     # Determine target host and execute command.
-    _execute_at_target(command, args)
+    _execute_at_target(command, args, kwargs)
     # Done
     ENV['fab_cur_command'] = None
 
-def _has_executed(command, args):
-    return (command, _args_hash(args)) in _EXECUTED_COMMANDS
+def _has_executed(command, args, kwargs):
+    return (command, _args_hash(args, kwargs)) in _EXECUTED_COMMANDS
 
-def _remember_executed(command, args):
+def _remember_executed(command, args, kwargs):
     try:
-        _EXECUTED_COMMANDS.add((command, _args_hash(args)))
+        _EXECUTED_COMMANDS.add((command, _args_hash(args, kwargs)))
     except TypeError:
         print "Warning: could not remember execution (unhashable arguments)."
 
-def _args_hash(args):
-    if not args:
+def _args_hash(args, kwargs):
+    if not args or kwargs:
         return None
-    return hash(tuple(sorted(args.items())))
+    return hash(tuple(sorted(args + kwargs.items())))
 
-def _execute_at_target(command, args):
+def _x(command, args, kwargs):
+    command(*(args or []), **(kwargs or {}))
+
+def _execute_at_target(command, args, kwargs):
     mode = ENV['fab_local_mode'] = getattr(command, 'mode', ENV['fab_mode'])
     hosts = ENV['fab_local_hosts'] = set(getattr(
         command, 'hosts', ENV.get('fab_hosts') or []))
@@ -1277,7 +1286,7 @@ def _execute_at_target(command, args):
         mode = ENV['fab_local_mode'] = 'broad'
     # Run command once, with each operation running once per host.
     if mode == 'broad':
-        command(**(args or {}))
+        _x(command, args, kwargs)
     # Run entire command once per host.
     elif mode == 'deep':
         # Determine whether we need to connect for this command, do so if so
@@ -1289,9 +1298,9 @@ def _execute_at_target(command, args):
             for host_conn in CONNECTIONS:
                 ENV['fab_host_conn'] = host_conn
                 ENV['fab_host'] = host_conn.host_local_env['fab_host']
-                command(**(args or {}))
+                _x(command, args, kwargs)
         else:
-            command(**(args or {}))
+            _x(command, args, kwargs)
     else:
         _fail({'fail':'abort'}, "Unknown fab_mode: '$(fab_mode)'")
     # Disconnect (to clear things up for next command)
