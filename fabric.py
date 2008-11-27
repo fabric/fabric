@@ -122,8 +122,6 @@ def _new_namespace():
 _LOADED_FABFILES = set()
 _EXECUTED_COMMANDS = set()
 
-_LAZY_FORMAT_SUBSTITUTER = re.compile(r'(.|^)(\$\((?P<var>[\w-]+?)\))')
-
 #
 # Compatibility fixes
 #
@@ -1046,6 +1044,7 @@ def _disconnect():
     map(HostConnection.disconnect, CONNECTIONS)
     CONNECTIONS = []
 
+_LAZY_FORMAT_SUBSTITUTER = re.compile(r'(\\?)(\$\((?P<var>[\w-]+?)\))')
 def _lazy_format(string, env=ENV):
     "Do recursive string substitution of ENV vars - both lazy and eager."
     if string is None:
