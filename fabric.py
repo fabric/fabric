@@ -489,8 +489,9 @@ def sudo(host, client, env, cmd, **kwargs):
         sudo_cmd = "sudo -S -p '%s' -u " + user + " "
     else:
         sudo_cmd = "sudo -S -p '%s' "
-    real_cmd = sudo_cmd % env['fab_sudo_prompt'] + cmd.replace('"', '\\"')
-    real_cmd = env['fab_shell'] + ' "' + cmd + '"'
+    sudo_cmd = sudo_cmd % env['fab_sudo_prompt']
+    real_cmd = env['fab_shell'] + ' "' + cmd.replace('"', '\\"') + '"'
+    real_cmd = sudo_cmd + ' ' + real_cmd
     real_cmd = _escape_bash_specialchars(real_cmd)
     cmd = env['fab_print_real_sudo'] and real_cmd or cmd
     if not _confirm_proceed('sudo', host, kwargs):

@@ -14,8 +14,10 @@ def test2():
     config.z = 'z'
     local("echo x$(y)$(z)")
 
+config.fab_print_real_sudo = True
 @hosts('localhost')
 def bash():
-    run("echo \\\$poke")
-    sudo("echo \\\$poke")
+    run("echo \\\$poke; whoami")
+    sudo("echo \\\$poke; whoami")
+    sudo("whoami")
 
