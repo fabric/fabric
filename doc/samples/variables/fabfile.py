@@ -17,4 +17,5 @@ def test2():
 @hosts('localhost')
 def bash():
     run("echo \\\$poke")
+    sudo("echo \\\$poke")
 
