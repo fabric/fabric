@@ -470,21 +470,29 @@ def sudo(host, client, env, cmd, **kwargs):
     environ is determined by the `fab_shell` variable - the `sudo` part is
     injected into this variable.
     
+    You can have the command run as a user other than root by setting the
+    `user` keyword argument to the intended username or uid.
+    
     May take an additional `fail` keyword argument with one of these values:
     
      * ignore - do nothing on failure
      * warn - print warning on failure
      * abort - terminate fabric on failure
     
-    Example:
+    Examples:
     
         sudo("install_script.py")
+        sudo("httpd restart", user='apache')
     
     """
     cmd = _lazy_format(cmd, env)
+    if "user" in kwargs:
+        user = _lazy_format(kwargs['user'], env)
+        sudo_cmd = "sudo -S -p '%s' -u " + user + " "
+    else:
+        sudo_cmd = "sudo -S -p '%s' "
     real_cmd = env['fab_shell'] % (
-        "sudo -S -p '%s' " % ENV['fab_sudo_prompt']
-        + cmd.replace('"', '\\"')
+        sudo_cmd % env['fab_sudo_prompt'] + cmd.replace('"', '\\"')
     )
     real_cmd = _escape_bash_specialchars(real_cmd)
     cmd = env['fab_print_real_sudo'] and real_cmd or cmd
