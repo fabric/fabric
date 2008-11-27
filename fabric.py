@@ -77,7 +77,7 @@ DEFAULT_ENV = {
     'fab_pkey': None,
     'fab_key_filename': None,
     'fab_new_host_key': 'accept',
-    'fab_shell': '/bin/bash -l -c "%s"',
+    'fab_shell': '/bin/bash -l -c',
     'fab_timestamp': datetime.datetime.utcnow().strftime('%F_%H-%M-%S'),
     'fab_print_real_sudo': False,
     'fab_fail': 'abort',
@@ -442,7 +442,7 @@ def run(host, client, env, cmd, **kwargs):
     
     """
     cmd = _lazy_format(cmd, env)
-    real_cmd = env['fab_shell'] % cmd.replace('"', '\\"')
+    real_cmd = env['fab_shell'] + ' "' + cmd.replace('"', '\\"') + '"'
     real_cmd = _escape_bash_specialchars(real_cmd)
     if not _confirm_proceed('run', host, kwargs):
         return False
@@ -491,9 +491,8 @@ def sudo(host, client, env, cmd, **kwargs):
         sudo_cmd = "sudo -S -p '%s' -u " + user + " "
     else:
         sudo_cmd = "sudo -S -p '%s' "
-    real_cmd = env['fab_shell'] % (
-        sudo_cmd % env['fab_sudo_prompt'] + cmd.replace('"', '\\"')
-    )
+    cmd = sudo_cmd % env['fab_sudo_prompt'] + cmd.replace('"', '\\"')
+    real_cmd = env['fab_shell'] + ' "' + cmd + '"'
     real_cmd = _escape_bash_specialchars(real_cmd)
     cmd = env['fab_print_real_sudo'] and real_cmd or cmd
     if not _confirm_proceed('sudo', host, kwargs):
