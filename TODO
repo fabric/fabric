@@ -10,7 +10,6 @@
 21  automated test suite
 22  find alternative to the deprecated 'execfile()'
     - compile() + eval() makes a combo worth considering (if it works in py3k).
-24  add escaping to _lazy_format
 25  turn fabric the module, into fabric the package
 26  fix upload_website when new files are added
 28  Grant more control over the output - e.g. hide 'run'/'sudo' lines
