@@ -1051,6 +1051,7 @@ def _lazy_format(string, env=ENV):
     if string is None:
         return None
     env = dict([(k, str(v)) for k, v in env.items()])
+    string = string.replace('%', '%%')
     def replacer_fn(match):
         escape = match.group(1)
         if escape == '\\':
