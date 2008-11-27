@@ -647,12 +647,16 @@ def invoke(*commands):
     """
     for item in commands:
         if isinstance(item, tuple):
-            cmd, args = item
+            if len(item) == 3:
+                cmd, args, kwargs = item
+            else:
+                cmd, args = item
+                kwargs = {}
         else:
-            cmd, args = item, None
+            cmd, args, kwargs = item, [], {}
         if isinstance(cmd, basestring):
             cmd = COMMANDS[item]
-        _execute_command(cmd.__name__, args, skip_executed=True)
+        _execute_command(cmd.__name__, args, kwargs, skip_executed=True)
 
 #
 # Standard Fabric commands:
