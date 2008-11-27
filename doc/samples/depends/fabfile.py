@@ -9,7 +9,7 @@ def a():
 def b1():
     run("echo b1")
 
-# Broken, a() called twice, no b2:
+# Works:
 def b2():
     invoke(a)
     run("echo b2")
@@ -24,7 +24,7 @@ def b3():
 def c11():
     run("echo c11")
 
-# Semi-works, b2 still breaks:
+# Works:
 @depends(b2)
 def c12():
     run("echo c12")
@@ -34,17 +34,17 @@ def c12():
 def c13():
     run("echo c13")
 
-# Broken, a() called twice, no c21:
+# Works:
 def c21():
     invoke(b1)
     run("echo c21")
 
-# Totally broken, a() called thrice:
+# Works:
 def c22():
     invoke(b2)
     run("echo c22")
 
-# Broken, a() called twice, no c23:
+# Works:
 def c23():
     invoke(b3)
     run("echo c23")
@@ -54,7 +54,7 @@ def c31():
     b1()
     run("echo c31")
 
-# Broken, a() called twice, then stops:
+# Works:
 def c32():
     b2()
     run("echo c32")
