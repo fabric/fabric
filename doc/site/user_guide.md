@@ -289,6 +289,17 @@ notation will be interpolated as soon as possible, which is line 3, but the
 lazy notation will not be evaluated until it is actually needed, in line 5,
 and by that time the value of `var` will change, resulting in the output "a b".
 
+Having variables automatically interpolated is nice, but sometimes we don't
+want it. In that case, we need to escape the interpolations and in the case of
+the special `$(variable)` notation, this is easily done by preceding it with a
+back-slash, like this: `\$(variable)`. The normal Python string interpolation
+is escaped like it has always been; by doubling the `%` character. When we
+execute commands with `local()`, `run()` and `sudo()`, the strings will pass by
+bash or some other shell, who might also be eager to do interpolation of
+environment variables upon seeing a `$` character. Escaping characters through
+several layers of different interpolations can be tricky, but triple-back-slash
+seems to work: `run("echo a string with a \\\$dollar")`.
+
 > **Q & A: Why two different kinds of string interpolation?**
 >
 > The main reason for the existence of the lazy interpolation notation, is that
