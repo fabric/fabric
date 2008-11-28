@@ -621,11 +621,12 @@ def upload_project(**kwargs):
     """
     tar_file = "/tmp/fab.%(fab_timestamp)s.tar" % ENV
     cwd_name = os.getcwd().split(os.sep)[-1]
+    tgz_name = cwd_name + ".tar.gz"
     local("tar -czf %s ." % tar_file, **kwargs)
     put(tar_file, cwd_name + ".tar.gz", **kwargs)
     local("rm -f " + tar_file, **kwargs)
-    run("tar -xzf " + cwd_name, **kwargs)
-    run("rm -f " + cwd_name + ".tar.gz", **kwargs)
+    run("tar -xzf " + tgz_name, **kwargs)
+    run("rm -f " + tgz_name, **kwargs)
 
 @operation
 def abort(msg):
