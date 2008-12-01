@@ -348,7 +348,7 @@ def prompt(varname, msg, validate=None, default=None):
             if value:
                 break
         
-        set(**{varname: value})
+        ENV[varname] = value
     except (KeyboardInterrupt, EOFError):
         print
         raise KeyboardInterrupt
@@ -404,7 +404,7 @@ def download(host, client, env, remotepath, localpath, **kwargs):
     
     Example:
     
-        set(fab_hosts=['node1.cluster.com', 'node2.cluster.com'])
+        config.fab_hosts = ['node1.cluster.com', 'node2.cluster.com']
         download('/var/log/server.log', 'server.log')
     
     The above code will produce two files on your local system, called
@@ -793,7 +793,7 @@ def _shell(**kwargs):
     if hosts:
         if CONNECTIONS:
             _fail(kwargs, "Already connected to predefined fab_hosts.")
-        set(fab_hosts = hosts)
+        ENV['fab_hosts'] = hosts
     def lines():
         try:
             while True:
