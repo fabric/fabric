@@ -110,6 +110,7 @@ ENV = Configuration(**DEFAULT_ENV)
 
 CONNECTIONS = []
 COMMANDS = {}
+USER_COMMANDS = []
 OPERATIONS = {}
 DECORATORS = {}
 
@@ -605,6 +606,7 @@ def load(filename, **kwargs):
     for name, obj in captured.items():
         if not name.startswith('_') and isinstance(obj, types.FunctionType):
             COMMANDS[name] = obj
+            USER_COMMANDS.append(name)
         if not name.startswith('_'):
             __builtins__[name] = obj
 
@@ -1322,6 +1324,13 @@ def _execute_at_target(command, args, kwargs):
     _disconnect()
 
 def _needs_connect(command):
+    """
+    User-specified commands, in deep mode, should still connect.
+    Otherwise -- such as with internal commands, or in broad mode (where
+    all connectivity is handled per operation) introspect the function.
+    """
+    if command.func_code.co_name in USER_COMMANDS and ENV['fab_mode'] == 'deep':
+        return True
     for operation in command.func_code.co_names:
         if getattr(OPERATIONS.get(operation), 'connects', False):
             return True
