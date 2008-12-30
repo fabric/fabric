@@ -505,6 +505,13 @@ def sudo(host, client, env, cmd, **kwargs):
 
     out_th = _start_outputter("[%s] out" % host, chan, env, capture=capture)
     err_th = _start_outputter("[%s] err" % host, chan, env, stderr=True)
+
+    # Wait for threads to exit before returning (otherwise we will occasionally
+    # end up returning before the threads have fully wrapped up)
+    out_th.join()
+    err_th.join()
+
+    # Close channel when done
     status = chan.recv_exit_status()
     chan.close()
 
@@ -1118,6 +1125,11 @@ def _fail(kwargs, msg, env=ENV):
 
 
 def _start_outputter(prefix, chan, env, stderr=False, capture=None):
+    """
+    Generates a thread/function capable of reading and optionally capturing
+    input from the given channel object 'chan'. 'stderr' determines whether
+    the channel's stdout or stderr is the focus of this particular thread.
+    """
     def outputter(prefix, chan, env, stderr, capture):
         # Read one "packet" at a time, which lets us get less-than-a-line
         # chunks of text, such as sudo prompts. However, we still print
@@ -1125,11 +1137,15 @@ def _start_outputter(prefix, chan, env, stderr=False, capture=None):
         leftovers = ""
         while True:
             out = None
+            # Is this thread being used for stdout or stderr?
+            # Also, use 65535 (arbitrary-ish number) since sys.maxint tends
+            # to make the threads blow up :( ugh.
             if not stderr:
                 out = chan.recv(65535)
             else:
                 out = chan.recv_stderr(65535)
-            if out is not None:
+            # Only do stuff if the recv'd data isn't None
+            if out != '':
                 # Capture if necessary
                 if capture is not None:
                     capture += out
@@ -1180,6 +1196,9 @@ def _start_outputter(prefix, chan, env, stderr=False, capture=None):
                 else:
                     leftovers += out
 
+            if chan.exit_status_ready():
+                break
+            
     thread = threading.Thread(None, outputter, prefix,
         (prefix, chan, env, stderr, capture))
     thread.setDaemon(True)
