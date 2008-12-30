@@ -1140,8 +1140,7 @@ def _start_outputter(prefix, chan, env, stderr=False, capture=None):
                 again_prompt = re.findall(r'^Sorry, try again', out, re.I|re.M)
                 if initial_prompt or again_prompt:
                     # First, get or prompt for password
-                    PASS_PROMPT = ("Password for $(fab_user)@" +
-                        "$(fab_host)$(fab_passprompt_suffix)")
+                    PASS_PROMPT = ("Password for $(fab_user)@$(fab_host)$(fab_passprompt_suffix)")
                     old_password = env.get('fab_password')
                     if old_password:
                         # Just set up prompt in case we're at an again prompt
