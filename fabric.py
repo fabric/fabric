@@ -1001,14 +1001,16 @@ def _list_objs(objs):
             print
 
 def _check_fab_hosts():
-    "Check that we have a fab_hosts variable, and prompt if it's missing."
+    """
+    Check that we have a fab_hosts variable, and prompt if it's missing.
+    """
     if not ENV.get('fab_local_hosts'):
         prompt('fab_input_hosts',
             'Please specify host or hosts to connect to (comma-separated)')
         hosts = ENV['fab_input_hosts']
         hosts = [x.strip() for x in hosts.split(',')]
         ENV['fab_local_hosts'] = hosts
-    
+
 def _connect():
     """Populate CONNECTIONS with HostConnection instances as per current
     fab_local_hosts."""
@@ -1230,19 +1232,59 @@ def _load_default_settings():
         ENV.update(settings)
 
 def _parse_args(args):
+    """
+    Parses the given list of args into command names and, optionally,
+    per-command args/kwargs. Per-command args are attached to the command name
+    with a colon (:), are comma-separated, and may use a=b syntax for kwargs.
+    These args/kwargs are passed into the resulting command as normal Python
+    args/kwargs.
+
+    For example:
+
+        $ fab do_stuff:a,b,c=d
+
+    will result in the function call do_stuff(a, b, c=d).
+
+    If 'host' or 'hosts' kwargs are given, they will be used to fill Fabric's
+    host list (which is checked later on). 'hosts' will override 'host' if both
+    are given.
+    
+    When using 'hosts' in this way, one must use semicolons (;), and must thus
+    quote the host list string to prevent shell interpretation.
+
+    For example,
+
+        $ fab ping_servers:hosts="a;b;c",foo=bar
+
+    will result in Fabric's host list for the 'ping_servers' command being set
+    to ['a', 'b', 'c'].
+    
+    'host'/'hosts' are removed from the kwargs mapping at this point, so
+    commands are not required to expect them. Thus, the resulting call of the
+    above example would be ping_servers(foo=bar).
+    """
     cmds = []
     for cmd in args:
         cmd_args = []
         cmd_kwargs = {}
+        cmd_hosts = []
         if ':' in cmd:
             cmd, cmd_str_args = cmd.split(':', 1)
             for cmd_arg_kv in cmd_str_args.split(','):
                 k, _, v = partition(cmd_arg_kv, '=')
                 if v:
-                    cmd_kwargs[k] = (v % ENV) or k
+                    # Catch, interpret host/hosts kwargs
+                    if k in ['host', 'hosts']:
+                        if k == 'host':
+                            cmd_hosts = [v.strip()]
+                        elif k == 'hosts':
+                            cmd_hosts = [x.strip() for x in v.split(';')]
+                    # Otherwise, record as usual
+                    else:
+                        cmd_kwargs[k] = (v % ENV) or k
                 else:
                     cmd_args.append(k)
-        cmds.append((cmd, cmd_args, cmd_kwargs))
+        cmds.append((cmd, cmd_args, cmd_kwargs, cmd_hosts))
     return cmds
 
 def _validate_commands(cmds):
@@ -1255,11 +1297,7 @@ def _validate_commands(cmds):
                 print("No such command: %s" % cmd[0])
                 sys.exit(1)
 
-def _execute_commands(cmds):
-    for cmd, args, kwargs in cmds:
-        _execute_command(cmd, args, kwargs)
-
-def _execute_command(cmd, args, kwargs, skip_executed=False):
+def _execute_command(cmd, args, kwargs, hosts=None, skip_executed=False):
     # Setup
     command = COMMANDS[cmd]
     if args is not None:
@@ -1286,7 +1324,7 @@ def _execute_command(cmd, args, kwargs, skip_executed=False):
             print("Back in %s..." % cmd)
             ENV['fab_cur_command'] = cmd
     # Determine target host and execute command.
-    _execute_at_target(command, args, kwargs)
+    _execute_at_target(command, args, kwargs, hosts)
     # Done
     ENV['fab_cur_command'] = None
 
@@ -1304,15 +1342,25 @@ def _args_hash(args, kwargs):
         return None
     return hash(tuple(sorted(args + kwargs.items())))
 
-def _execute_at_target(command, args, kwargs):
+def _execute_at_target(command, args, kwargs, host_list):
+    # Figure out which mode we're in (deep vs broad)
     mode = ENV['fab_local_mode'] = getattr(command, 'mode', ENV['fab_mode'])
+    # Obtain hosts from the fabfile (via manual setting of config.fab_hosts,
+    # or via @hosts.
     hosts = ENV['fab_local_hosts'] = set(getattr(
         command, 'hosts', ENV.get('fab_hosts') or []))
+    # Then add in any role-based hosts
     roles = getattr(command, 'roles', [])
     for role in roles:
         role = _lazy_format(role)
         role_hosts = ENV.get(role)
         map(hosts.add, role_hosts)
+    # However, if user specified hosts on the command line, use ONLY those
+    # hosts! (To do otherwise violates principle of least surprise)
+    if host_list:
+        hosts = ENV['fab_local_hosts'] = set(host_list)
+    # Attempts at using old terminology turn into the default mode (broad)
+    # TODO: remove eventually?
     if mode in ('rolling', 'fanout'):
         print("Warning: The 'rolling' and 'fanout' fab_modes are " +
               "deprecated.\n   Use 'broad' and 'deep' instead.")
@@ -1366,7 +1414,8 @@ def main():
             load(fabfile, fail='warn')
             commands = _parse_args(args)
             _validate_commands(commands)
-            _execute_commands(commands)
+            for tup in commands:
+                _execute_command(*tup)
         finally:
             _disconnect()
         print("Done.")
