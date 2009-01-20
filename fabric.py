@@ -679,7 +679,7 @@ def invoke(*commands):
 #
 @mode("broad")
 @command("help")
-def _help(**kwargs):
+def _help(*args, **kwargs):
     """
     Display Fabric usage help, or help for a given command.
     
@@ -698,8 +698,8 @@ def _help(**kwargs):
     more about it.
     
     """
-    if kwargs:
-        for k, v in kwargs.items():
+    if args:
+        for k in args:
             if k in COMMANDS:
                 _print_help_for_in(k, COMMANDS)
             elif k in OPERATIONS:
@@ -721,13 +721,13 @@ def _help(**kwargs):
     """)
 
 @command("about")
-def _print_about(**kwargs):
+def _print_about(*args, **kwargs):
     "Display Fabric version, warranty and license information"
     print(__about__ % ENV)
 
 @mode("broad")
 @command("list")
-def _list_commands(**kwargs):
+def _list_commands(*args, **kwargs):
     """
     Display a list of commands with descriptions.
     
@@ -737,8 +737,8 @@ def _list_commands(**kwargs):
     `operations` parameters, or it can print a list of available decorators if
     provided with the `dec` or `decorators` parameters.
     """
-    if kwargs:
-        for k, v in kwargs.items():
+    if args:
+        for k in args:
             if k in ['cmds', 'commands']:
                 print("Available commands are:")
                 _list_objs(COMMANDS)
@@ -763,7 +763,7 @@ def _list_commands(**kwargs):
 
 @mode("broad")
 @command("let")
-def _let(**kwargs):
+def _let(*args, **kwargs):
     """
     Set a Fabric variable.
     
@@ -778,7 +778,7 @@ def _let(**kwargs):
 
 @mode("broad")
 @command("shell")
-def _shell(**kwargs):
+def _shell(*args, **kwargs):
     """
     Start an interactive shell connection to the specified hosts.
     
