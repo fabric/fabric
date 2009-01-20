@@ -143,11 +143,10 @@ Fabric let us do just that with these three operations:
 These operations are the bread and butter of remote deployment in Fabric.
 But before we can use them, we need to tell Fabric which hosts to connect to.
 We do this by setting the `fab_hosts` variable with the `set` operation, to
-a list of strings that are our host names. We can also to specify the
-user we want to log into these hosts with by setting the `fab_user`
-variable. By default, Fabric will log in with the username of your current
-local user - which is perfectly fine in this example, so we'll leave that
-variable out.
+a list of strings that are our host names. We can also specify the user we
+want to log into these hosts with by setting the `fab_user` variable. By
+default, Fabric will log in with the username of your current local user -
+which is perfectly fine in this example, so we'll leave that variable out.
 
 Try changing your `fabfile` so it looks like this:
 
@@ -325,7 +324,7 @@ effect on a per host basis, have access to this variable which names a
 specific host to work on.
 * `fab_hosts` defines the list of hosts to connect to, as a list of strings.
 There's no default value for this variable so it must be specified if you
-want to execute any remove operations.
+want to execute any remote operations.
 * `fab_mode` specifies what strategy should be used to execute commands on the
 connected hosts. The default value is "rolling" which runs the commands on one
 host at a time, without any parallelism or concurrency.
@@ -362,7 +361,7 @@ need for deployment as sudo'able without a password.
 
 If you want to use a specific key file on your system, then that is possible
 as well by setting the `fab_key_filename` variable to the path of your desired
-key file. If you need even more control, then you can instanciate your own
+key file. If you need even more control, then you can instantiate your own
 [PKey][] instance and put it in the `fab_pkey` variable - this will cause it
 to be parsed directly to the underlying call to [connect][] without
 modification.
@@ -370,12 +369,12 @@ modification.
 ### User-local configurations and .fabric
 
 In the real world (at least the part I'm in), most projects are developed in
-teams. This means that more than one person might be allowed to the deploy
-any given project. This often means that we'll have some per-developer
+teams. This means that more than one person might be allowed to deploy any
+given project. This often means that we'll have some per-developer
 configuration located on his/her computer - the *username* that is used to log
 into the servers are the prime example of such individualized configuration.
 
-This is where the .fabric file come in; before the fabfile is load, Fabric
+This is where the .fabric file comes in; before the fabfile is loaded, Fabric
 will look for a .fabric file in your home directory and load it if found.
 Because it is loaded before the fabfile, you can override these defaults in the
 fabfile.
@@ -383,7 +382,7 @@ fabfile.
 The format of the .fabric file is very simple. The file is line-oriented and
 every line is evaluated based on these three rules:
 
-* Lines that are empty appart from white spaces, are ignored.
+* Lines that are empty apart from white spaces, are ignored.
 * Lines that begin with a hash `#` character, are ignored.
 * Otherwise, the line must contain a variable name, followed by an equal sign
 and then some text for the value - both name and value will be stripped of
