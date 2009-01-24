@@ -390,7 +390,7 @@ def put(host, client, env, localpath, remotepath, **kwargs):
     if mode is not None and stat.S_ISDIR(mode):
         remotepath = os.path.join(remotepath, os.path.basename(localpath))
 
-    for source in glob.iglob(localpath):
+    for source in glob.glob(localpath):
         print("[%s] put: %s -> %s" % (host, source, remotepath))
         ftp.put(source, remotepath)
 
