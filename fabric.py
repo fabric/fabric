@@ -30,6 +30,8 @@ import sys
 import threading
 import time
 import types
+import glob
+import stat
 from collections import deque
 from functools import wraps
 
@@ -358,10 +360,11 @@ def prompt(varname, msg, validate=None, default=None):
 @connects
 def put(host, client, env, localpath, remotepath, **kwargs):
     """
-    Upload a file to the current hosts.
+    Upload files to the current hosts.
     
-    The `localpath` parameter is the relative or absolute path to the file on
-    your localhost that you wish to upload to the `fab_hosts`.
+    The `localpath` parameter specifies the files that you wish to upload to
+    the `fab_hosts`. It can either by relative or absolute and can
+    contain shell-style wildcards.
     The `remotepath` parameter is the destination path on the individual
     `fab_hosts`, and relative paths are relative to the fab_user's home
     directory.
@@ -372,18 +375,26 @@ def put(host, client, env, localpath, remotepath, **kwargs):
      * warn - print warning on failure
      * abort - terminate fabric on failure
     
-    Example:
+    Examples:
     
         put('bin/project.zip', '/tmp/project.zip')
+        put('*.py', 'cgi-bin/')
     
     """
     localpath = _lazy_format(localpath, env)
     remotepath = _lazy_format(remotepath, env)
-    if not os.path.exists(localpath):
-        return False
+
     ftp = client.open_sftp()
-    print("[%s] put: %s -> %s" % (host, localpath, remotepath))
-    ftp.put(localpath, remotepath)
+
+    mode = ftp.lstat(remotepath).st_mode
+    if mode is not None and stat.S_ISDIR(mode):
+        remotepath = os.path.join(remotepath, os.path.basename(localpath))
+
+    for source in glob.iglob(localpath):
+        print("[%s] put: %s -> %s" % (host, source, remotepath))
+        ftp.put(source, remotepath)
+
+    ftp.close()
     return True
 
 @operation
