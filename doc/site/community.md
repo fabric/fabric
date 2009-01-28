@@ -23,7 +23,7 @@ Site-seeing
 Fabric, as a project, is featured on a number of different web sites for
 various purposes. The most notable listed here:
 
-* **[Project Home](https://savannah.nongnu.org/projects/fab/)** <br />
+* **[Project Home](http://savannah.nongnu.org/projects/fab/)** <br />
 This is the home-base for the Fabric project. Not terribly much to see,
 though.
 * **[Ohloh](http://www.ohloh.net/projects/fab)** <br />
@@ -31,4 +31,4 @@ Ohloh is a site that tracks code-metrics for numerous open source projects.
 * **[Github Repository](http://github.com/karmazilla/fabric/)** <br />
 Fabrics source code repository on Github.
 
-[fab-user]: https://savannah.nongnu.org/mail/?group=fab
+[fab-user]: http://savannah.nongnu.org/mail/?group=fab
