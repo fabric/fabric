@@ -550,11 +550,9 @@ def local(cmd, **kwargs):
     # we don't need _escape_bash_specialchars for local execution
     final_cmd = _lazy_format(cmd)
     print("[localhost] run: " + final_cmd)
-    proc = subprocess.Popen(final_cmd, shell=True, stdout=subprocess.PIPE)
-    stdout = proc.communicate()[0]
-    if proc.returncode != 0:
+    retcode = subprocess.call(final_cmd, shell=True)
+    if retcode != 0:
         _fail(kwargs, "Local command failed:\n" + _indent(final_cmd))
-    return stdout
 
 @operation
 def local_per_host(cmd, **kwargs):
