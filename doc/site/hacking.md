@@ -64,17 +64,17 @@ if it can be reasonably assumed that every commit represents a running
 program.
 
 Git has several nice features for manipulating history, and their use is
-recommended when it comes to keeping consistency. The features that comes to
+recommended when it comes to keeping consistency. The features that come to
 mind are interactive adding, amending commits and rebasing. Just be mindful
 that you do not change history that has been pushed to a public repository.
 
 **Cohesion** is about not mixing unrelated changes in the same commit.
 
 In general, try to split things up in sensible chunks. We don't want big
-commits that changes a dozen unrelated things; CVS just called and it want its
+commits that change a dozen unrelated things; CVS just called and it wants its
 monolithic commits back.
 
-Following is a list of commit themes that can be used as guiding boundaries
+The following is a list of commit themes that can be used as guiding boundaries
 for how to split things up, but these are not set in stone. Common sense is
 important.
 
@@ -91,10 +91,10 @@ your changes and put them in different commits. For instance, I often correct
 PEP-8 violations on sight and often while doing something else with the file,
 and then break up the changes afterwards with interactive adding.
 
-If you are certain that you will get a better history by bending or break these
-cohesion rules in a given instance, then do so. A clean and sensible commit
-history is more important than adhering to these rules. They are just here for
-guidance.
+If you are certain that you will get a better history by bending or breaking
+these cohesion rules in a given instance, then do so. A clean and sensible
+commit history is more important than adhering to these rules. They are just
+here for guidance.
 
 
 Keeping in touch
