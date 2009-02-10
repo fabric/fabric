@@ -956,6 +956,10 @@ class HostConnection(object):
         except socket.gaierror:
             print('Error: name lookup failed for %s' % host)
             sys.exit(1)
+        except socket.error, e:
+            # TODO: In 2.6, socket.error subclasses IOError
+            print('Low level socket error connecting to host %s: %s' % (host, e[1]))
+            sys.exit(1)
     def __str__(self):
         return self.host_local_env['fab_host']
 
