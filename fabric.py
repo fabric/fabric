@@ -1133,12 +1133,13 @@ def _fail(kwargs, msg, env=ENV):
     code, msg_prefix = codes[env['fab_fail']]
     if 'fail' in kwargs:
         code, msg_prefix = codes[kwargs['fail']]
-    # If warn or above (and not fab_quiet), print message
+    # If warn (and not fab_quiet), print message
     if code > 1 and not env['fab_quiet']:
         print(msg_prefix + _lazy_format(msg, env))
-        # If abort, also exit
-        if code > 2:
-            sys.exit(1)
+    # If abort, print message, and also exit
+    if code > 2:
+        print(msg_prefix + _lazy_format(msg, env))
+        sys.exit(1)
 
 
 def _start_outputter(prefix, chan, env, stderr=False, capture=None):
