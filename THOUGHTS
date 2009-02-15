@@ -1,0 +1,48 @@
+# Thoughts concerning magic-removal
+
+
+## Goals
+* Make Fabric as Pythonic as possible: no more autoloading of Fab operations, just make everything normal Python imports/method calls.
+* Primary benefits: less code, cleaner, less violation of the Principle of Least Surprise (in terms of scoping, what's available where, etc), things "just work"
+* Additional benefits: will be able to treat Fabric as a library in addition to a tool; Fabfiles may be used stand-alone (with usual "if __name__ == 'main'" technique)
+* Drawbacks: May lose some functionality which required the previous "fabric controls and envelops everything" approach.
+
+
+## Features that should not change
+* Using config.* to store global/shared state and configuration directives (normal import of e.g. fabric.config in any files that need it)
+* Setting hosts either globally (command line or config.fab_hosts) or per-command (@hosts decorator; would need to play nice with e.g. @deep however)
+* Roles, which are currently just config names mapping to list of hosts. (Again, @roles would have to play nice with @hosts and @deep and etc; order may matter)
+* @requires() / require()
+* prompt()
+* run()
+* sudo()
+* local()
+* local_per_host()
+* abort()
+* Lazy evaluation string syntax ("$(fab_host)") should not change, but we should update docs to make it clear it's only useful for broad mode, not deep mode.
+
+
+## Features that may change or go away
+* Deep-vs-broad mode: functionality will not change, but broad mode becomes the default (by using Fabric operations like run() which will iterate over all hosts) and deep will require a decorator which wraps the command and runs the whole thing for each host (and sets state which the operations can check for and only run once per execution)
+    * Still think deep mode would make sense to be the default; but only way to do that post-magic-removal would be for the loading mechanism to treat everything as if it were already wrapped in the decorator, which is still kind of magical.
+    * However, with clear documentation and an easy global option (that could be inspected between import and execution, or passed on command line) having it be the default might work out.
+* @depends() may turn into a more Capistrano-like before/after chain setup
+* put(), download() -- behavior will not change but may update names/aliases so we have put()/get() and/or upload()/download() (i.e. consistency)
+* invoke() and the invoke()-y behavior of @depends() -- which ensure a command is only run once per invocation of 'fab' -- might have to be dropped unless we can find a non-magical way of preserving this behavior.
+
+
+## Features that will definitely change or go away
+* load() will go away in favor of simply importing other Python files / fabfiles
+    * Note that the new importing setup may generally require all fabfiles to be named *.py -- depends on how __import__ works
+* upload_project() should go into a non-core lib/module of some kind (it's a common use case but not an atomic building block really)
+* Built-in fabric commands such as shell, help etc should go into their own namespace/module (but remain accessible via the 'fab' tool as a top level "name") (i.e. checks for 'what to run' will splice in that list of names as well as user-defined stuff from fabfile(s))
+
+
+## Internal code changes (things users are unlikely to notice) (most bullet items are likely to represent their own module/file)
+* Namespacing will go away entirely, now it's all pure Python: what you import (and what your imports import) is what you get
+* Internal decorator setup used to populate lists of commands, operations etc will *probably* go away
+* Execution mechanisms should drastically decrease in size: all we should need is a call chain to ensure methods are called in order, and @deep (poss. differently-named) decorator to enable deep mode. Otherwise all we're doing is importing the user's fabfile and calling the command(s) listed in the arguments to 'fab'. 
+* Connection mechanisms -- ideally these would not change much (i.e. we want to avoid, if possible, the naive approach of reconnecting on every command) but they may have to be updated to be cleaner?
+    * Given recent mailing list posts, we may also want to make the use of Paramiko cleaner/more obvious so that it's easier to change how it behaves in terms of honoring SSH config options and etc.
+    * Depending on Twisted integration, may also change drastically simply due to the move to that from Paramiko
+* Helper stuff like _indent and etc, would also go into its own module
