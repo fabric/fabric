@@ -45,7 +45,9 @@ def ready_files():
 
 def release(**kwargs):
     "Create a new release of Fabric, and upload it to our various services."
-    prompt("_", "This will release Fabric v. %(fab_version)s. Press Enter to continue.")
+    prompt("confirmed", "Release Fabric v. $(fab_version)? [y/n]")
+    if config.confirmed != "y":
+      exit(0)
     dry = 'dry' in kwargs
     if not dry:
         local('git tag -s -m "Fabric v. %(fab_version)s" %(fab_version)s HEAD')

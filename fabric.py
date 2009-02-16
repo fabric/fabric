@@ -341,7 +341,7 @@ def prompt(varname, msg, validate=None, default=None):
         prompt_msg = _lazy_format("%s%s: " % (msg.strip(), default_str))
         
         while True:
-            value = value or raw_input(prompt_msg) or default
+            value = value or raw_input(_lazy_format(prompt_msg, ENV)) or default
             if callable(validate):
                 try:
                     value = validate(value)
