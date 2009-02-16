@@ -45,7 +45,7 @@ def ready_files():
 
 def release(**kwargs):
     "Create a new release of Fabric, and upload it to our various services."
-    prompt("confirmed", "Release Fabric v. $(fab_version)? [y/n]")
+    prompt("confirmed", "Release Fabric v. %(fab_version)s? [y/n]")
     if config.confirmed != "y":
       exit(0)
     dry = 'dry' in kwargs
