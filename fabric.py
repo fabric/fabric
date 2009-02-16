@@ -1134,10 +1134,10 @@ def _fail(kwargs, msg, env=ENV):
     if 'fail' in kwargs:
         code, msg_prefix = codes[kwargs['fail']]
     # If warn (and not fab_quiet), print message
-    if code > 1 and not env['fab_quiet']:
+    if code == 2 and not env['fab_quiet']:
         print(msg_prefix + _lazy_format(msg, env))
     # If abort, print message, and also exit
-    if code > 2:
+    if code == 3:
         print(msg_prefix + _lazy_format(msg, env))
         sys.exit(1)
 
