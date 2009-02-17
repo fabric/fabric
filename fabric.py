@@ -55,7 +55,7 @@ else:
     import win32profile
     _username = win32api.GetUserName()
 
-__version__ = '0.0.9'
+__version__ = '0.1.0'
 __author__ = 'Christian Vest Hansen'
 __author_email__ = 'karmazilla@gmail.com'
 __url__ = 'http://www.nongnu.org/fab/'
@@ -341,7 +341,7 @@ def prompt(varname, msg, validate=None, default=None):
         prompt_msg = _lazy_format("%s%s: " % (msg.strip(), default_str))
         
         while True:
-            value = value or raw_input(prompt_msg) or default
+            value = value or raw_input(_lazy_format(prompt_msg, ENV)) or default
             if callable(validate):
                 try:
                     value = validate(value)
@@ -912,7 +912,7 @@ def _lazy_format(string, env=ENV):
     if string is None:
         return None
     env = dict([(k, str(v)) for k, v in env.items()])
-    string = string.replace('%', '%%')
+    #string = string.replace('%', '%%')
     def replacer_fn(match):
         escape = match.group(1)
         if escape == '\\':
