@@ -1,5 +1,6 @@
 # Thoughts concerning magic-removal
 
+## Goals
 * Make Fabric as Pythonic as possible: no more autoloading of Fab operations,
 just make everything normal Python imports/method calls.
 * Primary benefits: less code, cleaner, less violation of the Principle of

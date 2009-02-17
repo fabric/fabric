@@ -1,0 +1,10 @@
+# Backwards-incompatible changes from Fabric 0.0.*
+
+In no particular order:
+
+* Fab config file location used to be ~/.fabric; in the interests of Unix filename conventions it's now ~/.fabrc
+* The old Configuration class that 'env'/'ENV' was an instance of, has been cleaned up, and its 'getAny()' method has been renamed to 'first()'.
+* Additionally, that class apparently performed string interpolation -- with itself as the mapping -- when setting values via e.g. 'env[key] = value'. This didn't make much sense to me, so I've stripped it out for now.
+
+
+<!-- vim:set formatoptions=t : -->
