@@ -26,7 +26,8 @@ def clean(**kwargs):
 
 def ready_files():
     local('mkdir release', fail = 'warn')
-    set(prefix='fab-%(fab_version)s', filename='release/%(prefix)s.tar.gz')
+    config.prefix='fab-%(fab_version)s'
+    config.filename='release/%(prefix)s.tar.gz'
     # This next part needs explaining...
     # 1. use Git to pack HEAD in TAR format to stdout, so we don't distribute
     #    files with local changes. Plus, make sure that Git only packs those
@@ -45,6 +46,9 @@ def ready_files():
 
 def release(**kwargs):
     "Create a new release of Fabric, and upload it to our various services."
+    prompt("confirmed", "Release Fabric v. %(fab_version)s? [y/n]")
+    if config.confirmed != "y":
+      exit(0)
     dry = 'dry' in kwargs
     if not dry:
         local('git tag -s -m "Fabric v. %(fab_version)s" %(fab_version)s HEAD')
@@ -52,7 +56,7 @@ def release(**kwargs):
     scp_cmd = 'scp $(filename) $(nongnu_user)@dl.sv.nongnu.org:/releases/fab/'
     if not dry:
         local(scp_cmd)
-        set(filename='%(filename)s.sig')
+        config.filename='%(filename)s.sig'
         local(scp_cmd)
     distutil_cmd = ('cd release/%(prefix)s/ && '
         + 'python setup.py sdist upload --sign')
