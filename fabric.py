@@ -386,13 +386,18 @@ def put(host, client, env, localpath, remotepath, **kwargs):
 
     ftp = client.open_sftp()
 
-    mode = ftp.lstat(remotepath).st_mode
-    if mode is not None and stat.S_ISDIR(mode):
-        remotepath = os.path.join(remotepath, os.path.basename(localpath))
+    try:
+        mode = ftp.lstat(remotepath).st_mode
+    except:
+        # sadly, I see no better way of doing this
+        mode = None
 
     for source in glob.glob(localpath):
-        print("[%s] put: %s -> %s" % (host, source, remotepath))
-        ftp.put(source, remotepath)
+        rpath = remotepath
+        if mode is not None and stat.S_ISDIR(mode):
+            rpath = os.path.join(rpath, os.path.basename(source))
+        print("[%s] put: %s -> %s" % (host, source, rpath))
+        ftp.put(source, rpath)
 
     ftp.close()
     return True
