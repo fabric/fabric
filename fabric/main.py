@@ -121,7 +121,9 @@ def parse_options():
     # (or allow option-arguments to -h/--help? e.g. "fab -h foo" = help for foo)
 
     # TODO: verbosity selection (sets state var(s) used when printing)
-    # -v / --verbose
+    # Could default to typical -v/--verbose disabling fab_quiet; or could do
+    # multiple levels, e.g. -vvv, OR could specifically enable/disable stuff,
+    # e.g. --no-warnings / --no-run / --no-stdout / etc.
 
     # TODO: specify nonstandard fabricrc file (and call load_settings() on it)
     # -f / --fabricrc ?
@@ -139,8 +141,9 @@ def parse_options():
     # Finalize
     #
 
-    # Returns two-tuple, (options, args)
-    return parser.parse_args()
+    # Returns three-tuple of parser + the output from parse_args (opt obj, args)
+    opts, args = parser.parse_args()
+    return parser, opts, args
 
 
 def list_commands():
@@ -159,8 +162,10 @@ def list_commands():
     sys.exit(0)
 
 
-def parse_arguments(args):
+def parse_arguments(arguments):
     """
+    Parse string list into list of 4-tuples: command name, args, kwargs, hosts.
+
     Parses the given list of arguments into command names and, optionally,
     per-command args/kwargs. Per-command args are attached to the command name
     with a colon (:), are comma-separated, and may use a=b syntax for kwargs.
@@ -192,27 +197,27 @@ def parse_arguments(args):
     above example would be ping_servers(foo=bar).
     """
     cmds = []
-    for cmd in args:
-        cmd_args = []
-        cmd_kwargs = {}
-        cmd_hosts = []
+    for cmd in arguments:
+        args = []
+        kwargs = {}
+        hosts = []
         if ':' in cmd:
-            cmd, cmd_str_args = cmd.split(':', 1)
-            for cmd_arg_kv in cmd_str_args.split(','):
-                k, _, v = partition(cmd_arg_kv, '=')
+            cmd, argstr = cmd.split(':', 1)
+            for pair in argstr.split(','):
+                k, _, v = pair.partition('=')
                 if v:
                     # Catch, interpret host/hosts kwargs
                     if k in ['host', 'hosts']:
                         if k == 'host':
-                            cmd_hosts = [v.strip()]
+                            hosts = [v.strip()]
                         elif k == 'hosts':
-                            cmd_hosts = [x.strip() for x in v.split(';')]
+                            hosts = [x.strip() for x in v.split(';')]
                     # Otherwise, record as usual
                     else:
-                        cmd_kwargs[k] = (v % ENV) or k
+                        kwargs[k] = v
                 else:
-                    cmd_args.append(k)
-        cmds.append((cmd, cmd_args, cmd_kwargs, cmd_hosts))
+                    args.append(k)
+        cmds.append((cmd, args, kwargs, hosts))
     return cmds
 
 
@@ -220,7 +225,7 @@ def main():
     try:
         try:
             # Parse command line options
-            options, args = parse_options()
+            parser, options, arguments = parse_options()
 
             # Handle version number option
             if options.show_version:
@@ -242,37 +247,34 @@ def main():
             if not commands:
                 abort("Fabfile didn't contain any commands!")
 
-            # Handle list-commands option
+            # Handle list-commands option (now that commands are loaded)
             if options.list_commands:
                 list_commands()
+
+            # If user didn't specify any commands to run, show help
+            if not arguments:
+                parser.print_help()
+                sys.exit(0) # Or should it exit with error (1)?
+
+            # Parse arguments into commands to run (plus args/kwargs/hosts)
+            commands_to_run = parse_arguments(arguments)
             
-            #
-            # Import user fabfile
-            #
-#            # Need to add cwd to PythonPath first, though!
-#            sys.path.insert(0, os.getcwd())
-#            ALL_COMMANDS = load(options[0])
-#            # Load Fabric builtin commands
-#            # TODO: error on collision with Python keywords, builtins, or
-#            ALL_COMMANDS.update(load('builtins'))
-#            # Error if command list was empty
-#            if not commands_to_run:
-#                _fail({'fail': 'abort'}, "No commands specified!")
-#            # Figure out if any specified names are invalid
-#            unknown_commands = []
-#            for command in commands_to_run:
-#                if not command[0] in ALL_COMMANDS:
-#                    unknown_commands.append(command[0])
-#            # Error if any unknown commands were specified
-#            if unknown_commands:
-#                _fail({'fail': 'abort'}, "Command(s) not found:\n%s" % _indent(
-#                    unknown_commands
-#                ))
-#            # At this point all commands must exist, so execute them in order.
-#            for tup in commands_to_run:
-#                # TODO: handle call chain
-#                # TODO: handle requires
-#                ALL_COMMANDS[tup[0]](*tup[1], **tup[2])
+            # Figure out if any specified names are invalid
+            unknown_commands = []
+            for tup in commands_to_run:
+                if tup[0] not in commands:
+                    unknown_commands.append(tup[0])
+
+            # Abort if any unknown commands were specified
+            if unknown_commands:
+                abort("Command(s) not found:\n%s" % indent(unknown_commands))
+
+            # At this point all commands must exist, so execute them in order.
+            for name, args, kwargs, hosts in commands_to_run:
+                # TODO: handle call chain
+                # TODO: handle requires
+                # TODO: handle host connections (!)
+                commands[name](*args, **kwargs)
         finally:
             pass
 #            _disconnect()
