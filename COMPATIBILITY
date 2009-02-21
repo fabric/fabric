@@ -14,6 +14,9 @@ better.
 simply 'host' and 'version' and so forth. This looks cleaner/more natural and
 is less typing, and as long as we document them users should know not to
 override them (just like regular Python and keywords/builtins, for example).
+* Fabric version header is no longer printed every time the program runs; now
+use the standard --version/-V options to print version and exit.
+    * May add this behavior back in when Fab runs in some sort of verbose mode.
 
 
 <!-- vim:set filetype=mkd : -->

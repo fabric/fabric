@@ -27,7 +27,7 @@ Once installed, you can run `fab help` to learn more about how to use Fabric.
     py_modules = ['fabric'],
     entry_points = {
         'console_scripts': [
-            'fab = fabric:main',
+            'fab = fabric.main:main',
         ]
     },
     classifiers = [
