@@ -594,14 +594,44 @@ def local_per_host(cmd, **kwargs):
             _fail(kwargs, "Local command failed:\n" + _indent(final_cmd))
 
 @operation
-def load(filename):
+def load(filename, **kwargs):
     """
-    Import given Python module and return its callables in a name/obj dict.
-    Used to load fabfiles as well as Fabric's "internal" commands (e.g. help)
+    Load up the given fabfile.
+    
+    This loads the fabfile specified by the `filename` parameter into fabric
+    and makes its commands and other functions available in the scope of the 
+    current fabfile.
+    
+    If the file has already been loaded it will not be loaded again.
+    
+    May take an additional `fail` keyword argument with one of these values:
+    
+     * ignore - do nothing on failure
+     * warn - print warning on failure
+     * abort - terminate fabric on failure
+    
+    Example:
+    
+        load("conf/production-settings.py")
+    
     """
-    imported = __import__(filename)
-    return dict([x for x in vars(imported).items() if callable(x[1])])
-
+    if not os.path.exists(filename):
+        _fail(kwargs, "Load failed:\n" + _indent(
+            "File not found: " + filename))
+        return
+    
+    if filename in _LOADED_FABFILES:
+        return
+    _LOADED_FABFILES.add(filename)
+    
+    captured = {}
+    execfile(filename, _new_namespace(), captured)
+    for name, obj in captured.items():
+        if not name.startswith('_') and isinstance(obj, types.FunctionType):
+            COMMANDS[name] = obj
+            USER_COMMANDS.append(name)
+        if not name.startswith('_'):
+            __builtins__[name] = obj
 
 @operation
 def upload_project(**kwargs):
@@ -659,6 +689,150 @@ def invoke(*commands):
         if isinstance(cmd, basestring):
             cmd = COMMANDS[item]
         _execute_command(cmd.__name__, args, kwargs, skip_executed=True)
+
+#
+# Standard Fabric commands:
+#
+@mode("broad")
+@command("help")
+def _help(*args, **kwargs):
+    """
+    Display Fabric usage help, or help for a given command.
+    
+    You can provide help with a parameter and get more detailed help for a
+    specific command. For instance, to learn more about the list command, you
+    could run `fab help:list`.
+    
+    If you are developing your own fabfile, then you might also be interested
+    in learning more about operations. You can do this by running help with the
+    `op` parameter set to the name of the operation you would like to learn
+    more about. For instance, to learn more about the `run` operation, you
+    could run `fab help:op=run`.
+
+    Fabric also exposes some utility decorators for use with your own commands.
+    Run help with the `dec` parameter set to the name of a decorator to learn
+    more about it.
+    
+    """
+    if args:
+        for k in args:
+            if k in COMMANDS:
+                _print_help_for_in(k, COMMANDS)
+            elif k in OPERATIONS:
+                _print_help_for_in(k, OPERATIONS)
+            elif k in ['op', 'operation']:
+                _print_help_for_in(kwargs[k], OPERATIONS)
+            elif k in ['dec', 'decorator']:
+                _print_help_for_in(kwargs[k], DECORATORS)
+            else:
+                _print_help_for(k, None)
+    else:
+        print("""
+    Fabric is a simple pythonic remote deployment tool.
+    
+    Type `fab list` to get a list of available commands.
+    Type `fab help:help` to get more information on how to use the built in
+    help.
+    
+    """)
+
+@command("about")
+def _print_about(*args, **kwargs):
+    "Display Fabric version, warranty and license information"
+    print(__about__ % ENV)
+
+@mode("broad")
+@command("list")
+def _list_commands(*args, **kwargs):
+    """
+    Display a list of commands with descriptions.
+    
+    By default, the list command prints a list of available commands, with a
+    short description (if one is available). However, the list command can also
+    print a list of available operations if you provide it with the `ops` or
+    `operations` parameters, or it can print a list of available decorators if
+    provided with the `dec` or `decorators` parameters.
+    """
+    if args:
+        for k in args:
+            if k in ['cmds', 'commands']:
+                print("Available commands are:")
+                _list_objs(COMMANDS)
+            elif k in ['ops', 'operations']:
+                print("Available operations are:")
+                _list_objs(OPERATIONS)
+            elif k in ['dec', 'decorators']:
+                print("Available decorators are:")
+                _list_objs(DECORATORS)
+            else:
+                print("Don't know how to list '%s'." % k)
+                print("Try one of these instead:")
+                print(_indent('\n'.join([
+                    'cmds', 'commands',
+                    'ops', 'operations',
+                    'dec', 'decorators',
+                ])))
+                sys.exit(1)
+    else:
+        print("Available commands are:")
+        _list_objs(COMMANDS)
+
+@mode("broad")
+@command("let")
+def _let(*args, **kwargs):
+    """
+    Set a Fabric variable.
+    
+    Example:
+    
+        $fab let:fab_user=billy,other_var=other_value
+    """
+    for k, v in kwargs.items():
+        if isinstance(v, basestring):
+            v = (v % ENV)
+        ENV[k] = v
+
+@mode("broad")
+@command("shell")
+def _shell(*args, **kwargs):
+    """
+    Start an interactive shell connection to the specified hosts.
+    
+    Optionally takes a list of hostnames as arguments, if Fabric is, by
+    the time this command runs, not already connected to one or more
+    hosts. If you provide hostnames and Fabric is already connected, then
+    Fabric will, depending on `fab_fail`, complain and abort.
+    
+    The `fab_fail` variable can be overwritten with the `set` command, or
+    by specifying an additional `fail` argument.
+    
+    Examples:
+    
+        $fab shell
+        $fab shell:localhost,127.0.0.1
+        $fab shell:localhost,127.0.0.1,fail=warn
+    
+    """
+    # expect every arg w/o a value to be a hostname
+    hosts = filter(lambda k: not kwargs[k], kwargs.keys())
+    if hosts:
+        if CONNECTIONS:
+            _fail(kwargs, "Already connected to predefined fab_hosts.")
+        ENV['fab_hosts'] = hosts
+    def lines():
+        try:
+            while True:
+                yield raw_input("fab> ")
+        except EOFError:
+            # user pressed ctrl-d
+            print
+    for line in lines():
+        if line == 'exit':
+            break
+        elif line.startswith('sudo '):
+            sudo(line[5:], fail='warn')
+        else:
+            run(line, fail='warn')
 
 #
 # Per-operation execution strategies for "broad" mode.
@@ -805,17 +979,9 @@ class HostConnection(object):
     def __str__(self):
         return self.host_local_env['fab_host']
 
-def _indent(obj, level=4):
-    """
-    Indent all lines in given obj with 'level' number of spaces, default 4.
-    If obj is a string, split the string and introduce the indent.
-    If obj is a list, no need to split.
-    """
-    try:
-        lines = obj.splitlines()
-    except AttributeError:
-        lines = obj
-    return '\n'.join(((' ' * level) + line for line in lines))
+def _indent(text, level=4):
+    "Indent all lines in text with 'level' number of spaces, default 4."
+    return '\n'.join(((' ' * level) + line for line in text.splitlines()))
 
 def _print_help_for(name, doc):
     "Output a pretty-printed help text for the given name & doc"
@@ -1143,7 +1309,14 @@ def _parse_args(args):
     return cmds
 
 def _validate_commands(cmds):
-            sys.exit(1)
+    if not cmds:
+        print("No commands given.")
+        _list_commands()
+    else:
+        for cmd in cmds:
+            if not cmd[0] in COMMANDS:
+                print("No such command: %s" % cmd[0])
+                sys.exit(1)
 
 def _execute_command(cmd, args, kwargs, hosts=None, skip_executed=False):
     # Setup
@@ -1256,44 +1429,14 @@ def main():
     args = sys.argv[1:]
     try:
         try:
-            # Print header
             print("Fabric v. %(fab_version)s." % ENV)
-            # Load settings from ~/.fabric
             _load_default_settings()
-            # Figure out where the local fabfile is
-            # TODO: look upwards in dir hierarchy as well, not just cwd
-            guesses = ['fabfile', 'Fabfile']
-            options = filter(lambda x: os.path.exists(x + '.py'), guesses)
-            # Abort if none of our guesses were found
-            if not options:
-                _fail({'fail': 'abort'}, "Couldn't find any fabfiles!")
-            # Figure out what commands+options the user wants to invoke
-            commands_to_run = _parse_args(args)
-            # Load user fabfile (first one found)
-            # Need to add cwd to PythonPath first, though!
-            sys.path.insert(0, os.getcwd())
-            commands = load(options[0])
-            # Load Fabric builtin commands
-            # TODO: error on collision with Python keywords, builtins, or
-            commands.update(load('builtins'))
-            # Error if command list was empty
-            if not commands_to_run:
-                _fail({'fail': 'abort'}, "No commands specified!")
-            # Figure out if any specified names are invalid
-            unknown_commands = []
-            for command in commands_to_run:
-                if not command[0] in commands:
-                    unknown_commands.append(command[0])
-            # Error if any unknown commands were specified
-            if unknown_commands:
-                _fail({'fail': 'abort'}, "Command(s) not found:\n%s" % _indent(
-                    unknown_commands
-                ))
-            # At this point all commands must exist, so execute them in order.
-            for tup in commands_to_run:
-                # TODO: handle call chain
-                # TODO: handle requires
-                commands[tup[0]](*tup[1], **tup[2])
+            fabfile = _pick_fabfile()
+            load(fabfile, fail='warn')
+            commands = _parse_args(args)
+            _validate_commands(commands)
+            for tup in commands:
+                _execute_command(*tup)
         finally:
             _disconnect()
         print("Done.")
@@ -1308,3 +1451,5 @@ def main():
         # we might leave stale threads if we don't explicitly exit()
         sys.exit(1)
     sys.exit(0)
+
+
