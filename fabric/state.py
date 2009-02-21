@@ -5,11 +5,19 @@ Internal shared-state variables such as config settings and host lists.
 import sys
 
 
-# Win32 compat
+#
+# Win32 flag
+#
+
+# Impacts a handful of platform specific behaviors.
 win32 = sys.platform in ['win32', 'cygwin']
 
 
-class AttributeDict(dict):
+#
+# Environment dictionary
+# 
+
+class _AttributeDict(dict):
     """
     Dictionary subclass enabling attribute lookup/assignment of keys/values.
 
@@ -43,10 +51,18 @@ class AttributeDict(dict):
             if value:
                 return value
 
-
 # Global environment dict. Currently a catchall for everything: config settings
 # such as global deep/broad mode, host lists, username etc.
-env = AttributeDict({
+env = _AttributeDict({
     'version': '0.2.0',
     'settings_file': '.fabricrc',
 })
+
+
+#
+# Command dictionary
+#
+
+# Keys are the command/function names, values are the callables themselves.
+# This is filled in when main() runs.
+commands = {}
