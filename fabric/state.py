@@ -2,6 +2,12 @@
 Internal shared-state variables such as config settings and host lists.
 """
 
+import sys
+
+
+# Win32 compat
+win32 = sys.platform in ['win32', 'cygwin']
+
 
 class AttributeDict(dict):
     """
@@ -41,6 +47,6 @@ class AttributeDict(dict):
 # Global environment dict. Currently a catchall for everything: config settings
 # such as global deep/broad mode, host lists, username etc.
 env = AttributeDict({
-    'version': '0.1.0',
-    'settings_file': '~/.fabrc',
+    'version': '0.2.0',
+    'settings_file': '.fabricrc',
 })

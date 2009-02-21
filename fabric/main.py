@@ -18,45 +18,40 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 
-from subroutines import format, abort, warn
+from subroutines import format, abort, warn, rc_path, load_settings
 from state import env
 
 
 def main():
     """
-    Primary execution path when invoked as 'fab'. Imports first fabfile found,
-    parses command line arguments, and executes commands if found.
+    This is the primary execution method when Fabric is invoked as 'fab'.
+    
+    It imports the first fabfile found, parses command line arguments, and
+    executes commands if found.
     """
     args = sys.argv[1:]
     try:
         try:
             # Print header
-            print("Fabric v. %(fab_version)s." % env)
+            print("Fabric " + env.version)
 
-            # Load settings from ~/.fabric
-            if not win32:
-                cfg = os.path.expanduser(env['fab_settings_file'])
-            else:
-                from win32com.shell.shell import SHGetSpecialFolderPath
-                from win32com.shell.shellcon import CSIDL_PROFILE
-                cfg = SHGetSpecialFolderPath(0,CSIDL_PROFILE) + "/.fabric"
-            if os.path.exists(cfg):
-                comments = lambda s: s and not s.startswith("#")
-                settings = filter(comments, open(cfg, 'r'))
-                settings = [(k.strip(), v.strip()) for k, _, v in
-                    [partition(s, '=') for s in settings]]
-                ENV.update(settings)
+            # Load settings from user settings file
+            load_settings(rc_path())
 
-            # Figure out where the local fabfile is
-            # TODO: look upwards in dir hierarchy as well, not just cwd
-            guesses = ['fabfile', 'Fabfile']
-            options = filter(lambda x: os.path.exists(x + '.py'), guesses)
-            # Abort if none of our guesses were found
-            if not options:
-                _fail({'fail': 'abort'}, "Couldn't find any fabfiles!")
-            # Figure out what commands+options the user wants to invoke
+            # Find local fabfile or abort
+            fabfile = find_fabfile()
+            if not fabfile:
+                abort("Couldn't find any fabfiles!")
+
+            # 
+            # Parse commands and command options
+            #
+            # TODO: parse regular Unix style options too
             commands_to_run = _parse_args(args)
-            # Load user fabfile (first one found)
+
+            #
+            # Import user fabfile
+            #
             # Need to add cwd to PythonPath first, though!
             sys.path.insert(0, os.getcwd())
             ALL_COMMANDS = load(options[0])

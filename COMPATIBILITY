@@ -1,10 +1,19 @@
-# Backwards-incompatible changes from Fabric 0.0.*
+# Backwards-incompatible changes from Fabric 0.1.0
 
 In no particular order:
 
-* Fab config file location used to be ~/.fabric; in the interests of Unix filename conventions it's now ~/.fabrc
-* The old Configuration class that 'env'/'ENV' was an instance of, has been cleaned up, and its 'getAny()' method has been renamed to 'first()'.
-* Additionally, that class apparently performed string interpolation -- with itself as the mapping -- when setting values via e.g. 'env[key] = value'. This didn't make much sense to me, so I've stripped it out for now.
+* Fab config file location used to be ~/.fabric; in the interests of honoring
+Unix filename conventions it's now ~/.fabricrc
+* The old Configuration class that 'env'/'ENV' was an instance of, has been
+cleaned up, and its 'getAny()' method has been renamed to 'first()'.
+* Additionally, that class apparently performed string interpolation -- with
+itself as the mapping -- when setting values via e.g. 'env[key] = value'. This
+didn't make much sense to me, so I've stripped it out for now. Simpler is
+better.
+* Internal variables such as 'fab_host' and 'fab_version' have been renamed to
+simply 'host' and 'version' and so forth. This looks cleaner/more natural and
+is less typing, and as long as we document them users should know not to
+override them (just like regular Python and keywords/builtins, for example).
 
 
-<!-- vim:set formatoptions=t : -->
+<!-- vim:set filetype=mkd : -->

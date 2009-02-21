@@ -89,4 +89,4 @@ they may have to be updated to be cleaner?
 * Helper stuff like _indent and etc, would also go into its own module
 
 
-<!-- vim:set formatoptions=t : -->
+<!-- vim:set filetype=mkd : -->
