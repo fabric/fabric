@@ -17,6 +17,9 @@ override them (just like regular Python and keywords/builtins, for example).
 * Fabric version header is no longer printed every time the program runs; now
 use the standard --version/-V options to print version and exit.
     * May add this behavior back in when Fab runs in some sort of verbose mode.
+* The old internal 'about' command has been removed; other Unix programs don't
+typically offer this. Users can always see the license and warranty info in
+their respective text files distributed with the software.
 
 
 <!-- vim:set filetype=mkd : -->

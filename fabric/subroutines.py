@@ -151,6 +151,11 @@ def parse_options():
     # maybe "set" as the keyword? i.e. -s / --set x=y
     # allow multiple times (like with tar --exclude)
 
+    # TODO: old 'shell' functionality. Feels kind of odd as an option, but also
+    # doesn't make any sense as an actual command (since you cannot run it with
+    # other commands at the same time).
+    # Probably only offer long option: --shell, possibly with -S for short?
+
     #
     # Finalize
     #
