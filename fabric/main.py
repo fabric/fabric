@@ -244,6 +244,8 @@ def main():
             commands.update(load_fabfile(fabfile))
 
             # Abort if no commands found
+            # TODO: continue searching for fabfiles if one we selected doesn't
+            # contain any callables? Bit of an edge case, but still...
             if not commands:
                 abort("Fabfile didn't contain any commands!")
 
@@ -274,6 +276,10 @@ def main():
                 # TODO: handle call chain
                 # TODO: handle requires
                 # TODO: handle host connections (!)
+                command = commands[name]
+                # Set current command name (used for some error messages)
+                env.current_command = name
+                # Execute the function
                 commands[name](*args, **kwargs)
         finally:
             pass

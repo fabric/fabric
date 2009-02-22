@@ -37,7 +37,7 @@ def abort(msg):
     """
     Abort execution, printing given message and exiting with error status.
     """
-    print("Error: " + format(msg))
+    print("\nError: " + format(msg))
     sys.exit(1)
 
 

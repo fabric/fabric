@@ -2,7 +2,20 @@
 
 In no particular order:
 
-* Fab config file location used to be ~/.fabric; in the interests of honoring
+* Fabric no longer makes any attempt to be Python 2.4 compatible. It's painful,
+but when rewritten it was simply too tempting to make use of the various tools
+2.5 gives a developer: the `with` statement, the `all` and `any` builtin
+methods, the `partition` string method, and many more.
+    * Specifically, we're settling on a policy of supporting the most recent 2
+    stable releases of Python 2.x, and that means 2.5 and 2.6 at the present
+    time. Python 2.5 came out in 09/2006, which is pretty old at this point :)
+    Furthermore, Debian stable -- always a good milestone for "old stuff" --
+    recently came out with 2.5 on board.
+    * If any users absolutely must have 2.4 support, we would welcome a
+    semi-official standalone set of patches (or a Github fork) providing it,
+    and might link to such code to make it easy to find. We would not,
+    however, be able to actually support that version of the code.
+* Fabric config file location used to be ~/.fabric; in the interests of honoring
 Unix filename conventions it's now ~/.fabricrc
 * The old Configuration class that 'env'/'ENV' was an instance of, has been
 cleaned up, and its 'getAny()' method has been renamed to 'first()'.
