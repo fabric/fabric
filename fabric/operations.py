@@ -2,8 +2,10 @@
 Functions to be used in fabfiles and other non-core code, such as run()/sudo().
 """
 
+import re
+
 from state import env
-from utils import abort, indent
+from utils import abort, format, indent, warn
 
 
 def require(*keys, **kwargs):
@@ -53,8 +55,91 @@ def require(*keys, **kwargs):
             command = "the following command"
         to_s = lambda obj: getattr(obj, '__name__', str(obj))
         provided_by = [to_s(obj) for obj in funcs]
-        msg += "\n\nTry running %s prior to this one, to fix the problem:\n%s" % (
-            command,
-            indent(provided_by)
-        )
+        msg += "\n\nTry running %s prior to this one, to fix the problem:\n%s" % (command, indent(provided_by))
     abort(msg)
+
+
+def prompt(name, text, default=None, validate=None):
+    """
+    Prompt user with `text` asking for the value of `name` env variable.
+
+    If `name` is already present in the environment dict, it will be
+    overwritten, and a warning printed to the user alerting them to this fact.
+
+    If `default` is given, it is displayed in square brackets and used if the
+    user enters nothing (i.e. presses Enter without entering any text).
+
+    The optional keyword argument `validate` may be a callable or a string:
+    
+    * If a callable, it is called with the user's input, and should return the
+    value to be stored on success. On failure, it should raise an exception
+    with an exception message, which will be printed to the user.
+    * If a string, the value passed to `validate` is used as a regular
+    expression. It is thus recommended to use raw strings in this case. Note
+    that the regular expression, if it is not fully matching (bounded by ^ and
+    $) it will be made so. In other words, the input must fully match the regex.
+
+    Either way, `prompt()` will re-prompt until validation passes (or the user
+    hits Ctrl-C).
+    
+    Examples:
+    
+        # Simplest form:
+        prompt('environment', 'Please specify target environment')
+        
+        # With default:
+        prompt('dish', 'Specify favorite dish', default='spam & eggs')
+        
+        # With validation, i.e. require integer input:
+        prompt('nice', 'Please specify process nice level', validate=int)
+        
+        # With validation against a regular expression:
+        prompt('release', 'Please supply a release name',
+                validate=r'^\w+-\d+(\.\d+)?$')
+    
+    """
+    # Get default value or None
+    previous_value = env.get(name)
+    # Set up default display
+    default_str = ""
+    if default:
+        default_str = " [%s] " % str(default).strip()
+    # Construct full prompt string
+    prompt_str = format(text.strip()) + default_str
+    # Loop until we get valid input or KeyboardInterrupt
+    value = None
+    while not value:
+        # Get input
+        value = raw_input(prompt_str) or default
+        # Handle validation
+        if validate:
+            # Callable
+            if callable(validate):
+                # Callable validate() must return an exception if validation
+                # fails.
+                try:
+                    value = validate(value)
+                except Exception, e:
+                    value = None
+                    print("Validation failed for the following reason:")
+                    print(indent(e.message) + "\n")
+            # String / regex must match and will be empty if validation fails.
+            else:
+                # Need to transform regex into full-matching one if it's not.
+                if not validate.startswith('^'):
+                    validate = r'^' + validate
+                if not validate.endswith('$'):
+                    validate += r'$'
+                result = re.findall(validate, value)
+                if not result:
+                    print("Regular expression validation failed: '%s' does not match '%s'\n" % (value, validate))
+                    value = None
+        # Implicit continuation of loop if raw_input returned empty string, and
+        # default was also unspecified. In other words, empty values are not OK!
+    # At this point, value must be non-empty, so update env
+    env[name] = value
+    # Print warning if we overwrote some other value
+    if previous_value is not None and previous_value != value:
+        warn("overwrote previous value of '%s'; used to be '%s', is now '%s'." % (name, previous_value, value))
+    # And return the value, too, just in case someone finds that useful.
+    return value

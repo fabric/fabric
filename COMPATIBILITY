@@ -38,6 +38,27 @@ their respective text files distributed with the software.
     available through the command line -- those topics impact fabfile authors,
     not fab users (even though the former is a subset of the latter) and should
     stay in the documentation only.
+* `prompt()` has been updated to behave more obviously, as I felt its previous
+behavior was a bit confusing in a few ways:
+    * It will now overwrite any previous value in the environment dict, but
+    will print a warning to the user if it does so.
+    * Additionally, validation used to fire even if the variable already
+    existed in the env dict, and would error if the old value did not fit the
+    new validation -- and would discard the new input regardless! None of this
+    made any sense to me and I felt it could be very confusing to users, so it
+    has been removed.
+    * Also additionally, (and this appeared to be undocumented?) the `default`
+    argument could take a callable as well as a string, and would simply set
+    the default message to the return value if a callable was given. This also
+    doesn't make sense to me (the user can just do `prompt(blah, msg,
+    default=my_callable()` after all) so it has been nixed.
+
+
+# Things which are more bug-fixes than compatibility issues
+## but which still represent changes to actual behavior
+
+* It looks like the regex behavior of the `validate` argument of `prompt()` was
+never actually implemented. It now works as advertised.
 
 
 <!-- vim:set filetype=mkd : -->
