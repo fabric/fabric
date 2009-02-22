@@ -4,13 +4,13 @@ Fabric is a simple pythonic remote deployment tool.
 
 It is designed to upload files to, and run shell commands on, a number of
 servers in parallel or serially. These commands are grouped in tasks (regular
-python functions) and specified in a 'fabfile'. 
+python functions) and specified in a 'fabfile.'
 
-It is a bit like a dumbed down Capistrano, except it's in Python, doesn't
-expect you to be deploying Rails applications, and the 'put' command works. 
+This is called remote automation, and the primary use case is deploying
+applications to multiple similar hosts.
 
-Unlike Capistrano, Fabric wants to stay small, light, easy to change and not
-bound to any specific framework.
+Although it is easier to automate when the target hosts are similar, it is not
+a requirement and Fabric has features for working with heterogeneous hosts as
+well.
 
-Once installed, you can run 'fab help' to learn more about how to use Fabric.
-
+Once installed, you can run `fab help` to learn more about how to use Fabric.
