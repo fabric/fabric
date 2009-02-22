@@ -48,4 +48,13 @@ def warn(msg):
     print("Warning: " + format(msg))
 
 
+def indent(text, spaces=4):
+    """
+    Returns text indented by the given number of spaces.
 
+    If text is not a string, it is assumed to be a list of lines and will be
+    joined by \n prior to indenting.
+    """
+    if not hasattr(text, 'splitlines'):
+        text = '\n'.join(text)
+    return '\n'.join(((' ' * spaces) + line for line in text.splitlines()))

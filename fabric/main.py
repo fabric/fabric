@@ -10,7 +10,7 @@ from optparse import OptionParser
 import os
 import sys
 
-from utils import abort
+from utils import abort, indent
 from state import commands, env, win32
 
 
@@ -278,7 +278,7 @@ def main():
         finally:
             pass
 #            _disconnect()
-#        print("Done.")
+            print("\nDone.")
     except SystemExit:
         # a number of internal functions might raise this one.
         raise
