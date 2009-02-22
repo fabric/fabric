@@ -469,6 +469,7 @@ def run(host, client, env, cmd, **kwargs):
 
     out_th = _start_outputter("[%s] out" % host, chan, env, capture=capture)
     err_th = _start_outputter("[%s] err" % host, chan, env, stderr=True)
+    
     status = chan.recv_exit_status()
     chan.close()
 
@@ -512,7 +513,7 @@ def sudo(host, client, env, cmd, **kwargs):
     real_cmd = _escape_bash_specialchars(real_cmd)
     cmd = env['fab_print_real_sudo'] and real_cmd or cmd
     if not _confirm_proceed('sudo', host, kwargs):
-        return False # TODO: should we return False in fail??
+        return False
     if not env['fab_quiet']:
         print("[%s] sudo: %s" % (host, cmd))
     chan = client._transport.open_session()
