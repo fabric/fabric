@@ -221,6 +221,37 @@ def parse_arguments(arguments):
     return cmds
 
 
+def get_hosts(cli_hosts, command):
+    """
+    Return the host list the given command should be using.
+
+    The list of hosts a given command will run on follows a strict order of
+    precedence:
+    1. Hosts specified via the command line (e.g. fab foo:hosts='a;b;c')
+    2. Hosts specified via the @hosts decorator (e.g. @hosts('a', 'b', 'c'))
+    3. Hosts specified globally, by setting env.hosts at module level in the
+        fabfile (note: since fabfile is fully loaded, the last line to set
+        env.hosts is the line that wins)
+
+    If all three sources have been checked and no hosts are found, prompt the
+    user for a comma-separated list of host definitions.
+    """
+    # TODO: Figure out if we should be trying to "merge" host lists when
+    # running multiple commands which each specify their own CLI or @hosts list.
+    
+    if cli_hosts:
+        return cli_hosts
+    if getattr(command, 'hosts', None):
+        return command.hosts
+    if env.get('hosts'):
+        return env.hosts
+    hosts = []
+    while not hosts:
+        p = "Please specify host or hosts to connect to (comma-separated): "
+        hosts = filter(None, raw_input(p).split(','))
+    return hosts
+
+
 def main():
     try:
         try:
@@ -272,15 +303,17 @@ def main():
                 abort("Command(s) not found:\n%s" % indent(unknown_commands))
 
             # At this point all commands must exist, so execute them in order.
-            for name, args, kwargs, hosts in commands_to_run:
-                # TODO: handle call chain
-                # TODO: handle requires
-                # TODO: handle host connections (!)
+            for name, args, kwargs, cli_hosts in commands_to_run:
+                # Get callable by itself
                 command = commands[name]
                 # Set current command name (used for some error messages)
-                env.current_command = name
-                # Execute the function
-                commands[name](*args, **kwargs)
+                env.command = name
+                # Set host list
+                hosts = get_hosts(cli_hosts, command)
+                # Execute the function on each host in turn
+                for host in hosts:
+                    env.host = host
+                    commands[name](*args, **kwargs)
         finally:
             pass
 #            _disconnect()

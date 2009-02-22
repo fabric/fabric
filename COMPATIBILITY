@@ -52,6 +52,16 @@ behavior was a bit confusing in a few ways:
     the default message to the return value if a callable was given. This also
     doesn't make sense to me (the user can just do `prompt(blah, msg,
     default=my_callable()` after all) so it has been nixed.
+* "Broad" mode is no more; all commands now run all the way through, once per
+host (which is what used to be called "deep" mode). Reasoning:
+    * Broad mode offered no end-user functionality over deep mode; I can't
+    think of any realistic use case where one would need each operation to
+    apply to all hosts before moving on to the next operation.
+    * Comparatively, deep mode allows for actual logic to be performed in
+    fabfiles, something broad mode prevented by its very nature.
+    * Implementing broad mode alongside deep mode would require a significantly
+    larger amount of code and make the internals much more byzantine and
+    bug-prone.
 
 
 # Things which are more bug-fixes than compatibility issues

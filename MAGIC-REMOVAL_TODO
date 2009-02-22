@@ -1,0 +1,5 @@
+* See all TODO markings in source code
+* Comprehensive test suite (using unittest? Nose? Mocking? etc?)
+* Sphinx documentation
+* Run lint/check type scripts to catch silly stuff like variables named
+  'input' (i.e. accidental shadowing of builtins), unnecessary imports, etc.

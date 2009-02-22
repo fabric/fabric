@@ -41,7 +41,7 @@ def require(*keys, **kwargs):
         variable = "variable"
         used = "This variable is"
     # Regardless of kwargs, print what was missing.
-    msg = "the command '%s' failed because the following required environment %s were not defined:\n%s" % (env.current_command, variable, indent(keys))
+    msg = "the command '%s' failed because the following required environment %s were not defined:\n%s" % (env.command, variable, indent(keys))
     # Print used_for if given
     if 'used_for' in kwargs:
         msg += "\n\n%s used for %s" % (used, kwargs['used_for'])
