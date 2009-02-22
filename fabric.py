@@ -469,8 +469,14 @@ def run(host, client, env, cmd, **kwargs):
 
     out_th = _start_outputter("[%s] out" % host, chan, env, capture=capture)
     err_th = _start_outputter("[%s] err" % host, chan, env, stderr=True)
+    
+    # Close when done
     status = chan.recv_exit_status()
     chan.close()
+    
+    # Like in sudo()
+    out_th.join()
+    err_th.join()
 
     return ("".join(capture).strip(), status == 0)
 
@@ -522,14 +528,14 @@ def sudo(host, client, env, cmd, **kwargs):
     out_th = _start_outputter("[%s] out" % host, chan, env, capture=capture)
     err_th = _start_outputter("[%s] err" % host, chan, env, stderr=True)
 
+    # Close channel when done
+    status = chan.recv_exit_status()
+    chan.close()
+
     # Wait for threads to exit before returning (otherwise we will occasionally
     # end up returning before the threads have fully wrapped up)
     out_th.join()
     err_th.join()
-
-    # Close channel when done
-    status = chan.recv_exit_status()
-    chan.close()
 
     return ("".join(capture).strip(), status == 0)
 
@@ -1172,7 +1178,6 @@ def _start_outputter(prefix, chan, env, stderr=False, capture=None):
                 # Capture if necessary
                 if capture is not None:
                     capture += out
-
                 # Handle any password prompts
                 initial_prompt = re.findall(r'^%s$' % env['fab_sudo_prompt'],
                     out, re.I|re.M)
@@ -1218,10 +1223,6 @@ def _start_outputter(prefix, chan, env, stderr=False, capture=None):
                 # If no line breaks, just keep adding to leftovers
                 else:
                     leftovers += out
-
-            if chan.exit_status_ready():
-                break
-            
     thread = threading.Thread(None, outputter, prefix,
         (prefix, chan, env, stderr, capture))
     thread.setDaemon(True)
