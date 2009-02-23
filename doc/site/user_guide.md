@@ -142,11 +142,14 @@ Fabric let us do just that with these three operations:
 
 These operations are the bread and butter of remote deployment in Fabric.
 But before we can use them, we need to tell Fabric which hosts to connect to.
-We do this by setting the `fab_hosts` variable with the `set` operation, to
+We do this by setting the `fab_hosts` attribute on the `config` object, to
 a list of strings that are our host names. We can also specify the user we
 want to log into these hosts with by setting the `fab_user` variable. By
 default, Fabric will log in with the username of your current local user -
 which is perfectly fine in this example, so we'll leave that variable out.
+
+It is also possible to specify the username in fab_hosts, by preceding the
+host name with the username and then a `@` character.
 
 Try changing your `fabfile` so it looks like this:
 
