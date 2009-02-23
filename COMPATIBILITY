@@ -71,4 +71,10 @@ host (which is what used to be called "deep" mode). Reasoning:
 never actually implemented. It now works as advertised.
 
 
+# New features not present in previous versions
+* Unix-style options/flags now replace all previous "internal" commands such as
+`list` or `help`, as well as becoming the correct/only way to set some options
+which were implemented as global env vars such as `fab_quiet` or `fab_hosts`.
+
+
 <!-- vim:set filetype=mkd : -->

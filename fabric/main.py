@@ -252,6 +252,20 @@ def get_hosts(cli_hosts, command):
     return hosts
 
 
+def get_system_username():
+    """
+    Obtain name of current system user, which will be default connection user.
+    """
+    if not win32:
+        import pwd
+        return pwd.getpwuid(os.getuid())[0]
+    else:
+        import win32api
+        import win32security
+        import win32profile
+        return win32api.GetUserName()
+
+
 def main():
     try:
         try:
@@ -272,7 +286,9 @@ def main():
                 abort("Couldn't find any fabfiles!")
 
             # Load fabfile and put its commands in the shared commands dict
-            commands.update(load_fabfile(fabfile))
+            # TODO: figure out if we should store this in state; only real
+            # reason I can think of would be if call chaining needed it.
+            commands = load_fabfile(fabfile)
 
             # Abort if no commands found
             # TODO: continue searching for fabfiles if one we selected doesn't
@@ -301,6 +317,9 @@ def main():
             # Abort if any unknown commands were specified
             if unknown_commands:
                 abort("Command(s) not found:\n%s" % indent(unknown_commands))
+
+            # Obtain system username for use in creating connections
+            env.system_username = get_system_username()
 
             # At this point all commands must exist, so execute them in order.
             for name, args, kwargs, cli_hosts in commands_to_run:

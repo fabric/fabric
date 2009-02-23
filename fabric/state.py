@@ -2,6 +2,7 @@
 Internal shared-state variables such as config settings and host lists.
 """
 
+import re
 import sys
 
 
@@ -60,9 +61,50 @@ env = _AttributeDict({
 
 
 #
-# Command dictionary
+# Host connection cache
 #
 
-# Keys are the command/function names, values are the callables themselves.
-# This is filled in when main() runs.
-commands = {}
+class _HostConnectionCache(dict):
+    """
+    Dict subclass allowing for caching of host connections/clients.
+
+    This subclass does not offer any extra methods, but will intelligently
+    create new client connections when keys are requested, or return previously
+    created connections instead.
+
+    Key values are the same as host specifiers throughout Fabric: optional
+    username + '@', mandatory hostname, optional ':' + port number. Examples:
+
+    * 'example.com' - typical Internet host address
+    * 'firewall' - atypical, but still legal, local host address
+    * 'user@example.com' - with specific username attached.
+
+    When the username is not given, the local system username is assumed.
+
+    Note that differing explicit usernames for the same hostname will
+    result in multiple client connections being made. For example, specifying
+    'user1@example.com' will create a new connection to 'example.com', logged
+    in as 'user1'; later specifying 'user2@example.com' will create a new, 2nd
+    connection as 'user2'.
+    
+    The same applies to ports: specifying two different ports will result in
+    two different connections to the same host being made. If no port is given,
+    22 is assumed, so 'example.com' is equivalent to 'example.com:22'.
+    """
+    host_pattern = r'((?P<user>\w+)@)?(?P<hostname>[\w.]+)(:(?P<port>\d+))?'
+    host_regex = re.compile(host_pattern)
+
+    def __getitem__(self, key):
+        # Get user, hostname and port separately
+        r = self.host_regex.match(key).groupdict()
+        # Add any necessary defaults in
+        user = r['user'] or env.system_username
+        hostname = r['hostname']
+        port = r['port'] or '22'
+        # Put them back together for the "real" key
+        real_key = "%s@%s:%s" % (user, hostname, port)
+        # If not found, create new connection and store it
+        if real_key not in self:
+            self[real_key] = new_connection(user, hostname, port)
+        # Return the value either way
+        return dict.__getitem__(self, real_key)
