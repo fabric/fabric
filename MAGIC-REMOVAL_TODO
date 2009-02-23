@@ -6,3 +6,6 @@
 * Make sure "constants" are consistently named: I've been trending towards not
   using ALL_CAPS, but in some places I probably did use them, so check and
   update.
+* Figure out if there's any nice way to not have --list display callables the user didn't define -- i.e. if one's fabfile does "from foo import some_function", I believe --list will currently print out some_function.
+    * Perhaps we _should_ explicitly mark tasks, i.e. opt-in with a decorator or something? Not sure if it's worth going that far or not.
+    * See if there is any actual way to look at an imported module and see what's defined in the module vs what was imported into that module from elsewhere. Like, introspect the function callables to see where they're defined; if that can be done in a non-icky way, might do the trick.
