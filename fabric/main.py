@@ -12,6 +12,7 @@ import sys
 
 from utils import abort, indent
 from state import commands, env, win32
+import operations
 
 
 def rc_path():
@@ -64,6 +65,13 @@ def find_fabfile():
         path = os.path.join('..', path)
 
 
+def is_task(func):
+    """
+    Returns True if `func` is callable and not a Fabric operation.
+    """
+    return callable(func) and (func not in vars(operations).values())
+
+
 def load_fabfile(path):
     """
     Import given fabfile path and return dictionary of its callables.
@@ -80,8 +88,8 @@ def load_fabfile(path):
     # Remove directory from path if we added it ourselves (just to be neat)
     if added_to_path:
         del sys.path[0]
-    # Return dictionary of callables only
-    return dict(filter(lambda x: callable(x[1]), vars(imported).items()))
+    # Return dictionary of callables only (and don't include Fab operations)
+    return dict(filter(lambda x: is_task(x[1]), vars(imported).items()))
 
 
 def parse_options():
@@ -286,9 +294,7 @@ def main():
                 abort("Couldn't find any fabfiles!")
 
             # Load fabfile and put its commands in the shared commands dict
-            # TODO: figure out if we should store this in state; only real
-            # reason I can think of would be if call chaining needed it.
-            commands = load_fabfile(fabfile)
+            commands.update(load_fabfile(fabfile))
 
             # Abort if no commands found
             # TODO: continue searching for fabfiles if one we selected doesn't

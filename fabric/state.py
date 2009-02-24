@@ -61,6 +61,15 @@ env = _AttributeDict({
 
 
 #
+# Command dictionary
+#
+
+# Keys are the command/function names, values are the callables themselves.
+# This is filled in when main() runs.
+commands = {}
+
+
+#
 # Host connection cache
 #
 
