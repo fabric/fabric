@@ -13,7 +13,7 @@ FORMAT_REGEX = re.compile(r'(\\?)(\$\((?P<var>[\w-]+?)\))')
 
 def format(s):
     """
-    Replace "$(foo)" style references to ENV vars in given string, and return
+    Replace "$(foo)" style references to env vars in given string, and return
     the result.
     """
     if s is None:

@@ -39,6 +39,8 @@ def load_settings(path):
         settings = filter(comments, open(path, 'r'))
         return dict((k.strip(), v.strip()) for k, _, v in
             [s.partition('=') for s in settings])
+    # Handle nonexistent or empty settings file
+    return {}
 
 
 def find_fabfile():

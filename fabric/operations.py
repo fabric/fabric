@@ -115,7 +115,7 @@ def prompt(name, text, default=None, validate=None):
         if validate:
             # Callable
             if callable(validate):
-                # Callable validate() must return an exception if validation
+                # Callable validate() must raise an exception if validation
                 # fails.
                 try:
                     value = validate(value)
