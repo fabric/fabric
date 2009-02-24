@@ -5,6 +5,18 @@ Internal shared-state variables such as config settings and host lists.
 import re
 import sys
 
+from utils import abort
+
+#
+# Paramiko
+#
+
+try:
+    import paramiko as ssh
+except ImportError:
+    abort("paramiko is a required module. Please install it:\n\t$ sudo easy_install paramiko")
+
+
 
 #
 # Win32 flag
@@ -114,6 +126,13 @@ class _HostConnectionCache(dict):
         real_key = "%s@%s:%s" % (user, hostname, port)
         # If not found, create new connection and store it
         if real_key not in self:
-            self[real_key] = new_connection(user, hostname, port)
+            self[real_key] = self._connect(user, hostname, port)
         # Return the value either way
         return dict.__getitem__(self, real_key)
+
+    @staticmethod
+    def _connect(user, hostname, port):
+        """
+        Static helper method for generating and returning a new SSH connection.
+        """
+        return None

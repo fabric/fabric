@@ -6,8 +6,6 @@ or handling Fabric-specific string formatting.
 import re
 import sys
 
-from state import env
-
 
 FORMAT_REGEX = re.compile(r'(\\?)(\$\((?P<var>[\w-]+?)\))')
 
@@ -16,6 +14,7 @@ def format(s):
     Replace "$(foo)" style references to env vars in given string, and return
     the result.
     """
+    from state import env
     if s is None:
         return None
     # Escape percent signs
