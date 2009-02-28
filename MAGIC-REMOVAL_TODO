@@ -1,11 +1,12 @@
 * See all TODO markings in source code
 * Comprehensive test suite (using unittest? Nose? Mocking? etc?)
-* Sphinx documentation
+* Sphinx documentation (though this requires going back to RST...)
 * Run lint/check type scripts to catch silly stuff like variables named
   'input' (i.e. accidental shadowing of builtins), unnecessary imports, etc.
 * Make sure "constants" are consistently named: I've been trending towards not
   using ALL_CAPS, but in some places I probably did use them, so check and
-  update.
+  update (or change my mind and go back; but it just feels ugly when one is
+  referencing e.g. ENV in user code all over...)
 * Possibly note in docs that callables imported into one's fabfile will show up
   as executable tasks; i.e. they'll clutter --list and can be invoked via
   command-line.
@@ -14,5 +15,21 @@
     * Also good to note that they can take *advantage* of this to make
     "meta-fabfiles" collecting a number of sub-fabfiles' tasks into one
     user-facing presentation.
+* Start a 'lib' type thing with non-atomic builtin commands, e.g. `sudo_put`.
+Figure out how best to accomplish this: where should it live? what's the most
+idiomatic way to present it to users?
+    * Could borrow a page from Django and call it `contrib`
+    * Or, if all previously builtin "commands" are now option flags, we could
+    simply have `commands`, which makes it obvious that they are on the same
+    level as user-defined commands.
+* Terminology: rename 'commands' to 'tasks', 'operations' to 'commands' or
+'functions' or something?
+    * Plus: 'tasks' and etc sounds more natural to me; given how big of a
+    shake-up this is, why not go whole hog?
+    * Minus: commands/operations aren't all that bad for names, and should
+    avoid tendency to redo everything for redoing's sake.
+    * Minus: 'commands' feels like the most natural fit for a rename of
+    'operations' -- but then it's pretty confusing given the previous use of
+    'commands'!
 
 <!-- vim:set filetype=mkd : -->
