@@ -119,7 +119,7 @@ def parse_options():
         help="show program's version number and exit"
     )
 
-    # List possible Fab commands
+    # List Fab commands found in loaded fabfiles/source files
     parser.add_option('-l', '--list',
         action='store_true',
         dest='list_commands',
@@ -133,10 +133,18 @@ def parse_options():
     # TODO: verbosity selection (sets state var(s) used when printing)
     # Could default to typical -v/--verbose disabling fab_quiet; or could do
     # multiple levels, e.g. -vvv, OR could specifically enable/disable stuff,
-    # e.g. --no-warnings / --no-run / --no-stdout / etc.
+    # e.g. --no-warnings / --no-echo (no echoing commands) / --no-stdout / etc.
 
     # TODO: specify nonstandard fabricrc file (and call load_settings() on it)
-    # -f / --fabricrc ?
+    # -c ? --config ? --fabricrc ? --rcfile ?
+    # what are some commonly used flags for conf file specification?
+
+    # TODO: explicitly specify "fabfile(s)" to load.
+    # - Can specify multiple times
+    # - Disables implicit "local" fabfile discovery/loading
+    #   - or should the default be to "append" to the implicitly loaded fabfile?
+    #   - either way, also add a flag to toggle that append/disable behavior
+    # Flags: -f ? --fabfile ? --source ? what are some common flags?
 
     # TODO: old 'let' functionality, i.e. global env additions/overrides
     # maybe "set" as the keyword? i.e. -s / --set x=y
