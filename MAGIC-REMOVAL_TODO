@@ -15,6 +15,8 @@
     * Also good to note that they can take *advantage* of this to make
     "meta-fabfiles" collecting a number of sub-fabfiles' tasks into one
     user-facing presentation.
+        * Although, with flags for manually specifying 1+ sub-fabfiles at
+        runtime, that becomes less necessary, though still useful.
 * Start a 'lib' type thing with non-atomic builtin commands, e.g. `sudo_put`.
 Figure out how best to accomplish this: where should it live? what's the most
 idiomatic way to present it to users?
