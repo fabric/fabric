@@ -36,18 +36,18 @@ class _AttributeDict(dict):
 
     For example:
 
-        >>> m = AttributeDict({'foo': 'bar'})
+        >>> m = _AttributeDict({'foo': 'bar'})
         >>> m.foo
         bar
         >>> m.foo = 'not bar'
         >>> m['foo']
         not bar
 
-    AttributeDict objects also provide .first() which acts like .get() but
+    _AttributeDict objects also provide .first() which acts like .get() but
     accepts multiple keys as arguments, and returns the value of the first hit,
     e.g.
 
-        >>> m = AttributeDict({'foo': 'bar', 'biz': 'baz'})
+        >>> m = _AttributeDict({'foo': 'bar', 'biz': 'baz'})
         >>> m.first('wrong', 'incorrect', 'foo', 'biz')
         bar
 
@@ -100,7 +100,8 @@ class _HostConnectionCache(dict):
     * 'firewall' - atypical, but still legal, local host address
     * 'user@example.com' - with specific username attached.
 
-    When the username is not given, the local system username is assumed.
+    When the username is not given, `env.username` is used; if `env.username`
+    is not defined, the local system username is assumed.
 
     Note that differing explicit usernames for the same hostname will
     result in multiple client connections being made. For example, specifying
@@ -119,7 +120,7 @@ class _HostConnectionCache(dict):
         # Get user, hostname and port separately
         r = self.host_regex.match(key).groupdict()
         # Add any necessary defaults in
-        user = r['user'] or env.system_username
+        user = r['user'] or env.get('username') or env.system_username
         hostname = r['hostname']
         port = r['port'] or '22'
         # Put them back together for the "real" key
@@ -133,6 +134,6 @@ class _HostConnectionCache(dict):
     @staticmethod
     def _connect(user, hostname, port):
         """
-        Static helper method for generating and returning a new SSH connection.
+        Static helper method which generates a new SSH connection.
         """
         return None

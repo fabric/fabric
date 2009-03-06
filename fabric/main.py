@@ -1,9 +1,12 @@
 """
 This module contains Fab's main() method plus related subroutines.
 
-main() is executed as the command line 'fab' program and takes care of parsing options and commands, loading the user settings file, loading a fabfile, and executing the commands given.
+main() is executed as the command line 'fab' program and takes care of parsing
+options and commands, loading the user settings file, loading a fabfile, and
+executing the commands given.
 
-The other callables defined in this module are internal only. Anything useful to individuals leveraging Fabric as a library, should be kept elsewhere.
+The other callables defined in this module are internal only. Anything useful
+to individuals leveraging Fabric as a library, should be kept elsewhere.
 """
 
 from optparse import OptionParser
