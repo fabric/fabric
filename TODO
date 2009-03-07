@@ -19,4 +19,6 @@
 31  Figure out how to deal with the use of different @hosts lists when running
     more than one command in a single session.
 32  Glob patterns on put() and download(), like put('*.html', 'to/some/path')
-33  *
+33  When imported instead of ran via 'fab' (and/or controllable via option),
+    raise an exception instead of calling sys.exit().
+34  Put in optional (or default w/ option) timeouts for operations.

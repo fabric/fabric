@@ -158,6 +158,9 @@ def parse_options():
     # other commands at the same time).
     # Probably only offer long option: --shell, possibly with -S for short?
 
+    # TODO: option for whether to auto-accept new SSH host keys
+    # (see if ssh itself has such a flag, and try to use that one for this opt)
+
     #
     # Finalize
     #
