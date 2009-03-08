@@ -4,6 +4,7 @@ Internal shared-state variables such as config settings and host lists.
 
 import re
 import sys
+from optparse import make_option
 
 from utils import abort
 
@@ -64,12 +65,42 @@ class _AttributeDict(dict):
             if value:
                 return value
 
+# Options/settings which exist both as environment keys and which can be set
+# on the command line, are defined here. When used via `fab` they will be added
+# to the optparse parser, and either way they are added to `env` below (i.e.
+# the 'dest' value becomes the environment key and the value, the env value).
+#
+# Keep in mind that optparse changes hyphens to underscores when automatically
+# deriving the `dest` name, e.g. `--reject-unknown-keys` becomes
+# `reject_unknown_keys`.
+env_options = [
+
+    # By default, we accept unknown host keys. This option allows users to
+    # disable that behavior (which means Fabric will raise an exception and
+    # terminate when an unknown host key is received from a server).
+    make_option('-R', '--reject-unknown-keys',
+        action='store_true',
+        default=False,
+        help="reject unknown host keys"
+    ),
+
+    # TODO: verbosity selection (sets state var(s) used when printing)
+    # Could default to typical -v/--verbose disabling fab_quiet; or could do
+    # multiple levels, e.g. -vvv, OR could specifically enable/disable stuff,
+    # e.g. --no-warnings / --no-echo (no echoing commands) / --no-stdout / etc.
+
+]
+
 # Global environment dict. Currently a catchall for everything: config settings
 # such as global deep/broad mode, host lists, username etc.
 env = _AttributeDict({
     'version': '0.2.0',
     'settings_file': '.fabricrc',
 })
+
+# Add in option defaults
+for option in env_options:
+    env[option.dest] = option.default
 
 
 #

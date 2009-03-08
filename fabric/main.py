@@ -14,7 +14,7 @@ import os
 import sys
 
 from utils import abort, indent
-from state import commands, env, win32
+from state import commands, env, env_options, win32
 import operations
 
 
@@ -110,7 +110,8 @@ def parse_options():
     parser = OptionParser(usage="fab [options] <command>[:arg1,arg2=val2,host=foo,hosts='h1;h2',...] ...")
 
     #
-    # Define options
+    # Define options that don't become `env` vars (typically ones which cause
+    # Fabric to do something other than its normal execution, such as --version)
     #
 
     # Version number (optparse gives you --version but we have to do it
@@ -133,11 +134,6 @@ def parse_options():
     # TODO: help (and argument signatures?) for a specific command
     # (or allow option-arguments to -h/--help? e.g. "fab -h foo" = help for foo)
 
-    # TODO: verbosity selection (sets state var(s) used when printing)
-    # Could default to typical -v/--verbose disabling fab_quiet; or could do
-    # multiple levels, e.g. -vvv, OR could specifically enable/disable stuff,
-    # e.g. --no-warnings / --no-echo (no echoing commands) / --no-stdout / etc.
-
     # TODO: specify nonstandard fabricrc file (and call load_settings() on it)
     # -c ? --config ? --fabricrc ? --rcfile ?
     # what are some commonly used flags for conf file specification?
@@ -158,14 +154,18 @@ def parse_options():
     # other commands at the same time).
     # Probably only offer long option: --shell, possibly with -S for short?
 
-    # TODO: option for whether to auto-accept new SSH host keys
-    # (see if ssh itself has such a flag, and try to use that one for this opt)
+    #
+    # Add in options which are also destined to show up as `env` vars.
+    #
+
+    for option in env_options:
+        parser.add_option(option)
 
     #
     # Finalize
     #
 
-    # Returns three-tuple of parser + the output from parse_args (opt obj, args)
+    # Return three-tuple of parser + the output from parse_args (opt obj, args)
     opts, args = parser.parse_args()
     return parser, opts, args
 
@@ -342,6 +342,10 @@ def main():
 
             # Obtain system username for use in creating connections
             env.system_username = get_system_username()
+
+            # Update env with any overridden option values
+            for option in env_options:
+                env[option.dest] = getattr(options, option.dest)
 
             # At this point all commands must exist, so execute them in order.
             for name, args, kwargs, cli_hosts in commands_to_run:
