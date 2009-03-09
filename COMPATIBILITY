@@ -62,6 +62,10 @@ host (which is what used to be called "deep" mode). Reasoning:
     * Implementing broad mode alongside deep mode would require a significantly
     larger amount of code and make the internals much more byzantine and
     bug-prone.
+* When connecting, Fabric used to use the undocumented `fab_pkey` env variable
+as a method of passing in a Paramiko `PKey` object to the SSH client's `connect`
+method. I didn't see this as being widely used and decided to yank it for
+simplicity's sake -- the new `-i` option should generally be enough for most users.
 
 
 # Things which are more bug-fixes than compatibility issues

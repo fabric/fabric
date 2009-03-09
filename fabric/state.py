@@ -84,6 +84,20 @@ env_options = [
         help="reject unknown host keys"
     ),
 
+    # Password
+    make_option('-p', '--password',
+        default='',
+        help='password for use with authentication and/or sudo'
+    ),
+
+    # Private key file
+    make_option('-i', 
+        action='append',
+        dest='key_filename',
+        help='path to SSH private key file. May be repeated.'
+    )
+
+
     # TODO: verbosity selection (sets state var(s) used when printing)
     # Could default to typical -v/--verbose disabling fab_quiet; or could do
     # multiple levels, e.g. -vvv, OR could specifically enable/disable stuff,
@@ -93,6 +107,8 @@ env_options = [
 
 # Global environment dict. Currently a catchall for everything: config settings
 # such as global deep/broad mode, host lists, username etc.
+# Most default values are specified in `env_options` above, in the interests of
+# preserving DRY.
 env = _AttributeDict({
     'version': '0.2.0',
     'settings_file': '.fabricrc',
@@ -144,27 +160,93 @@ class _HostConnectionCache(dict):
     two different connections to the same host being made. If no port is given,
     22 is assumed, so 'example.com' is equivalent to 'example.com:22'.
     """
-    host_pattern = r'((?P<user>\w+)@)?(?P<hostname>[\w.]+)(:(?P<port>\d+))?'
+    host_pattern = r'((?P<username>\w+)@)?(?P<hostname>[\w.]+)(:(?P<port>\d+))?'
     host_regex = re.compile(host_pattern)
 
     def __getitem__(self, key):
         # Get user, hostname and port separately
         r = self.host_regex.match(key).groupdict()
         # Add any necessary defaults in
-        user = r['user'] or env.get('username') or env.system_username
+        username = r['username'] or env.get('username') or env.system_username
         hostname = r['hostname']
         port = r['port'] or '22'
         # Put them back together for the "real" key
-        real_key = "%s@%s:%s" % (user, hostname, port)
+        real_key = "%s@%s:%s" % (username, hostname, port)
         # If not found, create new connection and store it
         if real_key not in self:
-            self[real_key] = self._connect(user, hostname, port)
+            self[real_key] = self._connect(username, hostname, port)
         # Return the value either way
         return dict.__getitem__(self, real_key)
 
     @staticmethod
-    def _connect(user, hostname, port):
+    def _connect(username, hostname, port):
         """
         Static helper method which generates a new SSH connection.
         """
-        return None
+        #
+        # Initialization
+        #
+
+        # Init client
+        client = ssh.SSHClient()
+        # Load known host keys (e.g. ~/.ssh/known_hosts)
+        client.load_system_host_keys()
+        # Unless user specified not to, accept/add new, unknown host keys
+        if not env.reject_unknown_keys:
+            client.set_missing_host_key_policy(ssh.AutoAddPolicy())
+
+        #
+        # Connection attempt loop
+        #
+
+        # Initialize loop variables
+        connected = False
+        bad_password = False
+        suffix = '' # Defined here so it persists across loop iterations
+        password = env.password
+
+        # Loop until successful connect (keep prompting for new password)
+        while not connected:
+            # Attempt connection
+            try:
+                client.connect(hostname, port, username, password,
+                    key_filename=env.key_filename, timeout=10)
+                connected = True
+            # Prompt for new password to try on auth failure
+            except (ssh.AuthenticationException, ssh.SSHException):
+                # Unless this is the first time we're here, tell user the
+                # supplied password was bogus.
+                if bad_password:
+                    # Reprimand user
+                    print("Bad password.")
+                    # Reset prompt suffix
+                    suffix = ": "
+                # If not, do we have one to try?
+                elif password:
+                    # Imply we'll reuse last one entered, in prompt
+                    suffix = " [Enter for previous]: "
+                # Otherwise, use default prompt suffix
+                else:
+                    suffix = ": "
+                # Whatever password we tried last time was bad, so take note
+                bad_password = True
+                # Update current password with user input (loop will try again)
+                password = getpass.getpass("Password for %s@%s%s" % (
+                    username, hostname, suffix))
+            # Ctrl-D / Ctrl-C for exit
+            except (EOFError, TypeError):
+                # Print a newline (in case user was sitting at prompt)
+                print('')
+                sys.exit(0)
+            # Handle timeouts
+            except socket.timeout:
+                abort('Error: timed out trying to connect to %s' % host)
+            # Handle DNS error / name lookup failure
+            except socket.gaierror:
+                abort('Error: name lookup failed for %s' % host)
+            # Handle generic network-related errors
+            # NOTE: In 2.6, socket.error subclasses IOError
+            except socket.error, e:
+                abort('Low level socket error connecting to host %s: %s' % (
+                    host, e[1])
+                )
