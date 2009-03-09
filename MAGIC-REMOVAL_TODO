@@ -1,3 +1,14 @@
+# Next up
+* Figure out how well Paramiko honors ~/.ssh/config -- just curious.
+    * If it doesn't, does it make sense for us to try parsing/using it
+    ourselves? (Add note below on that; don't hold up main workflow)
+* Continue testing the various use cases of the connection stuff
+* Once that all works, consider cutting up a bit more into subroutines
+(though this is less necessary now that it's been cleaned up...)
+* Then keep going with actually using the returned client object in operations
+
+
+# Once basic functionality has been restored
 * See all TODO markings in source code
 * Comprehensive test suite (using unittest? Nose? Mocking? etc?)
 * Sphinx documentation (though this requires going back to RST...)
