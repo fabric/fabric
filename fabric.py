@@ -402,7 +402,6 @@ def put(host, client, env, localpath, remotepath, **kwargs):
         if mode is not None and stat.S_ISDIR(mode):
             rpath = os.path.join(rpath, os.path.basename(source))
         print("[%s] put: %s -> %s" % (host, source, rpath))
-        ftp.put(source, rpath)
         rattrs = ftp.put(source, rpath)
         if kwargs.has_key('mode') and kwargs['mode'] != rattrs.st_mode:
             ftp.chmod(rpath, kwargs['mode'])
