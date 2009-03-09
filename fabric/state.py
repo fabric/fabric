@@ -3,10 +3,12 @@ Internal shared-state variables such as config settings and host lists.
 """
 
 import re
+import socket
 import sys
 from optparse import make_option
 
-from utils import abort
+from utils import abort, get_system_username
+
 
 #
 # Paramiko
@@ -16,7 +18,6 @@ try:
     import paramiko as ssh
 except ImportError:
     abort("paramiko is a required module. Please install it:\n\t$ sudo easy_install paramiko")
-
 
 
 #
@@ -73,6 +74,9 @@ class _AttributeDict(dict):
 # Keep in mind that optparse changes hyphens to underscores when automatically
 # deriving the `dest` name, e.g. `--reject-unknown-keys` becomes
 # `reject_unknown_keys`.
+#
+# Furthermore, *always* specify some sort of default to avoid ending up with
+# optparse.NO_DEFAULT (currently a two-tuple)! None is better than ''.
 env_options = [
 
     # By default, we accept unknown host keys. This option allows users to
@@ -86,7 +90,7 @@ env_options = [
 
     # Password
     make_option('-p', '--password',
-        default='',
+        default=None,
         help='password for use with authentication and/or sudo'
     ),
 
@@ -94,6 +98,7 @@ env_options = [
     make_option('-i', 
         action='append',
         dest='key_filename',
+        default=None,
         help='path to SSH private key file. May be repeated.'
     )
 
@@ -110,13 +115,21 @@ env_options = [
 # Most default values are specified in `env_options` above, in the interests of
 # preserving DRY.
 env = _AttributeDict({
+    # Version number for --version
     'version': '0.2.0',
+    # Filename of Fab settings file
     'settings_file': '.fabricrc',
+    # Flag for whether we're running via the `fab` command (determines some
+    # behavioral changes such as using sys.exit() or not)
+    'invoked_as_fab': False
 })
 
 # Add in option defaults
 for option in env_options:
     env[option.dest] = option.default
+
+# System username (done here for library use)
+env.system_username = get_system_username()
 
 
 #
@@ -209,9 +222,10 @@ class _HostConnectionCache(dict):
         while not connected:
             # Attempt connection
             try:
-                client.connect(hostname, port, username, password,
+                client.connect(hostname, int(port), username, password,
                     key_filename=env.key_filename, timeout=10)
                 connected = True
+                return client
             # Prompt for new password to try on auth failure
             except (ssh.AuthenticationException, ssh.SSHException):
                 # Unless this is the first time we're here, tell user the
@@ -235,9 +249,11 @@ class _HostConnectionCache(dict):
                     username, hostname, suffix))
             # Ctrl-D / Ctrl-C for exit
             except (EOFError, TypeError):
-                # Print a newline (in case user was sitting at prompt)
-                print('')
-                sys.exit(0)
+                if env.invoked_as_fab:
+                    # Print a newline (in case user was sitting at prompt)
+                    print('')
+                    sys.exit(0)
+                raise
             # Handle timeouts
             except socket.timeout:
                 abort('Error: timed out trying to connect to %s' % host)

@@ -276,21 +276,9 @@ def get_hosts(cli_hosts, command):
     return hosts
 
 
-def get_system_username():
-    """
-    Obtain name of current system user, which will be default connection user.
-    """
-    if not win32:
-        import pwd
-        return pwd.getpwuid(os.getuid())[0]
-    else:
-        import win32api
-        import win32security
-        import win32profile
-        return win32api.GetUserName()
-
-
 def main():
+    # We're running from the command line, so set global flag to that effect.
+    env.invoked_as_fab = True
     try:
         try:
             # Parse command line options
@@ -339,9 +327,6 @@ def main():
             # Abort if any unknown commands were specified
             if unknown_commands:
                 abort("Command(s) not found:\n%s" % indent(unknown_commands))
-
-            # Obtain system username for use in creating connections
-            env.system_username = get_system_username()
 
             # Update env with any overridden option values
             for option in env_options:
