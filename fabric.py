@@ -375,10 +375,15 @@ def put(host, client, env, localpath, remotepath, **kwargs):
      * warn - print warning on failure
      * abort - terminate fabric on failure
     
+    May take an additional `mode` keyword argument which sets the numeric
+    mode of the remote file. See the os.chmod documentation for the format
+    of this argument.
+    
     Examples:
     
         put('bin/project.zip', '/tmp/project.zip')
         put('*.py', 'cgi-bin/')
+        put('index.html', 'index.html', mode=0755)
     
     """
     localpath = _lazy_format(localpath, env)
@@ -397,7 +402,9 @@ def put(host, client, env, localpath, remotepath, **kwargs):
         if mode is not None and stat.S_ISDIR(mode):
             rpath = os.path.join(rpath, os.path.basename(source))
         print("[%s] put: %s -> %s" % (host, source, rpath))
-        ftp.put(source, rpath)
+        rattrs = ftp.put(source, rpath)
+        if kwargs.has_key('mode') and kwargs['mode'] != rattrs.st_mode:
+            ftp.chmod(rpath, kwargs['mode'])
 
     ftp.close()
     return True
