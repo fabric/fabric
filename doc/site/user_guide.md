@@ -140,6 +140,9 @@ Fabric let us do just that with these three operations:
 * `run` : Run a shell-command on the connected hosts as a normal user.
 * `sudo` : Run a shell-command on the connected hosts as a privileged user.
 
+Remember that you can inspect the documentation for each of these operations
+with the `help` command, ie. `fab help:put`.
+
 These operations are the bread and butter of remote deployment in Fabric.
 But before we can use them, we need to tell Fabric which hosts to connect to.
 We do this by setting the `fab_hosts` attribute on the `config` object, to
