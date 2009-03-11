@@ -375,9 +375,11 @@ def put(host, client, env, localpath, remotepath, **kwargs):
      * warn - print warning on failure
      * abort - terminate fabric on failure
     
-    May take an additional `mode` keyword argument which sets the numeric
-    mode of the remote file. See the os.chmod documentation for the format
-    of this argument.
+    By default, the file mode is preserved by put when uploading. But you can
+    also set the mode explicitly by specifying an additional `mode` keyword
+    argument which sets the numeric mode of the remote file.
+    See the os.chmod documentation or `man chmod` for the format of this
+    argument.
     
     Examples:
     
@@ -392,19 +394,25 @@ def put(host, client, env, localpath, remotepath, **kwargs):
     ftp = client.open_sftp()
 
     try:
-        mode = ftp.lstat(remotepath).st_mode
+        rmode = ftp.lstat(remotepath).st_mode
     except:
         # sadly, I see no better way of doing this
-        mode = None
+        rmode = None
 
-    for source in glob.glob(localpath):
+    for lpath in glob.glob(localpath):
+        # first, figure out the real, absolute, remote path
         rpath = remotepath
-        if mode is not None and stat.S_ISDIR(mode):
-            rpath = os.path.join(rpath, os.path.basename(source))
-        print("[%s] put: %s -> %s" % (host, source, rpath))
-        rattrs = ftp.put(source, rpath)
-        if kwargs.has_key('mode') and kwargs['mode'] != rattrs.st_mode:
-            ftp.chmod(rpath, kwargs['mode'])
+        if mode is not None and stat.S_ISDIR(rmode):
+            rpath = os.path.join(rpath, os.path.basename(lpath))
+        
+        # then upload
+        print("[%s] put: %s -> %s" % (host, lpath, rpath))
+        rattrs = ftp.put(lpath, rpath)
+        
+        # and finally set the file mode
+        lmode = kwargs.get('mode') or os.stat(lpath).st_mode
+        if lmode != rattrs.st_mode:
+            ftp.chmod(rpath, lmode)
 
     ftp.close()
     return True
