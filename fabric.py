@@ -80,7 +80,7 @@ DEFAULT_ENV = {
     'fab_key_filename': None,
     'fab_new_host_key': 'accept',
     'fab_shell': '/bin/bash -l -c',
-    'fab_timestamp': datetime.datetime.utcnow().strftime('%F_%H-%M-%S'),
+    'fab_timestamp': datetime.datetime.utcnow().strftime('%Y_%m_%d_%H-%M-%S'),
     'fab_print_real_sudo': False,
     'fab_fail': 'abort',
     'fab_quiet': False,
