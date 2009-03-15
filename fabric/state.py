@@ -256,13 +256,16 @@ class _HostConnectionCache(dict):
                 raise
             # Handle timeouts
             except socket.timeout:
-                abort('Error: timed out trying to connect to %s' % host)
+                abort('Error: timed out trying to connect to %s' % hostname)
             # Handle DNS error / name lookup failure
             except socket.gaierror:
-                abort('Error: name lookup failed for %s' % host)
+                abort('Error: name lookup failed for %s' % hostname)
             # Handle generic network-related errors
             # NOTE: In 2.6, socket.error subclasses IOError
             except socket.error, e:
                 abort('Low level socket error connecting to host %s: %s' % (
-                    host, e[1])
+                    hostname, e[1])
                 )
+
+# Actual cache instance
+connections = _HostConnectionCache()

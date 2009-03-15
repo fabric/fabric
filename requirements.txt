@@ -1,0 +1,4 @@
+paramiko >= 1.7
+nose
+coverage
+pylint
