@@ -177,22 +177,29 @@ class _HostConnectionCache(dict):
     host_regex = re.compile(host_pattern)
 
     def __getitem__(self, key):
+        real_key = self.normalize(key)
+        # If not found, create new connection and store it
+        if real_key not in self:
+            self[real_key] = self.connect(username, hostname, port)
+        # Return the value either way
+        return dict.__getitem__(self, real_key)
+
+    @classmethod
+    def normalize(self, host_string):
+        """
+        Normalizes or fleshes out a host string to its full user@host:port form.
+        """
         # Get user, hostname and port separately
-        r = self.host_regex.match(key).groupdict()
+        r = self.host_regex.match(host_string).groupdict()
         # Add any necessary defaults in
         username = r['username'] or env.get('username') or env.system_username
         hostname = r['hostname']
         port = r['port'] or '22'
-        # Put them back together for the "real" key
-        real_key = "%s@%s:%s" % (username, hostname, port)
-        # If not found, create new connection and store it
-        if real_key not in self:
-            self[real_key] = self._connect(username, hostname, port)
-        # Return the value either way
-        return dict.__getitem__(self, real_key)
+        # Put them back together for fully normalized result.
+        return "%s@%s:%s" % (username, hostname, port)
 
     @staticmethod
-    def _connect(username, hostname, port):
+    def connect(username, hostname, port):
         """
         Static helper method which generates a new SSH connection.
         """

@@ -1,4 +1,8 @@
-VERSION = (0, 1, 0, 'alpha', 0)
+"""
+Package-level constructs. Currently, the only code not in sub-modules is the below version-related constant/method.
+"""
+
+VERSION = (0, 2, 0, 'alpha', 0)
 
 # Version code inspired by Django
 def get_version():

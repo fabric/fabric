@@ -82,5 +82,3 @@ def get_system_username():
         import win32security
         import win32profile
         return win32api.GetUserName()
-
-
