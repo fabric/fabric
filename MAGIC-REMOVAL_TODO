@@ -13,17 +13,18 @@
 * Take a step back, reorganize. E.g.:
     * stuff in `utils` should be user-useful only, other subroutines ought to go
     elsewhere
-    * is there enough connection-related stuff to make a `connections` or
-    similarly-named module? If so, move it in there from e.g. `state`.
     * Should probably move subroutines in `main` to another module so that
     `main` is just that: `main()`. New module would be something like `core` -
     subroutines of the same sort found in `utils` but NOT usually for user
-    consumption.
+    consumption (and ALSO not generally used multiple times by internals? or
+    should this be the same spot as other non-user-facing subroutines?)
 * Continue building out any previously made tests till coverage.py implies we
 have pretty decent coverage (100% would be nice but even a 100% from coverage.py
 doesn't literally mean full coverage...)
     * Have started using Nose for testing, probably stick with that;
-    * Have not picked a mocking framework yet, just monkey patching for now.
+    * Ditto with Fudge for mocking/stubbing/expecting; may need to contribute
+    some patches to it, though, it's not great for functional coding and I
+    don't see the need to 100% class-ify my code just so my mocker works better.
 * Sphinx documentation (though this requires going back to RST...)
 * Run Pylint, fix what it complains about (and generate a config file to make it
 shut up about stuff I don't care about)
