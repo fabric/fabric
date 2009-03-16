@@ -1,4 +1,8 @@
+# These requirements are for DEVELOPMENT ONLY!
+# You do not need e.g. Mercurial just to run the 'fab' tool.
+# Instead, these are necessary for executing the test suite.
 paramiko >= 1.7
 nose
 coverage
 pylint
+-e hg+http://bitbucket.org/kumar303/fudge/#egg=Fudge
