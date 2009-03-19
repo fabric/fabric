@@ -402,7 +402,7 @@ def put(host, client, env, localpath, remotepath, **kwargs):
     for lpath in glob.glob(localpath):
         # first, figure out the real, absolute, remote path
         rpath = remotepath
-        if mode is not None and stat.S_ISDIR(rmode):
+        if rmode is not None and stat.S_ISDIR(rmode):
             rpath = os.path.join(rpath, os.path.basename(lpath))
         
         # then upload
