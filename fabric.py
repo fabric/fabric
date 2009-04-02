@@ -656,6 +656,44 @@ def load(filename, **kwargs):
             __builtins__[name] = obj
 
 @operation
+def rsync_project(remotepath, exclude=False, delete=False, extra_opts='', **kwargs):
+    """
+    Uploads the current project directory using rsync.
+    By using rsync, only changes since last upload are actually sent over
+    the wire, rather than the whole directory like using upload_project.
+
+    Requires the rsync command-line utility to be available both on the local
+    and the remote machine.
+
+    Parameters are:
+        remotepath:         the path on the remote machine to which to rsync the
+                            current project
+        exclude (optional): the string passed to rsync's --exclude option.
+                            See the rsync manpage for details.
+        delete (optional):  True or False, whether to delete remote files that
+                            don't exist locally.
+        extra_opts (optional): Additional command-line options to set for rsync.
+
+    The rsync command is built from the options as follows:
+        rsync [--delete] [--exclude exclude] -pthrvz [extra_opts] \\
+            <project dir> <fab_user>@<host>:<remotepath>
+    """
+    username = ENV.get('fab_user')
+    exclude = exclude and exclude.replace('"', '\\\\"')
+    options_map = {
+        "delete" : '--delete' if delete else '',
+        "exclude" : exclude and '--exclude "%s"' % exclude or '',
+        "extra" : extra_opts
+    }
+    options = "%(delete)s %(exclude)s -pthrvz %(extra)s" % options_map
+    cwd = '../' + os.getcwd().split(os.sep)[-1]
+    userhost = "$(fab_user)@$(fab_host)"
+    rpath = _lazy_format(remotepath, ENV)
+
+    cmd = "rsync %s %s %s:%s" % (options, cwd, userhost, rpath)
+    local_per_host(cmd, **kwargs)
+
+@operation
 def upload_project(**kwargs):
     """
     Uploads the current project directory to the connected hosts.
