@@ -1,12 +1,8 @@
 # Next up
-* Figure out how well Paramiko honors ~/.ssh/config -- just curious.
-    * If it doesn't, does it make sense for us to try parsing/using it
-    ourselves? (Add note below on that; don't hold up main workflow)
 * Continue testing the various use cases of the connection stuff
 * Once that all works, consider cutting up a bit more into subroutines
 (though this is less necessary now that it's been cleaned up...)
 * Then keep going with actually using the returned client object in operations
-
 
 # Once basic functionality has been restored
 * See all TODO markings in source code
@@ -58,5 +54,7 @@ idiomatic way to present it to users?
     * Minus: 'commands' feels like the most natural fit for a rename of
     'operations' -- but then it's pretty confusing given the previous use of
     'commands'!
+* Add Paramiko SSHConfig support: it can provide username and port and other
+options. Look at `man ssh_config` for what else people can put in that file.
 
 <!-- vim:set filetype=mkd : -->

@@ -30,15 +30,14 @@ class HostConnectionCache(dict):
 
     Note that differing explicit usernames for the same hostname will
     result in multiple client connections being made. For example, specifying
-    'user1@example.com' will create a new connection to 'example.com', logged
-    in as 'user1'; later specifying 'user2@example.com' will create a new, 2nd
+    'user1@example.com' will create a connection to 'example.com', logged in as
+    'user1'; later specifying 'user2@example.com' will create a new, 2nd
     connection as 'user2'.
     
     The same applies to ports: specifying two different ports will result in
     two different connections to the same host being made. If no port is given,
     22 is assumed, so 'example.com' is equivalent to 'example.com:22'.
     """
-
     def __getitem__(self, key):
         # Normalize given key (i.e. obtain username and port, if not given)
         username, hostname, port = normalize(key)
@@ -56,7 +55,6 @@ def normalize(host_string):
     Normalizes a given host string, returning explicit host, user, port.
     """
     from fabric.state import env
-
     # Get user, hostname and port separately
     r = host_regex.match(host_string).groupdict()
     # Add any necessary defaults in
@@ -69,6 +67,9 @@ def normalize(host_string):
 def join_host_strings(username, hostname, port):
     """
     Turns user/host/port strings into 'user@host:port' combined string.
+
+    This function is not responsible for handling missing user/port strings; for
+    that, see the `normalize` function.
     """
     return "%s@%s:%s" % (username, hostname, port)
 
@@ -120,7 +121,7 @@ def connect(username, hostname, port):
                 suffix = ": "
             # If not, do we have one to try?
             elif password:
-                # Imply we'll reuse last one entered, in prompt
+                # Imply we'll reuse last one entered, in prompt suffix
                 suffix = " [Enter for previous]: "
             # Otherwise, use default prompt suffix
             else:
