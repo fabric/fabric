@@ -579,6 +579,7 @@ def local(cmd, **kwargs):
     retcode = subprocess.call(final_cmd, shell=True)
     if retcode != 0:
         _fail(kwargs, "Local command failed:\n" + _indent(final_cmd))
+    return retcode
 
 @operation
 def local_per_host(cmd, **kwargs):
