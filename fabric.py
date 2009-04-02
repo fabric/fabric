@@ -84,6 +84,7 @@ DEFAULT_ENV = {
     'fab_print_real_sudo': False,
     'fab_fail': 'abort',
     'fab_quiet': False,
+    'fab_sudo_noshell': False,
 }
 
 class Configuration(dict):
@@ -509,6 +510,13 @@ def sudo(host, client, env, cmd, **kwargs):
     You can have the command run as a user other than root by setting the
     `user` keyword argument to the intended username or uid.
     
+    In order to ensure a proper environment and command interpretation, sudo
+    actually executes the provided command through the CLI setup specified by
+    the `fab_shell` variable. If you don't want this behavior, then you can
+    turn it off for a single sudo command by setting the `noshell` keyword
+    argument to True, or you can turn the behavior off for all sudo commands
+    by setting the `config.fab_sudo_noshell` variable to True.
+    
     May take an additional `fail` keyword argument with one of these values:
     
      * ignore - do nothing on failure
@@ -528,8 +536,12 @@ def sudo(host, client, env, cmd, **kwargs):
     else:
         sudo_cmd = "sudo -S -p '%s' "
     sudo_cmd = sudo_cmd % env['fab_sudo_prompt']
-    real_cmd = env['fab_shell'] + ' "' + cmd.replace('"', '\\"') + '"'
-    real_cmd = sudo_cmd + ' ' + real_cmd
+    if env['fab_sudo_noshell'] or kwargs.get('noshell'):
+        real_cmd = sudo_cmd + ' ' + cmd.replace('"', '\\"')
+        real_cmd = env['fab_shell'] + ' "' + real_cmd + '"'
+    else:
+        real_cmd = env['fab_shell'] + ' "' + cmd.replace('"', '\\"') + '"'
+        real_cmd = sudo_cmd + ' ' + real_cmd
     real_cmd = _escape_bash_specialchars(real_cmd)
     cmd = env['fab_print_real_sudo'] and real_cmd or cmd
     if not _confirm_proceed('sudo', host, kwargs):
