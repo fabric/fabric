@@ -668,46 +668,63 @@ def load(filename, **kwargs):
             __builtins__[name] = obj
 
 @operation
-def rsync_project(remotepath, exclude=[], delete=False, extra_opts='', **kwargs):
+def rsync_project(remotedir, exclude=[], delete=False, extra_opts='', **kwargs):
+
     """
     Uploads the current project directory using rsync.
-    By using rsync, only changes since last upload are actually sent over
-    the wire, rather than the whole directory like using upload_project.
+    By using rsync, only changes since the last upload are actually sent over
+    the wire, rather than the whole directory like when using upload_project.
+
 
     Requires the rsync command-line utility to be available both on the local
     and the remote machine.
 
     Parameters are:
-        remotepath:         the path on the remote machine to which to rsync the
-                            current project
-        exclude (optional): an iterable of strings, each used as an --exclude
-                            argument to rsync. Or, alternatively a single
-                            string used as an --exclude.
+        remotedir:          the directory on the remote machine to which to
+                            rsync the current project. The project directory
+                            becomes a subdirectory of the remotedir.
+
+        exclude (optional): values passed to rsync's --exclude option.
+                            If the parameter object is iterable, (that is, it
+                            defines an __iter__ method), each of its elements is
+                            passed to a separate --exclude option. Otherwise,
+                            the object is passed as a string to a single
+                            --exclude option.
+                            See the rsync manpage for details on specifying
+                            filter rule arguments for --exclude.
+
         delete (optional):  True or False, whether to delete remote files that
-                            don't exist locally.
+                            don't exist locally. Defaults to False.
+
         extra_opts (optional): Additional command-line options to set for rsync.
 
     The rsync command is built from the options as follows:
-        rsync [--delete] [--exclude exclude] -pthrvz [extra_opts] \\
-            <project dir> <fab_user>@<host>:<remotepath>
+        rsync [--delete] [--exclude exclude[0][, --exclude[1][, ...]]] \\
+            -pthrvz [extra_opts] ../<project dir> <fab_user>@<host>:<remotedir>
+
     """
     username = ENV.get('fab_user')
-    exclusion_of = lambda s: '--exclude "%s"' % s.replace('"', '\\\\"')
-    if not isinstance(exclude, basestring):
-        exclude = ' '.join(map(exclusion_of, exclude))
-    else:
-        exclude = exclusion_of(exclude)
+
+    if not hasattr(exclude, '__iter__'):
+        exclude = [exclude]
+
+    exclude_opts = ' --exclude "%s"' * len(exclude)
+    exclusions = tuple([str(s).replace('"', '\\\\"') for s in exclude])
+
+
     options_map = {
-        "delete" : '--delete' if delete else '',
-        "exclude" : exclude,
-        "extra" : extra_opts
+        "delete"  : '--delete' if delete else '',
+        "exclude" : exclude_opts % exclusions,
+
+        "extra"   : extra_opts
     }
-    options = "%(delete)s %(exclude)s -pthrvz %(extra)s" % options_map
+    options = "%(delete)s%(exclude)s -pthrvz %(extra)s" % options_map
     cwd = '../' + os.getcwd().split(os.sep)[-1]
     userhost = "$(fab_user)@$(fab_host)"
-    rpath = _lazy_format(remotepath, ENV)
+    rdir = _lazy_format(remotedir, ENV)
 
-    cmd = "rsync %s %s %s:%s" % (options, cwd, userhost, rpath)
+    cmd = "rsync %s %s %s:%s" % (options, cwd, userhost, rdir)
+
     local_per_host(cmd, **kwargs)
 
 @operation
