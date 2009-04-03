@@ -669,12 +669,10 @@ def load(filename, **kwargs):
 
 @operation
 def rsync_project(remotedir, exclude=[], delete=False, extra_opts='', **kwargs):
-
     """
     Uploads the current project directory using rsync.
     By using rsync, only changes since the last upload are actually sent over
     the wire, rather than the whole directory like when using upload_project.
-
 
     Requires the rsync command-line utility to be available both on the local
     and the remote machine.
@@ -711,11 +709,9 @@ def rsync_project(remotedir, exclude=[], delete=False, extra_opts='', **kwargs):
     exclude_opts = ' --exclude "%s"' * len(exclude)
     exclusions = tuple([str(s).replace('"', '\\\\"') for s in exclude])
 
-
     options_map = {
         "delete"  : '--delete' if delete else '',
         "exclude" : exclude_opts % exclusions,
-
         "extra"   : extra_opts
     }
     options = "%(delete)s%(exclude)s -pthrvz %(extra)s" % options_map
