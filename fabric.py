@@ -668,7 +668,7 @@ def load(filename, **kwargs):
             __builtins__[name] = obj
 
 @operation
-def rsync_project(remotepath, exclude=False, delete=False, extra_opts='', **kwargs):
+def rsync_project(remotepath, exclude=[], delete=False, extra_opts='', **kwargs):
     """
     Uploads the current project directory using rsync.
     By using rsync, only changes since last upload are actually sent over
@@ -680,8 +680,9 @@ def rsync_project(remotepath, exclude=False, delete=False, extra_opts='', **kwar
     Parameters are:
         remotepath:         the path on the remote machine to which to rsync the
                             current project
-        exclude (optional): the string passed to rsync's --exclude option.
-                            See the rsync manpage for details.
+        exclude (optional): an iterable of strings, each used as an --exclude
+                            argument to rsync. Or, alternatively a single
+                            string used as an --exclude.
         delete (optional):  True or False, whether to delete remote files that
                             don't exist locally.
         extra_opts (optional): Additional command-line options to set for rsync.
@@ -691,10 +692,14 @@ def rsync_project(remotepath, exclude=False, delete=False, extra_opts='', **kwar
             <project dir> <fab_user>@<host>:<remotepath>
     """
     username = ENV.get('fab_user')
-    exclude = exclude and exclude.replace('"', '\\\\"')
+    exclusion_of = lambda s: '--exclude "%s"' % s.replace('"', '\\\\"')
+    if not isinstance(exclude, basestring):
+        exclude = ' '.join(map(exclusion_of, exclude))
+    else:
+        exclude = exclusion_of(exclude)
     options_map = {
         "delete" : '--delete' if delete else '',
-        "exclude" : exclude and '--exclude "%s"' % exclude or '',
+        "exclude" : exclude,
         "extra" : extra_opts
     }
     options = "%(delete)s %(exclude)s -pthrvz %(extra)s" % options_map
