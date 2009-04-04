@@ -42,18 +42,20 @@ def check_connection_calls(host_strings, num_calls):
     patched_connect = patch_object('fabric.network', 'connect',
         Fake('connect', expect_call=True).times_called(num_calls)
     )
-    # Make new cache object
-    cache = HostConnectionCache()
-    # Connect to all connection strings
-    for host_string in host_strings:
-        # Obtain connection from cache, potentially calling connect()
-        cache[host_string]
-    # Verify expected calls matches up with actual calls
-    verify()
-    # Restore connect()
-    patched_connect.restore()
-    # Clear expectation stack
-    clear_expectations()
+    try:
+        # Make new cache object
+        cache = HostConnectionCache()
+        # Connect to all connection strings
+        for host_string in host_strings:
+            # Obtain connection from cache, potentially calling connect()
+            cache[host_string]
+        # Verify expected calls matches up with actual calls
+        verify()
+    finally:
+        # Restore connect()
+        patched_connect.restore()
+        # Clear expectation stack
+        clear_expectations()
 
 def test_connection_caching():
     for description, host_strings, num_calls in (
