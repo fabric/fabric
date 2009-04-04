@@ -14,3 +14,6 @@ a requirement and Fabric has features for working with heterogeneous hosts as
 well.
 
 Once installed, you can run `fab help` to learn more about how to use Fabric.
+
+If you want to make changes to the Fabric source code, then please see the
+guide lines located here: http://www.nongnu.org/fab/hacking.html
