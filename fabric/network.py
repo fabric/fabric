@@ -4,6 +4,8 @@ Classes and subroutines dealing with network connections and related topics.
 
 import re
 
+import paramiko as ssh
+
 
 host_pattern = r'((?P<username>\w+)@)?(?P<hostname>[\w.]+)(:(?P<port>\d+))?'
 host_regex = re.compile(host_pattern)
