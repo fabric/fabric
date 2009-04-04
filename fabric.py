@@ -84,6 +84,7 @@ DEFAULT_ENV = {
     'fab_print_real_sudo': False,
     'fab_fail': 'abort',
     'fab_quiet': False,
+    'fab_sudo_noshell': False,
 }
 
 class Configuration(dict):
@@ -509,6 +510,13 @@ def sudo(host, client, env, cmd, **kwargs):
     You can have the command run as a user other than root by setting the
     `user` keyword argument to the intended username or uid.
     
+    In order to ensure a proper environment and command interpretation, sudo
+    actually executes the provided command through the CLI setup specified by
+    the `fab_shell` variable. If you don't want this behavior, then you can
+    turn it off for a single sudo command by setting the `noshell` keyword
+    argument to True, or you can turn the behavior off for all sudo commands
+    by setting the `config.fab_sudo_noshell` variable to True.
+    
     May take an additional `fail` keyword argument with one of these values:
     
      * ignore - do nothing on failure
@@ -528,8 +536,12 @@ def sudo(host, client, env, cmd, **kwargs):
     else:
         sudo_cmd = "sudo -S -p '%s' "
     sudo_cmd = sudo_cmd % env['fab_sudo_prompt']
-    real_cmd = env['fab_shell'] + ' "' + cmd.replace('"', '\\"') + '"'
-    real_cmd = sudo_cmd + ' ' + real_cmd
+    if env['fab_sudo_noshell'] or kwargs.get('noshell'):
+        real_cmd = sudo_cmd + ' ' + cmd.replace('"', '\\"')
+        real_cmd = env['fab_shell'] + ' "' + real_cmd + '"'
+    else:
+        real_cmd = env['fab_shell'] + ' "' + cmd.replace('"', '\\"') + '"'
+        real_cmd = sudo_cmd + ' ' + real_cmd
     real_cmd = _escape_bash_specialchars(real_cmd)
     cmd = env['fab_print_real_sudo'] and real_cmd or cmd
     if not _confirm_proceed('sudo', host, kwargs):
@@ -579,6 +591,7 @@ def local(cmd, **kwargs):
     retcode = subprocess.call(final_cmd, shell=True)
     if retcode != 0:
         _fail(kwargs, "Local command failed:\n" + _indent(final_cmd))
+    return retcode
 
 @operation
 def local_per_host(cmd, **kwargs):
@@ -653,6 +666,62 @@ def load(filename, **kwargs):
             USER_COMMANDS.append(name)
         if not name.startswith('_'):
             __builtins__[name] = obj
+
+@operation
+def rsync_project(remotedir, exclude=[], delete=False, extra_opts='', **kwargs):
+    """
+    Uploads the current project directory using rsync.
+    By using rsync, only changes since the last upload are actually sent over
+    the wire, rather than the whole directory like when using upload_project.
+
+    Requires the rsync command-line utility to be available both on the local
+    and the remote machine.
+
+    Parameters are:
+        remotedir:          the directory on the remote machine to which to
+                            rsync the current project. The project directory
+                            becomes a subdirectory of the remotedir.
+
+        exclude (optional): values passed to rsync's --exclude option.
+                            If the parameter object is iterable, (that is, it
+                            defines an __iter__ method), each of its elements is
+                            passed to a separate --exclude option. Otherwise,
+                            the object is passed as a string to a single
+                            --exclude option.
+                            See the rsync manpage for details on specifying
+                            filter rule arguments for --exclude.
+
+        delete (optional):  True or False, whether to delete remote files that
+                            don't exist locally. Defaults to False.
+
+        extra_opts (optional): Additional command-line options to set for rsync.
+
+    The rsync command is built from the options as follows:
+        rsync [--delete] [--exclude exclude[0][, --exclude[1][, ...]]] \\
+            -pthrvz [extra_opts] ../<project dir> <fab_user>@<host>:<remotedir>
+
+    """
+    username = ENV.get('fab_user')
+
+    if not hasattr(exclude, '__iter__'):
+        exclude = [exclude]
+
+    exclude_opts = ' --exclude "%s"' * len(exclude)
+    exclusions = tuple([str(s).replace('"', '\\\\"') for s in exclude])
+
+    options_map = {
+        "delete"  : '--delete' if delete else '',
+        "exclude" : exclude_opts % exclusions,
+        "extra"   : extra_opts
+    }
+    options = "%(delete)s%(exclude)s -pthrvz %(extra)s" % options_map
+    cwd = '../' + os.getcwd().split(os.sep)[-1]
+    userhost = "$(fab_user)@$(fab_host)"
+    rdir = _lazy_format(remotedir, ENV)
+
+    cmd = "rsync %s %s %s:%s" % (options, cwd, userhost, rdir)
+
+    local_per_host(cmd, **kwargs)
 
 @operation
 def upload_project(**kwargs):
