@@ -5,7 +5,7 @@ Functions to be used in fabfiles and other non-core code, such as run()/sudo().
 import re
 
 from state import env
-from utils import abort, format, indent, warn
+from utils import abort, indent, warn
 
 
 def require(*keys, **kwargs):
@@ -105,7 +105,7 @@ def prompt(name, text, default=None, validate=None):
     if default:
         default_str = " [%s] " % str(default).strip()
     # Construct full prompt string
-    prompt_str = format(text.strip()) + default_str
+    prompt_str = text.strip() + default_str
     # Loop until we get valid input or KeyboardInterrupt
     value = None
     while not value:
