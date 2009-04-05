@@ -1,8 +1,5 @@
 # Next up
-* Continue testing the various use cases of the connection stuff
-* Once that all works, consider cutting up a bit more into subroutines
-(though this is less necessary now that it's been cleaned up...)
-* Then keep going with actually using the returned client object in operations
+* Keep going with actually using the returned client object in operations
 
 # Once basic functionality has been restored
 * See all TODO markings in source code
