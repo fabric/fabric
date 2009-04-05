@@ -1,5 +1,5 @@
 # Next up
-* Keep going with actually using the returned client object in operations
+* Continue porting over operations
 
 # Once basic functionality has been restored
 * See all TODO markings in source code
@@ -14,6 +14,14 @@
         * Also note that a number of main() subroutines right now, such as the
         ones for finding settings, and setting host lists, should be updated so
         that library users can use them!
+* Output handling -- how to deal with:
+    * Status info
+    * Warnings
+    * Errors/failures (both printing info, and how to abort or not abort flow)
+    * Exceptions (outside of the ones involved with errors/failures)
+    * As mentioned elsewhere, want to make this as flexible as possible
+    * Put in logging-to-disk and/or leverage the logging module for stdout too?
+        * e.g. it already has the concepts of info/warn/etc -- can that be used?
 * Continue building out any previously made tests till coverage.py implies we
 have pretty decent coverage (100% would be nice but even a 100% from coverage.py
 doesn't literally mean full coverage...)
