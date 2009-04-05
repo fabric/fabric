@@ -11,6 +11,9 @@
     subroutines of the same sort found in `utils` but NOT usually for user
     consumption (and ALSO not generally used multiple times by internals? or
     should this be the same spot as other non-user-facing subroutines?)
+        * Also note that a number of main() subroutines right now, such as the
+        ones for finding settings, and setting host lists, should be updated so
+        that library users can use them!
 * Continue building out any previously made tests till coverage.py implies we
 have pretty decent coverage (100% would be nice but even a 100% from coverage.py
 doesn't literally mean full coverage...)
