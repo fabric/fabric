@@ -2,9 +2,12 @@
 Functions to be used in fabfiles and other non-core code, such as run()/sudo().
 """
 
+from glob import glob
+import os
 import re
+import stat
 
-from state import env
+from state import env, connections
 from utils import abort, indent, warn
 
 
@@ -143,3 +146,53 @@ def prompt(name, text, default=None, validate=None):
         warn("overwrote previous value of '%s'; used to be '%s', is now '%s'." % (name, previous_value, value))
     # And return the value, too, just in case someone finds that useful.
     return value
+
+
+def put(local_path, remote_path, mode=None):
+    """
+    Upload one or more files to each host in the current host list.
+    
+    `local_path` may be a relative or absolute local file path, and may contain
+    shell-style wildcards, as understood by the Python `glob` module.
+
+    `remote_path` may also be a relative or absolute location, but applied to
+    the remote host. Relative paths are relative to the remote user's home
+    directory.
+
+    By default, the file mode is preserved by put when uploading. But you can
+    also set the mode explicitly by specifying an additional `mode` keyword
+    argument which sets the numeric mode of the remote file. See the os.chmod
+    documentation or `man chmod` for the format of this argument.
+    
+    Examples:
+    
+        put('bin/project.zip', '/tmp/project.zip')
+        put('*.py', 'cgi-bin/')
+        put('index.html', 'index.html', mode=0755)
+    
+    """
+    ftp = connections[env.host].open_sftp()
+
+    try:
+        rmode = ftp.lstat(remote_path).st_mode
+    except:
+        # sadly, I see no better way of doing this
+        rmode = None
+
+    for lpath in glob(local_path):
+        # first, figure out the real, absolute, remote path
+        rpath = remote_path
+        if rmode is not None and stat.S_ISDIR(rmode):
+            rpath = os.path.join(rpath, os.path.basename(lpath))
+        
+        # then upload
+        # TODO: tie this into global output controls
+        print("[%s] put: %s -> %s" % (env.host, lpath, rpath))
+        rattrs = ftp.put(lpath, rpath)
+        
+        # and finally set the file mode
+        lmode = mode or os.stat(lpath).st_mode
+        if lmode != rattrs.st_mode:
+            ftp.chmod(rpath, lmode)
+
+    ftp.close()

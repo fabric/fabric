@@ -6,6 +6,7 @@ As this file's contents are used by the `state` module, all uses of `state` must
 be imported within each function and not at the module level.
 """
 
+from functools import wraps
 import os
 import sys
 
@@ -56,3 +57,25 @@ def get_system_username():
         import win32security
         import win32profile
         return win32api.GetUserName()
+
+
+def hosts(*host_list):
+    """
+    Decorator attaching its arg list to the wrapped function as .hosts.
+
+    For example:
+
+        @hosts('a', 'b', 'c')
+        def my_func():
+            pass
+
+    Once its module is loaded, my_func will exhibit a .hosts attribute equal to
+    ['a', 'b', 'c'].
+    """
+    def attach_hosts(func):
+        @wraps(func)
+        def inner_decorator(*args, **kwargs):
+            return func(*args, **kwargs)
+        inner_decorator.hosts = host_list
+        return inner_decorator
+    return attach_hosts
