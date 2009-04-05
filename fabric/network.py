@@ -2,6 +2,7 @@
 Classes and subroutines dealing with network connections and related topics.
 """
 
+import getpass
 import re
 
 import paramiko as ssh
