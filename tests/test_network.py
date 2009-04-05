@@ -1,9 +1,12 @@
 from __future__ import with_statement
 
 from datetime import datetime
+import getpass
 
+import paramiko
 from nose.tools import eq_, with_setup
-from fudge import Fake, clear_calls, clear_expectations, patch_object, verify
+from fudge import Fake, clear_calls, clear_expectations, patch_object, verify, \
+    patched_context
 
 from fabric.network import HostConnectionCache, join_host_strings, normalize
 from fabric.utils import get_system_username
@@ -70,3 +73,48 @@ def test_connection_caching():
     ):
         check_connection_calls.description = description
         yield check_connection_calls, host_strings, num_calls
+
+
+#
+# Connection loop flow
+#
+
+def test_saved_authentication_returns_client_object():
+    # Fake client whose connect() doesn't raise any errors.
+    # Note that we don't need verify/clear_calls/etc as this Fake isn't
+    # expecting anything.
+    f = (
+        Fake('SSHClient')
+        .provides('__init__')
+        .provides('connect')
+        .provides('load_system_host_keys')
+        .provides('set_missing_host_key_policy')
+    )
+    with patched_context('paramiko', 'SSHClient', f):
+        # Any connection attempts will "succeed" and return the client object
+        cache = HostConnectionCache()
+        eq_(cache['localhost'], f)
+
+def test_prompts_for_password_without_good_authentication():
+    # Fake client whose connect() raises an AuthenticationException on first
+    # call, mimicing behavior when auth is bad or doesn't exist yet
+    f = (
+        Fake('SSHClient')
+        .provides('__init__')
+        .provides('connect').raises(
+            paramiko.AuthenticationException
+        ).next_call().returns(True)
+        .provides('load_system_host_keys')
+        .provides('set_missing_host_key_policy')
+    )
+    with patched_context('paramiko', 'SSHClient', f):
+        # Fake builtin getpass() method which expects to be called once
+        f2 = Fake('getpass', expect_call=True).times_called(1).returns('')
+        with patched_context('getpass', 'getpass', f2):
+            try:
+                # Connect attempt will result in getpass() being called
+                cache = HostConnectionCache()
+                cache['localhost']
+                verify()
+            finally:
+                clear_expectations()
