@@ -55,7 +55,7 @@ else:
     import win32profile
     _username = win32api.GetUserName()
 
-__version__ = '0.1.0'
+__version__ = '0.1.1'
 __author__ = 'Christian Vest Hansen'
 __author_email__ = 'karmazilla@gmail.com'
 __url__ = 'http://www.nongnu.org/fab/'
