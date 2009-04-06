@@ -19,19 +19,22 @@ def require(*keys, **kwargs):
     checked for. If any of the given arguments do not exist, Fabric will abort
     execution and print the names of the missing keys.
 
-    The optional keyword argument `used_for` may be a string, which will be
+    The optional keyword argument ``used_for`` may be a string, which will be
     printed in the error output to inform users why this requirement is in
-    place. `used_for` is printed as part of the string "Th(is|ese) variable(s)
-    (are|is) used for %s", so format it appropriately.
+    place. ``used_for`` is printed as part of a string similar to::
+    
+        "Th(is|ese) variable(s) (are|is) used for %s"
+        
+    so format it appropriately.
 
-    The optional keyword argument `provided_by` may be a list of functions or
+    The optional keyword argument ``provided_by`` may be a list of functions or
     function names which the user should be able to execute in order to set the
     key or keys; it will be included in the error output if requirements are
     not met.
 
     Note: it is assumed that the keyword arguments apply to all given keys as a
-    group. If you feel the need to specify more than one `used_for`, for
-    example, you should break your logic into multiple calls to `require()`.
+    group. If you feel the need to specify more than one ``used_for``, for
+    example, you should break your logic into multiple calls to ``require()``.
     """
     # If all keys exist, we're good, so keep going.
     if all([x in env for x in keys]):
@@ -64,28 +67,29 @@ def require(*keys, **kwargs):
 
 def prompt(name, text, default=None, validate=None):
     """
-    Prompt user with `text` asking for the value of `name` env variable.
+    Prompt user with ``text`` asking for the value of ``name`` env variable.
 
-    If `name` is already present in the environment dict, it will be
+    If ``name`` is already present in the environment dict, it will be
     overwritten, and a warning printed to the user alerting them to this fact.
 
-    If `default` is given, it is displayed in square brackets and used if the
+    If ``default`` is given, it is displayed in square brackets and used if the
     user enters nothing (i.e. presses Enter without entering any text).
 
-    The optional keyword argument `validate` may be a callable or a string:
+    The optional keyword argument ``validate`` may be a callable or a string:
     
     * If a callable, it is called with the user's input, and should return the
-    value to be stored on success. On failure, it should raise an exception
-    with an exception message, which will be printed to the user.
-    * If a string, the value passed to `validate` is used as a regular
-    expression. It is thus recommended to use raw strings in this case. Note
-    that the regular expression, if it is not fully matching (bounded by ^ and
-    $) it will be made so. In other words, the input must fully match the regex.
+      value to be stored on success. On failure, it should raise an exception
+      with an exception message, which will be printed to the user.
+    * If a string, the value passed to ``validate`` is used as a regular
+      expression. It is thus recommended to use raw strings in this case. Note
+      that the regular expression, if it is not fully matching (bounded by
+      ``^`` and ``$``) it will be made so. In other words, the input must fully
+      match the regex.
 
-    Either way, `prompt()` will re-prompt until validation passes (or the user
-    hits Ctrl-C).
+    Either way, ``prompt()`` will re-prompt until validation passes (or the user
+    hits ``Ctrl-C``).
     
-    Examples:
+    Examples::
     
         # Simplest form:
         prompt('environment', 'Please specify target environment')
@@ -152,19 +156,19 @@ def put(local_path, remote_path, mode=None):
     """
     Upload one or more files to each host in the current host list.
     
-    `local_path` may be a relative or absolute local file path, and may contain
-    shell-style wildcards, as understood by the Python `glob` module.
+    ``local_path`` may be a relative or absolute local file path, and may
+    contain shell-style wildcards, as understood by the Python ``glob`` module.
 
-    `remote_path` may also be a relative or absolute location, but applied to
+    ``remote_path`` may also be a relative or absolute location, but applied to
     the remote host. Relative paths are relative to the remote user's home
     directory.
 
     By default, the file mode is preserved by put when uploading. But you can
-    also set the mode explicitly by specifying an additional `mode` keyword
-    argument which sets the numeric mode of the remote file. See the os.chmod
-    documentation or `man chmod` for the format of this argument.
+    also set the mode explicitly by specifying an additional ``mode`` keyword
+    argument which sets the numeric mode of the remote file. See the
+    ``os.chmod`` documentation or ``man chmod`` for the format of this argument.
     
-    Examples:
+    Examples::
     
         put('bin/project.zip', '/tmp/project.zip')
         put('*.py', 'cgi-bin/')

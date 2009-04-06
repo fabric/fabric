@@ -37,7 +37,7 @@ class _AttributeDict(dict):
     """
     Dictionary subclass enabling attribute lookup/assignment of keys/values.
 
-    For example:
+    For example::
 
         >>> m = _AttributeDict({'foo': 'bar'})
         >>> m.foo
@@ -46,9 +46,9 @@ class _AttributeDict(dict):
         >>> m['foo']
         not bar
 
-    _AttributeDict objects also provide .first() which acts like .get() but
-    accepts multiple keys as arguments, and returns the value of the first hit,
-    e.g.
+    ``_AttributeDict`` objects also provide ``.first()`` which acts like
+    ``.get()`` but accepts multiple keys as arguments, and returns the value of
+    the first hit, e.g.::
 
         >>> m = _AttributeDict({'foo': 'bar', 'biz': 'baz'})
         >>> m.first('wrong', 'incorrect', 'foo', 'biz')

@@ -21,25 +21,26 @@ class HostConnectionCache(dict):
     created connections instead.
 
     Key values are the same as host specifiers throughout Fabric: optional
-    username + '@', mandatory hostname, optional ':' + port number. Examples:
+    username + ``@``, mandatory hostname, optional ``:`` + port number.
+    Examples:
 
-    * 'example.com' - typical Internet host address.
-    * 'firewall' - atypical, but still legal, local host address.
-    * 'user@example.com' - with specific username attached.
-    * 'bob@smith.org:222' - with specific nonstandard port attached.
+    * ``example.com`` - typical Internet host address.
+    * ``firewall`` - atypical, but still legal, local host address.
+    * ``user@example.com`` - with specific username attached.
+    * ``bob@smith.org:222`` - with specific nonstandard port attached.
 
-    When the username is not given, `env.username` is used; if `env.username`
-    is not defined, the local system username is assumed.
+    When the username is not given, ``env.username`` is used; if
+    ``env.username`` is not defined, the local system username is assumed.
 
-    Note that differing explicit usernames for the same hostname will
-    result in multiple client connections being made. For example, specifying
-    'user1@example.com' will create a connection to 'example.com', logged in as
-    'user1'; later specifying 'user2@example.com' will create a new, 2nd
-    connection as 'user2'.
+    Note that differing explicit usernames for the same hostname will result in
+    multiple client connections being made. For example, specifying
+    ``user1@example.com`` will create a connection to ``example.com``, logged
+    in as ``user1``; later specifying ``user2@example.com`` will create a new,
+    2nd connection as ``user2``.
     
     The same applies to ports: specifying two different ports will result in
     two different connections to the same host being made. If no port is given,
-    22 is assumed, so 'example.com' is equivalent to 'example.com:22'.
+    22 is assumed, so ``example.com`` is equivalent to ``example.com:22``.
     """
     def __getitem__(self, key):
         # Normalize given key (i.e. obtain username and port, if not given)
@@ -69,10 +70,10 @@ def normalize(host_string):
 
 def join_host_strings(username, hostname, port):
     """
-    Turns user/host/port strings into 'user@host:port' combined string.
+    Turns user/host/port strings into ``user@host:port`` combined string.
 
     This function is not responsible for handling missing user/port strings; for
-    that, see the `normalize` function.
+    that, see the ``normalize`` function.
     """
     return "%s@%s:%s" % (username, hostname, port)
 

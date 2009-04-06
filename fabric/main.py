@@ -1,9 +1,9 @@
 """
-This module contains Fab's main() method plus related subroutines.
+This module contains Fab's ``main()`` method plus related subroutines.
 
-main() is executed as the command line 'fab' program and takes care of parsing
-options and commands, loading the user settings file, loading a fabfile, and
-executing the commands given.
+``main()`` is executed as the command line ``fab`` program and takes care of
+parsing options and commands, loading the user settings file, loading a
+fabfile, and executing the commands given.
 
 The other callables defined in this module are internal only. Anything useful
 to individuals leveraging Fabric as a library, should be kept elsewhere.
@@ -50,12 +50,12 @@ def find_fabfile():
     """
     Attempt to locate a fabfile in current or parent directories.
 
-    Fabfiles are defined as files named 'fabfile.py' or 'Fabfile.py'. The '.py'
-    extension is required, as fabfile loading (both by 'fab' and by fabfiles
-    which need other sub-fabfiles) is done via importing, not exec.
+    Fabfiles are defined as files named ``fabfile.py`` or ``Fabfile.py``. The
+    ``.py`` extension is required, as fabfile loading (both by ``fab`` and by
+    fabfiles which need other sub-fabfiles) is done via importing, not exec.
 
     Order of search is lowercase filename, capitalized filename, in current
-    working directory (where 'fab' was invoked) and then each parent directory
+    working directory (where ``fab`` was invoked) and then each parent directory
     in turn.
 
     Returns absolute path to first match, or None if no match found.
@@ -72,7 +72,7 @@ def find_fabfile():
 
 def is_task(func):
     """
-    Returns True if `func` is callable and not a Fabric operation.
+    Returns True if ``func`` is callable and not a Fabric operation.
     """
     return callable(func) and (func not in vars(operations).values())
 
@@ -192,33 +192,33 @@ def parse_arguments(arguments):
 
     Parses the given list of arguments into command names and, optionally,
     per-command args/kwargs. Per-command args are attached to the command name
-    with a colon (:), are comma-separated, and may use a=b syntax for kwargs.
-    These args/kwargs are passed into the resulting command as normal Python
-    args/kwargs.
+    with a colon (``:``), are comma-separated, and may use a=b syntax for
+    kwargs.  These args/kwargs are passed into the resulting command as normal
+    Python args/kwargs.
 
-    For example:
+    For example::
 
         $ fab do_stuff:a,b,c=d
 
-    will result in the function call do_stuff(a, b, c=d).
+    will result in the function call ``do_stuff(a, b, c=d)``.
 
-    If 'host' or 'hosts' kwargs are given, they will be used to fill Fabric's
-    host list (which is checked later on). 'hosts' will override 'host' if both
-    are given.
+    If ``host`` or ``hosts`` kwargs are given, they will be used to fill
+    Fabric's host list (which is checked later on). ``hosts`` will override
+    ``host`` if both are given.
     
-    When using 'hosts' in this way, one must use semicolons (;), and must thus
-    quote the host list string to prevent shell interpretation.
+    When using ``hosts`` in this way, one must use semicolons (``;``), and must
+    thus quote the host list string to prevent shell interpretation.
 
-    For example,
+    For example::
 
         $ fab ping_servers:hosts="a;b;c",foo=bar
 
-    will result in Fabric's host list for the 'ping_servers' command being set
-    to ['a', 'b', 'c'].
+    will result in Fabric's host list for the ``ping_servers`` command being set
+    to ``['a', 'b', 'c']``.
     
-    'host'/'hosts' are removed from the kwargs mapping at this point, so
+    ``host`` and ``hosts`` are removed from the kwargs mapping at this point, so
     commands are not required to expect them. Thus, the resulting call of the
-    above example would be ping_servers(foo=bar).
+    above example would be ``ping_servers(foo=bar)``.
     """
     cmds = []
     for cmd in arguments:
@@ -251,11 +251,13 @@ def get_hosts(cli_hosts, command):
 
     The list of hosts a given command will run on follows a strict order of
     precedence:
-    1. Hosts specified via the command line (e.g. fab foo:hosts='a;b;c')
-    2. Hosts specified via the @hosts decorator (e.g. @hosts('a', 'b', 'c'))
-    3. Hosts specified globally, by setting env.hosts at module level in the
-        fabfile (note: since fabfile is fully loaded, the last line to set
-        env.hosts is the line that wins)
+
+    1. Hosts specified via the command line (e.g. ``fab foo:hosts='a;b;c'``)
+    2. Hosts specified via the ``@hosts`` decorator (e.g. ``@hosts('a', 'b',
+       'c')``)
+    3. Hosts specified globally, by setting ``env.hosts`` at module level in
+       the fabfile (note: since fabfiles are fully loaded, the last line to set
+       ``env.hosts`` is the line that wins)
 
     If all three sources have been checked and no hosts are found, prompt the
     user for a comma-separated list of host definitions.

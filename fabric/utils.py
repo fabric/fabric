@@ -2,8 +2,8 @@
 Internal subroutines for e.g. aborting execution with an error message,
 or performing indenting on multiline output.
 
-As this file's contents are used by the `state` module, all uses of `state` must
-be imported within each function and not at the module level.
+As this file's contents are used by the ``state`` module, all uses of ``state``
+must be imported within each function and not at the module level.
 """
 
 from functools import wraps
@@ -14,7 +14,8 @@ import sys
 def abort(msg):
     """
     Abort execution, printing given message and exiting with error status.
-    When not invoked as the `fab` command line tool, raise an exception instead.
+    When not invoked as the ``fab`` command line tool, raise an exception
+    instead.
     """
     from state import env
     if env.invoked_as_fab:
@@ -37,7 +38,7 @@ def indent(text, spaces=4):
     Returns text indented by the given number of spaces.
 
     If text is not a string, it is assumed to be a list of lines and will be
-    joined by \n prior to indenting.
+    joined by ``\n`` prior to indenting.
     """
     if not hasattr(text, 'splitlines'):
         text = '\n'.join(text)
@@ -61,16 +62,16 @@ def get_system_username():
 
 def hosts(*host_list):
     """
-    Decorator attaching its arg list to the wrapped function as .hosts.
+    Decorator attaching its arg list to the wrapped function as ``.hosts``.
 
-    For example:
+    For example::
 
         @hosts('a', 'b', 'c')
         def my_func():
             pass
 
-    Once its module is loaded, my_func will exhibit a .hosts attribute equal to
-    ['a', 'b', 'c'].
+    Once its module is loaded, ``my_func`` will exhibit a ``.hosts`` attribute
+    equal to ``['a', 'b', 'c']``.
     """
     def attach_hosts(func):
         @wraps(func)
