@@ -39,14 +39,15 @@ def require(*keys, **kwargs):
     example, you should break your logic into multiple calls to ``require()``.
     """
     # If all keys exist, we're good, so keep going.
-    if all([x in env for x in keys]):
+    missing_keys = filter(lambda x: x not in env, keys)
+    if not missing_keys:
         return
     # Pluralization
-    if len(keys) > 1:
-        variable = "variables"
+    if len(missing_keys) > 1:
+        variable = "variables were"
         used = "These variables are"
     else:
-        variable = "variable"
+        variable = "variable was"
         used = "This variable is"
     # Regardless of kwargs, print what was missing. (Be graceful if used outside
     # of a command.)
@@ -54,8 +55,8 @@ def require(*keys, **kwargs):
         prefix = "The command '%s' failed because the " % env.command
     else:
         prefix = "The "
-    msg = "%sfollowing required environment %s were not defined:\n%s" % (
-        prefix, variable, indent(keys)
+    msg = "%sfollowing required environment %s not defined:\n%s" % (
+        prefix, variable, indent(missing_keys)
     )
     # Print used_for if given
     if 'used_for' in kwargs:
