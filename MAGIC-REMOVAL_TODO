@@ -1,5 +1,7 @@
 # Next up
 * Continue porting over operations
+* Go over entire old-fabric.py to make sure everything else has been ported or
+explicitly recorded in COMPATIBILITY as being removed
 
 # Once basic functionality has been restored
 * See all TODO markings in source code
@@ -14,6 +16,14 @@
         * Also note that a number of main() subroutines right now, such as the
         ones for finding settings, and setting host lists, should be updated so
         that library users can use them!
+* Re-examine API of existing operations, e.g. prompt's `validate` option
+    * wrt `validate`, figure out which is better: 'dual-mode' single arguments
+    like that, or splitting it into 2 different arguments
+        * dual-mode makes sense given an either-or situation like that one
+        * but at the same time it feels kind of messy
+        * see how stdlib does it in similar situations. guessing 2 arguments
+        with "only X or Y may be given, but not both at the same time" note?
+    * look at the rest too
 * Output handling -- how to deal with:
     * Status info
     * Warnings
@@ -29,7 +39,12 @@ doesn't literally mean full coverage...)
     * Ditto with Fudge for mocking/stubbing/expecting; may need to contribute
     some patches to it, though, it's not great for functional coding and I
     don't see the need to 100% class-ify my code just so my mocker works better.
-* Sphinx documentation (though this requires going back to RST...)
+* Sphinx documentation
+    * Read up on Sphinx generally
+    * Figure out what extra goodies can/should go in docstrings, utilize that
+    * Port old standalone docs to Sphinx (or rather, write new ones while
+    using old for inspiration as needed)
+    * Do whatever else is needed so a useful API is generated
 * Run Pylint, fix what it complains about (and generate a config file to make it
 shut up about stuff I don't care about)
 * Make sure "constants" are consistently named: I've been trending towards not
