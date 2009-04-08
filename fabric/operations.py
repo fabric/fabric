@@ -11,6 +11,8 @@ from state import env, connections
 from utils import abort, indent, warn
 
 
+# Can't wait till Python versions supporting 'def func(*args, foo=bar)' become
+# widespread :(
 def require(*keys, **kwargs):
     """
     Check for given keys in the shared environment dict and abort if not found.
@@ -46,8 +48,15 @@ def require(*keys, **kwargs):
     else:
         variable = "variable"
         used = "This variable is"
-    # Regardless of kwargs, print what was missing.
-    msg = "the command '%s' failed because the following required environment %s were not defined:\n%s" % (env.command, variable, indent(keys))
+    # Regardless of kwargs, print what was missing. (Be graceful if used outside
+    # of a command.)
+    if 'command' in env:
+        prefix = "The command '%s' failed because the " % env.command
+    else:
+        prefix = "The "
+    msg = "%sfollowing required environment %s were not defined:\n%s" % (
+        prefix, variable, indent(keys)
+    )
     # Print used_for if given
     if 'used_for' in kwargs:
         msg += "\n\n%s used for %s" % (used, kwargs['used_for'])
@@ -61,7 +70,8 @@ def require(*keys, **kwargs):
             command = "the following command"
         to_s = lambda obj: getattr(obj, '__name__', str(obj))
         provided_by = [to_s(obj) for obj in funcs]
-        msg += "\n\nTry running %s prior to this one, to fix the problem:\n%s" % (command, indent(provided_by))
+        msg += "\n\nTry running %s prior to this one, to fix the problem:\n%s"\
+            % (command, indent(provided_by))
     abort(msg)
 
 

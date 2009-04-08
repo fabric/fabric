@@ -23,6 +23,7 @@ def abort(msg):
         sys.exit(1)
     # TODO: Make our own exception, or figure out if a more specific builtin
     # exception applies here.
+    # TODO: when that decision is made, update the test suite too!
     raise StandardError
 
 
