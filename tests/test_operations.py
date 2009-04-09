@@ -1,7 +1,53 @@
+from __future__ import with_statement
+from functools import wraps
+from StringIO import StringIO # No need for cStringIO at this time
+import sys
+
 from nose.tools import raises
 
 from fabric.operations import require
 from fabric.state import env
+
+
+#
+# Setup/teardown helpers and decorators
+#
+
+def with_mocked_streams(*which):
+    """
+    Replaces ``sys.stderr`` with a ``StringIO`` during the test, then restores
+    after.
+
+    Must specify which stream via string args, e.g.::
+
+        @with_mocked_streams('stdout')
+        def func():
+            pass
+
+        @with_mocked_streams('stderr')
+        def func():
+            pass
+
+        @with_mocked_streams('stdout', 'stderr')
+        def func()
+            pass
+    """
+    def mocked_streams_decorator(func):
+        @wraps(func)
+        def inner_wrapper(*args, **kwargs):
+            if 'stdout' in which:
+                my_stdout, sys.stdout = sys.stdout, StringIO()
+            if 'stderr' in which:
+                my_stderr, sys.stderr = sys.stderr, StringIO()
+            result = func(*args, **kwargs)
+            if 'stderr' in which:
+                sys.stderr = my_stderr
+            if 'stdout' in which:
+                sys.stdout = my_stdout
+            return result
+        return inner_wrapper
+    return mocked_streams_decorator
+
 
 
 #
@@ -23,25 +69,36 @@ def test_require_multiple_existing_keys():
     require('version', 'settings_file')
 
 
-@raises(StandardError)
+@raises(SystemExit)
 def test_require_single_missing_key():
     """
-    When given a single non-existent key, require() raises StandardError
+    When given a single non-existent key, require() raises SystemExit
     """
     require('blah')
 
 
-@raises(StandardError)
+@raises(SystemExit)
 def test_require_multiple_missing_keys():
     """
-    When given multiple non-existent keys, require() raises StandardError
+    When given multiple non-existent keys, require() raises SystemExit
     """
     require('foo', 'bar')
 
 
-@raises(StandardError)
+@raises(SystemExit)
 def test_require_mixed_state_keys():
     """
-    When given existing and non-existent keys, require() raises StandardError
+    When given mixed-state keys, require() raises SystemExit
     """
     require('foo', 'version')
+
+
+@with_mocked_streams('stderr')
+def test_require_mixed_state_keys_prints_missing_only():
+    """
+    When given mixed-state keys, require() prints missing keys only
+    """
+    try:
+        require('foo', 'version')
+    except SystemExit:
+        assert 'version' not in sys.stderr.getvalue()

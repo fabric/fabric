@@ -18,20 +18,15 @@ def abort(msg):
     instead.
     """
     from state import env
-    if env.invoked_as_fab:
-        print("\nError: " + msg)
-        sys.exit(1)
-    # TODO: Make our own exception, or figure out if a more specific builtin
-    # exception applies here.
-    # TODO: when that decision is made, update the test suite too!
-    raise StandardError
+    print >>sys.stderr, "\nError: " + msg
+    sys.exit(1)
 
-
+    
 def warn(msg):
     """
     Print warning message, but do not abort execution.
     """
-    print("Warning: " + msg)
+    print >>sys.stderr, "Warning: " + msg
 
 
 def indent(text, spaces=4):
