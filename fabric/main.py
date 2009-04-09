@@ -279,8 +279,6 @@ def get_hosts(cli_hosts, command):
 
 
 def main():
-    # We're running from the command line, so set global flag to that effect.
-    env.invoked_as_fab = True
     try:
         try:
             # Parse command line options

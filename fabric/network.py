@@ -137,11 +137,9 @@ def connect(username, hostname, port):
                 username, hostname, suffix))
         # Ctrl-D / Ctrl-C for exit
         except (EOFError, TypeError):
-            if env.invoked_as_fab:
-                # Print a newline (in case user was sitting at prompt)
-                print('')
-                sys.exit(0)
-            raise
+            # Print a newline (in case user was sitting at prompt)
+            print('')
+            sys.exit(0)
         # Handle timeouts
         except socket.timeout:
             abort('Error: timed out trying to connect to %s' % hostname)

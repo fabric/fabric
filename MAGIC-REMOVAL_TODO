@@ -32,6 +32,12 @@ explicitly recorded in COMPATIBILITY as being removed
     * As mentioned elsewhere, want to make this as flexible as possible
     * Put in logging-to-disk and/or leverage the logging module for stdout too?
         * e.g. it already has the concepts of info/warn/etc -- can that be used?
+    * Ensure things behave gracefully when used as a lib
+        * Temporarily had 'invoked_as_fab' env var set in main(); but that made
+          testing a huge pain, so backed it out. Put it back in? or find some
+          other method? perhaps inverse -- setting has to be turned on
+          explicitly by a library user? or just ensure that e.g. printing,
+          exceptions have simple controls for making them shut up?
 * Continue building out any previously made tests till coverage.py implies we
 have pretty decent coverage (100% would be nice but even a 100% from coverage.py
 doesn't literally mean full coverage...)

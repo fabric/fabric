@@ -119,10 +119,7 @@ env = _AttributeDict({
     # Version number for --version
     'version': '0.2.0',
     # Filename of Fab settings file
-    'settings_file': '.fabricrc',
-    # Flag for whether we're running via the `fab` command (determines some
-    # behavioral changes such as using sys.exit() or not)
-    'invoked_as_fab': False
+    'settings_file': '.fabricrc'
 })
 
 # Add in option defaults
