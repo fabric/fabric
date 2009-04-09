@@ -13,22 +13,22 @@ from fabric.state import env
 # Setup/teardown helpers and decorators
 #
 
-def with_mocked_streams(*which):
+def mock_streams(*which):
     """
     Replaces ``sys.stderr`` with a ``StringIO`` during the test, then restores
     after.
 
     Must specify which stream via string args, e.g.::
 
-        @with_mocked_streams('stdout')
+        @mock_streams('stdout')
         def func():
             pass
 
-        @with_mocked_streams('stderr')
+        @mock_streams('stderr')
         def func():
             pass
 
-        @with_mocked_streams('stdout', 'stderr')
+        @mock_streams('stdout', 'stderr')
         def func()
             pass
     """
@@ -69,6 +69,7 @@ def test_require_multiple_existing_keys():
     require('version', 'settings_file')
 
 
+@mock_streams('stderr')
 @raises(SystemExit)
 def test_require_single_missing_key():
     """
@@ -77,6 +78,7 @@ def test_require_single_missing_key():
     require('blah')
 
 
+@mock_streams('stderr')
 @raises(SystemExit)
 def test_require_multiple_missing_keys():
     """
@@ -85,6 +87,7 @@ def test_require_multiple_missing_keys():
     require('foo', 'bar')
 
 
+@mock_streams('stderr')
 @raises(SystemExit)
 def test_require_mixed_state_keys():
     """
@@ -93,7 +96,7 @@ def test_require_mixed_state_keys():
     require('foo', 'version')
 
 
-@with_mocked_streams('stderr')
+@mock_streams('stderr')
 def test_require_mixed_state_keys_prints_missing_only():
     """
     When given mixed-state keys, require() prints missing keys only
@@ -101,4 +104,6 @@ def test_require_mixed_state_keys_prints_missing_only():
     try:
         require('foo', 'version')
     except SystemExit:
-        assert 'version' not in sys.stderr.getvalue()
+        err = sys.stderr.getvalue()
+        assert 'version' not in err
+        assert 'foo' in err
