@@ -165,7 +165,7 @@ def prompt(name, text, default=None, validate=None):
 
 def put(local_path, remote_path, mode=None):
     """
-    Upload one or more files to the current remote host.
+    Upload one or more files to a remote host.
     
     ``local_path`` may be a relative or absolute local file path, and may
     contain shell-style wildcards, as understood by the Python ``glob`` module.
@@ -215,7 +215,7 @@ def put(local_path, remote_path, mode=None):
 
 def get(remote_path, local_path):
     """
-    Download a file from the current remote host.
+    Download a file from a remote host.
     
     The ``remote_path`` parameter is the relative or absolute path to the files
     to download from the remote hosts. In order to play well with multiple-host

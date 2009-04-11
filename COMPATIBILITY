@@ -66,6 +66,8 @@ host (which is what used to be called "deep" mode). Reasoning:
 as a method of passing in a Paramiko `PKey` object to the SSH client's `connect`
 method. I didn't see this as being widely used and decided to yank it for
 simplicity's sake -- the new `-i` option should generally be enough for most users.
+* `download()` is now `get()` in order to match up with `put()` (I believe the
+name mismatch was due to `get()` being the old method of setting env vars.)
 
 
 # Things which are more bug-fixes than compatibility issues
