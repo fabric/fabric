@@ -165,7 +165,7 @@ def prompt(name, text, default=None, validate=None):
 
 def put(local_path, remote_path, mode=None):
     """
-    Upload one or more files to each host in the current host list.
+    Upload one or more files to the current remote host.
     
     ``local_path`` may be a relative or absolute local file path, and may
     contain shell-style wildcards, as understood by the Python ``glob`` module.
@@ -210,4 +210,30 @@ def put(local_path, remote_path, mode=None):
         if lmode != rattrs.st_mode:
             ftp.chmod(rpath, lmode)
 
+    ftp.close()
+
+
+def get(remote_path, local_path):
+    """
+    Download a file from the current remote host.
+    
+    The ``remote_path`` parameter is the relative or absolute path to the files
+    to download from the remote hosts. In order to play well with multiple-host
+    invocation, the local filename will be suffixed with the current hostname.
+     
+    Example::
+   
+        @hosts('host1', 'host2')
+        def my_download_task():
+            get('/var/log/server.log', 'server.log')
+    
+    The above code will produce two files on your local system, called
+    ``server.log.host1`` and ``server.log.host2`` respectively.
+    """
+    ftp = connections[env.host].open_sftp()
+    local_path = local_path + '.' + env.host
+    remote_path = remote_path
+    # TODO: tie this into global output controls
+    print("[%s] download: %s <- %s" % (env.host, local_path, remote_path))
+    ftp.get(remote_path, local_path)
     ftp.close()
