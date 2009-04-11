@@ -4,6 +4,7 @@ Classes and subroutines dealing with network connections and related topics.
 
 import getpass
 import re
+import threading
 
 import paramiko as ssh
 
@@ -152,3 +153,78 @@ def connect(username, hostname, port):
             abort('Low level socket error connecting to host %s: %s' % (
                 hostname, e[1])
             )
+
+
+def output_thread(prefix, chan, stderr=False, capture=None):
+    """
+    Generates a thread/function capable of reading and optionally capturing
+    input from the given channel object ``chan``. ``stderr`` determines whether
+    the channel's stdout or stderr is the focus of this particular thread.
+    """
+    from fabric.state import env
+
+    def outputter(prefix, chan, stderr, capture):
+        # Read one "packet" at a time, which lets us get less-than-a-line
+        # chunks of text, such as sudo prompts. However, we still print
+        # them to the user one line at a time. (We also eat sudo prompts.)
+        leftovers = ""
+        suffix = ""
+        password = env.password
+        if stderr:
+            recv = chan.recv_stderr
+        else:
+            recv = chan.recv
+        out = recv(65535)
+        while out != '':
+            # Capture if necessary
+            if capture is not None:
+                capture += out
+            # Handle any password prompts
+            # TODO: tie this into global/centralized prompt detection
+            initial_prompt = re.findall(r'^%s$' % env.sudo_prompt, out,
+                re.I|re.M)
+            again_prompt = re.findall(r'^Sorry, try again', out, re.I|re.M)
+            if initial_prompt or again_prompt:
+                # First, get or prompt for password
+                password_prompt = ("Password for %s%s" % (env.host, suffix))
+                if password:
+                    # Just set up prompt in case we're at an again prompt
+                    suffix = " [Enter for previous]: "
+                else:
+                    # Set prompt, then ask for a password
+                    suffix = ": "
+                    # Get pass, and make sure we communicate it back to the
+                    # global environment since that was obviously empty.
+                    env.password = password = getpass.getpass(password_prompt)
+                # Re-prompt -- whatever we supplied last time (the
+                # current value of env.password) was incorrect.
+                # Don't overwrite env.password, though -- it may still be
+                # correct for *other* hosts in a multi-host operation.
+                if again_prompt:
+                    password = getpass.getpass(password_prompt)
+                # Either way, we have a password now, so send it.
+                chan.sendall(password + '\n')
+                out = ""
+            # Deal with line breaks, printing all lines and storing the
+            # leftovers, if any.
+            if '\n' in out:
+                parts = out.split('\n')
+                line = leftovers + parts.pop(0)
+                leftovers = parts.pop()
+                while parts or line:
+                    # TODO: tie in with global output controls
+                    if not env.quiet:
+                        sys.stdout.write("%s: %s\n" % (prefix, line)),
+                        sys.stdout.flush()
+                    if parts:
+                        line = parts.pop(0)
+                    else:
+                        line = ""
+            else: # add to leftovers buffer
+                leftovers += out
+            out = recv(65535)
+    thread = threading.Thread(None, outputter, prefix,
+        (prefix, chan, stderr, capture))
+    thread.setDaemon(True)
+    thread.start()
+    return thread

@@ -119,7 +119,10 @@ env = _AttributeDict({
     # Version number for --version
     'version': '0.2.0',
     # Filename of Fab settings file
-    'settings_file': '.fabricrc'
+    'settings_file': '.fabricrc',
+    'shell': '/bin/bash -l -c',
+    'sudo_prompt': 'sudo password:',
+    'quiet': 'False'
 })
 
 # Add in option defaults

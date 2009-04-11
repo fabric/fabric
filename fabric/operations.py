@@ -7,6 +7,7 @@ import os
 import re
 import stat
 
+from network import output_thread
 from state import env, connections
 from utils import abort, indent, warn
 
@@ -237,3 +238,47 @@ def get(remote_path, local_path):
     print("[%s] download: %s <- %s" % (env.host, local_path, remote_path))
     ftp.get(remote_path, local_path)
     ftp.close()
+
+
+def run(command):
+    """
+    Run a shell command on a remote host.
+
+    ``run()`` will execute the given command string via a shell interpreter,
+    the value of which may be controlled by setting ``env.shell``. It defaults
+    to something similar to ``/bin/bash -l -c "<command>"``. Any double-quote
+    (``"``) characters in ``command`` will be automatically escaped.
+   
+    Example::
+    
+        run("ls /var/www/")
+    
+    """
+    real_command = '%s "%s"' % (env.shell, command.replace('"', '\\"'))
+    # TODO: possibly put back in previously undocumented 'confirm_proceed'
+    # functionality, i.e. users may set an option to be prompted before each
+    # execution. Pretty sure this should be a global option applying to ALL
+    # remote operations! And, of course -- documented.
+    # TODO: tie this into global output controls
+    # TODO: also, for this and sudo(), allow output of real_command too
+    # (possibly as part of a 'debug' flag?)
+    print("[%s] run: %s" % (env.host, command))
+    channel = connections[env.host]._transport.open_session()
+    channel.exec_command(real_command)
+    capture = []
+
+    # TODO: tie into global output controls
+    out_thread = output_thread("[%s] out" % env.host, channel, capture=capture)
+    err_thread = output_thread("[%s] err" % env.host, channel, stderr=True)
+    
+    # Close when done
+    status = channel.recv_exit_status()
+    channel.close()
+    
+    # Like in sudo()
+    out_thread.join()
+    err_thread.join()
+
+    return "".join(capture).strip()
+
+

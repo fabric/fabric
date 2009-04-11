@@ -85,5 +85,10 @@ idiomatic way to present it to users?
     'commands'!
 * Add Paramiko SSHConfig support: it can provide username and port and other
 options. Look at `man ssh_config` for what else people can put in that file.
+* Try to make Fabric threadsafe (and/or not using threads for outputting)
+    * Right now it uses threads and shared state for outputting, and shared
+    state for env/connection/etc stuff. This is probably not threadsafe as-is.
+    * Even if the shared state works OK, the thread use in outputting is kind
+    of wonky. See if it can be redone with coroutines or Twisted or something.
 
 <!-- vim:set filetype=mkd : -->
