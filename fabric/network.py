@@ -5,6 +5,7 @@ Classes and subroutines dealing with network connections and related topics.
 import getpass
 import re
 import threading
+import sys
 
 import paramiko as ssh
 
@@ -186,14 +187,14 @@ def output_thread(prefix, chan, stderr=False, capture=None):
             again_prompt = re.findall(r'^Sorry, try again', out, re.I|re.M)
             if initial_prompt or again_prompt:
                 # First, get or prompt for password
-                password_prompt = ("Password for %s%s" % (env.host, suffix))
+                password_prompt = "Password for %s%s" % (env.host, suffix)
                 if password:
                     # Just set up prompt in case we're at an again prompt
                     suffix = " [Enter for previous]: "
                 else:
                     # Set prompt, then ask for a password
                     suffix = ": "
-                    # Get pass, and make sure we communicate it back to the
+                    # Get password, and make sure we communicate it back to the
                     # global environment since that was obviously empty.
                     env.password = password = getpass.getpass(password_prompt)
                 # Re-prompt -- whatever we supplied last time (the

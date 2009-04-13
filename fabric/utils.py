@@ -76,3 +76,7 @@ def hosts(*host_list):
         inner_decorator.hosts = host_list
         return inner_decorator
     return attach_hosts
+
+
+def escape_quotes(string):
+    return string.replace('"', r'\"')

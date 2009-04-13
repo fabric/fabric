@@ -9,7 +9,7 @@ import stat
 
 from network import output_thread
 from state import env, connections
-from utils import abort, indent, warn
+from utils import abort, escape_quotes, indent, warn
 
 
 # Can't wait till Python versions supporting 'def func(*args, foo=bar)' become
@@ -240,21 +240,25 @@ def get(remote_path, local_path):
     ftp.close()
 
 
-def run(command):
+def run(command, shell=True):
     """
     Run a shell command on a remote host.
 
-    ``run()`` will execute the given command string via a shell interpreter,
-    the value of which may be controlled by setting ``env.shell``. It defaults
-    to something similar to ``/bin/bash -l -c "<command>"``. Any double-quote
-    (``"``) characters in ``command`` will be automatically escaped.
+    If ``shell`` is True (the default), ``run()`` will execute the given
+    command string via a shell interpreter, the value of which may be
+    controlled by setting ``env.shell`` (defaulting to something similar to
+    ``/bin/bash -l -c "<command>"``.) Any double-quote (``"``) characters in
+    ``command`` will be automatically escaped when ``shell`` is True.
    
     Example::
     
         run("ls /var/www/")
+        run("ls /home/myuser", shell=False)
     
     """
-    real_command = '%s "%s"' % (env.shell, command.replace('"', '\\"'))
+    real_command = command
+    if shell:
+        real_command = '%s "%s"' % (env.shell, command.replace('"', '\\"'))
     # TODO: possibly put back in previously undocumented 'confirm_proceed'
     # functionality, i.e. users may set an option to be prompted before each
     # execution. Pretty sure this should be a global option applying to ALL
@@ -276,6 +280,67 @@ def run(command):
     channel.close()
     
     # Like in sudo()
+    out_thread.join()
+    err_thread.join()
+
+    return "".join(capture).strip()
+
+
+def sudo(command, shell=True, user=None):
+    """
+    Run a shell command on a remote host, with superuser privileges.
+    
+    As with ``run()``, ``sudo()`` executes within a shell command defaulting to
+    the value of ``env.shell``, although it goes one step further and wraps the
+    command with ``sudo`` as well. Also similar to ``run()``, the shell
+
+    You may specify a ``user`` keyword argument, which is passed to ``sudo``
+    and allows you to run as some user other than root (which is the default).
+    On most systems, the ``sudo`` program can take a string username or an
+    integer userid (uid); ``user`` may likewise be a string or an int.
+       
+    Examples::
+    
+        sudo("~/install_script.py")
+        sudo("mkdir /var/www/new_docroot", user="www-data")
+        sudo("ls /home/jdoe", user=1001)
+    
+    """
+    # Construct sudo command, with user if necessary
+    if user is not None:
+        if str(user).isint():
+            user = "#%s" % user
+        sudo_prefix = "sudo -S -p '%%s' -u \"%s\" " % user
+    else:
+        sudo_prefix = "sudo -S -p '%s' "
+    # Put in explicit sudo prompt string (so we know what to look for when
+    # detecting prompts)
+    sudo_prefix = sudo_prefix % env.sudo_prompt
+    # Without using a shell, we just do 'sudo -u blah my_command'
+    if (not env.use_shell) or (not shell):
+        real_command = "%s %s" % (sudo_prefix, escape_quotes(command))
+    # With a shell, we do 'sudo -u blah /bin/bash -l -c "my_command"'
+    else:
+        real_command = '%s %s "%s"' % (sudo_prefix, env.shell,
+            escape_quotes(command))
+    # TODO: tie this into global output controls; both in terms of showing the
+    # shell itself, AND showing the sudo prefix. Not 100% sure it's worth being
+    # so granular as to allow one on and one off, but think about it.
+    # TODO: handle confirm_proceed behavior, as in run()
+    print("[%s] sudo: %s" % (env.host, command))
+    channel = connections[env.host]._transport.open_session()
+    channel.exec_command(real_command)
+    capture = []
+
+    out_thread = output_thread("[%s] out" % env.host, channel, capture=capture)
+    err_thread = output_thread("[%s] err" % env.host, channel, stderr=True)
+
+    # Close channel when done
+    status = channel.recv_exit_status()
+    channel.close()
+
+    # Wait for threads to exit before returning (otherwise we will occasionally
+    # end up returning before the threads have fully wrapped up)
     out_thread.join()
     err_thread.join()
 

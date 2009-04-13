@@ -68,6 +68,11 @@ method. I didn't see this as being widely used and decided to yank it for
 simplicity's sake -- the new `-i` option should generally be enough for most users.
 * `download()` is now `get()` in order to match up with `put()` (I believe the
 name mismatch was due to `get()` being the old method of setting env vars.)
+* The `noshell` argument to `sudo()` (added late in its life to previous Fabric
+versions) has been renamed to `shell` (defaults to True, so the effective
+behavior remains the same) and has also been extended to the `run()` operation.
+    * Additionally, the global `sudo_noshell` option has been renamed to
+    `use_shell` and applies to both `run()` and `sudo()`.
 
 
 # Things which are more bug-fixes than compatibility issues

@@ -122,7 +122,8 @@ env = _AttributeDict({
     'settings_file': '.fabricrc',
     'shell': '/bin/bash -l -c',
     'sudo_prompt': 'sudo password:',
-    'quiet': 'False'
+    'quiet': False,
+    'use_shell': True
 })
 
 # Add in option defaults
