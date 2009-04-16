@@ -120,7 +120,7 @@ def test_prompts_for_password_without_good_authentication():
     )
     with patched_context('paramiko', 'SSHClient', f):
         # Fake builtin getpass() method which expects to be called once
-        f2 = Fake('getpass', expect_call=True).times_called(1).returns('')
+        f2 = Fake('getpass', expect_call=True).times_called(1).returns('passwd')
         with patched_context('getpass', 'getpass', f2):
             try:
                 # Connect attempt will result in getpass() being called
