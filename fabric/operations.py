@@ -352,3 +352,27 @@ def sudo(command, shell=True, user=None):
     return "".join(capture).strip()
 
 
+def local(cmd, show_stderr=False):
+    """
+    Run a command on the local system.
+
+    ``local()`` is simply a convenience wrapper around the use of ``subprocess``
+    with ``shell=True`` activated. If you need to do anything special, consider 
+    using the ``subprocess`` module directly -- Fabric is just Python!
+
+    ``local()`` will return the contents of the command's stdout as a string.
+    Standard error will be discarded by default (so that this command is useful
+    for non-interactive use) but you may specify ``show_stderr=True``, which
+    will cause standard error to print to your local terminal.
+    """
+    # TODO: tie this into global output controls
+    print("[localhost] run: " + cmd)
+    PIPE = subprocess.PIPE
+    # stderr of None == inherit file handles from parent == goes to terminal
+    if show_stderr:
+        p = subprocess.Popen([cmd], shell=True, stdout=PIPE)
+    # stderr of PIPE == goes to file object == we can then ignore it
+    else:
+        p = subprocess.Popen([cmd], shell=True, stdout=PIPE, stderr=PIPE)
+    (stdout, stderr) = p.communicate()
+    return stdout
