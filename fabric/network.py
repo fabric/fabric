@@ -56,9 +56,11 @@ class HostConnectionCache(dict):
         return dict.__getitem__(self, real_key)
 
 
-def normalize(host_string):
+def normalize(host_string, omit_port=False):
     """
     Normalizes a given host string, returning explicit host, user, port.
+
+    If ``omit_port`` is given and is True, only the host and user are returned.
     """
     from fabric.state import env
     # Get user, hostname and port separately
@@ -67,17 +69,25 @@ def normalize(host_string):
     username = r['username'] or env.get('username') or env.system_username
     hostname = r['hostname']
     port = r['port'] or '22'
+    if omit_port:
+        return username, hostname
     return username, hostname, port
 
 
-def join_host_strings(username, hostname, port):
+def join_host_strings(username, hostname, port=None):
     """
     Turns user/host/port strings into ``user@host:port`` combined string.
 
     This function is not responsible for handling missing user/port strings; for
     that, see the ``normalize`` function.
+
+    If ``port`` is omitted, the returned string will be of the form
+    ``user@host``.
     """
-    return "%s@%s:%s" % (username, hostname, port)
+    port_string = ''
+    if port:
+        port_string = ":%s" % port
+    return "%s@%s%s" % (username, hostname, port_string)
 
 
 def connect(username, hostname, port):
@@ -104,8 +114,6 @@ def connect(username, hostname, port):
 
     # Initialize loop variables
     connected = False
-    bad_password = False
-    suffix = '' # Defined here so it persists across loop iterations
     password = env.password
 
     # Loop until successful connect (keep prompting for new password)
@@ -118,25 +126,13 @@ def connect(username, hostname, port):
             return client
         # Prompt for new password to try on auth failure
         except (ssh.AuthenticationException, ssh.SSHException):
-            # Unless this is the first time we're here, tell user the
-            # supplied password was bogus.
-            if bad_password:
-                # Reprimand user
-                print("Bad password.")
-                # Reset prompt suffix
-                suffix = ": "
-            # If not, do we have one to try?
-            elif password:
-                # Imply we'll reuse last one entered, in prompt suffix
-                suffix = " [Enter for previous]: "
-            # Otherwise, use default prompt suffix
-            else:
-                suffix = ": "
-            # Whatever password we tried last time was bad, so take note
-            bad_password = True
-            # Update current password with user input (loop will try again)
-            password = getpass.getpass("Password for %s@%s%s" % (
-                username, hostname, suffix))
+            # TODO: tie this into global prompting (i.e. right now both uses of
+            # prompt_for_password() do the same "if not env.password" stuff.
+            # may want to roll that into prompt_for_password() itself?
+            password = prompt_for_password(None, password)
+            # Update env.password if it was empty
+            if not env.password:
+                env.password = password
         # Ctrl-D / Ctrl-C for exit
         except (EOFError, TypeError):
             # Print a newline (in case user was sitting at prompt)
@@ -156,15 +152,19 @@ def connect(username, hostname, port):
             )
 
 
-def prompt_for_password(output, previous_password):
+def prompt_for_password(output=None, previous_password=None):
     """
     Prompts for and returns a new password if required; otherwise, returns None.
 
     ``output`` should be a string and is typically going to be the current
     chunk of text obtained from the remote server. It is searched for a couple
     of potential prompt strings (including the env variable
-    ``env.sudo_prompt``) and, if found, will prompt
-    the user for a password.
+    ``env.sudo_prompt``) and, if found, will prompt the user for a password.
+
+    Alternately, ``output`` may be None, implying that the password should
+    always be prompted for, such as in the case of initial SSH connection
+    (where "prompt for a password" is denoted by catching an exception, instead
+    of detecting a prompt.)
 
     ``previous_password`` should be the last known password, and is typically
     "primed" with ``env.password``, though it may be empty or None if
@@ -183,11 +183,13 @@ def prompt_for_password(output, previous_password):
     from fabric.state import env
     # TODO: tie all of this into global/centralized prompt detection
     # Short-circuit if no password prompt found in output
-    if not re.findall(r'^%s$' % env.sudo_prompt, output, re.I|re.M):
+    if (output is not None
+        and not re.findall(r'^%s$' % env.sudo_prompt, output, re.I|re.M)):
         return
     # Construct the prompt we will display to the user (using host if available)
     if 'host' in env:
-        base_password_prompt = "Password for %s" % env.host
+        base_password_prompt = "Password for %s" % join_host_strings(*normalize(
+            env.host, omit_port=True))
     else:
         base_password_prompt = "Password"
     password_prompt = base_password_prompt

@@ -35,6 +35,15 @@ def test_host_string_normalization():
         yield eq_, normalize(string1), normalize(string2) 
         del eq_.description
 
+def test_normalization_without_port():
+    """
+    normalize() and join_host_strings() omit port if omit_port given
+    """
+    eq_(
+        join_host_strings(*normalize('user@localhost', omit_port=True)),
+        'user@localhost'
+    )
+
 
 #
 # Connection caching
