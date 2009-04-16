@@ -6,8 +6,9 @@ from glob import glob
 import os
 import re
 import stat
+import subprocess
 
-from network import output_thread
+from network import output_thread, needs_host
 from state import env, connections
 from utils import abort, escape_quotes, indent, warn
 
@@ -164,6 +165,7 @@ def prompt(name, text, default=None, validate=None):
     return value
 
 
+@needs_host
 def put(local_path, remote_path, mode=None):
     """
     Upload one or more files to a remote host.
@@ -214,6 +216,7 @@ def put(local_path, remote_path, mode=None):
     ftp.close()
 
 
+@needs_host
 def get(remote_path, local_path):
     """
     Download a file from a remote host.
@@ -240,6 +243,7 @@ def get(remote_path, local_path):
     ftp.close()
 
 
+@needs_host
 def run(command, shell=True):
     """
     Run a shell command on a remote host.
@@ -286,6 +290,7 @@ def run(command, shell=True):
     return "".join(capture).strip()
 
 
+@needs_host
 def sudo(command, shell=True, user=None):
     """
     Run a shell command on a remote host, with superuser privileges.

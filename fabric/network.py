@@ -2,6 +2,7 @@
 Classes and subroutines dealing with network connections and related topics.
 """
 
+from functools import wraps
 import getpass
 import re
 import threading
@@ -62,7 +63,7 @@ def normalize(host_string, omit_port=False):
 
     If ``omit_port`` is given and is True, only the host and user are returned.
     """
-    from fabric.state import env
+    from state import env
     # Get user, hostname and port separately
     r = host_regex.match(host_string).groupdict()
     # Add any necessary defaults in
@@ -94,7 +95,7 @@ def connect(username, hostname, port):
     """
     Create and return a new SSHClient instance connected to given hostname.
     """
-    from fabric.state import env
+    from state import env
 
     #
     # Initialization
@@ -180,7 +181,7 @@ def prompt_for_password(output=None, previous_password=None):
     will never return the empty string, avoiding a potential pitfall of having
     two False-evaluating return values meaning two different things.
     """
-    from fabric.state import env
+    from state import env
     # TODO: tie all of this into global/centralized prompt detection
     # Short-circuit if no password prompt found in output
     if (output is not None
@@ -217,7 +218,7 @@ def output_thread(prefix, chan, stderr=False, capture=None):
     input from the given channel object ``chan``. ``stderr`` determines whether
     the channel's stdout or stderr is the focus of this particular thread.
     """
-    from fabric.state import env
+    from state import env
 
     def outputter(prefix, chan, stderr, capture):
         # Read one "packet" at a time, which lets us get less-than-a-line
@@ -270,3 +271,29 @@ def output_thread(prefix, chan, stderr=False, capture=None):
     thread.setDaemon(True)
     thread.start()
     return thread
+
+
+def needs_host(func):
+    """
+    Prompt user for value of ``env.host`` when ``env.host`` is empty.
+
+    This decorator is basically a safety net for silly users who forgot to
+    specify the host/host list in one way or another. It should be used to wrap
+    operations which require a network connection.
+    
+    Due to how we execute commands per-host in ``main()``, it's not possible to
+    specify multiple hosts at this point in time, so only a single host will be
+    prompted for.
+
+    Because this decorator sets ``env.host``, it will prompt once (and only
+    once) per command. As ``main()`` clears ``env.host`` between commands, this
+    decorator will also end up prompting the user once per command (in the case
+    where multiple commands have no hosts set, of course.)
+    """
+    from state import env
+    @wraps(func)
+    def host_prompting_wrapper(*args, **kwargs):
+        while not env.get('host', False):
+            env.host = raw_input("Network connection required, but no hosts found. Please specify (single) host string for connection: ")
+        return func(*args, **kwargs)
+    return host_prompting_wrapper

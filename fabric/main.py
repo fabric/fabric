@@ -259,23 +259,18 @@ def get_hosts(cli_hosts, command):
        the fabfile (note: since fabfiles are fully loaded, the last line to set
        ``env.hosts`` is the line that wins)
 
-    If all three sources have been checked and no hosts are found, prompt the
-    user for a comma-separated list of host definitions.
+    If all three sources have been checked and no hosts are found, an empty
+    list is returned -- the user is probably trying to do something locally.
     """
     # TODO: Figure out if we should be trying to "merge" host lists when
     # running multiple commands which each specify their own CLI or @hosts list.
-    
     if cli_hosts:
         return cli_hosts
     if getattr(command, 'hosts', None):
         return command.hosts
     if env.get('hosts'):
         return env.hosts
-    hosts = []
-    while not hosts:
-        p = "Please specify host or hosts to connect to (comma-separated): "
-        hosts = filter(None, raw_input(p).split(','))
-    return hosts
+    return []
 
 
 def main():
@@ -340,10 +335,15 @@ def main():
                 env.command = name
                 # Set host list
                 hosts = get_hosts(cli_hosts, command)
-                # Execute the function on each host in turn
+                # If hosts found, execute the function on each host in turn
                 for host in hosts:
                     env.host = host
                     commands[name](*args, **kwargs)
+                # If no hosts found, assume local-only and run once
+                if not hosts:
+                    commands[name](*args, **kwargs)
+                # Clear env.host so it doesn't "bleed" into other commands
+                env.host = None
         finally:
             pass
 #            _disconnect()
