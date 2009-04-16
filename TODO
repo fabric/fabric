@@ -18,3 +18,5 @@
     - Paver uses it too
     - Lots of Smart People don't seem put off by its magic
     - Definitely feels Pythonic and would save typing
+37  Put in ANSI-stripping functionality/options -- would save me a ton of time
+    doing it in my fabfiles and could be generally useful.
