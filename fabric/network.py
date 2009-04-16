@@ -156,6 +156,59 @@ def connect(username, hostname, port):
             )
 
 
+def prompt_for_password(output, previous_password):
+    """
+    Prompts for and returns a new password if required; otherwise, returns None.
+
+    ``output`` should be a string and is typically going to be the current
+    chunk of text obtained from the remote server. It is searched for a couple
+    of potential prompt strings (including the env variable
+    ``env.sudo_prompt``) and, if found, will prompt
+    the user for a password.
+
+    ``previous_password`` should be the last known password, and is typically
+    "primed" with ``env.password``, though it may be empty or None if
+    ``env.password`` was not set and no password has previously been entered
+    during this session.
+
+    When non-empty, ``previous_password`` will be used as a default if the user
+    hits Enter without entering a new password, and the displayed password
+    prompt will reflect this.
+
+    If the user supplies an empty password **and** ``previous_password`` is
+    also empty, the user will be re-prompted immediately. Thus, this function
+    will never return the empty string, avoiding a potential pitfall of having
+    two False-evaluating return values meaning two different things.
+    """
+    from fabric.state import env
+    # TODO: tie all of this into global/centralized prompt detection
+    # Short-circuit if no password prompt found in output
+    if not re.findall(r'^%s$' % env.sudo_prompt, output, re.I|re.M):
+        return
+    # Construct the prompt we will display to the user (using host if available)
+    if 'host' in env:
+        base_password_prompt = "Password for %s" % env.host
+    else:
+        base_password_prompt = "Password"
+    password_prompt = base_password_prompt
+    if previous_password:
+        password_prompt += " [Enter for previous]"
+    password_prompt += ": "
+    # Get new password value
+    new_password = getpass.getpass(password_prompt)
+    # See if user wants us to use the previous password and return right away
+    # if so.
+    if (not new_password) and previous_password:
+        return previous_password
+    # Otherwise, loop until user gives us a non-empty password (to prevent
+    # returning the empty string, and to avoid unnecessary network overhead.)
+    while not new_password:
+        print("Sorry, you can't enter an empty password. Please try again.")
+        password_prompt = base_password_prompt + ": "
+        new_password = getpass.getpass(password_prompt)
+    return new_password
+
+
 def output_thread(prefix, chan, stderr=False, capture=None):
     """
     Generates a thread/function capable of reading and optionally capturing
@@ -169,7 +222,6 @@ def output_thread(prefix, chan, stderr=False, capture=None):
         # chunks of text, such as sudo prompts. However, we still print
         # them to the user one line at a time. (We also eat sudo prompts.)
         leftovers = ""
-        suffix = ""
         password = env.password
         if stderr:
             recv = chan.recv_stderr
@@ -180,30 +232,16 @@ def output_thread(prefix, chan, stderr=False, capture=None):
             # Capture if necessary
             if capture is not None:
                 capture += out
-            # Handle any password prompts
-            # TODO: tie this into global/centralized prompt detection
-            initial_prompt = re.findall(r'^%s$' % env.sudo_prompt, out,
-                re.I|re.M)
-            again_prompt = re.findall(r'^Sorry, try again', out, re.I|re.M)
-            if initial_prompt or again_prompt:
-                # First, get or prompt for password
-                password_prompt = "Password for %s%s" % (env.host, suffix)
-                if password:
-                    # Just set up prompt in case we're at an again prompt
-                    suffix = " [Enter for previous]: "
-                else:
-                    # Set prompt, then ask for a password
-                    suffix = ": "
-                    # Get password, and make sure we communicate it back to the
-                    # global environment since that was obviously empty.
-                    env.password = password = getpass.getpass(password_prompt)
-                # Re-prompt -- whatever we supplied last time (the
-                # current value of env.password) was incorrect.
-                # Don't overwrite env.password, though -- it may still be
-                # correct for *other* hosts in a multi-host operation.
-                if again_prompt:
-                    password = getpass.getpass(password_prompt)
-                # Either way, we have a password now, so send it.
+            # Handle any password prompts (storing in current-session password)
+            password = prompt_for_password(out, password)
+            # prompt_for_password() returns None if no prompt was found; thus
+            # if the password is NOT None, we were prompted and have to inform
+            # the remote server of what the user supplied.
+            if password is not None:
+                # Communicate "upstream" to env if env.password was empty
+                if not env.password:
+                    env.password = password
+                # Send password down the pipe
                 chan.sendall(password + '\n')
                 out = ""
             # Deal with line breaks, printing all lines and storing the
@@ -223,6 +261,7 @@ def output_thread(prefix, chan, stderr=False, capture=None):
                         line = ""
             else: # add to leftovers buffer
                 leftovers += out
+            # Get next handful of bytes and continue the loop
             out = recv(65535)
     thread = threading.Thread(None, outputter, prefix,
         (prefix, chan, stderr, capture))

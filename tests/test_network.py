@@ -6,11 +6,13 @@ import getpass
 import paramiko
 from nose.tools import eq_, with_setup
 from fudge import Fake, clear_calls, clear_expectations, patch_object, verify, \
-    patched_context
+    with_patched_object, patched_context
 
-from fabric.network import HostConnectionCache, join_host_strings, normalize
+from fabric.network import (HostConnectionCache, join_host_strings, normalize,
+    prompt_for_password)
 from fabric.utils import get_system_username
 import fabric.network # So I can call patch_object correctly. Sigh.
+from fabric.state import env
 
 
 #
@@ -118,3 +120,43 @@ def test_prompts_for_password_without_good_authentication():
                 verify()
             finally:
                 clear_expectations()
+
+
+#
+# Password prompting
+#
+
+password = 'password'
+getpass_nonempty = Fake('getpass', callable=True).returns(password)
+getpass_empty = Fake('getpass', callable=True).returns('')
+
+
+@with_patched_object('getpass', 'getpass', getpass_nonempty)
+def test_password_prompt_respects_env_sudo_prompt():
+    """
+    prompt_for_password() detects env.sudo_prompt()
+    """
+    eq_(
+        prompt_for_password(env.sudo_prompt, None),
+        password
+    )
+
+@with_patched_object('getpass', 'getpass', getpass_nonempty)
+def test_password_prompt_ignores_non_prompt_output():
+    """
+    prompt_for_password() ignores output which is not a prompt
+    """
+    eq_(
+        prompt_for_password("blah blah blah this is not a prompt", None),
+        None
+    )
+
+@with_patched_object('getpass', 'getpass', getpass_empty)
+def test_password_prompt_uses_given_password_on_empty_input():
+    """
+    prompt_for_password() uses the supplied password if user hits Enter
+    """
+    eq_(
+        prompt_for_password(env.sudo_prompt, password),
+        password
+    )
