@@ -83,6 +83,11 @@ message, printing it to the user and then calling `sys.exit(1)`.
 * `rsyncproject()` and `upload_project()` have been moved to `fabric.contrib`,
 which is intended to be a new submodule (or eventually a tree of submodules)
 for housing "extra" code which may build on top of the core Fabric operations.
+* `invoke()` has been turned on its head, and is now the `@runs_once` decorator
+(living in `fabric.utils`). When used to decorate a function, that function
+will only execute one time during the lifetime of a `fab` run. Thus, where
+you might use `invoke()` multiple times to ensure a given command only runs
+once, you may now use `@runs_once` instead.
 
 
 # Things which are more bug-fixes than compatibility issues
