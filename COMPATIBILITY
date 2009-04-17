@@ -73,6 +73,16 @@ versions) has been renamed to `shell` (defaults to True, so the effective
 behavior remains the same) and has also been extended to the `run()` operation.
     * Additionally, the global `sudo_noshell` option has been renamed to
     `use_shell` and applies to both `run()` and `sudo()`.
+* `local_per_host()` has been removed as it only applied to the now-removed
+"broad" mode. Invocations of any and every operation will execute once per host.
+* `load()` has been removed; Fabric is now "just Python", so use Python's
+import mechanisms as you see fit.
+* `abort()` is no longer an "operation" *per se* and has been moved to
+`fabric.utils`. It is otherwise the same as before, taking a single string
+message, printing it to the user and then calling `sys.exit(1)`.
+* `rsyncproject()` and `upload_project()` have been moved to `fabric.contrib`,
+which is intended to be a new submodule (or eventually a tree of submodules)
+for housing "extra" code which may build on top of the core Fabric operations.
 
 
 # Things which are more bug-fixes than compatibility issues

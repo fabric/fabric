@@ -1,5 +1,5 @@
 # Next up
-* Continue porting over operations
+* Continue porting over operations (left off at invoke())
 * Go over entire old-fabric.py to make sure everything else has been ported or
 explicitly recorded in COMPATIBILITY as being removed
 
