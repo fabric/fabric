@@ -1,3 +1,7 @@
+"""
+Useful non-core functionality, e.g. functions composing multiple operations.
+"""
+
 from os import getcwd, sep
 
 from fabric.network import needs_host
@@ -75,27 +79,26 @@ def rsync_project(remote_dir, local_dir=None, exclude=[], delete=False,
     return local(cmd)
 
 
-def upload_project(**kwargs):
+def upload_project():
     """
-    Uploads the current project directory to the connected hosts.
-    
-    This is a higher-level convenience operation that basically 'tar' up the
-    directory that contains your fabfile (presumably it is your project
-    directory), uploads it to the `fab_hosts` and 'untar' it.
-    
-    This operation expects the tar command-line utility to be available on your
-    local machine, and it also expects your system to have a `/tmp` directory
-    that is writeable.
-    
-    Unless something fails half-way through, this operation will make sure to
-    delete the temporary files it creates.
-    
+    Upload the current project to a remote system, tar/gzipping during the move.
+
+    This function makes use of the ``/tmp/`` directory and the ``tar`` and
+    ``gzip`` programs/libraries; thus it will not work too well on Win32
+    systems unless one is using Cygwin or something similar.
+
+    ``upload_project`` will attempt to clean up the tarfiles when it finishes
+    executing.
     """
-    tar_file = "/tmp/fab.%(fab_timestamp)s.tar" % ENV
-    cwd_name = os.getcwd().split(os.sep)[-1]
-    tgz_name = cwd_name + ".tar.gz"
-    local("tar -czf %s ." % tar_file, **kwargs)
-    put(tar_file, cwd_name + ".tar.gz", **kwargs)
-    local("rm -f " + tar_file, **kwargs)
-    run("tar -xzf " + tgz_name, **kwargs)
-    run("rm -f " + tgz_name, **kwargs)
+    try:
+        # TODO: use tempfile lib to make unique temp directory
+        # TODO: wrap in try/finally to clean up afterwards
+        # TODO: put in optional local_dir, remote_dir options
+        tar_file = "/tmp/fab.%(fab_timestamp)s.tar" % ENV
+        cwd_name = os.getcwd().split(os.sep)[-1]
+        tgz_name = cwd_name + ".tar.gz"
+        local("tar -czf %s ." % tar_file)
+        put(tar_file, cwd_name + ".tar.gz")
+        local("rm -f " + tar_file)
+        run("tar -xzf " + tgz_name)
+        run("rm -f " + tgz_name)
