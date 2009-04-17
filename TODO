@@ -14,9 +14,18 @@
 34  Put in optional (or default w/ option) timeouts for operations (or make
     sure existing network timeouts work correctly)
 35  Figure out convenient way for users to set per-host passwords beforehand
-36  Consider using or pulling ideas from path.py for easier path management
+36a Consider using or pulling ideas from path.py for easier path management
     - Paver uses it too
     - Lots of Smart People don't seem put off by its magic
     - Definitely feels Pythonic and would save typing
+36b Another not-from-path.py (I think) idea: context managers to effect 
+    "cd foo && /bin/blah", e.g.
+        
+        with cwd('/tmp/'):
+            run('ls')
+            run('touch test')
+
+    would effectively do 'cd /tmp/ && ls' followed by 'cd /tmp/ && touch test'.
+
 37  Put in ANSI-stripping functionality/options -- would save me a ton of time
     doing it in my fabfiles and could be generally useful.

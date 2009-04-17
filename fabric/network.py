@@ -294,6 +294,6 @@ def needs_host(func):
     @wraps(func)
     def host_prompting_wrapper(*args, **kwargs):
         while not env.get('host', False):
-            env.host = raw_input("Network connection required, but no hosts found. Please specify (single) host string for connection: ")
+            env.host = raw_input("No hosts found. Please specify (single) host string for connection: ")
         return func(*args, **kwargs)
     return host_prompting_wrapper

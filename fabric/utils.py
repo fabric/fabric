@@ -17,7 +17,6 @@ def abort(msg):
     When not invoked as the ``fab`` command line tool, raise an exception
     instead.
     """
-    from state import env
     print >>sys.stderr, "\nError: " + msg
     sys.exit(1)
 
