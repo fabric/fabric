@@ -2,6 +2,21 @@
 * Go over entire old-fabric.py to make sure everything else has been ported or
 explicitly recorded in COMPATIBILITY as being removed
 
+# Functionality that still needs reimplementing
+* Roles - just named lists of hosts (?)
+* Require decorator - calls require() prior to executing the command
+    * Necessary? Doesn't really do anything but move a normal require() call
+    above the function itself instead of being on the first line?
+* Depends decorator - calls the given function(s) before the decorated one
+    * upgrade this to more cap-like "before/after" chains?
+    * what's the most Pythonic way to do this?
+* Make sure we have global variable setting on command line, forget if I put in
+a TODO for that yet, i.e. --let x=y or whatever.
+* Interactive shell
+    * Should probably make use of a builtin Python lib instead of raw_input()
+* Per-command help/description -- make sure a TODO exists. Think cap -T <foo>
+(though we have -l for the generic list feature of cap -T)
+
 # Once basic functionality has been restored
 * See all TODO markings in source code
 * Take a step back, reorganize. E.g.:
