@@ -1,9 +1,6 @@
 """
 Internal subroutines for e.g. aborting execution with an error message,
 or performing indenting on multiline output.
-
-As this file's contents are used by the ``state`` module, all uses of ``state``
-must be imported within each function and not at the module level.
 """
 
 from functools import wraps
@@ -38,65 +35,3 @@ def indent(text, spaces=4):
     if not hasattr(text, 'splitlines'):
         text = '\n'.join(text)
     return '\n'.join(((' ' * spaces) + line for line in text.splitlines()))
-
-
-def get_system_username():
-    """
-    Obtain name of current system user, which will be default connection user.
-    """
-    from state import win32
-    if not win32:
-        import pwd
-        return pwd.getpwuid(os.getuid())[0]
-    else:
-        import win32api
-        import win32security
-        import win32profile
-        return win32api.GetUserName()
-
-
-def hosts(*host_list):
-    """
-    Decorator attaching its arg list to the wrapped function as ``.hosts``.
-
-    For example::
-
-        @hosts('a', 'b', 'c')
-        def my_func():
-            pass
-
-    Once its module is loaded, ``my_func`` will exhibit a ``.hosts`` attribute
-    equal to ``['a', 'b', 'c']``.
-    """
-    def attach_hosts(func):
-        @wraps(func)
-        def inner_decorator(*args, **kwargs):
-            return func(*args, **kwargs)
-        inner_decorator.hosts = host_list
-        return inner_decorator
-    return attach_hosts
-
-
-def escape_quotes(string):
-    return string.replace('"', r'\"')
-
-
-def runs_once(func):
-    """
-    Decorator preventing wrapped function from running more than once.
-
-    By keeping internal state, this decorator allows you to mark a function
-    such that it will only run once per Python interpreter session, which in
-    typical use means "once per invocation of the ``fab`` program".
-
-    Any function wrapped with this decorator will silently fail to execute the
-    2nd, 3rd, ..., Nth time it is called, and will return None in that instance.
-    """
-    @wraps(func)
-    def decorated(*args, **kwargs):
-        if hasattr(decorated, 'has_run'):
-            return
-        else:
-            decorated.has_run = True
-            return func(*args, **kwargs)
-    return decorated

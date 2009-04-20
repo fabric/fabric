@@ -2,6 +2,7 @@
 Internal shared-state variables such as config settings and host lists.
 """
 
+import os
 import re
 import socket
 import sys
@@ -152,9 +153,6 @@ env = _AttributeDict({
 # Add in option defaults
 for option in env_options:
     env[option.dest] = option.default
-
-# System username (done here for library use)
-env.system_username = get_system_username()
 
 
 #

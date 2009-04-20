@@ -10,7 +10,7 @@ import subprocess
 
 from network import output_thread, needs_host
 from state import env, connections
-from utils import abort, escape_quotes, indent, warn
+from utils import abort, indent, warn
 
 
 # Can't wait till Python versions supporting 'def func(*args, foo=bar)' become
@@ -323,11 +323,11 @@ def sudo(command, shell=True, user=None):
     sudo_prefix = sudo_prefix % env.sudo_prompt
     # Without using a shell, we just do 'sudo -u blah my_command'
     if (not env.use_shell) or (not shell):
-        real_command = "%s %s" % (sudo_prefix, escape_quotes(command))
+        real_command = "%s %s" % (sudo_prefix, command.replace('"', r'\"'))
     # With a shell, we do 'sudo -u blah /bin/bash -l -c "my_command"'
     else:
         real_command = '%s %s "%s"' % (sudo_prefix, env.shell,
-            escape_quotes(command))
+            command.replace('"', r'\"'))
     # TODO: tie this into global output controls; both in terms of showing the
     # shell itself, AND showing the sudo prefix. Not 100% sure it's worth being
     # so granular as to allow one on and one off, but think about it.
