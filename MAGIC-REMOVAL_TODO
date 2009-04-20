@@ -1,5 +1,4 @@
 # Functionality that still needs reimplementing
-* Roles - just named lists of hosts (?)
 * Require decorator - calls require() prior to executing the command
     * Necessary? Doesn't really do anything but move a normal require() call
     above the function itself instead of being on the first line?

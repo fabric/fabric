@@ -9,12 +9,14 @@ The other callables defined in this module are internal only. Anything useful
 to individuals leveraging Fabric as a library, should be kept elsewhere.
 """
 
+from operator import add
 from optparse import OptionParser
 import os
 import sys
 
 from utils import abort, indent
-from state import commands, env, env_options, win32
+from state import commands, env_options, win32
+import state # For easily-mockable access to roles, env and etc
 import operations
 
 
@@ -23,13 +25,13 @@ def rc_path():
     Return platform-specific file path for $HOME/<env.settings_file>.
     """
     if not win32:
-        return os.path.expanduser("~/" + env.settings_file)
+        return os.path.expanduser("~/" + state.env.settings_file)
     else:
         from win32com.shell.shell import SHGetSpecialFolderPath
         from win32com.shell.shellcon import CSIDL_PROFILE
         return "%s/%s" % (
             SHGetSpecialFolderPath(0,CSIDL_PROFILE),
-            env.settings_file
+            state.env.settings_file
         )
 
 
@@ -253,23 +255,46 @@ def get_hosts(cli_hosts, command):
     precedence:
 
     1. Hosts specified via the command line (e.g. ``fab foo:hosts='a;b;c'``)
-    2. Hosts specified via the ``@hosts`` decorator (e.g. ``@hosts('a', 'b',
-       'c')``)
-    3. Hosts specified globally, by setting ``env.hosts`` at module level in
+    1. Hosts specified via the ``@hosts`` and ``@roles`` decorators
+    1. Hosts specified globally via the command line (TODO: "let" syntax)
+    1. Hosts specified globally by setting ``env.hosts`` at module level in
        the fabfile (note: since fabfiles are fully loaded, the last line to set
        ``env.hosts`` is the line that wins)
 
-    If all three sources have been checked and no hosts are found, an empty
-    list is returned -- the user is probably trying to do something locally.
+    Note that there is no "unionizing" of hosts between the above sources, so
+    if a global host list contains hosts A, B and C, and a per-function (e.g.
+    via ``@hosts``) host list is set to just hosts B and C, that function
+    will **not** execute on host A.
+
+    However, ``@hosts`` and ``@roles`` **will** result in the union of their
+    contents as the final host list. In the following example, if ``role1``
+    contains hosts ``b`` and ``c``, the resulting host list will be ``['a',
+    'b', 'c']``::
+
+        @hosts('a', 'b')
+        @roles('role1')
+        def my_func():
+            pass
+
+    Finally, note that if all sources have been checked and no hosts are found,
+    an empty list is returned -- the user is probably trying to do something
+    locally.
     """
-    # TODO: Figure out if we should be trying to "merge" host lists when
-    # running multiple commands which each specify their own CLI or @hosts list.
+    # Command line takes precedence over anythin else.
     if cli_hosts:
         return cli_hosts
-    if getattr(command, 'hosts', None):
-        return command.hosts
-    if env.get('hosts'):
-        return env.hosts
+    # Decorator-specific hosts/roles go next and are unioned.
+    func_hosts = getattr(command, 'hosts', [])
+    func_roles = getattr(command, 'roles', [])
+    if func_hosts or func_roles:
+        role_hosts = (func_roles and reduce(add, [state.roles[y] for y in
+            func_roles]) or [])
+        return list(set(func_hosts + role_hosts))
+    # Finally, the env is checked (which might contain values from the CLI or
+    # from module-level code).
+    if state.env.get('hosts'):
+        return state.env.hosts
+    # Empty list is the default if nothing is found.
     return []
 
 
@@ -281,11 +306,11 @@ def main():
 
             # Handle version number option
             if options.show_version:
-                print "Fabric " + env.version
+                print "Fabric " + state.env.version
                 sys.exit(0)
 
             # Load settings from user settings file, into shared env dict.
-            env.update(load_settings(rc_path()))
+            state.env.update(load_settings(rc_path()))
 
             # Find local fabfile path or abort
             fabfile = find_fabfile()
@@ -325,25 +350,25 @@ def main():
 
             # Update env with any overridden option values
             for option in env_options:
-                env[option.dest] = getattr(options, option.dest)
+                state.env[option.dest] = getattr(options, option.dest)
 
             # At this point all commands must exist, so execute them in order.
             for name, args, kwargs, cli_hosts in commands_to_run:
                 # Get callable by itself
                 command = commands[name]
                 # Set current command name (used for some error messages)
-                env.command = name
+                state.env.command = name
                 # Set host list
                 hosts = get_hosts(cli_hosts, command)
                 # If hosts found, execute the function on each host in turn
                 for host in hosts:
-                    env.host = host
+                    state.env.host = host
                     commands[name](*args, **kwargs)
                 # If no hosts found, assume local-only and run once
                 if not hosts:
                     commands[name](*args, **kwargs)
                 # Clear env.host so it doesn't "bleed" into other commands
-                env.host = None
+                state.env.host = None
         finally:
             pass
 #            _disconnect()

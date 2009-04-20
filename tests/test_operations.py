@@ -6,7 +6,6 @@ import sys
 from nose.tools import raises
 
 from fabric.operations import require
-from fabric.state import env
 
 
 #

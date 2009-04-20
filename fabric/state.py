@@ -169,3 +169,12 @@ commands = {}
 #
 
 connections = HostConnectionCache()
+
+
+#
+# Role dict
+#
+
+# Keys are simple string names, e.g. 'webservers', values are lists of host
+# strings.
+roles = {}
