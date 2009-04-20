@@ -1,7 +1,3 @@
-# Next up
-* Go over entire old-fabric.py to make sure everything else has been ported or
-explicitly recorded in COMPATIBILITY as being removed
-
 # Functionality that still needs reimplementing
 * Roles - just named lists of hosts (?)
 * Require decorator - calls require() prior to executing the command
