@@ -7,7 +7,7 @@ import socket
 import sys
 from optparse import make_option
 
-from fabric.utils import abort, get_system_username
+from fabric.utils import abort
 from fabric.network import HostConnectionCache
 
 
@@ -67,6 +67,23 @@ class _AttributeDict(dict):
             if value:
                 return value
 
+
+# By default, if the user (including code using Fabric as a library) doesn't
+# set the username, we obtain the currently running username and use that.
+def _get_system_username():
+    """
+    Obtain name of current system user, which will be default connection user.
+    """
+    if not win32:
+        import pwd
+        return pwd.getpwuid(os.getuid())[0]
+    else:
+        import win32api
+        import win32security
+        import win32profile
+        return win32api.GetUserName()
+
+
 # Options/settings which exist both as environment keys and which can be set
 # on the command line, are defined here. When used via `fab` they will be added
 # to the optparse parser, and either way they are added to `env` below (i.e.
@@ -87,6 +104,12 @@ env_options = [
         action='store_true',
         default=False,
         help="reject unknown host keys"
+    ),
+
+    # Username
+    make_option('-u', '--username',
+        default=_get_system_username(),
+        help='username to use when connecting to remote hosts'
     ),
 
     # Password

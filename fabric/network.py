@@ -32,8 +32,9 @@ class HostConnectionCache(dict):
     * ``user@example.com`` - with specific username attached.
     * ``bob@smith.org:222`` - with specific nonstandard port attached.
 
-    When the username is not given, ``env.username`` is used; if
-    ``env.username`` is not defined, the local system username is assumed.
+    When the username is not given, ``env.username`` is used. ``env.username``
+    defaults to the currently running user at startup but may be overwritten by
+    user code or by specifying a command-line flag.
 
     Note that differing explicit usernames for the same hostname will result in
     multiple client connections being made. For example, specifying
@@ -67,7 +68,7 @@ def normalize(host_string, omit_port=False):
     # Get user, hostname and port separately
     r = host_regex.match(host_string).groupdict()
     # Add any necessary defaults in
-    username = r['username'] or env.get('username') or env.system_username
+    username = r['username'] or env.get('username')
     hostname = r['hostname']
     port = r['port'] or '22'
     if omit_port:

@@ -10,9 +10,8 @@ from fudge import Fake, clear_calls, clear_expectations, patch_object, verify, \
 
 from fabric.network import (HostConnectionCache, join_host_strings, normalize,
     prompt_for_password)
-from fabric.utils import get_system_username
 import fabric.network # So I can call patch_object correctly. Sigh.
-from fabric.state import env
+from fabric.state import env, _get_system_username
 
 
 #
@@ -20,7 +19,7 @@ from fabric.state import env
 #
 
 def test_host_string_normalization():
-    username = get_system_username()
+    username = _get_system_username()
     for description, string1, string2 in (
         ("Sanity check: equal strings remain equal",
             'localhost', 'localhost'),
