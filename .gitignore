@@ -14,3 +14,4 @@ Fabric.egg-info
 release
 *.png
 .coverage
+docs/_*

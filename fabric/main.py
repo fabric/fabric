@@ -1,7 +1,7 @@
 """
-This module contains Fab's ``main()`` method plus related subroutines.
+This module contains Fab's `main` method plus related subroutines.
 
-``main()`` is executed as the command line ``fab`` program and takes care of
+`main` is executed as the command line ``fab`` program and takes care of
 parsing options and commands, loading the user settings file, loading a
 fabfile, and executing the commands given.
 
@@ -254,10 +254,10 @@ def get_hosts(cli_hosts, command):
     The list of hosts a given command will run on follows a strict order of
     precedence:
 
-    1. Hosts specified via the command line (e.g. ``fab foo:hosts='a;b;c'``)
-    1. Hosts specified via the ``@hosts`` and ``@roles`` decorators
-    1. Hosts specified globally via the command line (TODO: "let" syntax)
-    1. Hosts specified globally by setting ``env.hosts`` at module level in
+    #. Hosts specified via the command line (e.g. ``fab foo:hosts='a;b;c'``)
+    #. Hosts specified via the ``@hosts`` and ``@roles`` decorators
+    #. Hosts specified globally via the command line (TODO: "let" syntax)
+    #. Hosts specified globally by setting ``env.hosts`` at module level in
        the fabfile (note: since fabfiles are fully loaded, the last line to set
        ``env.hosts`` is the line that wins)
 
@@ -299,6 +299,9 @@ def get_hosts(cli_hosts, command):
 
 
 def main():
+    """
+    Main command-line execution loop.
+    """
     try:
         try:
             # Parse command line options
