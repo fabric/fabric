@@ -165,3 +165,32 @@ In no particular order:
 * Couldn't think of a good reason for `require` to be a decorator *and* a
   function, and the function is more versatile in terms of where it may be
   used, so the decorator has been removed.
+* As things currently stand with the execution model, the ``depends`` decorator
+  doesn't make a lot of sense: instead, it's safest/best to simply make "meta"
+  commands that just call whatever chain of "real" commands you need performed
+  for a given overarching task.
+  
+  For example, instead of having command A say
+  that it "depends on" command B, create a command C which calls A and B in the
+  right order, e.g.::
+
+    def build():
+        local('make clean all')
+
+    def upload():
+        put('app.tgz', '/tmp/app.tgz')
+        run('tar xzf /tmp/app.tgz')
+
+    def symlink():
+        run('ln -s /srv/media/photos /var/www/app/photos')
+
+    def deploy():
+        build()
+        upload()
+        symlink()
+  
+  .. note::
+
+    The execution model is still subject to change, pending feedback during the
+    alpha. Please don't hesitate to email the list or the developers if you have
+    a use case that needs something Fabric doesn't provide right now!

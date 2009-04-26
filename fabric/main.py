@@ -392,8 +392,7 @@ def main():
                 # Clear env.host so it doesn't "bleed" into other commands
                 state.env.host = None
         finally:
-            pass
-#            _disconnect()
+            # TODO: explicit disconnect?
             print("\nDone.")
     except SystemExit:
         # a number of internal functions might raise this one.

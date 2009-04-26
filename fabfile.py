@@ -2,6 +2,8 @@
 Fabric's own fabfile.
 """
 
+from fabric.operations import local, require, prompt
+
 def clean(**kwargs):
     "Recurse the directory tree and remove all files matched by .gitignore."
     # passing -delete to find doesn't work for directories, hence xargs rm -r
@@ -77,8 +79,7 @@ def layout(**kwargs):
 
 def test():
     "Run all unit tests."
-    local("cd test && ./gen_tests.py")
-    local("python test/alltests.pyt")
+    print(local('nosetests -sv', show_stderr=True))
 
 def website():
     "Generates the Fabric website."
