@@ -1,0 +1,10 @@
+Scratchpad for stuff to say about the alpha and recording feedback about same
+-----------------------------------------------------------------------------
+
+* Execution model: see "Make execution model more robust/flexible" bullet near
+  bottom of MAGIC-REMOVAL_TODO. Want people's thoughts on how they do or would
+  like to structure their fabfiles, in terms of execution order, and what host
+  lists should apply when.
+* Module layout: general feedback appreciated here. Make sense as-is?
+* Did I forget anything, or is anything I explicitly removed something that is
+  still necessary?
