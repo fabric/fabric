@@ -162,3 +162,6 @@ In no particular order:
   command only runs once, you may now use `runs_once` instead.
 * It looks like the regex behavior of the ``validate`` argument of `prompt` was
   never actually implemented. It now works as advertised.
+* Couldn't think of a good reason for `require` to be a decorator *and* a
+  function, and the function is more versatile in terms of where it may be
+  used, so the decorator has been removed.

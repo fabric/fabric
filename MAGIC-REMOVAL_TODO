@@ -1,10 +1,4 @@
 # Functionality that still needs reimplementing
-* Require decorator - calls require() prior to executing the command
-    * Necessary? Doesn't really do anything but move a normal require() call
-    above the function itself instead of being on the first line?
-* Depends decorator - calls the given function(s) before the decorated one
-    * upgrade this to more cap-like "before/after" chains?
-    * what's the most Pythonic way to do this?
 * Make sure we have global variable setting on command line, forget if I put in
 a TODO for that yet, i.e. --let x=y or whatever.
 * Interactive shell
@@ -55,11 +49,16 @@ doesn't literally mean full coverage...)
     some patches to it, though, it's not great for functional coding and I
     don't see the need to 100% class-ify my code just so my mocker works better.
 * Sphinx documentation
-    * Read up on Sphinx generally
-    * Figure out what extra goodies can/should go in docstrings, utilize that
-    * Port old standalone docs to Sphinx (or rather, write new ones while
-    using old for inspiration as needed)
-    * Do whatever else is needed so a useful API is generated
+    * Build out the API docs; probably just one RST file per module, with
+    automodule in use (see test api.rst file for details).
+    * Update all docstrings so they "read well" in the generated API:
+        * General language / tense / etc
+        * Where applicable, turn ``function()`` into `function` (so the default
+        role takes effect and makes it a link)
+        * If that default role doesn't work right for non-functions, add the
+        appropriate :type: prefixes.
+    * Go over old static docs to make sure anything applicable is copied over
+    and updated.
 * Run Pylint, fix what it complains about (and generate a config file to make it
 shut up about stuff I don't care about)
 * Make sure "constants" are consistently named: I've been trending towards not
@@ -99,5 +98,21 @@ options. Look at `man ssh_config` for what else people can put in that file.
     state for env/connection/etc stuff. This is probably not threadsafe as-is.
     * Even if the shared state works OK, the thread use in outputting is kind
     of wonky. See if it can be redone with coroutines or Twisted or something.
+* Make execution model more robust/flexible:
+    * Right now, relatively simple, calls each function one by one, and for each
+    function, runs on each host one by one, and the host list may be different
+    per-function.
+    * What may make more sense is to specify host list "first", then for each
+    host, you call each function in turn (in which case the order of functions
+    may matter more than it does now). This would mean that the logic for host
+    discovery changes a decent amount.
+    * Do we want to allow this to be switched up dynamically? I.e. allow user
+    to specify a "mode" (like in the old Fabric) to determine which of those
+    two algorithms is used?
+    * How do these decisions affect what decorators/etc can be applied? I.e.
+    @hosts doesn't make any sense in the latter scenario because there is only
+    one global host list per session. (But isn't that the more sensible
+    solution? When would you execute a `fab` command line and expect the host
+    list to change during the session?
 
 <!-- vim:set filetype=mkd : -->
