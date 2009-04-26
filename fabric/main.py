@@ -133,8 +133,11 @@ def parse_options():
         help="print list of possible commands and exit"
     )
 
-    # TODO: help (and argument signatures?) for a specific command
-    # (or allow option-arguments to -h/--help? e.g. "fab -h foo" = help for foo)
+    # Show info about a specific command
+    parser.add_option('-s', '--show',
+        metavar='COMMAND',
+        help="print detailed info about a given command and exit"
+    )
 
     # TODO: specify nonstandard fabricrc file (and call load_settings() on it)
     # -c ? --config ? --fabricrc ? --rcfile ?
@@ -185,6 +188,18 @@ def list_commands():
         # Or nothing (so just the name)
         else:
             print(prefix)
+    sys.exit(0)
+
+
+def show_command(command):
+    # Sanity check
+    if command not in commands:
+        abort("Command '%s' not found, exiting." % command)
+    # Print out nicely presented docstring
+    print("Displaying detailed information for command '%s':" % command)
+    print('')
+    print(indent(commands[command].__doc__, strip=True))
+    print('')
     sys.exit(0)
 
 
@@ -332,6 +347,10 @@ def main():
             # Handle list-commands option (now that commands are loaded)
             if options.list_commands:
                 list_commands()
+
+            # Handle show (command-specific help) option
+            if options.show:
+                show_command(options.show)
 
             # If user didn't specify any commands to run, show help
             if not arguments:
