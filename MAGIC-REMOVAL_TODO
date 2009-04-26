@@ -1,7 +1,3 @@
-# Functionality that still needs reimplementing
-* Interactive shell
-    * Should probably make use of a builtin Python lib instead of raw_input()
-
 # Once basic functionality has been restored
 * See all TODO markings in source code
 * Take a step back, reorganize. E.g.:
@@ -110,5 +106,12 @@ options. Look at `man ssh_config` for what else people can put in that file.
     one global host list per session. (But isn't that the more sensible
     solution? When would you execute a `fab` command line and expect the host
     list to change during the session?
+* Possibly add back in the old `shell` functionality (it would have to be a
+command line option such as `--shell` -- there are no more internal "commands"
+and it doesn't make sense as one anyway, as it cannot be run along with other
+commands at the same time.)
+    * Probably leverage IPython as a library, I've seen it done before
+    * Should end up equivalent to a user running `ipython` and then doing a
+    bunch of typical Fabric imports, i.e. all the operations plus `env`.
 
 <!-- vim:set filetype=mkd : -->
