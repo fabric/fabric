@@ -4,6 +4,32 @@ Fabric's own fabfile.
 
 from fabric.operations import local, require, prompt
 
+
+#
+# New or updated tasks which are known to work
+#
+
+def test():
+    """
+    Run all unit tests
+    """
+    # Need show_stderr=True because the interesting output of nosetests is
+    # actually sent to stderr, not stdout.
+    print(local('nosetests -sv', show_stderr=True))
+
+
+def make_docs():
+    """
+    Generate the Sphinx documentation
+    """
+    print(local('cd docs && make clean html'))
+
+
+#
+# Older stuff that need to be updated or removed
+#
+
+
 def clean(**kwargs):
     "Recurse the directory tree and remove all files matched by .gitignore."
     # passing -delete to find doesn't work for directories, hence xargs rm -r
@@ -76,10 +102,6 @@ def layout(**kwargs):
     options = ' '.join(['='.join(filter(None,i)) for i in kwargs.items()])
     local(r'grep %s \\\(^#\ .*:$\\\)\\\|.*def\ .* fabric.py|' % options
             + 'perl -p -e "s/def /   def /"')
-
-def test():
-    "Run all unit tests."
-    print(local('nosetests -sv', show_stderr=True))
 
 def website():
     "Generates the Fabric website."

@@ -33,6 +33,8 @@
           other method? perhaps inverse -- setting has to be turned on
           explicitly by a library user? or just ensure that e.g. printing,
           exceptions have simple controls for making them shut up?
+    * Regardless of other work in this area, make sure `local` can be
+    configured to print its output without being wrapped in `print` (durr)
 * Continue building out any previously made tests till coverage.py implies we
 have pretty decent coverage (100% would be nice but even a 100% from coverage.py
 doesn't literally mean full coverage...)
