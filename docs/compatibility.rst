@@ -10,84 +10,100 @@ command-line component has also been redone to behave more like a typical Unix
 program.
 
 
-Overview
---------
+Major changes
+=============
 
 You'll want to at least skim the entire document, but the primary changes that
 will need to be made to one's fabfiles are as follows:
 
-* **Imports**: You will need to **explicitly import any and all methods or
-  decorators used**, at the top of your fabfile; they are no longer magically
-  available. Here's a sample fabfile that works with 0.1 and earlier::
+Imports
+-------
 
-    @hosts('a', 'b')
-    def my_task():
-        run('ls /var/www')
-        sudo('mkdir /var/www/newsite')
+You will need to **explicitly import any and all methods or decorators used**,
+at the top of your fabfile; they are no longer magically available. Here's a
+sample fabfile that works with 0.1 and earlier::
 
-  The above fabfile uses `hosts`, `run` and `sudo`, and so in Fabric 0.9 one
-  simply needs to add the following imports::
+     @hosts('a', 'b')
+     def my_task():
+         run('ls /var/www')
+         sudo('mkdir /var/www/newsite')
 
-    from fabric.decorators import hosts
-    from fabric.operations import run, sudo
+The above fabfile uses `hosts`, `run` and `sudo`, and so in Fabric 0.9 one
+simply needs to add the following imports::
 
-    @hosts('a', 'b')
-    def my_task():
-        run('ls /var/www')
-        sudo('mkdir /var/www/newsite')
+     from fabric.decorators import hosts
+     from fabric.operations import run, sudo
+ 
+     @hosts('a', 'b')
+     def my_task():
+         run('ls /var/www')
+         sudo('mkdir /var/www/newsite')
 
-* **Python version**: Fabric started out Python 2.5-only, but became largely
-  2.4 compatible at one point during its lifetime. Fabric is once again **only
-  compatible with Python 2.5 or newer**, in order to take advantage of the
-  various new features and functions available in that version.
+Python version
+--------------
 
-  With this change we're setting an official policy to support the two most
-  recent stable releases of Python, which at time of writing is 2.5 and 2.6. We
-  feel this is a decent compromise between new features and the reality of
-  operating system packaging concerns. Given that most users use Fabric from
-  their workstations, which are typically more up-to-date than servers, we're
-  hoping this doesn't cut out too many folks.
+Fabric started out Python 2.5-only, but became largely
+2.4 compatible at one point during its lifetime. Fabric is once again **only
+compatible with Python 2.5 or newer**, in order to take advantage of the various
+new features and functions available in that version.
 
-  Finally, note that while we will not officially support a 2.4-compatible
-  version or fork, we may provide a link to such a project if one arises.
-* **Environment/config variables**: The ``config`` object previously used to
-  access and set internal state (including Fabric config options) **has been
-  renamed to** :data:`env`, but otherwise remains the same (it allows both
-  dictionary and object-attribute style access to its data.) :data:`env`
-  resides in the :mod:`state` submodule, so where before one might have seen
-  fabfiles like this::
+With this change we're setting an official policy to support the two most recent
+stable releases of Python, which at time of writing is 2.5 and 2.6. We feel this
+is a decent compromise between new features and the reality of operating system
+packaging concerns. Given that most users use Fabric from their workstations,
+which are typically more up-to-date than servers, we're hoping this doesn't cut
+out too many folks.
+
+Finally, note that while we will not officially support a 2.4-compatible
+version or fork, we may provide a link to such a project if one arises.
+
+Environment/config variables
+----------------------------
+
+The ``config`` object previously used to access and set internal state
+(including Fabric config options) **has been renamed to** :data:`env`, but
+otherwise remains the same (it allows both dictionary and object-attribute style
+access to its data.) :data:`env` resides in the :mod:`state` submodule, so where
+before one might have seen fabfiles like this::
 
     def my_task():
         config.foo = 'bar'
 
-  one will now be explicitly importing the object like so::
+one will now be explicitly importing the object like so::
 
     from fabric.state import env
-
+  
     def my_task():
         env.foo = 'bar'
 
-* **Execution mode**: Fabric's default mode of use, in prior versions, was what
-  we called "broad mode": your tasks, as Python code, ran only once, and any
-  calls to functions that made connections (such as `run` or `sudo`) would run
-  once per host in the current host list. We also offered "deep mode", in which
-  your entire task function would run once per host.
+Execution mode
+--------------
 
-  In Fabric 0.9, this dichotomy has been removed, and **"deep mode" is the
-  method Fabric uses to perform all operations**. This allows you to treat your
-  Fabfiles much more like regular Python code, including the use of ``if``
-  statements and so forth, and allows operations like `run` to return the
-  output from the server.
-* **"Lazy" string interpolation**: Because of how Fabric used to run in "broad
-  mode" (see previous bullet point) a special string formatting technique had
-  to be used to allow the current state of execution to be represented in one's
-  operations. **This is no longer necessary and has been removed**. Because
-  your tasks are executed once per host, you may simply refer to e.g.
-  ``env.host`` when building strings.
+Fabric's default mode of use, in prior versions, was what we called "broad
+mode": your tasks, as Python code, ran only once, and any calls to functions
+that made connections (such as `run` or `sudo`) would run once per host in the
+current host list. We also offered "deep mode", in which your entire task
+function would run once per host.
+
+In Fabric 0.9, this dichotomy has been removed, and **"deep mode" is the method
+Fabric uses to perform all operations**. This allows you to treat your Fabfiles
+much more like regular Python code, including the use of ``if`` statements and
+so forth, and allows operations like `run` to unambiguously return the output
+from the server.
+
+"Lazy" string interpolation
+---------------------------
+
+Because of how Fabric used to run in "broad mode" (see previous section) a
+special string formatting technique -- the use of a bash-like dollar sign
+notation, e.g. ``"hostname: $(fab_host)"`` -- had to be used to allow the
+current state of execution to be represented in one's operations. **This is no
+longer necessary and has been removed**. Because your tasks are executed once
+per host, you may simply refer to e.g.  ``env.host`` when building strings.
 
 
 Other backwards-incompatible changes
------------------------------------------------
+====================================
 
 In no particular order:
 
@@ -120,10 +136,9 @@ In no particular order:
     * It will now overwrite pre-existing values in the environment dict, but
       will print a warning to the user if it does so.
     * Additionally, validation used to fire even if the variable already
-      existed in the env dict, and would error if the old value did not fit the
-      new validation -- and would discard the new input regardless! None of
-      this made any sense and could be confusing to users, so it has been
-      removed.
+      existed in the environment dict. This presented a handful of odd
+      behaviors, and has been fixed: `prompt` will now only execute if the
+      requested variable does not have a value in the environment dict. 
     * Also additionally, (and this appeared to be undocumented) the ``default``
       argument could take a callable as well as a string, and would simply set
       the default message to the return value if a callable was given. This
