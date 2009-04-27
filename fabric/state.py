@@ -8,6 +8,7 @@ import socket
 import sys
 from optparse import make_option
 
+from fabric import get_version
 from fabric.utils import abort
 from fabric.network import HostConnectionCache
 
@@ -141,7 +142,7 @@ env_options = [
 # preserving DRY.
 env = _AttributeDict({
     # Version number for --version
-    'version': '0.2.0',
+    'version': get_version(),
     # Filename of Fab settings file
     'settings_file': '.fabricrc',
     'shell': '/bin/bash -l -c',
