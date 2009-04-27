@@ -51,6 +51,7 @@ doesn't literally mean full coverage...)
         appropriate :type: prefixes.
     * Go over old static docs to make sure anything applicable is copied over
     and updated.
+    * Don't forget the top level text files, e.g. INSTALL
 * Run Pylint, fix what it complains about (and generate a config file to make it
 shut up about stuff I don't care about)
 * Make sure "constants" are consistently named: I've been trending towards not
