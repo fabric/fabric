@@ -3,9 +3,9 @@ Internal subroutines for e.g. aborting execution with an error message,
 or performing indenting on multiline output.
 """
 
-from functools import wraps
 import os
 import sys
+import textwrap
 
 
 def abort(msg):
@@ -37,27 +37,15 @@ def indent(text, spaces=4, strip=False):
     preserved, but otherwise things are left-stripped). This allows you to
     effectively "normalize" any previous indentation for some inputs.
     """
-    # Normalize strings into lists of lines
-    if hasattr(text, 'splitlines'):
-        lines = text.splitlines()
-    else:
-        lines = text
+    # Normalize list of strings into a string for dedenting. "list" here means
+    # "not a string" meaning "doesn't have splitlines". Meh.
+    if not hasattr(text, 'splitlines'):
+        text = '\n'.join(text)
+    # Dedent if requested
     if strip:
-        # Find shortest amount of left-facing whitespace
-        shortest = max([len(x) for x in lines])
-        for line in filter(None, lines):
-            whitespace = shortest
-            for index, character in enumerate(line):
-                if not character.isspace():
-                    whitespace = index
-                    break
-            if whitespace < shortest:
-                shortest = whitespace
-        # Cut off that amount from each string in the line (i.e. unindent)
-        lines = [x[whitespace:] for x in lines]
+        text = textwrap.dedent(text)
     prefix = ' ' * spaces
-    # Join lines and indent
-    output = '\n'.join(prefix + line for line in lines)
+    output = '\n'.join(prefix + line for line in text.splitlines())
     # Strip out empty lines before/aft
     output = output.strip()
     # Reintroduce first indent (which just got stripped out)
