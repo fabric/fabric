@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name='Fabric',
-    version=__import__('fabric').get_version(),
+    version=__import__('fabric.version').get_version(),
     description='Fabric is a simple, Pythonic tool for remote execution and deployment.',
     long_description=open('README').read() + """
     

@@ -8,9 +8,9 @@ import socket
 import sys
 from optparse import make_option
 
-from fabric import get_version
 from fabric.utils import abort
 from fabric.network import HostConnectionCache
+from fabric.version import get_version
 
 
 #
