@@ -30,7 +30,7 @@ def indent(text, spaces=4, strip=False):
     Returns text indented by the given number of spaces.
 
     If text is not a string, it is assumed to be a list of lines and will be
-    joined by ``\n`` prior to indenting.
+    joined by ``\\n`` prior to indenting.
 
     When ``strip`` is ``True``, a minimum amount of whitespace is removed from
     the left-hand side of the given string (so that relative indents are

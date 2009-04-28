@@ -19,7 +19,6 @@ The most recent stable version of Fabric is |version| and may be downloaded
 from the :doc:`downloads` page, which also contains previous versions as well
 as installation instructions.
 
-
 Development version
 -------------------
 
@@ -56,14 +55,38 @@ team directly at ``developers [at] fabfile [dot] org``.
     getting prompt feedback, and also allows other users to confirm your bug
     report and thus give it a higher priority.
 
+
 Documentation
 =============
 
 .. toctree::
     :maxdepth: 2
+
+    usage
+    compatibility
+    development
+
+
+Getting Fabric
+==============
+
+.. toctree::
+    :maxdepth: 2
+
+    downloads
+    installation
+    development
+
+
+API
+===
+
+.. toctree::
+    :maxdepth: 2
     :glob:
 
-    *
+    api/*
+
 
 Indices and tables
 ==================
