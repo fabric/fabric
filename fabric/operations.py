@@ -99,8 +99,11 @@ def prompt(name, text, default=None, validate=None):
       ``^`` and ``$``) it will be made so. In other words, the input must fully
       match the regex.
 
-    Either way, ``prompt()`` will re-prompt until validation passes (or the user
+    Either way, `prompt` will re-prompt until validation passes (or the user
     hits ``Ctrl-C``).
+
+    Finally, note that `prompt` will return the obtained value as well as
+    setting it in the environment dict.
     
     Examples::
     
