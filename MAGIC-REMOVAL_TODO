@@ -23,6 +23,9 @@
     * Status info
     * Warnings
     * Errors/failures (both printing info, and how to abort or not abort flow)
+        * Also provide easy access to the return code, regardless of whether
+        Fabric actually fails -- i.e. have some level where the user can
+        inspect return codes and decide on their own whether to abort() or what
     * Exceptions (outside of the ones involved with errors/failures)
     * As mentioned elsewhere, want to make this as flexible as possible
     * Put in logging-to-disk and/or leverage the logging module for stdout too?
