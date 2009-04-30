@@ -3,3 +3,4 @@ from decorators import hosts, roles, runs_once
 from operations import require, prompt, put, get, run, sudo, local
 from state import env
 from utils import abort, warn
+from version import get_version
