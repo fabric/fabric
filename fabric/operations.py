@@ -365,7 +365,7 @@ def local(cmd, show_stderr=False):
 
     ``local()`` is simply a convenience wrapper around the use of ``subprocess``
     with ``shell=True`` activated. If you need to do anything special, consider 
-    using the ``subprocess`` module directly -- Fabric is just Python!
+    using the ``subprocess`` module directly.
 
     ``local()`` will return the contents of the command's stdout as a string.
     Standard error will be discarded by default (so that this command is useful
