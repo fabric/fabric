@@ -200,6 +200,10 @@ def put(local_path, remote_path, mode=None):
         # sadly, I see no better way of doing this
         rmode = None
 
+    # Deal with bad local_path
+    if not glob(local_path):
+        raise ValueError, "'%s' is not a valid local path or glob." % local_path
+
     for lpath in glob(local_path):
         # first, figure out the real, absolute, remote path
         rpath = remote_path
