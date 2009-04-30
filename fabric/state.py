@@ -144,6 +144,9 @@ env_options = [
     # Could default to typical -v/--verbose disabling fab_quiet; or could do
     # multiple levels, e.g. -vvv, OR could specifically enable/disable stuff,
     # e.g. --no-warnings / --no-echo (no echoing commands) / --no-stdout / etc.
+    
+    # TODO: shell-setting option? (or just use --let? an explicit option might
+    # make it slightly easier to handle quote issues...)
 
 ]
 
