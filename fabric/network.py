@@ -14,7 +14,7 @@ import paramiko as ssh
 from utils import abort
 
 
-host_pattern = r'((?P<user>\w+)@)?(?P<host>[\w.]+)(:(?P<port>\d+))?'
+host_pattern = r'((?P<user>\w+)@)?(?P<host>[^:]+)(:(?P<port>\d+))?'
 host_regex = re.compile(host_pattern)
 
 
