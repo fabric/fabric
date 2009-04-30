@@ -113,7 +113,7 @@ env_options = [
     ),
 
     # Username
-    make_option('-u', '--username',
+    make_option('-u', '--user',
         default=_get_system_username(),
         help="username to use when connecting to remote hosts"
     ),

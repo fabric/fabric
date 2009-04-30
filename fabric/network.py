@@ -14,7 +14,7 @@ import paramiko as ssh
 from utils import abort
 
 
-host_pattern = r'((?P<username>\w+)@)?(?P<hostname>[\w.]+)(:(?P<port>\d+))?'
+host_pattern = r'((?P<user>\w+)@)?(?P<host>[\w.]+)(:(?P<port>\d+))?'
 host_regex = re.compile(host_pattern)
 
 
@@ -35,7 +35,7 @@ class HostConnectionCache(dict):
     * ``user@example.com`` - with specific username attached.
     * ``bob@smith.org:222`` - with specific nonstandard port attached.
 
-    When the username is not given, ``env.username`` is used. ``env.username``
+    When the username is not given, ``env.user`` is used. ``env.user``
     defaults to the currently running user at startup but may be overwritten by
     user code or by specifying a command-line flag.
 
@@ -51,12 +51,12 @@ class HostConnectionCache(dict):
     """
     def __getitem__(self, key):
         # Normalize given key (i.e. obtain username and port, if not given)
-        username, hostname, port = normalize(key)
+        user, host, port = normalize(key)
         # Recombine for use as a key.
-        real_key = join_host_strings(username, hostname, port)
+        real_key = join_host_strings(user, host, port)
         # If not found, create new connection and store it
         if real_key not in self:
-            self[real_key] = connect(username, hostname, port)
+            self[real_key] = connect(user, host, port)
         # Return the value either way
         return dict.__getitem__(self, real_key)
 
@@ -68,18 +68,18 @@ def normalize(host_string, omit_port=False):
     If ``omit_port`` is given and is True, only the host and user are returned.
     """
     from state import env
-    # Get user, hostname and port separately
+    # Get user, host and port separately
     r = host_regex.match(host_string).groupdict()
     # Add any necessary defaults in
-    username = r['username'] or env.get('username')
-    hostname = r['hostname']
+    user = r['user'] or env.get('user')
+    host = r['host']
     port = r['port'] or '22'
     if omit_port:
-        return username, hostname
-    return username, hostname, port
+        return user, host
+    return user, host, port
 
 
-def join_host_strings(username, hostname, port=None):
+def join_host_strings(user, host, port=None):
     """
     Turns user/host/port strings into ``user@host:port`` combined string.
 
@@ -92,12 +92,12 @@ def join_host_strings(username, hostname, port=None):
     port_string = ''
     if port:
         port_string = ":%s" % port
-    return "%s@%s%s" % (username, hostname, port_string)
+    return "%s@%s%s" % (user, host, port_string)
 
 
-def connect(username, hostname, port):
+def connect(user, host, port):
     """
-    Create and return a new SSHClient instance connected to given hostname.
+    Create and return a new SSHClient instance connected to given host.
     """
     from state import env
 
@@ -125,7 +125,7 @@ def connect(username, hostname, port):
     while not connected:
         # Attempt connection
         try:
-            client.connect(hostname, int(port), username, password,
+            client.connect(host, int(port), user, password,
                 key_filename=env.key_filename, timeout=10)
             connected = True
             return client
@@ -145,15 +145,15 @@ def connect(username, hostname, port):
             sys.exit(0)
         # Handle timeouts
         except socket.timeout:
-            abort('Error: timed out trying to connect to %s' % hostname)
+            abort('Error: timed out trying to connect to %s' % host)
         # Handle DNS error / name lookup failure
         except socket.gaierror:
-            abort('Error: name lookup failed for %s' % hostname)
+            abort('Error: name lookup failed for %s' % host)
         # Handle generic network-related errors
         # NOTE: In 2.6, socket.error subclasses IOError
         except socket.error, e:
             abort('Low level socket error connecting to host %s: %s' % (
-                hostname, e[1])
+                host, e[1])
             )
 
 
