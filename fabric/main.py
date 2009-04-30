@@ -355,6 +355,13 @@ def main():
             if not fabfile:
                 abort("Couldn't find any fabfiles!")
 
+            # Update env with any overridden option values
+            # NOTE: this must be done prior to loading the fabfile!
+            # Otherwise the defaults override anything set at module level
+            # within the fabfile.
+            for option in env_options:
+                state.env[option.dest] = getattr(options, option.dest)
+
             # Load fabfile and put its commands in the shared commands dict
             commands.update(load_fabfile(fabfile))
 
@@ -390,10 +397,6 @@ def main():
             if unknown_commands:
                 abort("Command(s) not found:\n%s" \
                     % indent(unknown_commands))
-
-            # Update env with any overridden option values
-            for option in env_options:
-                state.env[option.dest] = getattr(options, option.dest)
 
             # At this point all commands must exist, so execute them in order.
             for name, args, kwargs, cli_hosts in commands_to_run:
