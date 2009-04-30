@@ -1,20 +1,34 @@
+"""
+Fabric's own fabfile.
+"""
 
-# fabfile.py - A fabfile for Fabric itself.
-# Copyright (C) 2008  Christian Vest Hansen
+from fabric.operations import local, require, prompt
+
+
 #
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
-# (at your option) any later version.
+# New or updated tasks which are known to work
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+
+def test():
+    """
+    Run all unit tests
+    """
+    # Need show_stderr=True because the interesting output of nosetests is
+    # actually sent to stderr, not stdout.
+    print(local('nosetests -sv', show_stderr=True))
+
+
+def make_docs():
+    """
+    Generate the Sphinx documentation
+    """
+    print(local('cd docs && make clean html'))
+
+
 #
-# You should have received a copy of the GNU General Public License along
-# with this program; if not, write to the Free Software Foundation, Inc.,
-# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+# Older stuff that need to be updated or removed
+#
+
 
 def clean(**kwargs):
     "Recurse the directory tree and remove all files matched by .gitignore."
@@ -88,11 +102,6 @@ def layout(**kwargs):
     options = ' '.join(['='.join(filter(None,i)) for i in kwargs.items()])
     local(r'grep %s \\\(^#\ .*:$\\\)\\\|.*def\ .* fabric.py|' % options
             + 'perl -p -e "s/def /   def /"')
-
-def test():
-    "Run all unit tests."
-    local("cd test && ./gen_tests.py")
-    local("python test/alltests.pyt")
 
 def website():
     "Generates the Fabric website."

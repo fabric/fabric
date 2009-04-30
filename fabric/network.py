@@ -1,0 +1,303 @@
+"""
+Classes and subroutines dealing with network connections and related topics.
+"""
+
+from functools import wraps
+import getpass
+import re
+import threading
+import socket
+import sys
+
+import paramiko as ssh
+
+from utils import abort
+
+
+host_pattern = r'((?P<user>\w+)@)?(?P<host>[^:]+)(:(?P<port>\d+))?'
+host_regex = re.compile(host_pattern)
+
+
+class HostConnectionCache(dict):
+    """
+    Dict subclass allowing for caching of host connections/clients.
+
+    This subclass does not offer any extra methods, but will intelligently
+    create new client connections when keys are requested, or return previously
+    created connections instead.
+
+    Key values are the same as host specifiers throughout Fabric: optional
+    username + ``@``, mandatory hostname, optional ``:`` + port number.
+    Examples:
+
+    * ``example.com`` - typical Internet host address.
+    * ``firewall`` - atypical, but still legal, local host address.
+    * ``user@example.com`` - with specific username attached.
+    * ``bob@smith.org:222`` - with specific nonstandard port attached.
+
+    When the username is not given, ``env.user`` is used. ``env.user``
+    defaults to the currently running user at startup but may be overwritten by
+    user code or by specifying a command-line flag.
+
+    Note that differing explicit usernames for the same hostname will result in
+    multiple client connections being made. For example, specifying
+    ``user1@example.com`` will create a connection to ``example.com``, logged
+    in as ``user1``; later specifying ``user2@example.com`` will create a new,
+    2nd connection as ``user2``.
+    
+    The same applies to ports: specifying two different ports will result in
+    two different connections to the same host being made. If no port is given,
+    22 is assumed, so ``example.com`` is equivalent to ``example.com:22``.
+    """
+    def __getitem__(self, key):
+        # Normalize given key (i.e. obtain username and port, if not given)
+        user, host, port = normalize(key)
+        # Recombine for use as a key.
+        real_key = join_host_strings(user, host, port)
+        # If not found, create new connection and store it
+        if real_key not in self:
+            self[real_key] = connect(user, host, port)
+        # Return the value either way
+        return dict.__getitem__(self, real_key)
+
+
+def normalize(host_string, omit_port=False):
+    """
+    Normalizes a given host string, returning explicit host, user, port.
+
+    If ``omit_port`` is given and is True, only the host and user are returned.
+    """
+    from state import env
+    # Get user, host and port separately
+    r = host_regex.match(host_string).groupdict()
+    # Add any necessary defaults in
+    user = r['user'] or env.get('user')
+    host = r['host']
+    port = r['port'] or '22'
+    if omit_port:
+        return user, host
+    return user, host, port
+
+
+def join_host_strings(user, host, port=None):
+    """
+    Turns user/host/port strings into ``user@host:port`` combined string.
+
+    This function is not responsible for handling missing user/port strings; for
+    that, see the ``normalize`` function.
+
+    If ``port`` is omitted, the returned string will be of the form
+    ``user@host``.
+    """
+    port_string = ''
+    if port:
+        port_string = ":%s" % port
+    return "%s@%s%s" % (user, host, port_string)
+
+
+def connect(user, host, port):
+    """
+    Create and return a new SSHClient instance connected to given host.
+    """
+    from state import env
+
+    #
+    # Initialization
+    #
+
+    # Init client
+    client = ssh.SSHClient()
+    # Load known host keys (e.g. ~/.ssh/known_hosts)
+    client.load_system_host_keys()
+    # Unless user specified not to, accept/add new, unknown host keys
+    if not env.reject_unknown_keys:
+        client.set_missing_host_key_policy(ssh.AutoAddPolicy())
+
+    #
+    # Connection attempt loop
+    #
+
+    # Initialize loop variables
+    connected = False
+    password = env.password
+
+    # Loop until successful connect (keep prompting for new password)
+    while not connected:
+        # Attempt connection
+        try:
+            client.connect(host, int(port), user, password,
+                key_filename=env.key_filename, timeout=10)
+            connected = True
+            return client
+        # Prompt for new password to try on auth failure
+        except (ssh.AuthenticationException, ssh.SSHException):
+            # TODO: tie this into global prompting (i.e. right now both uses of
+            # prompt_for_password() do the same "if not env.password" stuff.
+            # may want to roll that into prompt_for_password() itself?
+            password = prompt_for_password(None, password)
+            # Update env.password if it was empty
+            if not env.password:
+                env.password = password
+        # Ctrl-D / Ctrl-C for exit
+        except (EOFError, TypeError):
+            # Print a newline (in case user was sitting at prompt)
+            print('')
+            sys.exit(0)
+        # Handle timeouts
+        except socket.timeout:
+            abort('Timed out trying to connect to %s' % host)
+        # Handle DNS error / name lookup failure
+        except socket.gaierror:
+            abort('Name lookup failed for %s' % host)
+        # Handle generic network-related errors
+        # NOTE: In 2.6, socket.error subclasses IOError
+        except socket.error, e:
+            abort('Low level socket error connecting to host %s: %s' % (
+                host, e[1])
+            )
+
+
+def prompt_for_password(output=None, previous_password=None):
+    """
+    Prompts for and returns a new password if required; otherwise, returns None.
+
+    ``output`` should be a string and is typically going to be the current
+    chunk of text obtained from the remote server. It is searched for a couple
+    of potential prompt strings (including the env variable
+    ``env.sudo_prompt``) and, if found, will prompt the user for a password.
+
+    Alternately, ``output`` may be None, implying that the password should
+    always be prompted for, such as in the case of initial SSH connection
+    (where "prompt for a password" is denoted by catching an exception, instead
+    of detecting a prompt.)
+
+    ``previous_password`` should be the last known password, and is typically
+    "primed" with ``env.password``, though it may be empty or None if
+    ``env.password`` was not set and no password has previously been entered
+    during this session.
+
+    When non-empty, ``previous_password`` will be used as a default if the user
+    hits Enter without entering a new password, and the displayed password
+    prompt will reflect this.
+
+    If the user supplies an empty password **and** ``previous_password`` is
+    also empty, the user will be re-prompted immediately. Thus, this function
+    will never return the empty string, avoiding a potential pitfall of having
+    two False-evaluating return values meaning two different things.
+    """
+    from state import env
+    # TODO: tie all of this into global/centralized prompt detection
+    # Short-circuit if no password prompt found in output
+    if (output is not None
+        and not re.findall(r'^%s$' % env.sudo_prompt, output, re.I|re.M)):
+        return
+    # Construct the prompt we will display to the user (using host if available)
+    if 'host' in env:
+        base_password_prompt = "Password for %s" % join_host_strings(*normalize(
+            env.host, omit_port=True))
+    else:
+        base_password_prompt = "Password"
+    password_prompt = base_password_prompt
+    if previous_password:
+        password_prompt += " [Enter for previous]"
+    password_prompt += ": "
+    # Get new password value
+    new_password = getpass.getpass(password_prompt)
+    # See if user wants us to use the previous password and return right away
+    # if so.
+    if (not new_password) and previous_password:
+        return previous_password
+    # Otherwise, loop until user gives us a non-empty password (to prevent
+    # returning the empty string, and to avoid unnecessary network overhead.)
+    while not new_password:
+        print("Sorry, you can't enter an empty password. Please try again.")
+        password_prompt = base_password_prompt + ": "
+        new_password = getpass.getpass(password_prompt)
+    return new_password
+
+
+def output_thread(prefix, chan, stderr=False, capture=None):
+    """
+    Generates a thread/function capable of reading and optionally capturing
+    input from the given channel object ``chan``. ``stderr`` determines whether
+    the channel's stdout or stderr is the focus of this particular thread.
+    """
+    from state import env
+
+    def outputter(prefix, chan, stderr, capture):
+        # Read one "packet" at a time, which lets us get less-than-a-line
+        # chunks of text, such as sudo prompts. However, we still print
+        # them to the user one line at a time. (We also eat sudo prompts.)
+        leftovers = ""
+        password = env.password
+        if stderr:
+            recv = chan.recv_stderr
+        else:
+            recv = chan.recv
+        out = recv(65535)
+        while out != '':
+            # Capture if necessary
+            if capture is not None:
+                capture += out
+            # Handle any password prompts (storing in current-session password)
+            password = prompt_for_password(out, password)
+            # prompt_for_password() returns None if no prompt was found; thus
+            # if the password is NOT None, we were prompted and have to inform
+            # the remote server of what the user supplied.
+            if password is not None:
+                # Communicate "upstream" to env if env.password was empty
+                if not env.password:
+                    env.password = password
+                # Send password down the pipe
+                chan.sendall(password + '\n')
+                out = ""
+            # Deal with line breaks, printing all lines and storing the
+            # leftovers, if any.
+            if '\n' in out:
+                parts = out.split('\n')
+                line = leftovers + parts.pop(0)
+                leftovers = parts.pop()
+                while parts or line:
+                    # TODO: tie in with global output controls
+                    if not env.quiet:
+                        sys.stdout.write("%s: %s\n" % (prefix, line)),
+                        sys.stdout.flush()
+                    if parts:
+                        line = parts.pop(0)
+                    else:
+                        line = ""
+            else: # add to leftovers buffer
+                leftovers += out
+            # Get next handful of bytes and continue the loop
+            out = recv(65535)
+    thread = threading.Thread(None, outputter, prefix,
+        (prefix, chan, stderr, capture))
+    thread.setDaemon(True)
+    thread.start()
+    return thread
+
+
+def needs_host(func):
+    """
+    Prompt user for value of ``env.host`` when ``env.host`` is empty.
+
+    This decorator is basically a safety net for silly users who forgot to
+    specify the host/host list in one way or another. It should be used to wrap
+    operations which require a network connection.
+    
+    Due to how we execute commands per-host in ``main()``, it's not possible to
+    specify multiple hosts at this point in time, so only a single host will be
+    prompted for.
+
+    Because this decorator sets ``env.host``, it will prompt once (and only
+    once) per command. As ``main()`` clears ``env.host`` between commands, this
+    decorator will also end up prompting the user once per command (in the case
+    where multiple commands have no hosts set, of course.)
+    """
+    from state import env
+    @wraps(func)
+    def host_prompting_wrapper(*args, **kwargs):
+        while not env.get('host', False):
+            env.host = raw_input("No hosts found. Please specify (single) host string for connection: ")
+        return func(*args, **kwargs)
+    return host_prompting_wrapper
