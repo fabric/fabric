@@ -132,6 +132,12 @@ env_options = [
         help="path to SSH private key file. May be repeated."
     ),
 
+    # Fabfile name to look for
+    make_option('-f', '--fabfile',
+        default='fabfile.py',
+        help="name of fabfile to load, e.g. 'fabfile.py' or '../other.py'"
+    ),
+
     # Default error-handling behavior
     make_option('-w', '--warn-only',
         action='store_false',

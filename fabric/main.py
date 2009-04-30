@@ -15,21 +15,15 @@ import os
 import sys
 import textwrap
 
-import decorators
-import operations
+import fabric # For checking fabfile callables against Fabric's public functions
 import state # For easily-mockable access to roles, env and etc
 from state import commands, env_options, win32
-import utils # For easy checking of fabfile callables against internals
 from utils import abort, indent, warn
 
 
 # One-time calculation of "all internal callables" to avoid doing this on every
 # check of a given fabfile callable (in is_task())
-_mods = [decorators, operations, utils]
-_internals = reduce(lambda x, y: x + filter(callable, vars(y).values()),
-    _mods,
-    []
-)
+_internals = filter(callable, vars(fabric).values())
 
 
 def rc_path():
@@ -62,26 +56,36 @@ def load_settings(path):
 
 def find_fabfile():
     """
-    Attempt to locate a fabfile in current or parent directories.
+    Attempt to locate a fabfile, either explicitly or by searching parent dirs.
 
-    Fabfiles are defined as files named ``fabfile.py`` or ``Fabfile.py``. The
-    ``.py`` extension is required, as fabfile loading (both by ``fab`` and by
-    fabfiles which need other sub-fabfiles) is done via importing, not exec.
+    Uses the value of ``env.fabfile``, which defaults to ``fabfile.py``,
+    as the target of the search. This may be overridden on the command line.
 
-    Order of search is lowercase filename, capitalized filename, in current
-    working directory (where ``fab`` was invoked) and then each parent directory
-    in turn.
+    If ``env.fabfile`` contains path elements other than a filename (e.g.
+    ``../fabfile.py`` or ``dir1/dir2/other.py``) it will be treated as a file
+    path and directly checked for existence without any sort of searching. When
+    in this mode, tile-expansion will be applied, so one may refer to e.g.
+    ``~/special_fabfile.py``.
 
-    Returns absolute path to first match, or None if no match found.
+    Either way, `find_fabfile` will return an absolute path if a file is found,
+    or None otherwise.
     """
-    guesses = ['fabfile.py', 'Fabfile.py']
-    path = '.'
-    # Stop before falling off root of filesystem (should be platform agnostic)
-    while os.path.split(os.path.abspath(path))[1]:
-        found = filter(lambda x: os.path.exists(os.path.join(path, x)), guesses)
-        if found:
-            return os.path.abspath(os.path.join(path, found[0]))
-        path = os.path.join('..', path)
+    if os.path.dirname(state.env.fabfile):
+        expanded = os.path.expanduser(state.env.fabfile)
+        if os.path.exists(expanded):
+            return os.path.abspath(expanded)
+        else:
+            return None
+    else:
+        path = '.'
+        # Stop before falling off root of filesystem (should be platform
+        # agnostic)
+        while os.path.split(os.path.abspath(path))[1]:
+            joined = os.path.join(path, state.env.fabfile)
+            if os.path.exists(joined):
+                return os.path.abspath(joined)
+            path = os.path.join('..', path)
+        return None
 
 
 def is_task(tup):
@@ -342,6 +346,12 @@ def main():
             # Parse command line options
             parser, options, arguments = parse_options()
 
+            # Update env with any overridden option values
+            # NOTE: This needs to remain the first thing that occurs
+            # post-parsing, since so many things hinge on the values in env.
+            for option in env_options:
+                state.env[option.dest] = getattr(options, option.dest)
+
             # Handle version number option
             if options.show_version:
                 print "Fabric " + state.env.version
@@ -355,14 +365,12 @@ def main():
             if not fabfile:
                 abort("Couldn't find any fabfiles!")
 
-            # Update env with any overridden option values
-            # NOTE: this must be done prior to loading the fabfile!
-            # Otherwise the defaults override anything set at module level
-            # within the fabfile.
-            for option in env_options:
-                state.env[option.dest] = getattr(options, option.dest)
+            # Store absolute path to fabfile in case anyone needs it
+            state.env.real_fabfile = fabfile
 
-            # Load fabfile and put its commands in the shared commands dict
+            # Load fabfile (which calls its module-level code, including
+            # tweaks to env values) and put its commands in the shared commands
+            # dict
             commands.update(load_fabfile(fabfile))
 
             # Abort if no commands found
