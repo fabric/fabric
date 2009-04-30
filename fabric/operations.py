@@ -13,6 +13,33 @@ from state import env, connections
 from utils import abort, indent, warn
 
 
+def _handle_failure(message, exception=None):
+    """
+    Call `abort` or `warn` with the given message.
+
+    The value of ``env.abort_on_failure`` determines which method is called.
+
+    If ``exception`` is given, it is inspected to get a string message, which
+    is printed alongside the user-generated ``message``.
+    """
+    func = env.abort_on_failure and abort or warn
+    if exception is not None:
+        # Figure out how to get a string out of the exception; EnvironmentError
+        # subclasses, for example, "are" integers and .strerror is the string.
+        # Others "are" strings themselves. May have to expand this further for
+        # other error types.
+        if hasattr(exception, 'strerror'):
+            underlying_msg = exception.strerror
+        else:
+            underlying_msg = exception
+        func("%s\n\nUnderlying exception message:\n%s" % (
+            message,
+            indent(underlying_msg)
+        ))
+    else:
+        func(message)
+
+
 # Can't wait till Python versions supporting 'def func(*args, foo=bar)' become
 # widespread :(
 def require(*keys, **kwargs):
@@ -210,17 +237,22 @@ def put(local_path, remote_path, mode=None):
         if rmode is not None and stat.S_ISDIR(rmode):
             rpath = os.path.join(rpath, os.path.basename(lpath))
         
-        # then upload
         # TODO: tie this into global output controls
         print("[%s] put: %s -> %s" % (env.host, lpath, rpath))
-        rattrs = ftp.put(lpath, rpath)
-        
-        # and finally set the file mode
-        lmode = mode or os.stat(lpath).st_mode
-        if lmode != rattrs.st_mode:
-            ftp.chmod(rpath, lmode)
-
-    ftp.close()
+        # Try to catch raised exceptions (which is the only way to tell if
+        # this operation had problems; there's no return code) during upload
+        try:
+            # Actually do the upload
+            rattrs = ftp.put(lpath, rpath)
+            # and finally set the file mode
+            lmode = mode or os.stat(lpath).st_mode
+            if lmode != rattrs.st_mode:
+                ftp.chmod(rpath, lmode)
+        except Exception, e:
+            msg = "put() encountered an exception while uploading '%s'"
+            _handle_failure(message=msg % lpath, underlying=e)
+        finally:
+            ftp.close()
 
 
 @needs_host
@@ -246,8 +278,14 @@ def get(remote_path, local_path):
     remote_path = remote_path
     # TODO: tie this into global output controls
     print("[%s] download: %s <- %s" % (env.host, local_path, remote_path))
-    ftp.get(remote_path, local_path)
-    ftp.close()
+    # Handle any raised exceptions (no return code to inspect here)
+    try:
+        ftp.get(remote_path, local_path)
+    except Exception, e:
+        msg = "get() encountered an exception while downloading '%s'" 
+        _handle_failure(message=msg % remote_path, exception=e)
+    finally:
+        ftp.close()
 
 
 @needs_host
@@ -260,11 +298,15 @@ def run(command, shell=True):
     controlled by setting ``env.shell`` (defaulting to something similar to
     ``/bin/bash -l -c "<command>"``.) Any double-quote (``"``) characters in
     ``command`` will be automatically escaped when ``shell`` is True.
-   
-    Example::
+
+    `run` will return the result of the remote program's stdout as a
+    single (likely multiline) string.
+
+    Examples::
     
         run("ls /var/www/")
         run("ls /home/myuser", shell=False)
+        output = run('ls /var/www/site1')
     
     """
     real_command = command
@@ -290,11 +332,19 @@ def run(command, shell=True):
     status = channel.recv_exit_status()
     channel.close()
     
-    # Like in sudo()
+    # Wait for threads to exit so we aren't left with stale threads
     out_thread.join()
     err_thread.join()
 
-    return "".join(capture).strip()
+    # Assemble output string
+    output = "".join(capture).strip()
+
+    # Error handling
+    if status != 0:
+        msg = "run() encountered an error (return code %s) while executing '%s'" % (status, command)
+        _handle_failure(message=msg)
+
+    return output
 
 
 @needs_host
@@ -311,11 +361,15 @@ def sudo(command, shell=True, user=None):
     On most systems, the ``sudo`` program can take a string username or an
     integer userid (uid); ``user`` may likewise be a string or an int.
        
+    `sudo` will return the result of the remote program's stdout as a
+    single (likely multiline) string.
+
     Examples::
     
         sudo("~/install_script.py")
         sudo("mkdir /var/www/new_docroot", user="www-data")
         sudo("ls /home/jdoe", user=1001)
+        result = sudo("ls /tmp/")
     
     """
     # Construct sudo command, with user if necessary
@@ -356,10 +410,18 @@ def sudo(command, shell=True, user=None):
     out_thread.join()
     err_thread.join()
 
-    return "".join(capture).strip()
+    # Assemble stdout string
+    output = "".join(capture).strip()
+
+    # Error handling
+    if status != 0:
+        msg = "sudo() encountered an error (return code %s) while executing '%s'" % (status, command)
+        _handle_failure(message=msg)
+
+    return output
 
 
-def local(cmd, show_stderr=False):
+def local(command, show_stderr=False):
     """
     Run a command on the local system.
 
@@ -373,13 +435,17 @@ def local(cmd, show_stderr=False):
     will cause standard error to print to your local terminal.
     """
     # TODO: tie this into global output controls
-    print("[localhost] run: " + cmd)
+    print("[localhost] run: " + command)
     PIPE = subprocess.PIPE
     # stderr of None == inherit file handles from parent == goes to terminal
     if show_stderr:
-        p = subprocess.Popen([cmd], shell=True, stdout=PIPE)
+        p = subprocess.Popen([command], shell=True, stdout=PIPE)
     # stderr of PIPE == goes to file object == we can then ignore it
     else:
-        p = subprocess.Popen([cmd], shell=True, stdout=PIPE, stderr=PIPE)
+        p = subprocess.Popen([command], shell=True, stdout=PIPE, stderr=PIPE)
     (stdout, stderr) = p.communicate()
+    # Handle error condition
+    if p.returncode != 0:
+        msg = "local() encountered an error (return code %s) while executing '%s'" % (p.returncode, command)
+        _handle_failure(message=msg)
     return stdout

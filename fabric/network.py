@@ -6,9 +6,12 @@ from functools import wraps
 import getpass
 import re
 import threading
+import socket
 import sys
 
 import paramiko as ssh
+
+from utils import abort
 
 
 host_pattern = r'((?P<username>\w+)@)?(?P<hostname>[\w.]+)(:(?P<port>\d+))?'

@@ -15,11 +15,12 @@ import os
 import sys
 import textwrap
 
-from state import commands, env_options, win32
 import decorators
-import state # For easily-mockable access to roles, env and etc
 import operations
-import utils
+import state # For easily-mockable access to roles, env and etc
+from state import commands, env_options, win32
+import utils # For easy checking of fabfile callables against internals
+from utils import abort, indent, warn
 
 
 # One-time calculation of "all internal callables" to avoid doing this on every
@@ -206,18 +207,18 @@ def list_commands():
         # Or nothing (so just the name)
         else:
             output = name
-        print(utils.indent(output))
+        print(indent(output))
     sys.exit(0)
 
 
 def show_command(command):
     # Sanity check
     if command not in commands:
-        utils.abort("Command '%s' not found, exiting." % command)
+        abort("Command '%s' not found, exiting." % command)
     # Print out nicely presented docstring
     print("Displaying detailed information for command '%s':" % command)
     print('')
-    print(utils.indent(commands[command].__doc__, strip=True))
+    print(indent(commands[command].__doc__, strip=True))
     print('')
     sys.exit(0)
 
@@ -352,7 +353,7 @@ def main():
             # Find local fabfile path or abort
             fabfile = find_fabfile()
             if not fabfile:
-                utils.abort("Couldn't find any fabfiles!")
+                abort("Couldn't find any fabfiles!")
 
             # Load fabfile and put its commands in the shared commands dict
             commands.update(load_fabfile(fabfile))
@@ -361,7 +362,7 @@ def main():
             # TODO: continue searching for fabfiles if one we selected doesn't
             # contain any callables? Bit of an edge case, but still...
             if not commands:
-                utils.abort("Fabfile didn't contain any commands!")
+                abort("Fabfile didn't contain any commands!")
 
             # Handle list-commands option (now that commands are loaded)
             if options.list_commands:
@@ -387,8 +388,8 @@ def main():
 
             # Abort if any unknown commands were specified
             if unknown_commands:
-                utils.abort("Command(s) not found:\n%s" \
-                    % utils.indent(unknown_commands))
+                abort("Command(s) not found:\n%s" \
+                    % indent(unknown_commands))
 
             # Update env with any overridden option values
             for option in env_options:
@@ -411,14 +412,16 @@ def main():
                     commands[name](*args, **kwargs)
                 # Clear env.host so it doesn't "bleed" into other commands
                 state.env.host = None
+            # If we got here, no errors occurred, so print a final note.
+            print("\nDone.")
         finally:
             # TODO: explicit disconnect?
-            print("\nDone.")
+            pass
     except SystemExit:
         # a number of internal functions might raise this one.
         raise
     except KeyboardInterrupt:
-        print("Stopped.")
+        print >>sys.stderr, "\nStopped."
         sys.exit(1)
     except:
         sys.excepthook(*sys.exc_info())

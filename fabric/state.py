@@ -115,13 +115,13 @@ env_options = [
     # Username
     make_option('-u', '--username',
         default=_get_system_username(),
-        help='username to use when connecting to remote hosts'
+        help="username to use when connecting to remote hosts"
     ),
 
     # Password
     make_option('-p', '--password',
         default=None,
-        help='password for use with authentication and/or sudo'
+        help="password for use with authentication and/or sudo"
     ),
 
     # Private key file
@@ -129,9 +129,16 @@ env_options = [
         action='append',
         dest='key_filename',
         default=None,
-        help='path to SSH private key file. May be repeated.'
-    )
+        help="path to SSH private key file. May be repeated."
+    ),
 
+    # Default error-handling behavior
+    make_option('-w', '--warn-only',
+        action='store_false',
+        dest='abort_on_failure',
+        default=True,
+        help="warn, instead of abort, when commands fail"
+    )
 
     # TODO: verbosity selection (sets state var(s) used when printing)
     # Could default to typical -v/--verbose disabling fab_quiet; or could do
