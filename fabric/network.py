@@ -145,10 +145,10 @@ def connect(user, host, port):
             sys.exit(0)
         # Handle timeouts
         except socket.timeout:
-            abort('Error: timed out trying to connect to %s' % host)
+            abort('Timed out trying to connect to %s' % host)
         # Handle DNS error / name lookup failure
         except socket.gaierror:
-            abort('Error: name lookup failed for %s' % host)
+            abort('Name lookup failed for %s' % host)
         # Handle generic network-related errors
         # NOTE: In 2.6, socket.error subclasses IOError
         except socket.error, e:
