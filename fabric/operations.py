@@ -2,12 +2,16 @@
 Functions to be used in fabfiles and other non-core code, such as run()/sudo().
 """
 
+from __future__ import with_statement
+
 from glob import glob
 import os
+import os.path
 import re
 import stat
 import subprocess
 
+from context_managers import warnings_only
 from network import output_thread, needs_host
 from state import env, connections
 from utils import abort, indent, warn
@@ -38,6 +42,14 @@ def _handle_failure(message, exception=None):
         ))
     else:
         func(message)
+
+
+class _AttributeString(str):
+    """
+    Simple string subclass to allow arbitrary attribute access.
+    """
+    pass
+
 
 
 # Can't wait till Python versions supporting 'def func(*args, foo=bar)' become
@@ -202,10 +214,16 @@ def put(local_path, remote_path, mode=None):
     
     ``local_path`` may be a relative or absolute local file path, and may
     contain shell-style wildcards, as understood by the Python ``glob`` module.
+    Tilde expansion (as implemented by ``os.path.expanduser``) is also
+    performed.
 
     ``remote_path`` may also be a relative or absolute location, but applied to
     the remote host. Relative paths are relative to the remote user's home
     directory.
+
+    Fabric will attempt to discern the remote user's home directory in order to
+    perform tilde expansion for ``remote_path``, so you may specify remote paths
+    such as ``~/.ssh/``.
 
     By default, the file mode is preserved by put when uploading. But you can
     also set the mode explicitly by specifying an additional ``mode`` keyword
@@ -221,33 +239,43 @@ def put(local_path, remote_path, mode=None):
     """
     ftp = connections[env.host].open_sftp()
 
+    # Do jury-rigged tilde expansion, but only if we can do it nicely.
+    # TODO: tie into global output controls -- as a user! (i.e. hide all output
+    # from this chunk below if possible)
+    with warnings_only():
+        cwd = run('pwd')
+    if not cwd.failed:
+        remote_path = remote_path.replace('~', cwd)
+
     try:
         rmode = ftp.lstat(remote_path).st_mode
     except:
         # sadly, I see no better way of doing this
         rmode = None
 
+    # Expand local tildes and get globs
+    globs = glob(os.path.expanduser(local_path))
+
     # Deal with bad local_path
-    if not glob(local_path):
+    if not globs:
         raise ValueError, "'%s' is not a valid local path or glob." % local_path
 
-    for lpath in glob(local_path):
+    for lpath in globs:
         # first, figure out the real, absolute, remote path
-        rpath = remote_path
         if rmode is not None and stat.S_ISDIR(rmode):
-            rpath = os.path.join(rpath, os.path.basename(lpath))
+            rpath = os.path.join(remote_path, os.path.basename(lpath))
         
         # TODO: tie this into global output controls
-        print("[%s] put: %s -> %s" % (env.host, lpath, rpath))
+        print("[%s] put: %s -> %s" % (env.host, lpath, remote_path))
         # Try to catch raised exceptions (which is the only way to tell if
         # this operation had problems; there's no return code) during upload
         try:
             # Actually do the upload
-            rattrs = ftp.put(lpath, rpath)
+            rattrs = ftp.put(lpath, remote_path)
             # and finally set the file mode
             lmode = mode or os.stat(lpath).st_mode
             if lmode != rattrs.st_mode:
-                ftp.chmod(rpath, lmode)
+                ftp.chmod(remote_path, lmode)
         except Exception, e:
             msg = "put() encountered an exception while uploading '%s'"
             _handle_failure(message=msg % lpath, underlying=e)
@@ -300,7 +328,9 @@ def run(command, shell=True):
     ``command`` will be automatically escaped when ``shell`` is True.
 
     `run` will return the result of the remote program's stdout as a
-    single (likely multiline) string.
+    single (likely multiline) string. This string will exhibit a ``failed``
+    boolean attribute specifying whether the command failed or succeeded, and
+    will also include the return code as the ``return_code`` attribute.
 
     Examples::
     
@@ -337,13 +367,18 @@ def run(command, shell=True):
     err_thread.join()
 
     # Assemble output string
-    output = "".join(capture).strip()
+    output = _AttributeString("".join(capture).strip())
 
     # Error handling
+    output.failed = False
     if status != 0:
+        output.failed = True
         msg = "run() encountered an error (return code %s) while executing '%s'" % (status, command)
         _handle_failure(message=msg)
 
+    # Attach return code to output string so users who have set things to warn
+    # only, can inspect the error code.
+    output.return_code = status
     return output
 
 
@@ -362,7 +397,9 @@ def sudo(command, shell=True, user=None):
     integer userid (uid); ``user`` may likewise be a string or an int.
        
     `sudo` will return the result of the remote program's stdout as a
-    single (likely multiline) string.
+    single (likely multiline) string. This string will exhibit a ``failed``
+    boolean attribute specifying whether the command failed or succeeded, and
+    will also include the return code as the ``return_code`` attribute.
 
     Examples::
     
@@ -411,13 +448,17 @@ def sudo(command, shell=True, user=None):
     err_thread.join()
 
     # Assemble stdout string
-    output = "".join(capture).strip()
+    output = _AttributeString("".join(capture).strip())
 
     # Error handling
+    output.failed = False
     if status != 0:
+        output.failed = True
         msg = "sudo() encountered an error (return code %s) while executing '%s'" % (status, command)
         _handle_failure(message=msg)
 
+    # Attach return code for convenience
+    output.return_code = status
     return output
 
 
