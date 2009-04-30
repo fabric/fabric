@@ -127,5 +127,7 @@ basically just a nicer `raw_input`, but still.)
 laggy.
 * Fab -l is pretty slow for nontrivial fabfiles (though this may be a general
 "main.main() is slow with nontrivial fabfiles" issue), fix this.
+* Possibly allow "aliases" in `env`, i.e. user/username are treated as being the
+same key to limit possible confusion.
 
 <!-- vim:set filetype=mkd : -->
