@@ -73,10 +73,10 @@ def rsync_project(remote_dir, local_dir=None, exclude=[], delete=False,
         local_dir = '../' + getcwd().split(sep)[-1]
     # Create and run final command string
     cmd = "rsync %s %s %s@%s:%s" % (options, local_dir, env.user,
-        env.host, remote_dir)
+        env.hostname, remote_dir)
     # TODO: tie into global output controls
     print("[%s] rsync_project: %s" % (env.host, cmd))
-    return local(cmd)
+    return local(cmd, show_stderr=True)
 
 
 def upload_project():

@@ -16,6 +16,7 @@ import sys
 import textwrap
 
 from fabric import api # For checking callables against the API 
+from network import normalize
 import state # For easily-mockable access to roles, env and etc
 from state import commands, env_options, win32
 from utils import abort, indent, warn
@@ -416,7 +417,11 @@ def main():
                 hosts = get_hosts(cli_hosts, command)
                 # If hosts found, execute the function on each host in turn
                 for host in hosts:
+                    username, hostname, port = normalize(host)
                     state.env.host = host
+                    state.env.hostname = hostname
+                    state.env.username = username
+                    state.env.port = port
                     commands[name](*args, **kwargs)
                 # If no hosts found, assume local-only and run once
                 if not hosts:
