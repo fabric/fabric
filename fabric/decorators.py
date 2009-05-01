@@ -41,7 +41,7 @@ def roles(*role_list):
         env.webserver = ['www1', 'www2']
         env.dbserver = ['db1']
 
-        @hosts('webserver', 'dbserver')
+        @roles('webserver', 'dbserver')
         def my_func():
             pass
 
