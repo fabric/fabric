@@ -131,5 +131,7 @@ same key to limit possible confusion.
 emails for previous discussion)
 * Setup.py needs tweaking to deal with building eggs (at least) such that e.g.
 fabric.contrib doesn't get left out by mistake. See github mail from zirpu.
+* Try using `/usr/bin/env bash` instead of `/bin/bash` to handle systems where
+bash isn't in `/bin/`.
 
 <!-- vim:set filetype=mkd : -->
