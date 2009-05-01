@@ -15,7 +15,7 @@ import os
 import sys
 import textwrap
 
-import fabric # For checking fabfile callables against Fabric's public functions
+from fabric import api # For checking callables against the API 
 import state # For easily-mockable access to roles, env and etc
 from state import commands, env_options, win32
 from utils import abort, indent, warn
@@ -23,7 +23,7 @@ from utils import abort, indent, warn
 
 # One-time calculation of "all internal callables" to avoid doing this on every
 # check of a given fabfile callable (in is_task())
-_internals = filter(callable, vars(fabric).values())
+_internals = filter(callable, vars(api).values())
 
 
 def rc_path():
