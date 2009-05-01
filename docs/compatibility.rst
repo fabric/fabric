@@ -31,13 +31,17 @@ sample fabfile that works with 0.1 and earlier::
 The above fabfile uses `hosts`, `run` and `sudo`, and so in Fabric 0.9 one
 simply needs to add the following imports::
 
-     from fabric.decorators import hosts
-     from fabric.operations import run, sudo
+     from fabric.api import hosts, run, sudo
  
      @hosts('a', 'b')
      def my_task():
          run('ls /var/www')
          sudo('mkdir /var/www/newsite')
+
+You may, if you wish, use ``from fabric.api import *``, though this is
+technically not Python best practices; or you may import directly from the
+Fabric submodules if you desire (e.g. ``from fabric.decorators import hosts``.)
+See :doc:`usage` for a permanent version of this information.
 
 Python version
 --------------

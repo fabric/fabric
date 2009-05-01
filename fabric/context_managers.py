@@ -25,7 +25,7 @@ def warnings_only():
 
         def my_task():
             run('/not/gonna/happen')
-
+    
     However, with the use of `warnings_only`, the same call is guaranteed to
     warn only, and will never halt execution of the program:: 
 
@@ -38,8 +38,8 @@ def warnings_only():
         and not a context manager itself.
 
     .. note:: Remember that on Python 2.5, you will need to start your fabfile
-    with ``from __future__ import with_statement`` in order to make use of this
-    feature.
+        with ``from __future__ import with_statement`` in order to make use of
+        this feature.
 
     """
     previous = env.abort_on_failure

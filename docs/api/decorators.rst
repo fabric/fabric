@@ -3,4 +3,4 @@ Decorators
 ==========
 
 .. automodule:: fabric.decorators
-    :members:
+    :members: hosts, roles, runs_once

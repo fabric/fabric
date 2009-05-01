@@ -2,6 +2,14 @@
 Fabric
 ======
 
+Work in progress!
+=================
+
+This website and its documentation are still being written and updated during
+Fabric 0.9's alpha and beta periods. We are providing them to you now because
+any documentation is better than no documentation, but please keep in mind that
+many things here are subject to change or may lack documentation.
+
 
 About
 =====
@@ -9,15 +17,17 @@ About
 .. include:: ../README
 
 
-Download
-========
+Download/Installation
+=====================
 
 Latest stable version
 ---------------------
 
-The most recent stable version of Fabric is |version| and may be downloaded
-from the :doc:`downloads` page, which also contains previous versions as well
-as installation instructions.
+The most recent stable version of Fabric is |release|. The recommended
+installation method is to use ``easy_install`` or ``pip``; or you may download
+TGZ or ZIP archives from `the Fabric cgit page <http://git.fabfile.org>`_.
+Detailed install instructions for any of these methods can be found on the
+:doc:`installation` page.
 
 Development version
 -------------------
@@ -73,7 +83,6 @@ Getting Fabric
 .. toctree::
     :maxdepth: 2
 
-    downloads
     installation
     development
 
