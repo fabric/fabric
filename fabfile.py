@@ -2,7 +2,8 @@
 Fabric's own fabfile.
 """
 
-from fabric.operations import local, require, prompt
+from fabric.api import *
+from fabric.contrib import rsync_project
 
 
 #
@@ -18,15 +19,22 @@ def test():
     print(local('nosetests -sv', show_stderr=True))
 
 
-def make_docs():
+def build_docs():
     """
     Generate the Sphinx documentation
     """
-    print(local('cd docs && make clean html'))
+    print(local('cd docs && make clean html', show_stderr=True))
+
+
+@hosts('jforcier@fabfile.org')
+def push_docs():
+    build_docs()
+    rsync_project('/var/www/fabfile/', 'docs/_build/html/', delete=True)
+
 
 
 #
-# Older stuff that need to be updated or removed
+# Older stuff that needs to be updated or removed
 #
 
 
