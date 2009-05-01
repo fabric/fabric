@@ -103,7 +103,8 @@ special string formatting technique -- the use of a bash-like dollar sign
 notation, e.g. ``"hostname: $(fab_host)"`` -- had to be used to allow the
 current state of execution to be represented in one's operations. **This is no
 longer necessary and has been removed**. Because your tasks are executed once
-per host, you may simply refer to e.g.  ``env.host`` when building strings.
+per host, you may simply refer to e.g.  ``env.host_string`` (or ``env.host``,
+``env.user`` and so forth)  when building strings.
 
 
 Other backwards-incompatible changes

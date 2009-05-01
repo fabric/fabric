@@ -419,16 +419,24 @@ def main():
                 # If hosts found, execute the function on each host in turn
                 for host in hosts:
                     username, hostname, port = normalize(host)
-                    state.env.host = host
-                    state.env.hostname = hostname
-                    state.env.username = username
+                    state.env.host_string = host
+                    state.env.host = hostname
+                    # Preserve user
+                    prev_user = state.env.user
+                    state.env.user = username
                     state.env.port = port
+                    # Actually run command
                     commands[name](*args, **kwargs)
+                    # Put old user back
+                    state.env.user = prev_user
                 # If no hosts found, assume local-only and run once
                 if not hosts:
                     commands[name](*args, **kwargs)
-                # Clear env.host so it doesn't "bleed" into other commands
+                # Clear env.host_string and friends so it doesn't "bleed" into other commands
+                state.env.host_string = None
                 state.env.host = None
+                state.env.user = None
+                state.env.port = None
             # If we got here, no errors occurred, so print a final note.
             print("\nDone.")
         finally:

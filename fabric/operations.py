@@ -237,7 +237,7 @@ def put(local_path, remote_path, mode=None):
         put('index.html', 'index.html', mode=0755)
     
     """
-    ftp = connections[env.host].open_sftp()
+    ftp = connections[env.host_string].open_sftp()
 
     # Do jury-rigged tilde expansion, but only if we can do it nicely.
     # TODO: tie into global output controls -- as a user! (i.e. hide all output
@@ -266,7 +266,7 @@ def put(local_path, remote_path, mode=None):
             rpath = os.path.join(remote_path, os.path.basename(lpath))
         
         # TODO: tie this into global output controls
-        print("[%s] put: %s -> %s" % (env.host, lpath, remote_path))
+        print("[%s] put: %s -> %s" % (env.host_string, lpath, remote_path))
         # Try to catch raised exceptions (which is the only way to tell if
         # this operation had problems; there's no return code) during upload
         try:
@@ -301,11 +301,11 @@ def get(remote_path, local_path):
     The above code will produce two files on your local system, called
     ``server.log.host1`` and ``server.log.host2`` respectively.
     """
-    ftp = connections[env.host].open_sftp()
+    ftp = connections[env.host_string].open_sftp()
     local_path = local_path + '.' + env.host
     remote_path = remote_path
     # TODO: tie this into global output controls
-    print("[%s] download: %s <- %s" % (env.host, local_path, remote_path))
+    print("[%s] download: %s <- %s" % (env.host_string, local_path, remote_path))
     # Handle any raised exceptions (no return code to inspect here)
     try:
         ftp.get(remote_path, local_path)
@@ -349,14 +349,14 @@ def run(command, shell=True):
     # TODO: tie this into global output controls
     # TODO: also, for this and sudo(), allow output of real_command too
     # (possibly as part of a 'debug' flag?)
-    print("[%s] run: %s" % (env.host, command))
-    channel = connections[env.host]._transport.open_session()
+    print("[%s] run: %s" % (env.host_string, command))
+    channel = connections[env.host_string]._transport.open_session()
     channel.exec_command(real_command)
     capture = []
 
     # TODO: tie into global output controls
-    out_thread = output_thread("[%s] out" % env.host, channel, capture=capture)
-    err_thread = output_thread("[%s] err" % env.host, channel, stderr=True)
+    out_thread = output_thread("[%s] out" % env.host_string, channel, capture=capture)
+    err_thread = output_thread("[%s] err" % env.host_string, channel, stderr=True)
     
     # Close when done
     status = channel.recv_exit_status()
@@ -430,13 +430,13 @@ def sudo(command, shell=True, user=None):
     # shell itself, AND showing the sudo prefix. Not 100% sure it's worth being
     # so granular as to allow one on and one off, but think about it.
     # TODO: handle confirm_proceed behavior, as in run()
-    print("[%s] sudo: %s" % (env.host, command))
-    channel = connections[env.host]._transport.open_session()
+    print("[%s] sudo: %s" % (env.host_string, command))
+    channel = connections[env.host_string]._transport.open_session()
     channel.exec_command(real_command)
     capture = []
 
-    out_thread = output_thread("[%s] out" % env.host, channel, capture=capture)
-    err_thread = output_thread("[%s] err" % env.host, channel, stderr=True)
+    out_thread = output_thread("[%s] out" % env.host_string, channel, capture=capture)
+    err_thread = output_thread("[%s] err" % env.host_string, channel, stderr=True)
 
     # Close channel when done
     status = channel.recv_exit_status()

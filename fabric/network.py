@@ -194,7 +194,7 @@ def prompt_for_password(output=None, previous_password=None):
     # Construct the prompt we will display to the user (using host if available)
     if 'host' in env:
         base_password_prompt = "Password for %s" % join_host_strings(*normalize(
-            env.host, omit_port=True))
+            env.host_string, omit_port=True))
     else:
         base_password_prompt = "Password"
     password_prompt = base_password_prompt
@@ -279,7 +279,7 @@ def output_thread(prefix, chan, stderr=False, capture=None):
 
 def needs_host(func):
     """
-    Prompt user for value of ``env.host`` when ``env.host`` is empty.
+    Prompt user for value of ``env.host_string`` when ``env.host_string`` is empty.
 
     This decorator is basically a safety net for silly users who forgot to
     specify the host/host list in one way or another. It should be used to wrap
@@ -289,8 +289,8 @@ def needs_host(func):
     specify multiple hosts at this point in time, so only a single host will be
     prompted for.
 
-    Because this decorator sets ``env.host``, it will prompt once (and only
-    once) per command. As ``main()`` clears ``env.host`` between commands, this
+    Because this decorator sets ``env.host_string``, it will prompt once (and only
+    once) per command. As ``main()`` clears ``env.host_string`` between commands, this
     decorator will also end up prompting the user once per command (in the case
     where multiple commands have no hosts set, of course.)
     """
@@ -298,6 +298,6 @@ def needs_host(func):
     @wraps(func)
     def host_prompting_wrapper(*args, **kwargs):
         while not env.get('host', False):
-            env.host = raw_input("No hosts found. Please specify (single) host string for connection: ")
+            env.host_string = raw_input("No hosts found. Please specify (single) host string for connection: ")
         return func(*args, **kwargs)
     return host_prompting_wrapper
