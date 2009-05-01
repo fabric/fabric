@@ -127,5 +127,9 @@ basically just a nicer `raw_input`, but still.)
 laggy.
 * Possibly allow "aliases" in `env`, i.e. user/username are treated as being the
 same key to limit possible confusion.
+* Investigate allowing control of pty allocation for remote connections (look at
+emails for previous discussion)
+* Setup.py needs tweaking to deal with building eggs (at least) such that e.g.
+fabric.contrib doesn't get left out by mistake. See github mail from zirpu.
 
 <!-- vim:set filetype=mkd : -->
