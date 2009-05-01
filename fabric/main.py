@@ -126,7 +126,7 @@ def parse_options():
     """
     Handle command-line options with optparse.OptionParser.
 
-    Return list of arguments, largely for use in parse_arguments().
+    Return list of arguments, largely for use in `parse_arguments`.
     """
     #
     # Initialize
@@ -245,7 +245,7 @@ def parse_arguments(arguments):
     will result in the function call ``do_stuff(a, b, c=d)``.
 
     If ``host`` or ``hosts`` kwargs are given, they will be used to fill
-    Fabric's host list (which is checked later on). ``hosts`` will override
+    Fabric's host list (see `get_hosts`). ``hosts`` will override
     ``host`` if both are given.
     
     When using ``hosts`` in this way, one must use semicolons (``;``), and must
@@ -295,18 +295,19 @@ def get_hosts(cli_hosts, command):
     precedence:
 
     #. Hosts specified via the command line (e.g. ``fab foo:hosts='a;b;c'``)
-    #. Hosts specified via the ``@hosts`` and ``@roles`` decorators
-    #. Hosts specified globally via the command line (TODO: "let" syntax)
+    #. Hosts specified via the `~fabric.decorators.hosts` and
+       `~fabric.decorators.roles` decorators
+    #. Hosts specified globally via the command line (TBI)
     #. Hosts specified globally by setting ``env.hosts`` at module level in
        the fabfile (note: since fabfiles are fully loaded, the last line to set
        ``env.hosts`` is the line that wins)
 
     Note that there is no "unionizing" of hosts between the above sources, so
     if a global host list contains hosts A, B and C, and a per-function (e.g.
-    via ``@hosts``) host list is set to just hosts B and C, that function
+    via `~fabric.decorators.hosts`) host list is set to just hosts B and C, that function
     will **not** execute on host A.
 
-    However, ``@hosts`` and ``@roles`` **will** result in the union of their
+    However, `~fabric.decorators.hosts` and `~fabric.decorators.roles` **will** result in the union of their
     contents as the final host list. In the following example, if ``role1``
     contains hosts ``b`` and ``c``, the resulting host list will be ``['a',
     'b', 'c']``::
