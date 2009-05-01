@@ -33,9 +33,13 @@ def roles(*role_list):
     """
     Decorator defining a list of role names, used to look up host lists.
 
-    For example, the following will ensure that, barring an override on the
-    command line, ``my_func`` will be executed against the hosts listed in
-    the ``webserver`` and ``dbserver`` roles::
+    A role is simply defined as a key in `env` whose value is a list of one or
+    more host connection strings. For example, the following will ensure that,
+    barring an override on the command line, ``my_func`` will be executed
+    against the hosts listed in the ``webserver`` and ``dbserver`` roles::
+
+        env.webserver = ['www1', 'www2']
+        env.dbserver = ['db1']
 
         @hosts('webserver', 'dbserver')
         def my_func():
