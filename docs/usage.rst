@@ -7,16 +7,16 @@ Importing Fabric itself
 
 Simplest method, which is not PEP8-compliant (meaning it's not best practices)::
 
-    from fabric import *
+    from fabric.api import *
 
 Slightly better, albeit verbose, method which *is* PEP8-compliant::
 
-    from fabric import run, sudo, prompt, abort
+    from fabric.api import run, sudo, prompt, abort, ...
 
 .. note::
     You can also import directly from the individual submodules, e.g.
     ``from fabric.utils import abort``. However, all of Fabric's public API is
-    guaranteed to be available at the package level for convenience purposes.
+    guaranteed to be available via `fabric.api` for convenience purposes.
 
 Importing other modules
 =======================
@@ -36,7 +36,7 @@ data out of a webservice::
 
     from urllib import urlopen
 
-    from fabric import run
+    from fabric.api import run
 
     def my_task():
         """
