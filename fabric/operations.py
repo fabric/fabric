@@ -462,7 +462,7 @@ def sudo(command, shell=True, user=None):
     return output
 
 
-def local(command, show_stderr=False, capture=True):
+def local(command, show_stderr=True, capture=True):
     """
     Run a command on the local system.
 
@@ -471,9 +471,8 @@ def local(command, show_stderr=False, capture=True):
     do anything special, consider using the ``subprocess`` module directly.
 
     `local` will return the contents of the command's stdout as a string.
-    Standard error will be discarded by default (so that this command is useful
-    for non-interactive use) but you may specify ``show_stderr=True``, which
-    will cause standard error to print to your local terminal.
+    Standard error will be printed to your terminal by default, but you may
+    specify ``show_stderr=False`` in order to discard stderr.
 
     If you need full interactivity with the command being run (and are willing
     to accept the loss of captured stdout) you may specify ``capture=False`` so
@@ -490,7 +489,7 @@ def local(command, show_stderr=False, capture=True):
     # of discarded
     elif show_stderr:
         p = subprocess.Popen([command], shell=True, stdout=PIPE)
-    # Capture both (but for now, we simply ignore stderr, so it gets thrown out)
+    # Capture both and discard stderr
     else:
         p = subprocess.Popen([command], shell=True, stdout=PIPE, stderr=PIPE)
     (stdout, stderr) = p.communicate()
