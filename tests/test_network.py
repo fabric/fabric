@@ -43,6 +43,15 @@ def test_normalization_without_port():
         'user@localhost'
     )
 
+def test_nonword_character_in_username():
+    """
+    normalize() will accept non-word characters in the username part
+    """
+    eq_(
+        normalize('user-with-hyphens@someserver.org')[0],
+        'user-with-hyphens'
+    )
+
 
 #
 # Connection caching
