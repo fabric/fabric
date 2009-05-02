@@ -291,35 +291,8 @@ def get_hosts(cli_hosts, command):
     """
     Return the host list the given command should be using.
 
-    The list of hosts a given command will run on follows a strict order of
-    precedence:
-
-    #. Hosts specified via the command line (e.g. ``fab foo:hosts='a;b;c'``)
-    #. Hosts specified via the `~fabric.decorators.hosts` and
-       `~fabric.decorators.roles` decorators
-    #. Hosts specified globally via the command line (TBI)
-    #. Hosts specified globally by setting ``env.hosts`` at module level in
-       the fabfile (note: since fabfiles are fully loaded, the last line to set
-       ``env.hosts`` is the line that wins)
-
-    Note that there is no "unionizing" of hosts between the above sources, so
-    if a global host list contains hosts A, B and C, and a per-function (e.g.
-    via `~fabric.decorators.hosts`) host list is set to just hosts B and C, that function
-    will **not** execute on host A.
-
-    However, `~fabric.decorators.hosts` and `~fabric.decorators.roles` **will** result in the union of their
-    contents as the final host list. In the following example, if ``role1``
-    contains hosts ``b`` and ``c``, the resulting host list will be ``['a',
-    'b', 'c']``::
-
-        @hosts('a', 'b')
-        @roles('role1')
-        def my_func():
-            pass
-
-    Finally, note that if all sources have been checked and no hosts are found,
-    an empty list is returned -- the user is probably trying to do something
-    locally.
+    See :ref:`execution-model` for detailed documentation on how host lists are
+    set.
     """
     # Command line takes precedence over anythin else.
     if cli_hosts:
@@ -432,11 +405,6 @@ def main():
                 # If no hosts found, assume local-only and run once
                 if not hosts:
                     commands[name](*args, **kwargs)
-                # Clear env.host_string and friends so it doesn't "bleed" into other commands
-                state.env.host_string = None
-                state.env.host = None
-                state.env.user = None
-                state.env.port = None
             # If we got here, no errors occurred, so print a final note.
             print("\nDone.")
         finally:
