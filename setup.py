@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
     name='Fabric',
@@ -14,7 +14,7 @@ For more information, please see the Fabric website or execute ``fab --help``.
     author_email='jeff@bitprophet.org',
     url='http://fabfile.org',
     install_requires=['paramiko >=1.7, <2.0'],
-    py_modules=['fabric'],
+    packages=find_packages(),
     entry_points={
         'console_scripts': [
             'fab = fabric.main:main',
