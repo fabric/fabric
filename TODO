@@ -1,31 +1,149 @@
-1   Ctrl-C dosn't quite work... especially not with the tail example
-9   Allow for truly parallel execution (run on all hosts simultaneously)
-13  Reduce print & exit() statements to as few functions as possible
-15  Figure out a way to do plugins
-    - SCM support should be done entirely in plugins
-16  Get a better shell
-26  Fix upload_website when new files are added
-28  Grant more control over the output - e.g. hide 'run'/'sudo' lines
-29  Allow more interactivity -- detect remote prompts and passthru to user
-31  Figure out how to deal with the use of different @hosts lists when running
-    more than one command in a single session.
-33  When imported instead of ran via 'fab' (and/or controllable via option),
-    raise an exception instead of calling sys.exit().
-34  Put in optional (or default w/ option) timeouts for operations (or make
-    sure existing network timeouts work correctly)
-35  Figure out convenient way for users to set per-host passwords beforehand
-36a Consider using or pulling ideas from path.py for easier path management
-    - Paver uses it too
-    - Lots of Smart People don't seem put off by its magic
-    - Definitely feels Pythonic and would save typing
-36b Another not-from-path.py (I think) idea: context managers to effect 
-    "cd foo && /bin/blah", e.g.
-        
-        with cwd('/tmp/'):
-            run('ls')
-            run('touch test')
+* See all TODO markings in source code
+* Take a step back, reorganize. E.g.:
+    * stuff in `utils` should be user-useful only, other subroutines ought to go
+    elsewhere
+    * Should probably move subroutines in `main` to another module so that
+    `main` is just that: `main()`. New module would be something like `core` -
+    subroutines of the same sort found in `utils` but NOT usually for user
+    consumption (and ALSO not generally used multiple times by internals? or
+    should this be the same spot as other non-user-facing subroutines?)
+        * Also note that a number of main() subroutines right now, such as the
+        ones for finding settings, and setting host lists, should be updated so
+        that library users can use them!
+* Re-examine API of existing operations, e.g. prompt's `validate` option
+    * wrt `validate`, figure out which is better: 'dual-mode' single arguments
+    like that, or splitting it into 2 different arguments
+        * dual-mode makes sense given an either-or situation like that one
+        * but at the same time it feels kind of messy
+        * see how stdlib does it in similar situations. guessing 2 arguments
+        with "only X or Y may be given, but not both at the same time" note?
+    * look at the rest too
+* Output handling -- how to deal with:
+    * Status info
+    * Warnings
+    * Errors/failures (both printing info, and how to abort or not abort flow)
+        * Also provide easy access to the return code, regardless of whether
+        Fabric actually fails -- i.e. have some level where the user can
+        inspect return codes and decide on their own whether to abort() or what
+    * Exceptions (outside of the ones involved with errors/failures)
+    * As mentioned elsewhere, want to make this as flexible as possible
+    * Put in logging-to-disk and/or leverage the logging module for stdout too?
+        * e.g. it already has the concepts of info/warn/etc -- can that be used?
+    * Ensure things behave gracefully when used as a lib
+        * Temporarily had 'invoked_as_fab' env var set in main(); but that made
+          testing a huge pain, so backed it out. Put it back in? or find some
+          other method? perhaps inverse -- setting has to be turned on
+          explicitly by a library user? or just ensure that e.g. printing,
+          exceptions have simple controls for making them shut up?
+    * Regardless of other work in this area, make sure `local` can be
+    configured to print its output without being wrapped in `print` (durr)
+* Continue building out any previously made tests till coverage.py implies we
+have pretty decent coverage (100% would be nice but even a 100% from coverage.py
+doesn't literally mean full coverage...)
+    * Have started using Nose for testing, probably stick with that;
+    * Ditto with Fudge for mocking/stubbing/expecting; may need to contribute
+    some patches to it, though, it's not great for functional coding and I
+    don't see the need to 100% class-ify my code just so my mocker works better.
+* Sphinx documentation
+    * Build out the API docs; probably just one RST file per module, with
+    automodule in use (see test api.rst file for details).
+    * Update all docstrings so they "read well" in the generated API:
+        * General language / tense / etc
+        * Where applicable, turn ``function()`` into `function` (so the default
+        role takes effect and makes it a link)
+        * If that default role doesn't work right for non-functions, add the
+        appropriate :type: prefixes.
+    * Go over old static docs to make sure anything applicable is copied over
+    and updated.
+    * Don't forget the top level text files, e.g. INSTALL
+* Run Pylint, fix what it complains about (and generate a config file to make it
+shut up about stuff I don't care about)
+* Make sure "constants" are consistently named: I've been trending towards not
+  using ALL_CAPS, but in some places I probably did use them, so check and
+  update (or change my mind and go back; but it just feels ugly when one is
+  referencing e.g. ENV in user code all over...)
+* Possibly note in docs that callables imported into one's fabfile will show up
+  as executable tasks; i.e. they'll clutter --list and can be invoked via
+  command-line.
+    * If we do note this for users, probably suggest the obvious: import
+    modules instead of callables, and use module.callable instead.
+    * Also good to note that they can take *advantage* of this to make
+    "meta-fabfiles" collecting a number of sub-fabfiles' tasks into one
+    user-facing presentation.
+        * Although, with flags for manually specifying 1+ sub-fabfiles at
+        runtime, that becomes less necessary, though still useful.
+* Start a 'lib' type thing with non-atomic builtin commands, e.g. `sudo_put`.
+Figure out how best to accomplish this: where should it live? what's the most
+idiomatic way to present it to users?
+    * Could borrow a page from Django and call it `contrib`
+    * Or, if all previously builtin "commands" are now option flags, we could
+    simply have `commands`, which makes it obvious that they are on the same
+    level as user-defined commands.
+* Terminology: rename 'commands' to 'tasks', 'operations' to 'commands' or
+'functions' or something?
+    * Plus: 'tasks' and etc sounds more natural to me; given how big of a
+    shake-up this is, why not go whole hog?
+    * Minus: commands/operations aren't all that bad for names, and should
+    avoid tendency to redo everything for redoing's sake.
+    * Minus: 'commands' feels like the most natural fit for a rename of
+    'operations' -- but then it's pretty confusing given the previous use of
+    'commands'!
+* Add Paramiko SSHConfig support: it can provide username and port and other
+options. Look at `man ssh_config` for what else people can put in that file.
+* Try to make Fabric threadsafe (and/or not using threads for outputting)
+    * Right now it uses threads and shared state for outputting, and shared
+    state for env/connection/etc stuff. This is probably not threadsafe as-is.
+    * Even if the shared state works OK, the thread use in outputting is kind
+    of wonky. See if it can be redone with coroutines or Twisted or something.
+* Make execution model more robust/flexible:
+    * Right now, relatively simple, calls each function one by one, and for each
+    function, runs on each host one by one, and the host list may be different
+    per-function.
+    * What may make more sense is to specify host list "first", then for each
+    host, you call each function in turn (in which case the order of functions
+    may matter more than it does now). This would mean that the logic for host
+    discovery changes a decent amount.
+    * Do we want to allow this to be switched up dynamically? I.e. allow user
+    to specify a "mode" (like in the old Fabric) to determine which of those
+    two algorithms is used?
+    * How do these decisions affect what decorators/etc can be applied? I.e.
+    @hosts doesn't make any sense in the latter scenario because there is only
+    one global host list per session. (But isn't that the more sensible
+    solution? When would you execute a `fab` command line and expect the host
+    list to change during the session?
+* Possibly add back in the old `shell` functionality (it would have to be a
+command line option such as `--shell` -- there are no more internal "commands"
+and it doesn't make sense as one anyway, as it cannot be run along with other
+commands at the same time.)
+    * Probably leverage IPython as a library, I've seen it done before
+    * Should end up equivalent to a user running `ipython` and then doing a
+    bunch of typical Fabric imports, i.e. all the operations plus `env`.
+* Check Python 2.6 compatibility.
+* Consider tweaking `prompt` so the env-setting aspect is optional. I expect
+many people will only be using it to return the value (in which case it's
+basically just a nicer `raw_input`, but still.)
+* Bash tab-completion for Fab tasks, assuming it can be done without being too
+laggy.
+* Possibly allow "aliases" in `env`, i.e. user/username are treated as being the
+same key to limit possible confusion.
+* Investigate allowing control of pty allocation for remote connections (look at
+emails for previous discussion)
+* Setup.py needs tweaking to deal with building eggs (at least) such that e.g.
+fabric.contrib doesn't get left out by mistake. See github mail from zirpu.
+* Try using `/usr/bin/env bash` instead of `/bin/bash` to handle systems where
+bash isn't in `/bin/`.
+* Parallel execution (if it can be done without making things terribly complex
+again)
+* Better remote-end prompt detection/passthrough to local user
+* Add timeout support or ensure existing network level timeouts work well
+* More robust per-host/connection settings, e.g. dict of dicts or registry or
+some such.
+* Possibly include path.py support (or rather use some of its concepts, since
+I think it only works on local paths as-is?)
+* Allow persistent environments, either real (run a bunch of commands in one
+command string) or fake (put a prefix with e.g. 'cd foo && ' in front of each
+shell invocation, behind the scenes)
+* Strip ANSI colors from remote text, as an option (so I can stop having to do
+ls --color=never and so on)
 
-    would effectively do 'cd /tmp/ && ls' followed by 'cd /tmp/ && touch test'.
-
-37  Put in ANSI-stripping functionality/options -- would save me a ton of time
-    doing it in my fabfiles and could be generally useful.
+<!-- vim:set filetype=mkd : -->
