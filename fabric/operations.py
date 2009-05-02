@@ -462,26 +462,35 @@ def sudo(command, shell=True, user=None):
     return output
 
 
-def local(command, show_stderr=False):
+def local(command, show_stderr=False, capture=True):
     """
     Run a command on the local system.
 
-    ``local()`` is simply a convenience wrapper around the use of ``subprocess``
-    with ``shell=True`` activated. If you need to do anything special, consider 
-    using the ``subprocess`` module directly.
+    `local` is simply a convenience wrapper around the use of the builtin
+    Python ``subprocess`` module with ``shell=True`` activated. If you need to
+    do anything special, consider using the ``subprocess`` module directly.
 
-    ``local()`` will return the contents of the command's stdout as a string.
+    `local` will return the contents of the command's stdout as a string.
     Standard error will be discarded by default (so that this command is useful
     for non-interactive use) but you may specify ``show_stderr=True``, which
     will cause standard error to print to your local terminal.
+
+    If you need full interactivity with the command being run (and are willing
+    to accept the loss of captured stdout) you may specify ``capture=False`` so
+    that the subprocess' stdout and stderr pipes are connected to your terminal
+    instead of captured and read by Fabric.
     """
     # TODO: tie this into global output controls
     print("[localhost] run: " + command)
     PIPE = subprocess.PIPE
-    # stderr of None == inherit file handles from parent == goes to terminal
-    if show_stderr:
+    # User wants to interact with whatever was called, instead of capturing
+    if not capture:
+        p = subprocess.Popen([command], shell=True)
+    # User wants stdout captured but wants stderr printed to terminal instead
+    # of discarded
+    elif show_stderr:
         p = subprocess.Popen([command], shell=True, stdout=PIPE)
-    # stderr of PIPE == goes to file object == we can then ignore it
+    # Capture both (but for now, we simply ignore stderr, so it gets thrown out)
     else:
         p = subprocess.Popen([command], shell=True, stdout=PIPE, stderr=PIPE)
     (stdout, stderr) = p.communicate()
