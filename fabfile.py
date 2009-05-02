@@ -29,7 +29,7 @@ def build_docs():
 @hosts('jforcier@fabfile.org')
 def push_docs():
     build_docs()
-    rsync_project('/var/www/fabfile/', 'docs/_build/html/', delete=True)
+    rsync_project('/var/www/docs.fabfile/', 'docs/_build/html/', delete=True)
 
 
 
