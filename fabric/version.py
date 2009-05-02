@@ -6,7 +6,7 @@ problems with ``__init__.py`` (which exhibits a public API, including `env`,
 which in turn needs access to this version information.)
 """
 
-VERSION = (0, 9, 0, 'alpha', 0)
+VERSION = (0, 9, 0, 'alpha', 1)
 
 # Version code inspired by Django (but modified to be setuptools/PyPI ready)
 def get_version():
