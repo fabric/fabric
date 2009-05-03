@@ -65,6 +65,15 @@ team directly at ``developers [at] fabfile [dot] org``.
     getting prompt feedback, and also allows other users to confirm your bug
     report and thus give it a higher priority.
 
+Wiki
+----
+
+There is an official Fabric wiki reachable at `wiki.fabfile.org
+<http://wiki.fabfile.org>`_, although as of this writing its usage patterns are
+still being worked out. There is a `TodoList page
+<http://wiki.fabfile.org/TodoList>`_ which may also be used to submit bug
+reports, as an alternative to sending email.
+
 
 Documentation
 =============
