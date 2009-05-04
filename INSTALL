@@ -1,6 +1,7 @@
 INSTALLING FABRIC:
  1. Make sure you agree to the terms and conditions in LICENSE.
- 2. Make sure you got Python installed, preferably version 2.5 or greater.
- 3. Make sure you got Python Distutils installed (should be part of a normal python distro).
+ 2. Make sure you've got Python version 2.5 or greater.
+ 3. Make sure you've got Python Distutils installed (should be part of a 
+    normal python distro).
  4. Run as root: python setup.py build install
 

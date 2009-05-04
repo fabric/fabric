@@ -5,8 +5,8 @@ Scratchpad for stuff to say about the alpha and recording feedback about same
   of things which I explicitly removed such as require()-as-a-decorator, the
   depends() decorator, and etc.
   * Is there anything I'm missing still?
-  * Do you disagree with any of the omissions? If so, why, and please provide a
-  real-world use case if possible. Also keep in mind that one of the reasons
+  * Do you disagree with any of the omissions? If so, why, and please provide 
+  a real-world use case if possible. Also keep in mind that one of the reasons
   for stripping things down is...so we can build them up again from this new
   foundation :)
 * Execution model: see "Make execution model more robust/flexible" bullet near
