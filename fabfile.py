@@ -15,14 +15,14 @@ def test():
     """
     # Need show_stderr=True because the interesting output of nosetests is
     # actually sent to stderr, not stdout.
-    print(local('nosetests -sv', show_stderr=True))
+    print(local('nosetests -sv', capture=False))
 
 
 def build_docs():
     """
     Generate the Sphinx documentation
     """
-    print(local('cd docs && make clean html', show_stderr=True))
+    print(local('cd docs && make clean html', capture=False))
 
 
 @hosts('jforcier@fabfile.org')
