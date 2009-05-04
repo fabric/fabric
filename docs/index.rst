@@ -80,19 +80,10 @@ Documentation
 .. toctree::
     :maxdepth: 2
 
-    usage
-    compatibility
-    development
-
-
-Getting Fabric
-==============
-
-.. toctree::
-    :maxdepth: 2
-
     installation
     development
+    usage
+    compatibility
 
 
 API
