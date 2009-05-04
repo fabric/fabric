@@ -25,9 +25,9 @@ Latest stable version
 
 The most recent stable version of Fabric is |release|. The recommended
 installation method is to use ``easy_install`` or ``pip``; or you may download
-TGZ or ZIP archives from `the Fabric cgit page <http://git.fabfile.org>`_.
-Detailed install instructions for any of these methods can be found on the
-:doc:`installation` page.
+TGZ or ZIP archives from `the Fabric cgit page <http://git.fabfile.org>`_ or
+`PyPI <http://pypi.python.org/pypi/Fabric>`_.  Detailed install instructions
+for any of these methods can be found on the :doc:`installation` page.
 
 Development version
 -------------------
