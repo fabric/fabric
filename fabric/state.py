@@ -147,8 +147,8 @@ env_options = [
     ),
 
     make_option('-s', '--shell',
-        default='/bin/bash',
-        help="specify a new shell, defaults to '/bin/bash'"
+        default='/bin/bash -l -c',
+        help="specify a new shell, defaults to '/bin/bash -l -c'"
     )
 
     # TODO: verbosity selection (sets state var(s) used when printing)
@@ -169,7 +169,6 @@ env = _AttributeDict({
     'settings_file': '.fabricrc',
     'sudo_prompt': 'sudo password:',
     'quiet': False,
-    'shell_args': '-l -c',
     'use_shell': True
 })
 
