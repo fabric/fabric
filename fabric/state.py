@@ -147,7 +147,6 @@ env_options = [
     ),
 
     make_option('-s', '--shell',
-        dest='shell',
         default='/bin/bash',
         help="specify a new shell, defaults to '/bin/bash'"
     )
