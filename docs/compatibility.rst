@@ -144,15 +144,11 @@ In no particular order:
 
     * It will now overwrite pre-existing values in the environment dict, but
       will print a warning to the user if it does so.
-    * Additionally, validation used to fire even if the variable already
-      existed in the environment dict. This presented a handful of odd
-      behaviors, and has been fixed: `prompt` will now only execute if the
-      requested variable does not have a value in the environment dict. 
-    * Also additionally, (and this appeared to be undocumented) the ``default``
+    * Additionally, (and this appeared to be undocumented) the ``default``
       argument could take a callable as well as a string, and would simply set
       the default message to the return value if a callable was given. This
-      doesn't make much sense (the user can just do ``prompt(blah, msg,
-      default=my_callable()`` after all) so it has been removed.
+      seemed to add unnecessary complexity (the user can just do ``prompt(blah,
+      msg, default=my_callable()`` after all) so it has been removed.
 
 * When connecting, Fabric used to use the undocumented ``fab_pkey`` env variable
   as a method of passing in a Paramiko ``PKey`` object to the SSH client's
