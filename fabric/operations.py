@@ -12,6 +12,7 @@ import stat
 import subprocess
 
 from context_managers import warnings_only
+from contextlib import closing
 from network import output_thread, needs_host
 from state import env, connections
 from utils import abort, indent, warn
@@ -238,49 +239,48 @@ def put(local_path, remote_path, mode=None):
     
     """
     ftp = connections[env.host_string].open_sftp()
-
-    # Do jury-rigged tilde expansion, but only if we can do it nicely.
-    # TODO: tie into global output controls -- as a user! (i.e. hide all output
-    # from this chunk below if possible)
-    with warnings_only():
-        cwd = run('pwd')
-    if not cwd.failed:
-        remote_path = remote_path.replace('~', cwd)
-
-    try:
-        rmode = ftp.lstat(remote_path).st_mode
-    except:
-        # sadly, I see no better way of doing this
-        rmode = None
-
-    # Expand local tildes and get globs
-    globs = glob(os.path.expanduser(local_path))
-
-    # Deal with bad local_path
-    if not globs:
-        raise ValueError, "'%s' is not a valid local path or glob." % local_path
-
-    for lpath in globs:
-        # first, figure out the real, absolute, remote path
-        if rmode is not None and stat.S_ISDIR(rmode):
-            rpath = os.path.join(remote_path, os.path.basename(lpath))
-        
-        # TODO: tie this into global output controls
-        print("[%s] put: %s -> %s" % (env.host_string, lpath, remote_path))
-        # Try to catch raised exceptions (which is the only way to tell if
-        # this operation had problems; there's no return code) during upload
+    with closing(ftp) as  ftp:
+        # Do jury-rigged tilde expansion, but only if we can do it nicely.
+        # TODO: tie into global output controls -- as a user! (i.e. hide all output
+        # from this chunk below if possible)
+        with warnings_only():
+            cwd = run('pwd')
+        if not cwd.failed:
+            remote_path = remote_path.replace('~', cwd)
+    
         try:
-            # Actually do the upload
-            rattrs = ftp.put(lpath, remote_path)
-            # and finally set the file mode
-            lmode = mode or os.stat(lpath).st_mode
-            if lmode != rattrs.st_mode:
-                ftp.chmod(remote_path, lmode)
-        except Exception, e:
-            msg = "put() encountered an exception while uploading '%s'"
-            _handle_failure(message=msg % lpath, underlying=e)
-        finally:
-            ftp.close()
+            rmode = ftp.lstat(remote_path).st_mode
+        except:
+            # sadly, I see no better way of doing this
+            rmode = None
+    
+        # Expand local tildes and get globs
+        globs = glob(os.path.expanduser(local_path))
+    
+        # Deal with bad local_path
+        if not globs:
+            raise ValueError, "'%s' is not a valid local path or glob." % local_path
+    
+        for lpath in globs:
+            # first, figure out the real, absolute, remote path
+            _remote_path = remote_path
+            if rmode is not None and stat.S_ISDIR(rmode):
+                _remote_path = os.path.join(remote_path, os.path.basename(lpath))
+            
+            # TODO: tie this into global output controls
+            print("[%s] put: %s -> %s" % (env.host_string, lpath, _remote_path))
+            # Try to catch raised exceptions (which is the only way to tell if
+            # this operation had problems; there's no return code) during upload
+            try:
+                # Actually do the upload
+                rattrs = ftp.put(lpath, _remote_path)
+                # and finally set the file mode
+                lmode = mode or os.stat(lpath).st_mode
+                if lmode != rattrs.st_mode:
+                    ftp.chmod(_remote_path, lmode)
+            except Exception, e:
+                msg = "put() encountered an exception while uploading '%s'"
+                _handle_failure(message=msg % lpath, exception=e)
 
 
 @needs_host
