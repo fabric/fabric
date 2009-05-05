@@ -341,7 +341,8 @@ def run(command, shell=True):
     """
     real_command = command
     if shell:
-        real_command = '%s "%s"' % (env.shell, command.replace('"', '\\"'))
+        real_command = '%s %s "%s"' % (env.shell, env.shell_args,
+            command.replace('"', '\\"'))
     # TODO: possibly put back in previously undocumented 'confirm_proceed'
     # functionality, i.e. users may set an option to be prompted before each
     # execution. Pretty sure this should be a global option applying to ALL
@@ -424,8 +425,8 @@ def sudo(command, shell=True, user=None):
         real_command = "%s %s" % (sudo_prefix, command.replace('"', r'\"'))
     # With a shell, we do 'sudo -u blah /bin/bash -l -c "my_command"'
     else:
-        real_command = '%s %s "%s"' % (sudo_prefix, env.shell,
-            command.replace('"', r'\"'))
+        real_command = '%s %s %s "%s"' % (sudo_prefix, env.shell,
+                env.shell_args, command.replace('"', r'\"'))
     # TODO: tie this into global output controls; both in terms of showing the
     # shell itself, AND showing the sudo prefix. Not 100% sure it's worth being
     # so granular as to allow one on and one off, but think about it.

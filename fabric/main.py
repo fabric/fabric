@@ -156,8 +156,8 @@ def parse_options():
         help="print list of possible commands and exit"
     )
 
-    # Show info about a specific command
-    parser.add_option('-s', '--show',
+    # Display info about a specific command
+    parser.add_option('-d', '--display',
         metavar='COMMAND',
         help="print detailed info about a given command and exit"
     )
@@ -216,7 +216,7 @@ def list_commands():
     sys.exit(0)
 
 
-def show_command(command):
+def display_command(command):
     # Sanity check
     if command not in commands:
         abort("Command '%s' not found, exiting." % command)
@@ -359,8 +359,8 @@ def main():
                 list_commands()
 
             # Handle show (command-specific help) option
-            if options.show:
-                show_command(options.show)
+            if options.display:
+                show_command(options.display)
 
             # If user didn't specify any commands to run, show help
             if not arguments:
