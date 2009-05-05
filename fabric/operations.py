@@ -118,15 +118,17 @@ def require(*keys, **kwargs):
     abort(msg)
 
 
-def prompt(name, text, default=None, validate=None):
+def prompt(text, key=None, default='', validate=None):
     """
-    Prompt user with ``text`` asking for the value of ``name`` env variable.
+    Prompt user with ``text`` and return the input (like ``raw_input``).
 
-    If ``name`` is already present in the environment dict, it will be
-    overwritten, and a warning printed to the user alerting them to this fact.
+    If ``key`` is given, the user's input will also be stored as ``env.<key>``
+    in addition to being returned by `prompt`. If the key already existed in
+    ``env``, its value will be overwritten and a warning printed to the user.
 
     If ``default`` is given, it is displayed in square brackets and used if the
     user enters nothing (i.e. presses Enter without entering any text).
+    ``default`` defaults to the empty string.
 
     The optional keyword argument ``validate`` may be a callable or a string:
     
@@ -142,36 +144,34 @@ def prompt(name, text, default=None, validate=None):
     Either way, `prompt` will re-prompt until validation passes (or the user
     hits ``Ctrl-C``).
 
-    Finally, note that `prompt` will return the obtained value as well as
-    setting it in the environment dict.
-    
     Examples::
     
         # Simplest form:
-        prompt('environment', 'Please specify target environment')
+        environment = prompt('Please specify target environment: ')
         
-        # With default:
-        prompt('dish', 'Specify favorite dish', default='spam & eggs')
+        # With default, and storing as env.dish:
+        prompt('Specify favorite dish: ', 'dish', default='spam & eggs')
         
-        # With validation, i.e. require integer input:
-        prompt('nice', 'Please specify process nice level', validate=int)
+        # With validation, i.e. requiring integer input:
+        prompt('Please specify process nice level: ', key='nice', validate=int)
         
         # With validation against a regular expression:
-        prompt('release', 'Please supply a release name',
+        release = prompt('Please supply a release name',
                 validate=r'^\w+-\d+(\.\d+)?$')
     
     """
-    # Get default value or None
-    previous_value = env.get(name)
+    # Store previous env value for later display, if necessary
+    if key:
+        previous_value = env.get(key)
     # Set up default display
     default_str = ""
-    if default:
+    if default != '':
         default_str = " [%s] " % str(default).strip()
     # Construct full prompt string
     prompt_str = text.strip() + default_str
-    # Loop until we get valid input or KeyboardInterrupt
+    # Loop until we pass validation
     value = None
-    while not value:
+    while value is None:
         # Get input
         value = raw_input(prompt_str) or default
         # Handle validation
@@ -183,6 +183,7 @@ def prompt(name, text, default=None, validate=None):
                 try:
                     value = validate(value)
                 except Exception, e:
+                    # Reset value so we stay in the loop
                     value = None
                     print("Validation failed for the following reason:")
                     print(indent(e.message) + "\n")
@@ -196,14 +197,16 @@ def prompt(name, text, default=None, validate=None):
                 result = re.findall(validate, value)
                 if not result:
                     print("Regular expression validation failed: '%s' does not match '%s'\n" % (value, validate))
+                    # Reset value so we stay in the loop
                     value = None
-        # Implicit continuation of loop if raw_input returned empty string, and
-        # default was also unspecified. In other words, empty values are not OK!
-    # At this point, value must be non-empty, so update env
-    env[name] = value
+    # At this point, value must be valid, so update env if necessary
+    if key:
+        env[key] = value
     # Print warning if we overwrote some other value
-    if previous_value is not None and previous_value != value:
-        warn("overwrote previous value of '%s'; used to be '%s', is now '%s'." % (name, previous_value, value))
+    if key and previous_value is not None and previous_value != value:
+        warn("overwrote previous env variable '%s'; used to be '%s', is now '%s'." % (
+            key, previous_value, value
+        ))
     # And return the value, too, just in case someone finds that useful.
     return value
 

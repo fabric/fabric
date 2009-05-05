@@ -135,8 +135,12 @@ In no particular order:
       authors, not fab users (even though the former is a subset of the latter)
       and should stay in the documentation only.
 
-* `prompt` has been updated to behave more obviously, as its previous
-  behavior was confusing in a few ways:
+* `prompt`'s primary function is now to return a value to the caller, although
+  it may still optionally store the value in `env` as well.
+* `prompt` now considers the empty string to be valid input; this allows other
+  functions to wrap `prompt` and handle "empty" input on their own terms.
+* In addition to the above changes, `prompt` has been updated to behave more
+  obviously, as its previous behavior was confusing in a few ways:
 
     * It will now overwrite pre-existing values in the environment dict, but
       will print a warning to the user if it does so.
