@@ -171,10 +171,10 @@ In no particular order:
 * ``abort`` is no longer an "operation" *per se* and has been moved to
   :mod:`fabric.utils`. It is otherwise the same as before, taking a single
   string message, printing it to the user and then calling ``sys.exit(1)``.
-* ``rsyncproject`` and ``upload_project`` have been moved to
-  :mod:`fabric.contrib`, which is intended to be a new submodule (or eventually
-  a tree of submodules) for housing "extra" code which may build on top of the
-  core Fabric operations.
+* ``rsyncproject`` and ``upload_project`` have been moved into
+  :mod:`fabric.contrib` (specifically, :mod:`fabric.contrib.project`), which is
+  intended to be a new tree of submodules for housing "extra" code which may
+  build on top of the core Fabric operations.
 * ``invoke`` has been turned on its head, and is now the `runs_once` decorator
   (living in :mod:`fabric.decorators`). When used to decorate a function, that
   function will only execute one time during the lifetime of a ``fab`` run.

@@ -5,7 +5,7 @@ Fabric's own fabfile.
 from __future__ import with_statement
 
 from fabric.api import *
-from fabric.contrib import rsync_project
+from fabric.contrib.project import rsync_project
 import fabric.version
 
 
