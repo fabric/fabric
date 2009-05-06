@@ -297,7 +297,7 @@ def needs_host(func):
     from state import env
     @wraps(func)
     def host_prompting_wrapper(*args, **kwargs):
-        while not env.get('host', False):
+        while not env.get('host_string', False):
             env.host_string = raw_input("No hosts found. Please specify (single) host string for connection: ")
         return func(*args, **kwargs)
     return host_prompting_wrapper
