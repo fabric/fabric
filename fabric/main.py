@@ -213,9 +213,11 @@ def list_commands():
     # Want separator between name, description to be straight col
     max_len = reduce(lambda a, b: max(a, len(b)), commands.keys(), 0)
     sep = '  '
-    for name, func in commands.items():
+    names = sorted(commands.keys())
+    for name in names:
         output = None
         # Print first line of docstring
+        func = commands[name]
         if func.__doc__:
             lines = filter(None, func.__doc__.splitlines())
             first_line = lines[0].strip()
