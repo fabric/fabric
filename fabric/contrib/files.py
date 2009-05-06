@@ -107,13 +107,3 @@ def uncomment(filename, regex, use_sudo=False, char='#', backup='.bak'):
         backup=backup
     )
 
-
-def append(text, filename, use_sudo=False):
-    """
-    Append ``text`` to ``filename`` if ``text`` is not found in ``filename``.
-
-    If ``use_sudo`` is True, will use `sudo` instead of `run`.
-    """
-    callable = use_sudo and sudo or run
-    if
-    return callable("echo '%s' >> %s" % (text.replace("'", r'\''), filename))
