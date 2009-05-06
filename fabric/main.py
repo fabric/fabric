@@ -377,7 +377,7 @@ def main():
 
             # Handle show (command-specific help) option
             if options.display:
-                show_command(options.display)
+                display_command(options.display)
 
             # If user didn't specify any commands to run, show help
             if not arguments:
