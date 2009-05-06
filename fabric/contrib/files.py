@@ -99,7 +99,7 @@ def uncomment(filename, regex, use_sudo=False, char='#', backup='.bak'):
     but ``    # foo`` would become ``    foo`` (the single space is still
     stripped, but the preceding 4 spaces are not.)
     """
-    return _sed(filename,
+    return sed(filename,
         before=r'^([[:space:]]*)%s[[:space:]]?' % char,
         after=r'\1',
         limit=regex,
@@ -107,3 +107,47 @@ def uncomment(filename, regex, use_sudo=False, char='#', backup='.bak'):
         backup=backup
     )
 
+
+def contains(text, filename, exact=False, use_sudo=False):
+    """
+    Return True if ``filename`` contains ``text``.
+
+    By default, this function will consider a partial line match (i.e. where the
+    given text only makes up part of the line it's on). Specify ``exact=True``
+    to change this behavior so that only a line containing exactly ``text``
+    results in a True return value.
+
+    Double-quotes in either ``text`` or ``filename`` will be automatically
+    backslash-escaped in order to behave correctly during the remote shell
+    invocation.
+
+    If ``use_sudo`` is True, will use `sudo` instead of `run`.
+    """
+    callable = use_sudo and sudo or run
+    if exact:
+        text = "^%s$" % text
+    return callable('egrep "%s" "%s"' % (
+        text.replace('"', r'\"'),
+        filename.replace('"', r'\"')
+    ))
+
+
+def append(text, filename, use_sudo=False):
+    """
+    Append ``text`` to ``filename``.
+
+    If ``text`` is already found as a discrete line in ``filename``, the append is
+    not run, and None is returned immediately. Otherwise, the given text is
+    appended to the end of the given ``filename`` via e.g. ``echo '$text' >>
+    $filename``.
+
+    Because ``text`` is single-quoted, single quotes will be transparently 
+    backslash-escaped.
+
+    If ``use_sudo`` is True, will use `sudo` instead of `run`.
+    """
+    callable = use_sudo and sudo or run
+    with warnings_only():
+        if contains(text, filename, use_sudo=use_sudo):
+            return None
+    return callable("echo '%s' >> %s" % (text.replace("'", r'\''), filename))
