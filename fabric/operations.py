@@ -350,16 +350,19 @@ def run(command, shell=True):
     # execution. Pretty sure this should be a global option applying to ALL
     # remote operations! And, of course -- documented.
     # TODO: tie this into global output controls
-    # TODO: also, for this and sudo(), allow output of real_command too
-    # (possibly as part of a 'debug' flag?)
-    print("[%s] run: %s" % (env.host_string, command))
+    if env.debug:
+        print("[%s] run: %s" % (env.host_string, real_command))
+    else:
+        print("[%s] run: %s" % (env.host_string, command))
     channel = connections[env.host_string]._transport.open_session()
     channel.exec_command(real_command)
     capture = []
 
     # TODO: tie into global output controls
-    out_thread = output_thread("[%s] out" % env.host_string, channel, capture=capture)
-    err_thread = output_thread("[%s] err" % env.host_string, channel, stderr=True)
+    out_thread = output_thread("[%s] out" % env.host_string, channel,
+        capture=capture)
+    err_thread = output_thread("[%s] err" % env.host_string, channel,
+        stderr=True)
     
     # Close when done
     status = channel.recv_exit_status()
@@ -433,7 +436,10 @@ def sudo(command, shell=True, user=None):
     # shell itself, AND showing the sudo prefix. Not 100% sure it's worth being
     # so granular as to allow one on and one off, but think about it.
     # TODO: handle confirm_proceed behavior, as in run()
-    print("[%s] sudo: %s" % (env.host_string, command))
+    if env.debug:
+        print("[%s] sudo: %s" % (env.host_string, real_command))
+    else:
+        print("[%s] sudo: %s" % (env.host_string, command))
     channel = connections[env.host_string]._transport.open_session()
     channel.exec_command(real_command)
     capture = []

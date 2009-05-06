@@ -146,10 +146,20 @@ env_options = [
         help="warn, instead of abort, when commands fail"
     ),
 
+    # Shell used when running remote commands
     make_option('-s', '--shell',
         default='/bin/bash -l -c',
         help="specify a new shell, defaults to '/bin/bash -l -c'"
+    ),
+
+    # Debug output
+    # TODO: tie into global output controls better (this is just a stopgap)
+    make_option('--debug',
+        action='store_true',
+        default=False,
+        help="Display debug output"
     )
+
 
     # TODO: verbosity selection (sets state var(s) used when printing)
     # Could default to typical -v/--verbose disabling fab_quiet; or could do
