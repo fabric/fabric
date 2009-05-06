@@ -45,8 +45,16 @@ doesn't literally mean full coverage...)
     some patches to it, though, it's not great for functional coding and I
     don't see the need to 100% class-ify my code just so my mocker works better.
 * Sphinx documentation
-    * Build out the API docs; probably just one RST file per module, with
-    automodule in use (see test api.rst file for details).
+    * Functions wrapped with the @needs_host decorator, due to how @wraps works,
+    lose their argument signature because the wrapping function has to define the
+    generic signature (so it can take any input). Thus, since there doesn't seem
+    to be a way around this (I looked) I will need to add ``autofunction``
+    directives and repeat the signature.
+        * Might be wise to update build_docs so it scans for that sort of thing
+        and checks it against the actual signatures using the ``inspect``
+        module, e.g. ``printargspec(getargspec(function))``.
+        * In fact, even better might be for build_docs to just use that to
+        **generate** the autofunction directives for me. Hmm.
     * Update all docstrings so they "read well" in the generated API:
         * General language / tense / etc
         * Where applicable, turn ``function()`` into `function` (so the default
