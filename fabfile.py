@@ -4,9 +4,15 @@ Fabric's own fabfile.
 
 from __future__ import with_statement
 
+import inspect
+
 from fabric.api import *
 from fabric.contrib.project import rsync_project
 import fabric.version
+from fabric.main import internals # For doc introspection stuff
+
+import os.path
+
 
 
 def test():
@@ -18,10 +24,40 @@ def test():
     print(local('nosetests -sv', capture=False))
 
 
+def update_doc_signatures():
+    """
+    Update API autodocs with correct signatures for wrapped functions.
+    """
+    for name, d in internals.iteritems():
+        item = d['callable']
+        module_name = d['module_name']
+        if hasattr(item, 'wrapped'):
+            wrapped = item.wrapped
+            if callable(wrapped): # Just in case...
+                args = inspect.formatargspec(*inspect.getargspec(wrapped))
+                name = wrapped.__name__
+                argspec = "    .. autofunction:: " + name + args + '\n'
+                # Only update docs that actually exist
+                path = 'docs/api/%s.rst' % module_name
+                if os.path.exists(path):
+                    with open(path) as fd:
+                        lines = fd.readlines()
+                    # Only update if we're out of date
+                    if argspec not in lines:
+                        # if previous line containing name+( exists, nuke it
+                        # regardless, add ours in at the end
+                        with open(path, 'w') as fd:
+                            # writelines
+
+
+
+    
+
 def build_docs():
     """
-    Generate the Sphinx documentation
+    Generate the Sphinx documentation.
     """
+    update_doc_signatures()
     print(local('cd docs && make clean html', capture=False))
 
 
