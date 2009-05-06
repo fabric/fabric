@@ -150,5 +150,6 @@ its exit block.
     * This would thus prevent a bunch of ugly nesting when wanting to use >1
     context manager at once; and since behavior is always controlled with env
     vars, it should be able to handle just about anything.
+* Consider truncating the docstring part of --list output, instead of wrapping?
 
 <!-- vim:set filetype=mkd : -->

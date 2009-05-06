@@ -48,6 +48,7 @@ def update_doc_signatures():
                         # regardless, add ours in at the end
                         with open(path, 'w') as fd:
                             # writelines
+                            pass
 
 
 
