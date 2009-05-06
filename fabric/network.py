@@ -279,7 +279,8 @@ def output_thread(prefix, chan, stderr=False, capture=None):
 
 def needs_host(func):
     """
-    Prompt user for value of ``env.host_string`` when ``env.host_string`` is empty.
+    Prompt user for value of ``env.host_string`` when ``env.host_string`` is
+    empty.
 
     This decorator is basically a safety net for silly users who forgot to
     specify the host/host list in one way or another. It should be used to wrap
@@ -289,10 +290,10 @@ def needs_host(func):
     specify multiple hosts at this point in time, so only a single host will be
     prompted for.
 
-    Because this decorator sets ``env.host_string``, it will prompt once (and only
-    once) per command. As ``main()`` clears ``env.host_string`` between commands, this
-    decorator will also end up prompting the user once per command (in the case
-    where multiple commands have no hosts set, of course.)
+    Because this decorator sets ``env.host_string``, it will prompt once (and
+    only once) per command. As ``main()`` clears ``env.host_string`` between
+    commands, this decorator will also end up prompting the user once per
+    command (in the case where multiple commands have no hosts set, of course.)
     """
     from state import env
     @wraps(func)
