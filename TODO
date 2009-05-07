@@ -153,5 +153,13 @@ its exit block.
 * Consider truncating the docstring part of --list output, instead of wrapping?
 * Consider automatically detecting "missing" args to tasks and prompting for
 them?
+* Refactor run/sudo:
+    * many times I want to run a handful of commands as one or the other, or
+    there are call chains (e.g. in contrib and the fabfile) where I have to pass
+    `use_sudo` all the way down, and so on.
+    * run/sudo are nearly identical except for a handful of lines, so they
+    violate DRY.
+    * Probably do the usual "behavior controlled via `env`" thing, and make the
+    usual context manager too?
 
 <!-- vim:set filetype=mkd : -->
