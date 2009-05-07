@@ -36,7 +36,8 @@ def update_doc_signatures():
             if callable(wrapped): # Just in case...
                 args = inspect.formatargspec(*inspect.getargspec(wrapped))
                 name = wrapped.__name__
-                argspec = "    .. autofunction:: " + name + args + '\n'
+                funcspec = "    .. autofunction:: " + name
+                argspec = funcspec + args + '\n'
                 # Only update docs that actually exist
                 path = 'docs/api/%s.rst' % module_name
                 if os.path.exists(path):
@@ -44,11 +45,16 @@ def update_doc_signatures():
                         lines = fd.readlines()
                     # Only update if we're out of date
                     if argspec not in lines:
-                        # if previous line containing name+( exists, nuke it
-                        # regardless, add ours in at the end
+                        # If previous line containing name + ( exists, nuke it
+                        for i, line in enumerate(lines):
+                            if (funcspec + '(') in line:
+                                del lines[i]
+                                break
+                        # Regardless, append ours now that we're sure any old
+                        # version is gone.
                         with open(path, 'w') as fd:
-                            # writelines
-                            pass
+                            lines.append(argspec)
+                            fd.writelines(lines)
 
 
 
