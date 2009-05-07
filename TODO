@@ -151,5 +151,7 @@ its exit block.
     context manager at once; and since behavior is always controlled with env
     vars, it should be able to handle just about anything.
 * Consider truncating the docstring part of --list output, instead of wrapping?
+* Consider automatically detecting "missing" args to tasks and prompting for
+them?
 
 <!-- vim:set filetype=mkd : -->
