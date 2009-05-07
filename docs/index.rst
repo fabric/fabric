@@ -96,6 +96,16 @@ API
     api/*
 
 
+Contrib
+=======
+
+.. toctree::
+    :maxdepth: 2
+    :glob:
+
+    contrib/*
+
+
 Indices and tables
 ==================
 
