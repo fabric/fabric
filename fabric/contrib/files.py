@@ -71,14 +71,14 @@ def sed(filename, before, after, limit='', use_sudo=False, backup='.bak'):
 
     If ``use_sudo`` is True, will use `sudo` instead of `run`.
     """
-    callable = use_sudo and sudo or run
+    func = use_sudo and sudo or run
     expr = r'sed -i%s -r -e "%ss/%s/%s/g" %s'
     before = before.replace('/', r'\/')
     after = after.replace('/', r'\/')
     if limit:
         limit = r'/%s/ ' % limit
     command = expr % (backup, limit, before, after, filename)
-    return callable(command)
+    return func(command)
 
 
 def uncomment(filename, regex, use_sudo=False, char='#', backup='.bak'):
@@ -123,10 +123,10 @@ def contains(text, filename, exact=False, use_sudo=False):
 
     If ``use_sudo`` is True, will use `sudo` instead of `run`.
     """
-    callable = use_sudo and sudo or run
+    func = use_sudo and sudo or run
     if exact:
         text = "^%s$" % text
-    return callable('egrep "%s" "%s"' % (
+    return func('egrep "%s" "%s"' % (
         text.replace('"', r'\"'),
         filename.replace('"', r'\"')
     ))
@@ -146,8 +146,8 @@ def append(text, filename, use_sudo=False):
 
     If ``use_sudo`` is True, will use `sudo` instead of `run`.
     """
-    callable = use_sudo and sudo or run
+    func = use_sudo and sudo or run
     with warnings_only():
         if contains(text, filename, use_sudo=use_sudo):
             return None
-    return callable("echo '%s' >> %s" % (text.replace("'", r'\''), filename))
+    return func("echo '%s' >> %s" % (text.replace("'", r'\''), filename))
