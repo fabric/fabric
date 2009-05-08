@@ -327,18 +327,17 @@ def get(remote_path, local_path):
     ``server.log.host1`` and ``server.log.host2`` respectively.
     """
     ftp = connections[env.host_string].open_sftp()
-    local_path = local_path + '.' + env.host
-    remote_path = remote_path
-    # TODO: tie this into global output controls
-    print("[%s] download: %s <- %s" % (env.host_string, local_path, remote_path))
-    # Handle any raised exceptions (no return code to inspect here)
-    try:
-        ftp.get(remote_path, local_path)
-    except Exception, e:
-        msg = "get() encountered an exception while downloading '%s'" 
-        _handle_failure(message=msg % remote_path, exception=e)
-    finally:
-        ftp.close()
+    with closing (ftp) as ftp:
+        local_path = local_path + '.' + env.host
+        remote_path = remote_path
+        # TODO: tie this into global output controls
+        print("[%s] download: %s <- %s" % (env.host_string, local_path, remote_path))
+        # Handle any raised exceptions (no return code to inspect here)
+        try:
+            ftp.get(remote_path, local_path)
+        except Exception, e:
+            msg = "get() encountered an exception while downloading '%s'" 
+            _handle_failure(message=msg % remote_path, exception=e)
 
 
 @needs_host
