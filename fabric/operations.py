@@ -336,7 +336,7 @@ def get(remote_path, local_path):
         try:
             ftp.get(remote_path, local_path)
         except Exception, e:
-            msg = "get() encountered an exception while downloading '%s'" 
+            msg = "get() encountered an exception while downloading '%s'"
             _handle_failure(message=msg % remote_path, exception=e)
 
 
