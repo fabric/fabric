@@ -45,16 +45,6 @@ doesn't literally mean full coverage...)
     some patches to it, though, it's not great for functional coding and I
     don't see the need to 100% class-ify my code just so my mocker works better.
 * Sphinx documentation
-    * Functions wrapped with the @needs_host decorator, due to how @wraps works,
-    lose their argument signature because the wrapping function has to define the
-    generic signature (so it can take any input). Thus, since there doesn't seem
-    to be a way around this (I looked) I will need to add ``autofunction``
-    directives and repeat the signature.
-        * Might be wise to update build_docs so it scans for that sort of thing
-        and checks it against the actual signatures using the ``inspect``
-        module, e.g. ``printargspec(getargspec(function))``.
-        * In fact, even better might be for build_docs to just use that to
-        **generate** the autofunction directives for me. Hmm.
     * Update all docstrings so they "read well" in the generated API:
         * General language / tense / etc
         * Where applicable, turn ``function()`` into `function` (so the default
@@ -114,6 +104,8 @@ options. Look at `man ssh_config` for what else people can put in that file.
     one global host list per session. (But isn't that the more sensible
     solution? When would you execute a `fab` command line and expect the host
     list to change during the session?
+* Related to previous bullet point, but independent: possibly make concept of
+"host" more flexible to include host-specific password, username, arch, OS, etc.
 * Possibly add back in the old `shell` functionality (it would have to be a
 command line option such as `--run-shell` -- there are no more internal
 "commands" and it doesn't make sense as one anyway, as it cannot be run along
@@ -161,5 +153,13 @@ them?
     violate DRY.
     * Probably do the usual "behavior controlled via `env`" thing, and make the
     usual context manager too?
+* Add chmod/chown options to either put/get or to contrib.files, so either of:
+    * `put(x, y, chmod='775', chown='foo:bar')`
+    * `put(x, y) ; chmod(x, '775')`
+* Consider eventually changing backend from Paramiko to Twisted or PuSSH (e.g.
+in 2.0):
+    * Twisted: theoretically easier coding of the main network loops, possibly
+    more SSH functionality
+    * PuSSH: possibly more SSH functionality such as ProxyCommand, etc
 
 <!-- vim:set filetype=mkd : -->
