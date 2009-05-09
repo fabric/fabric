@@ -107,12 +107,14 @@ def connect(user, host, port):
 
     # Init client
     client = ssh.SSHClient()
-    if env.reject_unknown_keys:
-        # Load known host keys (e.g. ~/.ssh/known_hosts)
+
+    # Load known host keys (e.g. ~/.ssh/known_hosts) unless user says not to.
+    if not env.disable_known_hosts:
         client.load_system_host_keys()
-    else:
-        # Unless user specified not to, accept/add new, unknown host keys
+    # Unless user specified not to, accept/add new, unknown host keys
+    if not env.reject_unknown_hosts:
         client.set_missing_host_key_policy(ssh.AutoAddPolicy())
+
 
     #
     # Connection attempt loop

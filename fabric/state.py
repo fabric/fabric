@@ -96,20 +96,28 @@ def _get_system_username():
 # the 'dest' value becomes the environment key and the value, the env value).
 #
 # Keep in mind that optparse changes hyphens to underscores when automatically
-# deriving the `dest` name, e.g. `--reject-unknown-keys` becomes
-# `reject_unknown_keys`.
+# deriving the `dest` name, e.g. `--reject-unknown-hosts` becomes
+# `reject_unknown_hosts`.
 #
 # Furthermore, *always* specify some sort of default to avoid ending up with
 # optparse.NO_DEFAULT (currently a two-tuple)! None is better than ''.
 env_options = [
 
-    # By default, we accept unknown host keys. This option allows users to
+    # By default, we accept unknown hosts' keys. This option allows users to
     # disable that behavior (which means Fabric will raise an exception and
     # terminate when an unknown host key is received from a server).
-    make_option('-R', '--reject-unknown-keys',
+    make_option('-R', '--reject-unknown-hosts',
         action='store_true',
         default=False,
-        help="reject unknown host keys"
+        help="reject unknown hosts"
+    ),
+
+    # By default, we load the user's ~/.ssh/known_hosts file. In some cases
+    # users may not want this to occur.
+    make_option('-D', '--disable-known-hosts',
+        action='store_true',
+        default=False,
+        help="do not load user known_hosts file"
     ),
 
     # Username
