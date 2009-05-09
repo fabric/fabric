@@ -439,7 +439,7 @@ def sudo(command, shell=True, user=None):
     """
     # Construct sudo command, with user if necessary
     if user is not None:
-        if str(user).isint():
+        if str(user).isdigit():
             user = "#%s" % user
         sudo_prefix = "sudo -S -p '%%s' -u \"%s\" " % user
     else:
