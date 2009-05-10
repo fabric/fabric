@@ -250,14 +250,8 @@ def put(local_path, remote_path, mode=None):
     """
     ftp = connections[env.host_string].open_sftp()
     with closing(ftp) as ftp:
-        # Do jury-rigged tilde expansion, but only if we can do it nicely.
-        # TODO: tie into global output controls -- as a user! (i.e. hide all
-        # output from this chunk below if possible)
-        with settings(warn_only=True):
-            cwd = run('pwd')
-        if not cwd.failed:
-            remote_path = remote_path.replace('~', cwd)
-    
+        # Expand tildes (assumption: default remote cwd is user $HOME)
+        remote_path = remote_path.replace('~', ftp.normalize('.'))
         try:
             rmode = ftp.lstat(remote_path).st_mode
         except:
