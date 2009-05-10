@@ -366,8 +366,6 @@ def main():
             commands.update(load_fabfile(fabfile))
 
             # Abort if no commands found
-            # TODO: continue searching for fabfiles if one we selected doesn't
-            # contain any callables? Bit of an edge case, but still...
             if not commands:
                 abort("Fabfile didn't contain any commands!")
 
