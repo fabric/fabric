@@ -6,7 +6,7 @@ from os import getcwd, sep
 
 from fabric.network import needs_host
 from fabric.operations import local, run, put
-from fabric.state import env
+from fabric.state import env, output
 
 
 @needs_host
@@ -74,8 +74,8 @@ def rsync_project(remote_dir, local_dir=None, exclude=[], delete=False,
     # Create and run final command string
     cmd = "rsync %s %s %s@%s:%s" % (options, local_dir, env.user,
         env.host, remote_dir)
-    # TODO: tie into global output controls
-    print("[%s] rsync_project: %s" % (env.host_string, cmd))
+    if output.running:
+        print("[%s] rsync_project: %s" % (env.host_string, cmd))
     return local(cmd, show_stderr=True)
 
 

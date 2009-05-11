@@ -14,7 +14,7 @@ import subprocess
 from context_managers import warnings_only
 from contextlib import closing
 from network import output_thread, needs_host
-from state import env, connections
+from state import env, connections, output
 from utils import abort, indent, warn
 
 
@@ -269,7 +269,8 @@ def put(local_path, remote_path, mode=None):
     
         # Deal with bad local_path
         if not globs:
-            raise ValueError, "'%s' is not a valid local path or glob." % local_path
+            raise ValueError, "'%s' is not a valid local path or glob." \
+                % local_path
     
         for lpath in globs:
             # first, figure out the real, absolute, remote path
@@ -279,9 +280,10 @@ def put(local_path, remote_path, mode=None):
                     remote_path,
                     os.path.basename(lpath)
                 )
-            
-            # TODO: tie this into global output controls
-            print("[%s] put: %s -> %s" % (env.host_string, lpath, _remote_path))
+            if output.running:
+                print("[%s] put: %s -> %s" % (
+                    env.host_string, lpath, _remote_path
+                ))
             # Try to catch raised exceptions (which is the only way to tell if
             # this operation had problems; there's no return code) during upload
             try:
@@ -318,8 +320,10 @@ def get(remote_path, local_path):
     with closing (ftp) as ftp:
         local_path = local_path + '.' + env.host
         remote_path = remote_path
-        # TODO: tie this into global output controls
-        print("[%s] download: %s <- %s" % (env.host_string, local_path, remote_path))
+        if output.running:
+            print("[%s] download: %s <- %s" % (
+                env.host_string, local_path, remote_path
+            ))
         # Handle any raised exceptions (no return code to inspect here)
         try:
             ftp.get(remote_path, local_path)
@@ -358,16 +362,14 @@ def run(command, shell=True):
     # functionality, i.e. users may set an option to be prompted before each
     # execution. Pretty sure this should be a global option applying to ALL
     # remote operations! And, of course -- documented.
-    # TODO: tie this into global output controls
-    if env.debug:
+    if output.debug:
         print("[%s] run: %s" % (env.host_string, real_command))
-    else:
+    elif output.running:
         print("[%s] run: %s" % (env.host_string, command))
     channel = connections[env.host_string]._transport.open_session()
     channel.exec_command(real_command)
     capture = []
 
-    # TODO: tie into global output controls
     out_thread = output_thread("[%s] out" % env.host_string, channel,
         capture=capture)
     err_thread = output_thread("[%s] err" % env.host_string, channel,
@@ -441,13 +443,10 @@ def sudo(command, shell=True, user=None):
     else:
         real_command = '%s %s "%s"' % (sudo_prefix, env.shell,
            _shell_escape(command))
-    # TODO: tie this into global output controls; both in terms of showing the
-    # shell itself, AND showing the sudo prefix. Not 100% sure it's worth being
-    # so granular as to allow one on and one off, but think about it.
     # TODO: handle confirm_proceed behavior, as in run()
-    if env.debug:
+    if output.debug:
         print("[%s] sudo: %s" % (env.host_string, real_command))
-    else:
+    elif output.running:
         print("[%s] sudo: %s" % (env.host_string, command))
     channel = connections[env.host_string]._transport.open_session()
     channel.exec_command(real_command)
@@ -480,7 +479,7 @@ def sudo(command, shell=True, user=None):
     return output
 
 
-def local(command, show_stderr=True, capture=True):
+def local(command, capture=True):
     """
     Run a command on the local system.
 
@@ -488,31 +487,44 @@ def local(command, show_stderr=True, capture=True):
     Python ``subprocess`` module with ``shell=True`` activated. If you need to
     do anything special, consider using the ``subprocess`` module directly.
 
-    `local` will return the contents of the command's stdout as a string.
-    Standard error will be printed to your terminal by default, but you may
-    specify ``show_stderr=False`` in order to discard stderr.
+    `local` will, by default, capture and return the contents of the command's
+    stdout as a string, and will not print anything to the user (the command's
+    stderr is captured but discarded.)
+    
+    .. note::
+        This differs from the default behavior of `run` and `sudo` due to the
+        different mechanisms involved: it is difficult to simultaneously
+        capture and print local commands, so we have to choose one or the
+        other. We hope to address this in later releases.
 
     If you need full interactivity with the command being run (and are willing
     to accept the loss of captured stdout) you may specify ``capture=False`` so
     that the subprocess' stdout and stderr pipes are connected to your terminal
-    instead of captured and read by Fabric.
+    instead of captured by Fabric.
+
+    When ``capture`` is False, global output controls (``output.stdout`` and
+    ``output.stderr`` will be used to determine what is printed and what is
+    discarded.
     """
-    # TODO: tie this into global output controls
-    print("[localhost] run: " + command)
+    if output.running:
+        print("[localhost] run: " + command)
+    # By default, capture both stdout and stderr
     PIPE = subprocess.PIPE
-    # User wants to interact with whatever was called, instead of capturing
+    out_stream = PIPE
+    err_stream = PIPE
+    # Tie in to global output controls as best we can; our capture argument
+    # takes precedence over the output settings.
     if not capture:
-        p = subprocess.Popen([command], shell=True)
-    # User wants stdout captured but wants stderr printed to terminal instead
-    # of discarded
-    elif show_stderr:
-        p = subprocess.Popen([command], shell=True, stdout=PIPE)
-    # Capture both and discard stderr
-    else:
-        p = subprocess.Popen([command], shell=True, stdout=PIPE, stderr=PIPE)
+        if output.stdout:
+            out_stream = None
+        if output.stderr:
+            err_stream = None
+    p = subprocess.Popen([command], shell=True, stdout=out_stream,
+            stderr=err_stream)
     (stdout, stderr) = p.communicate()
     # Handle error condition
     if p.returncode != 0:
         msg = "local() encountered an error (return code %s) while executing '%s'" % (p.returncode, command)
         _handle_failure(message=msg)
+    # If we were capturing, this will be a string; otherwise it will be None.
     return stdout

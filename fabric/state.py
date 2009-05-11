@@ -32,7 +32,7 @@ win32 = sys.platform in ['win32', 'cygwin']
 
 
 #
-# Environment dictionary
+# Environment dictionary - support structures
 # 
 
 class _AttributeDict(dict):
@@ -199,6 +199,12 @@ env_options = [
     
 ]
 
+
+#
+# Environment dictionary - actual dictionary object
+#
+
+
 # Global environment dict. Currently a catchall for everything: config settings
 # such as global deep/broad mode, host lists, username etc.
 # Most default values are specified in `env_options` above, in the interests of
@@ -207,7 +213,6 @@ env = _AttributeDict({
     # Version number for --version
     'version': get_version(),
     'sudo_prompt': 'sudo password:',
-    'quiet': False,
     'use_shell': True
 })
 
@@ -239,3 +244,47 @@ connections = HostConnectionCache()
 # Keys are simple string names, e.g. 'webservers', values are lists of host
 # strings.
 roles = {}
+
+
+#
+# Output controls
+#
+
+# Uses _AttributeDict for ease of use; keys are "levels" or "groups" of output,
+# values are always boolean, determining whether output falling into the given
+# group is printed or not printed.
+#
+# By default, everything except 'debug' is printed, as this is what the average
+# user, and new users, are most likely to expect.
+output = _AttributeDict({
+    # Status messages, i.e. noting when Fabric is done running, if the user
+    # used a keyboard interrupt, or when servers are disconnected from.
+    # These are almost always of interest to CLI users regardless.
+    'status': True,
+    # Abort messages. Like status messages, these should really only be turned
+    # off when using Fabric as a library, and possibly not even then.
+    'aborts': True,
+    # Warning messages. These should usually stay on but are often useful to
+    # disable when e.g. using empty "grep" output to determine some sort of
+    # status.
+    'warnings': True,
+    # Printouts of commands being executed or files transferred, i.e.
+    # "[myserver] run: ls /var/www". This group and "stdout"/"stderr" are
+    # typically set to the same value, but may be toggled if the need arises.
+    'running': True,
+    # Local, or remote, stdout, i.e. non-error output from commands.
+    'stdout': True,
+    # Local, or remote, stderr, i.e. error-related output from commands.
+    'stderr': True,
+    # Turn on debugging. Typically off; used to see e.g. the "full" commands
+    # being run (i.e. env.shell + command => '/bin/bash -l -c "ls /var/www"',
+    # as well as various other debuggy-type things. May add additional output,
+    # or modify pre-existing output.
+    #
+    # Where modifying other pieces of output (such as above example where it
+    # modifies the 'running' line to show the shell and any escape characters),
+    # this setting takes precedence over the other; so if "running" is False
+    # but "debug" is True, you will still be shown the 'what is running' line
+    # in its debugging form.
+    'debug': False
+})

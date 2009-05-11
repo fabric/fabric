@@ -246,7 +246,7 @@ def output_thread(prefix, chan, stderr=False, capture=None):
     input from the given channel object ``chan``. ``stderr`` determines whether
     the channel's stdout or stderr is the focus of this particular thread.
     """
-    from state import env
+    from state import env, output
 
     def outputter(prefix, chan, stderr, capture):
         # Read one "packet" at a time, which lets us get less-than-a-line
@@ -282,10 +282,13 @@ def output_thread(prefix, chan, stderr=False, capture=None):
                 line = leftovers + parts.pop(0)
                 leftovers = parts.pop()
                 while parts or line:
-                    # TODO: tie in with global output controls
-                    if not env.quiet:
-                        sys.stdout.write("%s: %s\n" % (prefix, line)),
-                        sys.stdout.flush()
+                    # Write stderr to our own stderr.
+                    out_stream = stderr and sys.stderr or sys.stdout
+                    # But only write at all if we're supposed to.
+                    if ((not stderr and output.stdout)
+                        or (stderr and output.stderr)):
+                        out_stream.write("%s: %s\n" % (prefix, line)),
+                        out_stream.flush()
                     if parts:
                         line = parts.pop(0)
                     else:

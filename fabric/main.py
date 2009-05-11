@@ -319,7 +319,7 @@ def main():
 
         # Handle version number option
         if options.show_version:
-            print "Fabric " + state.env.version
+            print("Fabric %s" % state.env.version)
             sys.exit(0)
 
         # Load settings from user settings file, into shared env dict.
@@ -394,12 +394,14 @@ def main():
             if not hosts:
                 commands[name](*args, **kwargs)
         # If we got here, no errors occurred, so print a final note.
-        print("\nDone.")
+        if state.output.status:
+            print("\nDone.")
     except SystemExit:
         # a number of internal functions might raise this one.
         raise
     except KeyboardInterrupt:
-        print >>sys.stderr, "\nStopped."
+        if state.output.status:
+            print >>sys.stderr, "\nStopped."
         sys.exit(1)
     except:
         sys.excepthook(*sys.exc_info())
@@ -408,8 +410,9 @@ def main():
     finally:
         # Explicitly disconnect from all servers
         for key in connections.keys():
-            # TODO: tie into global output controls
-            print "Disconnecting from %s..." % denormalize(key),
+            if state.output.status:
+                print "Disconnecting from %s..." % denormalize(key),
             connections[key].close()
-            print "done."
+            if state.output.status:
+                print "done."
     sys.exit(0)

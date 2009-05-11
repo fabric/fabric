@@ -14,8 +14,10 @@ def abort(msg):
     When not invoked as the ``fab`` command line tool, raise an exception
     instead.
     """
-    print >>sys.stderr, "\nFatal error: " + str(msg)
-    print >>sys.stderr, "\nAborting."
+    from state import output
+    if output.aborts:
+        print >>sys.stderr, "\nFatal error: " + str(msg)
+        print >>sys.stderr, "\nAborting."
     sys.exit(1)
 
     
@@ -23,9 +25,9 @@ def warn(msg):
     """
     Print warning message, but do not abort execution.
     """
-    # TODO: tie this into global output controls -- should be a way to say
-    # "don't even show me warnings" along with whatever other controls there are
-    print >>sys.stderr, "\nWarning: %s\n" % msg
+    from state import output
+    if output.warnings:
+        print >>sys.stderr, "\nWarning: %s\n" % msg
 
 
 def indent(text, spaces=4, strip=False):
