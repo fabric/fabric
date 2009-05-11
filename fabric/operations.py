@@ -46,22 +46,10 @@ def _handle_failure(message, exception=None):
 
 
 def _shell_escape(string):
-    r"""
-    Escape double quotes and backslashes in given ``string``.
-
-    Backslashes are escaped first, followed by double quotes (so that the
-    backslashes added to escape double quotes are not themselves escaped.)
-
-    Example transformations:
-
-    ==========  ===============
-    ``foo``     ``foo``
-    ``"foo"``   ``\"foo\"``
-    ``\"foo\"`` ``\\\"foo\\\"``
-    ==========  ===============
-
     """
-    return string.replace('\\', r'\\').replace(r'"', r'\"')
+    Escape double quotes in given ``string``.
+    """
+    return string.replace(r'"', r'\"')
 
 
 class _AttributeString(str):
