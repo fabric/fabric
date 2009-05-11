@@ -17,9 +17,9 @@ import textwrap
 
 from fabric import api # For checking callables against the API 
 from fabric.contrib import project, files # Ditto
-from network import normalize
+from network import denormalize, normalize
 import state # For easily-mockable access to roles, env and etc
-from state import commands, env_options, win32
+from state import commands, connections, env_options, win32
 from utils import abort, indent, warn
 
 
@@ -334,97 +334,93 @@ def main():
     Main command-line execution loop.
     """
     try:
-        try:
-            # Parse command line options
-            parser, options, arguments = parse_options()
+        # Parse command line options
+        parser, options, arguments = parse_options()
 
-            # Update env with any overridden option values
-            # NOTE: This needs to remain the first thing that occurs
-            # post-parsing, since so many things hinge on the values in env.
-            for option in env_options:
-                state.env[option.dest] = getattr(options, option.dest)
+        # Update env with any overridden option values
+        # NOTE: This needs to remain the first thing that occurs
+        # post-parsing, since so many things hinge on the values in env.
+        for option in env_options:
+            state.env[option.dest] = getattr(options, option.dest)
 
-            # Handle version number option
-            if options.show_version:
-                print "Fabric " + state.env.version
-                sys.exit(0)
+        # Handle version number option
+        if options.show_version:
+            print "Fabric " + state.env.version
+            sys.exit(0)
 
-            # Load settings from user settings file, into shared env dict.
-            state.env.update(load_settings(rc_path()))
+        # Load settings from user settings file, into shared env dict.
+        state.env.update(load_settings(rc_path()))
 
-            # Find local fabfile path or abort
-            fabfile = find_fabfile()
-            if not fabfile:
-                abort("Couldn't find any fabfiles!")
+        # Find local fabfile path or abort
+        fabfile = find_fabfile()
+        if not fabfile:
+            abort("Couldn't find any fabfiles!")
 
-            # Store absolute path to fabfile in case anyone needs it
-            state.env.real_fabfile = fabfile
+        # Store absolute path to fabfile in case anyone needs it
+        state.env.real_fabfile = fabfile
 
-            # Load fabfile (which calls its module-level code, including
-            # tweaks to env values) and put its commands in the shared commands
-            # dict
-            commands.update(load_fabfile(fabfile))
+        # Load fabfile (which calls its module-level code, including
+        # tweaks to env values) and put its commands in the shared commands
+        # dict
+        commands.update(load_fabfile(fabfile))
 
-            # Abort if no commands found
-            if not commands:
-                abort("Fabfile didn't contain any commands!")
+        # Abort if no commands found
+        if not commands:
+            abort("Fabfile didn't contain any commands!")
 
-            # Handle list-commands option (now that commands are loaded)
-            if options.list_commands:
-                list_commands()
+        # Handle list-commands option (now that commands are loaded)
+        if options.list_commands:
+            list_commands()
 
-            # Handle show (command-specific help) option
-            if options.display:
-                display_command(options.display)
+        # Handle show (command-specific help) option
+        if options.display:
+            display_command(options.display)
 
-            # If user didn't specify any commands to run, show help
-            if not arguments:
-                parser.print_help()
-                sys.exit(0) # Or should it exit with error (1)?
+        # If user didn't specify any commands to run, show help
+        if not arguments:
+            parser.print_help()
+            sys.exit(0) # Or should it exit with error (1)?
 
-            # Parse arguments into commands to run (plus args/kwargs/hosts)
-            commands_to_run = parse_arguments(arguments)
-            
-            # Figure out if any specified names are invalid
-            unknown_commands = []
-            for tup in commands_to_run:
-                if tup[0] not in commands:
-                    unknown_commands.append(tup[0])
+        # Parse arguments into commands to run (plus args/kwargs/hosts)
+        commands_to_run = parse_arguments(arguments)
 
-            # Abort if any unknown commands were specified
-            if unknown_commands:
-                abort("Command(s) not found:\n%s" \
-                    % indent(unknown_commands))
+        # Figure out if any specified names are invalid
+        unknown_commands = []
+        for tup in commands_to_run:
+            if tup[0] not in commands:
+                unknown_commands.append(tup[0])
 
-            # At this point all commands must exist, so execute them in order.
-            for name, args, kwargs, cli_hosts in commands_to_run:
-                # Get callable by itself
-                command = commands[name]
-                # Set current command name (used for some error messages)
-                state.env.command = name
-                # Set host list
-                hosts = get_hosts(cli_hosts, command)
-                # If hosts found, execute the function on each host in turn
-                for host in hosts:
-                    username, hostname, port = normalize(host)
-                    state.env.host_string = host
-                    state.env.host = hostname
-                    # Preserve user
-                    prev_user = state.env.user
-                    state.env.user = username
-                    state.env.port = port
-                    # Actually run command
-                    commands[name](*args, **kwargs)
-                    # Put old user back
-                    state.env.user = prev_user
-                # If no hosts found, assume local-only and run once
-                if not hosts:
-                    commands[name](*args, **kwargs)
-            # If we got here, no errors occurred, so print a final note.
-            print("\nDone.")
-        finally:
-            # TODO: explicit disconnect?
-            pass
+        # Abort if any unknown commands were specified
+        if unknown_commands:
+            abort("Command(s) not found:\n%s" \
+                % indent(unknown_commands))
+
+        # At this point all commands must exist, so execute them in order.
+        for name, args, kwargs, cli_hosts in commands_to_run:
+            # Get callable by itself
+            command = commands[name]
+            # Set current command name (used for some error messages)
+            state.env.command = name
+            # Set host list
+            hosts = get_hosts(cli_hosts, command)
+            # If hosts found, execute the function on each host in turn
+            for host in hosts:
+                username, hostname, port = normalize(host)
+                state.env.host_string = host
+                state.env.host = hostname
+                # Preserve user
+                prev_user = state.env.user
+                state.env.user = username
+                state.env.port = port
+                # Actually run command
+                commands[name](*args, **kwargs)
+                # Put old user back
+                state.env.user = prev_user
+            # If no hosts found, assume local-only and run once
+            if not hosts:
+                commands[name](*args, **kwargs)
+        # If we got here, no errors occurred, so print a final note.
+        print("\nDone.")
     except SystemExit:
         # a number of internal functions might raise this one.
         raise
@@ -435,4 +431,11 @@ def main():
         sys.excepthook(*sys.exc_info())
         # we might leave stale threads if we don't explicitly exit()
         sys.exit(1)
+    finally:
+        # Explicitly disconnect from all servers
+        for key in connections.keys():
+            # TODO: tie into global output controls
+            print "Disconnecting from %s..." % denormalize(key),
+            connections[key].close()
+            print "done."
     sys.exit(0)

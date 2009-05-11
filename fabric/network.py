@@ -79,6 +79,24 @@ def normalize(host_string, omit_port=False):
     return user, host, port
 
 
+def denormalize(host_string):
+    """
+    Strips out default values for the given host string.
+
+    If the user part is the default user, it is removed; if the port is port 22,
+    it also is removed.
+    """
+    from state import env
+    r = host_regex.match(host_string).groupdict()
+    user = ''
+    if r['user'] != env.user:
+        user = r['user'] + '@'
+    port = ''
+    if r['port'] != '22':
+        port = ':' + r['port']
+    return user + r['host'] + port
+
+
 def join_host_strings(user, host, port=None):
     """
     Turns user/host/port strings into ``user@host:port`` combined string.
