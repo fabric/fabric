@@ -65,7 +65,7 @@ def test_require_multiple_existing_keys():
     """
     When given multiple existing keys, require() throws no exceptions
     """
-    require('version', 'settings_file')
+    require('version', 'sudo_prompt')
 
 
 @mock_streams('stderr')
