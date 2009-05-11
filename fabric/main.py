@@ -162,13 +162,6 @@ def parse_options():
         help="print detailed info about a given command and exit"
     )
 
-    # TODO: explicitly specify "fabfile(s)" to load.
-    # - Can specify multiple times
-    # - Disables implicit "local" fabfile discovery/loading
-    #   - or should the default be to "append" to the implicitly loaded fabfile?
-    #   - either way, also add a flag to toggle that append/disable behavior
-    # Flags: -f ? --fabfile ? --source ? what are some common flags?
-
     # TODO: old 'let' functionality, i.e. global env additions/overrides
     # maybe "set" as the keyword? i.e. -s / --set x=y
     # allow multiple times (like with tar --exclude)
