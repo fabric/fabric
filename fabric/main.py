@@ -42,21 +42,6 @@ for module in _modules:
             _internal_callables.append(item)
 
 
-def rc_path():
-    """
-    Return platform-specific file path for $HOME/<env.settings_file>.
-    """
-    if not win32:
-        return os.path.expanduser("~/" + state.env.settings_file)
-    else:
-        from win32com.shell.shell import SHGetSpecialFolderPath
-        from win32com.shell.shellcon import CSIDL_PROFILE
-        return "%s/%s" % (
-            SHGetSpecialFolderPath(0,CSIDL_PROFILE),
-            state.env.settings_file
-        )
-
-
 def load_settings(path):
     """
     Take given file path and return dictionary of any key=value pairs found.
@@ -176,10 +161,6 @@ def parse_options():
         metavar='COMMAND',
         help="print detailed info about a given command and exit"
     )
-
-    # TODO: specify nonstandard fabricrc file (and call load_settings() on it)
-    # -c ? --config ? --fabricrc ? --rcfile ?
-    # what are some commonly used flags for conf file specification?
 
     # TODO: explicitly specify "fabfile(s)" to load.
     # - Can specify multiple times
@@ -349,7 +330,7 @@ def main():
             sys.exit(0)
 
         # Load settings from user settings file, into shared env dict.
-        state.env.update(load_settings(rc_path()))
+        state.env.update(load_settings(state.env.rcfile))
 
         # Find local fabfile path or abort
         fabfile = find_fabfile()

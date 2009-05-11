@@ -90,6 +90,22 @@ def _get_system_username():
         return win32api.GetUserName()
 
 
+def _rc_path():
+    """
+    Return platform-specific default file path for $HOME/.fabricrc.
+    """
+    rc_file = '.fabricrc'
+    if not win32:
+        return os.path.expanduser("~/" + rc_file)
+    else:
+        from win32com.shell.shell import SHGetSpecialFolderPath
+        from win32com.shell.shellcon import CSIDL_PROFILE
+        return "%s/%s" % (
+            SHGetSpecialFolderPath(0,CSIDL_PROFILE),
+            rc_file
+        )
+
+
 # Options/settings which exist both as environment keys and which can be set
 # on the command line, are defined here. When used via `fab` they will be added
 # to the optparse parser, and either way they are added to `env` below (i.e.
@@ -165,7 +181,14 @@ env_options = [
     make_option('--debug',
         action='store_true',
         default=False,
-        help="Display debug output"
+        help="display debug output"
+    ),
+
+    # Config file location
+    make_option('-c', '--config',
+        dest='rcfile',
+        default=_rc_path(),
+        help="specify location of config file to use"
     )
 
 
@@ -183,8 +206,6 @@ env_options = [
 env = _AttributeDict({
     # Version number for --version
     'version': get_version(),
-    # Filename of Fab settings file
-    'settings_file': '.fabricrc',
     'sudo_prompt': 'sudo password:',
     'quiet': False,
     'use_shell': True
