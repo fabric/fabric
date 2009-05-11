@@ -18,15 +18,16 @@
         * see how stdlib does it in similar situations. guessing 2 arguments
         with "only X or Y may be given, but not both at the same time" note?
     * look at the rest too
-* Output handling -- how to deal with:
-    * Status info
-    * Warnings
-    * Errors/failures (both printing info, and how to abort or not abort flow)
-        * Also provide easy access to the return code, regardless of whether
-        Fabric actually fails -- i.e. have some level where the user can
-        inspect return codes and decide on their own whether to abort() or what
-    * Exceptions (outside of the ones involved with errors/failures)
-    * As mentioned elsewhere, want to make this as flexible as possible
+* Output handling:
+    * Add 'output' to API, and/or provide full access to it via a context
+      manager
+    * See existing TODO: note for CLI flags. Don't think -vvv style will really
+    work for the current setup; since they default to on, provide something
+    like "--hide warnings,aborts,stdout"?
+    * Consider aliases/groups for these, i.e. an easy way to turn off
+    running/stdout/stderr all at once (but leaving warnings, aborts etc).
+        * -vvv style WOULD work pretty well here; but I really want to leave in
+        the ability to specify any arbitrary combo, not just levels. :(
     * Put in logging-to-disk and/or leverage the logging module for stdout too?
         * e.g. it already has the concepts of info/warn/etc -- can that be used?
     * Ensure things behave gracefully when used as a lib
@@ -35,8 +36,6 @@
           other method? perhaps inverse -- setting has to be turned on
           explicitly by a library user? or just ensure that e.g. printing,
           exceptions have simple controls for making them shut up?
-    * Regardless of other work in this area, make sure `local` can be
-    configured to print its output without being wrapped in `print` (durr)
 * Continue building out any previously made tests till coverage.py implies we
 have pretty decent coverage (100% would be nice but even a 100% from coverage.py
 doesn't literally mean full coverage...)
