@@ -27,7 +27,7 @@ def build_docs():
     """
     Generate the Sphinx documentation.
     """
-    local('cd docs && make clean html')
+    local('cd docs && make clean html', capture=False)
 
 
 @hosts('jforcier@fabfile.org')

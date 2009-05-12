@@ -3,4 +3,8 @@ Context Managers
 ================
 
 .. automodule:: fabric.context_managers
-    :members: warnings_only
+
+    .. autofunction:: hide(*groups)
+    .. autofunction:: setenv(**kwargs)
+    .. autofunction:: settings
+    .. autofunction:: show(*groups)

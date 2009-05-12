@@ -78,7 +78,7 @@ Documentation
 =============
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 3
 
     installation
     development
@@ -90,7 +90,7 @@ API
 ===
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 3
     :glob:
 
     api/*
@@ -100,7 +100,7 @@ Contrib
 =======
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 3
     :glob:
 
     contrib/*
