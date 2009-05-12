@@ -123,7 +123,9 @@ def settings(*args, **kwargs):
     output that would normally occur.
 
     Thus, `settings` may be used to set any combination of environment
-    variables in tandem with hiding (or showing) specific levels of output.
+    variables in tandem with hiding (or showing) specific levels of output, or
+    in tandem with any other piece of functionality implemented as a context
+    manager.
     """
     managers = list(args)
     if kwargs:
