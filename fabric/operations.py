@@ -11,7 +11,7 @@ import re
 import stat
 import subprocess
 
-from context_managers import warnings_only
+from context_managers import setenv
 from contextlib import closing
 from network import output_thread, needs_host
 from state import env, connections, output
@@ -22,12 +22,12 @@ def _handle_failure(message, exception=None):
     """
     Call `abort` or `warn` with the given message.
 
-    The value of ``env.abort_on_failure`` determines which method is called.
+    The value of ``env.warn_only`` determines which method is called.
 
     If ``exception`` is given, it is inspected to get a string message, which
     is printed alongside the user-generated ``message``.
     """
-    func = env.abort_on_failure and abort or warn
+    func = env.warn_only and warn or abort
     if exception is not None:
         # Figure out how to get a string out of the exception; EnvironmentError
         # subclasses, for example, "are" integers and .strerror is the string.
@@ -253,7 +253,7 @@ def put(local_path, remote_path, mode=None):
         # Do jury-rigged tilde expansion, but only if we can do it nicely.
         # TODO: tie into global output controls -- as a user! (i.e. hide all
         # output from this chunk below if possible)
-        with warnings_only():
+        with setenv(warn_only=True):
             cwd = run('pwd')
         if not cwd.failed:
             remote_path = remote_path.replace('~', cwd)
@@ -384,19 +384,19 @@ def run(command, shell=True):
     err_thread.join()
 
     # Assemble output string
-    output = _AttributeString("".join(capture).strip())
+    out = _AttributeString("".join(capture).strip())
 
     # Error handling
-    output.failed = False
+    out.failed = False
     if status != 0:
-        output.failed = True
+        out.failed = True
         msg = "run() encountered an error (return code %s) while executing '%s'" % (status, command)
         _handle_failure(message=msg)
 
     # Attach return code to output string so users who have set things to warn
     # only, can inspect the error code.
-    output.return_code = status
-    return output
+    out.return_code = status
+    return out
 
 
 @needs_host
@@ -465,18 +465,18 @@ def sudo(command, shell=True, user=None):
     err_thread.join()
 
     # Assemble stdout string
-    output = _AttributeString("".join(capture).strip())
+    out = _AttributeString("".join(capture).strip())
 
     # Error handling
-    output.failed = False
+    out.failed = False
     if status != 0:
-        output.failed = True
+        out.failed = True
         msg = "sudo() encountered an error (return code %s) while executing '%s'" % (status, command)
         _handle_failure(message=msg)
 
     # Attach return code for convenience
-    output.return_code = status
-    return output
+    out.return_code = status
+    return out
 
 
 def local(command, capture=True):

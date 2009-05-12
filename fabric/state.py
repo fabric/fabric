@@ -176,9 +176,8 @@ env_options = [
 
     # Default error-handling behavior
     make_option('-w', '--warn-only',
-        action='store_false',
-        dest='abort_on_failure',
-        default=True,
+        action='store_true',
+        default=False,
         help="warn, instead of abort, when commands fail"
     ),
 

@@ -9,20 +9,28 @@ import tempfile
 from fabric.api import *
 
 
-def exists(path, use_sudo=False):
+def exists(path, use_sudo=False, verbose=False):
     """
     Return True if given path exists on the current remote host.
 
     If ``use_sudo`` is True, will use `sudo` instead of `run`.
+
+    `exists` will, by default, hide all output (including the run line, stdout,
+    stderr and any warning resulting from the file not existing) in order to
+    avoid cluttering output. You may specify ``verbose=True`` to change this
+    behavior.
     """
-    # Never abort when just testing existence.
-    with warnings_only():
-        command = 'ls -d --color=never %s' % path
-        if not sudo:
-            ret = run(command)
-        else:
-            ret = sudo(command)
-    return ret
+    func = use_sudo and sudo or run
+    cmd = 'ls -d --color=never %s' % path
+    # If verbose, run normally
+    if verbose:
+        return func(cmd)
+    # Otherwise, be quiet
+    with settings(
+        hide('warnings', 'running', 'stdout', 'stderr'),
+        warn_only=True
+    ):
+        return func(cmd)
 
 
 def first(*args, **kwargs):
@@ -149,7 +157,7 @@ def append(text, filename, use_sudo=False):
     If ``use_sudo`` is True, will use `sudo` instead of `run`.
     """
     func = use_sudo and sudo or run
-    with warnings_only():
+    with setenv(warn_only=True):
         if contains(text, filename, use_sudo=use_sudo):
             return None
     return func("echo '%s' >> %s" % (text.replace("'", r'\''), filename))

@@ -134,13 +134,6 @@ command string) or fake (put a prefix with e.g. 'cd foo && ' in front of each
 shell invocation, behind the scenes)
 * Strip ANSI colors from remote text, as an option (so I can stop having to do
 ls --color=never and so on)
-* Provide combined env-setting context manager that replaces or at least
-augments existing ones like `warnings_only`, e.g. `with_env(key1=val1,
-key2=val2)`. As with `warnings_only` it should restore the previous settings in
-its exit block.
-    * This would thus prevent a bunch of ugly nesting when wanting to use >1
-    context manager at once; and since behavior is always controlled with env
-    vars, it should be able to handle just about anything.
 * Consider truncating the docstring part of --list output, instead of wrapping?
 * Consider automatically detecting "missing" args to tasks and prompting for
 them?
