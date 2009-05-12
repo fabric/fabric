@@ -76,7 +76,7 @@ def rsync_project(remote_dir, local_dir=None, exclude=[], delete=False,
         env.host, remote_dir)
     if output.running:
         print("[%s] rsync_project: %s" % (env.host_string, cmd))
-    return local(cmd, show_stderr=True)
+    return local(cmd)
 
 
 def upload_project():

@@ -171,7 +171,7 @@ defined, the ``deploy`` command will inherit the host list
     This functionality is likely to become solidified into something less
     ad-hoc in the near future, so keep an eye out!
 
-.. _combining-host-lists::
+.. _combining-host-lists:
 
 Combining host lists
 --------------------
