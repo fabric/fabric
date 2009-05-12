@@ -122,7 +122,7 @@ env_options = [
     # By default, we accept unknown hosts' keys. This option allows users to
     # disable that behavior (which means Fabric will raise an exception and
     # terminate when an unknown host key is received from a server).
-    make_option('-R', '--reject-unknown-hosts',
+    make_option('-r', '--reject-unknown-hosts',
         action='store_true',
         default=False,
         help="reject unknown hosts"
@@ -146,6 +146,18 @@ env_options = [
     make_option('-p', '--password',
         default=None,
         help="password for use with authentication and/or sudo"
+    ),
+
+    # Global host list
+    make_option('-H', '--hosts',
+        default=None,
+        help="comma-separated list of hosts to operate on"
+    ),
+
+    # Global role list
+    make_option('-R', '--roles',
+        default=None,
+        help="comma-separated list of roles to operate on"
     ),
 
     # Private key file
@@ -213,7 +225,8 @@ env = _AttributeDict({
     # Version number for --version
     'version': get_version(),
     'sudo_prompt': 'sudo password:',
-    'use_shell': True
+    'use_shell': True,
+    'roledefs': {}
 })
 
 # Add in option defaults
@@ -235,15 +248,6 @@ commands = {}
 #
 
 connections = HostConnectionCache()
-
-
-#
-# Role dict
-#
-
-# Keys are simple string names, e.g. 'webservers', values are lists of host
-# strings.
-roles = {}
 
 
 #

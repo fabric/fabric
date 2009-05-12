@@ -221,7 +221,7 @@ def display_command(command):
 
 def parse_arguments(arguments):
     """
-    Parse string list into list of 4-tuples: command name, args, kwargs, hosts.
+    Parse string list into list of tuples: command, args, kwargs, hosts, roles.
 
     Parses the given list of arguments into command names and, optionally,
     per-command args/kwargs. Per-command args are attached to the command name
@@ -238,7 +238,7 @@ def parse_arguments(arguments):
     If ``host`` or ``hosts`` kwargs are given, they will be used to fill
     Fabric's host list (see `get_hosts`). ``hosts`` will override
     ``host`` if both are given.
-    
+
     When using ``hosts`` in this way, one must use semicolons (``;``), and must
     thus quote the host list string to prevent shell interpretation.
 
@@ -252,51 +252,75 @@ def parse_arguments(arguments):
     ``host`` and ``hosts`` are removed from the kwargs mapping at this point, so
     commands are not required to expect them. Thus, the resulting call of the
     above example would be ``ping_servers(foo=bar)``.
+
+    ``role`` or ``roles`` behave the same as ``host``/``hosts``, but are used
+    as role names (which will eventually be turned into additional hosts).
+
+    Host- and role-related arguments may be specified simultaneously, in which
+    case they will be merged into a single effective host list.
     """
     cmds = []
     for cmd in arguments:
         args = []
         kwargs = {}
         hosts = []
+        roles = []
         if ':' in cmd:
             cmd, argstr = cmd.split(':', 1)
             for pair in argstr.split(','):
                 k, _, v = pair.partition('=')
                 if v:
-                    # Catch, interpret host/hosts kwargs
-                    if k in ['host', 'hosts']:
+                    # Catch, interpret host/hosts/role/roles kwargs
+                    if k in ['host', 'hosts', 'role', 'roles']:
                         if k == 'host':
                             hosts = [v.strip()]
                         elif k == 'hosts':
                             hosts = [x.strip() for x in v.split(';')]
+                        elif k == 'role':
+                            roles = [v.strip()]
+                        elif k == 'roles':
+                            roles = [x.strip() for x in v.split(';')]
                     # Otherwise, record as usual
                     else:
                         kwargs[k] = v
                 else:
                     args.append(k)
-        cmds.append((cmd, args, kwargs, hosts))
+        cmds.append((cmd, args, kwargs, hosts, roles))
     return cmds
 
 
-def get_hosts(cli_hosts, command):
+def _merge(hosts, roles):
+    """
+    Merge given host and role lists into one list of deduped hosts.
+    """
+    # Look up roles, turn into flat list of hosts
+    role_hosts = (
+        roles
+        and reduce(add, [state.env.roledefs[y] for y in roles])
+        or []
+    )
+    # Return deduped combo of hosts and role_hosts
+    return list(set(hosts + role_hosts))
+
+
+
+def get_hosts(command, cli_hosts, cli_roles):
     """
     Return the host list the given command should be using.
 
     See :ref:`execution-model` for detailed documentation on how host lists are
     set.
     """
-    # Command line takes precedence over anythin else.
-    if cli_hosts:
-        return cli_hosts
-    # Decorator-specific hosts/roles go next and are unioned.
+    # Command line per-command takes precedence over anything else.
+    if cli_hosts or cli_roles:
+        return _merge(cli_hosts, cli_roles)
+    # Decorator-specific hosts/roles go next
     func_hosts = getattr(command, 'hosts', [])
     func_roles = getattr(command, 'roles', [])
     if func_hosts or func_roles:
-        role_hosts = (func_roles and reduce(add, [state.roles[y] for y in
-            func_roles]) or [])
-        return list(set(func_hosts + role_hosts))
-    # Finally, the env is checked (which might contain values from the CLI or
-    # from module-level code).
+        return _merge(func_hosts, func_roles)
+    # Finally, the env is checked (which might contain globally set lists from
+    # the CLI or from module-level code).
     if state.env.get('hosts'):
         return state.env.hosts
     # Empty list is the default if nothing is found.
@@ -370,13 +394,13 @@ def main():
                 % indent(unknown_commands))
 
         # At this point all commands must exist, so execute them in order.
-        for name, args, kwargs, cli_hosts in commands_to_run:
+        for name, args, kwargs, cli_hosts, cli_roles in commands_to_run:
             # Get callable by itself
             command = commands[name]
             # Set current command name (used for some error messages)
             state.env.command = name
             # Set host list
-            hosts = get_hosts(cli_hosts, command)
+            hosts = get_hosts(command, cli_hosts, cli_roles)
             # If hosts found, execute the function on each host in turn
             for host in hosts:
                 username, hostname, port = normalize(host)
