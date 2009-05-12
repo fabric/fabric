@@ -9,7 +9,6 @@ import inspect
 from fabric.api import *
 from fabric.contrib.project import rsync_project
 import fabric.version
-from fabric.main import internals # For doc introspection stuff
 
 import os.path
 
@@ -24,85 +23,11 @@ def test():
     print(local('nosetests -sv', capture=False))
 
 
-def update_doc_signatures():
-    """
-    Update API autodocs with correct signatures for wrapped functions.
-    """
-    for name, d in internals.iteritems():
-        item = d['callable']
-        module_name = d['module_name']
-        if hasattr(item, 'wrapped'):
-            wrapped = item.wrapped
-            if callable(wrapped): # Just in case...
-                args = inspect.formatargspec(*inspect.getargspec(wrapped))
-                name = wrapped.__name__
-                funcspec = "    .. autofunction:: " + name
-                argspec = funcspec + args + '\n'
-                # Only update docs that actually exist
-                path = 'docs/api/%s.rst' % module_name
-                if os.path.exists(path):
-                    # Read in lines
-                    with open(path) as fd:
-                        lines = fd.readlines()
-
-                    # Update argument specification if it's outdated
-                    if argspec not in lines:
-                        # If previous line containing name + ( exists, nuke it
-                        previous_index = None
-                        for i, line in enumerate(lines):
-                            if (funcspec + '(') in line:
-                                del lines[i]
-                                previous_index = i
-                                break
-                        # Regardless, append ours now that we're sure any old
-                        # version is gone.
-                        # Replace pre-existing line if possible
-                        if previous_index is not None:
-                            lines.insert(previous_index, argspec)
-                        # Otherwise, just append to the end
-                        else:
-                            lines.append(argspec)
-
-                    # Ensure item is excluded from being automatically found,
-                    # otherwise it will show up twice.
-                    # First, see if an exclude-members line exists (and also
-                    # look for the :members: line, which must exist)
-                    exclude_index = None
-                    members_index = None
-                    exclude_prefix = "    :exclude-members: "
-                    for i, line in enumerate(lines):
-                        if line.startswith(exclude_prefix):
-                            exclude_index = i
-                        if line.startswith("    :members:"):
-                            members_index = i
-                    # Sanity check
-                    if members_index is None:
-                        abort("%s lacks a members line, something's fishy!" % path)
-                    # No line found: make one after the members line
-                    if exclude_index is None:
-                        exclude = exclude_prefix + name + '\n'
-                        lines.insert(members_index + 1, exclude)
-                        # Also need to make sure a blank line is between these
-                        # args and the body, else Sphinx blows up.
-                        lines.insert(members_index + 2, '\n')
-                    # Line found: append if not already in line
-                    elif name not in lines[exclude_index]:
-                        line = lines[exclude_index]
-                        line = line.rstrip()
-                        line += u", %s\n" % name
-                        lines[exclude_index] = line
-
-                    # Now that we've tweaked the lines, write back to file.
-                    with open(path, 'w') as fd:
-                        fd.writelines(lines)
-
-
 def build_docs():
     """
     Generate the Sphinx documentation.
     """
-    print(local('cd docs && make clean html', capture=False))
-    update_doc_signatures()
+    local('cd docs && make clean html')
 
 
 @hosts('jforcier@fabfile.org')
