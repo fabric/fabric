@@ -19,8 +19,6 @@
         with "only X or Y may be given, but not both at the same time" note?
     * look at the rest too
 * Output handling:
-    * Add 'output' to API, and/or provide full access to it via a context
-      manager
     * See existing TODO: note for CLI flags. Don't think -vvv style will really
     work for the current setup; since they default to on, provide something
     like "--hide warnings,aborts,stdout"?
