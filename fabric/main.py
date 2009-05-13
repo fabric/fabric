@@ -176,6 +176,7 @@ def list_commands():
     # Want separator between name, description to be straight col
     max_len = reduce(lambda a, b: max(a, len(b)), commands.keys(), 0)
     sep = '  '
+    trail = '...'
     names = sorted(commands.keys())
     for name in names:
         output = None
@@ -184,11 +185,11 @@ def list_commands():
         if func.__doc__:
             lines = filter(None, func.__doc__.splitlines())
             first_line = lines[0].strip()
-            # Wrap it if it's longer than N chars
-            wrapped = textwrap.wrap(first_line, 75 - (max_len + len(sep)))
-            output = name.ljust(max_len) + sep + wrapped[0]
-            for line in wrapped[1:]:
-                output += '\n' + (' ' * max_len) + sep + line
+            # Truncate it if it's longer than N chars
+            size = 75 - (max_len + len(sep) + len(trail))
+            if len(first_line) > size:
+                first_line = first_line[:size] + trail
+            output = name.ljust(max_len) + sep + first_line
         # Or nothing (so just the name)
         else:
             output = name
