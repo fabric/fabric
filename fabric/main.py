@@ -330,6 +330,11 @@ def main():
         for option in env_options:
             state.env[option.dest] = getattr(options, option.dest)
 
+        # Handle --hosts, --roles (comma separated string => list)
+        for key in ['hosts', 'roles']:
+            if key in state.env and isinstance(state.env[key], str):
+                state.env[key] = state.env[key].split(',')
+
         # Handle version number option
         if options.show_version:
             print("Fabric %s" % state.env.version)
