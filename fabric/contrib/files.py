@@ -95,24 +95,72 @@ def uncomment(filename, regex, use_sudo=False, char='#', backup='.bak'):
     """
     Attempt to uncomment all lines in ``filename`` matching ``regex``.
 
-    Uses `run`, but will use `sudo` if the ``use_sudo`` argument is True.
-
     The default comment delimiter is `#` and may be overridden by the ``char``
     argument.
 
-    By default, ``-i.bak`` is passed to ``sed``, and this may be overridden by
-    setting the ``backup`` argument (which defaults to ``.bak``).
+    This function uses the `sed` function, and will accept the same
+    ``use_sudo`` and ``backup`` keyword arguments that `sed` does.
 
-    This function will remove a single whitespace character following the
+    `uncomment` will remove a single whitespace character following the
     comment character, if it exists, but will preserve all preceding whitespace.
     For example, ``# foo`` would become ``foo`` (the single space is stripped)
     but ``    # foo`` would become ``    foo`` (the single space is still
     stripped, but the preceding 4 spaces are not.)
     """
-    return sed(filename,
+    return sed(
+        filename,
         before=r'^([[:space:]]*)%s[[:space:]]?' % char,
         after=r'\1',
         limit=regex,
+        use_sudo=use_sudo,
+        backup=backup
+    )
+
+
+def comment(filename, regex, use_sudo=False, char='#', backup='.bak'):
+    """
+    Attempt to comment out all lines in ``filename`` matching ``regex``.
+
+    The default commenting character is `#` and may be overridden by the
+    ``char`` argument.
+
+    This function uses the `sed` function, and will accept the same
+    ``use_sudo`` and ``backup`` keyword arguments that `sed` does.
+
+    `comment` will prepend the comment character to the beginning of the line,
+    so that lines end up looking like so::
+
+        this line is uncommented
+        #this line is commented
+        #   this line is indented and commented
+
+    In other words, comment characters will not "follow" indentation as they
+    sometimes do when inserted by hand. Neither will they have a trailing space
+    unless you specify e.g. ``char='# '``.
+
+    .. note:: 
+
+        In order to preserve the line being commented out, this function will
+        wrap your ``regex`` argument in parentheses, so you don't need to. It
+        will ensure that any preceding/trailing ``^`` or ``$`` characters are
+        correctly moved outside the parentheses. For example, calling
+        ``comment(filename, r'^foo$')`` will result in a `sed` call with the
+        "before" regex of ``r'^(foo)$'`` (and the "after" regex, naturally, of
+        ``r'#\\1'``.)
+    """
+    carot = ''
+    dollar = ''
+    if regex.startswith('^'):
+        carot = '^'
+        regex = regex[1:]
+    if regex.endswith('$'):
+        dollar = '$'
+        regex = regex[:1]
+    regex = "%s(%s)%s" % (carot, regex, dollar)
+    return sed(
+        filename,
+        before=regex,
+        after='%s\1' % char,
         use_sudo=use_sudo,
         backup=backup
     )
