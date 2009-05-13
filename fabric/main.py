@@ -16,7 +16,7 @@ import sys
 import textwrap
 
 from fabric import api # For checking callables against the API 
-from fabric.contrib import project, files # Ditto
+from fabric.contrib import console, files, project # Ditto
 from network import denormalize, normalize
 import state # For easily-mockable access to roles, env and etc
 from state import commands, connections, env_options, win32
@@ -25,7 +25,7 @@ from utils import abort, indent, warn
 
 # One-time calculation of "all internal callables" to avoid doing this on every
 # check of a given fabfile callable (in is_task()).
-_modules = [api, project, files]
+_modules = [api, project, files, console]
 _internals = reduce(lambda x, y: x + filter(callable, vars(y).values()),
     _modules,
     []
