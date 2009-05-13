@@ -151,5 +151,6 @@ in 2.0):
     * Twisted: theoretically easier coding of the main network loops, possibly
     more SSH functionality
     * PuSSH: possibly more SSH functionality such as ProxyCommand, etc
+* Allow find_fabfile/load_fabfile to deal with packages as well as modules.
 
 <!-- vim:set filetype=mkd : -->
