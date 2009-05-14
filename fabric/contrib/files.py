@@ -47,24 +47,39 @@ def first(*args, **kwargs):
                 return directory
 
 
-def upload_template(template, context, destination):
+def upload_template(filename, destination, context=None, use_sudo=False):
     """
     Render and upload a template text file to a remote host.
 
-    ``template`` should be the path to a text file, which may contain Python
+    ``filename`` should be the path to a text file, which may contain Python
     string interpolation formatting and will be rendered with the given context
-    dictionary ``context``.
+    dictionary ``context`` (if given.)
     
     The resulting rendered file will be uploaded to the remote file path
     ``destination`` (which should include the desired remote filename.)
+
+    By default, the file will be copied to ``destination`` as the logged-in
+    user; specify ``use_sudo=True`` to use `sudo` instead.
     """
-    with open(template) as inputfile:
+    with open(filename) as inputfile:
         text = inputfile.read()
     with tempfile.NamedTemporaryFile() as output:
-        output.write(text % context)
+        if context:
+            text = text % context
+        output.write(text)
         output.flush()
-        put(output.name, "/tmp/" + template)
-    sudo("mv /tmp/%s %s" % (template, destination + template))
+        put(output.name, "/tmp/" + filename)
+    func = use_sudo and sudo or run
+    # Crappy sanity check pending a real os.path.join type function that honors
+    # the remote system's join character.
+    if not destination.endswith('/'):
+        destination += '/'
+    destination = destination + filename
+    # Back up any original file
+    if exists(destination):
+        func("cp %s %s.bak" % (destination, destination))
+    # Actually move uploaded template to destination
+    func("mv /tmp/%s %s" % (filename, destination))
 
 
 def sed(filename, before, after, limit='', use_sudo=False, backup='.bak'):
