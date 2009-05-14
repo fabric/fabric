@@ -24,7 +24,8 @@ def exists(path, use_sudo=False, verbose=False):
     cmd = 'ls -d --color=never %s' % path
     # If verbose, run normally
     if verbose:
-        return func(cmd)
+        with setenv(warn_only=True):
+            return func(cmd)
     # Otherwise, be quiet
     with settings(
         hide('warnings', 'running', 'stdout', 'stderr'),
