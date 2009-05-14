@@ -336,6 +336,9 @@ def main():
             if key in state.env and isinstance(state.env[key], str):
                 state.env[key] = state.env[key].split(',')
 
+        # Handle --debug
+        state.output.debug = options.debug
+
         # Handle version number option
         if options.show_version:
             print("Fabric %s" % state.env.version)
