@@ -224,6 +224,6 @@ def append(text, filename, use_sudo=False):
     """
     func = use_sudo and sudo or run
     with setenv(warn_only=True):
-        if contains(text, filename, use_sudo=use_sudo):
+        if contains('^' + text, filename, use_sudo=use_sudo):
             return None
     return func("echo '%s' >> %s" % (text.replace("'", r'\''), filename))
