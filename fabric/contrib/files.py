@@ -178,7 +178,7 @@ def comment(filename, regex, use_sudo=False, char='#', backup='.bak'):
     return sed(
         filename,
         before=regex,
-        after='%s\1' % char,
+        after=r'%s\1' % char,
         use_sudo=use_sudo,
         backup=backup
     )
