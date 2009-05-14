@@ -4,6 +4,7 @@ from nose.tools import eq_
 from fabric.decorators import hosts, roles
 from fabric.main import get_hosts, parse_arguments
 import fabric.state
+from fabric.state import _AttributeDict
 
 
 def test_argument_parsing():
@@ -50,7 +51,7 @@ fake_roles = {
     'r2': ['b', 'c']
 }
 
-@with_patched_object('fabric.state', 'roles', fake_roles)
+@with_patched_object(fabric.state, 'env', _AttributeDict({'roledefs': fake_roles}))
 def test_roles_decorator_by_itself():
     """
     Use of @roles only
@@ -61,7 +62,7 @@ def test_roles_decorator_by_itself():
     eq_hosts(command, ['a', 'b'])
 
 
-@with_patched_object('fabric.state', 'roles', fake_roles)
+@with_patched_object(fabric.state, 'env', _AttributeDict({'roledefs': fake_roles}))
 def test_hosts_and_roles_together():
     """
     Use of @roles and @hosts together results in union of both
