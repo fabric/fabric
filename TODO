@@ -152,5 +152,8 @@ in 2.0):
     more SSH functionality
     * PuSSH: possibly more SSH functionality such as ProxyCommand, etc
 * Allow find_fabfile/load_fabfile to deal with packages as well as modules.
+* Change fabfile loading to move found fabfile directory to front of sys.path
+in the case where it's already in sys.path; this prevents any other fabfiles
+from stealing the show.
 
 <!-- vim:set filetype=mkd : -->
