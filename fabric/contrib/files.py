@@ -95,15 +95,18 @@ def sed(filename, before, after, limit='', use_sudo=False, backup='.bak'):
     is fine.
 
     If ``use_sudo`` is True, will use `sudo` instead of `run`.
+
+    `sed` will pass ``shell=False`` to `run`/`sudo`, in order to avoid problems
+    with many nested levels of quotes and backslashes.
     """
     func = use_sudo and sudo or run
-    expr = r'sed -i%s -r -e "%ss/%s/%s/g" %s'
+    expr = r"sed -i%s -r -e '%ss/%s/%s/g' %s"
     before = before.replace('/', r'\/')
     after = after.replace('/', r'\/')
     if limit:
         limit = r'/%s/ ' % limit
     command = expr % (backup, limit, before, after, filename)
-    return func(command)
+    return func(command, shell=False)
 
 
 def uncomment(filename, regex, use_sudo=False, char='#', backup='.bak'):
