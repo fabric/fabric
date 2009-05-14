@@ -119,11 +119,11 @@ def uncomment(filename, regex, use_sudo=False, char='#', backup='.bak'):
     This function uses the `sed` function, and will accept the same
     ``use_sudo`` and ``backup`` keyword arguments that `sed` does.
 
-    `uncomment` will remove a single whitespace character following the
-    comment character, if it exists, but will preserve all preceding whitespace.
-    For example, ``# foo`` would become ``foo`` (the single space is stripped)
-    but ``    # foo`` would become ``    foo`` (the single space is still
-    stripped, but the preceding 4 spaces are not.)
+    `uncomment` will remove a single whitespace character following the comment
+    character, if it exists, but will preserve all preceding whitespace.  For
+    example, ``# foo`` would become ``foo`` (the single space is stripped) but
+    ``    # foo`` would become ``    foo`` (the single space is still stripped,
+    but the preceding 4 spaces are not.)
     """
     return sed(
         filename,
@@ -188,10 +188,10 @@ def contains(text, filename, exact=False, use_sudo=False):
     """
     Return True if ``filename`` contains ``text``.
 
-    By default, this function will consider a partial line match (i.e. where the
-    given text only makes up part of the line it's on). Specify ``exact=True``
-    to change this behavior so that only a line containing exactly ``text``
-    results in a True return value.
+    By default, this function will consider a partial line match (i.e. where
+    the given text only makes up part of the line it's on). Specify
+    ``exact=True`` to change this behavior so that only a line containing
+    exactly ``text`` results in a True return value.
 
     Double-quotes in either ``text`` or ``filename`` will be automatically
     backslash-escaped in order to behave correctly during the remote shell
@@ -212,8 +212,8 @@ def append(text, filename, use_sudo=False):
     """
     Append ``text`` to ``filename``.
 
-    If ``text`` is already found as a discrete line in ``filename``, the append is
-    not run, and None is returned immediately. Otherwise, the given text is
+    If ``text`` is already found as a discrete line in ``filename``, the append
+    is not run, and None is returned immediately. Otherwise, the given text is
     appended to the end of the given ``filename`` via e.g. ``echo '$text' >>
     $filename``.
 
