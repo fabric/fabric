@@ -9,29 +9,29 @@ import fabric.state
 def test_argument_parsing():
     for args, output in [
         # Basic 
-        ('abc', ('abc', [], {}, [])),
+        ('abc', ('abc', [], {}, [], [])),
         # Arg
-        ('ab:c', ('ab', ['c'], {}, [])),
+        ('ab:c', ('ab', ['c'], {}, [], [])),
         # Kwarg
-        ('a:b=c', ('a', [], {'b':'c'}, [])),
+        ('a:b=c', ('a', [], {'b':'c'}, [], [])),
         # Arg and kwarg
-        ('a:b=c,d', ('a', ['d'], {'b':'c'}, [])),
+        ('a:b=c,d', ('a', ['d'], {'b':'c'}, [], [])),
         # Multiple kwargs
-        ('a:b=c,d=e', ('a', [], {'b':'c','d':'e'}, [])),
+        ('a:b=c,d=e', ('a', [], {'b':'c','d':'e'}, [], [])),
         # Host
-        ('abc:host=foo', ('abc', [], {}, ['foo'])),
+        ('abc:host=foo', ('abc', [], {}, ['foo'], [])),
         # Hosts with single host
-        ('abc:hosts=foo', ('abc', [], {}, ['foo'])),
+        ('abc:hosts=foo', ('abc', [], {}, ['foo'], [])),
         # Hosts with multiple hosts
         # Note: in a real shell, one would need to quote or escape "foo;bar".
         # But in pure-Python that would get interpreted literally, so we don't.
-        ('abc:hosts=foo;bar', ('abc', [], {}, ['foo', 'bar'])),
+        ('abc:hosts=foo;bar', ('abc', [], {}, ['foo', 'bar'], [])),
     ]:
         yield eq_, parse_arguments([args]), [output]
 
 
 def eq_hosts(command, host_list):
-    eq_(set(get_hosts([], command)), set(host_list))
+    eq_(set(get_hosts(command, [], [])), set(host_list))
     
 
 def test_hosts_decorator_by_itself():
@@ -82,4 +82,4 @@ def test_hosts_decorator_overrides_env_hosts():
     def command():
         pass
     eq_hosts(command, ['bar'])
-    assert 'foo' not in get_hosts([], command)
+    assert 'foo' not in get_hosts(command, [], [])
