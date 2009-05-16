@@ -46,17 +46,17 @@ See :doc:`usage` for a permanent version of this information.
 Python version
 --------------
 
-Fabric started out Python 2.5-only, but became largely
-2.4 compatible at one point during its lifetime. Fabric is once again **only
-compatible with Python 2.5 or newer**, in order to take advantage of the various
-new features and functions available in that version.
+Fabric started out Python 2.5-only, but became largely 2.4 compatible at one
+point during its lifetime. Fabric is once again **only compatible with Python
+2.5 or newer**, in order to take advantage of the various new features and
+functions available in that version.
 
-With this change we're setting an official policy to support the two most recent
-stable releases of Python, which at time of writing is 2.5 and 2.6. We feel this
-is a decent compromise between new features and the reality of operating system
-packaging concerns. Given that most users use Fabric from their workstations,
-which are typically more up-to-date than servers, we're hoping this doesn't cut
-out too many folks.
+With this change we're setting an official policy to support the two most
+recent stable releases of Python, which at time of writing is 2.5 and 2.6. We
+feel this is a decent compromise between new features and the reality of
+operating system packaging concerns. Given that most users use Fabric from
+their workstations, which are typically more up-to-date than servers, we're
+hoping this doesn't cut out too many folks.
 
 Finally, note that while we will not officially support a 2.4-compatible
 version or fork, we may provide a link to such a project if one arises.
@@ -66,9 +66,9 @@ Environment/config variables
 
 The ``config`` object previously used to access and set internal state
 (including Fabric config options) **has been renamed to** :data:`env`, but
-otherwise remains the same (it allows both dictionary and object-attribute style
-access to its data.) :data:`env` resides in the :mod:`state` submodule, so where
-before one might have seen fabfiles like this::
+otherwise remains the same (it allows both dictionary and object-attribute
+style access to its data.) :data:`env` resides in the :mod:`state` submodule,
+so where before one might have seen fabfiles like this::
 
     def my_task():
         config.foo = 'bar'
