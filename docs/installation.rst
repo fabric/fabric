@@ -9,10 +9,11 @@ installation.
 
 .. note::
 
-    If you've obtained the Fabric source via source control and plan on updating
-    often, we highly suggest doing ``python setup.py develop`` instead -- it
-    will use symlinks instead of file copies so that use of the Python library
-    or command-line tool will always use your checked-out version.
+    If you've obtained the Fabric source via source control and plan on
+    updating often, we highly suggest doing ``python setup.py develop``
+    instead -- it will use symlinks instead of file copies so that use of the
+    Python library or command-line tool will always use your checked-out
+    version.
 
 Dependencies
 ============
@@ -66,7 +67,6 @@ For information on the hows and whys of Fabric development, including which
 branches may be of interest and how you can help out, please see the
 :doc:`development` page.
 
-
 Easy_install and Pip
 ====================
 
@@ -75,8 +75,8 @@ Fabric tries hard to play nice with packaging systems such as Python's
 <http://wiki.python.org/moin/CheeseShopTutorial>`_ or `pip
 <http://pip.openplans.org>`_.
 
-Fabric's source distribution also comes with a ``pip`` requirements file called
-``requirements.txt``, containing the various development requirements listed
-above. At time of writing, some of the listed third-party packages don't play
-well with ``pip``, so we aren't officially recommending use of the requirements
-file just yet.
+Fabric's source distribution also comes with a ``pip`` requirements file
+called ``requirements.txt``, containing the various development requirements
+listed above. At time of writing, some of the listed third-party packages
+don't play well with ``pip``, so we aren't officially recommending use of the
+requirements file just yet.

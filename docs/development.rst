@@ -38,13 +38,12 @@ TODO: expand on this
   Git is Git, contributors may of  course do whatever they wish in their own
   clones/forks.)
 * We use a combined 'release and feature branches' methodology, where every
-  minor release (see below) gets a release branch for bugfixes, and big feature
-  development is performed in a central 'master' branch and/or in
+  minor release (see below) gets a release branch for bugfixes, and big
+  feature development is performed in a central 'master' branch and/or in
   feature-specific feature branches.
 
   * Note to folks following the 0.9 alpha/beta: this won't actually be set up
     till 0.9-final goes out the door :)
-
 * Bugfixes are to be performed on release branches and then immediately
   backported to the master branch, so that the master branch is always
   up-to-date.
@@ -72,21 +71,21 @@ functionality to live. Version 2.0 might indicate a rewrite using a new
 underlying network technology (though this isn't necessarily planned :)).
 
 Major releases will often be backwards-incompatible with the previous line of
-development, though this is not a requirement, just a usual happenstance. Users
-should expect to have to make at least some changes to their fabfiles when
-switching major versions.
+development, though this is not a requirement, just a usual happenstance.
+Users should expect to have to make at least some changes to their fabfiles
+when switching major versions.
 
 Minor
 -----
 
 Minor releases, such as moving from 1.0 to 1.1, typically mean that a new,
 large feature has been added. They are also sometimes used to mark off the
-fact that a lot of bug fixes or small feature modifications have occurred since
-the previous minor release.
+fact that a lot of bug fixes or small feature modifications have occurred
+since the previous minor release.
 
 These releases are guaranteed to be backwards-compatible with all other
-releases containing the same major version number, so a fabfile that works with
-1.0 should also work fine with 1.1 or even 1.9.
+releases containing the same major version number, so a fabfile that works
+with 1.0 should also work fine with 1.1 or even 1.9.
 
 .. note::
 
@@ -95,6 +94,7 @@ releases containing the same major version number, so a fabfile that works with
 
 Bugfix/tertiary
 ---------------
+
 The third and final part of version numbers, such as the '3' in 1.0.3,
 generally indicate a release containing one or more bugfixes, although minor
 feature additions or modifications are also common.

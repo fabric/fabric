@@ -32,7 +32,7 @@ The above fabfile uses `hosts`, `run` and `sudo`, and so in Fabric 0.9 one
 simply needs to add the following imports::
 
      from fabric.api import hosts, run, sudo
- 
+
      @hosts('a', 'b')
      def my_task():
          run('ls /var/www')
@@ -76,7 +76,7 @@ so where before one might have seen fabfiles like this::
 one will now be explicitly importing the object like so::
 
     from fabric.state import env
-  
+
     def my_task():
         env.foo = 'bar'
 
@@ -89,11 +89,11 @@ that made connections (such as `run` or `sudo`) would run once per host in the
 current host list. We also offered "deep mode", in which your entire task
 function would run once per host.
 
-In Fabric 0.9, this dichotomy has been removed, and **"deep mode" is the method
-Fabric uses to perform all operations**. This allows you to treat your Fabfiles
-much more like regular Python code, including the use of ``if`` statements and
-so forth, and allows operations like `run` to unambiguously return the output
-from the server.
+In Fabric 0.9, this dichotomy has been removed, and **"deep mode" is the
+method Fabric uses to perform all operations**. This allows you to treat your
+Fabfiles much more like regular Python code, including the use of ``if``
+statements and so forth, and allows operations like `run` to unambiguously
+return the output from the server.
 
 "Lazy" string interpolation
 ---------------------------
@@ -103,8 +103,8 @@ special string formatting technique -- the use of a bash-like dollar sign
 notation, e.g. ``"hostname: $(fab_host)"`` -- had to be used to allow the
 current state of execution to be represented in one's operations. **This is no
 longer necessary and has been removed**. Because your tasks are executed once
-per host, you may simply refer to e.g.  ``env.host_string`` (or ``env.host``,
-``env.user`` and so forth)  when building strings.
+per host, you may simply refer to e.g. ``env.host_string`` (or ``env.host``,
+``env.user`` and so forth) when building strings.
 
 
 Other backwards-incompatible changes
@@ -112,84 +112,104 @@ Other backwards-incompatible changes
 
 In no particular order:
 
-* The Fabric config file location used to be ``~/.fabric``; in the interests of
-  honoring Unix filename conventions, it's now ``~/.fabricrc``.
+* The Fabric config file location used to be ``~/.fabric``; in the interests
+  of honoring Unix filename conventions, it's now ``~/.fabricrc``.
+
 * The old ``config`` object (now :data:`env`) had a ``getAny`` method which
-  took one or more key strings as arguments, and returned the value attached to
-  the first valid key. This method still exists but has been renamed to `first`.
-* Environment variables such as ``fab_host`` have been
-  renamed to simply e.g. ``host``. This looks cleaner and feels more natural,
-  and requires less typing. Users will naturally need to be careful not to
-  override these variables, but the same holds true for e.g. Python's builtin
-  methods and types already, so not a big deal.
+  took one or more key strings as arguments, and returned the value attached
+  to the first valid key. This method still exists but has been renamed to
+  `first`.
+
+* Environment variables such as ``fab_host`` have been renamed to simply e.g.
+  ``host``. This looks cleaner and feels more natural, and requires less
+  typing. Users will naturally need to be careful not to override these
+  variables, but the same holds true for e.g. Python's builtin methods and
+  types already, so not a big deal.
+
 * Fabric's version header is no longer printed every time the program runs;
   you should now use the standard ``--version``/``-V`` command-line options to
   print version and exit.
+
 * The old ``about`` command has been removed; other Unix programs don't
   typically offer this. Users can always view the license and warranty info in
   their respective text files distributed with the software.
+
 * The old ``help`` command is now the typical Unix options ``-h``/``--help``.
 
     * Furthermore, there is no longer a listing of Fabric's programming API
       available through the command line -- those topics impact fabfile
-      authors, not fab users (even though the former is a subset of the latter)
-      and should stay in the documentation only.
+      authors, not fab users (even though the former is a subset of the
+      latter) and should stay in the documentation only.
 
 * `prompt`'s primary function is now to return a value to the caller, although
   it may still optionally store the value in `env` as well.
+
 * `prompt` now considers the empty string to be valid input; this allows other
   functions to wrap `prompt` and handle "empty" input on their own terms.
+
 * In addition to the above changes, `prompt` has been updated to behave more
   obviously, as its previous behavior was confusing in a few ways:
 
     * It will now overwrite pre-existing values in the environment dict, but
       will print a warning to the user if it does so.
+
     * Additionally, (and this appeared to be undocumented) the ``default``
       argument could take a callable as well as a string, and would simply set
       the default message to the return value if a callable was given. This
-      seemed to add unnecessary complexity (the user can just do ``prompt(blah,
-      msg, default=my_callable()`` after all) so it has been removed.
+      seemed to add unnecessary complexity (the user can just do
+      ``prompt(blah, msg, default=my_callable()`` after all) so it has been
+      removed.
 
-* When connecting, Fabric used to use the undocumented ``fab_pkey`` env variable
-  as a method of passing in a Paramiko ``PKey`` object to the SSH client's
-  ``connect`` method. This has been removed in favor of an ``ssh``-like ``-i``
-  option, which allows one to specify a private key file to use; that should
-  generally be enough for most users.
+* When connecting, Fabric used to use the undocumented ``fab_pkey`` env
+  variable as a method of passing in a Paramiko ``PKey`` object to the SSH
+  client's ``connect`` method. This has been removed in favor of an
+  ``ssh``-like ``-i`` option, which allows one to specify a private key file
+  to use; that should generally be enough for most users.
+
 * ``download`` is now `get` in order to match up with `put` (I believe the
   name mismatch was due to `get` being the old method of getting env vars.)
-* The ``noshell`` argument to `sudo` (added late in its life to previous Fabric
-  versions) has been renamed to ``shell`` (defaults to True, so the effective
-  behavior remains the same) and has also been extended to the `run` operation.
+
+* The ``noshell`` argument to `sudo` (added late in its life to previous
+  Fabric versions) has been renamed to ``shell`` (defaults to True, so the
+  effective behavior remains the same) and has also been extended to the `run`
+  operation.
 
     * Additionally, the global ``sudo_noshell`` option has been renamed to
       ``use_shell`` and also applies to both `run` and `sudo`.
 
 * ``local_per_host`` has been removed, as it only applied to the now-removed
   "broad mode".
+
 * ``load`` has been removed; Fabric is now "just Python", so use Python's
   import mechanisms in order to stitch multiple fabfiles together.
+
 * ``abort`` is no longer an "operation" *per se* and has been moved to
   :mod:`fabric.utils`. It is otherwise the same as before, taking a single
   string message, printing it to the user and then calling ``sys.exit(1)``.
+
 * ``rsyncproject`` and ``upload_project`` have been moved into
-  :mod:`fabric.contrib` (specifically, :mod:`fabric.contrib.project`), which is
-  intended to be a new tree of submodules for housing "extra" code which may
-  build on top of the core Fabric operations.
+  :mod:`fabric.contrib` (specifically, :mod:`fabric.contrib.project`), which
+  is intended to be a new tree of submodules for housing "extra" code which
+  may build on top of the core Fabric operations.
+
 * ``invoke`` has been turned on its head, and is now the `runs_once` decorator
   (living in :mod:`fabric.decorators`). When used to decorate a function, that
   function will only execute one time during the lifetime of a ``fab`` run.
   Thus, where you might have used ``invoke`` multiple times to ensure a given
   command only runs once, you may now use `runs_once` instead.
-* It looks like the regex behavior of the ``validate`` argument of `prompt` was
-  never actually implemented. It now works as advertised.
+
+* It looks like the regex behavior of the ``validate`` argument of `prompt`
+  was never actually implemented. It now works as advertised.
+
 * Couldn't think of a good reason for `require` to be a decorator *and* a
   function, and the function is more versatile in terms of where it may be
   used, so the decorator has been removed.
-* As things currently stand with the execution model, the ``depends`` decorator
-  doesn't make a lot of sense: instead, it's safest/best to simply make "meta"
-  commands that just call whatever chain of "real" commands you need performed
-  for a given overarching task.
-  
+
+* As things currently stand with the execution model, the ``depends``
+  decorator doesn't make a lot of sense: instead, it's safest/best to simply
+  make "meta" commands that just call whatever chain of "real" commands you
+  need performed for a given overarching task.
+
   For example, instead of having command A say
   that it "depends on" command B, create a command C which calls A and B in the
   right order, e.g.::
@@ -208,7 +228,7 @@ In no particular order:
         build()
         upload()
         symlink()
-  
+
   .. note::
 
     The execution model is still subject to change, pending feedback during the
@@ -216,7 +236,7 @@ In no particular order:
     a use case that needs something Fabric doesn't provide right now!
 * Removed the old ``fab shell`` functionality, since the move to "just Python"
   should make vanilla ``python``/``ipython`` usage of Fabric much easier.
-  
+
     * May add it back in later as a convenient shortcut to what basically
       amounts to running ``ipython`` + doing a handful of ``from fabric.foo
       import bar`` calls.
@@ -228,19 +248,29 @@ Changes from alpha 1 to alpha 2
 The below list was generated by running ``git shortlog 0.9a1..0.9a2`` and then
 manually sifting through and editing the resulting commit messages. This will
 probably occur for the rest of the alphas and betas; we hope to use
-Sphinx-specific methods of documenting changes once the final release is out the
-door.
+Sphinx-specific methods of documenting changes once the final release is out
+the door.
 
 * Various minor tweaks to the (still in-progress) documentation, including one
   thanks to Curt Micol.
+  
 * Added a number of TODO items based on user feedback (thanks!)
-* Host information now available in granular form (user, host, port) in the env
-  dict, alongside the full ``user@host:port`` host string.
-* Parsing of host strings is now more lenient when examining the username (e.g.
-  hyphens.)
+
+* Host information now available in granular form (user, host, port) in the
+  env dict, alongside the full ``user@host:port`` host string.
+
+* Parsing of host strings is now more lenient when examining the username
+  (e.g. hyphens.)
+
 * User/host info no longer cleared out between commands.
+
 * Tweaked ``setup.py`` to use ``find_packages``. Thanks to Pat McNerthney.
-* Added 'capture' argument to `~fabric.operations.local` to allow local interactive tasks.
-* Reversed default value of `~fabric.operations.local`'s ``show_stderr`` kwarg;
-  local stderr now prints by default instead of being hidden by default.
+
+* Added 'capture' argument to `~fabric.operations.local` to allow local
+  interactive tasks.
+
+* Reversed default value of `~fabric.operations.local`'s ``show_stderr``
+  kwarg; local stderr now prints by default instead of being hidden by
+  default.
+
 * Various internal fabfile tweaks.
