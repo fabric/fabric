@@ -43,7 +43,7 @@ def tag():
     """
     Tag a new release of the software
     """
-    with setenv(warn_only=True):
+    with settings(warn_only=True):
         # Get current version string
         version = fabric.version.get_version()
         # Does that tag already exist?

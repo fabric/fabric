@@ -24,7 +24,7 @@ def exists(path, use_sudo=False, verbose=False):
     cmd = 'ls -d --color=never %s' % path
     # If verbose, run normally
     if verbose:
-        with setenv(warn_only=True):
+        with settings(warn_only=True):
             return func(cmd)
     # Otherwise, be quiet
     with settings(
@@ -224,7 +224,7 @@ def append(text, filename, use_sudo=False):
     If ``use_sudo`` is True, will use `sudo` instead of `run`.
     """
     func = use_sudo and sudo or run
-    with setenv(warn_only=True):
+    with settings(warn_only=True):
         if contains('^' + text, filename, use_sudo=use_sudo):
             return None
     return func("echo '%s' >> %s" % (text.replace("'", r'\''), filename))

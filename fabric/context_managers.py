@@ -66,20 +66,12 @@ def hide(*groups):
 
 
 @contextmanager
-def setenv(**kwargs):
+def _setenv(**kwargs):
     """
     Context manager temporarily overriding ``env`` with given key/value pairs.
 
-    This may be used to set any and all environment variables as you see fit. A
-    simple example for turning the default abort-on-error behavior into
-    warn-on-error could override ``env.warn_only``::
-
-        def my_task():
-        with setenv(warn_only=True):
-            run('ls /etc/lsb-release')
-
-    As with most other context managers provided with Fabric, `setenv` will
-    restore the prior state of ``env`` when it exits.
+    This context manager is used internally by `settings` and is not intended
+    to be used directly.
     """
     previous = {}
     for key, value in kwargs.iteritems():
@@ -91,19 +83,19 @@ def setenv(**kwargs):
 
 def settings(*args, **kwargs):
     """
-    Meta context manager: args are context managers, kwargs go to `setenv`.
+    Nest context managers and/or override ``env`` variables.
 
-    If any kwargs are given, they are passed directly to an invocation of
-    `setenv`; if any args are given, they (along with the invocation of
-    `setenv`, if any) are sent to `contextlib.nested`.
+    `settings` serves two purposes:
 
-    What this means is that `settings` may be used to combine multiple
-    Fabric context managers such as `hide` or `show`, with the functionality of
-    `setenv` thrown in for convenience's sake (so users do not have to
-    explicitly call `setenv` as well, when combining it with other context
-    managers.)
+    * Most usefully, it allows temporary overriding/updating of ``env`` with
+      any provided keyword arguments, e.g. ``with settings(user='foo'):``.
+      Original values, if any, will be restored once the ``with`` block closes.
+    * In addition, it will use ``contextlib.nested`` to nest any given
+      non-keyword arguments, which should be other context managers, e.g.
+      ``with settings(hide('stderr'), show('stdout')):``.
 
-    An example will hopefully illustrate why this is considered useful::
+    These behaviors may be specified at the same time if desired. An example
+    will hopefully illustrate why this is considered useful::
 
         def my_task():
             with settings(
@@ -115,19 +107,19 @@ def settings(*args, **kwargs):
                 elif run('ls /etc/redhat-release'):
                     return 'RedHat'
 
-    The above task executes a `run` statement or two, but will warn instead of
-    aborting if the `ls` fails, and all output -- including the warning itself
-    -- is prevented from printing to the user. The end result, in this
+    The above task executes a `run` statement, but will warn instead of
+    aborting if the ``ls`` fails, and all output -- including the warning
+    itself -- is prevented from printing to the user. The end result, in this
     scenario, is a completely silent task that allows the caller to figure out
     what type of system the remote host is, without incurring the handful of
     output that would normally occur.
 
     Thus, `settings` may be used to set any combination of environment
     variables in tandem with hiding (or showing) specific levels of output, or
-    in tandem with any other piece of functionality implemented as a context
-    manager.
+    in tandem with any other piece of Fabric functionality implemented as a
+    context manager.
     """
     managers = list(args)
     if kwargs:
-        managers.append(setenv(**kwargs))
+        managers.append(_setenv(**kwargs))
     return nested(*managers)

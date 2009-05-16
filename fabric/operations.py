@@ -11,7 +11,7 @@ import re
 import stat
 import subprocess
 
-from context_managers import setenv
+from context_managers import settings
 from contextlib import closing
 from network import output_thread, needs_host
 from state import env, connections, output
@@ -253,7 +253,7 @@ def put(local_path, remote_path, mode=None):
         # Do jury-rigged tilde expansion, but only if we can do it nicely.
         # TODO: tie into global output controls -- as a user! (i.e. hide all
         # output from this chunk below if possible)
-        with setenv(warn_only=True):
+        with settings(warn_only=True):
             cwd = run('pwd')
         if not cwd.failed:
             remote_path = remote_path.replace('~', cwd)
