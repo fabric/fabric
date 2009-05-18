@@ -276,6 +276,11 @@ class _AliasDict(_AttributeDict):
         Aliases are recursive, so you may refer to an alias within the key list
         of another alias. Naturally, this means that you can end up with
         infinite loops if you're not careful.
+
+    `_AliasDict` provides a special function, `expand_aliases`, which will take
+    a list of keys as an argument and will return that list of keys with any
+    aliases expanded. This function will **not** dedupe, so any aliases which
+    overlap will result in duplicate keys in the resulting list.
     """
     def __init__(self, arg=None, aliases=None):
         init = super(_AliasDict, self).__init__
@@ -292,6 +297,15 @@ class _AliasDict(_AttributeDict):
                 self[aliased] = value
         else:
             return super(_AliasDict, self).__setitem__(key, value)
+
+    def expand_aliases(self, keys):
+        ret = []
+        for key in keys:
+            if key in self.aliases:
+                ret.extend(self.expand_aliases(self.aliases[key]))
+            else:
+                ret.append(key)
+        return ret
 
 
 # Keys are "levels" or "groups" of output, values are always boolean,

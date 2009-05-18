@@ -13,11 +13,14 @@ from state import env, output
 
 
 def _set_output(groups, which):
+    # Preserve original values, pull in new given value to use
     previous = {}
-    for group in groups:
+    for group in output.expand_aliases(groups):
         previous[group] = output[group]
         output[group] = which
+    # Yield control
     yield
+    # Restore original values
     output.update(previous)
 
 

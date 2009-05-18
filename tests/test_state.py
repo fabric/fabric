@@ -23,7 +23,7 @@ def test_dict_aliasing():
     eq_(ad['baz'], True)
 
 
-def test_dict_nested_aliasing():
+def test_nested_dict_aliasing():
     """
     Aliases can be nested
     """
@@ -39,3 +39,14 @@ def test_dict_nested_aliasing():
     # After
     eq_(ad['bar'], True)
     eq_(ad['biz'], True)
+
+
+def test_dict_alias_expansion():
+    """
+    Alias expansion
+    """
+    ad = _AliasDict(
+        {'bar': False, 'biz': True},    
+        aliases={'foo': ['bar', 'nested'], 'nested': ['biz']}
+    )
+    eq_(ad.expand_aliases(['foo']), ['bar', 'biz'])
