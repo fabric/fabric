@@ -27,10 +27,7 @@ def exists(path, use_sudo=False, verbose=False):
         with settings(warn_only=True):
             return func(cmd)
     # Otherwise, be quiet
-    with settings(
-        hide('warnings', 'running', 'stdout', 'stderr'),
-        warn_only=True
-    ):
+    with settings(hide('everything'), warn_only=True):
         return func(cmd)
 
 

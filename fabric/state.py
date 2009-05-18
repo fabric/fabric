@@ -63,7 +63,6 @@ class _AttributeDict(dict):
         else:
             raise AttributeError # to conform with __getattr__ spec
 
-
     def __setattr__(self, key, value):
         self[key] = value
 
@@ -253,13 +252,55 @@ connections = HostConnectionCache()
 # Output controls
 #
 
-# Uses _AttributeDict for ease of use; keys are "levels" or "groups" of output,
-# values are always boolean, determining whether output falling into the given
-# group is printed or not printed.
+class _AliasDict(_AttributeDict):
+    """
+    `_AttributeDict` subclass that allows for "aliasing" of keys to other keys.
+
+    Upon creation, takes an ``aliases`` mapping, which should map alias names
+    to lists of key names. Aliases do not store their own value, but instead
+    set (override) all mapped keys' values. For example, in the following
+    `_AliasDict`, calling ``mydict['foo'] = True`` will set the values of
+    ``mydict['bar']``, ``mydict['biz']`` and ``mydict['baz']`` all to True::
+
+        mydict = _AliasDict(
+            {'biz': True, 'baz': False},
+            aliases={'foo': ['bar', 'biz', 'baz']}
+        )
+
+    Because it is possible for the aliased values to be in a heterogenous
+    state, reading aliases is not supported -- only writing to them is allowed.
+    This also means they will not show up in e.g. ``dict.keys()``.
+
+    ..note::
+        
+        Aliases are recursive, so you may refer to an alias within the key list
+        of another alias. Naturally, this means that you can end up with
+        infinite loops if you're not careful.
+    """
+    def __init__(self, arg=None, aliases=None):
+        init = super(_AliasDict, self).__init__
+        if arg is not None:
+            init(arg)
+        else:
+            init()
+        # Can't use super() here because of _AttributeDict's setattr override
+        dict.__setattr__(self, 'aliases', aliases)
+
+    def __setitem__(self, key, value):
+        if key in self.aliases:
+            for aliased in self.aliases[key]:
+                self[aliased] = value
+        else:
+            return super(_AliasDict, self).__setitem__(key, value)
+
+
+# Keys are "levels" or "groups" of output, values are always boolean,
+# determining whether output falling into the given group is printed or not
+# printed.
 #
 # By default, everything except 'debug' is printed, as this is what the average
 # user, and new users, are most likely to expect.
-output = _AttributeDict({
+output = _AliasDict({
     # Status messages, i.e. noting when Fabric is done running, if the user
     # used a keyboard interrupt, or when servers are disconnected from.
     # These are almost always of interest to CLI users regardless.
@@ -290,4 +331,8 @@ output = _AttributeDict({
     # but "debug" is True, you will still be shown the 'what is running' line
     # in its debugging form.
     'debug': False
+
+}, aliases={
+    'everything': ['warnings', 'running', 'output'],
+    'output': ['stdout', 'stderr']
 })
