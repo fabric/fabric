@@ -151,17 +151,26 @@ def connect(user, host, port):
             connected = True
             return client
         # Prompt for new password to try on auth failure
-        except ssh.AuthenticationException:
+        except (ssh.AuthenticationException, ssh.SSHException), e:
             # TODO: tie this into global prompting (i.e. right now both uses of
             # prompt_for_password() do the same "if not env.password" stuff.
             # may want to roll that into prompt_for_password() itself?
+
+            # For whatever reason, empty password + no ssh key or agent results
+            # in an SSHException instead of an AuthenticationException. Since
+            # it's difficult to do otherwise, we must assume empty password +
+            # SSHException == auth exception. Conversely: if we get
+            # SSHException and there *was* a password -- it is probably
+            # something non auth related, and should be sent upwards.
+            if e.__class__ is ssh.SSHException and password:
+                abort(str(e))
+
+            # Otherwise, assume an auth exception, and prompt for new/better
+            # password.
             password = prompt_for_password(None, password)
             # Update env.password if it was empty
             if not env.password:
                 env.password = password
-        # Handle any other kind of Paramiko-level exception
-        except ssh.SSHException, e:
-            abort(str(e))
         # Ctrl-D / Ctrl-C for exit
         except (EOFError, TypeError):
             # Print a newline (in case user was sitting at prompt)
