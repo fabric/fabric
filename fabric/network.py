@@ -89,10 +89,10 @@ def denormalize(host_string):
     from state import env
     r = host_regex.match(host_string).groupdict()
     user = ''
-    if r['user'] != env.user:
+    if r['user'] is not None and r['user'] != env.user:
         user = r['user'] + '@'
     port = ''
-    if r['port'] != '22':
+    if r['port'] is not None and r['port'] != '22':
         port = ':' + r['port']
     return user + r['host'] + port
 

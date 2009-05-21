@@ -9,7 +9,7 @@ from fudge import Fake, clear_calls, clear_expectations, patch_object, verify, \
     with_patched_object, patched_context
 
 from fabric.network import (HostConnectionCache, join_host_strings, normalize,
-    prompt_for_password)
+    prompt_for_password, denormalize)
 import fabric.network # So I can call patch_object correctly. Sigh.
 from fabric.state import env, _get_system_username
 
@@ -51,6 +51,22 @@ def test_nonword_character_in_username():
         normalize('user-with-hyphens@someserver.org')[0],
         'user-with-hyphens'
     )
+
+def test_host_string_denormalization():
+    username = _get_system_username()
+    for description, string1, string2 in (
+        ("Sanity check: equal strings remain equal",
+            'localhost', 'localhost'),
+        ("Empty username is same as get_system_username",
+            'localhost:22', username + '@localhost:22'),
+        ("Empty port is same as port 22",
+            'user@localhost', 'user@localhost:22'),
+        ("Both username and port",
+            'localhost', username + '@localhost:22'),
+    ):
+        eq_.description = description
+        yield eq_, denormalize(string1), denormalize(string2) 
+        del eq_.description
 
 
 #
