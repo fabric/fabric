@@ -22,10 +22,6 @@
     * See existing TODO: note for CLI flags. Don't think -vvv style will really
     work for the current setup; since they default to on, provide something
     like "--hide warnings,aborts,stdout"?
-    * Consider aliases/groups for these, i.e. an easy way to turn off
-    running/stdout/stderr all at once (but leaving warnings, aborts etc).
-        * -vvv style WOULD work pretty well here; but I really want to leave in
-        the ability to specify any arbitrary combo, not just levels. :(
     * Put in logging-to-disk and/or leverage the logging module for stdout too?
         * e.g. it already has the concepts of info/warn/etc -- can that be used?
     * Ensure things behave gracefully when used as a lib
@@ -84,7 +80,8 @@ options. Look at `man ssh_config` for what else people can put in that file.
     * Right now it uses threads and shared state for outputting, and shared
     state for env/connection/etc stuff. This is probably not threadsafe as-is.
     * Even if the shared state works OK, the thread use in outputting is kind
-    of wonky. See if it can be redone with coroutines or Twisted or something.
+    of wonky. See if it can be redone with coroutines, Twisted, Kamaelia/Axon,
+    or etc.
 * Make execution model more robust/flexible:
     * Right now, relatively simple, calls each function one by one, and for each
     function, runs on each host one by one, and the host list may be different
@@ -115,26 +112,26 @@ with other commands at the same time.)
 laggy.
 * Possibly allow "aliases" in `env`, i.e. 'user' and 'username' treated as
 being the same key to limit possible confusion.
+    * See \_AliasDict, possibly roll it back into \_AttributeDict?
 * Investigate allowing control of pty allocation for remote connections (look at
 emails for previous discussion)
 * Try using `/usr/bin/env bash` instead of `/bin/bash` to handle systems where
 bash isn't in `/bin/`?
+    * But what if `env` doesn't exist or isn't in `/usr/bin`? :(
 * Parallel execution (if it can be done without making things terribly complex
 again)
 * Better remote-end prompt detection/passthrough to local user
+    * See pexpect, it's awesome.
 * Add timeout support or ensure existing network level timeouts work well
-* More robust per-host/connection settings, e.g. dict of dicts or registry or
-some such.
 * Possibly include path.py support (or rather use some of its concepts, since
 I think it only works on local paths as-is?)
-* Allow persistent environments, either real (run a bunch of commands in one
-command string) or fake (put a prefix with e.g. 'cd foo && ' in front of each
-shell invocation, behind the scenes)
+    * See if its website is back up; would want to apply this sort of stuff to
+    contrib.files, most likely.
+* Allow persistent environments via context managers, either real (run a bunch
+of commands in one command string) or fake (put a prefix with e.g. 'cd foo && '
+in front of each shell invocation, behind the scenes)
 * Strip ANSI colors from remote text, as an option (so I can stop having to do
 ls --color=never and so on)
-* Consider truncating the docstring part of --list output, instead of wrapping?
-* Consider automatically detecting "missing" args to tasks and prompting for
-them?
 * Refactor run/sudo:
     * many times I want to run a handful of commands as one or the other, or
     there are call chains (e.g. in contrib and the fabfile) where I have to pass
@@ -155,5 +152,12 @@ in 2.0):
 * Change fabfile loading to move found fabfile directory to front of sys.path
 in the case where it's already in sys.path; this prevents any other fabfiles
 from stealing the show.
+* Have all operations capable of performing a "dry run" wherein they do not
+actually change anything, but simply return the empty string or other
+appropriate empty values.
+    * Allows users to see what would be run, without doing anything
+    * Can be used in conjunction with --debug to see the real commands to run
+    * Would be difficult to fully "test" user code relying on output from
+    server, without users doing their own mocking.
 
 <!-- vim:set filetype=mkd : -->
