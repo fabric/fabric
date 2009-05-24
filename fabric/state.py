@@ -58,10 +58,11 @@ class _AttributeDict(dict):
 
     """
     def __getattr__(self, key):
-        if key in self:
+        try:
             return self[key]
-        else:
-            raise AttributeError # to conform with __getattr__ spec
+        except KeyError:
+            # to conform with __getattr__ spec
+            raise AttributeError(key)
 
     def __setattr__(self, key, value):
         self[key] = value
