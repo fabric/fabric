@@ -30,7 +30,7 @@ def test_host_string_normalization():
         ("Both username and port tested at once, for kicks",
             'localhost', username + '@localhost:22'),
     ):
-        eq_.description = description
+        eq_.description = "Host-string normalization: %s" % description
         yield eq_, normalize(string1), normalize(string2) 
         del eq_.description
 
@@ -64,7 +64,7 @@ def test_host_string_denormalization():
         ("Both username and port",
             'localhost', username + '@localhost:22'),
     ):
-        eq_.description = description
+        eq_.description = "Host-string denormalization: %s" % description
         yield eq_, denormalize(string1), denormalize(string2) 
         del eq_.description
 
