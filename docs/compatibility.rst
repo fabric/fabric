@@ -274,3 +274,37 @@ the door.
   default.
 
 * Various internal fabfile tweaks.
+
+
+Changes from alpha 2 to alpha 3
+===============================
+
+* Lots of updates to the documentation and TODO
+
+* Added contrib.files with a handful of file-centric subroutines
+
+* Added contrib.console for console UI stuff (so far, just `confirm`)
+
+* Reworked config file mechanisms a bit, added CLI flag for setting it.
+
+* Output controls (including CLI args, documentation) have been added
+
+* Test coverage tweaked and grown a small amount (thanks in part to Peter
+  Ellis)
+
+* Roles overhauled/fixed (more like hosts now)
+
+* Changed ``--list`` linewrap behavior to truncate instead.
+
+* Make private key passphrase prompting more obvious to users.
+
+* Add ``pty`` option to `sudo`. Thanks to José Muanis for the tip-off re: get_pty()
+
+* Add CLI argument for setting the shell used in commands (thanks to Steve Steiner)
+
+* Only load host keys when ``env.reject_unknown_keys`` is True. Thanks to Pat
+  McNerthney.
+
+* And many, many additional bugfixes and behavioral tweaks too small to merit
+  cluttering up this list! Thanks as always to everyone who contributed
+  bugfixes, feedback and/or patches.
