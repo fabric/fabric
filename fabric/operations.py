@@ -394,7 +394,7 @@ def run(command, shell=True):
 
 
 @needs_host
-def sudo(command, shell=True, user=None):
+def sudo(command, shell=True, user=None, pty=False):
     """
     Run a shell command on a remote host, with superuser privileges.
     
@@ -406,6 +406,13 @@ def sudo(command, shell=True, user=None):
     and allows you to run as some user other than root (which is the default).
     On most systems, the ``sudo`` program can take a string username or an
     integer userid (uid); ``user`` may likewise be a string or an int.
+
+    Some remote systems may be configured to disallow sudo access unless a
+    terminal or pseudoterminal is being used (e.g. when ``Defaults
+    requiretty`` exists in ``/etc/sudoers``.) If updating the remote system's
+    ``sudoers`` configuration is not possible or desired, you may pass
+    ``pty=True`` to `sudo` to force allocation of a pseudo tty on the remote
+    end.
        
     `sudo` will return the result of the remote program's stdout as a
     single (likely multiline) string. This string will exhibit a ``failed``
@@ -443,6 +450,11 @@ def sudo(command, shell=True, user=None):
     elif output.running:
         print("[%s] sudo: %s" % (env.host_string, command))
     channel = connections[env.host_string]._transport.open_session()
+    # Create pty if necessary (using Paramiko default options, which as of
+    # 1.7.4 is vt100 $TERM @ 80x24 characters)
+    if pty:
+        channel.get_pty()
+    # Execute
     channel.exec_command(real_command)
     capture = []
 
