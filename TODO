@@ -19,9 +19,6 @@
         with "only X or Y may be given, but not both at the same time" note?
     * look at the rest too
 * Output handling:
-    * See existing TODO: note for CLI flags. Don't think -vvv style will really
-    work for the current setup; since they default to on, provide something
-    like "--hide warnings,aborts,stdout"?
     * Put in logging-to-disk and/or leverage the logging module for stdout too?
         * e.g. it already has the concepts of info/warn/etc -- can that be used?
     * Ensure things behave gracefully when used as a lib
@@ -53,27 +50,8 @@ shut up about stuff I don't care about)
   using ALL_CAPS, but in some places I probably did use them, so check and
   update (or change my mind and go back; but it just feels ugly when one is
   referencing e.g. ENV in user code all over...)
-* Possibly note in docs that callables imported into one's fabfile will show up
-  as executable tasks; i.e. they'll clutter --list and can be invoked via
-  command-line.
-    * If we do note this for users, probably suggest the obvious: import
-    modules instead of callables, and use module.callable instead.
-    * Also good to note that they can take *advantage* of this to make
-    "meta-fabfiles" collecting a number of sub-fabfiles' tasks into one
-    user-facing presentation.
-        * Although, with flags for manually specifying 1+ sub-fabfiles at
-        runtime, that becomes less necessary, though still useful.
 * Add with_sudo option to put(), which would need to be implemented as a call
 to itself (or make an inner function?) followed by a sudo mv call.
-* Terminology: rename 'commands' to 'tasks', 'operations' to 'commands' or
-'functions' or something?
-    * Plus: 'tasks' and etc sounds more natural to me; given how big of a
-    shake-up this is, why not go whole hog?
-    * Minus: commands/operations aren't all that bad for names, and should
-    avoid tendency to redo everything for redoing's sake.
-    * Minus: 'commands' feels like the most natural fit for a rename of
-    'operations' -- but then it's pretty confusing given the previous use of
-    'commands'!
 * Add Paramiko SSHConfig support: it can provide username and port and other
 options. Look at `man ssh_config` for what else people can put in that file.
 * Try to make Fabric threadsafe (and/or not using threads for outputting)
@@ -113,11 +91,6 @@ laggy.
 * Possibly allow "aliases" in `env`, i.e. 'user' and 'username' treated as
 being the same key to limit possible confusion.
     * See \_AliasDict, possibly roll it back into \_AttributeDict?
-* Investigate allowing control of pty allocation for remote connections (look at
-emails for previous discussion)
-* Try using `/usr/bin/env bash` instead of `/bin/bash` to handle systems where
-bash isn't in `/bin/`?
-    * But what if `env` doesn't exist or isn't in `/usr/bin`? :(
 * Parallel execution (if it can be done without making things terribly complex
 again)
 * Better remote-end prompt detection/passthrough to local user
