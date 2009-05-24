@@ -5,6 +5,7 @@ Module providing easy API for working with remote files and folders.
 from __future__ import with_statement
 
 import tempfile
+import re
 
 from fabric.api import *
 
@@ -222,6 +223,6 @@ def append(text, filename, use_sudo=False):
     """
     func = use_sudo and sudo or run
     with settings(warn_only=True):
-        if contains('^' + text, filename, use_sudo=use_sudo):
+        if contains('^' + re.escape(text), filename, use_sudo=use_sudo):
             return None
     return func("echo '%s' >> %s" % (text.replace("'", r'\''), filename))
