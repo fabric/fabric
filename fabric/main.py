@@ -293,7 +293,6 @@ def _merge(hosts, roles):
     return list(set(hosts + role_hosts))
 
 
-
 def get_hosts(command, cli_hosts, cli_roles):
     """
     Return the host list the given command should be using.
@@ -317,6 +316,23 @@ def get_hosts(command, cli_hosts, cli_roles):
     return []
 
 
+def update_output_levels(show, hide):
+    """
+    Update state.output values as per given comma-separated list of key names.
+
+    For example, ``update_output_levels(show='debug,warnings')`` is
+    functionally equivalent to ``state.output['debug'] = True ;
+    state.output['warnings'] = True``. Conversely, anything given to ``hide``
+    sets the values to ``False``.
+    """
+    if show:
+        for key in show.split(','):
+            state.output[key] = True
+    if hide:
+        for key in hide.split(','):
+            state.output[key] = False
+
+
 def main():
     """
     Main command-line execution loop.
@@ -336,8 +352,8 @@ def main():
             if key in state.env and isinstance(state.env[key], str):
                 state.env[key] = state.env[key].split(',')
 
-        # Handle --debug
-        state.output.debug = options.debug
+        # Handle output control level show/hide
+        update_output_levels(show=options.show, hide=options.hide)
 
         # Handle version number option
         if options.show_version:

@@ -187,26 +187,22 @@ env_options = [
         help="specify a new shell, defaults to '/bin/bash -l -c'"
     ),
 
-    # Debug output
-    # TODO: tie into global output controls better (this is just a stopgap)
-    make_option('--debug',
-        action='store_true',
-        default=False,
-        help="display debug output"
-    ),
-
     # Config file location
     make_option('-c', '--config',
         dest='rcfile',
         default=_rc_path(),
         help="specify location of config file to use"
+    ),
+
+    # Verbosity controls, analogous to context_managers.(hide|show)
+    make_option('--hide',
+        metavar='LEVELS',
+        help="comma-separated list of output levels to hide"
+    ),
+    make_option('--show',
+        metavar='LEVELS',
+        help="comma-separated list of output levels to show"
     )
-
-
-    # TODO: verbosity selection (sets state var(s) used when printing)
-    # Could default to typical -v/--verbose disabling fab_quiet; or could do
-    # multiple levels, e.g. -vvv, OR could specifically enable/disable stuff,
-    # e.g. --no-warnings / --no-echo (no echoing commands) / --no-stdout / etc.
     
 ]
 
