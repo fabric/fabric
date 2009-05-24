@@ -151,7 +151,11 @@ def connect(user, host, port):
             connected = True
             return client
         # Prompt for new password to try on auth failure
-        except (ssh.AuthenticationException, ssh.SSHException), e:
+        except (
+            ssh.AuthenticationException,
+            ssh.PasswordRequiredException,
+            ssh.SSHException
+        ), e:
             # TODO: tie this into global prompting (i.e. right now both uses of
             # prompt_for_password() do the same "if not env.password" stuff.
             # may want to roll that into prompt_for_password() itself?
@@ -167,7 +171,21 @@ def connect(user, host, port):
 
             # Otherwise, assume an auth exception, and prompt for new/better
             # password.
-            password = prompt_for_password(None, password)
+
+            # Paramiko doesn't handle prompting for locked private keys (i.e.
+            # keys with a passphrase and not loaded into an agent) so we have
+            # to detect this and tweak our prompt slightly.  (Otherwise,
+            # however, the logic flow is the same, because Paramiko's connect()
+            # method overrides the password argument to be either the login
+            # password OR the private key passphrase. Meh.)
+            text = None
+            if e.__class__ is ssh.PasswordRequiredException:
+                # NOTE: we can't easily say WHICH key's passphrase is needed,
+                # because Paramiko doesn't provide us with that info, and
+                # env.key_filename may be a list of keys, so we can't know
+                # which one raised the exception. Best not to try.
+                text = "Please enter passphrase for private key"
+            password = prompt_for_password(None, password, text)
             # Update env.password if it was empty
             if not env.password:
                 env.password = password
@@ -190,7 +208,7 @@ def connect(user, host, port):
             )
 
 
-def prompt_for_password(output=None, previous_password=None):
+def prompt_for_password(output=None, previous_password=None, text=None):
     """
     Prompts for and returns a new password if required; otherwise, returns None.
 
@@ -217,6 +235,10 @@ def prompt_for_password(output=None, previous_password=None):
     also empty, the user will be re-prompted immediately. Thus, this function
     will never return the empty string, avoiding a potential pitfall of having
     two False-evaluating return values meaning two different things.
+
+    Finally, ``prompt_for_password`` autogenerates the user prompt based on the
+    current host being connected to. To override this, specify a string value
+    for ``text``.
     """
     from state import env
     # TODO: tie all of this into global/centralized prompt detection
@@ -231,6 +253,9 @@ def prompt_for_password(output=None, previous_password=None):
     else:
         base_password_prompt = "Password"
     password_prompt = base_password_prompt
+    # Handle prompt override
+    if text is not None:
+        password_prompt = text
     if previous_password:
         password_prompt += " [Enter for previous]"
     password_prompt += ": "
