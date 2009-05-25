@@ -2,9 +2,11 @@
 
 from setuptools import setup, find_packages
 
+from fabric.version import get_version
+
 setup(
     name='Fabric',
-    version=__import__('fabric.version').get_version(),
+    version=get_version(),
     description='Fabric is a simple, Pythonic tool for remote execution and deployment.',
     long_description=open('README').read() + """
     
