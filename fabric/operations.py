@@ -33,7 +33,7 @@ def _handle_failure(message, exception=None):
         # subclasses, for example, "are" integers and .strerror is the string.
         # Others "are" strings themselves. May have to expand this further for
         # other error types.
-        if hasattr(exception, 'strerror'):
+        if hasattr(exception, 'strerror') and exception.strerror is not None:
             underlying_msg = exception.strerror
         else:
             underlying_msg = exception
