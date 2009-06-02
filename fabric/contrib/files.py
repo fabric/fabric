@@ -71,9 +71,16 @@ def upload_template(filename, destination, context=None, use_sudo=False):
         output.flush()
         put(output.name, "/tmp/" + filename)
     func = use_sudo and sudo or run
-    # Back up any original file
-    if exists(destination):
-        func("cp %s %s.bak" % (destination, destination))
+    # Back up any original file (need to do figure out ultimate destination)
+    to_backup = destination
+    with settings(hide('everything'), warn_only=True):
+        # Is destination a directory?
+        if func('test -f %s' % to_backup).failed:
+            # If so, tack on the filename to get "real" destination
+            # TODO: platform-specific path join
+            to_backup = destination + '/' + filename
+    if exists(to_backup):
+        func("cp %s %s.bak" % (to_backup, to_backup))
     # Actually move uploaded template to destination
     func("mv /tmp/%s %s" % (filename, destination))
 
