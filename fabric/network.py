@@ -178,6 +178,10 @@ def connect(user, host, port):
             # however, the logic flow is the same, because Paramiko's connect()
             # method overrides the password argument to be either the login
             # password OR the private key passphrase. Meh.)
+            #
+            # TODO: this block below results in passphrase prompt for some
+            # errors such as when the wrong user was given. See if this can be
+            # fixed.
             text = None
             if e.__class__ is ssh.PasswordRequiredException:
                 # NOTE: we can't easily say WHICH key's passphrase is needed,
