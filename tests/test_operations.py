@@ -2,9 +2,10 @@ from __future__ import with_statement
 
 import sys
 
-from nose.tools import raises
+from nose.tools import raises, eq_
+from fudge import with_patched_object
 
-from fabric.operations import require
+from fabric.operations import require, prompt
 from utils import mock_streams
 
 
@@ -65,3 +66,33 @@ def test_require_mixed_state_keys_prints_missing_only():
         err = sys.stderr.getvalue()
         assert 'version' not in err
         assert 'foo' in err
+
+
+#
+# prompt()
+#
+
+def p(x):
+    print x,
+
+@mock_streams('stdout')
+@with_patched_object(sys.modules['__builtin__'], 'raw_input', p)
+def test_prompt_appends_space():
+    """
+    prompt() appends a single space when no default is given
+    """
+    s = "This is my prompt"
+    prompt(s)
+    eq_(sys.stdout.getvalue(), s + ' ')
+
+
+@mock_streams('stdout')
+@with_patched_object(sys.modules['__builtin__'], 'raw_input', p)
+def test_prompt_with_default():
+    """
+    prompt() appends given default value plus one space on either side
+    """
+    s = "This is my prompt"
+    d = "default!"
+    prompt(s, default=d)
+    eq_(sys.stdout.getvalue(), "%s [%s] " % (s, d))

@@ -62,7 +62,7 @@ def test_roles_decorator_by_itself():
     eq_hosts(command, ['a', 'b'])
 
 
-@with_patched_object(fabric.state, 'env', _AttributeDict({'roledefs': fake_roles}))
+@with_patched_object('fabric.state', 'env', _AttributeDict({'roledefs': fake_roles}))
 def test_hosts_and_roles_together():
     """
     Use of @roles and @hosts together results in union of both

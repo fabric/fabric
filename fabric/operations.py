@@ -129,13 +129,19 @@ def prompt(text, key=None, default='', validate=None):
     """
     Prompt user with ``text`` and return the input (like ``raw_input``).
 
-    If ``key`` is given, the user's input will also be stored as ``env.<key>``
-    in addition to being returned by `prompt`. If the key already existed in
+    A single space character will be appended for convenience, but nothing
+    else. Thus, you may want to end your prompt text with a question mark or a
+    colon, e.g. ``prompt("What hostname?")``.
+
+    If ``key`` is given, the user's input will be stored as ``env.<key>`` in
+    addition to being returned by `prompt`. If the key already existed in
     ``env``, its value will be overwritten and a warning printed to the user.
 
     If ``default`` is given, it is displayed in square brackets and used if the
     user enters nothing (i.e. presses Enter without entering any text).
-    ``default`` defaults to the empty string.
+    ``default`` defaults to the empty string. If non-empty, a space will be
+    appended, so that a call such as ``prompt("What hostname?",
+    default="foo")`` would result in a prompt of ``What hostname? [foo] ``.
 
     The optional keyword argument ``validate`` may be a callable or a string:
     
@@ -174,6 +180,8 @@ def prompt(text, key=None, default='', validate=None):
     default_str = ""
     if default != '':
         default_str = " [%s] " % str(default).strip()
+    else:
+        default_str = " "
     # Construct full prompt string
     prompt_str = text.strip() + default_str
     # Loop until we pass validation
