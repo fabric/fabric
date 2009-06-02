@@ -141,7 +141,8 @@ def prompt(text, key=None, default='', validate=None):
     user enters nothing (i.e. presses Enter without entering any text).
     ``default`` defaults to the empty string. If non-empty, a space will be
     appended, so that a call such as ``prompt("What hostname?",
-    default="foo")`` would result in a prompt of ``What hostname? [foo] ``.
+    default="foo")`` would result in a prompt of ``What hostname? [foo]`` (with
+    a trailing space after the ``[foo]``.)
 
     The optional keyword argument ``validate`` may be a callable or a string:
     
