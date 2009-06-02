@@ -55,7 +55,9 @@ def upload_template(filename, destination, context=None, use_sudo=False):
     dictionary ``context`` (if given.)
     
     The resulting rendered file will be uploaded to the remote file path
-    ``destination`` (which should include the desired remote filename.)
+    ``destination`` (which should include the desired remote filename.) If the
+    destination file already exists, it will be renamed with a ``.bak``
+    extension.
 
     By default, the file will be copied to ``destination`` as the logged-in
     user; specify ``use_sudo=True`` to use `sudo` instead.
@@ -69,11 +71,6 @@ def upload_template(filename, destination, context=None, use_sudo=False):
         output.flush()
         put(output.name, "/tmp/" + filename)
     func = use_sudo and sudo or run
-    # Crappy sanity check pending a real os.path.join type function that honors
-    # the remote system's join character.
-    if not destination.endswith('/'):
-        destination += '/'
-    destination = destination + filename
     # Back up any original file
     if exists(destination):
         func("cp %s %s.bak" % (destination, destination))
