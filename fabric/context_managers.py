@@ -126,3 +126,57 @@ def settings(*args, **kwargs):
     if kwargs:
         managers.append(_setenv(**kwargs))
     return nested(*managers)
+
+
+def cd(path):
+    """
+    Context manager that keeps directory state when calling `run`/`sudo`.
+
+    Any calls to `run` or `sudo` within the wrapped block will implicitly have
+    a string similar to ``"cd <path> && "`` prefixed in order to give the sense
+    that there is actually statefulness involved.
+
+    Since all other operations and contrib functions make use of `run` and/or
+    `sudo`, they will also naturally be affected by use of `cd`.
+
+    Like the actual 'cd' shell builtin, `cd` may be called with relative paths
+    (keep in mind that your default starting directory is your remote user's
+    ``$HOME``) and may be nested as well.
+
+    Below is a "normal" attempt at using the shell 'cd', which doesn't work due
+    to how shell-less SSH connections are implemented -- state is **not** kept
+    between invocations of `run` or `sudo`::
+
+        run('cd /var/www')
+        run('ls')
+
+    The above snippet will list the contents of the remote user's ``$HOME``
+    instead of ``/var/www``. With `cd`, however, it will work as expected::
+
+        with cd('/var/www'):
+            run('ls') # Turns into "cd /var/www && ls"
+
+    Finally, a demonstration (see inline comments) of nesting::
+
+        with cd('/var/www'):
+            run('ls') # cd /var/www && ls
+            with cd('website1'):
+                run('ls') # cd /var/www/website1 && ls
+
+    ..note::
+
+        This context manager is currently implemented by appending to (and, as
+        always, restoring afterwards) the current value of an environment
+        variable, ``env.cwd``. By default, this variable is empty, and thus no
+        prefixing is performed.
+
+        However, this implementation may change in the future, so we do not
+        recommend manually altering ``env.cwd`` -- only the *behavior* of `cd`
+        will have any guarantee of backwards compatibility.
+    """
+    if env.get('cwd'):
+        # TODO: use platform-specific path join
+        new_cwd = env.cwd + '/' + path
+    else:
+        new_cwd = path
+    return _setenv(cwd=new_cwd)

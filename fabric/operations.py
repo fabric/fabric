@@ -358,9 +358,18 @@ def run(command, shell=True):
         output = run('ls /var/www/site1')
     
     """
+    # Set up new var so original argument can be displayed verbatim later.
     real_command = command
     if shell:
-        real_command = '%s "%s"' % (env.shell, _shell_escape(command))
+        # Handle cwd munging via 'cd' context manager
+        cwd = env.get('cwd', '')
+        if cwd:
+            # TODO: see if there is any nice way to quote this, given that it
+            # ends up inside double quotes down below...
+            cwd = 'cd %s && ' % _shell_escape(cwd)
+        # Construct final real, full command
+        real_command = '%s "%s"' % (env.shell,
+            _shell_escape(cwd + real_command))
     # TODO: possibly put back in previously undocumented 'confirm_proceed'
     # functionality, i.e. users may set an option to be prompted before each
     # execution. Pretty sure this should be a global option applying to ALL
@@ -451,8 +460,14 @@ def sudo(command, shell=True, user=None, pty=False):
         real_command = "%s %s" % (sudo_prefix, _shell_escape(command))
     # With a shell, we do 'sudo -u blah /bin/bash -l -c "my_command"'
     else:
+        # With a shell, we can also honor cwd
+        cwd = env.get('cwd', '')
+        if cwd:
+            # TODO: see if there is any nice way to quote this, given that it
+            # ends up inside double quotes down below...
+            cwd = 'cd %s && ' % _shell_escape(cwd)
         real_command = '%s %s "%s"' % (sudo_prefix, env.shell,
-           _shell_escape(command))
+            _shell_escape(cwd + command))
     # TODO: handle confirm_proceed behavior, as in run()
     if output.debug:
         print("[%s] sudo: %s" % (env.host_string, real_command))

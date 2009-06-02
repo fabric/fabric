@@ -221,7 +221,8 @@ env = _AttributeDict({
     'version': get_version(),
     'sudo_prompt': 'sudo password:',
     'use_shell': True,
-    'roledefs': {}
+    'roledefs': {},
+    'cwd': ''
 })
 
 # Add in option defaults
