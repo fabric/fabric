@@ -46,13 +46,19 @@ def first(*args, **kwargs):
                 return directory
 
 
-def upload_template(filename, destination, context=None, use_sudo=False):
+def upload_template(filename, destination, context=None, use_jinja=False,
+    template_dir=None, use_sudo=False):
     """
     Render and upload a template text file to a remote host.
 
     ``filename`` should be the path to a text file, which may contain Python
     string interpolation formatting and will be rendered with the given context
     dictionary ``context`` (if given.)
+
+    Alternately, if ``use_jinja`` is set to True and you have the Jinja2
+    templating library available, Jinja will be used to render the template
+    instead. Templates will be loaded from the invoking user's current working
+    directory by default, or from ``template_dir`` if given.
     
     The resulting rendered file will be uploaded to the remote file path
     ``destination`` (which should include the desired remote filename.) If the
@@ -62,11 +68,21 @@ def upload_template(filename, destination, context=None, use_sudo=False):
     By default, the file will be copied to ``destination`` as the logged-in
     user; specify ``use_sudo=True`` to use `sudo` instead.
     """
-    with open(filename) as inputfile:
-        text = inputfile.read()
     with tempfile.NamedTemporaryFile() as output:
-        if context:
-            text = text % context
+        # Init
+        text = None
+        if use_jinja:
+            try:
+                from jinja2 import Environment, FileSystemLoader
+                env = Environment(loader=FileSystemLoader(template_dir or '.'))
+                text = env.get_template(filename).render(**context or {})
+            except ImportError, e:
+                abort("tried to use Jinja2 but was unable to import: %s" % e)
+        else:
+            with open(filename) as inputfile:
+                text = inputfile.read()
+            if context:
+                text = text % context
         output.write(text)
         output.flush()
         put(output.name, "/tmp/" + filename)
