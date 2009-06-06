@@ -163,16 +163,14 @@ def cd(path):
             with cd('website1'):
                 run('ls') # cd /var/www/website1 && ls
 
-    ..note::
+    .. note::
 
         This context manager is currently implemented by appending to (and, as
         always, restoring afterwards) the current value of an environment
-        variable, ``env.cwd``. By default, this variable is empty, and thus no
-        prefixing is performed.
-
-        However, this implementation may change in the future, so we do not
-        recommend manually altering ``env.cwd`` -- only the *behavior* of `cd`
-        will have any guarantee of backwards compatibility.
+        variable, ``env.cwd``. However, this implementation may change in the
+        future, so we do not recommend manually altering ``env.cwd`` -- only
+        the *behavior* of `cd` will have any guarantee of backwards
+        compatibility.
     """
     if env.get('cwd'):
         # TODO: use platform-specific path join
