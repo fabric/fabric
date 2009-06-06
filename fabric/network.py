@@ -184,9 +184,18 @@ def connect(user, host, port):
             # method overrides the password argument to be either the login
             # password OR the private key passphrase. Meh.)
             #
-            # TODO: this block below results in passphrase prompt for some
-            # errors such as when the wrong user was given. See if this can be
-            # fixed.
+            # NOTE: This will come up if you normally use a
+            # passphrase-protected private key with ssh-agent, and enter an
+            # incorrect remote username, because Paramiko:
+            # * Tries the agent first, which will fail as you gave the wrong
+            # username, so obviously any loaded keys aren't gonna work for a
+            # nonexistent remote account;
+            # * Then tries the on-disk key file, which is passphrased;
+            # * Realizes there's no password to try unlocking that key with,
+            # because you didn't enter a password, because you're using
+            # ssh-agent;
+            # * In this condition (trying a key file, password is None)
+            # Paramiko raises PasswordRequiredException.
             text = None
             if e.__class__ is ssh.PasswordRequiredException:
                 # NOTE: we can't easily say WHICH key's passphrase is needed,
