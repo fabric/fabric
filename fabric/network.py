@@ -150,6 +150,11 @@ def connect(user, host, port):
                 key_filename=env.key_filename, timeout=10)
             connected = True
             return client
+        # BadHostKeyException corresponds to key mismatch, i.e. what on the
+        # command line results in the big banner error about man-in-the-middle
+        # attacks.
+        except ssh.BadHostKeyException:
+            abort("Host key for %s did not match pre-existing key! Server's key was changed recently, or possible man-in-the-middle attack." % env.host)
         # Prompt for new password to try on auth failure
         except (
             ssh.AuthenticationException,
