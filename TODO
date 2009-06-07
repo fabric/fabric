@@ -134,5 +134,7 @@ appropriate empty values.
     * Can be used in conjunction with --debug to see the real commands to run
     * Would be difficult to fully "test" user code relying on output from
     server, without users doing their own mocking.
+* Allow global override of the `pty` behavior currently implemented as kwargs
+for run/sudo. (And then note this in any FAQs mentioning tty problems!)
 
 <!-- vim:set filetype=mkd : -->

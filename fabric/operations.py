@@ -336,7 +336,7 @@ def get(remote_path, local_path):
 
 
 @needs_host
-def run(command, shell=True):
+def run(command, shell=True, pty=False):
     """
     Run a shell command on a remote host.
 
@@ -350,6 +350,10 @@ def run(command, shell=True):
     single (likely multiline) string. This string will exhibit a ``failed``
     boolean attribute specifying whether the command failed or succeeded, and
     will also include the return code as the ``return_code`` attribute.
+
+    You may pass ``pty=True`` to force allocation of a pseudo tty on
+    the remote end. This is not normally required, but some programs may
+    complain (or, even more rarely, refuse to run) if a tty is not present.
 
     Examples::
     
@@ -379,6 +383,10 @@ def run(command, shell=True):
     elif output.running:
         print("[%s] run: %s" % (env.host_string, command))
     channel = connections[env.host_string]._transport.open_session()
+    # Create pty if necessary (using Paramiko default options, which as of
+    # 1.7.4 is vt100 $TERM @ 80x24 characters)
+    if pty:
+        channel.get_pty()
     channel.exec_command(real_command)
     capture = []
 
