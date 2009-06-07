@@ -389,11 +389,13 @@ def run(command, shell=True):
     
     # Close when done
     status = channel.recv_exit_status()
-    channel.close()
     
     # Wait for threads to exit so we aren't left with stale threads
     out_thread.join()
     err_thread.join()
+
+    # Close channel
+    channel.close()
 
     # Assemble output string
     out = _AttributeString("".join(capture).strip())
@@ -487,12 +489,14 @@ def sudo(command, shell=True, user=None, pty=False):
 
     # Close channel when done
     status = channel.recv_exit_status()
-    channel.close()
 
     # Wait for threads to exit before returning (otherwise we will occasionally
     # end up returning before the threads have fully wrapped up)
     out_thread.join()
     err_thread.join()
+
+    # Close channel
+    channel.close()
 
     # Assemble stdout string
     out = _AttributeString("".join(capture).strip())
