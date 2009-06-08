@@ -8,6 +8,6 @@ well when you're using setup.py to install e.g. paramiko!
 """
 from context_managers import cd, hide, settings, show
 from decorators import hosts, roles, runs_once
-from operations import require, prompt, put, get, run, sudo, local
+from operations import require, prompt, put, get, run, sudo, local, reboot
 from state import env
 from utils import abort, warn

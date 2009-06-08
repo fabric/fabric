@@ -10,12 +10,14 @@ import os.path
 import re
 import stat
 import subprocess
+import sys
+import time
 
 from context_managers import settings
 from contextlib import closing
 from network import output_thread, needs_host
 from state import env, connections, output
-from utils import abort, indent, warn
+from utils import abort, indent, warn, fastprint
 
 
 def _handle_failure(message, exception=None):
@@ -570,3 +572,33 @@ def local(command, capture=True):
         _handle_failure(message=msg)
     # If we were capturing, this will be a string; otherwise it will be None.
     return stdout
+
+
+def reboot(wait):
+    """
+    Reboot the remote system, disconnect, and wait for ``wait`` seconds.
+
+    After calling this operation, further execution of `run` or `sudo` will
+    result in a normal reconnection to the server, including any password
+    prompts.
+    """
+    sudo('reboot')
+    client = connections[env.host_string]
+    client.close()
+    del connections[env.host_string]
+    # TODO: more robust reconnection/sleep mechanism than "guess how long a
+    # reboot takes and sleep that long". Possibilities:
+    # * Try reconnecting after, say, 30 seconds, with a short timeout value,
+    # then loop every, say, 10 seconds until we reconnect
+    # * Just give user a prompt, within a loop, so they can manually whack
+    # Enter to try reconnecting
+    # * Stick with the manual sleep timer entry, and just ensure it is
+    # explicitly documented, i.e. "we highly recommend figuring out how long
+    # your system takes to reboot before using this function"
+    if output.running:
+        fastprint("Waiting for reboot: ")
+        per_tick = 5
+        for second in range(int(wait / per_tick)):
+            fastprint(".")
+            time.sleep(per_tick)
+        fastprint("done.\n")

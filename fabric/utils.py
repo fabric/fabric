@@ -56,3 +56,13 @@ def indent(text, spaces=4, strip=False):
     # Reintroduce first indent (which just got stripped out)
     output = prefix + output
     return output
+
+
+def fastprint(text):
+    """
+    Uses sys.stdout.flush() to get around buffer/cache behavior of stdout.
+
+    Does not append newline characters.
+    """
+    sys.stdout.write(text)
+    sys.stdout.flush()

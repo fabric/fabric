@@ -60,6 +60,9 @@ class HostConnectionCache(dict):
         # Return the value either way
         return dict.__getitem__(self, real_key)
 
+    def __delitem__(self, key):
+        return dict.__delitem__(self, join_host_strings(*normalize(key)))
+
 
 def normalize(host_string, omit_port=False):
     """
