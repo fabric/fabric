@@ -566,12 +566,15 @@ def local(command, capture=True):
     p = subprocess.Popen([command], shell=True, stdout=out_stream,
             stderr=err_stream)
     (stdout, stderr) = p.communicate()
-    # Handle error condition
+    # Handle error condition (deal with stdout being None, too)
+    out = _AttributeString(stdout or "")
+    out.failed = False
     if p.returncode != 0:
+        out.failed = True
         msg = "local() encountered an error (return code %s) while executing '%s'" % (p.returncode, command)
         _handle_failure(message=msg)
     # If we were capturing, this will be a string; otherwise it will be None.
-    return stdout
+    return out
 
 
 def reboot(wait):
