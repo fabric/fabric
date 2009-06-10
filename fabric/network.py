@@ -329,8 +329,8 @@ def output_thread(prefix, chan, stderr=False, capture=None):
                 out = ""
             # Deal with line breaks, printing all lines and storing the
             # leftovers, if any.
-            if '\n' in out:
-                parts = out.split('\n')
+            if '\n' in out or '\r' in out:
+                parts = out.splitlines()
                 line = leftovers + parts.pop(0)
                 leftovers = parts.pop()
                 while parts or line:
