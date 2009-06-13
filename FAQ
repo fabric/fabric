@@ -28,3 +28,27 @@ There are multiple ways to deal with this problem:
 * Pass ``pty=True`` to `run` or `sudo`, which will force allocation of a
   pseudo-tty on the remote end, and hopefully cause the offending program to be
   less cranky.
+
+
+2. Why can't I run programs in the background with ``&``? It makes Fabric hang.
+-------------------------------------------------------------------------------
+
+Because Fabric executes a shell on the remote end for each invocation of
+``run`` or ``sudo``, techniques like backgrounding (or using ``cd``, but see
+the `cd` context manager for help on that) will not work as expected.
+Backgrounded processes still prevent the calling shell from exiting until they
+stop running, and this in turn prevents Fabric from continuing on with its own
+execution.
+
+If you truly need to run a process in the "background" and are unable to
+properly `daemonize
+<http://en.wikipedia.org/wiki/Daemon_(computer_software)>`_, you may want to
+look into GNU Screen (widely available in package managers or preinstalled)
+which can easily serve the same purpose. A trivial example (``yes`` is a
+simple Unix app that simply prints the word "yes" forever until killed)::
+
+    run('screen -d -m "yes"')
+
+Such a call will effectively fork the ``yes`` program into a detached
+``screen`` session, which will no longer be associated with the calling shell,
+and thus your Fabric task will continue executing as intended.
