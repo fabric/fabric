@@ -47,9 +47,9 @@ def _handle_failure(message, exception=None):
 
 def _shell_escape(string):
     """
-    Escape double quotes in given ``string``.
+    Escape double quotes and dollar signs in given ``string``.
     """
-    return string.replace(r'"', r'\"')
+    return string.replace(r'"', r'\"').replace(r'$', r'\$')
 
 
 class _AttributeString(str):
