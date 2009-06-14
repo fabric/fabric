@@ -239,16 +239,13 @@ def put(local_path, remote_path, mode=None):
 
     ``remote_path`` may also be a relative or absolute location, but applied to
     the remote host. Relative paths are relative to the remote user's home
-    directory.
+    directory, but tilde expansion (e.g. ``~/.ssh/``) will also be performed if
+    necessary.
 
-    Fabric will attempt to discern the remote user's home directory in order to
-    perform tilde expansion for ``remote_path``, so you may specify remote paths
-    such as ``~/.ssh/``.
-
-    By default, the file mode is preserved by put when uploading. But you can
-    also set the mode explicitly by specifying an additional ``mode`` keyword
-    argument which sets the numeric mode of the remote file. See the
-    ``os.chmod`` documentation or ``man chmod`` for the format of this argument.
+    By default, `put` preserves file modes when uploading. However, you can
+    also set the mode explicitly by specifying the ``mode`` keyword argument,
+    which sets the numeric mode of the remote file. See the ``os.chmod``
+    documentation or ``man chmod`` for the format of this argument.
     
     Examples::
     
@@ -261,28 +258,29 @@ def put(local_path, remote_path, mode=None):
     with closing(ftp) as ftp:
         # Expand tildes (assumption: default remote cwd is user $HOME)
         remote_path = remote_path.replace('~', ftp.normalize('.'))
+        # Get remote mode for directory-vs-file detection
         try:
             rmode = ftp.lstat(remote_path).st_mode
         except:
             # sadly, I see no better way of doing this
             rmode = None
-    
         # Expand local tildes and get globs
         globs = glob(os.path.expanduser(local_path))
-    
         # Deal with bad local_path
         if not globs:
             raise ValueError, "'%s' is not a valid local path or glob." \
                 % local_path
     
+        # Iterate over all given local files
         for lpath in globs:
-            # first, figure out the real, absolute, remote path
+            # If remote path is directory, tack on the local filename
             _remote_path = remote_path
             if rmode is not None and stat.S_ISDIR(rmode):
                 _remote_path = os.path.join(
                     remote_path,
                     os.path.basename(lpath)
                 )
+            # Print
             if output.running:
                 print("[%s] put: %s -> %s" % (
                     env.host_string, lpath, _remote_path
@@ -306,23 +304,48 @@ def get(remote_path, local_path):
     """
     Download a file from a remote host.
     
-    The ``remote_path`` parameter is the relative or absolute path to the files
-    to download from the remote hosts. In order to play well with multiple-host
-    invocation, the local filename will be suffixed with the current hostname.
-     
-    Example::
+    ``remote_path`` should point to a specific file, while ``local_path`` may
+    be a directory (in which case the remote filename is preserved) or
+    something else (in which case the downloaded file is renamed). Tilde
+    expansion is performed on both ends.
+
+    For example, ``get('~/info.txt', '/tmp/')`` will create a new file,
+    ``/tmp/info.txt``, because ``/tmp`` is a directory. However, a call such as
+    ``get('~/info.txt', '/tmp/my_info.txt')`` would result in a new file named
+    ``/tmp/my_info.txt``, as that path didn't exist (and thus wasn't a
+    directory.)
+
+    If ``local_path`` names a file that already exists locally, that file
+    will be overwritten without complaint.
+
+    Finally, if `get` detects that it will be run on more than one host, it
+    will suffix the current host string to the local filename, to avoid
+    clobbering when it is run multiple times.
+
+    For example, the following snippet will produce two files on your local
+    system, called ``server.log.host1`` and ``server.log.host2`` respectively::
    
         @hosts('host1', 'host2')
         def my_download_task():
             get('/var/log/server.log', 'server.log')
-    
-    The above code will produce two files on your local system, called
-    ``server.log.host1`` and ``server.log.host2`` respectively.
     """
     ftp = connections[env.host_string].open_sftp()
     with closing (ftp) as ftp:
-        local_path = local_path + '.' + env.host
-        remote_path = remote_path
+        # Expand tildes (assumption: default remote cwd is user $HOME)
+        remote_path = remote_path.replace('~', ftp.normalize('.'))
+        local_path = os.path.expanduser(local_path)
+        # Detect local directory and append filename if necessary (assuming
+        # Unix file separators for now :()
+        if os.path.isdir(local_path):
+            remote_file = remote_path
+            if '/' in remote_file:
+                remote_file = remote_file.split('/')[-1]
+            local_path = os.path.join(local_path, remote_file)
+        # If the current run appears to be scheduled for multiple hosts,
+        # append a suffix to the downloaded file to prevent clobbering.
+        if len(env.all_hosts) > 1:
+            local_path = local_path + '.' + env.host
+        # Print
         if output.running:
             print("[%s] download: %s <- %s" % (
                 env.host_string, local_path, remote_path
