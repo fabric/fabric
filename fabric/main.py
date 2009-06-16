@@ -380,6 +380,10 @@ def main():
         if not commands:
             abort("Fabfile didn't contain any commands!")
 
+        # Now that we're settled on a fabfile, inform user.
+        if state.output.debug:
+            print("Using fabfile '%s'" % fabfile)
+
         # Handle list-commands option (now that commands are loaded)
         if options.list_commands:
             list_commands()
