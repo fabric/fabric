@@ -115,9 +115,6 @@ ls --color=never and so on)
     violate DRY.
     * Probably do the usual "behavior controlled via `env`" thing, and make the
     usual context manager too?
-* Add chmod/chown options to either put/get or to contrib.files, so either of:
-    * `put(x, y, chmod='775', chown='foo:bar')`
-    * `put(x, y) ; chmod(x, '775')`
 * Consider eventually changing backend from Paramiko to Twisted or PuSSH (e.g.
 in 2.0):
     * Twisted: theoretically easier coding of the main network loops, possibly
@@ -136,5 +133,12 @@ appropriate empty values.
     server, without users doing their own mocking.
 * Allow global override of the `pty` behavior currently implemented as kwargs
 for run/sudo. (And then note this in any FAQs mentioning tty problems!)
+* Extend globbing to `get`; with `put` we can leverage local Python libs, but
+for `get` we will have to use a subroutine or something that can do e.g. `ls -1
+foo*` and then nab the list of resulting file paths.
+    * Or see if `paramiko.SFTPClient.listdir` is capable of doing globbing,
+    though that is unlikely.
+* Maybe extend `mode` argument from `put` to `get`, though it seems much less
+useful in that direction.
 
 <!-- vim:set filetype=mkd : -->

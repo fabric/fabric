@@ -380,6 +380,10 @@ def main():
         if not commands:
             abort("Fabfile didn't contain any commands!")
 
+        # Now that we're settled on a fabfile, inform user.
+        if state.output.debug:
+            print("Using fabfile '%s'" % fabfile)
+
         # Handle list-commands option (now that commands are loaded)
         if options.list_commands:
             list_commands()
@@ -413,8 +417,9 @@ def main():
             command = commands[name]
             # Set current command name (used for some error messages)
             state.env.command = name
-            # Set host list
-            hosts = get_hosts(command, cli_hosts, cli_roles)
+            # Set host list (also copy to env)
+            state.env.all_hosts = hosts = get_hosts(
+                command, cli_hosts, cli_roles)
             # If hosts found, execute the function on each host in turn
             for host in hosts:
                 username, hostname, port = normalize(host)
