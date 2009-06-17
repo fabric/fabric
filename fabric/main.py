@@ -217,11 +217,16 @@ def display_command(command):
     # Sanity check
     if command not in commands:
         abort("Command '%s' not found, exiting." % command)
-    # Print out nicely presented docstring
-    print("Displaying detailed information for command '%s':" % command)
-    print('')
-    print(indent(commands[command].__doc__, strip=True))
-    print('')
+    cmd = commands[command]
+    # Print out nicely presented docstring if found
+    if cmd.__doc__:
+        print("Displaying detailed information for command '%s':" % command)
+        print('')
+        print(indent(cmd.__doc__, strip=True))
+        print('')
+    # Or print notice if not
+    else:
+        print("No detailed information available for command '%s':" % command)
     sys.exit(0)
 
 
