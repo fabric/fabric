@@ -332,7 +332,8 @@ def output_thread(prefix, chan, stderr=False, capture=None):
             if '\n' in out or '\r' in out:
                 parts = out.splitlines()
                 line = leftovers + parts.pop(0)
-                leftovers = parts.pop()
+                if parts:
+                    leftovers = parts.pop()
                 while parts or line:
                     # Write stderr to our own stderr.
                     out_stream = stderr and sys.stderr or sys.stdout
