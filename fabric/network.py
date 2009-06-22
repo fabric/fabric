@@ -203,7 +203,7 @@ def connect(user, host, port):
                 # env.key_filename may be a list of keys, so we can't know
                 # which one raised the exception. Best not to try.
                 text = "Please enter passphrase for private key"
-            password = prompt_for_password(None, password, text)
+            password = prompt_for_password(password, text)
             # Update env.password if it was empty
             if not env.password:
                 env.password = password
@@ -226,44 +226,28 @@ def connect(user, host, port):
             )
 
 
-def prompt_for_password(output=None, previous_password=None, text=None):
+def prompt_for_password(previous=None, prompt=None):
     """
     Prompts for and returns a new password if required; otherwise, returns None.
 
-    ``output`` should be a string and is typically going to be the current
-    chunk of text obtained from the remote server. It is searched for a couple
-    of potential prompt strings (including the env variable
-    ``env.sudo_prompt``) and, if found, will prompt the user for a password.
+    ``previous`` should be the last known password, and is typically "primed"
+    with ``env.password``, though it may be empty or None if ``env.password``
+    was not set and no password has previously been entered during this
+    session.
 
-    Alternately, ``output`` may be None, implying that the password should
-    always be prompted for, such as in the case of initial SSH connection
-    (where "prompt for a password" is denoted by catching an exception, instead
-    of detecting a prompt.)
+    When non-empty, ``previous`` will be used as a default if the user hits
+    Enter without entering a new password, and the displayed password prompt
+    will reflect this.
 
-    ``previous_password`` should be the last known password, and is typically
-    "primed" with ``env.password``, though it may be empty or None if
-    ``env.password`` was not set and no password has previously been entered
-    during this session.
-
-    When non-empty, ``previous_password`` will be used as a default if the user
-    hits Enter without entering a new password, and the displayed password
-    prompt will reflect this.
-
-    If the user supplies an empty password **and** ``previous_password`` is
-    also empty, the user will be re-prompted immediately. Thus, this function
-    will never return the empty string, avoiding a potential pitfall of having
-    two False-evaluating return values meaning two different things.
+    If the user supplies an empty password **and** ``previous`` is also empty,
+    the user will be re-prompted until they enter a non-empty password.
 
     Finally, ``prompt_for_password`` autogenerates the user prompt based on the
     current host being connected to. To override this, specify a string value
-    for ``text``.
+    for ``prompt``.
     """
-    from state import env
     # TODO: tie all of this into global/centralized prompt detection
-    # Short-circuit if no password prompt found in output
-    if (output is not None
-        and not re.findall(r'^%s$' % env.sudo_prompt, output, re.I|re.M)):
-        return
+    from state import env
     # Construct the prompt we will display to the user (using host if available)
     if 'host' in env:
         base_password_prompt = "Password for %s" % join_host_strings(*normalize(
@@ -271,18 +255,20 @@ def prompt_for_password(output=None, previous_password=None, text=None):
     else:
         base_password_prompt = "Password"
     password_prompt = base_password_prompt
-    # Handle prompt override
-    if text is not None:
-        password_prompt = text
-    if previous_password:
+    # Handle prompt text override
+    if prompt is not None:
+        password_prompt = prompt
+    # If the caller knew of a previously given password, give the user the
+    # option of trying that again.
+    if previous:
         password_prompt += " [Enter for previous]"
     password_prompt += ": "
     # Get new password value
     new_password = getpass.getpass(password_prompt)
     # See if user wants us to use the previous password and return right away
     # if so.
-    if (not new_password) and previous_password:
-        return previous_password
+    if (not new_password) and previous:
+        return previous
     # Otherwise, loop until user gives us a non-empty password (to prevent
     # returning the empty string, and to avoid unnecessary network overhead.)
     while not new_password:
@@ -315,16 +301,18 @@ def output_thread(prefix, chan, stderr=False, capture=None):
             # Capture if necessary
             if capture is not None:
                 capture += out
-            # Handle any password prompts (storing in current-session password)
-            password = prompt_for_password(out, password)
-            # prompt_for_password() returns None if no prompt was found; thus
-            # if the password is NOT None, we were prompted and have to inform
-            # the remote server of what the user supplied.
-            if password is not None:
-                # Communicate "upstream" to env if env.password was empty
+            # Detect password prompts
+            initial = re.findall(r'^%s$' % env.sudo_prompt, out, re.I|re.M)
+            try_again = re.findall(r'^Sorry, try again', out, re.I|re.M)
+            # Deal with any such prompts
+            if initial or try_again:
+                # Prompt user if nothing to try, or if stored password failed
+                if not password or try_again:
+                    password = prompt_for_password(password)
+                # Set environment password if that was previously empty.
                 if not env.password:
                     env.password = password
-                # Send password down the pipe
+                # Send current password down the pipe
                 chan.sendall(password + '\n')
                 out = ""
             # Deal with line breaks, printing all lines and storing the
