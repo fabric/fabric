@@ -140,5 +140,20 @@ foo*` and then nab the list of resulting file paths.
     though that is unlikely.
 * Maybe extend `mode` argument from `put` to `get`, though it seems much less
 useful in that direction.
+* See whether task dependencies makes sense. So far, have been simply writing
+"meta tasks" containing a specific order of sub-task function calls, but being
+able to specify a Cap/Rake like "always call X after Y runs" might be useful
+for some cases.
+    * Primary argument against this is that it introduces additional
+    magic/processing to the execution model, where a function call is not just
+    a function call but may implicitly call other things as well. This could be
+    bad from both the sanity of use perspective as well as just complex to
+    implement.
+* Allow arbitrary shell commands to be specified at runtime, e.g. `fab -H foo
+-- "ifconfig -a"`
+    * Should simply be an alias to calling `run()` with the supplied text
+    * Specifying task names along with that syntax should probably be
+    considered an error condition? or run the arbitrary command after the other
+    tasks?
 
 <!-- vim:set filetype=mkd : -->
