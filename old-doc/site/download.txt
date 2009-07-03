@@ -1,6 +1,0 @@
-h1. Download
-
-From the Python Package Index (also used by distutils and easy_install):
-http://pypi.python.org/pypi?:action=display&name=Fabric
-
-From nongnu.org: http://download.savannah.nongnu.org/releases/fab/
