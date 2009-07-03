@@ -36,7 +36,9 @@ def push_docs():
     Build and push the Sphinx docs to docs.fabfile.org
     """
     build_docs()
-    rsync_project('/var/www/docs.fabfile/', 'docs/_build/html/', delete=True)
+    branch = fabric.version.get_version(line_only=True)
+    remote_loc = '/var/www/docs.fabfile/%s/' % branch
+    rsync_project(remote_loc, 'docs/_build/html/', delete=True)
 
 
 def tag():
