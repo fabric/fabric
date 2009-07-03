@@ -14,4 +14,4 @@ Fabric.egg-info
 release
 *.png
 .coverage
-docs/_*
+docs/_build
