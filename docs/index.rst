@@ -5,10 +5,9 @@ Fabric
 Work in progress!
 =================
 
-This website and its documentation are still being written and updated during
-Fabric 0.9's alpha and beta periods. We are providing them to you now because
-any documentation is better than no documentation, but please keep in mind
-that many things here are subject to change or may need fleshing out.
+Fabric 0.9 is now in beta, meaning that its behavior and feature set are
+effectively frozen. However, this documentation is still being expanded and
+updated prior to final release, so changes are likely to occur.
 
 
 About
