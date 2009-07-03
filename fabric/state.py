@@ -43,10 +43,10 @@ class _AttributeDict(dict):
 
         >>> m = _AttributeDict({'foo': 'bar'})
         >>> m.foo
-        bar
+        'bar'
         >>> m.foo = 'not bar'
         >>> m['foo']
-        not bar
+        'not bar'
 
     ``_AttributeDict`` objects also provide ``.first()`` which acts like
     ``.get()`` but accepts multiple keys as arguments, and returns the value of
@@ -54,7 +54,7 @@ class _AttributeDict(dict):
 
         >>> m = _AttributeDict({'foo': 'bar', 'biz': 'baz'})
         >>> m.first('wrong', 'incorrect', 'foo', 'biz')
-        bar
+        'bar'
 
     """
     def __getattr__(self, key):
