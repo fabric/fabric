@@ -8,7 +8,7 @@ which in turn needs access to this version information.)
 
 VERSION = (0, 9, 0, 'alpha', 3)
 
-def get_version(verbose=False):
+def get_version(verbose=False, line_only=False):
     """
     Return a version string for this package, based on `VERSION`.
 
@@ -18,10 +18,16 @@ def get_version(verbose=False):
     When ``verbose`` is True, a slightly more human-readable version is
     produced, e.g. '0.9 alpha 2'.
 
+    When ``line_only`` is True, only the major and minor version numbers are
+    returned, e.g. '0.9'.
+
     This code is based off of Django's similar version output algorithm.
     """
     # Major + minor only
     version = '%s.%s' % (VERSION[0], VERSION[1])
+    # Break off now if we only want the line of development
+    if line_only:
+        return version
     # Append tertiary/patch if non-zero
     if VERSION[2]:
         version = '%s.%s' % (version, VERSION[2])
