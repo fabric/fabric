@@ -17,16 +17,16 @@ About
 .. include:: ../README
 
 
-Download/Installation
+Installation
 =====================
 
 Latest stable version
 ---------------------
 
-The most recent stable version of Fabric is |release|. The recommended
-installation method is to use ``easy_install`` or ``pip``; or you may download
-TGZ or ZIP source archives from a couple of official locations. Detailed
-instructions and links may be found on the :doc:`installation` page.
+Stable releases of Fabric are best installed via ``easy_install`` or ``pip``;
+or you may download TGZ or ZIP source archives from a couple of official
+locations. Detailed instructions and links may be found on the
+:doc:`installation` page.
 
 Development version
 -------------------

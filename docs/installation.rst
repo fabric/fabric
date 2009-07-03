@@ -10,10 +10,10 @@ installation.
 .. note::
 
     If you've obtained the Fabric source via source control and plan on
-    updating often, we highly suggest doing ``python setup.py develop``
-    instead -- it will use symlinks instead of file copies so that use of the
-    Python library or command-line tool will always use your checked-out
-    version.
+    updating your checkout in the future, we highly suggest doing ``python
+    setup.py develop`` instead -- it will use symlinks instead of file copies
+    so that use of the Python library or command-line tool will always use your
+    checked-out version.
 
 Dependencies
 ============
