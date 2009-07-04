@@ -48,7 +48,12 @@ def _handle_failure(message, exception=None):
 def _shell_escape(string):
     """
     Escape double quotes and dollar signs in given ``string``.
+    >>> _shell_escape('abc$')
+    'abc\\\\$'
+    >>> _shell_escape('"')
+    '\\\\"'
     """
+
     return string.replace(r'"', r'\"').replace(r'$', r'\$')
 
 
@@ -56,7 +61,6 @@ class _AttributeString(str):
     """
     Simple string subclass to allow arbitrary attribute access.
     """
-    pass
 
 
 
