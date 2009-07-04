@@ -4,14 +4,9 @@ Fabric's own fabfile.
 
 from __future__ import with_statement
 
-import inspect
-
 from fabric.api import *
 from fabric.contrib.project import rsync_project
 import fabric.version
-
-import os.path
-
 
 
 def test():
