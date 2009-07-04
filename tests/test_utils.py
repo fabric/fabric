@@ -5,7 +5,7 @@ from nose.tools import eq_
 from nose.tools import raises
 
 from fabric.state import output
-from fabric.utils import warn, indent, abort
+from fabric.utils import warn, indent, abort, fastprint
 from utils import mock_streams
 
 
@@ -68,3 +68,10 @@ def test_abort_message():
     result = sys.stderr.getvalue()
     eq_("\nFatal error: Test\n\nAborting.\n", result)
    
+@mock_streams('stdout')
+def test_fastprint():
+
+    fastprint('zoom!')
+    s = sys.stdout.getvalue()
+
+    assert s == 'zoom!', s
