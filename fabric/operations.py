@@ -573,7 +573,15 @@ def local(command, capture=True):
     ``output.stderr`` will be used to determine what is printed and what is
     discarded.
     """
-    if output.running:
+    # Handle cd() context manager
+    cwd = env.get('cwd', '')
+    if cwd:
+        cwd = 'cd %s && ' % _shell_escape(cwd)
+    # Construct real command
+    real_command = cwd + command
+    if output.debug:
+        print("[localhost] run: %s" % (real_command))
+    elif output.running:
         print("[localhost] run: " + command)
     # By default, capture both stdout and stderr
     PIPE = subprocess.PIPE
@@ -586,7 +594,7 @@ def local(command, capture=True):
             out_stream = None
         if output.stderr:
             err_stream = None
-    p = subprocess.Popen([command], shell=True, stdout=out_stream,
+    p = subprocess.Popen([real_command], shell=True, stdout=out_stream,
             stderr=err_stream)
     (stdout, stderr) = p.communicate()
     # Handle error condition (deal with stdout being None, too)
