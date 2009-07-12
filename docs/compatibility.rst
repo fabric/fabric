@@ -234,12 +234,16 @@ In no particular order:
     The execution model is still subject to change, pending feedback during the
     alpha. Please don't hesitate to email the list or the developers if you have
     a use case that needs something Fabric doesn't provide right now!
+
 * Removed the old ``fab shell`` functionality, since the move to "just Python"
   should make vanilla ``python``/``ipython`` usage of Fabric much easier.
 
     * May add it back in later as a convenient shortcut to what basically
       amounts to running ``ipython`` + doing a handful of ``from fabric.foo
       import bar`` calls.
+
+* The undocumented `fab_quiet` option has been replaced by a much more granular
+  set of output controls. For more info, see :ref:`output-controls`.
 
 
 Changes from alpha 1 to alpha 2
