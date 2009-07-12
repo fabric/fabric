@@ -70,8 +70,10 @@ def test_abort_message():
    
 @mock_streams('stdout')
 def test_fastprint():
-
-    fastprint('zoom!')
-    s = sys.stdout.getvalue()
-
-    assert s == 'zoom!', s
+    """
+    fastprint() should print its input to sys.stdout
+    """
+    s = 'zoom!'
+    fastprint(s)
+    result = sys.stdout.getvalue()
+    eq_(result, s)
