@@ -251,6 +251,8 @@ is True by default, in order to preserve default SSH behavior.
     man-in-the-middle attacks! Please use with caution.
 
 
+.. _output-controls:
+
 Output controls
 ===============
 
