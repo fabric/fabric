@@ -79,6 +79,11 @@ parallel operation mode can work again.
     one global host list per session. (But isn't that the more sensible
     solution? When would you execute a `fab` command line and expect the host
     list to change during the session?
+    * See mikeias' fork (http://github.com/mikeias/fabric/) for one potential
+    approach: preserves dynamic checking of host/role lists as attached to
+    tasks via decorators, but thus requires one to call a function with the
+    task name as a string, instead of simply calling the function itself. May
+    be worth the tradeoff, and is definitely food for thought.
 * Related to previous bullet point, but independent: possibly make concept of
 "host" more flexible to include host-specific password, username, arch, OS, etc.
 * Possibly add back in the old `shell` functionality (it would have to be a
