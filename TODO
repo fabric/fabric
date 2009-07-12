@@ -88,6 +88,8 @@ with other commands at the same time.)
     * Probably leverage IPython as a library, I've seen it done before
     * Should end up equivalent to a user running `ipython` and then doing a
     bunch of typical Fabric imports, i.e. all the operations plus `env`.
+    * Make it easy to say "all hosts" or "all roles" as well as
+    specifying arbitrary hosts/roles.
 * Check Python 2.6 compatibility.
 * Bash tab-completion for Fab tasks, assuming it can be done without being too
 laggy.
