@@ -11,11 +11,11 @@ import fabric.version
 
 def test():
     """
-    Run all unit tests
+    Run all unit tests and doctests.
     """
     # Need show_stderr=True because the interesting output of nosetests is
     # actually sent to stderr, not stdout.
-    print(local('nosetests -sv', capture=False))
+    print(local('nosetests -sv --with-doctest', capture=False))
 
 
 def build_docs():
