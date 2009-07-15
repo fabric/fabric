@@ -170,8 +170,8 @@ env_options = [
 
     # Fabfile name to look for
     make_option('-f', '--fabfile',
-        default='fabfile.py',
-        help="name of fabfile to load, e.g. 'fabfile.py' or '../other.py'"
+        default='fabfile',
+        help="name of or path to a fabfile module or package, e.g. 'path/to/fabfile.py' or 'myfab'"
     ),
 
     # Default error-handling behavior

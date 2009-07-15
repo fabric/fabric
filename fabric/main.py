@@ -44,12 +44,23 @@ def load_settings(path):
     return {}
 
 
+def _is_package(path):
+    """
+    Is the given path a Python package?
+    """
+    return (
+        os.path.isdir(path)
+        and os.path.exists(os.path.join(path, '__init__.py'))
+    )
+
+
 def find_fabfile():
     """
     Attempt to locate a fabfile, either explicitly or by searching parent dirs.
 
-    Uses the value of ``env.fabfile``, which defaults to ``fabfile.py``,
-    as the target of the search. This may be overridden on the command line.
+    Uses the value of ``env.fabfile``, which defaults to ``fabfile``,
+    as the target of the search. This may be overridden on the command line or
+    in a ``.fabricrc`` file.
 
     If ``env.fabfile`` contains path elements other than a filename (e.g.
     ``../fabfile.py`` or ``dir1/dir2/other.py``) it will be treated as a file
@@ -59,23 +70,43 @@ def find_fabfile():
 
     Either way, `find_fabfile` will return an absolute path if a file is found,
     or None otherwise.
+
+    If ``env.fabfile`` does not end with ``.py``, this function will search
+    for both the literal value of ``env.fabfile`` **and** that value suffixed
+    with ``.py``. Thus, by default, it will be capable of locating a
+    file/module named ``fabfile.py``, or a directory/package named ``fabfile``.
+
+    In this situation, the explicitly given name is searched for first,
+    followed by the suffixed version; this search is breadth-first, meaning it
+    will attempt to find both versions in the current directory before
+    traveling upwards.
     """
-    if os.path.dirname(state.env.fabfile):
-        expanded = os.path.expanduser(state.env.fabfile)
-        if os.path.exists(expanded):
-            return os.path.abspath(expanded)
-        else:
-            return None
+    # Obtain env value
+    names = [state.env.fabfile]
+    # Create .py version if necessary
+    if not names[0].endswith('.py'):
+        names += [names[0] + '.py']
+    # Does the name contain path elements?
+    if os.path.dirname(names[0]):
+        # If so, expand home-directory markers and test for existence
+        for name in names:
+            expanded = os.path.expanduser(name)
+            if os.path.exists(expanded):
+                if name.endswith('.py') or _is_package(expanded):
+                    return os.path.abspath(expanded)
     else:
+        # Otherwise, start in cwd and work downwards towards filesystem root
         path = '.'
         # Stop before falling off root of filesystem (should be platform
         # agnostic)
         while os.path.split(os.path.abspath(path))[1]:
-            joined = os.path.join(path, state.env.fabfile)
-            if os.path.exists(joined):
-                return os.path.abspath(joined)
+            for name in names:
+                joined = os.path.join(path, name)
+                if os.path.exists(joined):
+                    if name.endswith('.py') or _is_package(joined):
+                        return os.path.abspath(joined)
             path = os.path.join('..', path)
-        return None
+    # Implicit 'return None' if nothing was found
 
 
 def is_task(tup):
