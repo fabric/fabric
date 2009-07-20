@@ -52,10 +52,6 @@ shut up about stuff I don't care about)
   using ALL_CAPS, but in some places I probably did use them, so check and
   update (or change my mind and go back; but it just feels ugly when one is
   referencing e.g. ENV in user code all over...)
-* Add with_sudo option to put(), which would need to be implemented as a call
-to itself (or make an inner function?) followed by a sudo mv call.
-* Add Paramiko SSHConfig support: it can provide username and port and other
-options. Look at `man ssh_config` for what else people can put in that file.
 * Try to make Fabric threadsafe (and/or not using threads for outputting) so a
 parallel operation mode can work again.
     * Right now it uses threads and shared state for outputting, and shared
@@ -84,27 +80,11 @@ parallel operation mode can work again.
     tasks via decorators, but thus requires one to call a function with the
     task name as a string, instead of simply calling the function itself. May
     be worth the tradeoff, and is definitely food for thought.
-* Related to previous bullet point, but independent: possibly make concept of
-"host" more flexible to include host-specific password, username, arch, OS, etc.
-* Possibly add back in the old `shell` functionality (it would have to be a
-command line option such as `--run-shell` -- there are no more internal
-"commands" and it doesn't make sense as one anyway, as it cannot be run along
-with other commands at the same time.)
-    * Probably leverage IPython as a library, I've seen it done before
-    * Should end up equivalent to a user running `ipython` and then doing a
-    bunch of typical Fabric imports, i.e. all the operations plus `env`.
-    * Make it easy to say "all hosts" or "all roles" as well as
-    specifying arbitrary hosts/roles.
 * Check Python 2.6 compatibility.
-* Bash tab-completion for Fab tasks, assuming it can be done without being too
-laggy.
 * Possibly allow "aliases" in `env`, i.e. 'user' and 'username' treated as
 being the same key to limit possible confusion.
     * See \_AliasDict, possibly roll it back into \_AttributeDict?
 again)
-* Better remote-end prompt detection/passthrough to local user
-    * See pexpect, it's awesome.
-* Add timeout support or ensure existing network level timeouts work well
 * Possibly include path.py support (or rather use some of its concepts, since
 I think it only works on local paths as-is?)
     * See if its website is back up; would want to apply this sort of stuff to
@@ -134,7 +114,6 @@ in 2.0):
     * Twisted: theoretically easier coding of the main network loops, possibly
     more SSH functionality
     * PuSSH: possibly more SSH functionality such as ProxyCommand, etc
-* Allow find_fabfile/load_fabfile to deal with packages as well as modules.
 * Have all operations capable of performing a "dry run" wherein they do not
 actually change anything, but simply return the empty string or other
 appropriate empty values.
