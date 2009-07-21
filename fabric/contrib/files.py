@@ -93,7 +93,6 @@ def upload_template(filename, destination, context=None, use_jinja=False,
         # Is destination a directory?
         if func('test -f %s' % to_backup).failed:
             # If so, tack on the filename to get "real" destination
-            # TODO: platform-specific path join
             to_backup = destination + '/' + filename
     if exists(to_backup):
         func("cp %s %s.bak" % (to_backup, to_backup))

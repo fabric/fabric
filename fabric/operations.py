@@ -405,10 +405,6 @@ def run(command, shell=True, pty=False):
         # Construct final real, full command
         real_command = '%s "%s"' % (env.shell,
             _shell_escape(cwd + real_command))
-    # TODO: possibly put back in previously undocumented 'confirm_proceed'
-    # functionality, i.e. users may set an option to be prompted before each
-    # execution. Pretty sure this should be a global option applying to ALL
-    # remote operations! And, of course -- documented.
     if output.debug:
         print("[%s] run: %s" % (env.host_string, real_command))
     elif output.running:
@@ -509,7 +505,6 @@ def sudo(command, shell=True, user=None, pty=False):
             cwd = 'cd %s && ' % _shell_escape(cwd)
         real_command = '%s %s "%s"' % (sudo_prefix, env.shell,
             _shell_escape(cwd + command))
-    # TODO: handle confirm_proceed behavior, as in run()
     if output.debug:
         print("[%s] sudo: %s" % (env.host_string, real_command))
     elif output.running:
@@ -626,15 +621,6 @@ def reboot(wait):
     client = connections[env.host_string]
     client.close()
     del connections[env.host_string]
-    # TODO: more robust reconnection/sleep mechanism than "guess how long a
-    # reboot takes and sleep that long". Possibilities:
-    # * Try reconnecting after, say, 30 seconds, with a short timeout value,
-    # then loop every, say, 10 seconds until we reconnect
-    # * Just give user a prompt, within a loop, so they can manually whack
-    # Enter to try reconnecting
-    # * Stick with the manual sleep timer entry, and just ensure it is
-    # explicitly documented, i.e. "we highly recommend figuring out how long
-    # your system takes to reboot before using this function"
     if output.running:
         fastprint("Waiting for reboot: ")
         per_tick = 5

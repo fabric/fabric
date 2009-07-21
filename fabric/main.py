@@ -198,10 +198,6 @@ def parse_options():
         help="print detailed info about a given command and exit"
     )
 
-    # TODO: old 'let' functionality, i.e. global env additions/overrides
-    # maybe "set" as the keyword? i.e. -s / --set x=y
-    # allow multiple times (like with tar --exclude)
-
     #
     # Add in options which are also destined to show up as `env` vars.
     #

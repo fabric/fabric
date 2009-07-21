@@ -90,9 +90,6 @@ def upload_project():
     ``upload_project`` will attempt to clean up the tarfiles when it finishes
     executing.
     """
-    # TODO: use tempfile lib to make unique temp directory
-    # TODO: wrap in try/finally to clean up afterwards
-    # TODO: put in optional local_dir, remote_dir options
     tar_file = "/tmp/fab.%(fab_timestamp)s.tar" % ENV
     cwd_name = os.getcwd().split(os.sep)[-1]
     tgz_name = cwd_name + ".tar.gz"
