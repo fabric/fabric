@@ -161,10 +161,6 @@ def connect(user, host, port):
             ssh.PasswordRequiredException,
             ssh.SSHException
         ), e:
-            # TODO: tie this into global prompting (i.e. right now both uses of
-            # prompt_for_password() do the same "if not env.password" stuff.
-            # may want to roll that into prompt_for_password() itself?
-
             # For whatever reason, empty password + no ssh key or agent results
             # in an SSHException instead of an AuthenticationException. Since
             # it's difficult to do otherwise, we must assume empty password +
@@ -246,7 +242,6 @@ def prompt_for_password(previous=None, prompt=None):
     current host being connected to. To override this, specify a string value
     for ``prompt``.
     """
-    # TODO: tie all of this into global/centralized prompt detection
     from state import env
     # Construct the prompt we will display to the user (using host if available)
     if 'host' in env:

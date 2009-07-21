@@ -173,7 +173,6 @@ def cd(path):
         compatibility.
     """
     if env.get('cwd'):
-        # TODO: use platform-specific path join
         new_cwd = env.cwd + '/' + path
     else:
         new_cwd = path

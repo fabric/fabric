@@ -1,4 +1,3 @@
-* See all TODO markings in source code
 * Take a step back, reorganize. E.g.:
     * stuff in `utils` should be user-useful only, other subroutines ought to go
     elsewhere
