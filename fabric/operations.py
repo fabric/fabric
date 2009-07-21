@@ -399,9 +399,7 @@ def run(command, shell=True, pty=False):
         # Handle cwd munging via 'cd' context manager
         cwd = env.get('cwd', '')
         if cwd:
-            # TODO: see if there is any nice way to quote this, given that it
-            # ends up inside double quotes down below...
-            cwd = 'cd %s && ' % _shell_escape(cwd)
+            cwd = 'cd \"%s\" && ' % _shell_escape(cwd)
         # Construct final real, full command
         real_command = '%s "%s"' % (env.shell,
             _shell_escape(cwd + real_command))
@@ -500,9 +498,7 @@ def sudo(command, shell=True, user=None, pty=False):
         # With a shell, we can also honor cwd
         cwd = env.get('cwd', '')
         if cwd:
-            # TODO: see if there is any nice way to quote this, given that it
-            # ends up inside double quotes down below...
-            cwd = 'cd %s && ' % _shell_escape(cwd)
+            cwd = 'cd \"%s\" && ' % _shell_escape(cwd)
         real_command = '%s %s "%s"' % (sudo_prefix, env.shell,
             _shell_escape(cwd + command))
     if output.debug:
