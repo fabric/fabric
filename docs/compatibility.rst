@@ -312,3 +312,32 @@ Changes from alpha 2 to alpha 3
 * And many, many additional bugfixes and behavioral tweaks too small to merit
   cluttering up this list! Thanks as always to everyone who contributed
   bugfixes, feedback and/or patches.
+
+
+Changes from alpha 3 to beta 1
+==============================
+
+This is closer to being a straight dump of the Git changelog than the previous
+sections; apologies for the overall change in tense.
+
+* Add autodocs for fabric.contrib.console.
+* Minor cleanup to package init and setup.py.
+* Handle exceptions with strerror attributes that are None instead of strings.
+* contrib.files.append may now take a list of strings if desired.
+* Straighten out how prompt() deals with trailing whitespace
+* Add 'cd' context manager.
+* Update upload_template to correctly handle backing up target directories.
+* upload_template() can now use Jinja2 if it's installed and user asks for it.
+* Handle case where remote host SSH key doesn't match known_hosts.
+* Fix race condition in run/sudo.
+* Start fledgling FAQ; extended pty option to run(); related doc tweaks.
+* Bring local() in line with run()/sudo() in terms of .failed attribute.
+* Add dollar-sign backslash escaping to run/sudo.
+* Add FAQ question re: backgrounding processes.
+* Extend some of put()'s niceties to get(), plus docstring/comment updates
+* Add debug output of chosen fabfile for troubleshooting fabfile discovery.
+* Fix Python path bug which sometimes caused Fabric's internal fabfile to
+  pre-empt user's fabfile during load phase.
+* Gracefully handle "display" for tasks with no docstring.
+* Fix edge case that comes up during some auth/prompt situations.
+* Handle carriage returns in output_thread correctly. Thanks to Brian Rosner.
