@@ -62,14 +62,11 @@ well.
 Bugs
 ----
 
-Fabric has no official bug tracker at this point in time, but getting one is
-very high on our priority list, so keep an eye out! For the time being, please
-submit bug reports via the mailing list (see above) or e-mail the development
-team directly at ``developers [at] fabfile [dot] org``.
-
-.. note:: Using the mailing list is preferred -- it increases your chances of
-    getting prompt feedback, and also allows other users to confirm your bug
-    report and thus give it a higher priority.
+To file new bugs or search existing ones, you may visit Fabric's `Redmine
+<http://redmine.org>`_ instance, located at `code.fabfile.org
+<http://code.fabfile.org>`_. Anonymous users can currently post new tickets and
+comments, but the system may be locked down in the future to prevent spam, so
+we highly recommend registering an account.
 
 Wiki
 ----
@@ -78,7 +75,9 @@ There is an official Fabric wiki reachable at `wiki.fabfile.org
 <http://wiki.fabfile.org>`_, although as of this writing its usage patterns
 are still being worked out. There is a `TodoList page
 <http://wiki.fabfile.org/TodoList>`_ which may also be used to submit bug
-reports, as an alternative to sending email.
+reports, as an alternative to sending email. The wiki is currently locked due
+to spammers, so you'll need to register an account in order to edit or add new
+pages.
 
 
 Documentation
