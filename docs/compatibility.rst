@@ -108,8 +108,16 @@ special string formatting technique -- the use of a bash-like dollar sign
 notation, e.g. ``"hostname: $(fab_host)"`` -- had to be used to allow the
 current state of execution to be represented in one's operations. **This is no
 longer necessary and has been removed**. Because your tasks are executed once
-per host, you may simply refer to e.g. ``env.host_string`` (or ``env.host``,
-``env.user`` and so forth) when building strings.
+per host, you may build strings normally (e.g. with the ``%`` operator) and
+refer to ``env.host_string``, ``env.user`` and so forth.
+
+For example, Fabric 0.1 had to insert the current username like so::
+
+    print("Your current username is $(fab_user)")
+
+Fabric 0.9 and up simply reference ``env`` variables as normal::
+
+    print("Your current username is %s" % env.user)
 
 As with the execution modes, a special string interpolation function or method
 that automatically makes use of ``env`` values may find its way back into
