@@ -334,6 +334,9 @@ def get(remote_path, local_path):
         @hosts('host1', 'host2')
         def my_download_task():
             get('/var/log/server.log', 'server.log')
+
+    However, with a single host (e.g. ``@hosts('host1')``), no suffixing is
+    performed, leaving you with a single, pristine ``server.log``.
     """
     ftp = connections[env.host_string].open_sftp()
     with closing (ftp) as ftp:
