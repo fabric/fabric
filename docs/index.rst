@@ -10,10 +10,10 @@ effectively frozen and should not change much, if at all, between now and final
 release. Please try out the latest beta release and submit any bugs you find
 (see :ref:`bugs` below.)
 
-While behavior and API are stable, expect this documentation (as well as the
-test suite) to be updated and expanded significantly before the beta period is
-over. We plan to add more examples and more explanatory text on top of the
-existing API documentation.
+While behavior and API are stable, **expect this documentation to be updated and
+expanded significantly before the beta period is over**. We plan to add more
+examples and more explanatory text on top of the existing API documentation, as
+well as adding more prose (non-API) documentation concerning usage and design.
 
 
 About
