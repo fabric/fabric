@@ -31,6 +31,15 @@ In order to install Fabric, you will need `Python <http://python.org>`_ version
     below) will automatically install the above packages, so you may not need
     to hunt for them yourself.
 
+.. note::
+
+    Windows users without an installed C compiler will likely experience
+    problems installing PyCrypto, as it involves C code and is not a pure
+    Python package like the others. We recommend either installing a C
+    development environment such as `Cygwin <http://cygwin.com>`_ or obtaining
+    a precompiled Win32 PyCrypto package from `voidspace's Python modules page
+    <http://www.voidspace.org.uk/python/modules.shtml#pycrypto>`_.
+
 If you are interested in doing development work on Fabric, you may also need to
 install some or all of the following packages:
 
