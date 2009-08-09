@@ -150,13 +150,13 @@ env_options = [
 
     # Global host list
     make_option('-H', '--hosts',
-        default=None,
+        default=[],
         help="comma-separated list of hosts to operate on"
     ),
 
     # Global role list
     make_option('-R', '--roles',
-        default=None,
+        default=[],
         help="comma-separated list of roles to operate on"
     ),
 

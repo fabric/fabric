@@ -326,13 +326,10 @@ def get_hosts(command, cli_hosts, cli_roles):
     if func_hosts or func_roles:
         return _merge(func_hosts, func_roles)
     # Finally, the env is checked (which might contain globally set lists from
-    # the CLI or from module-level code).
-    if state.env.get('hosts'):
-        # Return a copy of env.hosts instead of env.hosts itself -- this avoids
-        # infinite loops when modifying env.hosts within a task function.
-        return state.env.hosts[:]
-    # Empty list is the default if nothing is found.
-    return []
+    # the CLI or from module-level code). This will be the empty list if these
+    # have not been set -- which is fine, this method should return an empty
+    # list if no hosts have been set anywhere.
+    return _merge(state.env['hosts'], state.env['roles'])
 
 
 def update_output_levels(show, hide):
