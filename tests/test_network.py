@@ -2,6 +2,7 @@ from __future__ import with_statement
 
 from datetime import datetime
 import getpass
+import sys
 
 import paramiko
 from nose.tools import eq_, with_setup
@@ -9,9 +10,11 @@ from fudge import Fake, clear_calls, clear_expectations, patch_object, verify, \
     with_patched_object, patched_context
 
 from fabric.network import (HostConnectionCache, join_host_strings, normalize,
-    denormalize)
+    denormalize, output_thread)
 import fabric.network # So I can call patch_object correctly. Sigh.
-from fabric.state import env, _get_system_username
+from fabric.state import env, _get_system_username, output as state_output
+
+from utils import mock_streams
 
 
 #
@@ -153,3 +156,67 @@ def test_prompts_for_password_without_good_authentication():
                 verify()
             finally:
                 clear_expectations()
+
+
+class FakeChannel(object):
+    """
+    Does what it says on the tin. Fakes a paramiko.Channel object.
+
+    Currently only fakes what is necessary for the following test and is not a
+    full drop-in replacement.
+    """
+    def __init__(self, stdout_text, stderr_text=""):
+        self.stdout = stdout_text
+        self.stderr = stderr_text
+
+    def _recv(self, which, num_bytes):
+        obj = getattr(self, which)
+        chunk = obj[:num_bytes]
+        setattr(self, which, obj[num_bytes:])
+        return chunk
+
+    def recv(self, num_bytes):
+        return self._recv('stdout', num_bytes)
+
+    def recv_stderr(self, num_bytes):
+        return self._recv('stderr', num_bytes)
+
+
+@mock_streams('stdout')
+def test_trailing_newline_line_drop():
+    """
+    Trailing newlines shouldn't cause last line to be dropped.
+    """
+    # Multiline output with trailing newline
+    output_string = """AUTHORS
+FAQ
+Fabric.egg-info
+INSTALL
+LICENSE
+MANIFEST
+README
+build
+docs
+fabfile.py
+fabfile.pyc
+fabric
+requirements.txt
+setup.py
+tests
+"""
+    # Setup for calling output_thread
+    capture = []
+    prefix = "[localhost]"
+    # TODO: fix below two lines, duplicates inner workings of output_thread
+    full_prefix = prefix + ": "
+    expected_output = (full_prefix
+        + ('\n' + full_prefix).join(output_string.splitlines())
+    ) + '\n'
+    # Create, tie off thread
+    thread = output_thread(prefix, FakeChannel(output_string), capture=capture)
+    thread.join()
+    # Test equivalence of expected, received output
+    eq_(
+        expected_output,
+        sys.stdout.getvalue()
+    )

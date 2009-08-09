@@ -316,8 +316,15 @@ def output_thread(prefix, chan, stderr=False, capture=None):
             # Deal with line breaks, printing all lines and storing the
             # leftovers, if any.
             if '\n' in out or '\r' in out:
+                # Break into list of lines/parts
                 parts = out.splitlines()
+                # Deal with edge case of trailing newline (messes up leftovers
+                # logic due to how splitlines() behaves)
+                if out[-1] in ['\n', '\r']:
+                    parts.append('')
+                # Initialize loop with first line
                 line = leftovers + parts.pop(0)
+                # Take off the last part, since it may be a partial line
                 if parts:
                     leftovers = parts.pop()
                 while parts or line:
