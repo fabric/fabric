@@ -359,7 +359,9 @@ def get_hosts(command, cli_hosts, cli_roles):
     # Finally, the env is checked (which might contain globally set lists from
     # the CLI or from module-level code).
     if state.env.get('hosts'):
-        return state.env.hosts
+        # Return a copy of env.hosts instead of env.hosts itself -- this avoids
+        # infinite loops when modifying env.hosts within a task function.
+        return state.env.hosts[:]
     # Empty list is the default if nothing is found.
     return []
 
