@@ -20,7 +20,7 @@ single task::
 Executing this on an arbitrary server or list of servers is simple (below,
 we're using an ssh-agent, and so there are no password prompts)::
 
-    $ fab -H localhost,linuxbox uname
+    $ fab -H localhost,linuxbox host_type
     [localhost] run: uname -s
     [localhost] out: Darwin
     [linuxbox] run: uname -s
