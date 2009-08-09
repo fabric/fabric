@@ -61,3 +61,32 @@ This is actually a problem in the third party library Fabric uses for its SSH
 layer, Paramiko. Paramiko's latest released version at time of writing uses the
 ``md5`` and ``sha`` modules, which are deprecated in Python 2.6. We apologize
 for the inconvenience and hope that a new Paramiko version comes out soon.
+
+
+4. My remote system doesn't have ``bash`` installed by default, do I need to install ``bash``?
+----------------------------------------------------------------------------------------------
+
+While Fabric is written with ``bash`` in mind, it's not an absolute
+requirement.  Simply change ``env.shell`` to call your desired shell, and
+include an argument similar to ``bash``'s ``-c`` argument, which allows us to
+build shell commands of the form::
+
+    /bin/bash -l -c "<command string here>"
+
+where ``/bin/bash -l -c`` is the default value of ``env.shell``.
+
+.. note::
+
+    The ``-l`` argument specifices a login shell and is not absolutely
+    required, merely convenient in many situations. Some shells lack the option
+    entirely and it may be safely omitted in such cases.
+
+A relatively safe baseline is to call ``/bin/sh``, which may call the original
+``sh`` binary, or (on some systems) ``csh``, and give it the ``-c``
+argument, like so::
+
+    from fabric.api import env
+
+    env.shell = "/bin/sh -c"
+
+This has been shown to work on FreeBSD and may work on other systems as well.
