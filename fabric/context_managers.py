@@ -9,10 +9,13 @@ Context managers for use with the ``with`` statement.
 
 from contextlib import contextmanager, nested
 
-from state import env, output
+from fabric.state import env, output
 
 
 def _set_output(groups, which):
+    """
+    Refactored subroutine used by ``hide`` and ``show``.
+    """
     # Preserve original values, pull in new given value to use
     previous = {}
     for group in output.expand_aliases(groups):
