@@ -54,16 +54,7 @@ Such a call will effectively fork the ``yes`` program into a detached
 and thus your Fabric task will continue executing as intended.
 
 
-3. Fabric throws ``DeprecationWarning``s in Python 2.6
-------------------------------------------------------
-
-This is actually a problem in the third party library Fabric uses for its SSH
-layer, Paramiko. Paramiko's latest released version at time of writing uses the
-``md5`` and ``sha`` modules, which are deprecated in Python 2.6. We apologize
-for the inconvenience and hope that a new Paramiko version comes out soon.
-
-
-4. My remote system doesn't have ``bash`` installed by default, do I need to install ``bash``?
+3. My remote system doesn't have ``bash`` installed by default, do I need to install ``bash``?
 ----------------------------------------------------------------------------------------------
 
 While Fabric is written with ``bash`` in mind, it's not an absolute
