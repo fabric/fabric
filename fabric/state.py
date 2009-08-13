@@ -14,16 +14,6 @@ from fabric.version import get_version
 
 
 #
-# Paramiko
-#
-
-try:
-    import paramiko as ssh
-except ImportError:
-    abort("paramiko is a required module. Please install it:\n\t$ sudo easy_install paramiko")
-
-
-#
 # Win32 flag
 #
 
