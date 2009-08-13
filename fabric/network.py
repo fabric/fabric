@@ -9,7 +9,12 @@ import threading
 import socket
 import sys
 
-import paramiko as ssh
+try:
+    import warnings
+    warnings.simplefilter('ignore', DeprecationWarning)
+    import paramiko as ssh
+except ImportError:
+    abort("paramiko is a required module. Please install it:\n\t$ sudo easy_install paramiko")
 
 from utils import abort
 
