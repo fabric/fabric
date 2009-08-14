@@ -3,7 +3,6 @@ Internal subroutines for e.g. aborting execution with an error message,
 or performing indenting on multiline output.
 """
 
-import os
 import sys
 import textwrap
 
@@ -14,10 +13,10 @@ def abort(msg):
     When not invoked as the ``fab`` command line tool, raise an exception
     instead.
     """
-    from state import output
+    from fabric.state import output
     if output.aborts:
-        print >>sys.stderr, "\nFatal error: " + str(msg)
-        print >>sys.stderr, "\nAborting."
+        print >> sys.stderr, "\nFatal error: " + str(msg)
+        print >> sys.stderr, "\nAborting."
     sys.exit(1)
 
     
@@ -25,9 +24,9 @@ def warn(msg):
     """
     Print warning message, but do not abort execution.
     """
-    from state import output
+    from fabric.state import output
     if output.warnings:
-        print >>sys.stderr, "\nWarning: %s\n" % msg
+        print >> sys.stderr, "\nWarning: %s\n" % msg
 
 
 def indent(text, spaces=4, strip=False):

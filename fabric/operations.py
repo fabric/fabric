@@ -13,11 +13,12 @@ import subprocess
 import sys
 import time
 
-from context_managers import settings
 from contextlib import closing
-from network import output_thread, needs_host
-from state import env, connections, output
-from utils import abort, indent, warn, fastprint
+
+from fabric.context_managers import settings
+from fabric.network import output_thread, needs_host
+from fabric.state import env, connections, output
+from fabric.utils import abort, indent, warn, fastprint
 
 
 def _handle_failure(message, exception=None):

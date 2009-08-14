@@ -3,6 +3,7 @@ Useful non-core functionality, e.g. functions composing multiple operations.
 """
 
 from os import getcwd, sep
+from datetime import datetime
 
 from fabric.network import needs_host
 from fabric.operations import local, run, put
@@ -10,7 +11,7 @@ from fabric.state import env, output
 
 
 @needs_host
-def rsync_project(remote_dir, local_dir=None, exclude=[], delete=False,
+def rsync_project(remote_dir, local_dir=None, exclude=(), delete=False,
     extra_opts=''):
     """
     Synchronize a remote directory with the current project directory via rsync.
@@ -56,7 +57,7 @@ def rsync_project(remote_dir, local_dir=None, exclude=[], delete=False,
     """
     # Turn single-string exclude into a one-item list for consistency
     if not hasattr(exclude, '__iter__'):
-        exclude = [exclude]
+        exclude = (exclude,)
     # Create --exclude options from exclude list
     exclude_opts = ' --exclude "%s"' * len(exclude)
     # Double-backslash-escape
@@ -90,8 +91,9 @@ def upload_project():
     ``upload_project`` will attempt to clean up the tarfiles when it finishes
     executing.
     """
-    tar_file = "/tmp/fab.%(fab_timestamp)s.tar" % ENV
-    cwd_name = os.getcwd().split(os.sep)[-1]
+    tar_file = "/tmp/fab.%s.tar" % datetime.utcnow().strftime(
+        '%Y_%m_%d_%H-%M-%S')
+    cwd_name = getcwd().split(sep)[-1]
     tgz_name = cwd_name + ".tar.gz"
     local("tar -czf %s ." % tar_file)
     put(tar_file, cwd_name + ".tar.gz")

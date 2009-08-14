@@ -13,14 +13,13 @@ from operator import add
 from optparse import OptionParser
 import os
 import sys
-import textwrap
 
 from fabric import api # For checking callables against the API 
 from fabric.contrib import console, files, project # Ditto
-from network import denormalize, normalize
-import state # For easily-mockable access to roles, env and etc
-from state import commands, connections, env_options, win32
-from utils import abort, indent, warn
+from fabric.network import denormalize, normalize
+from fabric import state # For easily-mockable access to roles, env and etc
+from fabric.state import commands, connections, env_options
+from fabric.utils import abort, indent
 
 
 # One-time calculation of "all internal callables" to avoid doing this on every
@@ -215,6 +214,9 @@ def parse_options():
 
 
 def list_commands():
+    """
+    Print all found commands/tasks, then exit. Invoked with -l/--list.
+    """
     print("Available commands:\n")
     # Want separator between name, description to be straight col
     max_len = reduce(lambda a, b: max(a, len(b)), commands.keys(), 0)
@@ -241,6 +243,9 @@ def list_commands():
 
 
 def display_command(command):
+    """
+    Print command function's docstring, then exit. Invoked with -d/--display.
+    """
     # Sanity check
     if command not in commands:
         abort("Command '%s' not found, exiting." % command)
@@ -491,7 +496,7 @@ def main():
         raise
     except KeyboardInterrupt:
         if state.output.status:
-            print >>sys.stderr, "\nStopped."
+            print >> sys.stderr, "\nStopped."
         sys.exit(1)
     except:
         sys.excepthook(*sys.exc_info())
