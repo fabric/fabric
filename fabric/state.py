@@ -3,12 +3,9 @@ Internal shared-state variables such as config settings and host lists.
 """
 
 import os
-import re
-import socket
 import sys
 from optparse import make_option
 
-from fabric.utils import abort
 from fabric.network import HostConnectionCache
 from fabric.version import get_version
 
