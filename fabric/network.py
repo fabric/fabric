@@ -9,6 +9,8 @@ import threading
 import socket
 import sys
 
+from fabric.utils import abort
+
 try:
     import warnings
     warnings.simplefilter('ignore', DeprecationWarning)
@@ -16,7 +18,6 @@ try:
 except ImportError:
     abort("paramiko is a required module. Please install it:\n\t$ sudo easy_install paramiko")
 
-from utils import abort
 
 
 host_pattern = r'((?P<user>[^@]+)@)?(?P<host>[^:]+)(:(?P<port>\d+))?'
@@ -72,7 +73,7 @@ def normalize(host_string, omit_port=False):
 
     If ``omit_port`` is given and is True, only the host and user are returned.
     """
-    from state import env
+    from fabric.state import env
     # Get user, host and port separately
     r = host_regex.match(host_string).groupdict()
     # Add any necessary defaults in
@@ -247,7 +248,7 @@ def prompt_for_password(previous=None, prompt=None):
     current host being connected to. To override this, specify a string value
     for ``prompt``.
     """
-    from state import env
+    from fabric.state import env
     # Construct the prompt we will display to the user (using host if available)
     if 'host' in env:
         base_password_prompt = "Password for %s" % join_host_strings(*normalize(
@@ -370,7 +371,7 @@ def needs_host(func):
     commands, this decorator will also end up prompting the user once per
     command (in the case where multiple commands have no hosts set, of course.)
     """
-    from state import env
+    from fabric.state import env
     @wraps(func)
     def host_prompting_wrapper(*args, **kwargs):
         while not env.get('host_string', False):

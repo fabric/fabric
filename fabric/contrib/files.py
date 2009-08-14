@@ -7,7 +7,7 @@ from __future__ import with_statement
 import tempfile
 import re
 
-from fabric.api import *
+from fabric.api import run, sudo, settings, put
 
 
 def exists(path, use_sudo=False, verbose=False):
@@ -74,8 +74,8 @@ def upload_template(filename, destination, context=None, use_jinja=False,
         if use_jinja:
             try:
                 from jinja2 import Environment, FileSystemLoader
-                env = Environment(loader=FileSystemLoader(template_dir or '.'))
-                text = env.get_template(filename).render(**context or {})
+                jenv = Environment(loader=FileSystemLoader(template_dir or '.'))
+                text = jenv.get_template(filename).render(**context or {})
             except ImportError, e:
                 abort("tried to use Jinja2 but was unable to import: %s" % e)
         else:
