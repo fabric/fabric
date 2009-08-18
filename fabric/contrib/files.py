@@ -7,7 +7,7 @@ from __future__ import with_statement
 import tempfile
 import re
 
-from fabric.api import run, sudo, settings, put
+from fabric.api import run, sudo, settings, put, hide, abort
 
 
 def exists(path, use_sudo=False, verbose=False):
