@@ -332,6 +332,13 @@ def parse_arguments(arguments):
     return cmds
 
 
+def parse_remainder(arguments):
+    """
+    Merge list of "remainder arguments" into a single command string.
+    """
+    return ' '.join(arguments)
+
+
 def _merge(hosts, roles):
     """
     Merge given host and role lists into one list of deduped hosts.
@@ -400,6 +407,10 @@ def main():
         # Parse command line options
         parser, options, arguments = parse_options()
 
+        # Handle regular args vs -- args
+        arguments = parser.largs
+        remainder_arguments = parser.rargs
+
         # Update env with any overridden option values
         # NOTE: This needs to remain the first thing that occurs
         # post-parsing, since so many things hinge on the values in env.
@@ -436,7 +447,7 @@ def main():
         commands.update(load_fabfile(fabfile))
 
         # Abort if no commands found
-        if not commands:
+        if not commands and not remainder_arguments:
             abort("Fabfile didn't contain any commands!")
 
         # Now that we're settled on a fabfile, inform user.
@@ -452,14 +463,17 @@ def main():
             display_command(options.display)
 
         # If user didn't specify any commands to run, show help
-        if not arguments:
+        if not (arguments or remainder_arguments):
             parser.print_help()
             sys.exit(0) # Or should it exit with error (1)?
 
         # Parse arguments into commands to run (plus args/kwargs/hosts)
         commands_to_run = parse_arguments(arguments)
 
-        # Figure out if any specified names are invalid
+        # Parse remainders into a faux "command" to execute
+        remainder_command = parse_remainder(remainder_arguments)
+
+        # Figure out if any specified task names are invalid
         unknown_commands = []
         for tup in commands_to_run:
             if tup[0] not in commands:
@@ -469,6 +483,12 @@ def main():
         if unknown_commands:
             abort("Command(s) not found:\n%s" \
                 % indent(unknown_commands))
+
+        # Generate remainder command and insert into commands, commands_to_run
+        if remainder_command:
+            r = '<remainder>'
+            commands[r] = lambda: api.run(remainder_command)
+            commands_to_run.append((r, [], {}, [], []))
 
         # At this point all commands must exist, so execute them in order.
         for name, args, kwargs, cli_hosts, cli_roles in commands_to_run:
