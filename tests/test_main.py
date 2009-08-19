@@ -1,10 +1,12 @@
 from fudge.patcher import with_patched_object
-from nose.tools import eq_
+from nose.tools import eq_, raises
 
 from fabric.decorators import hosts, roles
-from fabric.main import get_hosts, parse_arguments
+from fabric.main import get_hosts, parse_arguments, _merge
 import fabric.state
 from fabric.state import _AttributeDict
+
+from utils import mock_streams
 
 
 def test_argument_parsing():
@@ -51,7 +53,7 @@ fake_roles = {
     'r2': ['b', 'c']
 }
 
-@with_patched_object(fabric.state, 'env', _AttributeDict({'roledefs': fake_roles}))
+@with_patched_object('fabric.state', 'env', _AttributeDict({'roledefs': fake_roles}))
 def test_roles_decorator_by_itself():
     """
     Use of @roles only
@@ -84,3 +86,13 @@ def test_hosts_decorator_overrides_env_hosts():
         pass
     eq_hosts(command, ['bar'])
     assert 'foo' not in get_hosts(command, [], [])
+
+
+@with_patched_object('fabric.state', 'env', _AttributeDict({'roledefs': fake_roles}))
+@raises(SystemExit)
+@mock_streams('stderr')
+def test_aborts_on_nonexistent_roles():
+    """
+    Aborts if any given roles aren't found
+    """
+    _merge([], ['badrole'])

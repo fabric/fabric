@@ -305,6 +305,13 @@ def _merge(hosts, roles):
     """
     Merge given host and role lists into one list of deduped hosts.
     """
+    # Abort if any roles don't exist
+    bad_roles = [x for x in roles if x not in state.env.roledefs]
+    if bad_roles:
+        abort("The following specified roles do not exist:\n%s" % (
+            indent(bad_roles)
+        ))
+
     # Look up roles, turn into flat list of hosts
     role_hosts = (
         roles
