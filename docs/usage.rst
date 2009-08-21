@@ -243,11 +243,11 @@ In some edge cases such as some EC2 deployments, you may want to ignore this
 potential problem. Paramiko, at the time of writing, doesn't give us control
 over this behavior, but we can sidestep it by simply skipping the loading of
 ``known_hosts`` -- if the host list being compared to is empty, then there's no
-problem. Set ``env.load_known_hosts`` to False when you want this behavior; it
-is True by default, in order to preserve default SSH behavior.
+problem. Set ``env.disable_known_hosts`` to True when you want this behavior; it
+is False by default, in order to preserve default SSH behavior.
 
 .. warning::
-    Disabling ``env.load_known_hosts`` will leave you wide open to
+    Enabling ``env.disable_known_hosts`` will leave you wide open to
     man-in-the-middle attacks! Please use with caution.
 
 
