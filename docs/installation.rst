@@ -21,9 +21,27 @@ Dependencies
 In order to install Fabric, you will need `Python <http://python.org>`_ version
 2.5 or newer, and the following third-party Python packages:
 
-* `Paramiko <http://www.lag.net/paramiko/>`_ >=1.7
+* `Paramiko <http://www.lag.net/paramiko/>`_ =1.7.4
 * `PyCrypto <http://www.amk.ca/python/code/crypto.html>`_ (a dependency of
   Paramiko) >=1.9
+
+.. warning::
+
+    Paramiko 1.7.5 is currently out, but suffers from a relatively serious bug
+    that can cause effectively random SSHException errors. While the frequency
+    of these errors is somewhat low (about a 1 in 100 chance) it's enough to
+    prevent Fabric from consistently working correctly. Thus, we strongly
+    recommend against using Paramiko 1.7.5, and will let you know when we're
+    aware of a release that fixes this problem.
+
+.. warning::
+
+    A bug in Python version 2.5.0 and 2.5.1 which causes issues when using
+    the ``with`` statement alongside ``tempfile.NamedTemporaryFile`` will cause
+    `fabric.contrib.files.upload_template` to abort with an error. If you do
+    not have Python 2.5.2 or newer, use of ``upload_template`` is not advised.
+    The rest of the Fabric codebase is not affected and should work fine on
+    2.5.0 and up.
 
 .. note::
 
@@ -40,8 +58,9 @@ In order to install Fabric, you will need `Python <http://python.org>`_ version
     a precompiled Win32 PyCrypto package from `voidspace's Python modules page
     <http://www.voidspace.org.uk/python/modules.shtml#pycrypto>`_.
 
-If you are interested in doing development work on Fabric, you may also need to
-install some or all of the following packages:
+If you are interested in doing development work on Fabric (or even just running
+the test suite), you may also need to install some or all of the following
+packages:
 
 * `Nose <http://code.google.com/p/python-nose/>`_ >=0.10 
 * `Coverage <http://nedbatchelder.com/code/modules/coverage.html>`_ >=2.85
@@ -59,7 +78,11 @@ either of the following locations:
   <http://git.fabfile.org>`_. Our Git repository viewer provides downloads of
   all tagged releases. See the "Download" column, next to the "Tag" column in
   the middle of the front page.
-* Alternately, see `Fabric's PyPI page <http://pypi.python.org/pypi/Fabric>`_.
+* `Our GitHub mirror <http://github.com/bitprophet/fabric>`_ has downloads of
+  all tagged releases as well -- just click the 'Download' button near the top
+  of the main page.
+* `Fabric's PyPI page <http://pypi.python.org/pypi/Fabric>`_ offers manual
+  downloads as well as being the entry point for :ref:`easy-install`.
 
 .. _source-code-checkouts:
 
@@ -95,6 +118,7 @@ Fabric tries hard to play nice with packaging systems such as Python's
 
 Fabric's source distribution also comes with a ``pip`` requirements file
 called ``requirements.txt``, containing the various development requirements
-listed above. At time of writing, some of the listed third-party packages
-don't play well with ``pip``, so we aren't officially recommending use of the
-requirements file just yet.
+listed above (note, that's *development* requirements -- not necessary for
+simply using the software.) At time of writing, some of the listed third-party
+packages don't play well with ``pip``, so we aren't officially recommending use
+of the requirements file just yet.
