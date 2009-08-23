@@ -601,6 +601,7 @@ def local(command, capture=True):
     # Handle error condition (deal with stdout being None, too)
     out = _AttributeString(stdout or "")
     out.failed = False
+    out.return_code = p.returncode
     if p.returncode != 0:
         out.failed = True
         msg = "local() encountered an error (return code %s) while executing '%s'" % (p.returncode, command)
