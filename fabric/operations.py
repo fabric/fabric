@@ -12,6 +12,7 @@ import stat
 import subprocess
 import sys
 import time
+from traceback import format_exc
 
 from contextlib import closing
 
@@ -31,21 +32,22 @@ def _handle_failure(message, exception=None):
     is printed alongside the user-generated ``message``.
     """
     func = env.warn_only and warn or abort
-    if exception is not None:
+    # If debug printing is on, append a traceback to the message
+    if output.debug:
+        message += "\n\n" + format_exc()
+    # Otherwise, if we were given an exception, append its contents.
+    elif exception is not None:
         # Figure out how to get a string out of the exception; EnvironmentError
         # subclasses, for example, "are" integers and .strerror is the string.
         # Others "are" strings themselves. May have to expand this further for
         # other error types.
         if hasattr(exception, 'strerror') and exception.strerror is not None:
-            underlying_msg = exception.strerror
+            underlying = exception.strerror
         else:
-            underlying_msg = exception
-        func("%s\n\nUnderlying exception message:\n%s" % (
-            message,
-            indent(underlying_msg)
-        ))
-    else:
-        func(message)
+            underlying = exception
+        message += "\n\nUnderlying exception message:\n" + indent(underlying)
+    return func(message)
+
 
 
 def _shell_escape(string):
