@@ -6,6 +6,7 @@ from __future__ import with_statement
 
 import tempfile
 import re
+import os
 
 from fabric.api import run, sudo, settings, put, hide, abort
 
@@ -68,6 +69,8 @@ def upload_template(filename, destination, context=None, use_jinja=False,
     By default, the file will be copied to ``destination`` as the logged-in
     user; specify ``use_sudo=True`` to use `sudo` instead.
     """
+    basename = os.path.basename(filename)
+    temp_destination = '/tmp/' + basename
     with tempfile.NamedTemporaryFile() as output:
         # Init
         text = None
@@ -85,7 +88,7 @@ def upload_template(filename, destination, context=None, use_jinja=False,
                 text = text % context
         output.write(text)
         output.flush()
-        put(output.name, "/tmp/" + filename)
+        put(output.name, temp_destination)
     func = use_sudo and sudo or run
     # Back up any original file (need to do figure out ultimate destination)
     to_backup = destination
@@ -93,11 +96,11 @@ def upload_template(filename, destination, context=None, use_jinja=False,
         # Is destination a directory?
         if func('test -f %s' % to_backup).failed:
             # If so, tack on the filename to get "real" destination
-            to_backup = destination + '/' + filename
+            to_backup = destination + '/' + basename
     if exists(to_backup):
         func("cp %s %s.bak" % (to_backup, to_backup))
     # Actually move uploaded template to destination
-    func("mv /tmp/%s %s" % (filename, destination))
+    func("mv %s %s" % (temp_destination, destination))
 
 
 def sed(filename, before, after, limit='', use_sudo=False, backup='.bak'):
