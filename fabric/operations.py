@@ -388,6 +388,9 @@ def run(command, shell=True, pty=False):
     boolean attribute specifying whether the command failed or succeeded, and
     will also include the return code as the ``return_code`` attribute.
 
+    Standard error will also be attached, as a string, to this return value as
+    the ``stderr`` attribute.
+
     You may pass ``pty=True`` to force allocation of a pseudo tty on
     the remote end. This is not normally required, but some programs may
     complain (or, even more rarely, refuse to run) if a tty is not present.
@@ -419,12 +422,13 @@ def run(command, shell=True, pty=False):
     if pty:
         channel.get_pty()
     channel.exec_command(real_command)
-    capture = []
+    capture_stdout = []
+    capture_stderr = []
 
     out_thread = output_thread("[%s] out" % env.host_string, channel,
-        capture=capture)
+        capture=capture_stdout)
     err_thread = output_thread("[%s] err" % env.host_string, channel,
-        stderr=True)
+        stderr=True, capture=capture_stderr)
     
     # Close when done
     status = channel.recv_exit_status()
@@ -437,7 +441,8 @@ def run(command, shell=True, pty=False):
     channel.close()
 
     # Assemble output string
-    out = _AttributeString("".join(capture).strip())
+    out = _AttributeString("".join(capture_stdout).strip())
+    err = _AttributeString("".join(capture_stderr).strip())
 
     # Error handling
     out.failed = False
@@ -449,6 +454,10 @@ def run(command, shell=True, pty=False):
     # Attach return code to output string so users who have set things to warn
     # only, can inspect the error code.
     out.return_code = status
+
+    # Attach stderr for anyone interested in that.
+    out.stderr = err
+
     return out
 
 
@@ -477,6 +486,9 @@ def sudo(command, shell=True, user=None, pty=False):
     single (likely multiline) string. This string will exhibit a ``failed``
     boolean attribute specifying whether the command failed or succeeded, and
     will also include the return code as the ``return_code`` attribute.
+
+    Standard error will also be attached, as a string, to this return value as
+    the ``stderr`` attribute.
 
     Examples::
     
@@ -518,10 +530,13 @@ def sudo(command, shell=True, user=None, pty=False):
         channel.get_pty()
     # Execute
     channel.exec_command(real_command)
-    capture = []
+    capture_stdout = []
+    capture_stderr = []
 
-    out_thread = output_thread("[%s] out" % env.host_string, channel, capture=capture)
-    err_thread = output_thread("[%s] err" % env.host_string, channel, stderr=True)
+    out_thread = output_thread("[%s] out" % env.host_string, channel,
+        capture=capture_stdout)
+    err_thread = output_thread("[%s] err" % env.host_string, channel,
+        stderr=True, capture=capture_stderr)
 
     # Close channel when done
     status = channel.recv_exit_status()
@@ -535,7 +550,8 @@ def sudo(command, shell=True, user=None, pty=False):
     channel.close()
 
     # Assemble stdout string
-    out = _AttributeString("".join(capture).strip())
+    out = _AttributeString("".join(capture_stdout).strip())
+    err = _AttributeString("".join(capture_stderr).strip())
 
     # Error handling
     out.failed = False
@@ -546,6 +562,10 @@ def sudo(command, shell=True, user=None, pty=False):
 
     # Attach return code for convenience
     out.return_code = status
+
+    # Attach stderr for those who need it.
+    out.stderr = err
+
     return out
 
 
@@ -558,14 +578,15 @@ def local(command, capture=True):
     do anything special, consider using the ``subprocess`` module directly.
 
     `local` will, by default, capture and return the contents of the command's
-    stdout as a string, and will not print anything to the user (the command's
-    stderr is captured but discarded.)
+    stdout as a string, and will not print anything to the user. As with `run`
+    and `sudo`, this return value itself will exhibit a ``stderr`` attribute
+    containing standard error output.
     
     .. note::
-        This differs from the default behavior of `run` and `sudo` due to the
-        different mechanisms involved: it is difficult to simultaneously
-        capture and print local commands, so we have to choose one or the
-        other. We hope to address this in later releases.
+        `local`'s capturing behavior differs from the default behavior of `run`
+        and `sudo` due to the different mechanisms involved: it is difficult to
+        simultaneously capture and print local commands, so we have to choose
+        one or the other. We hope to address this in later releases.
 
     If you need full interactivity with the command being run (and are willing
     to accept the loss of captured stdout) you may specify ``capture=False`` so
@@ -602,8 +623,10 @@ def local(command, capture=True):
     (stdout, stderr) = p.communicate()
     # Handle error condition (deal with stdout being None, too)
     out = _AttributeString(stdout or "")
+    err = _AttributeString(stderr or "")
     out.failed = False
     out.return_code = p.returncode
+    out.stderr = err
     if p.returncode != 0:
         out.failed = True
         msg = "local() encountered an error (return code %s) while executing '%s'" % (p.returncode, command)

@@ -207,6 +207,7 @@ env = _AttributeDict({
     # Version number for --version
     'version': get_version(),
     'sudo_prompt': 'sudo password:',
+    'again_prompt': 'Sorry, try again.\n',
     'use_shell': True,
     'roledefs': {},
     'cwd': ''

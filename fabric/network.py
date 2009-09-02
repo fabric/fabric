@@ -302,13 +302,18 @@ def output_thread(prefix, chan, stderr=False, capture=None):
             recv = chan.recv
         out = recv(65535)
         while out != '':
-            # Capture if necessary
-            if capture is not None:
-                capture += out
             # Detect password prompts
             initial = re.findall(r'^%s$' % env.sudo_prompt, out, re.I|re.M)
-            try_again = re.findall(r'^Sorry, try again', out, re.I|re.M)
-            # Deal with any such prompts
+            try_again = re.findall(r'^%s' % env.again_prompt, out, re.I|re.M)
+            # Capture if necessary (omitting password prompts so captured
+            # stderr isn't gunked up)
+            if capture is not None:
+                if initial:
+                    out = out.replace(env.sudo_prompt, '')
+                if try_again:
+                    out = out.replace(env.again_prompt, '')
+                capture += out
+            # Deal with password prompts
             if initial or try_again:
                 # Prompt user if nothing to try, or if stored password failed
                 if not password or try_again:
