@@ -18,11 +18,14 @@ def test():
     print(local('nosetests -sv --with-doctest', capture=False))
 
 
-def build_docs():
+def build_docs(clean='no'):
     """
     Generate the Sphinx documentation.
     """
-    local('cd docs && make clean html', capture=False)
+    c = ""
+    if clean.lower() in ['yes', 'y']:
+        c = "clean "
+    local('cd docs && make %shtml' % c, capture=False)
 
 
 @hosts('jforcier@fabfile.org')
