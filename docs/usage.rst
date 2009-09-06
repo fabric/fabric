@@ -14,22 +14,26 @@ Slightly better, albeit verbose, method which *is* PEP8-compliant::
     from fabric.api import run, sudo, prompt, abort, ...
 
 .. note::
-    You can also import directly from the individual submodules, e.g.
-    ``from fabric.utils import abort``. However, all of Fabric's public API is
-    guaranteed to be available via `fabric.api` for convenience purposes.
+    You can also import directly from the individual submodules, e.g. ``from
+    fabric.utils import abort``. However, all of Fabric's public API is
+    available via `fabric.api` for convenience purposes.
 
 
 Importing other modules
 =======================
 
 Because of the way the ``fab`` tool runs, any callables found in your fabfile
-(excepting Fabric's own callables, which it filters out) will be candidates for
-execution, and will be displayed in ``fab --list``, and so forth.
+will be candidates for execution, displayed in ``fab --list``, and so forth.
+This can lead to minor annoyances if your fabfile contains ``from module import
+callable``-style imports -- all such callables will appear in ``fab --list``,
+cluttering it up. Because of this, we strongly recommend that you use ``import
+module`` followed by ``module.callable()`` in order to give your fabfile a
+clean API.
 
-This can lead to minor annoyances if you do a lot of ``from module import
-callable``-style imports in your fabfile. Thus, we strongly recommend that you
-use ``import module`` followed by ``module.callable()`` in order to give your
-fabfile a clean API.
+.. note::
+    Fabric strips out its own callables when building the list of potential
+    commands, so you don't need to worry about finding ``run`` or ``sudo`` in
+    your ``--list`` output.
 
 Rationale
 ---------
@@ -132,9 +136,10 @@ The lookup order is as follows:
     * Python code operating on ``env`` within your fabfile (which will append
       to or overwrite anything set on the command line)
 
-    Note that you may set either of these at module level, in which case the
-    given list will apply globally to all commands (unless overridden in one of
-    the previous ways.)
+    .. note:: 
+        You may set either of these at module level, in which case the given
+        list will apply globally to all commands (unless overridden in one of
+        the previous ways.)
 
 Using env vars and shared state to create "environments"
 --------------------------------------------------------
