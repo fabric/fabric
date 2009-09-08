@@ -18,45 +18,75 @@ installation.
 Dependencies
 ============
 
-In order to install Fabric, you will need `Python <http://python.org>`_ version
-2.5 or newer, and the following third-party Python packages:
+In order to install Fabric, you will need three primary pieces of
+software: the Python programming language, the Paramiko SSH library, and
+the PyCrypto cryptography library (a dependency of Paramiko.) Please read
+on for important details on each dependency -- there are a few gotchas.
 
-* `Paramiko <http://www.lag.net/paramiko/>`_ =1.7.4
-* `PyCrypto <http://www.amk.ca/python/code/crypto.html>`_ (a dependency of
-  Paramiko) >=1.9
+Python
+------
 
-.. warning::
+Fabric requires `Python <http://python.org>`_ version 2.5 or 2.6. Some caveats
+and notes about other Python versions:
 
-    Paramiko 1.7.5 is currently out, but suffers from a relatively serious bug
-    that can cause effectively random SSHException errors. While the frequency
-    of these errors is somewhat low (about a 1 in 100 chance) it's enough to
-    prevent Fabric from consistently working correctly. Thus, we strongly
-    recommend against using Paramiko 1.7.5, and will let you know when we're
-    aware of a release that fixes this problem.
+* We are not planning on supporting **Python 2.4** given its age and the number
+  of useful tools in Python 2.5 such as context managers and new modules.
+  That said, the actual amount of 2.5-specific functionality is not
+  prohibitively large, and we would link to -- but not support -- a third-party
+  2.4-compatible fork. (No such fork exists at this time, to our knowledge.)
+* Fabric has not yet been tested on **Python 3.x** and is thus likely to be
+  incompatible with that line of development. However, we try to be at least
+  somewhat forward-looking (e.g. using ``print()`` instead of ``print``) and
+  will definitely be porting to 3.x in the future once our dependencies and the
+  rest of the ecosystem does so as well.
+* A bug in **Python 2.5.0 and 2.5.1** causes errors in
+  `fabric.contrib.files.upload_template` due to its combination of context
+  managers and ``tempfile.NamedTemporaryFile``. The rest of Fabric will work
+  fine on these Python versions, but be aware of this conflict if you do use
+  `upload_template` and are running on something older than Python 2.5.2.
 
-.. warning::
+Paramiko
+--------
 
-    A bug in Python version 2.5.0 and 2.5.1 which causes issues when using
-    the ``with`` statement alongside ``tempfile.NamedTemporaryFile`` will cause
-    `fabric.contrib.files.upload_template` to abort with an error. If you do
-    not have Python 2.5.2 or newer, use of ``upload_template`` is not advised.
-    The rest of the Fabric codebase is not affected and should work fine on
-    2.5.0 and up.
+`Paramiko <http://www.lag.net/paramiko/>`_ is a Python implementation of the
+SSH protocol suite, and is what Fabric builds upon for its networking support.
+At this time, **only Paramiko version 1.7.4 is supported!** A more recent
+version, 1.7.5, is on PyPI, but contains `a serious bug
+<https://bugs.launchpad.net/paramiko/+bug/413850>`_ that causes effectively
+random (albeit uncommon) SSHException errors.
 
-.. note::
+Furthermore, because 1.7.5 is the only version currently uploaded to PyPI (the
+source of ``easy_install`` and ``pip`` installs) we do **not** recommend you
+use those tools to install Fabric until you have installed Paramiko and
+PyCrypto by hand.
 
-    Installation via ``pip`` or ``easy_install`` (see :ref:`easy-install`
-    below) will automatically install the above packages, so you may not need
-    to hunt for them yourself.
+Paramiko 1.7.4 may be downloaded from Paramiko's `old releases directory
+<http://www.lag.net/paramiko/download/>`_ and installed by unpacking and
+running ``python setup.py install``, as with most other Python packages.
 
-.. note::
+PyCrypto
+--------
 
-    Windows users without an installed C compiler will likely experience
-    problems installing PyCrypto, as it involves C code and is not a pure
-    Python package like the others. We recommend either installing a C
-    development environment such as `Cygwin <http://cygwin.com>`_ or obtaining
-    a precompiled Win32 PyCrypto package from `voidspace's Python modules page
-    <http://www.voidspace.org.uk/python/modules.shtml#pycrypto>`_.
+`PyCrypto <http://www.amk.ca/python/code/crypto.html>`_ is a dependency of
+Paramiko, providing the low-level (C-based) encryption algorithms used to run
+SSH. You will need version 1.9 or newer, and may install PyCrypto from
+``easy_install`` or ``pip`` without worry. However, unless you are installing
+from a precompiled source such as a Debian apt repository or RedHat RPM, you
+will need the ability to build Python C-based modules from source -- read on.
+
+Users on **Unix-based platforms** such as Ubuntu or Mac OS X will need the
+traditional C build toolchain installed (e.g. Developer Tools / XCode Tools on
+the Mac, or the ``build-essential`` package on Ubuntu or Debian Linux --
+basically, anything with ``gcc``, ``make`` and so forth) as well as the Python
+development libraries, often named ``python-dev`` or similar.
+
+For **Windows** users we recommend either installing a C development environment
+such as `Cygwin <http://cygwin.com>`_ or obtaining a precompiled Win32 PyCrypto
+package from `voidspace's Python modules page
+<http://www.voidspace.org.uk/python/modules.shtml#pycrypto>`_.
+
+Development dependencies
+------------------------
 
 If you are interested in doing development work on Fabric (or even just running
 the test suite), you may also need to install some or all of the following
@@ -67,6 +97,7 @@ packages:
 * `PyLint <http://www.logilab.org/857>`_ >=0.18
 * `Fudge <http://farmdev.com/projects/fudge/index.html>`_ >=0.9.2
 * `Sphinx <http://sphinx.pocoo.org/>`_ >= 0.6.1
+
 
 Downloads
 =========
@@ -115,6 +146,11 @@ Fabric tries hard to play nice with packaging systems such as Python's
 ``setuptools``, and as such it may be installed via either `easy_install
 <http://wiki.python.org/moin/CheeseShopTutorial>`_ or `pip
 <http://pip.openplans.org>`_.
+
+.. warning::
+
+    Please see the :ref:`above warning concerning Paramiko <paramiko>` before
+    attempting to install Fabric via ``easy_install`` or ``pip``.
 
 Fabric's source distribution also comes with a ``pip`` requirements file
 called ``requirements.txt``, containing the various development requirements
