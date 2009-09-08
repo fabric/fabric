@@ -468,7 +468,8 @@ def sudo(command, shell=True, user=None, pty=False):
     
     As with ``run()``, ``sudo()`` executes within a shell command defaulting to
     the value of ``env.shell``, although it goes one step further and wraps the
-    command with ``sudo`` as well. Also similar to ``run()``, the shell
+    command with ``sudo`` as well. Like `run`, this behavior may be disabled by
+    specifying ``shell=False``.
 
     You may specify a ``user`` keyword argument, which is passed to ``sudo``
     and allows you to run as some user other than root (which is the default).
