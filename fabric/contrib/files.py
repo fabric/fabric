@@ -205,7 +205,7 @@ def comment(filename, regex, use_sudo=False, char='#', backup='.bak'):
     )
 
 
-def contains(text, filename, exact=False, use_sudo=False):
+def contains(filename, text, exact=False, use_sudo=False):
     """
     Return True if ``filename`` contains ``text``.
 
@@ -230,7 +230,7 @@ def contains(text, filename, exact=False, use_sudo=False):
         ))
 
 
-def append(text, filename, use_sudo=False):
+def append(filename, text, use_sudo=False):
     """
     Append string (or list of strings) ``text`` to ``filename``.
 
@@ -252,7 +252,7 @@ def append(text, filename, use_sudo=False):
     if isinstance(text, str):
         text = [text]
     for line in text:
-        if (contains('^' + re.escape(line), filename, use_sudo=use_sudo)
+        if (contains(filename, '^' + re.escape(line), use_sudo=use_sudo)
             and line):
             continue
         func("echo '%s' >> %s" % (line.replace("'", r'\''), filename))
