@@ -508,6 +508,9 @@ def main():
                 prev_user = state.env.user
                 state.env.user = username
                 state.env.port = port
+                # Log to stdout
+                if state.output.running:
+                    print("[%s] Executing task '%s'" % (host, name))
                 # Actually run command
                 commands[name](*args, **kwargs)
                 # Put old user back
