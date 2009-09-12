@@ -1,6 +1,20 @@
 ======================
+Changes in version 1.0
+======================
+
+* `~fabric.contrib.files.contains` and `~fabric.contrib.files.append`
+  previously had the ``filename`` argument in the second position, whereas all
+  other functions in the module had ``filename`` as the first argument. In 1.0,
+  these two functions were brought in line with the rest of
+  `~fabric.contrib.files`.
+
+
+======================
 Changes in version 0.9
 ======================
+
+**TODO**: update the below at least, or overall page at best, so it meshes well
+with this now covering 2 updates (0.1 => 0.9, 0.9 => 1.0).
 
 This document details the various backwards-incompatible changes made during
 Fabric's rewrite between versions 0.1 and 0.9. The codebase has been almost
