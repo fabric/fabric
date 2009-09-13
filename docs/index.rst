@@ -43,8 +43,9 @@ the following patterns that may throw off readers used to Python 2.4 or who
 have already upgraded to Python 2.6:
 
 * ``from __future__ import with_statement``: a "future import" required to
-  use the ``with`` statement in Python 2.5. Python 2.6 users have this built-in
-  and won't need the extra import.
+  use the ``with`` statement in Python 2.5 -- a feature you'll be using
+  frequently. Python 2.6 users have this built-in and won't need the extra
+  import.
 * ``<true_value> if <expression> else <false_value>``: Python's relatively new
   ternary statement, available in 2.5 and newer. Python 2.4 and older used to
   fake this with ``<expression> and <true_value> or <false_value>``.
