@@ -198,9 +198,10 @@ password prompt will appear, which Fabric will detect and pass through to you::
 
 The above usage example highlights a couple new features:
 
-* The ``fab -H`` command-line flag, allowing you to define the host or hosts to
+* ``fab``'s ``-H`` option, allowing you to define the host or hosts to
   connect to. See :doc:`fab` for details on other options the ``fab`` tool
-  accepts; and see :ref:`hosts` for more on setting host lists.
+  accepts, and read :ref:`hosts` below to learn about the various different
+  ways in which you can tell Fabric what servers to talk to.
 * The ability to specify task arguments on the command line. :doc:`fab` also
   discusses this aspect of command-line use.
 
@@ -211,7 +212,7 @@ authentication and more -- please see :doc:`foo`.
 `local`
 -------
 
-While the rest of the Fabric API deals with remote servers, we've included a
+While much of the Fabric API deals with remote servers, we've included a
 convenient wrapper around the Python stdlib's ``subprocess`` library called
 `local`. `local` does not make network connections, but is otherwise similar to
 `run` and `sudo` in that it takes a command string, invokes it in a shell, and
@@ -259,7 +260,7 @@ uploading and downloading of files, via the `put` and `get` functions
 respectively. The builtin ``contrib`` function `upload_project` combines
 `local`, `run` and `put` to transmit a copy of the current project to the
 remote server, and serves as a good example of what we've seen so far. What
-follows is a slightly simplified version of the real thing::
+follows is a modified version of the real thing::
 
     def upload_project():
         fname = "project.tgz"
@@ -287,8 +288,7 @@ and `prompt`. `require` lets you ensure that a task will abort if some needed
 information is not present, which can be handy if you have a small network of
 inter-operating tasks (see :ref:`env` below for more.) You can probably guess
 what `prompt` does -- it's a convenient wrapper around Python's `raw_input`
-builtin that asks the user to enter a string, useful for interactive fabfile
-tasks.
+builtin that asks the user to enter a string, useful for interactive tasks.
 
 
 
