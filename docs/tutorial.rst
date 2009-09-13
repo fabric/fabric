@@ -54,7 +54,7 @@ Shell commands executed via SSH
 -------------------------------
 
 Fabric provides a number of API functions (sometimes referred to as
-"operations") including a few, core functions which connect to remote servers
+"operations") including two core functions which connect to remote servers
 and execute their arguments as shell commands. These are roughly equivalent to
 using the command-line SSH tool with extra arguments, e.g.::
 
@@ -109,11 +109,6 @@ therefore likely to differ.
     will hang when you try to use Control-D or ``exit()``. This is less than
     ideal, and Fabric's use as a library is expected to improve in version 1.0.
 
-A close cousin to `run` is `sudo`, which is identical save for the fact that it
-automatically wraps your command inside a ``sudo`` call, and is capable of
-detecting ``sudo``'s password prompt. See :ref:`foo` for more on ``sudo`` and
-the other SSH-related functions Fabric provides.
-
 Putting them together
 ---------------------
 
@@ -162,49 +157,146 @@ From here on, we'll be exploring the rest of Fabric's API and the various nuts
 and bolts you'll need to understand in order to use Fabric effectively.
 
 
-Nuts and bolts go here
-======================
+Operations
+==========
 
-what it does
+In this section we'll give a quick tour of Fabric's basic building blocks, the
+operations. Not only are these the most commonly utilized parts of Fabric's API
+in user fabfiles, but they're also what form the foundation for the rapidly
+growing ``contrib`` section of the codebase.
 
-* Brief overview of the operations / "fabric core api"
+Follow any link containing the name of an operation to view its API
+documentation with complete details on its use.
 
-  * Explain how we use SSH and what exactly run/sudo do shellwise
+`run` and `sudo`
+----------------
 
-    * including explanation of the bin/bash wrapper and how to turn it off
-      with shell=False
-    * link to detailed docs, e.g. unknown hosts and keys and etc
+You've already seen how `run` executes a given command in a remote shell; it
+has a close cousin, `sudo`, which is identical save for the fact that it
+automatically wraps your command inside a ``sudo`` call, and is capable of
+detecting ``sudo``'s password prompt.
 
-  * put/get operate one file at a time (paramiko limitation)
+A simple example, defining a useful subroutine for restarting services on a
+Linux system::
 
-    * maybe a "paramiko limitations" page-o-shame? eh
+    from fabric.api import sudo
 
-  * local uses subprocess
+    def restart(service):
+        sudo('/etc/init.d/%s restart' % service)
 
-    * it's not quite the same api/behavior as run/sudo; we hope to change
-      this
+Assuming you haven't recently entered your password on the remote system, a
+password prompt will appear, which Fabric will detect and pass through to you::
 
-  * everything else builds on these guys -- your stuff, and our stuff
-    (contrib!)
+    $ fab -H example.com restart:service=apache2
+    [example.com] sudo: /etc/init.d/apache2 restart
+    Password for username@example.com: 
+    [example.com] out: Restarting web server apache2
+    [example.com] out: ...done.
 
-    * link to contrib api docs?
+    Done.
+    Disconnecting from example.com... done.
 
-the basic ingredients
+The above usage example highlights a couple new features:
 
-* intro to fab tool
+* The ``fab -H`` command-line flag, allowing you to define the host or hosts to
+  connect to. See :doc:`fab` for details on other options the ``fab`` tool
+  accepts; and see :ref:`hosts` for more on setting host lists.
+* The ability to specify task arguments on the command line. :doc:`fab` also
+  discusses this aspect of command-line use.
 
-  * tries to be good unix citizen
-  * overview of most common options, link to an actual doc page
+Finally, for more details on how `run` and `sudo` interact with the SSH
+protocol -- including the shell loaded on the remote end, key-based
+authentication and more -- please see :doc:`foo`.
 
-    * do we have one? make one if not
+`local`
+-------
 
-* intro to fabfiles
+While the rest of the Fabric API deals with remote servers, we've included a
+convenient wrapper around the Python stdlib's ``subprocess`` library called
+`local`. `local` does not make network connections, but is otherwise similar to
+`run` and `sudo` in that it takes a command string, invokes it in a shell, and
+is capable of printing and/or capturing the resulting output.
 
-  * really just restating the intro material?
+.. note::
+
+    At the present time, `local`'s API is not a perfect copy of that seen in
+    `run` and `sudo` -- for example, it cannot capture **and** print at the
+    same time. This is likely to improve by the time Fabric 1.0 is released.
+
+Here's a sample taken from Fabric's own internal fabfile, which executes the
+test suite and displays the output::
+
+    def test():
+        print(local('nosetests -sv --with-doctest', capture=False))
+
+A truncated version of the output::
+
+    $ fab test
+    [localhost] run: nosetests -sv --with-doctest
+    Doctest: fabric.operations._shell_escape ... ok
+    Aborts if any given roles aren't found ... ok
+    Use of @roles and @hosts together results in union of both ... ok
+    If @hosts is used it replaces any env.hosts value ... ok
+    [...]
+    Aliases can be nested ... ok
+    Alias expansion ... ok
+    warn() should print 'Warning' plus given text ... ok
+    indent(strip=True): Sanity check: 1 line string ... ok
+    abort() should raise SystemExit ... ok
+    ----------------------------------------------------------------------
+    Ran 63 tests in 0.606s
+
+    OK
+
+
+    Done.
+
+`put` and `get`
+---------------
+
+In addition to executing shell commands, Fabric leverages SFTP to allow
+uploading and downloading of files, via the `put` and `get` functions
+respectively. The builtin ``contrib`` function `upload_project` combines
+`local`, `run` and `put` to transmit a copy of the current project to the
+remote server, and serves as a good example of what we've seen so far. What
+follows is a slightly simplified version of the real thing::
+
+    def upload_project():
+        fname = "project.tgz"
+        fpath = "/tmp/%s" % fname
+        local("tar -czf %s ." % fpath)
+        dest = "/var/www/%s" % fname
+        put(fpath, dest)
+        run("cd /var/www && tar -xzf %s" % fname)
+        run("rm -f %s" % dest)
+
+Running it doesn't provide much output, provided things go well (which is
+generally the Unix way -- be silent unless something is wrong)::
+
+    $ fab -H example.com upload_project
+    [localhost] run: tar -czf /tmp/project.tgz .
+    [ubuntu904] put: /tmp/project.tgz -> /var/www/project.tgz
+    [ubuntu904] run: cd /var/www && tar -xzf project.tgz
+    [ubuntu904] run: rm -f /var/www/project.tgz
+
+`require` and `prompt`
+----------------------
+
+Finally, Fabric's operations contain a couple convenience methods: `require`
+and `prompt`. `require` lets you ensure that a task will abort if some needed
+information is not present, which can be handy if you have a small network of
+inter-operating tasks (see :ref:`env` below for more.) You can probably guess
+what `prompt` does -- it's a convenient wrapper around Python's `raw_input`
+builtin that asks the user to enter a string, useful for interactive fabfile
+tasks.
+
+
+
+env
 
 * intro to env
 
-how it runs
+Execution model
 
 * execution model (ties fab tool, fabfiles together?)
 
