@@ -291,12 +291,36 @@ what `prompt` does -- it's a convenient wrapper around Python's `raw_input`
 builtin that asks the user to enter a string, useful for interactive tasks.
 
 
+The environment
+===============
 
-env
+A simple but integral aspect of Fabric is what is known as the "environment": a
+Python dictionary subclass which is used as a combination settings registry and
+shared inter-task data namespace. You've already seen it in action during the
+:ref:`introduction` when it was used to set the ``host_string`` setting.
 
-* intro to env
+Most of Fabric's behavior is controllable by modifying env variables in the
+same way that ``host_string`` was used in the introduction; other
+commonly-modified env vars are:
+
+* ``hosts`` and ``roledefs``: more commonly used than ``host_string``, these
+  allow control of the host or hosts which Fabric connects to when it runs. See
+  :ref:`hosts` for details.
+* ``user`` and ``password``: Fabric uses your local username by default, and
+  will prompt you for connection and sudo passwords as necessary -- but you can
+  always specify these explicitly if you need to.
+* ``warn_only``: a Boolean setting determining whether Fabric exits when
+  detecting errors on the remote end. See :ref:`execution` for more on this
+  behavior.
+
+For a full list of environment variables Fabric makes use of, see :doc:`env`.
+
+Finally, as mentioned, the ``env`` object is simply a dictionary subclass, so
+your own fabfile code may store information in it as well. This is often useful
+for keeping state between multiple tasks within a single execution run.
 
 Execution model
+===============
 
 * execution model (ties fab tool, fabfiles together?)
 
