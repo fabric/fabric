@@ -37,6 +37,21 @@ Fabric's development process.
 Documentation
 =============
 
+Please note that all documentation is currently written with Python 2.5 users
+in mind, but with an eye for eventual Python 3.x compatibility. This leads to
+the following patterns that may throw off readers used to Python 2.4 or who
+have already upgraded to Python 2.6:
+
+* ``from __future__ import with_statement``: a "future import" required to
+  use the ``with`` statement in Python 2.5. Python 2.6 users have this built-in
+  and won't need the extra import.
+* ``<true_value> if <expression> else <false_value>``: Python's relatively new
+  ternary statement, available in 2.5 and newer. Python 2.4 and older used to
+  fake this with ``<expression> and <true_value> or <false_value>``.
+* ``print(<expression>)`` instead of ``print <expression>``: We use the
+  ``print`` statement's optional parentheses where possible, in order to be
+  more compatible with Python 3.x (in which ``print`` becomes a function.)
+
 Tutorial
 --------
 
