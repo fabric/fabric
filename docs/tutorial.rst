@@ -214,6 +214,7 @@ how it runs
 
   * build host list for each task
   * for each task, then for each host for that task, execute
+  * fail-fast unless warn_only
   * plan to add more in future
   * not threadsafe/parallelizable right now
 
@@ -225,4 +226,7 @@ how it runs
      * or is what we have in usage.rst really all there is to it?
      * it won't be once we beef it up more...
 
-more?
+etc
+
+* you saw the links scattered throughout; see the docs index (link to index
+  page, doc section) for the full list
