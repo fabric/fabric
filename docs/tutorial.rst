@@ -10,6 +10,8 @@ of the documentation, which is linked to in a number of places.
 You will need Fabric :doc:`installed <installation>` in order to follow along.
 
 
+.. _introduction:
+
 Introduction
 ============
 
@@ -25,12 +27,12 @@ Python functions executed via the CLI
 
 Fabric comes with a ``fab`` command-line tool capable of loading a Python
 module (named ``fabfile`` by default and usually referred to as "a fabfile")
-and executing any functions defined within. Functions designed for use with
+and executing functions defined within. Functions designed for use with
 Fabric are referred to as "tasks" or "commands", and are pure Python code.
 
 Let's start with a typical Hello World example. Create a ``fabfile.py`` in your
 current directory and enter the following (and only the following: no imports
-are necessary)::
+are necessary at this point)::
 
     def hello():
         print("Hello, world!")
@@ -43,12 +45,13 @@ Once you've saved this fabfile, you can execute the ``hello`` task with the
 
     Done.
 
-That's all there is to it. Since a fabfile is simply a Python module, the sky's
-the limit. However, most of the time you'll be interested in using the other
-side of Fabric: its SSH functionality.
+That's all there is to it: define one or more tasks, then ask ``fab`` to
+execute them. You may specify multiple task names, space-separated; for details
+on ``fab``'s behavior and its options/arguments, please see :doc:`fab`.
 
-For details on ``fab``'s behavior and its options/arguments, please see
-:ref:`fab`.
+Since a fabfile is simply a Python module, the sky's the limit. However, most
+of the time you'll be interested in importing and using the other side of
+Fabric: its SSH functionality.
 
 Shell commands executed via SSH
 -------------------------------
@@ -60,16 +63,14 @@ using the command-line SSH tool with extra arguments, e.g.::
 
   $ ssh myserver sudo /etc/init.d/apache2 reload
 
-Use of this SSH API is relatively simple: just set an "environment" variable
-telling Fabric what server to talk to, and call your desired function. The most
-basic such function is `run`, which calls a shell with the given command and
-returns the command's output (printing out what it's doing all the while.)
-Here's an interactive Python session making use of `run`::
+Use of this SSH API is relatively simple: just set an :ref:`environment
+variable <environment>` telling Fabric what server to talk to, and call your
+desired function. The most basic such function is `~fabric.operations.run`,
+which calls a shell with the given command and returns the command's output
+(printing out what it's doing all the while.) Here's an interactive Python
+session making use of `~fabric.operations.run`::
 
     $ python
-    Python 2.5.1 (r251:54863, Feb  9 2009, 18:49:36) 
-    [GCC 4.0.1 (Apple Inc. build 5465)] on darwin
-    Type "help", "copyright", "credits" or "license" for more information.
     >>> from fabric.api import run, env
     >>> from fabric.state import connections
     >>> env.host_string = "localhost"
@@ -107,15 +108,17 @@ therefore likely to differ.
     The use of the ``connections`` object to close the connection is necessary
     in order to cleanly exit the Python interpreter; otherwise your session
     will hang when you try to use Control-D or ``exit()``. This is less than
-    ideal, and Fabric's use as a library is expected to improve in version 1.0.
+    ideal, and Fabric's usability as a library is expected to improve in
+    version 1.0.
 
-Putting them together
+Putting it together
 ---------------------
 
 While these two primary features of Fabric can be used separately, the main use
 case is to combine them, defining and running (via ``fab``) task functions
-which in turn import and use Fabric's API calls such as `run`. Most of Fabric's
-auxiliary functions and tools revolve around this mode of use.
+which in turn import and use Fabric's API calls such as
+`~fabric.operations.run`. Most of Fabric's auxiliary functions and tools
+revolve around this mode of use.
 
 Here's an example which simply takes the previous interactive example and drops
 it into a fabfile::
@@ -128,10 +131,10 @@ it into a fabfile::
 
 .. note::
 
-    When using functions like `run` in ``fab``-driven fabfiles, you don't need
-    to bother with the ``connections`` object -- it's handled for you by
-    ``fab``'s main execution loop. See :ref:`execution` for more on how the
-    ``fab`` tool handles host connections.
+    When using functions like `~fabric.operations.run` in ``fab``-driven
+    fabfiles, you don't need to bother with the ``connections`` object -- it's
+    handled for you by ``fab``'s main execution loop. See :ref:`execution` for
+    more on how the ``fab`` tool handles host connections.
 
 The result is much the same as before::
 
@@ -161,20 +164,29 @@ Operations
 ==========
 
 In this section we'll give a quick tour of Fabric's basic building blocks, the
-operations. Not only are these the most commonly utilized parts of Fabric's API
-in user fabfiles, but they're also what form the foundation for the rapidly
-growing ``contrib`` section of the codebase.
+:doc:`operations <api/operations>`. Not only are these the most commonly
+utilized parts of Fabric's API in user fabfiles, but they're also what form the
+foundation for the rapidly growing :ref:`contrib <contrib-api>` section of the
+codebase.
 
 Follow any link containing the name of an operation to view its API
-documentation with complete details on its use.
+documentation with complete details on its use. There are a number of
+additional options for most functions, which we won't be going into here, so
+we highly recommend reading the API documentation.
 
-`run` and `sudo`
-----------------
+`~fabric.operations.run` and `~fabric.operations.sudo`
+------------------------------------------------------
 
-You've already seen how `run` executes a given command in a remote shell; it
-has a close cousin, `sudo`, which is identical save for the fact that it
-automatically wraps your command inside a ``sudo`` call, and is capable of
-detecting ``sudo``'s password prompt.
+You've already seen how `~fabric.operations.run` executes a given command in a
+remote shell; it has a close cousin, `~fabric.operations.sudo`, which is
+identical save for the fact that it automatically wraps your command inside a
+``sudo`` call, and is capable of detecting ``sudo``'s password prompt.
+
+.. note::
+
+    Hyperlinked versions of the word "sudo" (e.g. `~fabric.operations.sudo`)
+    refer to the Python function; non-hyperlinked, monospaced versions
+    (``sudo``) refer to the command-line program which the function uses.
 
 A simple example, defining a useful subroutine for restarting services on a
 Linux system::
@@ -205,27 +217,34 @@ The above usage example highlights a couple new features:
 * The ability to specify task arguments on the command line. :doc:`fab` also
   discusses this aspect of command-line use.
 
-Finally, for more details on how `run` and `sudo` interact with the SSH
-protocol -- including the shell loaded on the remote end, key-based
-authentication and more -- please see :doc:`foo`.
+Finally, for more details on how `~fabric.operations.run`
+and `~fabric.operations.sudo` interact with the SSH protocol -- including the
+shell loaded on the remote end, key-based authentication and more -- please
+see :doc:`foo`.
 
-`local`
--------
+`~fabric.operations.local`
+--------------------------
 
 While much of the Fabric API deals with remote servers, we've included a
 convenient wrapper around the Python stdlib's ``subprocess`` library called
-`local`. `local` does not make network connections, but is otherwise similar to
-`run` and `sudo` in that it takes a command string, invokes it in a shell, and
-is capable of printing and/or capturing the resulting output.
+`~fabric.operations.local`. `~fabric.operations.local` does not make network
+connections, running (as you might expect) locally instead, but is otherwise
+similar to `~fabric.operations.run` and `~fabric.operations.sudo`: it takes a
+command string, invokes it in a shell, and is capable of printing and/or
+capturing the resulting output.
 
 .. note::
 
-    At the present time, `local`'s API is not a perfect copy of that seen in
-    `run` and `sudo` -- for example, it cannot capture **and** print at the
-    same time. This is likely to improve by the time Fabric 1.0 is released.
+    At the present time, `~fabric.operations.local`'s behavior is not a perfect
+    copy of that seen in `~fabric.operations.run` and
+    `~fabric.operations.sudo` -- for example, it cannot capture **and** print
+    at the same time. This is likely to improve by the time Fabric 1.0 is
+    released.
 
 Here's a sample taken from Fabric's own internal fabfile, which executes the
 test suite and displays the output::
+
+    from fabric.api import local
 
     def test():
         print(local('nosetests -sv --with-doctest', capture=False))
@@ -252,15 +271,19 @@ A truncated version of the output::
 
     Done.
 
-`put` and `get`
----------------
+`~fabric.operations.put` and `~fabric.operations.get`
+-----------------------------------------------------
 
 In addition to executing shell commands, Fabric leverages SFTP to allow
-uploading and downloading of files, via the `put` and `get` functions
-respectively. The builtin ``contrib`` function `upload_project` combines
-`local`, `run` and `put` to transmit a copy of the current project to the
+uploading and downloading of files, via the `~fabric.operations.put` and
+`~fabric.operations.get` functions respectively. The builtin contrib
+function `~fabric.contrib.project.upload_project` combines
+`~fabric.operations.local`, `~fabric.operations.run` and
+`~fabric.operations.put` to transmit a copy of the current project to the
 remote server, and serves as a good example of what we've seen so far. What
 follows is a modified version of the real thing::
+
+    from fabric.api import local, put, run
 
     def upload_project():
         fname = "project.tgz"
@@ -272,7 +295,8 @@ follows is a modified version of the real thing::
         run("rm -f %s" % dest)
 
 Running it doesn't provide much output, provided things go well (which is
-generally the Unix way -- be silent unless something is wrong)::
+generally the Unix way -- be silent unless something is wrong -- and this is
+followed by the commands we call here: ``tar``, ``cd`` and ``rm``)::
 
     $ fab -H example.com upload_project
     [localhost] run: tar -czf /tmp/project.tgz .
@@ -280,16 +304,22 @@ generally the Unix way -- be silent unless something is wrong)::
     [ubuntu904] run: cd /var/www && tar -xzf project.tgz
     [ubuntu904] run: rm -f /var/www/project.tgz
 
-`require` and `prompt`
-----------------------
+`require` and `~fabric.operations.prompt`
+-----------------------------------------
 
-Finally, Fabric's operations contain a couple convenience methods: `require`
-and `prompt`. `require` lets you ensure that a task will abort if some needed
-information is not present, which can be handy if you have a small network of
-inter-operating tasks (see :ref:`env` below for more.) You can probably guess
-what `prompt` does -- it's a convenient wrapper around Python's `raw_input`
-builtin that asks the user to enter a string, useful for interactive tasks.
+Finally, Fabric's operations contain a couple convenience methods:
+`~fabric.operations.require` and `~fabric.operations.prompt`.
+`~fabric.operations.require` lets you ensure that a task will abort if some
+needed information is not present, which can be handy if you have a small
+network of inter-operating tasks (see :ref:`env` below for more.) You can
+probably guess what `~fabric.operations.prompt` does -- it's a convenient
+wrapper around Python's ``raw_input`` builtin that asks the user to enter a
+string, useful for interactive tasks.
 
+For details and examples, please see the relevant API documentation.
+
+
+.. _environment:
 
 The environment
 ===============
@@ -299,8 +329,11 @@ Python dictionary subclass which is used as a combination settings registry and
 shared inter-task data namespace. You've already seen it in action during the
 :ref:`introduction` when it was used to set the ``host_string`` setting.
 
+Environment as configuration
+----------------------------
+
 Most of Fabric's behavior is controllable by modifying env variables in the
-same way that ``host_string`` was used in the introduction; other
+same way that ``host_string`` was used in the :ref:`introduction`; other
 commonly-modified env vars are:
 
 * ``hosts`` and ``roledefs``: more commonly used than ``host_string``, these
@@ -308,16 +341,56 @@ commonly-modified env vars are:
   :ref:`hosts` for details.
 * ``user`` and ``password``: Fabric uses your local username by default, and
   will prompt you for connection and sudo passwords as necessary -- but you can
-  always specify these explicitly if you need to.
+  always specify these explicitly if you need to. The :ref:`hosts` section also
+  has info on how to specify usernames on a per-host basis.
 * ``warn_only``: a Boolean setting determining whether Fabric exits when
   detecting errors on the remote end. See :ref:`execution` for more on this
   behavior.
 
 For a full list of environment variables Fabric makes use of, see :doc:`env`.
 
-Finally, as mentioned, the ``env`` object is simply a dictionary subclass, so
-your own fabfile code may store information in it as well. This is often useful
-for keeping state between multiple tasks within a single execution run.
+It's possible (and useful) to temporarily modify ``env`` vars by means of the
+``settings`` context manager, which will override the given key/value pairs in
+``env`` within the wrapped block. For example, if you expect a given command
+may fail but wish to continue executing your task regardless, wrap it with
+``settings(warn_only=True)``, as seen in this simplified version of the contrib
+`~fabric.contrib.files.exists` function::
+
+    from fabric.api import settings, run
+
+    def exists(path):
+        with settings(warn_only=True):
+            return run('ls -d --color=never %s' % path)
+
+See the :doc:`api/context_managers` API documentation for details on
+`~fabric.context_managers.settings` and other, similar tools.
+
+Environment as shared state
+---------------------------
+
+As mentioned, the ``env`` object is simply a dictionary subclass, so your own
+fabfile code may store information in it as well. This is sometimes useful for
+keeping state between multiple tasks within a single execution run.
+
+.. note::
+
+    This aspect of ``env`` is largely historical: in the past, fabfiles were
+    not pure Python and thus the environment was the only way to communicate
+    between tasks. Nowadays, you may call other tasks or subroutines directly,
+    and even keep module-level shared state if you wish.
+
+    However, in future versions, Fabric will become threadsafe and
+    parallel-friendly, at which point ``env`` may be the only safe way to keep
+    global state.
+
+Other considerations
+--------------------
+
+Finally, note that ``env`` has been modified so that its values may be
+read/written by way of attribute access, again as seen in the
+:ref:`introduction`. In other words, ``env.host_string`` and
+``env['host_string']`` are functionally identical. We feel this saves a bit of
+typing and makes the code more readable.
 
 Execution model
 ===============

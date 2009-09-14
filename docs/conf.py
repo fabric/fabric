@@ -56,7 +56,6 @@ from fabric.version import get_version
 version = get_version(line_only=True)
 # The full version, including alpha/beta/rc tags.
 release = get_version(verbose=True)
-
 # Restore old path
 sys.path = oldpath[:]
 
