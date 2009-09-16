@@ -139,8 +139,10 @@ def cd(path):
     a string similar to ``"cd <path> && "`` prefixed in order to give the sense
     that there is actually statefulness involved.
 
-    Since all other operations and contrib functions make use of `run` and/or
-    `sudo`, they will also naturally be affected by use of `cd`.
+    Because use of `cd` affects all `run` and `sudo` invocations, any code
+    making use of `run` and/or `sudo`, such as much of the ``contrib`` section,
+    will also be affected by use of `cd`. However, at this time, `get` and
+    `put` do not honor `cd`; we expect this to be fixed in future releases.
 
     Like the actual 'cd' shell builtin, `cd` may be called with relative paths
     (keep in mind that your default starting directory is your remote user's
