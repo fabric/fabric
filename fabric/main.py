@@ -351,11 +351,13 @@ def _merge(hosts, roles):
         ))
 
     # Look up roles, turn into flat list of hosts
-    role_hosts = (
-        roles
-        and reduce(add, [state.env.roledefs[y] for y in roles])
-        or []
-    )
+    role_hosts = []
+    for role in roles:
+        value = state.env.roledefs[role]
+        # Handle "lazy" roles (callables)
+        if callable(value):
+            value = value()
+        role_hosts += value
     # Return deduped combo of hosts and role_hosts
     return list(set(hosts + role_hosts))
 
