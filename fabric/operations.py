@@ -389,17 +389,16 @@ def _shell_wrap(command, shell=True, sudo_prefix=None):
     """
     Conditionally wrap given command in env.shell (while honoring sudo.)
     """
-    # Do shell escaping here and only here.
-    command = _shell_escape(command)
     # Sudo plus space, or empty string
     if sudo_prefix is None:
         sudo_prefix = ""
     else:
         sudo_prefix += " "
-    # Shell plus space, or empty string; and command quoted or not.
+    # If we're shell wrapping, prefix shell and space, escape the command and
+    # then quote it. Otherwise, empty string.
     if shell:
         shell = env.shell + " "
-        command = '"%s"' % command
+        command = '"%s"' % _shell_escape(command)
     else:
         shell = ""
     # Resulting string should now have correct formatting
@@ -520,8 +519,8 @@ def run(command, shell=True, pty=False):
     If ``shell`` is True (the default), `run` will execute the given command
     string via a shell interpreter, the value of which may be controlled by
     setting ``env.shell`` (defaulting to something similar to ``/bin/bash -l -c
-    "<command>"``.) Any double-quote (``"``) characters in ``command`` will be
-    automatically escaped when ``shell`` is True.
+    "<command>"``.) Any double-quote (``"``) or dollar-sign (``$``) characters
+    in ``command`` will be automatically escaped when ``shell`` is True.
 
     `run` will return the result of the remote program's stdout as a
     single (likely multiline) string. This string will exhibit a ``failed``

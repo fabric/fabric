@@ -139,12 +139,23 @@ def test_shell_wrap():
         del eq_.description
 
 
-def test_shell_wrap_escapes_command():
+def test_shell_wrap_escapes_command_if_shell_is_true():
     """
-    _shell_wrap() escapes given command
+    _shell_wrap() escapes given command if shell=True
     """
     cmd = "cd \"Application Support\""
-    eq_(_shell_wrap(cmd, shell=False), _shell_escape(cmd))
+    eq_(
+        _shell_wrap(cmd, shell=True),
+        '%s "%s"' % (env.shell, _shell_escape(cmd))
+    )
+
+
+def test_shell_wrap_does_not_escape_command_if_shell_is_false():
+    """
+    _shell_wrap() does no escaping if shell=False
+    """
+    cmd = "cd \"Application Support\""
+    eq_(_shell_wrap(cmd, shell=False), cmd)
 
 
 def test_shell_escape_escapes_doublequotes():
