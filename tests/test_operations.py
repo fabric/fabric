@@ -5,7 +5,9 @@ import sys
 from nose.tools import raises, eq_
 from fudge import with_patched_object
 
-from fabric.operations import require, prompt
+from fabric.state import env
+from fabric.operations import require, prompt, _sudo_prefix, _shell_wrap, \
+    _shell_escape
 from utils import mock_streams
 
 
@@ -96,3 +98,66 @@ def test_prompt_with_default():
     d = "default!"
     prompt(s, default=d)
     eq_(sys.stdout.getvalue(), "%s [%s] " % (s, d))
+    
+
+#
+# run()/sudo()
+#
+
+def test_sudo_prefix_with_user():
+    """
+    _sudo_prefix() returns prefix plus -u flag for nonempty user
+    """
+    eq_(
+        _sudo_prefix(user="foo"),
+        "%s -u \"foo\" " % (env.sudo_prefix % env.sudo_prompt)
+    )
+
+
+def test_sudo_prefix_without_user():
+    """
+    _sudo_prefix() returns standard prefix when user is empty
+    """
+    eq_(_sudo_prefix(user=None), env.sudo_prefix % env.sudo_prompt)
+
+
+def test_shell_wrap():
+    prefix = "prefix"
+    command = "command"
+    for description, shell, sudo_prefix, result in (
+        ("shell=True, sudo_prefix=None",
+            True, None, "%s \"%s\"" % (env.shell, command)),
+        ("shell=True, sudo_prefix=string",
+            True, prefix, prefix + " %s \"%s\"" % (env.shell, command)),
+        ("shell=False, sudo_prefix=None",
+            False, None, command),
+        ("shell=False, sudo_prefix=string",
+            False, prefix, prefix + " " + command),
+    ):
+        eq_.description = "_shell_wrap: %s" % description
+        yield eq_, _shell_wrap(command, shell, sudo_prefix), result
+        del eq_.description
+
+
+def test_shell_wrap_escapes_command():
+    """
+    _shell_wrap() escapes given command
+    """
+    cmd = "cd \"Application Support\""
+    eq_(_shell_wrap(cmd, shell=False), _shell_escape(cmd))
+
+
+def test_shell_escape_escapes_doublequotes():
+    """
+    _shell_escape() escapes double-quotes
+    """
+    cmd = "cd \"Application Support\""
+    eq_(_shell_escape(cmd), 'cd \\"Application Support\\"')
+
+
+def test_shell_escape_escapes_dollar_signs():
+    """
+    _shell_escape() escapes dollar signs
+    """
+    cmd = "cd $HOME"
+    eq_(_shell_escape(cmd), 'cd \$HOME')

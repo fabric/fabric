@@ -9,13 +9,13 @@ from fabric.contrib.project import rsync_project
 import fabric.version
 
 
-def test():
+def test(args=None):
     """
     Run all unit tests and doctests.
     """
-    # Need show_stderr=True because the interesting output of nosetests is
-    # actually sent to stderr, not stdout.
-    print(local('nosetests -sv --with-doctest', capture=False))
+    if args is None:
+        args = ""
+    print(local('nosetests -sv --with-doctest %s' % args, capture=False))
 
 
 def build_docs(clean='no'):

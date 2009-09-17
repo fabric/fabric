@@ -180,3 +180,32 @@ def cd(path):
     else:
         new_cwd = path
     return _setenv(cwd=new_cwd)
+
+
+def path(path, behavior='append'):
+    """
+    Append the given ``path`` to the PATH used to execute any wrapped commands.
+
+    Any calls to `run` or `sudo` within the wrapped block will implicitly have
+    a string similar to ``"PATH=$PATH:<path> "`` prepended before the given
+    command.
+
+    You may customize the behavior of `path` by specifying the optional
+    ``behavior`` keyword argument, as follows:
+
+    * ``'append'``: append given path to the current ``$PATH``, e.g.
+      ``PATH=$PATH:<path>``. This is the default behavior.
+    * ``'prepend'``: prepend given path to the current ``$PATH``, e.g.
+      ``PATH=<path>:$PATH``.
+    * ``'replace'``: ignore previous value of ``$PATH`` altogether, e.g.
+      ``PATH=<path>``.
+
+    .. note::
+
+        This context manager is currently implemented by modifying (and, as
+        always, restoring afterwards) the current value of environment
+        variables, ``env.path`` and ``env.path_behavior``. However, this
+        implementation may change in the future, so we do not recommend
+        manually altering them directly.
+    """
+    return _setenv(path=path, path_behavior=behavior)

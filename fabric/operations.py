@@ -372,6 +372,148 @@ def get(remote_path, local_path):
             _handle_failure(message=msg % remote_path, exception=e)
 
 
+
+
+def _sudo_prefix(user):
+    """
+    Return ``env.sudo_prefix`` with ``user`` inserted if necessary.
+    """
+    # Insert env.sudo_prompt into env.sudo_prefix
+    prefix = env.sudo_prefix % env.sudo_prompt
+    if user is not None:
+        if str(user).isdigit():
+            user = "#%s" % user
+        return "%s -u \"%s\" " % (prefix, user)
+    return prefix
+
+
+def _shell_wrap(command, shell=True, sudo_prefix=None):
+    """
+    Conditionally wrap given command in env.shell (while honoring sudo.)
+    """
+    # Do shell escaping here and only here.
+    command = _shell_escape(command)
+    # Sudo plus space, or empty string
+    if sudo_prefix is None:
+        sudo_prefix = ""
+    else:
+        sudo_prefix += " "
+    # Shell plus space, or empty string; and command quoted or not.
+    if shell:
+        shell = env.shell + " "
+        command = '"%s"' % command
+    else:
+        shell = ""
+    # Resulting string should now have correct formatting
+    return sudo_prefix + shell + command
+
+
+def _prefix_commands(command):
+    """
+    Prefixes ``command`` with any "prefix commands", e.g. ``cd <foo> && ``.
+
+    Currently, this only applies the directory switching implemented in
+    `~fabric.context_managers.cd`.
+    """
+    # cd(): "cd" call bringing us to the current working dir
+    cwd = env.cwd
+    if cwd:
+        cwd = 'cd \"%s\" && ' % cwd
+    else:
+        cwd = ''
+    return cwd + command
+
+
+def _prefix_env_vars(command):
+    """
+    Prefixes ``command`` with any shell environment vars, e.g. ``PATH=foo ``.
+
+    Currently, this only applies the PATH updating implemented in
+    `~fabric.context_managers.path`.
+    """
+    # path(): local shell env var update, appending/prepending/replacing $PATH
+    path = env.path
+    if path:
+        if env.path_behavior == 'append':
+            path = 'PATH=$PATH:\"%s\" ' % path
+        elif env.path_behavior == 'prepend':
+            path = 'PATH=\"%s\":$PATH ' % path
+        elif env.path_behavior == 'replace':
+            path = 'PATH=\"%s\" ' % path
+    else:
+        path = ''
+    return path + command
+
+
+def _execute_remotely(command, sudo=False, shell=True, pty=False, user=None):
+    """
+    Execute remote shell command, either "normally" or via ``sudo``.
+
+    Used to drive `~fabric.operations.run` and `~fabric.operations.sudo`.
+    """
+
+
+def _run_command(command, shell=True, pty=False, sudo=False, user=None):
+    """
+    Underpinnings of `run` and `sudo`. See their docstrings for more info.
+    """
+    # Set up new var so original argument can be displayed verbatim later.
+    given_command = command
+    # Handle context manager modifications, and shell wrapping
+    wrapped_command = _shell_wrap(
+        _prefix_commands(_prefix_env_vars(command)),
+        shell,
+        _sudo_prefix(user) if sudo else None
+    )
+    if output.debug:
+        print("[%s] run: %s" % (env.host_string, wrapped_command))
+    elif output.running:
+        print("[%s] run: %s" % (env.host_string, given_command))
+    channel = connections[env.host_string]._transport.open_session()
+    # Create pty if necessary (using Paramiko default options, which as of
+    # 1.7.4 is vt100 $TERM @ 80x24 characters)
+    if pty:
+        channel.get_pty()
+    channel.exec_command(wrapped_command)
+    capture_stdout = []
+    capture_stderr = []
+
+    out_thread = output_thread("[%s] out" % env.host_string, channel,
+        capture=capture_stdout)
+    err_thread = output_thread("[%s] err" % env.host_string, channel,
+        stderr=True, capture=capture_stderr)
+    
+    # Close when done
+    status = channel.recv_exit_status()
+    
+    # Wait for threads to exit so we aren't left with stale threads
+    out_thread.join()
+    err_thread.join()
+
+    # Close channel
+    channel.close()
+
+    # Assemble output string
+    out = _AttributeString("".join(capture_stdout).strip())
+    err = _AttributeString("".join(capture_stderr).strip())
+
+    # Error handling
+    out.failed = False
+    if status != 0:
+        out.failed = True
+        msg = "%s() encountered an error (return code %s) while executing '%s'" % ('sudo' if sudo else 'run', status, command)
+        _handle_failure(message=msg)
+
+    # Attach return code to output string so users who have set things to warn
+    # only, can inspect the error code.
+    out.return_code = status
+
+    # Attach stderr for anyone interested in that.
+    out.stderr = err
+
+    return out
+
+
 @needs_host
 def run(command, shell=True, pty=False):
     """
@@ -402,63 +544,7 @@ def run(command, shell=True, pty=False):
         output = run('ls /var/www/site1')
     
     """
-    # Set up new var so original argument can be displayed verbatim later.
-    real_command = command
-    if shell:
-        # Handle cwd munging via 'cd' context manager
-        cwd = env.get('cwd', '')
-        if cwd:
-            cwd = 'cd \"%s\" && ' % _shell_escape(cwd)
-        # Construct final real, full command
-        real_command = '%s "%s"' % (env.shell,
-            _shell_escape(cwd + real_command))
-    if output.debug:
-        print("[%s] run: %s" % (env.host_string, real_command))
-    elif output.running:
-        print("[%s] run: %s" % (env.host_string, command))
-    channel = connections[env.host_string]._transport.open_session()
-    # Create pty if necessary (using Paramiko default options, which as of
-    # 1.7.4 is vt100 $TERM @ 80x24 characters)
-    if pty:
-        channel.get_pty()
-    channel.exec_command(real_command)
-    capture_stdout = []
-    capture_stderr = []
-
-    out_thread = output_thread("[%s] out" % env.host_string, channel,
-        capture=capture_stdout)
-    err_thread = output_thread("[%s] err" % env.host_string, channel,
-        stderr=True, capture=capture_stderr)
-    
-    # Close when done
-    status = channel.recv_exit_status()
-    
-    # Wait for threads to exit so we aren't left with stale threads
-    out_thread.join()
-    err_thread.join()
-
-    # Close channel
-    channel.close()
-
-    # Assemble output string
-    out = _AttributeString("".join(capture_stdout).strip())
-    err = _AttributeString("".join(capture_stderr).strip())
-
-    # Error handling
-    out.failed = False
-    if status != 0:
-        out.failed = True
-        msg = "run() encountered an error (return code %s) while executing '%s'" % (status, command)
-        _handle_failure(message=msg)
-
-    # Attach return code to output string so users who have set things to warn
-    # only, can inspect the error code.
-    out.return_code = status
-
-    # Attach stderr for anyone interested in that.
-    out.stderr = err
-
-    return out
+    return _run_command(command, shell, pty)
 
 
 @needs_host
@@ -499,75 +585,7 @@ def sudo(command, shell=True, user=None, pty=False):
         result = sudo("ls /tmp/")
     
     """
-    # Construct sudo command, with user if necessary
-    if user is not None:
-        if str(user).isdigit():
-            user = "#%s" % user
-        sudo_prefix = "sudo -S -p '%%s' -u \"%s\" " % user
-    else:
-        sudo_prefix = "sudo -S -p '%s' "
-    # Put in explicit sudo prompt string (so we know what to look for when
-    # detecting prompts)
-    sudo_prefix = sudo_prefix % env.sudo_prompt
-    # Without using a shell, we just do 'sudo -u blah my_command'
-    if (not env.use_shell) or (not shell):
-        real_command = "%s %s" % (sudo_prefix, _shell_escape(command))
-    # With a shell, we do 'sudo -u blah /bin/bash -l -c "my_command"'
-    else:
-        # With a shell, we can also honor cwd
-        cwd = env.get('cwd', '')
-        if cwd:
-            cwd = 'cd \"%s\" && ' % _shell_escape(cwd)
-        real_command = '%s %s "%s"' % (sudo_prefix, env.shell,
-            _shell_escape(cwd + command))
-    if output.debug:
-        print("[%s] sudo: %s" % (env.host_string, real_command))
-    elif output.running:
-        print("[%s] sudo: %s" % (env.host_string, command))
-    channel = connections[env.host_string]._transport.open_session()
-    # Create pty if necessary (using Paramiko default options, which as of
-    # 1.7.4 is vt100 $TERM @ 80x24 characters)
-    if pty:
-        channel.get_pty()
-    # Execute
-    channel.exec_command(real_command)
-    capture_stdout = []
-    capture_stderr = []
-
-    out_thread = output_thread("[%s] out" % env.host_string, channel,
-        capture=capture_stdout)
-    err_thread = output_thread("[%s] err" % env.host_string, channel,
-        stderr=True, capture=capture_stderr)
-
-    # Close channel when done
-    status = channel.recv_exit_status()
-
-    # Wait for threads to exit before returning (otherwise we will occasionally
-    # end up returning before the threads have fully wrapped up)
-    out_thread.join()
-    err_thread.join()
-
-    # Close channel
-    channel.close()
-
-    # Assemble stdout string
-    out = _AttributeString("".join(capture_stdout).strip())
-    err = _AttributeString("".join(capture_stderr).strip())
-
-    # Error handling
-    out.failed = False
-    if status != 0:
-        out.failed = True
-        msg = "sudo() encountered an error (return code %s) while executing '%s'" % (status, command)
-        _handle_failure(message=msg)
-
-    # Attach return code for convenience
-    out.return_code = status
-
-    # Attach stderr for those who need it.
-    out.stderr = err
-
-    return out
+    return _run_command(command, shell, pty, sudo=True, user=user) 
 
 
 def local(command, capture=True):
@@ -598,16 +616,13 @@ def local(command, capture=True):
     ``output.stderr`` will be used to determine what is printed and what is
     discarded.
     """
-    # Handle cd() context manager
-    cwd = env.get('cwd', '')
-    if cwd:
-        cwd = 'cd %s && ' % _shell_escape(cwd)
-    # Construct real command
-    real_command = cwd + command
+    given_command = command
+    # Apply cd(), path() etc
+    wrapped_command = _prefix_commands(_prefix_env_vars(command))
     if output.debug:
-        print("[localhost] run: %s" % (real_command))
+        print("[localhost] run: %s" % (wrapped_command))
     elif output.running:
-        print("[localhost] run: " + command)
+        print("[localhost] run: " + given_command)
     # By default, capture both stdout and stderr
     PIPE = subprocess.PIPE
     out_stream = PIPE
@@ -619,7 +634,7 @@ def local(command, capture=True):
             out_stream = None
         if output.stderr:
             err_stream = None
-    p = subprocess.Popen([real_command], shell=True, stdout=out_stream,
+    p = subprocess.Popen([wrapped_command], shell=True, stdout=out_stream,
             stderr=err_stream)
     (stdout, stderr) = p.communicate()
     # Handle error condition (deal with stdout being None, too)

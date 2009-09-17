@@ -207,10 +207,15 @@ env = _AttributeDict({
     # Version number for --version
     'version': get_version(),
     'sudo_prompt': 'sudo password:',
+    # -S so sudo accepts passwd via stdin, -p with our known-value prompt for
+    # later detection (thus %s -- gets filled with env.sudo_prompt at runtime)
+    'sudo_prefix': "sudo -S -p '%s' ",
     'again_prompt': 'Sorry, try again.\n',
     'use_shell': True,
     'roledefs': {},
-    'cwd': ''
+    'cwd': '',
+    'path': '',
+    'path_behavior': 'append',
 })
 
 # Add in option defaults
