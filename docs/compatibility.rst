@@ -7,6 +7,9 @@ Changes in version 1.0
   other functions in the module had ``filename`` as the first argument. In 1.0,
   these two functions were brought in line with the rest of
   `~fabric.contrib.files`.
+* `~fabric.operations.sudo`'s signature used to be ``sudo(command, shell, user,
+  pty)``; to be consistent with `~fabric.operations.run`, the last two kwargs
+  have been swapped: its signature is now ``sudo(command, shell, pty, user)``.
 
 
 ======================

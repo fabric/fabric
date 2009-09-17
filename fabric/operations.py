@@ -372,8 +372,6 @@ def get(remote_path, local_path):
             _handle_failure(message=msg % remote_path, exception=e)
 
 
-
-
 def _sudo_prefix(user):
     """
     Return ``env.sudo_prefix`` with ``user`` inserted if necessary.
@@ -519,11 +517,11 @@ def run(command, shell=True, pty=False):
     """
     Run a shell command on a remote host.
 
-    If ``shell`` is True (the default), ``run()`` will execute the given
-    command string via a shell interpreter, the value of which may be
-    controlled by setting ``env.shell`` (defaulting to something similar to
-    ``/bin/bash -l -c "<command>"``.) Any double-quote (``"``) characters in
-    ``command`` will be automatically escaped when ``shell`` is True.
+    If ``shell`` is True (the default), `run` will execute the given command
+    string via a shell interpreter, the value of which may be controlled by
+    setting ``env.shell`` (defaulting to something similar to ``/bin/bash -l -c
+    "<command>"``.) Any double-quote (``"``) characters in ``command`` will be
+    automatically escaped when ``shell`` is True.
 
     `run` will return the result of the remote program's stdout as a
     single (likely multiline) string. This string will exhibit a ``failed``
@@ -548,34 +546,18 @@ def run(command, shell=True, pty=False):
 
 
 @needs_host
-def sudo(command, shell=True, user=None, pty=False):
+def sudo(command, shell=True, pty=False, user=None):
     """
     Run a shell command on a remote host, with superuser privileges.
-    
-    As with ``run()``, ``sudo()`` executes within a shell command defaulting to
-    the value of ``env.shell``, although it goes one step further and wraps the
-    command with ``sudo`` as well. Like `run`, this behavior may be disabled by
-    specifying ``shell=False``.
 
-    You may specify a ``user`` keyword argument, which is passed to ``sudo``
-    and allows you to run as some user other than root (which is the default).
-    On most systems, the ``sudo`` program can take a string username or an
-    integer userid (uid); ``user`` may likewise be a string or an int.
+    `sudo` is identical in every way to `run`, except that it will always wrap
+    the given ``command`` in a call to the ``sudo`` program to provide
+    superuser privileges.
 
-    Some remote systems may be configured to disallow sudo access unless a
-    terminal or pseudoterminal is being used (e.g. when ``Defaults
-    requiretty`` exists in ``/etc/sudoers``.) If updating the remote system's
-    ``sudoers`` configuration is not possible or desired, you may pass
-    ``pty=True`` to `sudo` to force allocation of a pseudo tty on the remote
-    end.
-       
-    `sudo` will return the result of the remote program's stdout as a
-    single (likely multiline) string. This string will exhibit a ``failed``
-    boolean attribute specifying whether the command failed or succeeded, and
-    will also include the return code as the ``return_code`` attribute.
-
-    Standard error will also be attached, as a string, to this return value as
-    the ``stderr`` attribute.
+    `sudo` accepts an additional ``user`` argument, which is passed to ``sudo``
+    and allows you to run as some user other than root.  On most systems, the
+    ``sudo`` program can take a string username or an integer userid (uid);
+    ``user`` may likewise be a string or an int.
 
     Examples::
     
@@ -598,8 +580,8 @@ def local(command, capture=True):
 
     `local` will, by default, capture and return the contents of the command's
     stdout as a string, and will not print anything to the user. As with `run`
-    and `sudo`, this return value itself will exhibit a ``stderr`` attribute
-    containing standard error output.
+    and `sudo`, this return value exhibits the ``return_code``, ``stderr`` and
+    ``failed`` attributes. See `run` for details.
     
     .. note::
         `local`'s capturing behavior differs from the default behavior of `run`
