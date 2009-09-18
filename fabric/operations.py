@@ -52,7 +52,7 @@ def _handle_failure(message, exception=None):
 
 def _shell_escape(string):
     """
-    Escape double quotes and dollar signs in given ``string``.
+    Escape double quotes, backticks and dollar signs in given ``string``.
 
     For example::
 
@@ -61,7 +61,9 @@ def _shell_escape(string):
         >>> _shell_escape('"')
         '\\\\"'
     """
-    return string.replace(r'"', r'\"').replace(r'$', r'\$')
+    for char in ('"', '$', '`'):
+        string = string.replace(char, '\%s' % char)
+    return string
 
 
 class _AttributeString(str):
