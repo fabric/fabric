@@ -217,6 +217,13 @@ The above usage example highlights a couple new features:
 * The ability to specify task arguments on the command line. :doc:`fab` also
   discusses this aspect of command-line use.
 
+.. note::
+
+    Both `~fabric.operations.run` and `~fabric.operations.sudo` wrap your
+    command in a call to a shell binary, loading your login files for a
+    smoother experience. However, this can occasionally cause problems with
+    complex commands, and may be disabled by specifying ``shell=False``.
+
 Finally, for more details on how `~fabric.operations.run`
 and `~fabric.operations.sudo` interact with the SSH protocol -- including the
 shell loaded on the remote end, key-based authentication and more -- please
@@ -351,16 +358,16 @@ For a full list of environment variables Fabric makes use of, see :doc:`env`.
 
 It's possible (and useful) to temporarily modify ``env`` vars by means of the
 ``settings`` context manager, which will override the given key/value pairs in
-``env`` within the wrapped block. For example, if you expect a given command
-may fail but wish to continue executing your task regardless, wrap it with
-``settings(warn_only=True)``, as seen in this simplified version of the contrib
-`~fabric.contrib.files.exists` function::
+``env`` within the wrapped block only. For example, if you expect a given
+command may fail but wish to continue executing your task regardless, wrap it
+with ``settings(warn_only=True):``, as seen in this simplified version of the
+contrib `~fabric.contrib.files.exists` function::
 
     from fabric.api import settings, run
 
     def exists(path):
         with settings(warn_only=True):
-            return run('ls -d --color=never %s' % path)
+            return run('test -e %s' % path)
 
 See the :doc:`api/context_managers` API documentation for details on
 `~fabric.context_managers.settings` and other, similar tools.
@@ -380,8 +387,8 @@ keeping state between multiple tasks within a single execution run.
     and even keep module-level shared state if you wish.
 
     However, in future versions, Fabric will become threadsafe and
-    parallel-friendly, at which point ``env`` may be the only safe way to keep
-    global state.
+    parallel-friendly, at which point ``env`` may be the only easy/safe way to
+    keep global state.
 
 Other considerations
 --------------------
