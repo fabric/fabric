@@ -23,14 +23,14 @@ def exists(path, use_sudo=False, verbose=False):
     behavior.
     """
     func = use_sudo and sudo or run
-    cmd = 'ls -d --color=never %s' % path
+    cmd = 'test -e "%s"' % path
     # If verbose, run normally
     if verbose:
         with settings(warn_only=True):
-            return func(cmd)
+            return not func(cmd).failed
     # Otherwise, be quiet
     with settings(hide('everything'), warn_only=True):
-        return func(cmd)
+        return not func(cmd).failed
 
 
 def first(*args, **kwargs):
