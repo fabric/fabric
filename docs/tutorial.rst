@@ -472,17 +472,49 @@ rule, so Fabric provides a ``warn_only`` Boolean setting that, if set to True
 at the time of failure, causes Fabric to emit a warning message but continue
 executing.
 
-
 Output controls
-===============
+---------------
 
-   * quick info
-   * link to detailed page
+Fabric is verbose by default, allowing you to see what's going on at any given
+moment: it prints out which tasks it's executing, what commands
+`~fabric.operations.run`, `~fabric.operations.sudo` and
+`~fabric.operations.local` are running, and the contents of the remote end's
+standard output and error.
 
-     * or is what we have in usage.rst really all there is to it?
-     * it won't be once we beef it up more...
+However, in many situations this verbosity can result in a large amount of
+output, and to help you handle it, Fabric provides two context managers:
+`~fabric.context_managers.hide` and `~fabric.context_managers.show`. These take
+one or more strings naming various output groups to hide or show, respectively.
 
-etc
+Building upon an earlier example, the below shows how the contrib
+`~fabric.contrib.files.exists` function can hide the normal ``[run] test -e
+<path>`` line, and its standard output, so as to not clutter up your terminal
+during a simple operation::
 
-* you saw the links scattered throughout; see the docs index (link to index
-  page, doc section) for the full list
+    from fabric.api import settings, run, hide
+
+    def exists(path):
+        with settings(hide('running', 'stdout'), warn_only=True):
+                return run('test -e %s' % path)
+
+.. note::
+
+    While `~fabric.context_managers.hide` is a standalone context manager, we
+    use it here inside of `~fabric.context_managers.settings`, which is capable
+    of combining other context managers as well as performing its own function.
+    This helps prevent your fabfile from having too many indent levels.
+
+See :doc:`output_levels` for details on the various output levels available, as
+well as further notes on the use of `~fabric.context_managers.hide` and
+`~fabric.context_managers.show`.
+
+
+Conclusion
+==========
+
+This concludes the tutorial and overview. We've only touched on the basics
+here; we hope you've been following the provided links to the detailed
+documentation on various topics. For the full documentation list, see :ref:`the
+index page <prose-docs>`.
+
+Have fun using Fabric!
