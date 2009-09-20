@@ -402,19 +402,79 @@ typing and makes the code more readable.
 Execution model
 ===============
 
-* execution model (ties fab tool, fabfiles together?)
+So far, we've seen relatively simple examples, but in real-world use things
+aren't always so straightforward. To utilize Fabric successfully, you'll need
+to understand the basics about how it decides what to do and in what order.
 
-  * build task list
+Multiple tasks and/or hosts
+---------------------------
 
-    * so keep other callables out of the fabfile!
+There are often situations where executing multiple tasks or connecting to
+multiple hosts becomes useful. Fabric follows a relatively simple serial
+pattern when it comes to executing multiple tasks via the ``fab`` tool:
 
-  * build host list for each task
-  * for each task, then for each host for that task, execute
-  * fail-fast unless warn_only
-  * plan to add more in future
-  * not threadsafe/parallelizable right now
+* Tasks are executed in the order given on the command line;
+* Each task is executed once per host in that task's host list.
 
-* output controls
+Thus, given the following fabfile::
+
+    from fabric.api import run, env
+
+    env.hosts = ['host1', 'host2']
+
+    def taskA():
+        run('ls')
+
+    def taskB():
+        run('whoami')
+
+and the following invocation::
+
+    $ fab taskA taskB
+
+you will see that Fabric performs the following:
+
+* ``taskA`` executed on ``host1``
+* ``taskA`` executed on ``host2``
+* ``taskB`` executed on ``host1``
+* ``taskB`` executed on ``host2``
+
+This allows for a straightforward composition of task functions, as they will
+run against a single host at a time, allowing for shell-script-like logic.
+
+See :doc:`execution` for more details and background on this topic.
+
+Which functions are tasks?
+--------------------------
+
+When looking for tasks to execute, Fabric will consider any callable:
+
+* whose name doesn't start with an underscore (``_``). In other words, Python's
+  usual "private" convention holds true here.
+* which isn't defined within Fabric itself. Therefore, Fabric's own functions
+  such as `~fabric.operations.run` and `~fabric.operations.sudo`  will not show
+  up in your task list.
+
+To see exactly which callables in your fabfile may be executed via ``fab``,
+use ``fab --list``. For some additional notes concerning task discovery and
+fabfile loading, see :doc:`execution`.
+
+Failure handling
+----------------
+
+As we mentioned earlier during the introduction of the
+`~fabric.context_managers.settings` context manager, Fabric defaults to a
+"fail-fast" behavior pattern: if anything goes wrong, such as a remote program
+returning a nonzero return value, execution will halt immediately.
+
+This is typically the desired behavior, but there are many exceptions to the
+rule, so Fabric provides a ``warn_only`` Boolean setting that, if set to True
+at the time of failure, causes Fabric to emit a warning message but continue
+executing.
+
+
+Output controls
+===============
 
    * quick info
    * link to detailed page
