@@ -396,8 +396,21 @@ Other considerations
 Finally, note that ``env`` has been modified so that its values may be
 read/written by way of attribute access, again as seen in the
 :ref:`introduction`. In other words, ``env.host_string`` and
-``env['host_string']`` are functionally identical. We feel this saves a bit of
-typing and makes the code more readable.
+``env['host_string']`` are functionally identical. We feel that attribute
+access can often save a bit of typing and makes the code more readable, so it's
+the recommended way to interact with ``env``.
+
+However, the fact that it's a dictionary can be useful in other ways, such as
+with Python's dict-based string interpolation, which is especially handy if you
+need to insert multiple env vars into a single string. Using "normal" string
+interpolation might look like this::
+
+    print("Executing on %s as %s" % (env.host, env.user))
+
+Using dict-style interpolation is more readable and slightly shorter::
+
+        print("Executing on %(host)s as %(user)s" % env)
+
 
 Execution model
 ===============
@@ -516,5 +529,3 @@ This concludes the tutorial and overview. We've only touched on the basics
 here; we hope you've been following the provided links to the detailed
 documentation on various topics. For the full documentation list, see :ref:`the
 index page <prose-docs>`.
-
-Have fun using Fabric!
