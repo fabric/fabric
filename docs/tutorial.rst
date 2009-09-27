@@ -2,12 +2,10 @@
 Overview and Tutorial
 =====================
 
-This document provides a high level overview of how to use Fabric, starting
-with basic concepts and moving through progressively more complex (and
-realistic!) example code. It tries to leave in-depth explanations to the rest
-of the documentation, which is linked to in a number of places.
-
-You will need Fabric :doc:`installed <installation>` in order to follow along.
+This document provides a high level overview of Fabric's functionality and use,
+including a number of real-world examples. Throughout the tutorial, links will
+be provided to the rest of the documentation -- be sure to follow them for
+details on any particular topic.
 
 
 .. _introduction:
@@ -15,30 +13,29 @@ You will need Fabric :doc:`installed <installation>` in order to follow along.
 Introduction
 ============
 
-At its heart, Fabric can do two things:
+Fabric is primarily designed to do two things:
 
-* Execute (on the command line) arbitrary Python functions
-* Execute (on remote servers) arbitrary shell commands
+* Run Python functions from the command line, with the ``fab`` tool;
+* Execute shell commands locally or on remote servers, with the Fabric library.
 
-We'll tackle these in order, and then see how to use them together.
+We'll tackle these in order, and then see how to use them together, which is
+the primary use case.
 
-Python functions executed via the CLI
--------------------------------------
+Python on the command line: the ``fab`` tool
+--------------------------------------------
 
-Fabric comes with a ``fab`` command-line tool capable of loading a Python
-module (named ``fabfile`` by default and usually referred to as "a fabfile")
-and executing functions defined within. Functions designed for use with
-Fabric are referred to as "tasks" or "commands", and are pure Python code.
+Fabric's main interface is a command-line script called ``fab``, which is
+capable of loading a Python module (or "fabfile") and executing one or more of
+the functions defined within (also known as "tasks" or "commands".)
 
-Let's start with a typical Hello World example. Create a ``fabfile.py`` in your
-current directory and enter the following (and only the following: no imports
-are necessary at this point)::
+A "Hello World" example of this would be creating a ``fabfile.py`` with the
+following contents::
 
     def hello():
         print("Hello, world!")
 
-Once you've saved this fabfile, you can execute the ``hello`` task with the
-``fab`` command-line tool::
+The ``hello`` task can then be executed with ``fab`` like so, provided you're
+in the same directory as ``fabfile.py``::
 
     $ fab hello
     Hello, world!
@@ -46,88 +43,65 @@ Once you've saved this fabfile, you can execute the ``hello`` task with the
     Done.
 
 That's all there is to it: define one or more tasks, then ask ``fab`` to
-execute them. You may specify multiple task names, space-separated; for details
-on ``fab``'s behavior and its options/arguments, please see :doc:`fab`.
+execute them. For details on ``fab``'s behavior and its options/arguments,
+please see :doc:`fab`. We'll also be highlighting a handful of common options
+throughout the tutorial.
 
-Since a fabfile is simply a Python module, the sky's the limit. However, most
-of the time you'll be interested in importing and using the other side of
-Fabric: its SSH functionality.
+Local and remote shell commands: the Fabric library
+---------------------------------------------------
 
-Shell commands executed via SSH
--------------------------------
+Fabric provides a number of core API functions (sometimes referred to as
+"operations") revolving around the execution of shell commands. Aside
+from a convenient function for calling a local shell, most of these functions
+use the SSH protocol to interact with remote servers.
 
-Fabric provides a number of API functions (sometimes referred to as
-"operations") including two core functions which connect to remote servers
-and execute their arguments as shell commands. These are roughly equivalent to
-using the command-line SSH tool with extra arguments, e.g.::
+Use of this API is relatively simple: set an environment variable (:ref:`see
+below <environment>`) telling Fabric what server to talk to, and call the
+desired function or functions.
 
-  $ ssh myserver sudo /etc/init.d/apache2 reload
-
-Use of this SSH API is relatively simple: just set an :ref:`environment
-variable <environment>` telling Fabric what server to talk to, and call your
-desired function. The most basic such function is `~fabric.operations.run`,
-which calls a shell with the given command and returns the command's output
-(printing out what it's doing all the while.) Here's an interactive Python
-session making use of `~fabric.operations.run`::
+Here's an interactive Python session making use of the `~fabric.operations.run`
+function (which executes the given string in a remote shell and returns the
+output) where we list the document-root folders on a hypothetical Web server::
 
     $ python
     >>> from fabric.api import run, env
     >>> from fabric.state import connections
-    >>> env.host_string = "localhost"
-    >>> result = run("ls")
-    [localhost] run: ls
-    [localhost] out: Desktop
-    [localhost] out: Documents
-    [localhost] out: Downloads
-    [localhost] out: Dropbox
-    [localhost] out: Library
-    [localhost] out: Movies
-    [localhost] out: Music
-    [localhost] out: Pictures
-    [localhost] out: Public
-    [localhost] out: Sites
-    [localhost] out: bin
-    >>> connections["localhost"].close()
+    >>> env.host_string = 'example.com'
+    >>> result = run("ls /var/www")
+    [example.com] run: ls
+    [example.com] out: www.example.com
+    [example.com] out: code.example.com
+    [example.com] out: webmail.example.com
+    >>> connections['example.com'].close()
     >>> ^D
     $ 
 
-Since we ran this against our local machine (and because Fabric uses your local
-username as the username to connect with, by default -- see :ref:`foo` for
-more), it printed out the contents of our home directory. Your results are
-therefore likely to differ.
-
-.. note::
-
-    If you're following along, you'll want to replace ``"localhost"`` with the
-    hostname of a computer you have SSH access to. If you're on a Linux or Mac
-    machine, you may already have an SSH server running locally, as we do --
-    it's certainly the easiest way to try out Fabric.
+As you can see, `~fabric.operations.run` prints out what it's doing, as well as
+the standard output from the remote end, in addition to returning the final result.
 
 .. note::
 
     The use of the ``connections`` object to close the connection is necessary
-    in order to cleanly exit the Python interpreter; otherwise your session
-    will hang when you try to use Control-D or ``exit()``. This is less than
-    ideal, and Fabric's usability as a library is expected to improve in
-    version 1.0.
+    in order to cleanly exit the Python interpreter. This is less than ideal,
+    and Fabric's usability as a library is expected to improve in version 1.0.
+    In normal use, you won't have to worry about this -- see the next section.
 
-Putting it together
+Putting them together
 ---------------------
 
-While these two primary features of Fabric can be used separately, the main use
-case is to combine them, defining and running (via ``fab``) task functions
-which in turn import and use Fabric's API calls such as
-`~fabric.operations.run`. Most of Fabric's auxiliary functions and tools
-revolve around this mode of use.
+While these two aspects of Fabric can be used separately, the main use case is
+to combine them by using ``fab`` to execute tasks which import the API
+functions.  Most of Fabric's auxiliary functions and tools revolve around using
+it in this manner.
 
 Here's an example which simply takes the previous interactive example and drops
 it into a fabfile::
 
     from fabric.api import run, env
 
-    def list_home():
-        env.host_string = 'localhost'
-        result = run('ls')
+    def list_docroots():
+        env.host_string = 'example.com'
+        result = run("ls /var/www")
 
 .. note::
 
@@ -138,26 +112,20 @@ it into a fabfile::
 
 The result is much the same as before::
 
-    $ fab list_home
+    $ fab list_docroots
 
-    [localhost] run: ls
-    [localhost] out: Desktop
-    [localhost] out: Documents
-    [localhost] out: Downloads
-    [localhost] out: Dropbox
-    [localhost] out: Library
-    [localhost] out: Movies
-    [localhost] out: Music
-    [localhost] out: Pictures
-    [localhost] out: Public
-    [localhost] out: Sites
-    [localhost] out: bin
+    [example.com] run: ls
+    [example.com] out: www.example.com
+    [example.com] out: code.example.com
+    [example.com] out: webmail.example.com
 
     Done.
-    Disconnecting from localhost... done.
+    Disconnecting from example.com... done.
 
 From here on, we'll be exploring the rest of Fabric's API and the various nuts
-and bolts you'll need to understand in order to use Fabric effectively.
+and bolts you'll need to understand in order to use Fabric effectively. We'll
+also be creating more realistic examples now that you have the background to
+understand them.
 
 
 Operations
