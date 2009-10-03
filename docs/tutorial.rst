@@ -419,7 +419,9 @@ you will see that Fabric performs the following:
 * ``taskB`` executed on ``host2``
 
 This allows for a straightforward composition of task functions, as they will
-run against a single host at a time, allowing for shell-script-like logic.
+run against a single host at a time -- enabling shell script-like logic where
+you may introspect the stdout or stderr of a given command and decide what to
+do next.
 
 See :doc:`execution` for more details and background on this topic.
 
@@ -447,18 +449,17 @@ As we mentioned earlier during the introduction of the
 returning a nonzero return value, execution will halt immediately.
 
 This is typically the desired behavior, but there are many exceptions to the
-rule, so Fabric provides a ``warn_only`` Boolean setting that, if set to True
-at the time of failure, causes Fabric to emit a warning message but continue
-executing.
+rule, so Fabric provides a ``warn_only`` Boolean setting. If ``warn_only`` is
+set to True at the time of failure, Fabric will emit a warning message but
+continue executing.
 
 Output controls
 ---------------
 
 Fabric is verbose by default, allowing you to see what's going on at any given
-moment: it prints out which tasks it's executing, what commands
-`~fabric.operations.run`, `~fabric.operations.sudo` and
-`~fabric.operations.local` are running, and the contents of the remote end's
-standard output and error.
+moment: it prints out which tasks it's executing, what local/remote commands
+are running, which files are up- or downloading, and the contents of the remote
+end's standard output and error.
 
 However, in many situations this verbosity can result in a large amount of
 output, and to help you handle it, Fabric provides two context managers:
@@ -474,7 +475,7 @@ during a simple operation::
 
     def exists(path):
         with settings(hide('running', 'stdout'), warn_only=True):
-                return run('test -e %s' % path)
+            return run('test -e %s' % path)
 
 .. note::
 
