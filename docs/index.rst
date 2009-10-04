@@ -60,7 +60,7 @@ For new users, and/or for an overview of Fabric's basic functionality, please
 see the :doc:`tutorial`. The rest of the documentation will assume you're at
 least passingly familiar with the material contained within.
 
-.. _prose_docs:
+.. _prose-docs:
 
 Prose documentation
 -------------------
@@ -74,6 +74,7 @@ and also covers advanced topics.
 
     installation
     development
+    env
     usage
     compatibility
 
@@ -121,7 +122,7 @@ backwards-compatible) as more use-cases are solved and added.
 Getting help
 ============
 
-If you've scoured the :ref:`prose <prose_docs>` and :ref:`API <api_docs>`
+If you've scoured the :ref:`prose <prose-docs>` and :ref:`API <api_docs>`
 documentation and still can't find an answer to your question, below are
 various support resources that should help. We do request that you do at least
 skim the documentation before posting tickets or mailing list questions,
