@@ -51,13 +51,13 @@ Local and remote shell commands: the Fabric library
 ---------------------------------------------------
 
 Fabric provides a number of core API functions (sometimes referred to as
-"operations") revolving around the execution of shell commands. Aside
-from a convenient function for calling a local shell, most of these functions
-use the SSH protocol to interact with remote servers.
+"operations") revolving around the execution of shell commands. Aside from a
+convenient function for calling a local shell, most of these functions use the
+SSH protocol to interact with remote servers.
 
-Use of this API is relatively simple: set an environment variable (:ref:`see
-below <environment>`) telling Fabric what server to talk to, and call the
-desired function or functions.
+Use of this API is relatively simple: set an :doc:`environment variable <env>`
+telling Fabric what server to talk to, and call the desired function or
+functions.
 
 Here's an interactive Python session making use of the `~fabric.operations.run`
 function (which executes the given string in a remote shell and returns the
@@ -279,13 +279,11 @@ convenience methods: `~fabric.operations.require` and
 
 * `~fabric.operations.require` lets you ensure that a task will abort if some
   needed information is not present, which can be handy if you have a small
-  network of inter-operating tasks (see :ref:`env` below for more.)
+  network of inter-operating tasks (see :doc:`env` for more.)
 * `~fabric.operations.prompt` is a convenience wrapper around Python's
   ``raw_input`` builtin that asks the user to enter a string, which can be
   useful for interactive tasks.
 
-
-.. _environment:
 
 Execution model
 ===============
