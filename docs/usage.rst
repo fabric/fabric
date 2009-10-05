@@ -141,41 +141,6 @@ The lookup order is as follows:
         list will apply globally to all commands (unless overridden in one of
         the previous ways.)
 
-Using env vars and shared state to create "environments"
---------------------------------------------------------
-
-Because env vars, including ``env.hosts`` and ``env.roles``, are shared between
-commands, you may update these lists inside one command and they will affect
-this host lookup process for any commands that run after it. A useful trick is
-to take advantage of this in order to have one (local-only) command modify the
-environment for remote commands.
-
-Here's a sample fabfile illustrating this tactic::
-
-    def staging():
-        env.hosts = ['staging-server']
-        env.user = 'deploy'
-
-    def production():
-        env.hosts = ['prod-server']
-        env.user = 'deploy2'
-
-    def deploy():
-        run('foo')
-        sudo('bar')
-
-One would use the above fabfile like so::
-
-    $ fab staging deploy
-
-Because ``env.hosts`` is set in the ``staging`` command and is not otherwise
-defined, the ``deploy`` command will inherit the host list
-``['staging-server']``.
-
-.. note::
-    This functionality is likely to become solidified into something less
-    ad-hoc in the near future, so keep an eye out!
-
 .. _combining-host-lists:
 
 Combining host lists
