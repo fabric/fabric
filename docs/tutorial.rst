@@ -107,8 +107,8 @@ it into a fabfile::
 
     When using functions like `~fabric.operations.run` in ``fab``-driven
     fabfiles, you don't need to bother with the ``connections`` object -- it's
-    handled for you by ``fab``'s main execution loop. See :ref:`execution` for
-    more on how the ``fab`` tool handles host connections.
+    handled for you by ``fab``'s main execution loop. See :doc:`execution` for
+    more on how the ``fab`` tool handles connections.
 
 The result is much the same as before::
 
@@ -179,7 +179,7 @@ The above highlights a couple of additional ``fab`` features besides
 `~fabric.operations.sudo`'s password prompt detection:
 
 * The ``-H`` option, allowing you to define the host or hosts to connect to.
-  See :ref:`hosts` below for more on this and other ways of defining host
+  See :doc:`hosts` below for more on this and other ways of defining host
   connections.
 * The ability to specify task arguments on the command line. See :doc:`fab` for
   details on how to specify Python function arguments and keyword arguments in
@@ -285,80 +285,6 @@ convenience methods: `~fabric.operations.require` and
   useful for interactive tasks.
 
 
-Execution model
-===============
-
-So far, we've seen relatively straightforward examples, but in real-world use
-things aren't always so simple. To utilize Fabric successfully, you'll need to
-understand the basics about how it decides what to do and in what order.
-
-Multiple tasks and/or hosts
----------------------------
-
-There are often situations where executing multiple tasks or connecting to
-multiple hosts becomes useful. Fabric follows a relatively simple serial
-pattern when it comes to executing multiple tasks via the ``fab`` tool:
-
-* Tasks are executed in the order given on the command line;
-* Each task is executed once per host in that task's host list.
-
-Thus, given the following fabfile::
-
-    from fabric.api import run, env
-
-    env.hosts = ['host1', 'host2']
-
-    def taskA():
-        run('ls')
-
-    def taskB():
-        run('whoami')
-
-and the following invocation::
-
-    $ fab taskA taskB
-
-you will see that Fabric performs the following:
-
-* ``taskA`` executed on ``host1``
-* ``taskA`` executed on ``host2``
-* ``taskB`` executed on ``host1``
-* ``taskB`` executed on ``host2``
-
-This allows for a straightforward composition of task functions, as they will
-run against a single host at a time -- enabling shell script-like logic where
-you may introspect the stdout or stderr of a given command and decide what to
-do next.
-
-See :doc:`execution` for more details and background on this topic.
-
-Which functions are tasks?
---------------------------
-
-When looking for tasks to execute, Fabric will consider any callable:
-
-* whose name doesn't start with an underscore (``_``). In other words, Python's
-  usual "private" convention holds true here.
-* which isn't defined within Fabric itself. Therefore, Fabric's own functions
-  such as `~fabric.operations.run` and `~fabric.operations.sudo`  will not show
-  up in your task list.
-
-To see exactly which callables in your fabfile may be executed via ``fab``,
-use ``fab --list``. For some additional notes concerning task discovery and
-fabfile loading, see :doc:`execution`.
-
-Failure handling
-----------------
-
-As we mentioned earlier during the introduction of the
-`~fabric.context_managers.settings` context manager, Fabric defaults to a
-"fail-fast" behavior pattern: if anything goes wrong, such as a remote program
-returning a nonzero return value, execution will halt immediately.
-
-This is typically the desired behavior, but there are many exceptions to the
-rule, so Fabric provides a ``warn_only`` Boolean setting. If ``warn_only`` is
-set to True at the time of failure, Fabric will emit a warning message but
-continue executing.
 
 Output controls
 ---------------
