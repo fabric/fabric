@@ -45,6 +45,8 @@ and notes about other Python versions:
   fine on these Python versions, but be aware of this conflict if you do use
   `upload_template` and are running on something older than Python 2.5.2.
 
+.. _paramiko-warning:
+
 Paramiko
 --------
 
@@ -149,8 +151,8 @@ Fabric tries hard to play nice with packaging systems such as Python's
 
 .. warning::
 
-    Please see the :ref:`above warning concerning Paramiko <paramiko>` before
-    attempting to install Fabric via ``easy_install`` or ``pip``.
+    Please see the :ref:`above warning concerning Paramiko <paramiko-warning>`
+    before attempting to install Fabric via ``easy_install`` or ``pip``.
 
 Fabric's source distribution also comes with a ``pip`` requirements file
 called ``requirements.txt``, containing the various development requirements
