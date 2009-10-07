@@ -1,83 +1,49 @@
-=================
-How to use Fabric
-=================
+===============
+Managing output
+===============
 
-Importing Fabric itself
-=======================
 
-Simplest method, which is not PEP8-compliant (meaning it's not best practices)::
 
-    from fabric.api import *
+Output controls
+---------------
 
-Slightly better, albeit verbose, method which *is* PEP8-compliant::
+Fabric is verbose by default, allowing you to see what's going on at any given
+moment: it prints out which tasks it's executing, what local/remote commands
+are running, which files are up- or downloading, and the contents of the remote
+end's standard output and error.
 
-    from fabric.api import run, sudo, prompt, abort, ...
+However, in many situations this verbosity can result in a large amount of
+output, and to help you handle it, Fabric provides two context managers:
+`~fabric.context_managers.hide` and `~fabric.context_managers.show`. These take
+one or more strings naming various output groups to hide or show, respectively.
+
+Building upon an earlier example, the below shows how the contrib
+`~fabric.contrib.files.exists` function can hide the normal ``[run] test -e
+<path>`` line, and its standard output, so as to not clutter up your terminal
+during a simple operation::
+
+    from fabric.api import settings, run, hide
+
+    def exists(path):
+        with settings(hide('running', 'stdout'), warn_only=True):
+            return run('test -e %s' % path)
 
 .. note::
-    You can also import directly from the individual submodules, e.g. ``from
-    fabric.utils import abort``. However, all of Fabric's public API is
-    available via `fabric.api` for convenience purposes.
+
+    While `~fabric.context_managers.hide` is a standalone context manager, we
+    use it here inside of `~fabric.context_managers.settings`, which is capable
+    of combining other context managers as well as performing its own function.
+    This helps prevent your fabfile from having too many indent levels.
+
+See :doc:`output_levels` for details on the various output levels available, as
+well as further notes on the use of `~fabric.context_managers.hide` and
+`~fabric.context_managers.show`.
 
 
 
-SSH behavior
-============
-
-Fabric currently makes use of the `Paramiko
-<http://www.lag.net/paramiko/docs/>`_ SSH library for managing all connections,
-meaning that there are occasionally spots where it is limited by Paramiko's
-capabilities. Below are areas of note where Fabric will exhibit behavior that
-isn't consistent with, or as flexible as, the behavior of the ``ssh`` program.
-
-Unknown hosts
--------------
-SSH's host key tracking mechanism keeps tabs on all the hosts you attempt to
-connect to, and maintains a ``~/.ssh/known_hosts`` file with mappings between
-identifiers (IP address, sometimes with a hostname as well) and SSH keys. (For
-details on how this works, please see the `OpenSSH documentation
-<http://openssh.org/manual.html>`_.)
-
-Paramiko is capable of loading up your ``known_hosts`` file, and will then
-compare any host it connects to, with that mapping. Settings are available to
-determine what happens when an unknown host (a host whose username or IP is not
-found in ``known_hosts``) is seen:
-
-* **Reject**: the host key is rejected and the connection is not made. This
-  results in a Python exception, which will terminate your Fabric session with a
-  message that the host is unknown.
-* **Add**: the new host key is added to the in-memory list of known hosts, the
-  connection is made, and things continue normally. Note that this does **not**
-  modify your on-disk ``known_hosts`` file!
-* **Ask**: not yet implemented at the Fabric level, this is a Paramiko option
-  which would result in the user being prompted about this key and whether to
-  accept it.
-
-Whether to reject or add hosts, as above, is controlled in Fabric via the
-``env.reject_unknown_hosts`` option, which is False by default for
-convenience's sake.
-
-Known hosts with changed keys
------------------------------
-The point of SSH's key tracking is so that man-in-the-middle attacks can be
-detected: if an attacker redirects your SSH traffic to a computer under his
-control, and pretends to be your original destination server, the host keys will
-differ. Thus, the default behavior of SSH -- and Paramiko -- is to immediately
-abort the connection when a host previously recorded in ``known_hosts`` suddenly
-starts sending us a different host key.
-
-In some edge cases such as some EC2 deployments, you may want to ignore this
-potential problem. Paramiko, at the time of writing, doesn't give us control
-over this behavior, but we can sidestep it by simply skipping the loading of
-``known_hosts`` -- if the host list being compared to is empty, then there's no
-problem. Set ``env.disable_known_hosts`` to True when you want this behavior; it
-is False by default, in order to preserve default SSH behavior.
-
-.. warning::
-    Enabling ``env.disable_known_hosts`` will leave you wide open to
-    man-in-the-middle attacks! Please use with caution.
 
 
-.. _output-controls:
+
 
 Output controls
 ===============

@@ -100,9 +100,9 @@ Full list of env vars
 
 Below is a list of all predefined (or defined by Fabric itself during
 execution) environment variables. While any of them may be manipulated
-directly, it's often best to use :doc:`context-managers`, either generally via
-`~fabric.context_managers.settings` or via specific context managers such as
-`~fabric.context_managers.cd`.
+directly, it's often best to use `~fabric.context_managers`, either generally
+via `~fabric.context_managers.settings` or via specific context managers such
+as `~fabric.context_managers.cd`.
 
 Note that many of these may be set via ``fab``'s command-line switches -- see
 :doc:`fab` for details.
