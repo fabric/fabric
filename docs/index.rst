@@ -15,23 +15,23 @@ Installation
 .. warning::
 
     Fabric's primary dependency, Paramiko, has a severe bug in its latest
-    version.  Please see the :doc:`installation` page for more details before
-    using ``easy_install`` or ``pip`` to install Fabric!
+    version.  Please see the :doc:`usage/installation` page for more details
+    before using ``easy_install`` or ``pip`` to install Fabric!
 
 Stable releases of Fabric are best installed via ``easy_install`` or ``pip``;
 or you may download TGZ or ZIP source archives from a couple of official
 locations. Detailed instructions and links may be found on the
-:doc:`installation` page.
+:doc:`usage/installation` page.
 
 We recommend using the latest stable version of Fabric; releases are made often
 to prevent any large gaps in functionality between the latest stable release
 and the development version.
 
 However, if you want to live on the edge, you can pull down the latest source
-code from our Git repository, or fork us on Github. The :doc:`installation`
-page has details for how to access the source code; there is also a
-documentation section on :doc:`development` with important information about
-Fabric's development process.
+code from our Git repository, or fork us on Github. The
+:doc:`usage/installation` page has details for how to access the source code;
+there is also a documentation section on :doc:`usage/development` with
+important information about Fabric's development process.
 
 
 Documentation
@@ -44,8 +44,7 @@ have already upgraded to Python 2.6:
 
 * ``from __future__ import with_statement``: a "future import" required to
   use the ``with`` statement in Python 2.5 -- a feature you'll be using
-  frequently. Python 2.6 users have this built-in and won't need the extra
-  import.
+  frequently. Python 2.6 users don't need to do this.
 * ``<true_value> if <expression> else <false_value>``: Python's relatively new
   ternary statement, available in 2.5 and newer. Python 2.4 and older used to
   fake this with ``<expression> and <true_value> or <false_value>``.
@@ -57,26 +56,23 @@ Tutorial
 --------
 
 For new users, and/or for an overview of Fabric's basic functionality, please
-see the :doc:`tutorial`. The rest of the documentation will assume you're at
-least passingly familiar with the material contained within.
+see the :doc:`usage/tutorial`. The rest of the documentation will assume you're
+at least passingly familiar with the material contained within.
 
-.. _prose-docs:
+.. _usage-docs:
 
-Prose documentation
+Usage documentation
 -------------------
 
 The following list contains all major sections of Fabric's prose (non-API)
-documentation, which expands upon the concepts outlined in the :doc:`tutorial`
-and also covers advanced topics.
+documentation, which expands upon the concepts outlined in the
+:doc:`usage/tutorial` and also covers advanced topics.
 
 .. toctree::
     :maxdepth: 1
+    :glob:
 
-    installation
-    development
-    env
-    usage
-    compatibility
+    usage/*
 
 .. _api_docs:
 
@@ -92,8 +88,9 @@ Core API
 ~~~~~~~~
 
 The **core** API is loosely defined as those functions, classes and methods
-which form the basic building blocks of Fabric (such as `run` and `sudo`) upon
-which everything else (the below "contrib" section, and user fabfiles) builds.
+which form the basic building blocks of Fabric (such as
+`~fabric.operations.run` and `~fabric.operations.sudo`) upon which everything
+else (the below "contrib" section, and user fabfiles) builds.
 
 .. toctree::
     :maxdepth: 1
@@ -118,11 +115,19 @@ backwards-compatible) as more use-cases are solved and added.
 
     contrib/*
 
+Changes from previous versions
+------------------------------
+
+.. toctree::
+    :maxdepth: 1
+    :glob:
+
+    changes/*
 
 Getting help
 ============
 
-If you've scoured the :ref:`prose <prose-docs>` and :ref:`API <api_docs>`
+If you've scoured the :ref:`prose <usage-docs>` and :ref:`API <api_docs>`
 documentation and still can't find an answer to your question, below are
 various support resources that should help. We do request that you do at least
 skim the documentation before posting tickets or mailing list questions,

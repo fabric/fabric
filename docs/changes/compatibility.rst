@@ -41,7 +41,7 @@ simply needs to import those objects from the new API module ``fabric.api``::
 You may, if you wish, use ``from fabric.api import *``, though this is
 technically not Python best practices; or you may import directly from the
 Fabric submodules (e.g. ``from fabric.decorators import hosts``.)
-See :doc:`usage` for more information.
+See :doc:`../usage/fabfiles` for more information.
 
 Python version
 --------------
@@ -260,7 +260,7 @@ In no particular order:
       fabric.foo import bar`` calls.
 
 * The undocumented `fab_quiet` option has been replaced by a much more granular
-  set of output controls. For more info, see :ref:`output-controls`.
+  set of output controls. For more info, see :doc:`../usage/output_controls`.
 
 
 Changes from alpha 1 to alpha 2

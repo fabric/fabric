@@ -35,7 +35,7 @@ during a simple operation::
     of combining other context managers as well as performing its own function.
     This helps prevent your fabfile from having too many indent levels.
 
-See :doc:`output_levels` for details on the various output levels available, as
+See :doc:`output_controls` for details on the various output levels available, as
 well as further notes on the use of `~fabric.context_managers.hide` and
 `~fabric.context_managers.show`.
 
