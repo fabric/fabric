@@ -52,7 +52,7 @@ is useful. To apply it to a few lines of code, use
         with settings(warn_only=True):
             return run('test -e %s' % path)
 
-See the :doc:`api/context_managers` API documentation for details on
+See the :doc:`../api/core/context_managers` API documentation for details on
 `~fabric.context_managers.settings` and other, similar tools.
 
 Environment as shared state

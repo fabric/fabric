@@ -132,7 +132,7 @@ Operations
 ==========
 
 In this section we'll give a quick tour of Fabric's basic building blocks, the
-:doc:`operations <api/operations>`. These the most commonly utilized parts of
+:doc:`operations <../api/core/operations>`. These the most commonly utilized parts of
 Fabric's API, and also form the foundation for the :ref:`contrib <contrib-api>`
 modules.
 
@@ -293,4 +293,4 @@ Conclusion
 This concludes the tutorial and overview. We've only touched on the basics
 here; we hope you've been following the provided links to the detailed
 documentation on various topics. For the full documentation list, see :ref:`the
-index page <prose-docs>`.
+index page <usage-docs>`.

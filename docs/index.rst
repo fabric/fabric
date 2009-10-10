@@ -96,7 +96,7 @@ else (the below "contrib" section, and user fabfiles) builds.
     :maxdepth: 1
     :glob:
 
-    api/*
+    api/core/*
 
 .. _contrib-api:
 
@@ -113,7 +113,7 @@ backwards-compatible) as more use-cases are solved and added.
     :maxdepth: 1
     :glob:
 
-    contrib/*
+    api/contrib/*
 
 Changes from previous versions
 ------------------------------
