@@ -26,7 +26,7 @@ def build_docs(clean='no', browse='no'):
     b = ""
     if browse.lower() in ['yes', 'y']:
         b = " && open _build/html/index.html"
-    local('cd docs && make %shtml%s' % (c, b), capture=False)
+    local('cd docs; make %shtml%s' % (c, b), capture=False)
 
 
 @hosts('jforcier@fabfile.org')
