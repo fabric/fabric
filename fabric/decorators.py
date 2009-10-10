@@ -38,8 +38,10 @@ def roles(*role_list):
     barring an override on the command line, ``my_func`` will be executed
     against the hosts listed in the ``webserver`` and ``dbserver`` roles::
 
-        env.webserver = ['www1', 'www2']
-        env.dbserver = ['db1']
+        env.roledefs.update({
+            'webserver': ['www1', 'www2'],
+            'dbserver': ['db1']
+        })
 
         @roles('webserver', 'dbserver')
         def my_func():
