@@ -165,5 +165,5 @@ Wiki
 There is an official Fabric `MoinMoin <http://moinmo.in>`_ wiki reachable at
 `wiki.fabfile.org <http://wiki.fabfile.org>`_, although as of this writing its
 usage patterns are still being worked out. Like the ticket tracker, spam has
-forced us to put anti-spam measures up; the wiki has a simple, easy captcha in
+forced us to put anti-spam measures up: the wiki has a simple, easy captcha in
 place on the edit form.

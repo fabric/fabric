@@ -3,9 +3,8 @@ Installation
 ============
 
 The most direct way to install Fabric is to obtain the source code and run
-``python setup.py install``. This method works for both release versions and
-development versions of the code, and requires nothing but a basic Python
-installation.
+``python setup.py install``. This method works for both release and development
+versions of the code, and requires nothing but a basic Python installation.
 
 .. note::
 
