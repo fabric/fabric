@@ -47,6 +47,8 @@ execute them. For details on ``fab``'s behavior and its options/arguments,
 please see :doc:`usage/fab`. We'll also be highlighting a handful of common
 options throughout the tutorial.
 
+.. _library-usage:
+
 Local and remote shell commands: the Fabric library
 ---------------------------------------------------
 
@@ -180,7 +182,7 @@ The above highlights a couple of additional ``fab`` features besides
 `~fabric.operations.sudo`'s password prompt detection:
 
 * The ``-H`` option, allowing you to define the host or hosts to connect to.
-  See :doc:`usage/hosts` below for more on this and other ways of defining host
+  See :doc:`usage/execution` below for more on this and other ways of defining host
   connections.
 * The ability to specify task arguments on the command line. See
   :doc:`usage/fab` for details on how to specify Python function arguments and

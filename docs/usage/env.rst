@@ -19,9 +19,9 @@ same way that ``host_string`` was used in the :doc:`../tutorial`'s
 
 * ``hosts`` and ``roledefs``: more commonly used than ``host_string``, these
   allow control of the host or hosts which Fabric connects to when it runs.
-  See :doc:`hosts` for details.
+  See :doc:`execution` for details.
 * ``user``: Fabric defaults to your local username when making SSH connections,
-  but you can use ``env.user`` to override this if necessary. The :doc:`hosts`
+  but you can use ``env.user`` to override this if necessary. The :doc:`execution`
   documentation also has info on how to specify usernames on a per-host basis.
 * ``password``: Used to explicitly set your connection or sudo password if
   desired. Fabric will prompt you when necessary if this isn't set or doesn't
@@ -115,7 +115,7 @@ Note that many of these may be set via ``fab``'s command-line switches -- see
 Set by ``fab`` to the full host list for the currently executing command. For
 informational purposes only.
 
-.. seealso:: :doc:`hosts`
+.. seealso:: :doc:`execution`
 
 ``command``
 -----------
@@ -169,7 +169,7 @@ Defines the current user/host/port which Fabric will connect to when executing
 ``fab`` when iterating over a previously set host list, and may also be
 manually set when using Fabric as a library.
 
-.. seealso:: :doc:`hosts`
+.. seealso:: :doc:`execution`
 
 ``host``
 --------
@@ -186,7 +186,7 @@ purposes only.
 
 The global host list used when composing per-task host lists.
 
-.. seealso:: :doc:`hosts`
+.. seealso:: :doc:`execution`
 
 ``key_filename``
 ----------------
@@ -215,7 +215,7 @@ will be stored into ``env.password``. Put another way, the only time
 ``env.password`` is written to by Fabric itself is when it is empty. This may
 change in the future.
 
-.. seealso:: :doc:`hosts`
+.. seealso:: :doc:`execution`
 
 ``port``
 --------
@@ -261,7 +261,7 @@ listed in the user's known-hosts file.
 
 Dictionary defining role name to host list mappings.
 
-.. seealso:: :doc:`hosts`
+.. seealso:: :doc:`execution`
 
 ``roles``
 ---------
@@ -270,7 +270,7 @@ Dictionary defining role name to host list mappings.
 
 The global role list used when composing per-task host lists.
 
-.. seealso:: :doc:`hosts`
+.. seealso:: :doc:`execution`
 
 ``shell``
 ---------
@@ -350,7 +350,7 @@ As you can see, during execution on ``host2``, ``env.user`` was set to
     the informational aspect will likely be broken out into a separate env
     variable.
 
-.. seealso:: :doc:`hosts`
+.. seealso:: :doc:`execution`
 
 ``version``
 -----------
