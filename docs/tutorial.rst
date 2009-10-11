@@ -44,8 +44,8 @@ in the same directory as ``fabfile.py``::
 
 That's all there is to it: define one or more tasks, then ask ``fab`` to
 execute them. For details on ``fab``'s behavior and its options/arguments,
-please see :doc:`fab`. We'll also be highlighting a handful of common options
-throughout the tutorial.
+please see :doc:`usage/fab`. We'll also be highlighting a handful of common
+options throughout the tutorial.
 
 Local and remote shell commands: the Fabric library
 ---------------------------------------------------
@@ -55,9 +55,9 @@ Fabric provides a number of core API functions (sometimes referred to as
 convenient function for calling a local shell, most of these functions use the
 SSH protocol to interact with remote servers.
 
-Use of this API is relatively simple: set an :doc:`environment variable <env>`
-telling Fabric what server to talk to, and call the desired function or
-functions.
+Use of this API is relatively simple: set an :doc:`environment variable
+<usage/env>` telling Fabric what server to talk to, and call the desired
+function or functions.
 
 Here's an interactive Python session making use of the `~fabric.operations.run`
 function (which executes the given string in a remote shell and returns the
@@ -107,8 +107,9 @@ it into a fabfile::
 
     When using functions like `~fabric.operations.run` in ``fab``-driven
     fabfiles, you don't need to bother with the ``connections`` object -- it's
-    handled for you by ``fab``'s main execution loop. See :doc:`execution` for
-    more on how the ``fab`` tool handles connections.
+    handled for you by ``fab``'s main execution loop. See
+    :doc:`usage/execution` for more on how the ``fab`` tool handles
+    connections.
 
 The result is much the same as before::
 
@@ -132,7 +133,7 @@ Operations
 ==========
 
 In this section we'll give a quick tour of Fabric's basic building blocks, the
-:doc:`operations <../api/core/operations>`. These the most commonly utilized parts of
+:doc:`operations <api/core/operations>`. These the most commonly utilized parts of
 Fabric's API, and also form the foundation for the :ref:`contrib <contrib-api>`
 modules.
 
@@ -179,15 +180,15 @@ The above highlights a couple of additional ``fab`` features besides
 `~fabric.operations.sudo`'s password prompt detection:
 
 * The ``-H`` option, allowing you to define the host or hosts to connect to.
-  See :doc:`hosts` below for more on this and other ways of defining host
+  See :doc:`usage/hosts` below for more on this and other ways of defining host
   connections.
-* The ability to specify task arguments on the command line. See :doc:`fab` for
-  details on how to specify Python function arguments and keyword arguments in
-  this manner.
+* The ability to specify task arguments on the command line. See
+  :doc:`usage/fab` for details on how to specify Python function arguments and
+  keyword arguments in this manner.
 
 For more details on how `~fabric.operations.run` and `~fabric.operations.sudo`
 interact with the SSH protocol -- including the shell loaded on the remote end,
-key-based authentication and more -- please see :doc:`ssh`.
+key-based authentication and more -- please see :doc:`usage/ssh`.
 
 `~fabric.operations.local`
 --------------------------
@@ -279,7 +280,7 @@ convenience methods: `~fabric.operations.require` and
 
 * `~fabric.operations.require` lets you ensure that a task will abort if some
   needed information is not present, which can be handy if you have a small
-  network of inter-operating tasks (see :doc:`env` for more.)
+  network of inter-operating tasks (see :doc:`usage/env` for more.)
 * `~fabric.operations.prompt` is a convenience wrapper around Python's
   ``raw_input`` builtin that asks the user to enter a string, which can be
   useful for interactive tasks.

@@ -14,7 +14,7 @@ Environment as configuration
 ============================
 
 Most of Fabric's behavior is controllable by modifying env variables in the
-same way that ``host_string`` was used in the :doc:`tutorial`'s
+same way that ``host_string`` was used in the :doc:`../tutorial`'s
 :ref:`introduction <introduction>`. Other commonly-modified env vars include:
 
 * ``hosts`` and ``roledefs``: more commonly used than ``host_string``, these

@@ -15,13 +15,13 @@ Installation
 .. warning::
 
     Fabric's primary dependency, Paramiko, has a severe bug in its latest
-    version.  Please see the :doc:`usage/installation` page for more details
+    version.  Please see the :doc:`installation` page for more details
     before using ``easy_install`` or ``pip`` to install Fabric!
 
 Stable releases of Fabric are best installed via ``easy_install`` or ``pip``;
 or you may download TGZ or ZIP source archives from a couple of official
 locations. Detailed instructions and links may be found on the
-:doc:`usage/installation` page.
+:doc:`installation` page.
 
 We recommend using the latest stable version of Fabric; releases are made often
 to prevent any large gaps in functionality between the latest stable release
@@ -29,8 +29,8 @@ and the development version.
 
 However, if you want to live on the edge, you can pull down the latest source
 code from our Git repository, or fork us on Github. The
-:doc:`usage/installation` page has details for how to access the source code;
-there is also a documentation section on :doc:`usage/development` with
+:doc:`installation` page has details for how to access the source code;
+there is also a documentation section on :doc:`development` with
 important information about Fabric's development process.
 
 
@@ -52,11 +52,18 @@ have already upgraded to Python 2.6:
   ``print`` statement's optional parentheses where possible, in order to be
   more compatible with Python 3.x (in which ``print`` becomes a function.)
 
+.. toctree::
+    :hidden:
+
+    tutorial
+    installation
+    development
+
 Tutorial
 --------
 
 For new users, and/or for an overview of Fabric's basic functionality, please
-see the :doc:`usage/tutorial`. The rest of the documentation will assume you're
+see the :doc:`tutorial`. The rest of the documentation will assume you're
 at least passingly familiar with the material contained within.
 
 .. _usage-docs:
@@ -66,7 +73,7 @@ Usage documentation
 
 The following list contains all major sections of Fabric's prose (non-API)
 documentation, which expands upon the concepts outlined in the
-:doc:`usage/tutorial` and also covers advanced topics.
+:doc:`tutorial` and also covers advanced topics.
 
 .. toctree::
     :maxdepth: 1
