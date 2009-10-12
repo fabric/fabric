@@ -3,29 +3,22 @@ Execution model
 ===============
 
 If you've read the :doc:`../tutorial`, you should already be familiar with how
-Fabric operates in the base case (a single task on a single host.) However,
-in many situations you'll find yourself wanting to execute multiple tasks
-and/or on multiple hosts. Perhaps you want to split a big task into smaller
-reusable parts, or want to crawl a collection of servers looking for an old
-user to remove. Such a scenario requires specific rules for when and how tasks
-are executed.
+Fabric operates in the base case (a single task on a single host.) However, in
+many situations you'll find yourself wanting to execute multiple tasks and/or
+on multiple hosts. Perhaps you want to split a big task into smaller reusable
+parts, or crawl a collection of servers looking for an old user to remove. Such
+a scenario requires specific rules for when and how tasks are executed.
 
 This document explores Fabric's execution model, including the main execution
 loop, how to define host lists, how connections are made, and so forth.
 
+.. note::
 
-``fab`` versus ``fabric``
-=========================
-
-Before we begin, please note that most of the below applies to the :doc:`fab
-<fab>` tool only, as this mode of use has historically been the main focus of
-Fabric's development. When writing version 0.9 we attempted to straighten out
-Fabric's internals to make it easier to use as a library, but there's still
-work to be done before using it outside of :doc:`fab <fab>` is as flexible and
-easy as we'd like it to be.
-
-In the meantime, we'll try to point out in this document the spots to be aware
-of when using Fabric in your own Python code.
+    Most of this material applies to the :doc:`fab <fab>` tool only, as this
+    mode of use has historically been the main focus of Fabric's development.
+    When writing version 0.9 we straightened out Fabric's internals to make it
+    easier to use as a library, but there's still work to be done before this
+    is as flexible and easy as we'd like it to be.
 
 .. _execution-strategy:
 
@@ -69,7 +62,7 @@ you will see that Fabric performs the following:
 
 While this approach is simplistic, it allows for a straightforward composition
 of task functions, and (unlike tools which push the multi-host functionality
-down to the ``run`` level) enables shell script-like logic where you may
+down to the individual function calls) enables shell script-like logic where you may
 introspect the output or return code of a given command and decide what to do
 next.
 
@@ -129,6 +122,18 @@ probably won't work very well. Imagine any real-world fabfile, which is likely
 to be much more complex, and hopefully you can see how this could get messy
 fast.
 
+For reference, here's the recommended way to do it::
+
+    import urllib
+
+    from fabric.api import run
+
+    def webservice_read():
+        objects = urllib.urlopen('http://my/web/service/?foo=bar').read().split()
+        print(objects)
+
+It's a simple change, but it'll make anyone using your fabfile a bit happier.
+
 
 Defining host lists
 ===================
@@ -149,6 +154,9 @@ strings specifying a username, hostname and port combination, in the form of
 username, and/or port 22, respectively. Thus, ``admin@foo.com:222``,
 ``deploy@website`` and ``nameserver1`` could all be valid host strings.
 
+In other words, Fabric expects the same format as the command-line ``ssh``
+program.
+
 During execution, Fabric normalizes the host strings given and then stores each
 part (username/hostname/port) in the environment dictionary, for both its use
 and for tasks to reference if the need arises. See :doc:`env` for details.
@@ -156,15 +164,21 @@ and for tasks to reference if the need arises. See :doc:`env` for details.
 Roles
 -----
 
-Roles are simply string identifiers mapping to lists of host strings. This
-mapping is defined as a dictionary, ``env.roledefs``, which must be modified by
-a fabfile in order to be used, e.g.::
+Host strings map to single hosts, but sometimes it's useful to arrange hosts in
+groups. Perhaps you have a number of Web servers behind a load balancer and
+want to update all of them, or want to run a task on "all client servers".
+Roles provide a way of defining strings which correspond to lists of host
+strings, and can then be specified instead of writing out the entire list every
+time.
+
+This mapping is defined as a dictionary, ``env.roledefs``, which must be
+modified by a fabfile in order to be used. A simple example::
 
     from fabric.api import env
 
     env.roledefs['webservers'] = ['www1', 'www2', 'www3']
 
-Since this dictionary is naturally empty by default, you may also opt to
+Since ``env.roledefs`` is naturally empty by default, you may also opt to
 re-assign to it without fear of losing any information (provided you aren't
 loading other fabfiles which also modify it, of course)::
 
@@ -231,8 +245,8 @@ own host list is empty -- but ``mytask`` will again run on the two hosts given.
     in some situations, however.
 
 Alongside ``env.hosts`` is ``env.roles`` (not to be confused with
-``env.roledefs``!) which, if given, will be taken as a list of keys to look up
-in ``env.roledefs``.
+``env.roledefs``!) which, if given, will be taken as a list of role names to
+look up in ``env.roledefs``.
 
 Globally, via the command line
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -243,8 +257,9 @@ command-line switches ``--hosts/-H`` and ``--roles/-R``, e.g.::
 
     $ fab -H host1,host2 mytask
 
-Such an invocation is directly equivalent to ``env.hosts = ['host1',
-'host2']``. The same is true of ``--roles``.
+Such an invocation is directly equivalent to ``env.hosts = ['host1', 'host2']``
+-- the argument parser knows to look for these arguments and will modify
+``env`` at parse time.
 
 .. note::
 
@@ -257,7 +272,7 @@ It is important to know that these command-line switches are interpreted
 ``env.roles`` in your fabfile will overwrite them.
 
 If you wish to nondestructively merge the command-line hosts with your
-fabfile-defined ones, make sure your fabfile uses ``env.hosts.extent()``
+fabfile-defined ones, make sure your fabfile uses ``env.hosts.extend()``
 instead::
 
     from fabric.api import env, run
@@ -267,13 +282,14 @@ instead::
     def mytask():
         run('ls /var/www')
 
-When run as ``fab -H host1,host2 mytask``, ``env.hosts`` will end contain
-``['host1', 'host2', 'host3', 'host4']`` when ``mytask`` is executed.
+When this fabfile is run as ``fab -H host1,host2 mytask``, ``env.hosts`` will
+end contain ``['host1', 'host2', 'host3', 'host4']`` at the time that
+``mytask`` is executed.
 
 .. note::
 
-    ``env.hosts`` is simply a Python list object -- so may also use
-    ``env.hosts.append()`` or any other method you wish.
+    ``env.hosts`` is simply a Python list object -- so you may use
+    ``env.hosts.append()`` or any other such method you wish.
 
 Per-task, via the command line
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -328,13 +344,32 @@ decorators. These decorators take a variable argument list, like so::
 When used, they override any checks of ``env`` for that particular task's host
 list (though ``env`` is not modified in any way -- it is simply ignored.) Thus,
 even if the above fabfile had defined ``env.hosts`` or the call to :doc:`fab
-<fab`> uses ``--hosts``, ``mytask`` would still run on a host list of
+<fab>` uses ``--hosts``, ``mytask`` would still run on a host list of
 ``['host1', 'host2']``.
 
-However, decorators' host lists do **not** override per-task command-line
-arguments, as given in the previous section. In other words, anything given on
-the command-line will always trump host lists defined within the fabfile
-itself, whether global or per-task.
+However, decorator host lists do **not** override per-task command-line
+arguments, as given in the previous section.
+
+Order of precedence
+~~~~~~~~~~~~~~~~~~~
+
+We've been pointing out which methods of setting host lists trump the others,
+as we've gone along. However, to make things clearer, here's a quick breakdown:
+
+* Per-task, command-line host lists (``fab mytask:host=host1``) override
+  absolutely everything else.
+* Per-task, decorator-specified host lists (``@hosts('host1')``) override the
+  ``env`` variables.
+* Globally specified host lists set in the fabfile (``env.hosts = ['host1']``)
+  *can* override such lists set on the command-line, but only if you're not
+  careful (or want them to.)
+* Globally specified host lists set on the command-line (``--hosts=host1``)
+  will initialize the ``env`` variables, but that's it.
+
+This logic may change slightly in the future to be more consistent (e.g.
+having ``--hosts`` somehow take precedence over ``env.hosts`` in the same way
+that command-line per-task lists trump in-code ones) but only in a
+backwards-incompatible release.
 
 .. _combining-host-lists:
 
@@ -342,9 +377,10 @@ Combining host lists
 --------------------
 
 There is no "unionizing" of hosts between the various sources mentioned in
-:ref:`host-lists`. If a global host list contains hosts A, B and C, and a
-per-function (e.g.  via `~fabric.decorators.hosts`) host list is set to just
-hosts B and C, that function will **not** execute on host A.
+:ref:`host-lists`. If ``env.hosts`` is set to ``['host1', 'host2', 'host3']``,
+and a per-function (e.g.  via `~fabric.decorators.hosts`) host list is set to
+just ``['host2', 'host3']``, that function will **not** execute on ``host1``,
+because the per-task decorator host list takes precedence.
 
 However, for each given source, if both roles **and** hosts are specified, they
 will be merged together into a single host list. Take, for example, this
@@ -360,8 +396,8 @@ fabfile where both of the decorators are used::
         run('ls /var/www')
 
 Assuming no command-line hosts or roles are given when ``mytask`` is executed,
-this fabfile will call ``mytask`` on a host list of ``['a', 'b', 'c', 'd']`` --
-the union of ``role1`` and the contents of the `~fabric.decorators.hosts` call.
+this fabfile will call ``mytask`` on a host list of ``['a', 'b', 'c']`` -- the
+union of ``role1`` and the contents of the `~fabric.decorators.hosts` call.
 
 
 Failure handling
@@ -385,12 +421,11 @@ manager -- Fabric will emit a warning message but continue executing.
 Connections
 ===========
 
-Despite all this talk about hosts, ``fab`` itself doesn't actually make any
-connections to remote hosts. Instead, it simply ensures that for each distinct
-run of a task on one of its hosts, the env var ``env.host_string`` is set to
-the right value. Users wanting to leverage Fabric as a library may do so
-manually to achieve similar effects, as seen in :ref:`tutorial
-<library-usage>`.
+``fab`` itself doesn't actually make any connections to remote hosts. Instead,
+it simply ensures that for each distinct run of a task on one of its hosts, the
+env var ``env.host_string`` is set to the right value. Users wanting to
+leverage Fabric as a library may do so manually to achieve similar effects, as
+seen in :ref:`the tutorial <library-usage>`.
 
 ``env.host_string`` is (as the name implies) the "current" host string, and is
 what Fabric uses to determine what connections to make (or re-use) when
@@ -409,11 +444,12 @@ dictionary which maps host strings to SSH connection objects.
 Lazy connections
 ----------------
 
-Because of this approach, Fabric will not actually make connections until
-they're necessary. Take for example this task which does some local
-housekeeping prior to interacting with the remote server::
+Because connections are driven by the individual operations, Fabric will not
+actually make connections until they're necessary. Take for example this task
+which does some local housekeeping prior to interacting with the remote
+server::
 
-    from fabric.api import hosts, run
+    from fabric.api import *
 
     @hosts('host1')
     def clean_and_upload():
@@ -445,8 +481,10 @@ Closing connections
 -------------------
 
 Fabric's connection cache never closes connections itself -- it leaves this up
-to whatever is using it. :doc:`fab <fab>` does this bookkeeping for you: it
-iterates over all open connections and closes them just before it exits
-(regardless of whether the task failed or not.) Library users will need to
-ensure they explicitly close all open connections before their program exits,
-though we plan to makes this easier in the future.
+to whatever is using it. The :doc:`fab <fab>` tool does this bookkeeping for
+you: it iterates over all open connections and closes them just before it exits
+(regardless of whether the tasks failed or not.)
+
+Library users will need to ensure they explicitly close all open connections
+before their program exits, though we plan to makes this easier in the future.
+An example of this can be seen in `the tutorial <library-usage>`.
