@@ -1,9 +1,13 @@
-=========================
-Fabfile construction tips
-=========================
+============================
+Fabfile construction and use
+============================
 
 Odds and ends about recommended ways to build your fabfile(s). These are just
 recommendations -- as always, Fabric is just Python!
+
+Also include: note about how Fabric discovers fabfiles. See docstrings.
+
+
 
 
 Importing Fabric itself

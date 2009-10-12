@@ -1,6 +1,6 @@
-====================================
-The ``env`` "environment" dictionary
-====================================
+===================================
+The environment dictionary, ``env``
+===================================
 
 A simple but integral aspect of Fabric is what is known as the "environment": a
 Python dictionary subclass which is used as a combination settings registry and
@@ -105,7 +105,7 @@ via `~fabric.context_managers.settings` or via specific context managers such
 as `~fabric.context_managers.cd`.
 
 Note that many of these may be set via ``fab``'s command-line switches -- see
-:doc:`fab` for details.
+:doc:`fab` for details. Cross-links will be provided where appropriate.
 
 ``all_hosts``
 -------------
@@ -136,6 +136,8 @@ only.
 
 Current working directory. Used to keep state for the
 `~fabric.context_managers.cd` context manager.
+
+.. _disable-known-hosts:
 
 ``disable_known_hosts``
 -----------------------
@@ -179,6 +181,8 @@ manually set when using Fabric as a library.
 Set to the hostname part of ``env.host_string`` by ``fab``. For informational
 purposes only.
 
+.. _hosts:
+
 ``hosts``
 ---------
 
@@ -197,6 +201,8 @@ May be a string or list of strings, referencing file paths to SSH key files to
 try when connecting. Passed through directly to the SSH layer.
 
 .. seealso:: `Paramiko's documentation for SSHClient.connect() <http://www.lag.net/paramiko/docs/paramiko.SSHClient-class.html#connect>`_
+
+.. _password:
 
 ``password``
 ------------
@@ -235,6 +241,8 @@ far. For informational purposes only.
 
 .. seealso:: :doc:`fab`
 
+.. _rcfile:
+
 ``rcfile``
 ----------
 
@@ -243,6 +251,8 @@ far. For informational purposes only.
 Path used when loading Fabric's local settings file.
 
 .. seealso:: :doc:`fab`
+
+.. _reject-unknown-hosts:
 
 ``reject_unknown_hosts``
 ------------------------
@@ -263,6 +273,8 @@ Dictionary defining role name to host list mappings.
 
 .. seealso:: :doc:`execution`
 
+.. _roles:
+
 ``roles``
 ---------
 
@@ -271,6 +283,8 @@ Dictionary defining role name to host list mappings.
 The global role list used when composing per-task host lists.
 
 .. seealso:: :doc:`execution`
+
+.. _shell:
 
 ``shell``
 ---------
@@ -303,6 +317,8 @@ real reason to.
 Global setting which acts like the ``use_shell`` argument to
 `~fabric.operations.run`/`~fabric.operations.sudo`: if it is set to ``False``,
 operations will not wrap executed commands in ``env.shell``.
+
+.. _user:
 
 ``user``
 --------
@@ -359,6 +375,8 @@ As you can see, during execution on ``host2``, ``env.user`` was set to
 
 Mostly for informational purposes. Modification is not recommended, but
 probably won't break anything either.
+
+.. _warn_only:
 
 ``warn_only``
 -------------
