@@ -417,7 +417,9 @@ def _prefix_commands(command):
     # cd(): "cd" call bringing us to the current working dir
     cwd = env.cwd
     if cwd:
-        cwd = 'cd \"%s\" && ' % cwd
+        # Deal with spaces so users don't have to e.g. cd("foo\ bar")
+        # themselves; do NOT double-quote as that will kill e.g. cd("~/foo").
+        cwd = 'cd %s && ' % cwd.replace(' ', '\ ')
     else:
         cwd = ''
     return cwd + command
