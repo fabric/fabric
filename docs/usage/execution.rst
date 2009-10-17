@@ -82,7 +82,7 @@ consider any callable object, **except** for the following:
 .. note::
 
     To see exactly which callables in your fabfile may be executed via ``fab``,
-    use ``fab --list``.
+    use :option:`fab --list <-l>`.
 
 Imports
 -------
@@ -108,7 +108,7 @@ data out of a webservice::
         print(objects)
 
 This looks simple enough, and will run without error. However, look what
-happens if we run ``fab --list`` on this fabfile::
+happens if we run :option:`fab --list <-l>` on this fabfile::
 
     $ fab --list
     Available commands:
@@ -253,7 +253,8 @@ Globally, via the command line
 
 In addition to modifying ``env.hosts`` and ``env.roles`` at the module level,
 you may define them by passing comma-separated string arguments to the
-command-line switches ``--hosts/-H`` and ``--roles/-R``, e.g.::
+command-line switches :option:`--hosts/-H <-H>` and :option:`--roles/-R <-R>`,
+e.g.::
 
     $ fab -H host1,host2 mytask
 
@@ -290,6 +291,8 @@ end contain ``['host1', 'host2', 'host3', 'host4']`` at the time that
 
     ``env.hosts`` is simply a Python list object -- so you may use
     ``env.hosts.append()`` or any other such method you wish.
+
+.. _hosts-per-task-cli:
 
 Per-task, via the command line
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -344,7 +347,7 @@ decorators. These decorators take a variable argument list, like so::
 When used, they override any checks of ``env`` for that particular task's host
 list (though ``env`` is not modified in any way -- it is simply ignored.) Thus,
 even if the above fabfile had defined ``env.hosts`` or the call to :doc:`fab
-<fab>` uses ``--hosts``, ``mytask`` would still run on a host list of
+<fab>` uses :option:`--hosts/-H <-H>`, ``mytask`` would still run on a host list of
 ``['host1', 'host2']``.
 
 However, decorator host lists do **not** override per-task command-line
@@ -367,7 +370,7 @@ as we've gone along. However, to make things clearer, here's a quick breakdown:
   will initialize the ``env`` variables, but that's it.
 
 This logic may change slightly in the future to be more consistent (e.g.
-having ``--hosts`` somehow take precedence over ``env.hosts`` in the same way
+having :option:`--hosts <-H>` somehow take precedence over ``env.hosts`` in the same way
 that command-line per-task lists trump in-code ones) but only in a
 backwards-incompatible release.
 

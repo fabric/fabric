@@ -25,6 +25,8 @@ flexible, by using the provided options and/or passing arguments to individual
 tasks.
 
 
+.. _command-line-options:
+
 Command-line options
 ====================
 
@@ -32,122 +34,189 @@ A quick overview of all possible command line options can be found via ``fab
 --help``. If you're looking for details on a specific option, we go into detail
 below.
 
-``-h/--help``
--------------
+.. note::
 
-Displays a standard help message, with all possible options and a brief
-overview of what they do, then exits.
+    ``fab`` uses Python's `optparse`_ library, meaning that it honors typical
+    Linux or GNU style short and long options, as well as freely mixing options
+    and arguments. E.g. ``fab task1 -H hostname task2 -i path/to/keyfile`` is
+    just as valid as the more straightforward ``fab -H hostname -i
+    path/to/keyfile task1 task2``.
 
-``-V/--version``
-----------------
+.. _optparse: http://docs.python.org/library/optparse.html
 
-Displays Fabric's version number, then exits. Note that the shorthand form is a
-capital ``V``, not a lowercase one.
+.. cmdoption:: -h, --help
 
-``-l/--list``
--------------
+    Displays a standard help message, with all possible options and a brief
+    overview of what they do, then exits.
 
-Imports a fabfile as normal, but then prints a list of all discovered tasks and
-exits. If provided, will print the first line of each task's docstring next to
-it (truncating if necessary.)
+.. cmdoption:: -V, --version
 
-``-d COMMAND/--display=COMMAND``
---------------------------------
+    Displays Fabric's version number, then exits.
 
-Prints the entire docstring for the given task, if there is one. Does not
-currently print out the task's function signature, so descriptive docstrings
-are a good idea. (They're *always* a good idea, of course -- just moreso here.)
+.. cmdoption:: -l, --list
 
-``-r/--reject-unknown-hosts``
------------------------------
+    Imports a fabfile as normal, but then prints a list of all discovered tasks
+    and exits. Will also print the first line of each task's docstring, if it
+    has one, next to it (truncating if necessary.)
 
-Sets :ref:`env.reject_unknown_hosts <reject-unknown-hosts>` to ``True``,
-causing Fabric to abort when connecting to hosts not found in the user's SSH
-known_hosts file.
+.. cmdoption:: -d COMMAND, --display=COMMAND
 
-``-D/--disable-known-hosts``
-----------------------------
+    Prints the entire docstring for the given task, if there is one. Does not
+    currently print out the task's function signature, so descriptive
+    docstrings are a good idea. (They're *always* a good idea, of course --
+    just moreso here.)
 
-Sets :ref:`env.disable_known_hosts <disable-known-hosts>` to ``True``,
-preventing Fabric from loading the user's SSH known_hosts file.
+.. cmdoption:: -r, --reject-unknown-hosts
 
-``-u USER/--user=USER``
------------------------
+    Sets :ref:`env.reject_unknown_hosts <reject-unknown-hosts>` to ``True``,
+    causing Fabric to abort when connecting to hosts not found in the user's SSH
+    known_hosts file.
 
-Sets :ref:`env.user <user>` to the given string; it will then be used as the
-default username when making SSH connections.
+.. cmdoption:: -D, --disable-known-hosts
 
-``-p PASSWORD/--password=PASSWORD``
------------------------------------
+    Sets :ref:`env.disable_known_hosts <disable-known-hosts>` to ``True``,
+    preventing Fabric from loading the user's SSH known_hosts file.
 
-Sets :ref:`env.password <password>` to the given string; it will then be used
-as the default password when making SSH connections or calling the ``sudo``
-program.
+.. cmdoption:: -u USER, --user=USER
 
-``-H HOSTS/--hosts=HOSTS``
---------------------------
+    Sets :ref:`env.user <user>` to the given string; it will then be used as the
+    default username when making SSH connections.
 
-Sets :ref:`env.hosts <hosts>` to the given comma-delimited list of host
-strings.
+.. cmdoption:: -p PASSWORD, --password=PASSWORD
 
-``-R ROLES/--roles=ROLES``
---------------------------
+    Sets :ref:`env.password <password>` to the given string; it will then be
+    used as the default password when making SSH connections or calling the
+    ``sudo`` program.
 
-Sets :ref:`env.roles <roles>` to the given comma-separated list of role names.
+.. cmdoption:: -H HOSTS, --hosts=HOSTS
 
-``-i KEY_FILENAME``
--------------------
+    Sets :ref:`env.hosts <hosts>` to the given comma-delimited list of host
+    strings.
 
-When set to a file path, will load the given file as an SSH identity file
-(usually a private key.) This option may be repeated multiple times.
+.. cmdoption:: -R ROLES, --roles=ROLES
 
-``-f FABFILE/--fabfile=FABFILE``
---------------------------------
+    Sets :ref:`env.roles <roles>` to the given comma-separated list of role
+    names.
 
-The fabfile name pattern to search for (defaults to ``fabfile.py``), or
-alternately an explicit file path to load as the fabfile (e.g.
-``/path/to/my/fabfile.py``.)
+.. cmdoption:: -i KEY_FILENAME
+
+    When set to a file path, will load the given file as an SSH identity file
+    (usually a private key.) This option may be repeated multiple times.
+
+.. cmdoption:: -f FABFILE, --fabfile=FABFILE
+
+    The fabfile name pattern to search for (defaults to ``fabfile.py``), or
+    alternately an explicit file path to load as the fabfile (e.g.
+    ``/path/to/my/fabfile.py``.)
 
 .. seealso:: :doc:`fabfiles`
 
-``-w/--warn-only``
-------------------
+.. cmdoption:: -w, --warn-only
 
-Sets :ref:`env.warn_only <warn_only>` to ``True``, causing Fabric to continue
-execution even when commands encounter error conditions.
+    Sets :ref:`env.warn_only <warn_only>` to ``True``, causing Fabric to
+    continue execution even when commands encounter error conditions.
 
-``-s SHELL/--shell=SHELL``
---------------------------
+.. cmdoption:: -s SHELL, --shell=SHELL
 
-Sets :ref:`env.shell <shell>` to the given string, overriding the default shell
-wrapper used to execute remote commands.
+    Sets :ref:`env.shell <shell>` to the given string, overriding the default
+    shell wrapper used to execute remote commands.
 
 .. seealso:: `~fabric.operations.run`, `~fabric.operations.sudo`
 
-``-c RCFILE/--config=RCFILE``
------------------------------
+.. cmdoption:: -c RCFILE, --config=RCFILE
 
-Sets :ref:`env.rcfile <rcfile>` to the given file path, which Fabric will try
-to load on startup and use to update environment variables.
+    Sets :ref:`env.rcfile <rcfile>` to the given file path, which Fabric will
+    try to load on startup and use to update environment variables.
 
-``--hide=LEVELS``
------------------
+.. cmdoption:: --hide=LEVELS
 
-A comma-separated list of :doc:`output levels <output_controls>` to hide by
-default.
+    A comma-separated list of :doc:`output levels <output_controls>` to hide by
+    default.
 
-``--show=LEVELS``
------------------
+.. cmdoption:: --show=LEVELS
 
-A comma-separated list of :doc:`output levels <output_controls>` to show by
-default.
+    A comma-separated list of :doc:`output levels <output_controls>` to show by
+    default.
 
 
 Per-task arguments
 ==================
 
-Move some docstrings in here.
+The options given in :ref:`command-line-options` apply to the invocation of
+``fab`` as a whole; even if the order is mixed around, options still apply to
+all given tasks equally. Additionally, since tasks are just Python functions,
+it's often desirable to pass in arguments to them at runtime.
 
+Answering both these needs is the concept of "per-task arguments", which is a
+special syntax you can tack onto the end of any task name:
+
+* Use a colon (``:``) to separate the task name from its arguments;
+* Use commas (``,``) to separate arguments from one another;
+* Use equals signs (``=``) for keyword arguments, or omit them for positional
+  arguments;
+
+Additionally, since this process involves string parsing, all values will end
+up as Python strings, so plan accordingly. (We hope to improve upon this in
+future versions of Fabric, provided an intuitive syntax can be found.)
+
+For example, a "create a new user" task might be defined like so (omitting the
+actual logic for brevity)::
+
+    def new_user(username, admin='no'):
+        pass
+
+You can specify just the username::
+
+    $ fab new_user:myusername
+
+Or treat it as an explicit keyword argument::
+
+    $ fab new_user:username=myusername
+
+If both args are given, you can again give them as positional args::
+
+    $ fab new_user:myusername,yes
+
+Or mix and match, just like in Python::
+
+    $ fab new_user:myusername,admin=yes
+
+All of the above are translated into the expected Python function calls. For
+example, the last call above would become::
+
+    >>> new_user('myusername', admin='yes')
+
+Roles and hosts
+---------------
+
+As mentioned in :ref:`the section on task execution <hosts-per-task-cli>`,
+there are a handful of per-task keyword arguments (``host``, ``hosts``,
+``role`` and ``roles``) which do not actually map to the task functions
+themselves, but are used for setting per-task host and/or role lists.
+
+These special kwargs are **removed** from the args/kwargs sent to the task
+function itself; this is so that you don't run into TypeErrors if your task
+doesn't define the kwargs in question. (It also means that if you **do** define
+arguments with these names, you won't be able to specify them in this manner --
+a regrettable but necessary sacrifice.)
+
+.. note::
+
+    If both the plural and singular forms of these kwargs are given, the value
+    of the plural will win out and the singular will be discarded.
+
+When using the plural form of these arguments, one must use semicolons (``;``)
+since commas are already being used to separate arguments from one another.
+Furthermore, since your shell is likely to consider semicolons a special
+character, you'll want to quote the host list string to prevent shell
+interpretation, e.g.::
+
+    $ fab new_user:myusername,hosts="host1;host2"
+
+Again, since the ``hosts`` kwarg is removed from the argument list sent to the
+``new_user`` task function, the actual Python invocation would be
+``new_user('myusername')``, and the function would be executed on a host list
+of ``['host1', 'host2']``.
 
 Settings files
 ==============

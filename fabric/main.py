@@ -234,42 +234,6 @@ def display_command(command):
 def parse_arguments(arguments):
     """
     Parse string list into list of tuples: command, args, kwargs, hosts, roles.
-
-    Parses the given list of arguments into command names and, optionally,
-    per-command args/kwargs. Per-command args are attached to the command name
-    with a colon (``:``), are comma-separated, and may use a=b syntax for
-    kwargs.  These args/kwargs are passed into the resulting command as normal
-    Python args/kwargs.
-
-    For example::
-
-        $ fab do_stuff:a,b,c=d
-
-    will result in the function call ``do_stuff(a, b, c=d)``.
-
-    If ``host`` or ``hosts`` kwargs are given, they will be used to fill
-    Fabric's host list (see `get_hosts`). ``hosts`` will override
-    ``host`` if both are given.
-
-    When using ``hosts`` in this way, one must use semicolons (``;``), and must
-    thus quote the host list string to prevent shell interpretation.
-
-    For example::
-
-        $ fab ping_servers:hosts="a;b;c",foo=bar
-
-    will result in Fabric's host list for the ``ping_servers`` command being set
-    to ``['a', 'b', 'c']``.
-    
-    ``host`` and ``hosts`` are removed from the kwargs mapping at this point, so
-    commands are not required to expect them. Thus, the resulting call of the
-    above example would be ``ping_servers(foo=bar)``.
-
-    ``role`` or ``roles`` behave the same as ``host``/``hosts``, but are used
-    as role names (which will eventually be turned into additional hosts).
-
-    Host- and role-related arguments may be specified simultaneously, in which
-    case they will be merged into a single effective host list.
     """
     cmds = []
     for cmd in arguments:
