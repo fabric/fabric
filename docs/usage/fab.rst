@@ -221,4 +221,23 @@ of ``['host1', 'host2']``.
 Settings files
 ==============
 
-Talk about RCfiles here.
+Fabric currently honors a simple user settings file, or ``fabricrc`` (think
+``bashrc`` but for ``fab``) which should contain one or more key-value pairs,
+one per line. These lines will be subject to ``string.split('=')``, and thus
+can currently only be used to specify string settings. Any such key-value pairs
+will be used to update :doc:`env <env>` when ``fab`` runs, and is loaded prior
+to the loading of any fabfile.
+
+By default, Fabric looks for ``~/.fabricrc``, and this may be overridden by
+specifying the :option:`-c` flag to ``fab``.
+
+For example, if your typical SSH login username differs from your workstation
+username, and you don't want to modify ``env.user`` in a project's fabfile
+(possibly because you expect others to use it as well) you could write a
+``fabricrc`` file like so::
+
+    user = ssh_user_name
+
+Then, when running ``fab``, your fabfile would load up with ``env.user`` set to
+``'ssh_user_name'``. Other users of that fabfile could do the same, allowing
+the fabfile itself to be cleanly agnostic regarding the default username.
