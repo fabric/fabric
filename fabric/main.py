@@ -234,6 +234,8 @@ def display_command(command):
 def parse_arguments(arguments):
     """
     Parse string list into list of tuples: command, args, kwargs, hosts, roles.
+
+    See docs/usage/fab.rst, section on "per-task arguments" for details.
     """
     cmds = []
     for cmd in arguments:
