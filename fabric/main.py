@@ -33,6 +33,8 @@ _internals = reduce(lambda x, y: x + filter(callable, vars(y).values()),
 def load_settings(path):
     """
     Take given file path and return dictionary of any key=value pairs found.
+
+    Usage docs are in docs/usage/fab.rst, in "Settings files."
     """
     if os.path.exists(path):
         comments = lambda s: s and not s.startswith("#")
@@ -47,17 +49,7 @@ def find_fabfile():
     """
     Attempt to locate a fabfile, either explicitly or by searching parent dirs.
 
-    Uses the value of ``env.fabfile``, which defaults to ``fabfile.py``,
-    as the target of the search. This may be overridden on the command line.
-
-    If ``env.fabfile`` contains path elements other than a filename (e.g.
-    ``../fabfile.py`` or ``dir1/dir2/other.py``) it will be treated as a file
-    path and directly checked for existence without any sort of searching. When
-    in this mode, tile-expansion will be applied, so one may refer to e.g.
-    ``~/special_fabfile.py``.
-
-    Either way, `find_fabfile` will return an absolute path if a file is found,
-    or None otherwise.
+    Usage docs are in docs/usage/fabfiles.rst, in "Fabfile discovery."
     """
     if os.path.dirname(state.env.fabfile):
         expanded = os.path.expanduser(state.env.fabfile)

@@ -218,6 +218,8 @@ Again, since the ``hosts`` kwarg is removed from the argument list sent to the
 ``new_user('myusername')``, and the function would be executed on a host list
 of ``['host1', 'host2']``.
 
+.. _fabricrc:
+
 Settings files
 ==============
 
