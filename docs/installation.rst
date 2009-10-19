@@ -38,11 +38,6 @@ and notes about other Python versions:
   somewhat forward-looking (e.g. using ``print()`` instead of ``print``) and
   will definitely be porting to 3.x in the future once our dependencies and the
   rest of the ecosystem does so as well.
-* A bug in **Python 2.5.0 and 2.5.1** causes errors in
-  `fabric.contrib.files.upload_template` due to its combination of context
-  managers and ``tempfile.NamedTemporaryFile``. The rest of Fabric will work
-  fine on these Python versions, but be aware of this conflict if you do use
-  `upload_template` and are running on something older than Python 2.5.2.
 
 .. _paramiko-warning:
 
