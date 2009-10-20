@@ -8,7 +8,7 @@ import tempfile
 import re
 import os
 
-from fabric.api import run, sudo, settings, put, hide, abort
+from fabric.api import *
 
 
 def exists(path, use_sudo=False, verbose=False):
@@ -253,6 +253,7 @@ def append(filename, text, use_sudo=False):
         text = [text]
     for line in text:
         if (contains(filename, '^' + re.escape(line), use_sudo=use_sudo)
-            and line):
+            and line
+            and exists(filename)):
             continue
         func("echo '%s' >> %s" % (line.replace("'", r'\''), filename))
