@@ -473,7 +473,7 @@ def _run_command(command, shell=True, pty=False, sudo=False, user=None):
     channel = connections[env.host_string]._transport.open_session()
     # Create pty if necessary (using Paramiko default options, which as of
     # 1.7.4 is vt100 $TERM @ 80x24 characters)
-    if pty:
+    if pty or env.always_use_pty:
         channel.get_pty()
     channel.exec_command(wrapped_command)
     capture_stdout = []

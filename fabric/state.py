@@ -189,6 +189,14 @@ env_options = [
     make_option('--show',
         metavar='LEVELS',
         help="comma-separated list of output levels to show"
+    ),
+
+    # Global PTY flag for run/sudo
+    make_option('--pty',
+        dest='always_use_pty',
+        action='store_true',
+        default=False,
+        help="force use of pseudo-terminal in run/sudo"
     )
     
 ]
