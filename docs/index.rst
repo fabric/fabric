@@ -10,7 +10,7 @@ About
 
 
 Installation
-=====================
+============
 
 .. warning::
 
@@ -54,7 +54,8 @@ have already upgraded to Python 2.6:
   frequently. Python 2.6 users don't need to do this.
 * ``<true_value> if <expression> else <false_value>``: Python's relatively new
   ternary statement, available in 2.5 and newer. Python 2.4 and older used to
-  fake this with ``<expression> and <true_value> or <false_value>``.
+  fake this with ``<expression> and <true_value> or <false_value>`` (which
+  isn't quite the same thing and has some logical loopholes.)
 * ``print(<expression>)`` instead of ``print <expression>``: We use the
   ``print`` statement's optional parentheses where possible, in order to be
   more compatible with Python 3.x (in which ``print`` becomes a function.)

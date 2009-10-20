@@ -70,3 +70,11 @@ will be a lot easier to write and read than::
 so in this case we feel pragmatism overrides best practices.
 
 .. _a number of reasons: http://python.net/~goodger/projects/pycon/2007/idiomatic/handout.html#importing
+
+
+Defining tasks and importing callables
+======================================
+
+For important information on what exactly Fabric will consider as a task when
+it loads your fabfile, as well as notes on how best to import other code,
+please see :ref:`tasks-and-imports` in the :doc:`execution` documentation.

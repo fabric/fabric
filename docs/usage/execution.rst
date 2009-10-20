@@ -67,6 +67,8 @@ introspect the output or return code of a given command and decide what to do
 next.
 
 
+.. _tasks-and-imports:
+
 Defining tasks
 ==============
 
