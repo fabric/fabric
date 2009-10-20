@@ -28,10 +28,17 @@ to prevent any large gaps in functionality between the latest stable release
 and the development version.
 
 However, if you want to live on the edge, you can pull down the latest source
-code from our Git repository, or fork us on Github. The
-:doc:`installation` page has details for how to access the source code;
-there is also a documentation section on :doc:`development` with
-important information about Fabric's development process.
+code from our Git repository, or fork us on Github. The :doc:`installation`
+page has details for how to access the source code.
+
+
+Development
+===========
+
+Any hackers interested in improving Fabric (or even users interested in how
+Fabric is put together or released) please see the :doc:`development` page. It
+contains comprehensive info on contributing, repository layout, our release
+strategy, and more.
 
 
 Documentation
