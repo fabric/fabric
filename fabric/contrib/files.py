@@ -71,24 +71,33 @@ def upload_template(filename, destination, context=None, use_jinja=False,
     """
     basename = os.path.basename(filename)
     temp_destination = '/tmp/' + basename
-    with tempfile.NamedTemporaryFile() as output:
-        # Init
-        text = None
-        if use_jinja:
-            try:
-                from jinja2 import Environment, FileSystemLoader
-                jenv = Environment(loader=FileSystemLoader(template_dir or '.'))
-                text = jenv.get_template(filename).render(**context or {})
-            except ImportError, e:
-                abort("tried to use Jinja2 but was unable to import: %s" % e)
-        else:
-            with open(filename) as inputfile:
-                text = inputfile.read()
-            if context:
-                text = text % context
-        output.write(text)
-        output.flush()
-        put(output.name, temp_destination)
+
+    # This temporary file should not be automatically deleted on close, as we
+    # need it there to upload it (Windows locks the file for reading while open).
+    tempfile_fd, tempfile_name = tempfile.mkstemp()
+    output = open(tempfile_name, "w+b")
+    # Init
+    text = None
+    if use_jinja:
+        try:
+            from jinja2 import Environment, FileSystemLoader
+            jenv = Environment(loader=FileSystemLoader(template_dir or '.'))
+            text = jenv.get_template(filename).render(**context or {})
+        except ImportError, e:
+            abort("tried to use Jinja2 but was unable to import: %s" % e)
+    else:
+        with open(filename) as inputfile:
+            text = inputfile.read()
+        if context:
+            text = text % context
+    output.write(text)
+    output.close()
+
+    # Upload the file.
+    put(tempfile_name, temp_destination)
+    os.close(tempfile_fd)
+    os.remove(tempfile_name)
+
     func = use_sudo and sudo or run
     # Back up any original file (need to do figure out ultimate destination)
     to_backup = destination
