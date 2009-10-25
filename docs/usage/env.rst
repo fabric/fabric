@@ -13,13 +13,10 @@ in ``env`` are sometimes referred to as "env variables".
 Environment as configuration
 ============================
 
-Most of Fabric's behavior is controllable by modifying env variables in the
-same way that ``host_string`` was used in the :doc:`../tutorial`'s
-:ref:`introduction <introduction>`. Other commonly-modified env vars include:
+Most of Fabric's behavior is controllable by modifying env variables, such as
+``env.hosts`` (as seen in :ref:`the tutorial <defining-connections>`). Other
+commonly-modified env vars include:
 
-* ``hosts`` and ``roledefs``: more commonly used than ``host_string``, these
-  allow control of the host or hosts which Fabric connects to when it runs.
-  See :doc:`execution` for details.
 * ``user``: Fabric defaults to your local username when making SSH connections,
   but you can use ``env.user`` to override this if necessary. The :doc:`execution`
   documentation also has info on how to specify usernames on a per-host basis.

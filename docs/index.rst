@@ -41,6 +41,8 @@ contains comprehensive info on contributing, repository layout, our release
 strategy, and more.
 
 
+.. _documentation-index:
+
 Documentation
 =============
 

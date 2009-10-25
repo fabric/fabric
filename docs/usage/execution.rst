@@ -372,8 +372,8 @@ as we've gone along. However, to make things clearer, here's a quick breakdown:
   will initialize the ``env`` variables, but that's it.
 
 This logic may change slightly in the future to be more consistent (e.g.
-having :option:`--hosts <-H>` somehow take precedence over ``env.hosts`` in the same way
-that command-line per-task lists trump in-code ones) but only in a
+having :option:`--hosts <-H>` somehow take precedence over ``env.hosts`` in the
+same way that command-line per-task lists trump in-code ones) but only in a
 backwards-incompatible release.
 
 .. _combining-host-lists:
@@ -431,8 +431,7 @@ Connections
 ``fab`` itself doesn't actually make any connections to remote hosts. Instead,
 it simply ensures that for each distinct run of a task on one of its hosts, the
 env var ``env.host_string`` is set to the right value. Users wanting to
-leverage Fabric as a library may do so manually to achieve similar effects, as
-seen in :ref:`the tutorial <library-usage>`.
+leverage Fabric as a library may do so manually to achieve similar effects.
 
 ``env.host_string`` is (as the name implies) the "current" host string, and is
 what Fabric uses to determine what connections to make (or re-use) when
