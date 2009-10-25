@@ -48,7 +48,7 @@ Placed in a file called ``fabfile.py``, that function can be executed with the
 That's all there is to it. This functionality allows Fabric to be used as a
 (very) basic build tool even without importing any of its API.
 
-.. seealso:: :doc:`usage/execution`, :doc:`usage/fabfiles`, :doc:`usage/fab`
+.. seealso:: :ref:`execution-strategy`, :ref:`tasks-and-imports`, :doc:`usage/fab`
 
 
 Local commands
@@ -112,7 +112,7 @@ The code itself is straightforward: import a Fabric API function,
 `~fabric.operations.local`, and use it to run local shell commands. The rest of
 Fabric's API is similar -- it's all just Python.
 
-.. seealso:: :doc:`api/core/operations`
+.. seealso:: :doc:`api/core/operations`, :ref:`fabfile-discovery`
 
 
 Organize it your way
@@ -173,6 +173,8 @@ encounters an error::
 Great! We didn't have to do anything ourselves: Fabric detected the failure and
 aborted, never running the ``pack`` task.
 
+.. seealso:: :ref:`failures`
+
 Failure handling
 ----------------
 
@@ -205,7 +207,7 @@ In adding this new feature we've introduced a number of new things:
 * And the `~fabric.utils.abort` function, used to manually abort execution.
 
 However, despite the additional complexity, it's still pretty easy to follow,
-and we now have a solid test task in place.
+and is now much more flexible.
 
 .. seealso:: :doc:`api/core/context_managers`
 
@@ -252,6 +254,8 @@ runtime. Connection definitions use SSH-like "host strings" (e.g.
 ``user@host:port``) and will use your local username as a default -- so in this
 example, we just had to specify the hostname, ``my_server``.
 
+.. seealso:: :ref:`importing-the-api`
+
 Defining connections beforehand
 -------------------------------
 
@@ -274,4 +278,4 @@ This is also how you can tell Fabric to run on multiple remote systems at once:
 because ``env.hosts`` is a list, ``fab`` iterates over it, calling the given
 task once for each connection.
 
-.. seealso:: :doc:`usage/env`
+.. seealso:: :doc:`usage/env`, :ref:`host-lists`

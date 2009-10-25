@@ -96,9 +96,11 @@ def settings(*args, **kwargs):
     * Most usefully, it allows temporary overriding/updating of ``env`` with
       any provided keyword arguments, e.g. ``with settings(user='foo'):``.
       Original values, if any, will be restored once the ``with`` block closes.
-    * In addition, it will use ``contextlib.nested`` to nest any given
+    * In addition, it will use `contextlib.nested`_ to nest any given
       non-keyword arguments, which should be other context managers, e.g.
       ``with settings(hide('stderr'), show('stdout')):``.
+
+    .. _contextlib.nested: http://docs.python.org/library/contextlib.html#contextlib.nested
 
     These behaviors may be specified at the same time if desired. An example
     will hopefully illustrate why this is considered useful::

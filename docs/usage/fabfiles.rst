@@ -5,6 +5,8 @@ Fabfile construction and use
 This document contains miscellaneous sections about fabfiles, both how to best
 write them, and how to use them once written.
 
+.. _fabfile-discovery:
+
 Fabfile discovery
 =================
 
@@ -35,6 +37,8 @@ mode, tile-expansion will be applied, so one may refer to e.g.
     fabfile's containing folder to the Python load path (and removes it
     immediately afterwards.)
 
+
+.. _importing-the-api:
 
 Importing Fabric
 ================

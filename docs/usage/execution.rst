@@ -62,9 +62,9 @@ you will see that Fabric performs the following:
 
 While this approach is simplistic, it allows for a straightforward composition
 of task functions, and (unlike tools which push the multi-host functionality
-down to the individual function calls) enables shell script-like logic where you may
-introspect the output or return code of a given command and decide what to do
-next.
+down to the individual function calls) enables shell script-like logic where
+you may introspect the output or return code of a given command and decide what
+to do next.
 
 
 .. _tasks-and-imports:
@@ -404,6 +404,8 @@ Assuming no command-line hosts or roles are given when ``mytask`` is executed,
 this fabfile will call ``mytask`` on a host list of ``['a', 'b', 'c']`` -- the
 union of ``role1`` and the contents of the `~fabric.decorators.hosts` call.
 
+
+.. _failures:
 
 Failure handling
 ================
