@@ -48,20 +48,19 @@ Placed in a file called ``fabfile.py``, that function can be executed with the
 That's all there is to it. This functionality allows Fabric to be used as a
 (very) basic build tool even without importing any of its API.
 
-.. seealso:: :doc:`usage/execution`, :doc:`usage/fabfiles`
+.. seealso:: :doc:`usage/execution`, :doc:`usage/fabfiles`, :doc:`usage/fab`
 
 
 Local commands
 ==============
 
-Without importing anything, ``fab`` just saves a couple lines of ``if __name__
-== "__main__"`` boilerplate. It's mostly designed for use with Fabric's API,
-which contains functions (or **operations**) for executing shell commands,
-moving files around, and so forth.
+In general, ``fab`` just saves a couple lines of ``if __name__ == "__main__"``
+boilerplate. It's mostly designed for use with Fabric's API, which contains
+functions (or **operations**) for executing shell commands, moving files
+around, and so forth.
 
-Let's build a hypothetical Web application fabfile. Fabfiles work best at the
-root of a project (because they can be picked up by ``fab`` while anywhere
-inside the project)::
+Let's build a hypothetical Web application fabfile. Fabfiles usually work best
+at the root of a project::
 
     .
     |-- __init__.py
@@ -82,14 +81,14 @@ inside the project)::
     We're using a Django application here, but only as an example -- Fabric is
     not tied to any external codebase, save for its SSH library.
 
-For starters, perhaps we want to run our tests and then check changes into our
-SCM so we're ready for a deploy::
+For starters, perhaps we want to run our tests and then pack up a copy of our
+app so we're ready for a deploy::
 
     from fabric.api import local
 
     def prepare_deploy():
         local('./manage.py test my_app', capture=False)
-        local('git commit -a', capture=False)
+        local('tar czf /tmp/my_project.tgz .', capture=False)
 
 The output of which might look a bit like this::
 
@@ -105,36 +104,13 @@ The output of which might look a bit like this::
     OK
     Destroying test database...
 
-    [localhost] run: git commit -a
-    # On branch master
-    nothing to commit (working directory clean)
+    [localhost] run: tar czf /tmp/my_project.tgz .
 
     Done.
 
 The code itself is straightforward: import a Fabric API function,
 `~fabric.operations.local`, and use it to run local shell commands. The rest of
 Fabric's API is similar -- it's all just Python.
-
-
-Prompting
----------
-
-Our ``git commit`` call didn't do anything this time, but if we had modified
-files it would've popped open our editor for a commit message. Let's use
-`~fabric.operations.prompt` to prompt the user instead::
-
-    from fabric.api import local, prompt
-
-    def prepare_deploy():
-        local('./manage.py test my_app', capture=False)
-        commit_msg = prompt("Commit message:")
-        local('git commit -a -m "%s"' % commit_msg, capture=False)
-
-We won't bore you with a near repetition of the earlier output -- the only
-difference will be a text prompt waiting for input from the user.
-
-Fabric has a number of core operations like these, more of which will be
-popping up later. For a full list, see the below link to the API documentation.
 
 .. seealso:: :doc:`api/core/operations`
 
@@ -146,35 +122,27 @@ Because Fabric is "just Python" you're free to organize your fabfile any way
 you want. For example, it's often useful to start splitting things up into
 subtasks::
 
-    from fabric.api import local, prompt
+    from fabric.api import local
 
     def test():
         local('./manage.py test my_app', capture=False)
 
-    def commit():
-        commit_msg = prompt("Commit message:")
-        local('git commit -a -m "%s"' % commit_msg, capture=False)
+    def pack():
+        local('tar czf /tmp/my_project.tgz .', capture=False)
 
     def prepare_deploy():
         test()
-        commit()
+        pack()
 
 The ``prepare_deploy`` task can be called just as before, but now you can make
 a more granular call to one of the sub-tasks, if desired.
-
-.. note::
-
-    Fabric will let you execute any public callable in your fabfile, so you can
-    even import tasks defined in other Python modules or packages.
-
-.. seealso:: :doc:`usage/fabfiles`
 
 
 Failure
 =======
 
 Our base case works fine now, but what happens if our tests fail?  Chances are
-we want to put on the brakes and fix them before committing or deploying.
+we want to put on the brakes and fix them before deploying.
 
 Fabric checks the return value of programs called via operations and will abort
 if they didn't exit cleanly. Let's see what happens if one of our tests
@@ -203,20 +171,20 @@ encounters an error::
     Aborting.
 
 Great! We didn't have to do anything ourselves: Fabric detected the failure and
-aborted.
+aborted, never running the ``pack`` task.
 
-Coping with failure
--------------------
+Failure handling
+----------------
 
 But what if we wanted to be flexible and give the user a choice? A setting
 called :ref:`warn_only` lets you turn aborts into warnings, allowing flexible
 error handling to occur.
 
 Let's flip this setting on for our ``test`` function, and then inspect the
-result of our `~fabric.operations.local` call ourselves::
+result of the `~fabric.operations.local` call ourselves::
 
     from __future__ import with_statement
-    from fabric.api import local, prompt, settings, abort
+    from fabric.api import local, settings, abort
     from fabric.contrib.console import confirm
 
     def test():
@@ -239,4 +207,71 @@ In adding this new feature we've introduced a number of new things:
 However, despite the additional complexity, it's still pretty easy to follow,
 and we now have a solid test task in place.
 
-.. seealso:: :doc:`usage/execution`, :doc:`api/core/context_managers`
+.. seealso:: :doc:`api/core/context_managers`
+
+
+Making connections
+==================
+
+Let's start wrapping up our fabfile by putting in the keystone: a ``deploy``
+task::
+
+    def deploy():
+        put('/tmp/my_project.tgz', '/tmp/')
+        with cd('/srv/django/my_project/'):
+            run('tar xzf /tmp/my_project.tgz')
+            run('touch app.wsgi')
+
+Here again, we introduce a handful of new functions:
+
+* `~fabric.operations.put`, which simply uploads a file to a remote server;
+* `~fabric.context_managers.cd`, an easy way of prefixing commands with a
+  ``cd /to/some/directory`` call;
+* `~fabric.operations.run`, which is similar to `~fabric.operations.local` but
+  runs remotely instead of locally.
+
+And because at this point, we're using a nontrivial number of Fabric's API
+functions, let's switch our API import to use ``*`` (as mentioned in the
+:doc:`fabfile <usage/fabfiles>` documentation)::
+
+    from __future__ import with_statement
+    from fabric.api import *
+    from fabric.contrib.console import confirm
+
+With these changes in place, let's deploy::
+
+    $ fab deploy
+    No hosts found. Please specify (single) host string for connection: my_server
+    [my_server] put: /tmp/my_project.tgz -> /tmp/my_project.tgz
+    [my_server] run: touch app.wsgi
+
+    Done.
+
+We never specified any connection info in our fabfile, so Fabric prompted us at
+runtime. Connection definitions use SSH-like "host strings" (e.g.
+``user@host:port``) and will use your local username as a default -- so in this
+example, we just had to specify the hostname, ``my_server``.
+
+Defining connections beforehand
+-------------------------------
+
+Specifying connection info at runtime gets old real fast, so Fabric provides a handful of ways to do it in your fabfile or on the command line. We won't cover all of them here, but we will show you the most common one: setting the global host list, :ref:`env.hosts <hosts>`.
+
+:doc:`env <usage/env>` is a global dictionary-like object driving many of Fabric's settings, and can be written to with attributes as well. Thus, we can modify it at module level near the top of our fabfile like so::
+
+    from __future__ import with_statement
+    from fabric.api import *
+    from fabric.contrib.console import confirm
+
+    env.hosts = ['my_server']
+
+    def test():
+    [...]
+
+When ``fab`` loads up our fabfile, our modification of ``env`` will execute, storing our settings change. The end result is exactly as above: our ``deploy`` task will run against the ``my_server`` server.
+
+This is also how you can tell Fabric to run on multiple remote systems at once:
+because ``env.hosts`` is a list, ``fab`` iterates over it, calling the given
+task once for each connection.
+
+.. seealso:: :doc:`usage/env`
