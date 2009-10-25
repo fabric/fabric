@@ -6,8 +6,7 @@ Welcome to Fabric!
 
 This document is a whirlwind tour of Fabric's features and a quick guide to its
 use. Additional documentation (which is linked to throughout) can be found in
-the :ref:`usage documentation <usage-docs>` -- we'll be light on details here,
-so please check out the links.
+the :ref:`usage documentation <usage-docs>` -- please make sure to check it out.
 
 
 What is Fabric?
@@ -20,27 +19,26 @@ As the ``README`` says:
 
 More specifically, Fabric is:
 
-* A library of functions (built on top of a lower-level library) to make
-  executing shell commands over SSH **easy** and **Pythonic**;
 * A tool that lets you execute **arbitrary Python functions** via the **command
   line**.
+* A library of functions (built on top of a lower-level library) to make
+  executing shell commands over SSH **easy** and **Pythonic**;
 
 Naturally, most users combine these two things, using Fabric to write and
 execute Python functions, or **tasks**, to automate interactions with remote
 servers. Let's take a look.
 
 
-Starting out
-============
+Hello, ``fab``
+==============
 
 This wouldn't be a proper tutorial without "the usual"::
 
     def hello():
         print("Hello world!")
 
-Placed in a file called ``fabfile.py`` (without any other code whatsoever!)
-that function can be executed with the ``fab`` tool (installed as part of
-Fabric) and does just what you'd expect::
+Placed in a file called ``fabfile.py``, that function can be executed with the
+``fab`` tool (installed as part of Fabric) and does just what you'd expect::
 
     $ fab hello
     Hello world!
@@ -53,26 +51,23 @@ That's all there is to it. This functionality allows Fabric to be used as a
 .. seealso:: :doc:`usage/execution`, :doc:`usage/fabfiles`
 
 
-Using operations
-================
+Local commands
+==============
 
-While convenient, the ``fab`` tool isn't very interesting, only saving you the
-usual ``if __name__ == "__main__"`` stuff. It's designed to be paired with
-Fabric's API full of functions for executing commands, moving files around, and
-so forth. Functions in this API are sometimes called **operations**.
+Without importing anything, ``fab`` just saves a couple lines of ``if __name__
+== "__main__"`` boilerplate. It's mostly designed for use with Fabric's API,
+which contains functions (or **operations**) for executing shell commands,
+moving files around, and so forth.
 
-Let's start building a hypothetical Web application fabfile. Fabfiles work best when at the root of a project source tree (because they can be picked up by ``fab`` while anywhere inside the tree)::
+Let's build a hypothetical Web application fabfile. Fabfiles work best at the
+root of a project (because they can be picked up by ``fab`` while anywhere
+inside the project)::
 
     .
     |-- __init__.py
     |-- app.wsgi
     |-- fabfile.py <-- our fabfile!
     |-- manage.py
-    |-- media
-    |   |-- global.js
-    |   |-- img
-    |   |   `-- favicon.ico
-    |   `-- screen.css
     `-- my_app
         |-- __init__.py
         |-- models.py
@@ -84,12 +79,11 @@ Let's start building a hypothetical Web application fabfile. Fabfiles work best 
 
 .. note::
 
-    The above, for those familiar with it, is a Django application. However,
-    Fabric isn't tied to any external codebase unless you explicitly import
-    one -- this is solely an example!
+    We're using a Django application here, but only as an example -- Fabric is
+    not tied to any external codebase, save for its SSH library.
 
-Starting out, perhaps we want to just have a task that runs our tests and then
-checks any changed files into our SCM so we're ready for a SCM-based deploy::
+For starters, perhaps we want to run our tests and then check changes into our
+SCM so we're ready for a deploy::
 
     from fabric.api import local
 
@@ -97,7 +91,7 @@ checks any changed files into our SCM so we're ready for a SCM-based deploy::
         local('./manage.py test my_app', capture=False)
         local('git commit -a', capture=False)
 
-The output of which might look like this::
+The output of which might look a bit like this::
 
     $ fab prepare_deploy
     [localhost] run: ./manage.py test my_app
@@ -117,13 +111,17 @@ The output of which might look like this::
 
     Done.
 
-Hopefully the code itself is pretty obvious: import a Fabric API function, `~fabric.operations.local`, and use it to run some local shell commands. Using the rest of Fabric's API is similarly straightforward -- it's all just Python.
+The code itself is straightforward: import a Fabric API function,
+`~fabric.operations.local`, and use it to run local shell commands. The rest of
+Fabric's API is similar -- it's all just Python.
 
-If you're familiar with Git, you'll notice that while our ``git commit`` call
-didn't do anything this time, if we had modified files it would've popped open
-our editor for a commit message. Let's use another operation,
-`~fabric.operations.prompt`, to prompt the user for the commit message
-instead::
+
+Prompting
+---------
+
+Our ``git commit`` call didn't do anything this time, but if we had modified
+files it would've popped open our editor for a commit message. Let's use
+`~fabric.operations.prompt` to prompt the user instead::
 
     from fabric.api import local, prompt
 
@@ -132,7 +130,8 @@ instead::
         commit_msg = prompt("Commit message:")
         local('git commit -a -m "%s"' % commit_msg, capture=False)
 
-We won't bore you with a near repetition of the earlier output -- the only difference will be a simple prompt popping up waiting for input from the user.
+We won't bore you with a near repetition of the earlier output -- the only
+difference will be a text prompt waiting for input from the user.
 
 Fabric has a number of core operations like these, more of which will be
 popping up later. For a full list, see the below link to the API documentation.
@@ -143,7 +142,9 @@ popping up later. For a full list, see the below link to the API documentation.
 Organize it your way
 ====================
 
-As mentioned, Fabric is just Python, so you're free to organize your fabfile any way you want -- do what works for you. In this case, we might find it useful to start splitting things up into subtasks::
+Because Fabric is "just Python" you're free to organize your fabfile any way
+you want. For example, it's often useful to start splitting things up into
+subtasks::
 
     from fabric.api import local, prompt
 
@@ -158,12 +159,84 @@ As mentioned, Fabric is just Python, so you're free to organize your fabfile any
         test()
         commit()
 
-The ``prepare_deploy`` task can be called just as before, but now you can make a more granular call to one of the sub-tasks, if desired. Fabric will let you execute any public callable in your fabfile, so you can even import from other Python modules or packages.
+The ``prepare_deploy`` task can be called just as before, but now you can make
+a more granular call to one of the sub-tasks, if desired.
+
+.. note::
+
+    Fabric will let you execute any public callable in your fabfile, so you can
+    even import tasks defined in other Python modules or packages.
 
 .. seealso:: :doc:`usage/fabfiles`
 
 
-Coping with failure
-===================
+Failure
+=======
 
-Our fabfile is coming along nicely, but what happens if our tests fail?
+Our base case works fine now, but what happens if our tests fail?  Chances are
+we want to put on the brakes and fix them before committing or deploying.
+
+Fabric checks the return value of programs called via operations and will abort
+if they didn't exit cleanly. Let's see what happens if one of our tests
+encounters an error::
+
+    $ fab prepare_deploy
+    [localhost] run: ./manage.py test my_app
+    Creating test database...
+    Creating tables
+    Creating indexes
+    .............E............................
+    ======================================================================
+    ERROR: testSomething (my_project.my_app.tests.MainTests)
+    ----------------------------------------------------------------------
+    Traceback (most recent call last):
+    [...]
+
+    ----------------------------------------------------------------------
+    Ran 42 tests in 9.138s
+
+    FAILED (errors=1)
+    Destroying test database...
+
+    Fatal error: local() encountered an error (return code 2) while executing './manage.py test my_app'
+
+    Aborting.
+
+Great! We didn't have to do anything ourselves: Fabric detected the failure and
+aborted.
+
+Coping with failure
+-------------------
+
+But what if we wanted to be flexible and give the user a choice? A setting
+called :ref:`warn_only` lets you turn aborts into warnings, allowing flexible
+error handling to occur.
+
+Let's flip this setting on for our ``test`` function, and then inspect the
+result of our `~fabric.operations.local` call ourselves::
+
+    from __future__ import with_statement
+    from fabric.api import local, prompt, settings, abort
+    from fabric.contrib.console import confirm
+
+    def test():
+        with settings(warn_only=True):
+            result = local('./manage.py test my_app', capture=False)
+        if result.failed and not confirm("Tests failed. Continue anyway?"):
+            abort("Aborting at user request.")
+
+    [...]
+
+In adding this new feature we've introduced a number of new things:
+
+* The ``__future__`` import required to use ``with:`` in Python 2.5;
+* Fabric's `contrib.console <fabric.contrib.console>` submodule, containing the
+  `~fabric.contrib.console.confirm` function, used for simple yes/no prompts;
+* The `~fabric.context_managers.settings` context manager, used to apply
+  settings to a specific block of code;
+* And the `~fabric.utils.abort` function, used to manually abort execution.
+
+However, despite the additional complexity, it's still pretty easy to follow,
+and we now have a solid test task in place.
+
+.. seealso:: :doc:`usage/execution`, :doc:`api/core/context_managers`
