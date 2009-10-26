@@ -55,6 +55,18 @@ def test_nonword_character_in_username():
         'user-with-hyphens'
     )
 
+def test_normalization_of_empty_input():
+    empties = ('', '', '')
+    for description, input in (
+        ("empty string", ''),
+        ("None", None)
+    ):
+        eq_.description = "normalize() returns empty strings for %s input" % (
+            description
+        )
+        yield eq_, normalize(input), empties
+        del eq_.description
+
 def test_host_string_denormalization():
     username = _get_system_username()
     for description, string1, string2 in (
