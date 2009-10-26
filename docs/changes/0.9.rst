@@ -377,3 +377,33 @@ sections; apologies for the overall change in tense.
 * Fix edge case that comes up during some auth/prompt situations.
 
 * Handle carriage returns in output_thread correctly. Thanks to Brian Rosner.
+
+
+Changes from beta 1 to release candidate 1
+==========================================
+
+As with the previous changelog, this is also mostly a dump of the Git log. We
+promise that future changelogs will be more verbose :)
+
+* Near-total overhaul and expansion of documentation (this is the big one!)
+  Other mentions of documentation in this list are items deserving their own
+  mention, e.g. FAQ updates.
+* Add FAQ question re: passphrase/password prompt
+* Vendorized Paramiko: it is now included in our distribution and is no longer
+  an external dependency, at least until upstream fixes a nasty 1.7.5 bug.
+* Fix #34: switch upload_template to use mkstemp (also removes Python 2.5.2+
+  dependency -- now works on 2.5.0 and up)
+* Fix #62 by escaping backticks.
+* Replace "ls" with "test" in exists()
+* Fixes #50. Thanks to Alex Koshelev for the patch.
+* ``local``'s return value now exhibits ``.return_code``.
+* Abort on bad role names instead of blowing up.
+* Turn off DeprecationWarning when importing paramiko.
+* Attempted fix re #32 (dropped output)
+* Update role/host initialization logic (was missing some edge cases)
+* Add note to install docs re: PyCrypto on win32.
+* Add FAQ item re: changing env.shell.
+* Rest of TODO migrated to tickets.
+* ``fab test`` (when in source tree) now uses doctests.
+* Add note to compatibility page re: fab_quiet.
+* Update local() to honor context_managers.cd()
