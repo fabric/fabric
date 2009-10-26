@@ -23,7 +23,7 @@ from utils import mock_streams
 
 def test_host_string_normalization():
     username = _get_system_username()
-    for description, string1, string2 in (
+    for description, input, output in (
         ("Sanity check: equal strings remain equal",
             'localhost', 'localhost'),
         ("Empty username is same as get_system_username",
@@ -34,7 +34,7 @@ def test_host_string_normalization():
             'localhost', username + '@localhost:22'),
     ):
         eq_.description = "Host-string normalization: %s" % description
-        yield eq_, normalize(string1), normalize(string2) 
+        yield eq_, normalize(input), normalize(output)
         del eq_.description
 
 def test_normalization_without_port():
