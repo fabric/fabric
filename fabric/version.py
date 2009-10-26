@@ -6,7 +6,7 @@ problems with ``__init__.py`` (which is loaded by setup.py during installation,
 which in turn needs access to this version information.)
 """
 
-VERSION = (0, 9, 0, 'beta', 1)
+VERSION = (0, 9, 0, 'release candidate', 1)
 
 def get_version(verbose=False, line_only=False):
     """
@@ -34,8 +34,10 @@ def get_version(verbose=False, line_only=False):
     # Append alpha/beta modifier if not a final release
     if VERSION[3] != 'final':
         # If non-verbose, just the first letter of the modifier, and no spaces.
+        # (If modifier is >1 word, create acronym.)
         if not verbose:
-            version = '%s%s%s' % (version, VERSION[3][0], VERSION[4])
+            firsts = ''.join([x[0] for x in VERSION[3].split()])
+            version = '%s%s%s' % (version, firsts, VERSION[4])
         # Otherwise, be more generous.
         else:
             version = '%s %s %s' % (version, VERSION[3], VERSION[4])

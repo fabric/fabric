@@ -13,7 +13,9 @@ def test_get_version():
         ((0, 9, 0, 'final'), '0.9', '0.9 final', '0.9'),
         ((0, 9, 1, 'final'), '0.9.1', '0.9.1 final', '0.9'),
         ((0, 9, 0, 'alpha', 1), '0.9a1', '0.9 alpha 1', '0.9'),
-        ((0, 9, 1, 'beta', 1), '0.9.1b1', '0.9.1 beta 1', '0.9')
+        ((0, 9, 1, 'beta', 1), '0.9.1b1', '0.9.1 beta 1', '0.9'),
+        ((0, 9, 0, 'release candidate', 1),
+            '0.9rc1', '0.9 release candidate 1', '0.9')
     ]:
         fabric.version.VERSION = tup
         yield eq_, get_version(), regular_str
