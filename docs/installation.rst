@@ -4,7 +4,8 @@ Installation
 
 The most direct way to install Fabric is to obtain the source code and run
 ``python setup.py install``. This method works for both release and development
-versions of the code, and requires nothing but a basic Python installation.
+versions of the code, and requires nothing but a basic Python installation and
+the `setuptools`_ library.
 
 .. note::
 
@@ -17,10 +18,10 @@ versions of the code, and requires nothing but a basic Python installation.
 Dependencies
 ============
 
-In order to install Fabric, you will need three primary pieces of
-software: the Python programming language, the Paramiko SSH library, and
-the PyCrypto cryptography library (a dependency of Paramiko.) Please read
-on for important details on each dependency -- there are a few gotchas.
+In order to install Fabric, you will need three primary pieces of software: the
+Python programming language, the setuptools library, and the PyCrypto
+cryptography library. Please read on for important details on each dependency
+-- there are a few gotchas.
 
 Python
 ------
@@ -39,36 +40,28 @@ and notes about other Python versions:
   will definitely be porting to 3.x in the future once our dependencies and the
   rest of the ecosystem does so as well.
 
-.. _paramiko-warning:
+setuptools
+----------
 
-Paramiko
---------
+`Setuptools`_ comes with some Python installations by default; if yours doesn't,
+you'll need to grab it. In such situations it's typically packaged as
+``python-setuptools``, ``py25-setuptools`` or similar. Fabric may drop its
+setuptools dependency in the future, or include alternative support for the
+`Distribute`_ project, but for now setuptools is required for installation.
 
-`Paramiko <http://www.lag.net/paramiko/>`_ is a Python implementation of the
-SSH protocol suite, and is what Fabric builds upon for its networking support.
-At this time, **only Paramiko version 1.7.4 is supported!** A more recent
-version, 1.7.5, is on PyPI, but contains `a serious bug
-<https://bugs.launchpad.net/paramiko/+bug/413850>`_ that causes effectively
-random (albeit uncommon) SSHException errors.
-
-Furthermore, because 1.7.5 is the only version currently uploaded to PyPI (the
-source of ``easy_install`` and ``pip`` installs) we do **not** recommend you
-use those tools to install Fabric until you have installed Paramiko and
-PyCrypto by hand.
-
-Paramiko 1.7.4 may be downloaded from Paramiko's `old releases directory
-<http://www.lag.net/paramiko/download/>`_ and installed by unpacking and
-running ``python setup.py install``, as with most other Python packages.
+.. _setuptools: http://pypi.python.org/pypi/setuptools
+.. _Distribute: http://pypi.python.org/pypi/distribute
 
 PyCrypto
 --------
 
 `PyCrypto <http://www.amk.ca/python/code/crypto.html>`_ is a dependency of
-Paramiko, providing the low-level (C-based) encryption algorithms used to run
-SSH. You will need version 1.9 or newer, and may install PyCrypto from
-``easy_install`` or ``pip`` without worry. However, unless you are installing
-from a precompiled source such as a Debian apt repository or RedHat RPM, you
-will need the ability to build Python C-based modules from source -- read on.
+Paramiko (which Fabric uses internally for SSH support), providing the
+low-level (C-based) encryption algorithms used to run SSH. You will need
+version 1.9 or newer, and may install PyCrypto from ``easy_install`` or ``pip``
+without worry. However, unless you are installing from a precompiled source
+such as a Debian apt repository or RedHat RPM, you will need the ability to
+build Python C-based modules from source -- read on.
 
 Users on **Unix-based platforms** such as Ubuntu or Mac OS X will need the
 traditional C build toolchain installed (e.g. Developer Tools / XCode Tools on
@@ -88,12 +81,15 @@ If you are interested in doing development work on Fabric (or even just running
 the test suite), you may also need to install some or all of the following
 packages:
 
+* `git <http://git-scm.com>`_ and `Mercurial`_, in order to obtain some of the
+  other dependencies below;
 * `Nose <http://code.google.com/p/python-nose/>`_ >=0.10 
 * `Coverage <http://nedbatchelder.com/code/modules/coverage.html>`_ >=2.85
 * `PyLint <http://www.logilab.org/857>`_ >=0.18
 * `Fudge <http://farmdev.com/projects/fudge/index.html>`_ >=0.9.2
 * `Sphinx <http://sphinx.pocoo.org/>`_ >= 0.6.1
 
+.. _Mercurial: http://mercurial.selenic.com/wiki/
 
 Downloads
 =========
@@ -138,15 +134,9 @@ branches may be of interest and how you can help out, please see the
 Easy_install and Pip
 ====================
 
-Fabric tries hard to play nice with packaging systems such as Python's
-``setuptools``, and as such it may be installed via either `easy_install
+Fabric may be installed via either `easy_install
 <http://wiki.python.org/moin/CheeseShopTutorial>`_ or `pip
 <http://pip.openplans.org>`_.
-
-.. warning::
-
-    Please see the :ref:`above warning concerning Paramiko <paramiko-warning>`
-    before attempting to install Fabric via ``easy_install`` or ``pip``.
 
 Fabric's source distribution also comes with a ``pip`` requirements file
 called ``requirements.txt``, containing the various development requirements

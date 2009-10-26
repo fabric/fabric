@@ -12,12 +12,6 @@ About
 Installation
 ============
 
-.. warning::
-
-    Fabric's primary dependency, Paramiko, has a severe bug in its latest
-    version.  Please see the :doc:`installation` page for more details
-    before using ``easy_install`` or ``pip`` to install Fabric!
-
 Stable releases of Fabric are best installed via ``easy_install`` or ``pip``;
 or you may download TGZ or ZIP source archives from a couple of official
 locations. Detailed instructions and links may be found on the
