@@ -1,17 +1,10 @@
 *~
-fabc
 *.pyc
 *.pyo
-*.tar.gz
 *.pyt
 *.pytc
 .DS_Store
-build
-dist
-doc/site/fab
 .*.swp
 Fabric.egg-info
-release
-*.png
 .coverage
 docs/_build
