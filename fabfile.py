@@ -9,11 +9,13 @@ from fabric.contrib.project import rsync_project
 import fabric.version
 
 
-def test():
+def test(args=""):
     """
     Run all unit tests and doctests.
+
+    Specify string argument ``args`` for additional args to ``nosetests``.
     """
-    print(local('nosetests -sv --with-doctest', capture=False))
+    print(local('nosetests -sv --with-doctest %s' % args, capture=False))
 
 
 def build_docs(clean='no', browse='no'):
