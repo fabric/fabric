@@ -254,8 +254,8 @@ def prompt_for_password(previous=None, prompt=None):
     from fabric.state import env
     # Construct the prompt we will display to the user (using host if available)
     if 'host' in env:
-        base_password_prompt = "Password for %s" % join_host_strings(*normalize(
-            env.host_string, omit_port=True))
+        host = join_host_strings(*normalize(env.host_string, omit_port=True))
+        base_password_prompt = "Password for %s" % host
     else:
         base_password_prompt = "Password"
     password_prompt = base_password_prompt
