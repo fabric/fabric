@@ -509,6 +509,9 @@ def _run_command(command, shell=True, pty=False, sudo=False, user=None):
     # only, can inspect the error code.
     out.return_code = status
 
+    # Convenience mirror of .failed
+    out.succeeded = not out.failed
+
     # Attach stderr for anyone interested in that.
     out.stderr = err
 
@@ -526,10 +529,11 @@ def run(command, shell=True, pty=False):
     "<command>"``.) Any double-quote (``"``) or dollar-sign (``$``) characters
     in ``command`` will be automatically escaped when ``shell`` is True.
 
-    `run` will return the result of the remote program's stdout as a
-    single (likely multiline) string. This string will exhibit a ``failed``
-    boolean attribute specifying whether the command failed or succeeded, and
-    will also include the return code as the ``return_code`` attribute.
+    `run` will return the result of the remote program's stdout as a single
+    (likely multiline) string. This string will exhibit ``failed`` and
+    ``succeeded`` boolean attributes specifying whether the command failed or
+    succeeded, and will also include the return code as the ``return_code``
+    attribute.
 
     Standard error will also be attached, as a string, to this return value as
     the ``stderr`` attribute.
@@ -583,8 +587,8 @@ def local(command, capture=True):
 
     `local` will, by default, capture and return the contents of the command's
     stdout as a string, and will not print anything to the user. As with `run`
-    and `sudo`, this return value exhibits the ``return_code``, ``stderr`` and
-    ``failed`` attributes. See `run` for details.
+    and `sudo`, this return value exhibits the ``return_code``, ``stderr``,
+    ``failed`` and ``succeeded`` attributes. See `run` for details.
     
     .. note::
         `local`'s capturing behavior differs from the default behavior of `run`
@@ -632,6 +636,7 @@ def local(command, capture=True):
         out.failed = True
         msg = "local() encountered an error (return code %s) while executing '%s'" % (p.returncode, command)
         _handle_failure(message=msg)
+    out.succeeded = not out.failed
     # If we were capturing, this will be a string; otherwise it will be None.
     return out
 
