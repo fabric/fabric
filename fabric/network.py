@@ -77,6 +77,9 @@ def normalize(host_string, omit_port=False):
     If ``omit_port`` is given and is True, only the host and user are returned.
     """
     from fabric.state import env
+    # Gracefully handle "empty" input by returning empty output
+    if not host_string:
+        return ('', '') if omit_port else ('', '', '')
     # Get user, host and port separately
     r = host_regex.match(host_string).groupdict()
     # Add any necessary defaults in
@@ -254,8 +257,8 @@ def prompt_for_password(previous=None, prompt=None):
     from fabric.state import env
     # Construct the prompt we will display to the user (using host if available)
     if 'host' in env:
-        base_password_prompt = "Password for %s" % join_host_strings(*normalize(
-            env.host_string, omit_port=True))
+        host = join_host_strings(*normalize(env.host_string, omit_port=True))
+        base_password_prompt = "Password for %s" % host
     else:
         base_password_prompt = "Password"
     password_prompt = base_password_prompt

@@ -1,5 +1,9 @@
-Fabric is a Python library and command-line tool designed to streamline
-deploying applications or performing system administration tasks via SSH.
+**PLEASE NOTE:** This is a release-candidate release of Fabric and is not
+intended for use in production. However, please do test it out on non-critical
+systems and let us know of any issues you encounter. **END NOTE**
+
+Fabric is a Python library and command-line tool for streamlining the use of
+SSH for application deployment or systems administration tasks.
 
 It provides a basic suite of operations for executing local or remote shell
 commands (normally or via ``sudo``) and uploading/downloading files, as well as

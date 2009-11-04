@@ -12,20 +12,25 @@ import fabric.version
 def test(args=None):
     """
     Run all unit tests and doctests.
+
+    Specify string argument ``args`` for additional args to ``nosetests``.
     """
     if args is None:
         args = ""
     print(local('nosetests -sv --with-doctest %s' % args, capture=False))
 
 
-def build_docs(clean='no'):
+def build_docs(clean='no', browse='no'):
     """
     Generate the Sphinx documentation.
     """
     c = ""
     if clean.lower() in ['yes', 'y']:
         c = "clean "
-    local('cd docs && make %shtml' % c, capture=False)
+    b = ""
+    if browse.lower() in ['yes', 'y']:
+        b = " && open _build/html/index.html"
+    local('cd docs; make %shtml%s' % (c, b), capture=False)
 
 
 @hosts('jforcier@fabfile.org')

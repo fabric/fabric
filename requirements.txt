@@ -6,7 +6,7 @@
 # execute "pip install Mercurial" before using this file. Otherwise it will
 # bail out upon trying to install Fudge from BitBucket.
 
-paramiko >= 1.7
+pycrypto >= 1.9
 nose
 coverage
 pylint

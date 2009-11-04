@@ -38,6 +38,26 @@ There are a number of ways to get involved with Fabric:
   inspect all contributions and either incorporate them or explain why we don't
   feel the change is a good fit.
 
+Style
+-----
+
+Fabric tries hard to honor `PEP-8`_, especially (but not limited to!) the
+following:
+
+* Keep all lines under 80 characters. This goes for the ReST documentation as
+  well as code itself.
+
+  * Exceptions are made for situations where breaking a long string (such as a
+    string being ``print``-ed from source code, or an especially long URL link
+    in documentation) would be kind of a pain.
+
+* Typical Python 4-space (soft-tab) indents. No tabs! No 8 space indents! (No
+  2- or 3-space indents, for that matter!)
+* ``CamelCase`` class names, but ``lowercase_underscore_separated`` everything
+  else.
+
+.. _PEP-8: http://www.python.org/dev/peps/pep-0008/
+
 Branching/Repository Layout
 ===========================
 
