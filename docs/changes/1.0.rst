@@ -13,3 +13,8 @@ Fabric.
 * `~fabric.operations.sudo`'s signature used to be ``sudo(command, shell, user,
   pty)``; to be consistent with `~fabric.operations.run`, the last two kwargs
   have been swapped: its signature is now ``sudo(command, shell, pty, user)``.
+* The `~fabric.operations.reboot` operation has been added, providing a way for
+  Fabric to issue a reboot command and then reconnect after the system has
+  restarted.
+* Added a `~fabric.utils.fastprint` utility function equivalent to
+  ``sys.stdout.write(text); sys.stdout.flush()``.
