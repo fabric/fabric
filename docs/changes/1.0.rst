@@ -18,3 +18,8 @@ Fabric.
   restarted.
 * Added a `~fabric.utils.fastprint` utility function equivalent to
   ``sys.stdout.write(text); sys.stdout.flush()``.
+* `~fabric.operations.local` now returns the same "rich" string object as
+  `~fabric.operations.run`/`~fabric.operations.sudo` do, so that it is a
+  string containing the command's stdout (if ``capture=True``) or the empty
+  string (if ``capture=False) which exposes the ``.failed``
+  and ``.return_code`` attributes, and so forth.
