@@ -72,7 +72,7 @@ def tag():
         local("git add fabric/version.py")
         local("git commit -m \"Cut %s\"" % verbose_version)
         # And tag it
-        local("git tag -m \"Fabric %s\" %s" % (
+        local("git tag -am \"Fabric %s\" %s" % (
             verbose_version,
             short_version
         ))
