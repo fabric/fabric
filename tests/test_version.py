@@ -20,4 +20,4 @@ def test_get_version():
         fabric.version.VERSION = tup
         yield eq_, get_version(), regular_str
         yield eq_, get_version(verbose=True), verbose_str
-        yield eq_, get_version(line_only=True), line_str
+        yield eq_, get_version(branch_only=True), line_str
