@@ -76,3 +76,10 @@ def tag():
             verbose_version,
             short_version
         ))
+
+
+def build():
+    """
+    Create distribution package via setup.py
+    """
+    local('python setup.py sdist', capture=False)
