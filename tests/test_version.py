@@ -9,7 +9,7 @@ import fabric.version
 
 def test_get_version():
     get_version = fabric.version.get_version
-    for tup, regular_str, verbose_str, line_str in [
+    for tup, regular_str, verbose_str, branch_str in [
         ((0, 9, 0, 'final'), '0.9', '0.9 final', '0.9'),
         ((0, 9, 1, 'final'), '0.9.1', '0.9.1 final', '0.9'),
         ((0, 9, 0, 'alpha', 1), '0.9a1', '0.9 alpha 1', '0.9'),
@@ -20,4 +20,4 @@ def test_get_version():
         fabric.version.VERSION = tup
         yield eq_, get_version(), regular_str
         yield eq_, get_version(verbose=True), verbose_str
-        yield eq_, get_version(line_only=True), line_str
+        yield eq_, get_version(branch_only=True), branch_str
