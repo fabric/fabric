@@ -45,40 +45,54 @@ def push_docs():
     rsync_project(remote_loc, 'docs/_build/html/', delete=True)
 
 
+def _code_version_is_tagged():
+    return local('git tag | egrep "^%s$"' % _version('short'))
+
+def _update_code_version():
+    """
+    Update version data structure in-code and commit that change to git.
+    """
+    raw_input("Work has been done since last tag, version update is needed. Hit Enter to load version info in your editor: ")
+    local("$EDITOR fabric/version.py", capture=False)
+    # Try to detect whether user bailed out of the edit
+    if not local('git diff -- fabric/version.py'):
+        abort("You seem to have aborted the file edit, so I'm aborting too.")
+    # Reload version module to get new version
+    reload(fabric.version)
+    # Commit the version update
+    local("git add fabric/version.py", capture=False)
+    local("git commit -m \"Cut %s\"" % _version('verbose'), capture=False)
+
+def _commits_since_tag():
+    """
+    Has any work been done since the last tag?
+    """
+    return local("git log %s.." % _version('short'))
+
 def tag():
     """
     Tag a new release of the software
     """
     with settings(warn_only=True):
-        # Get current version string
-        version = fabric.version.get_version()
-        # Does that tag already exist?
-        exists = local("git tag | grep %s" % version)
-        if exists:
-            # If no work has been done since, what's the point?
-            if not local("git log %s.." % version):
+        # Does the current in-code version exist as a Git tag already?
+        # If so, this means we haven't updated the in-code version specifier
+        # yet, and need to do so.
+        if _code_version_is_tagged():
+            # That is, if any work has been done since. Sanity check!
+            if not _commits_since_tag():
                 abort("No work done since last tag!")
-            # If work *has* been done since, we need to make a new tag. To the
-            # editor for version update!
-            raw_input("Work has been done since last tag, version update is needed. Hit Enter to load version info in your editor: ")
-            local("$EDITOR fabric/version.py", capture=False)
-            # Reload version module to get new version
-            reload(fabric.version)
+            # Open editor, update version, commit that change to Git.
+            _update_code_version()
         # If the tag doesn't exist, the user has already updated version info
         # and we can just move on.
         else:
             print("Version has already been updated, no need to edit...")
-        # Get version strings
-        verbose_version = fabric.version.get_version(verbose=True)
-        short_version = fabric.version.get_version()
-        # Commit the version update
-        local("git add fabric/version.py")
-        local("git commit -m \"Cut %s\"" % verbose_version)
-        # And tag it
+        # At this point, we've incremented the in-code version and just need to
+        # tag it in Git.
         local("git tag -am \"Fabric %s\" %s" % (
-            verbose_version,
-            short_version
-        ))
+            _version('verbose'),
+            _version('short')
+        ), capture=False)
 
 
 def build():
