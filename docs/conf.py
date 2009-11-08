@@ -52,10 +52,10 @@ sys.path.insert(0, os.path.abspath(os.path.join('..', '..', __file__)))
 from fabric.version import get_version
 # Get version info
 #
-# The short X.Y version.
-version = get_version(line_only=True)
-# The full version, including alpha/beta/rc tags.
-release = get_version(verbose=True)
+# Branch-only name
+version = get_version('branch')
+# The full human readable version, including alpha/beta/rc tags.
+release = get_version('normal')
 # Restore old path
 sys.path = oldpath[:]
 

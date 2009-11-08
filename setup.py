@@ -6,7 +6,7 @@ from fabric.version import get_version
 
 setup(
     name='Fabric',
-    version=get_version(),
+    version=get_version('short'),
     description='Fabric is a simple, Pythonic tool for remote execution and deployment.',
     long_description=open('README').read() + """
     

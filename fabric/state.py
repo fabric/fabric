@@ -205,7 +205,7 @@ env = _AttributeDict({
     'sudo_prompt': 'sudo password:',
     'use_shell': True,
     'user': None,
-    'version': get_version(),
+    'version': get_version('short'),
 })
 
 # Add in option defaults
