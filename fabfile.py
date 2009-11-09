@@ -39,9 +39,8 @@ def push_docs():
     """
     Build and push the Sphinx docs to docs.fabfile.org
     """
-    build_docs()
-    branch = _version('branch')
-    remote_loc = '/var/www/docs.fabfile/%s/' % branch
+    build_docs(clean='yes')
+    remote_loc = '/var/www/docs.fabfile/%s/' % _version('short')
     rsync_project(remote_loc, 'docs/_build/html/', delete=True)
 
 
