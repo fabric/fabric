@@ -320,10 +320,11 @@ def output_thread(prefix, chan, stderr=False, capture=None):
             if initial or try_again:
                 # Prompt user if nothing to try, or if stored password failed
                 if not password or try_again:
-                    password = prompt_for_password(password)
-                # Set environment password if that was previously empty.
-                if not env.password:
-                    env.password = password
+                    # Save entered password in local and global password var.
+                    # Will have to re-enter when password changes per host, but
+                    # this way a given password will persist for as long as
+                    # it's valid.
+                    env.password = password = prompt_for_password(password)
                 # Send current password down the pipe
                 chan.sendall(password + '\n')
                 out = ""
