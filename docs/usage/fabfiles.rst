@@ -10,23 +10,27 @@ write them, and how to use them once written.
 Fabfile discovery
 =================
 
-By default, ``fab`` attempts to find a file named ``fabfile.py``, in the
-invoking user's current working directory or any parent directories. Thus, it
-is oriented around "project" use, where one keeps a ``fabfile.py`` at the root
-of a source code tree. Such a fabfile will then be discovered no matter where
-in the source code the user invokes ``fab``.
+Fabric is capable of loading Python modules (e.g. ``fabfile.py``) or packages
+(e.g. a ``fabfile/`` directory containing an ``__init__.py``). By default, it
+looks for something named either ``fabfile`` or ``fabfile.py``.
 
-The specific name of the fabfile may be overridden on the command-line with
-the :option:`-f` option, or by adding a line setting the value of ``fabfile``
-to one's :ref:`fabricrc <fabricrc>`. For example, if you wanted to name
-your fabfile ``fab_tasks.py``, you could create such a file and then call
-``fab -f fab_tasks.py <task name>``, or add ``fabfile = fab_tasks.py`` to
+The fabfile discovery algorithm searches in the invoking user's current working
+directory or any parent directories. Thus, it is oriented around "project" use,
+where one keeps e.g. a ``fabfile.py`` at the root of a source code tree. Such a
+fabfile will then be discovered no matter where in the tree the user invokes
+``fab``.
+
+The specific name to be searched for may be overridden on the command-line with
+the :option:`-f` option, or by adding a :ref:`fabricrc <fabricrc>` line which
+sets the value of ``fabfile``. For example, if you wanted to name your fabfile
+``fab_tasks.py``, you could create such a file and then call ``fab -f
+fab_tasks.py <task name>``, or add ``fabfile = fab_tasks.py`` to
 ``~/.fabricrc``.
 
 If the given fabfile name contains path elements other than a filename (e.g.
-``../fabfile.py`` or ``/dir1/dir2/other.py``) it will be treated as a file path
-and directly checked for existence without any sort of searching. When in this
-mode, tile-expansion will be applied, so one may refer to e.g.
+``../fabfile.py`` or ``/dir1/dir2/custom_fabfile``) it will be treated as a
+file path and directly checked for existence without any sort of searching.
+When in this mode, tilde-expansion will be applied, so one may refer to e.g.
 ``~/personal_fabfile.py``.
 
 .. note::
@@ -36,6 +40,9 @@ mode, tile-expansion will be applied, so one may refer to e.g.
     or similar. In order for this to work, Fabric temporarily adds the found
     fabfile's containing folder to the Python load path (and removes it
     immediately afterwards.)
+
+.. versionadded:: 1.0
+    The ability to load package fabfiles.
 
 
 .. _importing-the-api:

@@ -26,3 +26,6 @@ Fabric.
 * :option:`fab -d <-d>` now displays a well formatted message for tasks that
   have no docstring defined.
 * `~fabric.operations.local` now honors `~fabric.context_managers.cd`.
+* Added functionality for loading fabfiles which are Python packages
+  (directories) instead of just modules (single files.) See
+  :ref:`fabfile-discovery`.
