@@ -35,4 +35,8 @@ Fabric.
   [options] -- [shell command]``. See :ref:`arbitrary-commands`.
 * Full tracebacks during aborts are now displayed if the user has opted to see
   debug-level output. Fixes `#52 <http://code.fabfile.org/issues/show/52>`_.
+* `~fabric.operations.run`, `~fabric.operations.sudo` and
+  `~fabric.operations.local` now provide access to their standard error
+  (stderr) as an attribute on the return value, alongside e.g. ``.failed``.
+  Fixes `#55 <http://code.fabfile.org/issues/show/55>`_.
 * Various and sundry minor bugfixes and code tweaks.
