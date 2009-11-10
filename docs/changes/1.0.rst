@@ -23,3 +23,6 @@ Fabric.
   string containing the command's stdout (if ``capture=True``) or the empty
   string (if ``capture=False) which exposes the ``.failed``
   and ``.return_code`` attributes, and so forth.
+* Fixed a bug where Fabric's own internal fabfile would pre-empt the user's
+  fabfile due to a PYTHONPATH order issue. User fabfiles are now always loaded
+  at the front of the PYTHONPATH during import.
