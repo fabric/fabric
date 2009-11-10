@@ -33,4 +33,6 @@ Fabric.
   imported into Fabric under Python 2.6.
 * Added support for arbitrary command-line-driven anonymous tasks via ``fab
   [options] -- [shell command]``. See :ref:`arbitrary-commands`.
-* Various and sundry minor bugfixes and code enhancements.
+* Full tracebacks during aborts are now displayed if the user has opted to see
+  debug-level output. Fixes `#52 <http://code.fabfile.org/issues/show/52>`_.
+* Various and sundry minor bugfixes and code tweaks.

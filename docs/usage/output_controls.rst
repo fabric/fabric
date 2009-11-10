@@ -67,6 +67,9 @@ differently from the rest:
   will see the literal, full string as passed to the remote server::
 
       [hostname] run: /bin/bash -l -c "ls \"/home/username/Folder Name With Spaces\""
+
+  Enabling ``debug`` output will also display full Python tracebacks during
+  aborts.
   
   .. note::
   
