@@ -21,6 +21,9 @@ user.
 
     All levels, save for ``debug``, are on by default.
 
+Standard output levels
+----------------------
+
 The standard, atomic output levels/groups are as follows:
 
 * **status**: Status messages, i.e. noting when Fabric is done running, if

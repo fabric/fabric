@@ -220,7 +220,7 @@ env = _AttributeDict({
     'path': '',
     'path_behavior': 'append',
     'user': None,
-    'version': get_version(),
+    'version': get_version('short'),
 })
 
 # Add in option defaults
