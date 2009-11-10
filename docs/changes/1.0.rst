@@ -29,3 +29,6 @@ Fabric.
 * Added functionality for loading fabfiles which are Python packages
   (directories) instead of just modules (single files.) See
   :ref:`fabfile-discovery`.
+* Disabled some DeprecationWarnings thrown by Paramiko when that library is
+  imported into Fabric under Python 2.6.
+* Various and sundry minor bugfixes and code enhancements.
