@@ -23,3 +23,5 @@ Fabric.
   string containing the command's stdout (if ``capture=True``) or the empty
   string (if ``capture=False) which exposes the ``.failed``
   and ``.return_code`` attributes, and so forth.
+* :option:`fab -d <-d>` now displays a well formatted message for tasks that
+  have no docstring defined.
