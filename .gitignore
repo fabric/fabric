@@ -8,3 +8,4 @@
 Fabric.egg-info
 .coverage
 docs/_build
+dist

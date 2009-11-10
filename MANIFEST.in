@@ -1,0 +1,10 @@
+include AUTHORS
+include FAQ
+include INSTALL
+include LICENSE
+include README
+recursive-include docs *.rst
+recursive-exclude docs/_build *
+include fabfile.py
+include requirements.txt
+recursive-include tests *.py
