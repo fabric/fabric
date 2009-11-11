@@ -47,6 +47,16 @@ def project(name):
     location.
 
     Uses `settings_module` -- see its documentation for details on why and how
-    to use this functionality.
+    to use this functionality. Another example (which would also work for
+    `settings_module`, as they are functionally equivalent)::
+
+        from fabric.contrib import django
+
+        django.project('myproject')
+        from django.conf import settings as django_settings
+
+        def print_database_info():
+            print("User: %s" % django_settings.DATABASE_USER)
+            print("Password: %s" % django_settings.DATABASE_PASSWORD)
     """
     settings_module('%s.settings' % name)
