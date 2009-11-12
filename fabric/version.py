@@ -8,43 +8,69 @@ which in turn needs access to this version information.)
 
 VERSION = (1, 0, 0, 'alpha', 0)
 
-def get_version(verbose=False, line_only=False):
+def get_version(form='short'):
     """
     Return a version string for this package, based on `VERSION`.
 
-    When ``verbose`` is False (the default), `get_version` prints a
-    tag-friendly version of the string, e.g. '0.9a2'.
+    Takes a single argument, ``form``, which should be one of the following
+    strings:
 
-    When ``verbose`` is True, a slightly more human-readable version is
-    produced, e.g. '0.9 alpha 2'.
-
-    When ``line_only`` is True, only the major and minor version numbers are
-    returned, e.g. '0.9'.
-
-    This code is based off of Django's similar version output algorithm.
+    * ``branch``: just the major + minor, e.g. "0.9", "1.0".
+    * ``short`` (default): compact, e.g. "0.9rc1", "0.9.0". For package
+      filenames or SCM tag identifiers.
+    * ``normal``: human readable, e.g. "0.9", "0.9.1", "0.9 beta 1". For e.g.
+      documentation site headers.
+    * ``verbose``: like ``normal`` but fully explicit, e.g. "0.9 final". For
+      tag commit messages, or anywhere that it's important to remove ambiguity
+      between a branch and the first final release within that branch.
     """
-    # Major + minor only
-    version = '%s.%s' % (VERSION[0], VERSION[1])
-    # Break off now if we only want the line of development
-    if line_only:
-        return version
-    # Append tertiary/patch if non-zero
-    if VERSION[2]:
-        version = '%s.%s' % (version, VERSION[2])
-    # Append alpha/beta modifier if not a final release
-    if VERSION[3] != 'final':
-        # If non-verbose, just the first letter of the modifier, and no spaces.
-        # (If modifier is >1 word, create acronym.)
-        if not verbose:
-            firsts = ''.join([x[0] for x in VERSION[3].split()])
-            version = '%s%s%s' % (version, firsts, VERSION[4])
-        # Otherwise, be more generous.
-        else:
-            version = '%s %s %s' % (version, VERSION[3], VERSION[4])
-    # If it is final, and we're being verbose, also tack on the 'final'.
-    elif verbose:
-        version = '%s %s' % (version, VERSION[3])
+    # Setup
+    versions = {}
+    branch = "%s.%s" % (VERSION[0], VERSION[1])
+    tertiary = VERSION[2]
+    type_ = VERSION[3]
+    final = (type_ == "final")
+    type_num = VERSION[4]
+    firsts = "".join([x[0] for x in type_.split()])
 
-    return version
+    # Branch
+    versions['branch'] = branch
 
-__version__ = get_version()
+    # Short
+    v = branch
+    if (tertiary or final):
+        v += "." + str(tertiary)
+    if not final:
+        v += firsts
+        if type_num:
+            v += str(type_num)
+    versions['short'] = v
+
+    # Normal
+    v = branch
+    if tertiary:
+        v += "." + str(tertiary)
+    if not final:
+        v += " " + type_
+        if type_num:
+            v += " " + str(type_num)
+    versions['normal'] = v
+
+    # Verbose
+    v = branch
+    if tertiary:
+        v += "." + str(tertiary)
+    if not final:
+        v += " " + type_
+        if type_num:
+            v += " " + str(type_num)
+    else:
+        v += " final"
+    versions['verbose'] = v
+
+    try:
+        return versions[form]
+    except KeyError:
+        raise TypeError, '"%s" is not a valid form specifier.' % form
+
+__version__ = get_version('short')

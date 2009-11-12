@@ -407,3 +407,11 @@ promise that future changelogs will be more verbose :)
 * ``fab test`` (when in source tree) now uses doctests.
 * Add note to compatibility page re: fab_quiet.
 * Update local() to honor context_managers.cd()
+
+Changes from release candidate 1 to final release
+=================================================
+
+* Fixed the `~fabric.contrib.files.sed` docstring to accurately reflect which
+  ``sed`` options it uses.
+* Various changes to internal fabfile, version mechanisms, and other
+  non-user-facing things.

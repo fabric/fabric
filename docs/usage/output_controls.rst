@@ -21,6 +21,9 @@ user.
 
     All levels, save for ``debug``, are on by default.
 
+Standard output levels
+----------------------
+
 The standard, atomic output levels/groups are as follows:
 
 * **status**: Status messages, i.e. noting when Fabric is done running, if
@@ -67,6 +70,9 @@ differently from the rest:
   will see the literal, full string as passed to the remote server::
 
       [hostname] run: /bin/bash -l -c "ls \"/home/username/Folder Name With Spaces\""
+
+  Enabling ``debug`` output will also display full Python tracebacks during
+  aborts.
   
   .. note::
   

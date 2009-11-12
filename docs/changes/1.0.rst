@@ -26,3 +26,23 @@ Fabric.
 * Fixed a bug where Fabric's own internal fabfile would pre-empt the user's
   fabfile due to a PYTHONPATH order issue. User fabfiles are now always loaded
   at the front of the PYTHONPATH during import.
+* :option:`fab -d <-d>` now displays a well formatted message for tasks that
+  have no docstring defined.
+* `~fabric.operations.local` now honors `~fabric.context_managers.cd`.
+* Added functionality for loading fabfiles which are Python packages
+  (directories) instead of just modules (single files.) See
+  :ref:`fabfile-discovery`.
+* Disabled some DeprecationWarnings thrown by Paramiko when that library is
+  imported into Fabric under Python 2.6.
+* Added support for arbitrary command-line-driven anonymous tasks via ``fab
+  [options] -- [shell command]``. See :ref:`arbitrary-commands`.
+* Full tracebacks during aborts are now displayed if the user has opted to see
+  debug-level output. Fixes `#52 <http://code.fabfile.org/issues/show/52>`_.
+* `~fabric.operations.run`, `~fabric.operations.sudo` and
+  `~fabric.operations.local` now provide access to their standard error
+  (stderr) as an attribute on the return value, alongside e.g. ``.failed``.
+  Fixes `#55 <http://code.fabfile.org/issues/show/55>`_.
+* `~fabric.contrib.files.contains` and `~fabric.contrib.files.append` have had
+  their arguments juggled for consistency's sake so they line up with the other
+  :doc:`contrib.files <../api/contrib/files>` functions.
+* Various and sundry minor bugfixes and code tweaks.

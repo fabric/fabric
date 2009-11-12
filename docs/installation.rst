@@ -97,15 +97,20 @@ Downloads
 To obtain a tar.gz or zip archive of the Fabric source code, you may visit
 either of the following locations:
 
-* The official downloads are available via `git.fabfile.org
-  <http://git.fabfile.org>`_. Our Git repository viewer provides downloads of
+* The official downloads are located in Fabric's Redmine instance at
+  http://code.fabfile.org/projects/fabric/files/. This is the spot you want
+  to download from for operating system packages, as the only changing part of
+  the URL will be the filename itself and the md5 hashes will be consistent.
+* Our `Git repository viewer <http://git.fabfile.org>`_ provides downloads of
   all tagged releases. See the "Download" column, next to the "Tag" column in
-  the middle of the front page.
-* `Our GitHub mirror <http://github.com/bitprophet/fabric>`_ has downloads of
-  all tagged releases as well -- just click the 'Download' button near the top
-  of the main page.
+  the middle of the front page. Please note that due to how cgit generates tag
+  archives, the md5 sums will change over time, so use of this location for
+  package downloads is not recommended.
+* `Our GitHub mirror <http://github.com/bitprophet/fabric>`_ also has downloads
+  of all tagged releases -- just click the 'Download' button near the top of
+  the main page.
 * `Fabric's PyPI page <http://pypi.python.org/pypi/Fabric>`_ offers manual
-  downloads as well as being the entry point for :ref:`easy-install`.
+  downloads in addition to being the entry point for :ref:`easy-install`.
 
 .. _source-code-checkouts:
 
