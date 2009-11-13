@@ -43,7 +43,8 @@ The standard, atomic output levels/groups are as follows:
   whether warning messages are printed or hidden.
 
 * **running**: Printouts of commands being executed or files transferred, e.g.
-  ``[myserver] run: ls /var/www``.
+  ``[myserver] run: ls /var/www``. Also controls printing of tasks being run,
+  e.g. ``[myserver] Executing task 'foo'``.
 
 * **stdout**: Local, or remote, stdout, i.e. non-error output from commands.
 

@@ -46,3 +46,5 @@ Fabric.
   their arguments juggled for consistency's sake so they line up with the other
   :doc:`contrib.files <../api/contrib/files>` functions.
 * Various and sundry minor bugfixes and code tweaks.
+* Added output lines informing the user of which tasks are being executed (e.g.
+  ``[myserver] Executing task 'foo'``.)
