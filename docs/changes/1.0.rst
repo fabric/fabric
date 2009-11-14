@@ -51,3 +51,6 @@ Fabric.
 * Added `~fabric.context_managers.path` context manager for modifying commands'
   effective ``$PATH``.
 * Added support for lazy (callable) role definition values in ``env.roledefs``.
+* Added environment variable (:ref:`always-use-pty`) and command-line flag
+  (:option:`--pty`) for global control over the
+  `~fabric.operations.run`/`~fabric.operations.sudo` ``pty`` argument.

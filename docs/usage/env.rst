@@ -114,6 +114,20 @@ informational purposes only.
 
 .. seealso:: :doc:`execution`
 
+.. _always-use-pty:
+
+``always_use_pty``
+------------------
+
+**Default:** ``False``
+
+When set to ``True``, causes `~fabric.operations.run`/`~fabric.operations.sudo`
+to act as if they have been called with ``pty=True``. (To disable on a
+per-invocation basis, manually specify ``pty=False``.)
+
+The command-line flag :option:`--pty`, if given, will set this env var to
+``True``.
+
 ``command``
 -----------
 

@@ -177,6 +177,12 @@ below.
     A comma-separated list of :doc:`output levels <output_controls>` to show by
     default.
 
+.. cmdoption:: --pty
+
+    Sets :ref:`env.always_use_pty <always-use-pty>` to ``True``, causing all
+    `~fabric.operations.run`/`~fabric.operations.sudo` calls to behave as if
+    one had specified ``pty=True`` (forcing a pseudoterminal on the remote
+    end.)
 
 Per-task arguments
 ==================
