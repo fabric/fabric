@@ -50,6 +50,9 @@ The standard, atomic output levels/groups are as follows:
 
 * **stderr**: Local, or remote, stderr, i.e. error-related output from commands.
 
+.. versionchanged:: 1.0
+    Added "Executing task" lines to the ``running`` output level.
+
 Debug output
 ------------
 
