@@ -6,5 +6,6 @@ Context Managers
 
     .. autofunction:: cd(path)
     .. autofunction:: hide(*groups)
+    .. autofunction:: path
     .. autofunction:: settings
     .. autofunction:: show(*groups)

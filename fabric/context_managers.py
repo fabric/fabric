@@ -211,5 +211,7 @@ def path(path, behavior='append'):
         variables, ``env.path`` and ``env.path_behavior``. However, this
         implementation may change in the future, so we do not recommend
         manually altering them directly.
+
+    .. versionadded:: 1.0
     """
     return _setenv(path=path, path_behavior=behavior)
