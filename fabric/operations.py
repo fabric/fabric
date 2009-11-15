@@ -550,6 +550,8 @@ def run(command, shell=True, pty=False):
     
     .. versionchanged:: 1.0
         Added the ``succeeded`` attribute.
+    .. versionchanged:: 1.0
+        Added the ``stderr`` attribute.
     """
     return _run_command(command, shell, pty)
 
@@ -611,6 +613,8 @@ def local(command, capture=True):
         Added the ``succeeded`` attribute.
     .. versionchanged:: 1.0
         Now honors the `~fabric.context_managers.cd` context manager.
+    .. versionchanged:: 1.0
+        Added the ``stderr`` attribute.
     """
     given_command = command
     # Apply cd(), path() etc
