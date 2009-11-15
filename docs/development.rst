@@ -75,8 +75,8 @@ contributors.
   to be threadsafe, or one for overhauling task dependencies, etc.)
 
   * At time of writing, this means that Fabric maintains an ``0.9`` release
-    branch, from which the 0.9 betas are cut, and from which the final release
-    and bugfix releases will continue to be generated from.
+    branch, from which all prerelease and final release versions of 0.9.x, e.g.
+    0.9rc1 and 0.9.0 and so forth, are cut.
   * New features intended for the next major release (Fabric 1.0) will be kept
     in the ``master`` branch. Once the 1.0 alpha or beta period begins, this
     work will be split off into a ``1.0`` branch and ``master`` will start
@@ -109,7 +109,7 @@ Releases
 
 Fabric tries to follow open-source standards and conventions in its release
 tagging, including typical version numbers such as 2.0, 1.2.5, or
-1.2-beta1. Each release will be marked as a tag in the Git repositories, and
+1.2b1. Each release will be marked as a tag in the Git repositories, and
 are broken down as follows:
 
 Major
@@ -134,7 +134,8 @@ Minor
 Minor releases, such as moving from 1.0 to 1.1, typically mean that a new,
 large feature has been added. They are also sometimes used to mark off the
 fact that a lot of bug fixes or small feature modifications have occurred
-since the previous minor release.
+since the previous minor release. (And, naturally, some of them will involve
+both at the same time.)
 
 These releases are guaranteed to be backwards-compatible with all other
 releases containing the same major version number, so a fabfile that works
@@ -146,14 +147,53 @@ with 1.0 should also work fine with 1.1 or even 1.9.
     minor release number was the backwards-compatibility boundary -- e.g.
     Fabric 0.1 was incompatible with Fabric 0.0.x.
 
+    Fabric 0.1 to 0.9 also marked a rewrite of the software and a change of
+    hands, and so did break backwards compatibility. This will not happen
+    again.
+
 Bugfix/tertiary
 ---------------
 
 The third and final part of version numbers, such as the '3' in 1.0.3,
 generally indicate a release containing one or more bugfixes, although minor
-feature additions or modifications are also common.
+feature additions or modifications may sometimes occur.
 
 This third number is sometimes omitted for the first major or minor release in
 a series, e.g. 1.2 or 2.0, and in these cases it can be considered an implicit
-zero (e.g. 2.0.0). Fabric will likely include the explicit zero in these cases,
-however -- after all, explicit is better than implicit.
+zero (e.g. 2.0.0).
+
+.. note::
+
+    The 0.9.x branch of development will see more significant feature additions
+    than is planned for future lines. This is in order to backport some useful
+    features from the 1.0 branch so that the feature gap between 0.9 and 1.0 is
+    not as large as it was when 0.9.0 was released.
+
+    In 1.0.x and so forth, tertiary releases are more likely to contain just
+    bugfixes or tweaks, and not new functionality, as the window between minor
+    releases is expected to be shorter than that of 0.1 => 0.9.
+
+
+Support of older releases
+=========================
+
+Major and minor releases do not mark the end of the previous line or lines of
+development:
+
+* The two most recent stable release branches will continue to receive critical
+  bugfixes. For example, once 1.0 is released, both it and 0.9 will likely see
+  tertiary releases until 1.1 is released, at which point only 1.1 and 1.0 will
+  get bugfixes.
+* Depending on the nature of bugs found and the difficulty in backporting them,
+  older release lines may also continue to get bugfixes -- but there's no
+  longer a guarantee of any kind. Thus, if a bug is found in 1.1 that affects
+  0.9 and can be easily applied, we *may* cut a new 0.9.x release.
+* This policy may change in the future to accomodate more branches, depending
+  on development speed.
+
+We hope that this policy will allow us to have a rapid minor release cycle (and
+thus keep new features coming out frequently) without causing users to feel too
+much pressure to upgrade right away. At the same time, the backwards
+compatibility guarantee means that users should still feel comfortable
+upgrading to the next minor release in order to stay within this sliding
+support window.
