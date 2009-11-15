@@ -59,3 +59,4 @@ Fabric.
   which is simply the opposite of the ``.failed`` attribute.
 * Added `contrib.django <fabric.contrib.django>` module with basic Django
   integration.
+* Added `~fabric.colors` module with basic color output support.
