@@ -548,8 +548,8 @@ def run(command, shell=True, pty=False):
         run("ls /home/myuser", shell=False)
         output = run('ls /var/www/site1')
     
-    .. versionadded:: 1.0
-        The ``succeeded`` attribute.
+    .. versionchanged:: 1.0
+        Added the ``succeeded`` attribute.
     """
     return _run_command(command, shell, pty)
 
@@ -607,8 +607,8 @@ def local(command, capture=True):
     ``output.stderr`` will be used to determine what is printed and what is
     discarded.
 
-    .. versionadded:: 1.0
-        The ``succeeded`` attribute.
+    .. versionchanged:: 1.0
+        Added the ``succeeded`` attribute.
     """
     given_command = command
     # Apply cd(), path() etc

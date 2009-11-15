@@ -41,7 +41,7 @@ When in this mode, tilde-expansion will be applied, so one may refer to e.g.
     fabfile's containing folder to the Python load path (and removes it
     immediately afterwards.)
 
-.. versionadded:: 1.0
+.. versionchanged:: 1.0
     The ability to load package fabfiles.
 
 
