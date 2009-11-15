@@ -83,6 +83,9 @@ differently from the rest:
       ``running`` is False but ``debug`` is True, you will still be shown the
       'running' line in its debugging form.
 
+.. versionchanged:: 1.0
+    Debug output now includes full Python tracebacks during aborts.
+
 Output level aliases
 --------------------
 
