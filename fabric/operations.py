@@ -609,6 +609,8 @@ def local(command, capture=True):
 
     .. versionchanged:: 1.0
         Added the ``succeeded`` attribute.
+    .. versionchanged:: 1.0
+        Now honors the `~fabric.context_managers.cd` context manager.
     """
     given_command = command
     # Apply cd(), path() etc
