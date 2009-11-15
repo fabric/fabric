@@ -54,3 +54,6 @@ Fabric.
 * Added environment variable (:ref:`always-use-pty`) and command-line flag
   (:option:`--pty`) for global control over the
   `~fabric.operations.run`/`~fabric.operations.sudo` ``pty`` argument.
+* Added convenience ``.succeeded`` attribute to the return values of
+  `~fabric.operations.run`/`~fabric.operations.sudo`/`~fabric.operations.local`
+  which is simply the opposite of the ``.failed`` attribute.
