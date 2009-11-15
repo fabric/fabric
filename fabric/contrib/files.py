@@ -228,6 +228,10 @@ def contains(filename, text, exact=False, use_sudo=False):
     invocation.
 
     If ``use_sudo`` is True, will use `sudo` instead of `run`.
+
+    .. versionchanged:: 1.0
+        Swapped the order of the ``filename`` and ``text`` arguments to be
+        consistent with other functions in this module.
     """
     func = use_sudo and sudo or run
     if exact:
@@ -255,6 +259,10 @@ def append(filename, text, use_sudo=False):
     backslash-escaped.
 
     If ``use_sudo`` is True, will use `sudo` instead of `run`.
+
+    .. versionchanged:: 1.0
+        Swapped the order of the ``filename`` and ``text`` arguments to be
+        consistent with other functions in this module.
     """
     func = use_sudo and sudo or run
     # Normalize non-list input to be a list
