@@ -140,7 +140,8 @@ below.
 .. cmdoption:: -i KEY_FILENAME
 
     When set to a file path, will load the given file as an SSH identity file
-    (usually a private key.) This option may be repeated multiple times.
+    (usually a private key.) This option may be repeated multiple times. Sets
+    (or appends to) :ref:`env.key_filename <key-filename>`.
 
 .. cmdoption:: -f FABFILE, --fabfile=FABFILE
 

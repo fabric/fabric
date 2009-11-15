@@ -205,13 +205,16 @@ The global host list used when composing per-task host lists.
 
 .. seealso:: :doc:`execution`
 
+.. _key-filename:
+
 ``key_filename``
 ----------------
 
 **Default:** ``None``
 
 May be a string or list of strings, referencing file paths to SSH key files to
-try when connecting. Passed through directly to the SSH layer.
+try when connecting. Passed through directly to the SSH layer. May be
+set/appended to with :option:`-i`.
 
 .. seealso:: `Paramiko's documentation for SSHClient.connect() <http://www.lag.net/paramiko/docs/paramiko.SSHClient-class.html#connect>`_
 
