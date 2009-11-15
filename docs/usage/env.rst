@@ -128,6 +128,8 @@ per-invocation basis, manually specify ``pty=False``.)
 The command-line flag :option:`--pty`, if given, will set this env var to
 ``True``.
 
+.. versionadded:: 1.0
+
 ``command``
 -----------
 

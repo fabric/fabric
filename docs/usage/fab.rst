@@ -184,6 +184,8 @@ below.
     one had specified ``pty=True`` (forcing a pseudoterminal on the remote
     end.)
 
+    .. versionadded:: 1.0
+
 Per-task arguments
 ==================
 
