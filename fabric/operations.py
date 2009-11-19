@@ -466,10 +466,11 @@ def _run_command(command, shell=True, pty=False, sudo=False, user=None):
         shell,
         _sudo_prefix(user) if sudo else None
     )
+    which = 'sudo' if sudo else 'run'
     if output.debug:
-        print("[%s] run: %s" % (env.host_string, wrapped_command))
+        print("[%s] %s: %s" % (env.host_string, which, wrapped_command))
     elif output.running:
-        print("[%s] run: %s" % (env.host_string, given_command))
+        print("[%s] %s: %s" % (env.host_string, which, given_command))
     channel = connections[env.host_string]._transport.open_session()
     # Create pty if necessary (using Paramiko default options, which as of
     # 1.7.4 is vt100 $TERM @ 80x24 characters)
@@ -502,7 +503,7 @@ def _run_command(command, shell=True, pty=False, sudo=False, user=None):
     out.failed = False
     if status != 0:
         out.failed = True
-        msg = "%s() encountered an error (return code %s) while executing '%s'" % ('sudo' if sudo else 'run', status, command)
+        msg = "%s() encountered an error (return code %s) while executing '%s'" % (which, status, command)
         _handle_failure(message=msg)
 
     # Attach return code to output string so users who have set things to warn
