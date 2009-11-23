@@ -621,9 +621,9 @@ def local(command, capture=True):
     # Apply cd(), path() etc
     wrapped_command = _prefix_commands(_prefix_env_vars(command))
     if output.debug:
-        print("[localhost] run: %s" % (wrapped_command))
+        print("[localhost] local: %s" % (wrapped_command))
     elif output.running:
-        print("[localhost] run: " + given_command)
+        print("[localhost] local: " + given_command)
     # By default, capture both stdout and stderr
     PIPE = subprocess.PIPE
     out_stream = PIPE
