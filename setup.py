@@ -16,6 +16,8 @@ For more information, please see the Fabric website or execute ``fab --help``.
     author_email='jeff@bitprophet.org',
     url='http://fabfile.org',
     packages=find_packages(),
+    test_suite='nose.collector',
+    tests_require=['nose', 'fudge'],
     install_requires=['pycrypto >=1.9'],
     entry_points={
         'console_scripts': [
