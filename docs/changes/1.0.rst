@@ -56,4 +56,6 @@ Fabric.
 * Added `contrib.django <fabric.contrib.django>` module with basic Django
   integration.
 * Added `~fabric.colors` module with basic color output support.
+* Modified `~fabric.contrib.project.rsync_project` to honor existing SSH port
+  and identity file settings. Thanks to Mich Matuson and Morgan Goose.
 * Various other minor bugfixes and code tweaks.

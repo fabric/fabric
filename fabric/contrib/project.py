@@ -48,6 +48,11 @@ def rsync_project(remote_dir, local_dir=None, exclude=(), delete=False,
     * ``extra_opts``: an optional, arbitrary string which you may use to pass
       custom arguments or options to ``rsync``.
 
+    Furthermore, this function transparently honors Fabric's port and SSH key
+    settings. Calling this function when the current host string contains a
+    nonstandard port, or when ``env.key_filename`` is non-empty, will use the
+    specified port and/or SSH key filename(s).
+
     For reference, the approximate ``rsync`` command-line call that is
     constructed by this function is the following:
 
@@ -62,13 +67,28 @@ def rsync_project(remote_dir, local_dir=None, exclude=(), delete=False,
     exclude_opts = ' --exclude "%s"' * len(exclude)
     # Double-backslash-escape
     exclusions = tuple([str(s).replace('"', '\\\\"') for s in exclude])
+    # Honor SSH key(s)
+    key_string = ""
+    if env.key_filename:
+        keys = env.key_filename
+        # For ease of use, coerce stringish key filename into list
+        if not isinstance(env.key_filename, (list, tuple)):
+            keys = [keys]
+        key_string = "-i " + " -i ".join(keys)
+    # Honor nonstandard port
+    port_string = ("-p %s" % env.port) if env.port else ""
+    # RSH
+    rsh_string = ""
+    if key_string or port_string:
+        rsh_string = "--rsh='ssh %s %s'" % (port_string, key_string)
     # Set up options part of string
     options_map = {
-        "delete"  : '--delete' if delete else '',
-        "exclude" : exclude_opts % exclusions,
-        "extra"   : extra_opts
+        'delete': '--delete' if delete else '',
+        'exclude': exclude_opts % exclusions,
+        'rsh': rsh_string,
+        'extra': extra_opts
     }
-    options = "%(delete)s%(exclude)s -pthrvz %(extra)s" % options_map
+    options = "%(delete)s%(exclude)s -pthrvz %(extra)s %(rsh)s" % options_map
     # Get local directory
     if local_dir is None:
         local_dir = '../' + getcwd().split(sep)[-1]
