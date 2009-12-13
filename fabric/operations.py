@@ -391,6 +391,10 @@ def _shell_wrap(command, shell=True, sudo_prefix=None):
     """
     Conditionally wrap given command in env.shell (while honoring sudo.)
     """
+    # Honor env.shell, while allowing the 'shell' kwarg to override it (at
+    # least in terms of turning it off.)
+    if shell and not env.use_shell:
+        shell = False
     # Sudo plus space, or empty string
     if sudo_prefix is None:
         sudo_prefix = ""
