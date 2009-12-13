@@ -16,7 +16,7 @@ import sys
 
 from fabric import api # For checking callables against the API 
 from fabric.contrib import console, files, project # Ditto
-from fabric.network import denormalize, normalize
+from fabric.network import denormalize, interpret_host_string
 from fabric import state # For easily-mockable access to roles, env and etc
 from fabric.state import commands, connections, env_options
 from fabric.utils import abort, indent
@@ -450,13 +450,10 @@ def main():
                 command, cli_hosts, cli_roles)
             # If hosts found, execute the function on each host in turn
             for host in hosts:
-                username, hostname, port = normalize(host)
-                state.env.host_string = host
-                state.env.host = hostname
                 # Preserve user
                 prev_user = state.env.user
-                state.env.user = username
-                state.env.port = port
+                # Split host string and apply to env dict
+                username, hostname, port = interpret_host_string(host)
                 # Log to stdout
                 if state.output.running:
                     print("[%s] Executing task '%s'" % (host, name))
