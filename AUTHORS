@@ -1,4 +1,7 @@
-Ordered by date of first contribution:
+The following list contains individuals who contributed nontrivial code to
+Fabric's codebase, ordered by date of first contribution. Individuals who
+submitted bug reports or trivial one-line "you forgot to do X" patches are
+generally credited in the commit log only.
 
 Christian Vest Hansen
 Rob Cowie
@@ -20,3 +23,7 @@ Ali Saifee
 Jorge Vargas
 Peter Ellis
 Brian Rosner
+Xinan Wu
+Alex Koshelev
+Mich Matuson
+Morgan Goose
