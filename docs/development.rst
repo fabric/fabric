@@ -38,6 +38,17 @@ There are a number of ways to get involved with Fabric:
   inspect all contributions and either incorporate them or explain why we don't
   feel the change is a good fit.
 
+Communication
+-------------
+
+If a ticket-tracker ticket exists for a given issue, **please** keep all
+communication in that ticket's comments -- for example, when submitting patches
+via Github, it's easier for us if you leave a note in the ticket **instead of**
+sending a Github pull request.
+
+The core devs receive emails for just about any ticket-tracker activity, so
+additional notices via Github or other means only serve to slow things down.
+
 Style
 -----
 
