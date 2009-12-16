@@ -259,5 +259,20 @@ def prefix(command):
 
         $ cd /path/to/app && workon myvenv && ./manage.py syncdb
         $ cd /path/to/app && workon myvenv && ./manage.py loaddata myfixture
+
+    Finally, as alluded to near the beginning,
+    `~fabric.context_managers.prefix` may be nested if desired, e.g.::
+
+        with prefix('workon myenv'):
+            run('ls')
+            with prefix('source /some/script'):
+                run('touch a_file')
+
+    The result::
+
+        $ workon myenv && ls
+        $ workon myenv && source /some/script && touch a_file
+
+    Contrived, but hopefully illustrative.
     """
     return _setenv(command_prefixes=env.command_prefixes + [command])
