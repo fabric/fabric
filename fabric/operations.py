@@ -413,20 +413,26 @@ def _shell_wrap(command, shell=True, sudo_prefix=None):
 
 def _prefix_commands(command):
     """
-    Prefixes ``command`` with any "prefix commands", e.g. ``cd <foo> && ``.
+    Prefixes ``command`` with all prefixes found in ``env.command_prefixes``.
 
-    Currently, this only applies the directory switching implemented in
+    ``env.command_prefixes`` is a list of strings which is modified by the
+    `~fabric.context_managers.prefix` context manager.
+
+    This function also handles a special-case prefix, ``cwd``, used by
     `~fabric.context_managers.cd`.
     """
-    # cd(): "cd" call bringing us to the current working dir
-    cwd = env.cwd
-    if cwd:
-        # Deal with spaces so users don't have to e.g. cd("foo\ bar")
-        # themselves; do NOT double-quote as that will kill e.g. cd("~/foo").
-        cwd = 'cd %s && ' % cwd.replace(' ', '\ ')
-    else:
-        cwd = ''
-    return cwd + command
+    # Local prefix list (to hold env.command_prefixes + any special cases)
+    prefixes = list(env.command_prefixes)
+    # Handle current working directory, which gets its own special case due to
+    # being a path string that gets grown/shrunk, instead of just a single
+    # string or lack thereof.
+    # Also place it at the front of the list, in case user is expecting another
+    # prefixed command to be "in" the current working directory.
+    if env.cwd:
+        prefixes.insert(0, 'cd %s' % cwd)
+    glue = " && "
+    prefix = (glue.join(prefixes) + glue) if prefixes else ""
+    return prefix + command
 
 
 def _prefix_env_vars(command):

@@ -178,7 +178,13 @@ def cd(path):
         future, so we do not recommend manually altering ``env.cwd`` -- only
         the *behavior* of `cd` will have any guarantee of backwards
         compatibility.
+
+    .. note::
+
+        Space characters will be escaped automatically to make dealing with
+        such directory names easier.
     """
+    path = path.replace(' ', '\ ')
     if env.get('cwd'):
         new_cwd = env.cwd + '/' + path
     else:
@@ -215,3 +221,43 @@ def path(path, behavior='append'):
     .. versionadded:: 1.0
     """
     return _setenv(path=path, path_behavior=behavior)
+
+
+def prefix(command):
+    """
+    Prefix all wrapped `run`/`sudo` commands with given command plus ``&&``.
+
+    This is nearly identical to `~fabric.operations.cd`, except that nested
+    invocations append to a list of command strings instead of modifying a
+    single string.
+
+    Most of the time, you'll want to be using this alongside a shell script
+    which alters shell state, such as ones which export or alter shell
+    environment variables.
+
+    For example, one of the most common uses of this tool is with the
+    ``workon`` command from `virtualenvwrapper
+    <http://www.doughellmann.com/projects/virtualenvwrapper/>`_::
+
+        with prefix('workon myvenv'):
+            run('./manage.py syncdb')
+
+    In the above snippet, the actual shell command run would be this::
+
+        $ workon myvenv && ./manage.py syncdb
+
+    This context manager is compatible with `~fabric.context_managers.cd`, so
+    if your virtualenv doesn't ``cd`` in its ``postactivate`` script, you could
+    do the following::
+
+        with cd('/path/to/app'):
+            with prefix('workon myvenv'):
+                run('./manage.py syncdb')
+                run('./manage.py loaddata myfixture')
+
+    Which would result in executions like so::
+
+        $ cd /path/to/app && workon myvenv && ./manage.py syncdb
+        $ cd /path/to/app && workon myvenv && ./manage.py loaddata myfixture
+    """
+    return _setenv(command_prefixes=env.command_prefixes + [command])

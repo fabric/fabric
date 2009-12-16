@@ -58,4 +58,6 @@ Fabric.
 * Added `~fabric.colors` module with basic color output support.
 * Modified `~fabric.contrib.project.rsync_project` to honor existing SSH port
   and identity file settings. Thanks to Mitch Matuson and Morgan Goose.
+* Added `~fabric.context_managers.prefix` context manager for easier management
+  of persistent state across commands.
 * Various other minor bugfixes and code tweaks.

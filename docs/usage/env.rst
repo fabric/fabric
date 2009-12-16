@@ -142,6 +142,16 @@ only.
 
 .. seealso:: :doc:`execution`
 
+``command_prefixes``
+--------------------
+
+**Default:** ``[]``
+
+Modified by `~fabric.context_managers.prefix`, and prepended to commands
+executed by `~fabric.operations.run`/`~fabric.operations.sudo`.
+
+.. versionadded:: 1.0
+
 ``cwd``
 -------
 
