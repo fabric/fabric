@@ -429,7 +429,7 @@ def _prefix_commands(command):
     # Also place it at the front of the list, in case user is expecting another
     # prefixed command to be "in" the current working directory.
     if env.cwd:
-        prefixes.insert(0, 'cd %s' % cwd)
+        prefixes.insert(0, 'cd %s' % env.cwd)
     glue = " && "
     prefix = (glue.join(prefixes) + glue) if prefixes else ""
     return prefix + command
