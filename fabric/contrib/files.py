@@ -11,7 +11,7 @@ import os
 from fabric.api import *
 
 
-def exists(path, use_sudo=False, verbose=False):
+def exists(path, use_sudo=False, verbose=False, cmd=run):
     """
     Return True if given path exists on the current remote host.
 
@@ -22,7 +22,7 @@ def exists(path, use_sudo=False, verbose=False):
     avoid cluttering output. You may specify ``verbose=True`` to change this
     behavior.
     """
-    func = use_sudo and sudo or run
+    func = use_sudo and sudo or cmd
     cmd = 'test -e "%s"' % path
     # If verbose, run normally
     if verbose:
@@ -36,14 +36,15 @@ def exists(path, use_sudo=False, verbose=False):
 def first(*args, **kwargs):
     """
     Given one or more file paths, returns first one found, or None if none
-    exist. May specify ``use_sudo`` which is passed to `exists`.
+    exist. May specify ``use_sudo`` and ``cmd`` which are passed to `exists`.
     """
+    cmd = 'cmd' in kwargs and kwargs['cmd'] or run
     for directory in args:
         if not kwargs.get('use_sudo'):
-            if exists(directory, sudo=False):
+            if exists(directory, sudo=False, cmd=cmd):
                 return directory
         else:
-            if exists(directory):
+            if exists(directory, cmd=cmd):
                 return directory
 
 
@@ -220,7 +221,7 @@ def comment(filename, regex, use_sudo=False, char='#', backup='.bak'):
     )
 
 
-def contains(filename, text, exact=False, use_sudo=False):
+def contains(filename, text, exact=False, use_sudo=False, cmd=run):
     """
     Return True if ``filename`` contains ``text``.
 
@@ -235,11 +236,15 @@ def contains(filename, text, exact=False, use_sudo=False):
 
     If ``use_sudo`` is True, will use `sudo` instead of `run`.
 
+    You can also specify the command that should be written by providing the
+    ``cmd`` keyward argument.  It defaults to `run`.  Note that using ``use_sudo``
+    as `True` negates this setting.
+
     .. versionchanged:: 1.0
         Swapped the order of the ``filename`` and ``text`` arguments to be
         consistent with other functions in this module.
     """
-    func = use_sudo and sudo or run
+    func = use_sudo and sudo or cmd
     if exact:
         text = "^%s$" % text
     with settings(hide('everything'), warn_only=True):
@@ -307,8 +312,8 @@ def write_to_file(filename, text, use_sudo=False, cmd=run, overwrite=False):
         text = [text]
     for line in text:
         regex = '^' + re.escape(line) + ('' if partial else '$')
-        if (exists(filename) and line
-            and contains(filename, regex, use_sudo=use_sudo)):
+        if (exists(filename, cmd=cmd) and line
+            and contains(filename, regex, use_sudo=use_sudo, cmd=cmd)):
             continue
         func('echo "%s" %s %s' % (line.replace('"', '\\"'), operator, filename))
 
