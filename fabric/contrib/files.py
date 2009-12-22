@@ -310,6 +310,6 @@ def write_to_file(filename, text, use_sudo=False, cmd=run, overwrite=False):
         if (exists(filename) and line
             and contains(filename, regex, use_sudo=use_sudo)):
             continue
-        func("echo '%s' %s %s" % (line.replace("'", r'\''), operator, filename))
+        func('echo "%s" %s %s' % (line.replace('"', '\\"'), operator, filename))
 
 
