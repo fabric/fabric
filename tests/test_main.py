@@ -1,12 +1,14 @@
 from fudge.patcher import with_patched_object
-from nose.tools import eq_, raises
+from nose.tools import ok_, eq_, raises
 
 from fabric.decorators import hosts, roles
-from fabric.main import get_hosts, parse_arguments, _merge, _escape_split
+from fabric.main import get_hosts, parse_arguments, _merge, _escape_split, load_fabfile
 import fabric.state
 from fabric.state import _AttributeDict
 
 from utils import mock_streams
+import os
+import sys
 
 
 def test_argument_parsing():
@@ -140,13 +142,32 @@ def test_lazy_roles():
         pass
     eq_hosts(command, ['a', 'b'])
 
+def support_fabfile(name):
+    return os.path.join(os.path.dirname(__file__), 'support', name)
 
-def test_escaped_task_arg_split():
+def test_implicit_discover():
     """
-    Allow backslashes to escape the task argument separator character
+    Automatically includes all functions in a fabfile
     """
-    argstr = r"foo,bar\,biz\,baz,what comes after baz?"
-    eq_(
-        _escape_split(',', argstr),
-        ['foo', 'bar,biz,baz', 'what comes after baz?']
-    )
+    implicit = support_fabfile("implicit_fabfile.py")
+    sys.path[0:0] = [os.path.dirname(implicit),]
+
+    docs, funcs = load_fabfile(implicit)
+    ok_(len(funcs) == 2)
+    ok_("foo" in funcs)
+    ok_("bar" in funcs)
+
+    sys.path = sys.path[1:]
+
+def test_explicit_discover():
+    """
+    Only use those methods listed in __all__
+    """
+    explicit = support_fabfile("explicit_fabfile.py")
+    sys.path[0:0] = [os.path.dirname(explicit),]
+
+    docs, funcs = load_fabfile(explicit)
+    ok_(len(funcs) == 1)
+    ok_("foo" in funcs)
+    ok_("bar" not in funcs)
+

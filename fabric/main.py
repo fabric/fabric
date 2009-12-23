@@ -137,9 +137,16 @@ def load_fabfile(path):
     if index is not None:
         sys.path.insert(index + 1, directory)
         del sys.path[0]
-    # Return our two-tuple
-    tasks = dict(filter(is_task, vars(imported).items()))
-    return imported.__doc__, tasks
+    # Obey the use of <module>.__all__ if it is present
+    imported_vars = vars(imported)
+    if "__all__" in imported_vars:
+        imported_vars = [(name, imported_vars[name]) for name in imported_vars if name in imported_vars["__all__"]]
+    else:
+        imported_vars = imported_vars.items()
+    # Return a two-tuple value.  First is the documentation, second is a
+    # dictionary of callables only (and don't include Fab operations or
+    # underscored callables)
+    return imported.__doc__, dict(filter(is_task, imported_vars))
 
 
 def parse_options():
