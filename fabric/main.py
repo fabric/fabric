@@ -137,6 +137,13 @@ def load_fabfile(path):
     if index is not None:
         sys.path.insert(index + 1, directory)
         del sys.path[0]
+
+    return load_fab_tasks_from_module(imported)
+
+def load_fab_tasks_from_module(imported):
+    """
+    Handles loading all of the fab_tasks for a given `imported` module
+    """
     # Obey the use of <module>.__all__ if it is present
     imported_vars = vars(imported)
     if "__all__" in imported_vars:
