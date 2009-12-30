@@ -171,3 +171,21 @@ def test_explicit_discover():
     ok_("foo" in funcs)
     ok_("bar" not in funcs)
 
+def test_allow_registering_modules():
+    module = support_fabfile('module_fabfile.py')
+    sys.path[0:0] = [os.path.dirname(module),]
+
+    docs, funcs = load_fabfile(module)
+    ok_(len(funcs) == 2)
+    ok_('tasks.hello' in funcs)
+    ok_('tasks.world' in funcs)
+
+def test_modules_should_pay_attention_to_all_and_explicit_discovery():
+    module = support_fabfile('module_explicit.py')
+    sys.path[0:0] = [os.path.dirname(module),]
+
+    docs, funcs = load_fabfile(module)
+    ok_(len(funcs) == 1)
+    ok_('tasks.hello' in funcs)
+    ok_('tasks.world' not in funcs)
+
