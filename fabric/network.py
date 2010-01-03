@@ -410,3 +410,20 @@ def interpret_host_string(host_string):
     env.user = username
     env.port = port
     return username, hostname, port
+
+
+def disconnect_all():
+    """
+    Disconnect from all currently connected servers.
+
+    Used at the end of ``fab``'s main loop, and also intended for use by
+    library users.
+    """
+    from fabric.state import connections, output
+    # Explicitly disconnect from all servers
+    for key in connections.keys():
+        if output.status:
+            print "Disconnecting from %s..." % denormalize(key),
+        connections[key].close()
+        if output.status:
+            print "done."

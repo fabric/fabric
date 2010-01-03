@@ -16,7 +16,7 @@ import sys
 
 from fabric import api # For checking callables against the API 
 from fabric.contrib import console, files, project # Ditto
-from fabric.network import denormalize, interpret_host_string
+from fabric.network import denormalize, interpret_host_string, disconnect_all
 from fabric import state # For easily-mockable access to roles, env and etc
 from fabric.state import commands, connections, env_options
 from fabric.utils import abort, indent
@@ -479,11 +479,5 @@ def main():
         # we might leave stale threads if we don't explicitly exit()
         sys.exit(1)
     finally:
-        # Explicitly disconnect from all servers
-        for key in connections.keys():
-            if state.output.status:
-                print "Disconnecting from %s..." % denormalize(key),
-            connections[key].close()
-            if state.output.status:
-                print "done."
+        disconnect_all()
     sys.exit(0)
