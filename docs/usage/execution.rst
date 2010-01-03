@@ -501,5 +501,11 @@ you: it iterates over all open connections and closes them just before it exits
 (regardless of whether the tasks failed or not.)
 
 Library users will need to ensure they explicitly close all open connections
-before their program exits, though we plan to makes this easier in the future.
-An example of this can be seen in `the tutorial <library-usage>`.
+before their program exits. This can be accomplished by calling
+`~fabric.network.disconnect_all` at the end of your script.
+
+.. note::
+
+    `~fabric.network.disconnect_all` may be moved to a more public location in
+    the future; we're still working on making the library aspects of Fabric
+    more solidified and organized.
