@@ -60,4 +60,7 @@ Fabric.
   and identity file settings. Thanks to Mitch Matuson and Morgan Goose.
 * Added `~fabric.context_managers.prefix` context manager for easier management
   of persistent state across commands.
+* Refactored SSH disconnection code out of the main ``fab`` loop into
+  `~fabric.network.disconnect_all`, allowing library users to avoid problems
+  with non-fabfile Python scripts hanging after execution finishes.
 * Various other minor bugfixes and code tweaks.
