@@ -98,7 +98,7 @@ return the output from the server.
 
 Other modes of execution such as the old "broad mode" may return as Fabric's
 internals are refactored and expanded, but for now we've simplified things, and
-broad mode made the most sense as the primary mode of use.
+deep mode made the most sense as the primary mode of use.
 
 "Lazy" string interpolation
 ---------------------------
