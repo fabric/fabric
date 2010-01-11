@@ -2,12 +2,16 @@ from __future__ import with_statement
 
 import sys
 
+import unittest
+import random
+import types
+
 from nose.tools import raises, eq_
 from fudge import with_patched_object
 
 from fabric.state import env
 from fabric.operations import require, prompt, _sudo_prefix, _shell_wrap, \
-    _shell_escape
+    _shell_escape, do
 from utils import mock_streams
 
 
@@ -180,3 +184,85 @@ def test_shell_escape_escapes_backticks():
     """
     cmd = "touch test.pid && kill `cat test.pid`"
     eq_(_shell_escape(cmd), "touch test.pid && kill \`cat test.pid\`")
+
+
+#
+# do()
+#
+class MockCommand(object):
+    def __init__(self):
+        self.args = None
+        self.kwargs = None
+
+    def __call__(self, *args, **kwargs):
+        self.args = args
+        self.kwargs = kwargs
+
+class TestOfDoOperation(unittest.TestCase):
+    def setUp(self):
+        self.replace_operations()
+
+    def tearDown(self):
+        self.restore_operations()
+
+    def replace_operations(self):
+        operations = sys.modules['fabric.operations']
+        self.original_run = operations.run
+        self.original_local = operations.local
+        self.original_sudo = operations.sudo
+        self.mock_run = operations.run = MockCommand()
+        self.mock_local = operations.local = MockCommand()
+        self.mock_sudo = operations.sudo = MockCommand()
+
+    def restore_operations(self):
+        operations = sys.modules['fabric.operations']
+        operations.run = self.original_run
+        operations.local = self.original_local
+        operations.sudo = self.original_sudo
+
+    def remove_run_as_if_present(self):
+        if hasattr(env, "run_as"):
+            del env['run_as']
+
+    def random_ls(self):
+        random_string = ("foo*", "bar*", "baz*")[random.randint(0, 2)]
+        return "ls -l %s" % random_string
+
+    def assertNone(self, a):
+        self.assertEqual(types.NoneType, type(a))
+
+    def test_run_called_on_remote_do(self):
+        env['run_as'] = "remote"
+        cmd = self.random_ls()
+        do(cmd)
+        self.assertEqual(types.TupleType, type(self.mock_run.args))
+        self.assert_(cmd in self.mock_run.args)
+        self.assertEqual(types.NoneType, type(self.mock_local.args))
+
+    def test_local_called_on_local_do(self):
+        env['run_as'] = "local"
+        cmd = self.random_ls()
+        do(cmd)
+        self.assertEqual(types.TupleType, type(self.mock_local.args))
+        self.assert_(cmd in self.mock_local.args)
+        self.assertEqual(types.NoneType, type(self.mock_run.args))
+
+    def test_defaults_to_run_in_the_presence_of_no_run_as(self):
+        self.remove_run_as_if_present()
+        cmd = self.random_ls()
+        do(cmd)
+        self.assertEqual(types.TupleType, type(self.mock_run.args))
+        self.assert_(cmd in self.mock_run.args)
+        self.assertEqual(types.NoneType, type(self.mock_local.args))
+
+    def test_sudo_called_on_remote_do_with_sudo_kwarg_set_to_true(self):
+        env['run_as'] = 'remote'
+        cmd = self.random_ls()
+        do(cmd, sudo=True)
+        self.assertNone(self.mock_run.args)
+        self.assertNone(self.mock_local.args)
+        self.assert_(cmd in self.mock_sudo.args)
+        self.assert_("sudo" not in self.mock_sudo.kwargs)
+
+if __name__ == "__main__":
+    unittest.main()
