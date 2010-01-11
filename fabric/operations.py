@@ -812,18 +812,23 @@ def local(command, capture=True):
     # If we were capturing, this will be a string; otherwise it will be None.
     return out
 
-def do(*args, **kwargs):
+def do(command, **kwargs):
     cmd = run
     if hasattr(env, "run_as"):
         if env.run_as == "local":
             cmd = local
+            keys_to_remove = ['shell', 'pty', 'user', 'sudo', ]
+            if "sudo" in kwargs:
+                command = 'sudo %s' % command
         else:
             if "sudo" in kwargs:
                 cmd = sudo
                 del kwargs['sudo']
             else:
                 cmd = run
-    cmd(*args, **kwargs)
+            keys_to_remove = ['capture', ]
+    kwargs = dict([(k,v) for k,v in kwargs.items() if k not in keys_to_remove])
+    cmd(command, **kwargs)
 
 @needs_host
 def reboot(wait):

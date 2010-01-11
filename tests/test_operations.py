@@ -264,5 +264,36 @@ class TestOfDoOperation(unittest.TestCase):
         self.assert_(cmd in self.mock_sudo.args)
         self.assert_("sudo" not in self.mock_sudo.kwargs)
 
+    def test_capture_pulled_from_run_commands_on_remote(self):
+        env['run_as'] = 'remote'
+        do(self.random_ls(), capture=True)
+        self.assert_("capture" not in self.mock_run.kwargs)
+
+    def test_shell_pulled_from_run_commands_on_local(self):
+        env['run_as'] = 'local'
+        do(self.random_ls(), shell=True)
+        self.assert_("shell" not in self.mock_local.kwargs)
+
+    def test_pty_pulled_from_run_commands_on_local(self):
+        env['run_as'] = 'local'
+        do(self.random_ls(), pty=True)
+        self.assert_("pty" not in self.mock_local.kwargs)
+
+    def test_user_pulled_from_run_commands_on_local(self):
+        env['run_as'] = 'local'
+        do(self.random_ls(), user=True)
+        self.assert_("user" not in self.mock_local.kwargs)
+
+    def test_sudo_pulled_from_run_commands_on_local(self):
+        env['run_as'] = 'local'
+        do(self.random_ls(), sudo=True)
+        self.assert_("sudo" not in self.mock_local.kwargs)
+
+    def test_local_commands_with_sudo_kwarg_true_are_prefixed_with_sudo(self):
+        env['run_as'] = 'local'
+        do(self.random_ls(), sudo=True)
+        self.assertEqual('sudo ', self.mock_local.args[0][0:5])
+
+
 if __name__ == "__main__":
     unittest.main()
