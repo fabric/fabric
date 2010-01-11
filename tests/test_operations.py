@@ -264,6 +264,15 @@ class TestOfDoOperation(unittest.TestCase):
         self.assert_(cmd in self.mock_sudo.args)
         self.assert_("sudo" not in self.mock_sudo.kwargs)
 
+    def test_sudo_is_not_called_if_kwarg_is_false(self):
+        env['run_as'] = 'remote'
+        cmd = self.random_ls()
+        do(cmd, sudo=False)
+        self.assertNone(self.mock_sudo.args)
+        self.assertNone(self.mock_local.args)
+        self.assert_(cmd in self.mock_run.args)
+        self.assert_("sudo" not in self.mock_run.kwargs)
+
     def test_capture_pulled_from_run_commands_on_remote(self):
         env['run_as'] = 'remote'
         do(self.random_ls(), capture=True)
@@ -293,6 +302,11 @@ class TestOfDoOperation(unittest.TestCase):
         env['run_as'] = 'local'
         do(self.random_ls(), sudo=True)
         self.assertEqual('sudo ', self.mock_local.args[0][0:5])
+
+    def test_local_commands_with_sudo_kwarg_false_are_not_prefixed_with_sudo(self):
+        env['run_as'] = 'local'
+        do(self.random_ls(), sudo=False)
+        self.assertNotEqual('sudo ', self.mock_local.args[0][0:5])
 
 
 if __name__ == "__main__":

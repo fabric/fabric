@@ -818,15 +818,14 @@ def do(command, **kwargs):
         if env.run_as == "local":
             cmd = local
             keys_to_remove = ['shell', 'pty', 'user', 'sudo', ]
-            if "sudo" in kwargs:
+            if "sudo" in kwargs and kwargs['sudo']:
                 command = 'sudo %s' % command
         else:
-            if "sudo" in kwargs:
+            if "sudo" in kwargs and kwargs['sudo']:
                 cmd = sudo
-                del kwargs['sudo']
             else:
                 cmd = run
-            keys_to_remove = ['capture', ]
+            keys_to_remove = ['capture', 'sudo', ]
     kwargs = dict([(k,v) for k,v in kwargs.items() if k not in keys_to_remove])
     cmd(command, **kwargs)
 
