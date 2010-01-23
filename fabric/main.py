@@ -157,6 +157,9 @@ def load_fab_tasks_from_module(imported):
     return imported.__doc__, extract_tasks(imported_vars)
 
 def extract_tasks(imported_vars):
+    """
+    Handle extracting tasks from a given list of variables
+    """
     tasks = {}
     for tup in imported_vars:
         name, callable = tup
