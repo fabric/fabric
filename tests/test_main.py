@@ -189,3 +189,10 @@ def test_modules_should_pay_attention_to_all_and_explicit_discovery():
     ok_('tasks.hello' in funcs)
     ok_('tasks.world' not in funcs)
 
+def test_modules_should_load_decorated_tasks_only_if_one_is_found():
+    module = support_fabfile('decorated_fabfile.py')
+    sys.path[0:0] = [os.path.dirname(module),]
+
+    docs, funcs = load_fabfile(module)
+    ok_(len(funcs) == 1)
+
