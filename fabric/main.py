@@ -22,6 +22,7 @@ from fabric import state # For easily-mockable access to roles, env and etc
 from fabric.state import commands, connections, env_options
 from fabric.utils import abort, indent
 from fabric import decorators
+from fabric.tasks import Task
 
 
 # One-time calculation of "all internal callables" to avoid doing this on every
@@ -165,9 +166,10 @@ def extract_tasks(imported_vars):
     using_decorated_tasks = False
     for tup in imported_vars:
         name, callable = tup
-        if hasattr(callable, 'is_fabric_task') and callable.is_fabric_task:
+        if isinstance(callable, Task):
             using_decorated_tasks = True
-        if is_task(tup):
+            tasks[callable.name] = callable
+        elif is_task(tup):
             tasks[name] = callable
             continue
         if type(callable) is not types.ModuleType or getattr(callable, "FABRIC_TASK_MODULE", False) is False:
@@ -178,7 +180,7 @@ def extract_tasks(imported_vars):
     if using_decorated_tasks:
         def is_usable_task(tup):
             name, task = tup
-            return name.find('.') != -1 or task == decorators.task
+            return name.find('.') != -1 or isinstance(task, Task)
         tasks = dict(filter(is_usable_task, tasks.items()))
     return tasks
 

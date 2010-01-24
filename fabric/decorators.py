@@ -6,12 +6,13 @@ from fabric import tasks
 from functools import wraps
 from types import StringTypes
 
-"""
-Convenience variable to using an instance of the Task object as a decorator.
+def task(func):
+    """
+    Decorator defining a function as a task.
 
-See `fabric.tasks.Task` for more information.
-"""
-task = tasks.Task()
+    This is a convenience wrapper around `tasks.WrappedCallableTask`.
+    """
+    return tasks.WrappedCallableTask(func)
 
 def hosts(*host_list):
     """
