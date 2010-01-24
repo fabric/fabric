@@ -13,7 +13,7 @@ class Task(object):
     """
     is_fabric_task = True
 
-    def __call__(self, *args, **kwargs):
-        pass
+    def __call__(self, func, **kwargs):
+        return func
 
 
