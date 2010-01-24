@@ -1,3 +1,0 @@
-
-class Task(object):
-    pass

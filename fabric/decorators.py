@@ -2,7 +2,6 @@
 Convenience decorators for use in fabfiles.
 """
 
-from fabric.tasks import Task
 from functools import wraps
 from types import StringTypes
 
@@ -103,5 +102,5 @@ def runs_once(func):
     return decorated
 
 def task(func):
-    return Task()
+    pass
 
