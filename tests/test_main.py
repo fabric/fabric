@@ -203,3 +203,10 @@ def test_modules_are_still_loaded_if_fabfile_contains_decorated_task():
     docs, funcs = load_fabfile(module)
     eq_(3, len(funcs))
 
+def test_modules_pay_attention_to_task_decorator():
+    module = support_fabfile('decorated_fabfile_with_decorated_module.py')
+    sys.path[0:0] = [os.path.dirname(module),]
+
+    docs, funcs = load_fabfile(module)
+    eq_(2, len(funcs))
+
