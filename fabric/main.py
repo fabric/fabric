@@ -176,7 +176,9 @@ def extract_tasks(imported_vars):
             tasks["%s.%s" % (name, task_name)] = task
 
     if using_decorated_tasks:
-        tasks = dict([(name, new_task) for name, new_task in tasks.items() if new_task == decorators.task])
+        def is_usable_task(name, task):
+            return name.find('.') != -1 or task == decorators.task
+        tasks = dict([(name, new_task) for name, new_task in tasks.items() if is_usable_task(name, new_task)])
     return tasks
 
 def parse_options():

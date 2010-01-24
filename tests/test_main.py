@@ -196,3 +196,10 @@ def test_modules_should_load_decorated_tasks_only_if_one_is_found():
     docs, funcs = load_fabfile(module)
     ok_(len(funcs) == 1)
 
+def test_modules_are_still_loaded_if_fabfile_contains_decorated_task():
+    module = support_fabfile('decorated_fabfile_with_modules.py')
+    sys.path[0:0] = [os.path.dirname(module),]
+
+    docs, funcs = load_fabfile(module)
+    eq_(3, len(funcs))
+
