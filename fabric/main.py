@@ -165,7 +165,7 @@ def extract_tasks(imported_vars):
     using_decorated_tasks = False
     for tup in imported_vars:
         name, callable = tup
-        if callable == decorators.task:
+        if hasattr(callable, 'is_fabric_task') and callable.is_fabric_task:
             using_decorated_tasks = True
         if is_task(tup):
             tasks[name] = callable
