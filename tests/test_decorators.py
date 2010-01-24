@@ -1,8 +1,10 @@
 from nose.tools import eq_
 from fudge import Fake, with_fakes
 
-from fabric import decorators
+from fabric import decorators, tasks
 
+def test_task_is_an_instance_of_task_object():
+    ok_(isinstance(decorators.task, tasks.Task))
 
 def fake_function(*args, **kwargs):
     """
