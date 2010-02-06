@@ -44,20 +44,10 @@ below.
 
 .. _optparse: http://docs.python.org/library/optparse.html
 
-.. cmdoption:: -h, --help
+.. cmdoption:: -c RCFILE, --config=RCFILE
 
-    Displays a standard help message, with all possible options and a brief
-    overview of what they do, then exits.
-
-.. cmdoption:: -V, --version
-
-    Displays Fabric's version number, then exits.
-
-.. cmdoption:: -l, --list
-
-    Imports a fabfile as normal, but then prints a list of all discovered tasks
-    and exits. Will also print the first line of each task's docstring, if it
-    has one, next to it (truncating if necessary.)
+    Sets :ref:`env.rcfile <rcfile>` to the given file path, which Fabric will
+    try to load on startup and use to update environment variables.
 
 .. cmdoption:: -d COMMAND, --display=COMMAND
 
@@ -66,37 +56,26 @@ below.
     docstrings are a good idea. (They're *always* a good idea, of course --
     just moreso here.)
 
-.. cmdoption:: -r, --reject-unknown-hosts
-
-    Sets :ref:`env.reject_unknown_hosts <reject-unknown-hosts>` to ``True``,
-    causing Fabric to abort when connecting to hosts not found in the user's SSH
-    known_hosts file.
-
 .. cmdoption:: -D, --disable-known-hosts
 
     Sets :ref:`env.disable_known_hosts <disable-known-hosts>` to ``True``,
     preventing Fabric from loading the user's SSH known_hosts file.
 
-.. cmdoption:: -u USER, --user=USER
+.. cmdoption:: -h, --help
 
-    Sets :ref:`env.user <user>` to the given string; it will then be used as the
-    default username when making SSH connections.
+    Displays a standard help message, with all possible options and a brief
+    overview of what they do, then exits.
 
-.. cmdoption:: -p PASSWORD, --password=PASSWORD
+.. cmdoption:: --hide=LEVELS
 
-    Sets :ref:`env.password <password>` to the given string; it will then be
-    used as the default password when making SSH connections or calling the
-    ``sudo`` program.
+    A comma-separated list of :doc:`output levels <output_controls>` to hide by
+    default.
+
 
 .. cmdoption:: -H HOSTS, --hosts=HOSTS
 
     Sets :ref:`env.hosts <hosts>` to the given comma-delimited list of host
     strings.
-
-.. cmdoption:: -R ROLES, --roles=ROLES
-
-    Sets :ref:`env.roles <roles>` to the given comma-separated list of role
-    names.
 
 .. cmdoption:: -i KEY_FILENAME
 
@@ -112,10 +91,46 @@ below.
 
 .. seealso:: :doc:`fabfiles`
 
-.. cmdoption:: -w, --warn-only
+.. cmdoption:: -l, --list
 
-    Sets :ref:`env.warn_only <warn_only>` to ``True``, causing Fabric to
-    continue execution even when commands encounter error conditions.
+    Imports a fabfile as normal, but then prints a list of all discovered tasks
+    and exits. Will also print the first line of each task's docstring, if it
+    has one, next to it (truncating if necessary.)
+
+.. cmdoption:: -p PASSWORD, --password=PASSWORD
+
+    Sets :ref:`env.password <password>` to the given string; it will then be
+    used as the default password when making SSH connections or calling the
+    ``sudo`` program.
+
+.. cmdoption:: --pty
+
+    Sets :ref:`env.always_use_pty <always-use-pty>` to ``True``, causing all
+    `~fabric.operations.run`/`~fabric.operations.sudo` calls to behave as if
+    one had specified ``pty=True`` (forcing a pseudoterminal on the remote
+    end.)
+
+    .. versionadded:: 1.0
+
+.. cmdoption:: -r, --reject-unknown-hosts
+
+    Sets :ref:`env.reject_unknown_hosts <reject-unknown-hosts>` to ``True``,
+    causing Fabric to abort when connecting to hosts not found in the user's SSH
+    known_hosts file.
+
+.. cmdoption:: -u USER, --user=USER
+
+    Sets :ref:`env.user <user>` to the given string; it will then be used as the
+    default username when making SSH connections.
+
+.. cmdoption:: -V, --version
+
+    Displays Fabric's version number, then exits.
+
+.. cmdoption:: -R ROLES, --roles=ROLES
+
+    Sets :ref:`env.roles <roles>` to the given comma-separated list of role
+    names.
 
 .. cmdoption:: -s SHELL, --shell=SHELL
 
@@ -124,21 +139,15 @@ below.
 
 .. seealso:: `~fabric.operations.run`, `~fabric.operations.sudo`
 
-.. cmdoption:: -c RCFILE, --config=RCFILE
-
-    Sets :ref:`env.rcfile <rcfile>` to the given file path, which Fabric will
-    try to load on startup and use to update environment variables.
-
-.. cmdoption:: --hide=LEVELS
-
-    A comma-separated list of :doc:`output levels <output_controls>` to hide by
-    default.
-
 .. cmdoption:: --show=LEVELS
 
     A comma-separated list of :doc:`output levels <output_controls>` to show by
     default.
 
+.. cmdoption:: -w, --warn-only
+
+    Sets :ref:`env.warn_only <warn_only>` to ``True``, causing Fabric to
+    continue execution even when commands encounter error conditions.
 
 Per-task arguments
 ==================
