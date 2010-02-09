@@ -20,6 +20,7 @@ from fabric.context_managers import settings
 from fabric.network import output_thread, needs_host
 from fabric.state import env, connections, output
 from fabric.utils import abort, indent, warn, fastprint
+from scp import SCPClient
 
 
 def _handle_failure(message, exception=None):
@@ -86,9 +87,9 @@ def require(*keys, **kwargs):
     The optional keyword argument ``used_for`` may be a string, which will be
     printed in the error output to inform users why this requirement is in
     place. ``used_for`` is printed as part of a string similar to::
-    
+
         "Th(is|ese) variable(s) (are|is) used for %s"
-        
+
     so format it appropriately.
 
     The optional keyword argument ``provided_by`` may be a list of functions or
@@ -158,7 +159,7 @@ def prompt(text, key=None, default='', validate=None):
     a trailing space after the ``[foo]``.)
 
     The optional keyword argument ``validate`` may be a callable or a string:
-    
+
     * If a callable, it is called with the user's input, and should return the
       value to be stored on success. On failure, it should raise an exception
       with an exception message, which will be printed to the user.
@@ -172,20 +173,20 @@ def prompt(text, key=None, default='', validate=None):
     hits ``Ctrl-C``).
 
     Examples::
-    
+
         # Simplest form:
         environment = prompt('Please specify target environment: ')
-        
+
         # With default, and storing as env.dish:
         prompt('Specify favorite dish: ', 'dish', default='spam & eggs')
-        
+
         # With validation, i.e. requiring integer input:
         prompt('Please specify process nice level: ', key='nice', validate=int)
-        
+
         # With validation against a regular expression:
         release = prompt('Please supply a release name',
                 validate=r'^\w+-\d+(\.\d+)?$')
-    
+
     """
     # Store previous env value for later display, if necessary
     if key:
@@ -241,10 +242,10 @@ def prompt(text, key=None, default='', validate=None):
 
 
 @needs_host
-def put(local_path, remote_path, mode=None):
+def put(local_path, remote_path, recursive=True):
     """
     Upload one or more files to a remote host.
-    
+
     ``local_path`` may be a relative or absolute local file path, and may
     contain shell-style wildcards, as understood by the Python ``glob`` module.
     Tilde expansion (as implemented by ``os.path.expanduser``) is also
@@ -259,64 +260,82 @@ def put(local_path, remote_path, mode=None):
     also set the mode explicitly by specifying the ``mode`` keyword argument,
     which sets the numeric mode of the remote file. See the ``os.chmod``
     documentation or ``man chmod`` for the format of this argument.
-    
+
     Examples::
-    
+
         put('bin/project.zip', '/tmp/project.zip')
         put('*.py', 'cgi-bin/')
         put('index.html', 'index.html', mode=0755)
-    
+
     """
-    ftp = connections[env.host_string].open_sftp()
-    with closing(ftp) as ftp:
-        # Expand tildes (assumption: default remote cwd is user $HOME)
-        remote_path = remote_path.replace('~', ftp.normalize('.'))
-        # Get remote mode for directory-vs-file detection
-        try:
-            rmode = ftp.lstat(remote_path).st_mode
-        except:
-            # sadly, I see no better way of doing this
-            rmode = None
-        # Expand local tildes and get globs
-        globs = glob(os.path.expanduser(local_path))
-        # Deal with bad local_path
-        if not globs:
-            raise ValueError, "'%s' is not a valid local path or glob." \
-                % local_path
-    
-        # Iterate over all given local files
-        for lpath in globs:
-            # If remote path is directory, tack on the local filename
-            _remote_path = remote_path
-            if rmode is not None and stat.S_ISDIR(rmode):
-                _remote_path = os.path.join(
-                    remote_path,
-                    os.path.basename(lpath)
-                )
-            # Print
-            if output.running:
-                print("[%s] put: %s -> %s" % (
-                    env.host_string, lpath, _remote_path
-                ))
-            # Try to catch raised exceptions (which is the only way to tell if
-            # this operation had problems; there's no return code) during upload
-            try:
-                # Actually do the upload
-                rattrs = ftp.put(lpath, _remote_path)
-                # and finally set the file mode
-                lmode = mode or os.stat(lpath).st_mode
-                if lmode != rattrs.st_mode:
-                    ftp.chmod(_remote_path, lmode)
-            except Exception, e:
-                msg = "put() encountered an exception while uploading '%s'"
-                _handle_failure(message=msg % lpath, exception=e)
+    scp = SCPClient(connections[env.host_string].get_transport())
+    globs = glob(os.path.expanduser(local_path))
+
+    if not recursive:
+        files = list()
+        for name in globs:
+            if os.path.isdir(name):
+                warn('%s is a directory, skipping.' % name)
+            else:
+                files.append(name)
+    else:
+        files = globs
+
+    try:
+        scp.put(files, remote_path, recursive)
+    except Exception, e:
+        msg = "put() encountered an exception while uploading '%s'"
+        _handle_failure(message=msg % local_path, exception=e)
+
+    #with closing(ftp) as ftp:
+    #    # Expand tildes (assumption: default remote cwd is user $HOME)
+    #    remote_path = remote_path.replace('~', ftp.normalize('.'))
+    #    # Get remote mode for directory-vs-file detection
+    #    try:
+    #        rmode = ftp.lstat(remote_path).st_mode
+    #    except:
+    #        # sadly, I see no better way of doing this
+    #        rmode = None
+    #    # Expand local tildes and get globs
+    #    globs = glob(os.path.expanduser(local_path))
+    #    # Deal with bad local_path
+    #    if not globs:
+    #        raise ValueError, "'%s' is not a valid local path or glob." \
+    #            % local_path
+    #
+    #    # Iterate over all given local files
+    #    for lpath in globs:
+    #        # If remote path is directory, tack on the local filename
+    #        _remote_path = remote_path
+    #        if rmode is not None and stat.S_ISDIR(rmode):
+    #            _remote_path = os.path.join(
+    #                remote_path,
+    #                os.path.basename(lpath)
+    #            )
+    #        # Print
+    #        if output.running:
+    #            print("[%s] put: %s -> %s" % (
+    #                env.host_string, lpath, _remote_path
+    #            ))
+    #        # Try to catch raised exceptions (which is the only way to tell if
+    #        # this operation had problems; there's no return code) during upload
+    #        try:
+    #            # Actually do the upload
+    #            rattrs = ftp.put(lpath, _remote_path)
+    #            # and finally set the file mode
+    #            lmode = mode or os.stat(lpath).st_mode
+    #            if lmode != rattrs.st_mode:
+    #                ftp.chmod(_remote_path, lmode)
+    #        except Exception, e:
+    #            msg = "put() encountered an exception while uploading '%s'"
+    #            _handle_failure(message=msg % lpath, exception=e)
 
 
 @needs_host
-def get(remote_path, local_path):
+def get(remote_path, local_path, recursive=False):
     """
     Download a file from a remote host.
-    
+
     ``remote_path`` should point to a specific file, while ``local_path`` may
     be a directory (in which case the remote filename is preserved) or
     something else (in which case the downloaded file is renamed). Tilde
@@ -337,7 +356,7 @@ def get(remote_path, local_path):
 
     For example, the following snippet will produce two files on your local
     system, called ``server.log.host1`` and ``server.log.host2`` respectively::
-   
+
         @hosts('host1', 'host2')
         def my_download_task():
             get('/var/log/server.log', 'server.log')
@@ -345,33 +364,41 @@ def get(remote_path, local_path):
     However, with a single host (e.g. ``@hosts('host1')``), no suffixing is
     performed, leaving you with a single, pristine ``server.log``.
     """
-    ftp = connections[env.host_string].open_sftp()
-    with closing (ftp) as ftp:
-        # Expand tildes (assumption: default remote cwd is user $HOME)
-        remote_path = remote_path.replace('~', ftp.normalize('.'))
-        local_path = os.path.expanduser(local_path)
-        # Detect local directory and append filename if necessary (assuming
-        # Unix file separators for now :()
-        if os.path.isdir(local_path):
-            remote_file = remote_path
-            if '/' in remote_file:
-                remote_file = remote_file.split('/')[-1]
-            local_path = os.path.join(local_path, remote_file)
-        # If the current run appears to be scheduled for multiple hosts,
-        # append a suffix to the downloaded file to prevent clobbering.
-        if len(env.all_hosts) > 1:
-            local_path = local_path + '.' + env.host
-        # Print
-        if output.running:
-            print("[%s] download: %s <- %s" % (
-                env.host_string, local_path, remote_path
-            ))
-        # Handle any raised exceptions (no return code to inspect here)
-        try:
-            ftp.get(remote_path, local_path)
-        except Exception, e:
-            msg = "get() encountered an exception while downloading '%s'"
-            _handle_failure(message=msg % remote_path, exception=e)
+    scp = SCPClient(connections[env.host_string].get_transport())
+
+    try:
+        scp.get(remote_path, local_path, recursive)
+    except Exception, e:
+        msg = "get() encountered an exception while downloading '%s'"
+        _handle_failure(message=msg % remote_path, exception=e)
+
+
+    #with closing (ftp) as ftp:
+    #    # Expand tildes (assumption: default remote cwd is user $HOME)
+    #    remote_path = remote_path.replace('~', ftp.normalize('.'))
+    #    local_path = os.path.expanduser(local_path)
+    #    # Detect local directory and append filename if necessary (assuming
+    #    # Unix file separators for now :()
+    #    if os.path.isdir(local_path):
+    #        remote_file = remote_path
+    #        if '/' in remote_file:
+    #            remote_file = remote_file.split('/')[-1]
+    #        local_path = os.path.join(local_path, remote_file)
+    #    # If the current run appears to be scheduled for multiple hosts,
+    #    # append a suffix to the downloaded file to prevent clobbering.
+    #    if len(env.all_hosts) > 1:
+    #        local_path = local_path + '.' + env.host
+    #    # Print
+    #    if output.running:
+    #        print("[%s] download: %s <- %s" % (
+    #            env.host_string, local_path, remote_path
+    #        ))
+    #    # Handle any raised exceptions (no return code to inspect here)
+    #    try:
+    #        ftp.get(remote_path, local_path)
+    #    except Exception, e:
+    #        msg = "get() encountered an exception while downloading '%s'"
+    #        _handle_failure(message=msg % remote_path, exception=e)
 
 
 def _sudo_prefix(user):
@@ -494,10 +521,10 @@ def _run_command(command, shell=True, pty=False, sudo=False, user=None):
         capture=capture_stdout)
     err_thread = output_thread("[%s] err" % env.host_string, channel,
         stderr=True, capture=capture_stderr)
-    
+
     # Close when done
     status = channel.recv_exit_status()
-    
+
     # Wait for threads to exit so we aren't left with stale threads
     out_thread.join()
     err_thread.join()
@@ -554,11 +581,11 @@ def run(command, shell=True, pty=False):
     complain (or, even more rarely, refuse to run) if a tty is not present.
 
     Examples::
-    
+
         run("ls /var/www/")
         run("ls /home/myuser", shell=False)
         output = run('ls /var/www/site1')
-    
+
     .. versionchanged:: 1.0
         Added the ``succeeded`` attribute.
     .. versionchanged:: 1.0
@@ -582,14 +609,14 @@ def sudo(command, shell=True, pty=False, user=None):
     ``user`` may likewise be a string or an int.
 
     Examples::
-    
+
         sudo("~/install_script.py")
         sudo("mkdir /var/www/new_docroot", user="www-data")
         sudo("ls /home/jdoe", user=1001)
         result = sudo("ls /tmp/")
-    
+
     """
-    return _run_command(command, shell, pty, sudo=True, user=user) 
+    return _run_command(command, shell, pty, sudo=True, user=user)
 
 
 def local(command, capture=True):
@@ -604,7 +631,7 @@ def local(command, capture=True):
     stdout as a string, and will not print anything to the user. As with `run`
     and `sudo`, this return value exhibits the ``return_code``, ``stderr``,
     ``failed`` and ``succeeded`` attributes. See `run` for details.
-    
+
     .. note::
         `local`'s capturing behavior differs from the default behavior of `run`
         and `sudo` due to the different mechanisms involved: it is difficult to
