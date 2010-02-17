@@ -131,8 +131,13 @@ def sed(filename, before, after, limit='', use_sudo=False, backup='.bak'):
     """
     func = use_sudo and sudo or run
     expr = r"sed -i%s -r -e '%ss/%s/%s/g' %s"
-    for char in "/'()":
+    # Characters to be escaped in both
+    for char in "/'":
         before = before.replace(char, r'\%s' % char)
+        after = after.replace(char, r'\%s' % char)
+    # Characters to be escaped in replacement only (they're useful in regexen
+    # in the 'before' part)
+    for char in "()":
         after = after.replace(char, r'\%s' % char)
     if limit:
         limit = r'/%s/ ' % limit
