@@ -62,6 +62,7 @@ have already upgraded to Python 2.6:
     tutorial
     installation
     development
+    faq
 
 Tutorial
 --------
@@ -84,6 +85,14 @@ documentation, which expands upon the concepts outlined in the
     :glob:
 
     usage/*
+
+.. _faq:
+
+FAQ
+---
+
+Some frequently encountered questions, coupled with answers/solutions/excuses,
+may be found on the :doc:`faq` page.
 
 .. _api_docs:
 
