@@ -4,8 +4,9 @@ Frequently Asked Questions (FAQ)
 
 These are some of the most commonly encountered problems or frequently asked
 questions which we receive from users. They aren't intended as a substitute for
-reading the rest of the documentation, especially the :doc:`usage` docs, so
-please make sure you check those out if your question is not answered here.
+reading the rest of the documentation, especially the :ref:`usage docs
+<usage-docs>`, so please make sure you check those out if your question is not
+answered here.
 
 
 1. Why do I sometimes see ``err: stdin: is not a tty``?
