@@ -46,6 +46,7 @@ def get_version(form='short'):
     final = (type_ == "final")
     type_num = VERSION[4]
     firsts = "".join([x[0] for x in type_.split()])
+    sha1 = " (%s)" % git_sha()
 
     # Branch
     versions['branch'] = branch
@@ -58,6 +59,8 @@ def get_version(form='short'):
         v += firsts
         if type_num:
             v += str(type_num)
+        else:
+            v += sha1
     versions['short'] = v
 
     # Normal
@@ -68,7 +71,7 @@ def get_version(form='short'):
         if type_num:
             v += " " + type_ + " " + str(type_num)
         else:
-            v += " pre-" + type_
+            v += " pre-" + type_ + sha1
     versions['normal'] = v
 
     # Verbose
@@ -79,7 +82,7 @@ def get_version(form='short'):
         if type_num:
             v += " " + type_ + " " + str(type_num)
         else:
-            v += " pre-" + type_ + " (%s)" % git_sha()
+            v += " pre-" + type_ + sha1
     else:
         v += " final"
     versions['verbose'] = v
