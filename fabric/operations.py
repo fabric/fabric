@@ -4,6 +4,8 @@ Functions to be used in fabfiles and other non-core code, such as run()/sudo().
 
 from __future__ import with_statement
 
+from glob import glob
+from fnmatch import filter as fnfilter
 import os
 import os.path
 import re
@@ -303,71 +305,118 @@ def put(local_path, remote_path, recursive=True):
         put('index.html', 'index.html', mode=0755)
 
     """
-    scp = SCPClient(connections[env.host_string].get_transport())
-    globs = glob(os.path.expanduser(local_path))
+    ftp = connections[env.host_string].open_sftp()
 
-    if not recursive:
-        files = list()
-        for name in globs:
-            if os.path.isdir(name):
-                warn('%s is a directory, skipping.' % name)
+
+    with closing(ftp) as ftp:
+
+        # Expand tildes (assumption: default remote cwd is user $HOME)
+        remote_path = remote_path.replace('~', ftp.normalize('.'))
+        local_path = os.path.expanduser(local_path)
+
+        # get filenames from glob
+        names = glob(local_path)
+
+        # sanity check and wierd cases
+        if _remote_exists(remote_path, ftp):
+            if recursive and len(names) != 1 and \
+                    not _remote_isdir(remote_path, ftp):
+                raise ValueError("'%s' is not a directory" \
+                    % remote_path)
+
+        # Iterate over all given local files
+        for lpath in names:
+            if os.path.isdir(lpath):
+                if not recursive:
+                    warn('%s is a directory, skipping.' % lpath)
+                else:
+                    _send_dir(lpath, remote_path, ftp)
             else:
-                files.append(name)
-    else:
-        files = globs
+                _send_file(lpath, remote_path, ftp)
 
+def _send_dir(lpath, rpath, ftp):
+    if os.path.basename(lpath):
+        strip = os.path.dirname(lpath)
+    else:
+        strip = os.path.dirname(os.path.dirname(lpath))
+
+    print 'lpath is', lpath, 'strip is',strip
+    for context, dirs, files in os.walk(lpath):
+        rcontext = context.replace(strip,'')
+        rcontext = rcontext.lstrip('/')
+        print "rcontext is", rcontext,
+        rcontext = os.path.join(rpath, rcontext)
+        print 'then ', rcontext
+
+        if not _remote_exists(rcontext, ftp):
+            ftp.mkdir(rcontext)
+
+        for d in dirs:
+            n = os.path.join(rcontext,d)
+            if not _remote_exists(n, ftp):
+                ftp.mkdir(n)
+
+        for f in files:
+            lpath = os.path.join(context,f)
+            n = os.path.join(rcontext,f)
+            _send_file(lpath, n, ftp)
+
+def _remote_exists(path, ftp):
     try:
-        scp.put(files, remote_path, recursive)
+        ftp.lstat(path).st_mode
+    except:
+        return False
+    return True
+
+def _remote_isdir(path, ftp):
+     try:
+        return stat.S_ISDIR(ftp.lstat(path).st_mode)
+     except:
+        return False
+
+def _remote_islink(path, ftp):
+    try:
+        return stat.S_ISLNK(ftp.lstat(path).st_mode)
+    except:
+        return False
+
+def _send_file(lpath, rpath, ftp):
+    pre = ftp.getcwd()
+    pre = pre if pre else ''
+
+    if _remote_isdir(rpath, ftp):
+        rpath = os.path.join(rpath, os.path.basename(lpath))
+    if output.running:
+        print 'lpath:', lpath, 'rpath:',rpath,'pre:', pre
+        print("[%s] put: %s -> %s" % (
+            env.host_string, lpath, os.path.join(pre, rpath)
+        ))
+    # Try to catch raised exceptions (which is the only way to tell if
+    # this operation had problems; there's no return code) during upload
+    try:
+        # Actually do the upload
+        rattrs = ftp.put(lpath, rpath)
+        # and finally set the file mode
+        lmode = os.stat(lpath).st_mode
+        if lmode != rattrs.st_mode:
+            ftp.chmod(rpath, lmode)
     except Exception, e:
         msg = "put() encountered an exception while uploading '%s'"
-        _handle_failure(message=msg % local_path, exception=e)
+        _handle_failure(message=msg % lpath, exception=e)
 
-    #with closing(ftp) as ftp:
-    #    # Expand tildes (assumption: default remote cwd is user $HOME)
-    #    remote_path = remote_path.replace('~', ftp.normalize('.'))
-    #    # Get remote mode for directory-vs-file detection
-    #    try:
-    #        rmode = ftp.lstat(remote_path).st_mode
-    #    except:
-    #        # sadly, I see no better way of doing this
-    #        rmode = None
-    #    # Expand local tildes and get globs
-    #    globs = glob(os.path.expanduser(local_path))
-    #    # Deal with bad local_path
-    #    if not globs:
-    #        raise ValueError, "'%s' is not a valid local path or glob." \
-    #            % local_path
-    #
-    #    # Iterate over all given local files
-    #    for lpath in globs:
-    #        # If remote path is directory, tack on the local filename
-    #        _remote_path = remote_path
-    #        if rmode is not None and stat.S_ISDIR(rmode):
-    #            _remote_path = os.path.join(
-    #                remote_path,
-    #                os.path.basename(lpath)
-    #            )
-    #        # Print
-    #        if output.running:
-    #            print("[%s] put: %s -> %s" % (
-    #                env.host_string, lpath, _remote_path
-    #            ))
-    #        # Try to catch raised exceptions (which is the only way to tell if
-    #        # this operation had problems; there's no return code) during upload
-    #        try:
-    #            # Actually do the upload
-    #            rattrs = ftp.put(lpath, _remote_path)
-    #            # and finally set the file mode
-    #            lmode = mode or os.stat(lpath).st_mode
-    #            if lmode != rattrs.st_mode:
-    #                ftp.chmod(_remote_path, lmode)
-    #        except Exception, e:
-    #            msg = "put() encountered an exception while uploading '%s'"
-    #            _handle_failure(message=msg % lpath, exception=e)
+def _remote_glob(pat, ftp):
+    dirpart, pat = os.path.split(pat)
+    rlist = ftp.listdir(dirpart)
 
+    print "rlist is", rlist
+    names = fnfilter([f for f in rlist if not f[0] == '.'], pat)
+    if len(names):
+        return [os.path.join(dirpart, name) for name in names]
+    else:
+        return [dirpart]
 
 @needs_host
-def get(remote_path, local_path, recursive=False):
+def get(rpath, lpath, recursive=False):
     """
     Download a file from a remote host.
 
@@ -399,41 +448,119 @@ def get(remote_path, local_path, recursive=False):
     However, with a single host (e.g. ``@hosts('host1')``), no suffixing is
     performed, leaving you with a single, pristine ``server.log``.
     """
-    scp = SCPClient(connections[env.host_string].get_transport())
+    ftp = connections[env.host_string].open_sftp()
 
+    with closing (ftp) as ftp:
+        rpath = rpath.replace('~', ftp.normalize('.'))
+        lpath = os.path.expanduser(lpath)
+
+
+        # If the current run appears to be scheduled for multiple hosts,
+        # append a suffix to the downloaded file to prevent clobbering.
+        if len(env.all_hosts) > 1:
+            if os.path.isdir(lpath):
+                lpath = os.path.join(lpath, env.hostname)
+                os.mkdir(lpath)
+            else:
+                if os.path.exists(lpath):
+                    warn("Local file exists, but writing new file per host")
+                lpath = lpath + "." + env.hostname
+
+        # setup glob
+        names =  _remote_glob(rpath, ftp)
+        print 'rpath', rpath, 'names', names
+        # sanity check
+        if len(names) > 1 and os.path.exists(lpath) and not os.path.isdir(lpath):
+            es = "[%s] %s not a directory, but multiple files to be fetched"
+            raise ValueError(es % (env.host, lpath))
+
+        for name in names:
+            if _remote_isdir(name, ftp):
+                print 'remote dir!'
+                if recursive:
+                    print 'recursive'
+                    _get_dir(name, lpath, ftp)
+                else:
+                    warn("[%s] %s is a directory, skipping" % \
+                        (env.host_string, name))
+            else:
+                print 'not remote dir'
+                _get_file(name, lpath, ftp)
+        #Print
+
+def _remote_walk(top, ftp, topdown=True, onerror=None, followlinks=False):
+    from os.path import join, isdir, islink
+
+    # We may not have read permission for top, in which case we can't
+    # get a list of the files the directory contains.  os.path.walk
+    # always suppressed the exception then, rather than blow up for a
+    # minor reason when (say) a thousand readable directories are still
+    # left to visit.  That logic is copied here.
     try:
-        scp.get(remote_path, local_path, recursive)
+        # Note that listdir and error are globals in this module due
+        # to earlier import-*.
+        names = ftp.listdir(top)
+    except Exception, err:
+        if onerror is not None:
+            onerror(err)
+        return
+
+    dirs, nondirs = [], []
+    for name in names:
+        if _remote_isdir(join(top, name), ftp):
+            dirs.append(name)
+        else:
+            nondirs.append(name)
+
+    if topdown:
+        yield top, dirs, nondirs
+
+    for name in dirs:
+        path = join(top, name)
+        if followlinks or not _remote_islink(path, ftp):
+            for x in _remote_walk(path, ftp, topdown, onerror, followlinks):
+                yield x
+    if not topdown:
+        yield top, dirs, nondirs
+
+def _get_dir(rpath, lpath, ftp):
+    if os.path.basename(rpath):
+        strip = os.path.dirname(rpath)
+    else:
+        strip = os.path.dirname(os.path.dirname(rpath))
+
+    print 'rpath is', rpath ,'strip is', strip
+    for context, dirs, files in _remote_walk(rpath, ftp):
+        print 'context is', context,
+        lcontext = context.replace(strip,'')
+        lcontext = lcontext.lstrip('/')
+        lcontext = os.path.join(lpath, lcontext)
+        print "lcontext is", lcontext
+
+        if not os.path.exists(lcontext):
+            os.mkdir(lcontext)
+        for d in dirs:
+            n = os.path.join(lcontext, d)
+            if not os.path.exists(n):
+                os.mkdir(n)
+        for f in files:
+            rpath = os.path.join(context, f)
+            n = os.path.join(lcontext, f)
+            _get_file(rpath, n, ftp)
+
+def _get_file(rpath, lpath, ftp):
+    if os.path.isdir(lpath):
+        lpath = os.path.join(lpath, os.path.basename(rpath))
+    if output.running:
+        print("[%s] download: %s <- %s" % (
+            env.host_string, lpath, rpath
+        ))
+    # Handle any raised exceptions (no return code to inspect here)
+    try:
+        ftp.get(rpath, lpath)
     except Exception, e:
         msg = "get() encountered an exception while downloading '%s'"
-        _handle_failure(message=msg % remote_path, exception=e)
-
-
-    #with closing (ftp) as ftp:
-    #    # Expand tildes (assumption: default remote cwd is user $HOME)
-    #    remote_path = remote_path.replace('~', ftp.normalize('.'))
-    #    local_path = os.path.expanduser(local_path)
-    #    # Detect local directory and append filename if necessary (assuming
-    #    # Unix file separators for now :()
-    #    if os.path.isdir(local_path):
-    #        remote_file = remote_path
-    #        if '/' in remote_file:
-    #            remote_file = remote_file.split('/')[-1]
-    #        local_path = os.path.join(local_path, remote_file)
-    #    # If the current run appears to be scheduled for multiple hosts,
-    #    # append a suffix to the downloaded file to prevent clobbering.
-    #    if len(env.all_hosts) > 1:
-    #        local_path = local_path + '.' + env.host
-    #    # Print
-    #    if output.running:
-    #        print("[%s] download: %s <- %s" % (
-    #            env.host_string, local_path, remote_path
-    #        ))
-    #    # Handle any raised exceptions (no return code to inspect here)
-    #    try:
-    #        ftp.get(remote_path, local_path)
-    #    except Exception, e:
-    #        msg = "get() encountered an exception while downloading '%s'"
-    #        _handle_failure(message=msg % remote_path, exception=e)
+        _handle_failure(message=msg % rpath, exception=e)
 
 
 def _sudo_prefix(user):
