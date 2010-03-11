@@ -106,3 +106,12 @@ sent to the remote end's password authentication.
 
 We hope to address this in future releases, either by doing heavier
 introspection of Paramiko or patching Paramiko itself.
+
+
+Is Fabric thread-safe?
+======================
+
+Currently, no, it's not -- the present version of Fabric relies heavily on
+shared state in order to keep the codebase simple. However, there are definite
+plans to update its internals so that Fabric may be either threaded or
+otherwise parallelized so your tasks can run on multiple servers concurrently.
