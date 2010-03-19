@@ -62,6 +62,50 @@ def fastprint(text):
     Uses sys.stdout.flush() to get around buffer/cache behavior of stdout.
 
     Does not append newline characters.
+
+    This function's output may be controlled via the ``user`` :doc:`output
+    level </usage/output_controls>` (which is visible by default.)
+
+    .. versionchanged:: 1.0
+        Added this function's output to the ``user`` output level.
     """
-    sys.stdout.write(text)
-    sys.stdout.flush()
+    from fabric.state import output
+    if output.user:
+        sys.stdout.write(text)
+        sys.stdout.flush()
+
+
+def puts(text, show_prefix=True, end="\n", flush=False):
+    """
+    An alias for ``print`` whose output is managed by Fabric's output controls.
+
+    In other words, this function simply prints to ``sys.stdout``, but will
+    hide its output if the ``user`` :doc:`output level
+    </usage/output_controls>` is set to ``False``.
+
+    If ``show_prefix=False``, `puts` will omit the leading ``[hostname] ``
+    which it tacks on by default. (It will also omit this prefix if
+    ``env.host_string`` is empty.)
+
+    Newlines may be disabled by setting ``end`` to the empty string (``''``).
+    (This intentionally mirrors Python 3's ``print`` syntax.)
+
+    You may force output flushing (e.g. to bypass output buffering) by setting
+    ``flush=True``.
+
+    .. note::
+        due to what appears to be a bug in the otherwise amazing Sphinx
+        documentation generator, the reported default value for ``end`` in the
+        above function signature is incorrect. The actual default value is a
+        newline, ``"\\n"``.
+
+    .. versionadded:: 1.0
+    """
+    from fabric.state import output, env
+    if output.user:
+        prefix = ""
+        if env.host_string and show_prefix:
+            prefix = "[%s] " % env.host_string
+        sys.stdout.write(prefix + str(text) + end)
+        if flush:
+            sys.stdout.flush()

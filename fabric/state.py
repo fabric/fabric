@@ -320,9 +320,9 @@ output = _AliasDict({
     'running': True,
     'stdout': True,
     'stderr': True,
-    'debug': False
-
+    'debug': False,
+    'user': True
 }, aliases={
-    'everything': ['warnings', 'running', 'output'],
+    'everything': ['warnings', 'running', 'user', 'output'],
     'output': ['stdout', 'stderr']
 })
