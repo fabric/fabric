@@ -71,7 +71,9 @@ class _AttributeString(str):
     """
     Simple string subclass to allow arbitrary attribute access.
     """
-
+    @property
+    def stdout(self):
+        return str(self)
 
 
 # Can't wait till Python versions supporting 'def func(*args, foo=bar)' become

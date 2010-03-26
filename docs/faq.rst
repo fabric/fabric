@@ -1,11 +1,13 @@
-=================================
-Fabric Frequently Asked Questions
-=================================
+================================
+Frequently Asked Questions (FAQ)
+================================
 
-This is a dev-oriented list of FAQs from users. Once we get to maybe 10 or
-more, turn this into an actual document. (Would rather not have a user facing
-FAQ doc with only one or two entries, and too lazy to brainstorm a bunch of
-anticipated FAQs right now...)
+These are some of the most commonly encountered problems or frequently asked
+questions which we receive from users. They aren't intended as a substitute for
+reading the rest of the documentation, especially the :ref:`usage docs
+<usage-docs>`, so please make sure you check those out if your question is not
+answered here.
+
 
 1. Why do I sometimes see ``err: stdin: is not a tty``?
 =======================================================
