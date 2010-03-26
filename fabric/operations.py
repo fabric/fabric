@@ -5,7 +5,6 @@ Functions to be used in fabfiles and other non-core code, such as run()/sudo().
 from __future__ import with_statement
 
 from glob import glob
-from fnmatch import filter as fnfilter
 import os
 import os.path
 import re
@@ -24,7 +23,7 @@ from fabric.network import needs_host
 from fabric.state import env, connections, output, win32, default_channel
 from fabric.utils import abort, indent, warn, puts
 from fabric.thread_handling import ThreadHandler
-from scp import SCPClient
+from fabric.sftp import FabSFTP
 
 # For terminal size logic below
 if not win32:
@@ -305,7 +304,7 @@ def put(local_path, remote_path, recursive=True):
         put('index.html', 'index.html', mode=0755)
 
     """
-    ftp = connections[env.host_string].open_sftp()
+    ftp = FabSFTP(env.host_string)
 
 
     with closing(ftp) as ftp:
@@ -318,102 +317,26 @@ def put(local_path, remote_path, recursive=True):
         names = glob(local_path)
 
         # sanity check and wierd cases
-        if _remote_exists(remote_path, ftp):
+        if ftp.exists(remote_path):
             if recursive and len(names) != 1 and \
-                    not _remote_isdir(remote_path, ftp):
+                    not ftp.isdir(remote_path):
                 raise ValueError("'%s' is not a directory" \
                     % remote_path)
 
         # Iterate over all given local files
         for lpath in names:
-            if os.path.isdir(lpath):
-                if not recursive:
-                    warn('%s is a directory, skipping.' % lpath)
+            try:
+                if os.path.isdir(lpath):
+                    if not recursive:
+                        warn('%s is a directory, skipping.' % lpath)
+                    else:
+                        ftp.put_dir(lpath, remote_path)
                 else:
-                    _send_dir(lpath, remote_path, ftp)
-            else:
-                _send_file(lpath, remote_path, ftp)
+                    ftp.put(lpath, remote_path)
+            except Exception, e:
+                msg = "put() encountered an exception while uploading '%s'"
+                _handle_failure(message=msg % lpath, exception=e)
 
-def _send_dir(lpath, rpath, ftp):
-    if os.path.basename(lpath):
-        strip = os.path.dirname(lpath)
-    else:
-        strip = os.path.dirname(os.path.dirname(lpath))
-
-    print 'lpath is', lpath, 'strip is',strip
-    for context, dirs, files in os.walk(lpath):
-        rcontext = context.replace(strip,'')
-        rcontext = rcontext.lstrip('/')
-        print "rcontext is", rcontext,
-        rcontext = os.path.join(rpath, rcontext)
-        print 'then ', rcontext
-
-        if not _remote_exists(rcontext, ftp):
-            ftp.mkdir(rcontext)
-
-        for d in dirs:
-            n = os.path.join(rcontext,d)
-            if not _remote_exists(n, ftp):
-                ftp.mkdir(n)
-
-        for f in files:
-            lpath = os.path.join(context,f)
-            n = os.path.join(rcontext,f)
-            _send_file(lpath, n, ftp)
-
-def _remote_exists(path, ftp):
-    try:
-        ftp.lstat(path).st_mode
-    except:
-        return False
-    return True
-
-def _remote_isdir(path, ftp):
-     try:
-        return stat.S_ISDIR(ftp.lstat(path).st_mode)
-     except:
-        return False
-
-def _remote_islink(path, ftp):
-    try:
-        return stat.S_ISLNK(ftp.lstat(path).st_mode)
-    except:
-        return False
-
-def _send_file(lpath, rpath, ftp):
-    pre = ftp.getcwd()
-    pre = pre if pre else ''
-
-    if _remote_isdir(rpath, ftp):
-        rpath = os.path.join(rpath, os.path.basename(lpath))
-    if output.running:
-        print 'lpath:', lpath, 'rpath:',rpath,'pre:', pre
-        print("[%s] put: %s -> %s" % (
-            env.host_string, lpath, os.path.join(pre, rpath)
-        ))
-    # Try to catch raised exceptions (which is the only way to tell if
-    # this operation had problems; there's no return code) during upload
-    try:
-        # Actually do the upload
-        rattrs = ftp.put(lpath, rpath)
-        # and finally set the file mode
-        lmode = os.stat(lpath).st_mode
-        if lmode != rattrs.st_mode:
-            ftp.chmod(rpath, lmode)
-    except Exception, e:
-        msg = "put() encountered an exception while uploading '%s'"
-        _handle_failure(message=msg % lpath, exception=e)
-
-def _remote_glob(pat, ftp):
-    dirpart, pat = os.path.split(pat)
-    rlist = ftp.listdir(dirpart)
-
-    print "rlist is", rlist
-    names = fnfilter([f for f in rlist if not f[0] == '.'], pat)
-    if len(names):
-        return [os.path.join(dirpart, name) for name in names]
-    else:
-        return [dirpart]
 
 @needs_host
 def get(rpath, lpath, recursive=False):
@@ -448,7 +371,7 @@ def get(rpath, lpath, recursive=False):
     However, with a single host (e.g. ``@hosts('host1')``), no suffixing is
     performed, leaving you with a single, pristine ``server.log``.
     """
-    ftp = connections[env.host_string].open_sftp()
+    ftp = FabSFTP(env.host_string)
 
     with closing (ftp) as ftp:
         rpath = rpath.replace('~', ftp.normalize('.'))
@@ -467,100 +390,29 @@ def get(rpath, lpath, recursive=False):
                 lpath = lpath + "." + env.hostname
 
         # setup glob
-        names =  _remote_glob(rpath, ftp)
+        names =  ftp.glob(rpath)
         print 'rpath', rpath, 'names', names
         # sanity check
         if len(names) > 1 and os.path.exists(lpath) and not os.path.isdir(lpath):
             es = "[%s] %s not a directory, but multiple files to be fetched"
             raise ValueError(es % (env.host, lpath))
 
-        for name in names:
-            if _remote_isdir(name, ftp):
-                print 'remote dir!'
-                if recursive:
-                    print 'recursive'
-                    _get_dir(name, lpath, ftp)
+        for rpath in names:
+            try:
+                if ftp.isdir(rpath):
+                    print 'remote dir!'
+                    if recursive:
+                        print 'recursive'
+                        ftp.get_dir(rpath, lpath)
+                    else:
+                        warn("[%s] %s is a directory, skipping" % \
+                            (env.host_string, rpath))
                 else:
-                    warn("[%s] %s is a directory, skipping" % \
-                        (env.host_string, name))
-            else:
-                print 'not remote dir'
-                _get_file(name, lpath, ftp)
-        #Print
-
-def _remote_walk(top, ftp, topdown=True, onerror=None, followlinks=False):
-    from os.path import join, isdir, islink
-
-    # We may not have read permission for top, in which case we can't
-    # get a list of the files the directory contains.  os.path.walk
-    # always suppressed the exception then, rather than blow up for a
-    # minor reason when (say) a thousand readable directories are still
-    # left to visit.  That logic is copied here.
-    try:
-        # Note that listdir and error are globals in this module due
-        # to earlier import-*.
-        names = ftp.listdir(top)
-    except Exception, err:
-        if onerror is not None:
-            onerror(err)
-        return
-
-    dirs, nondirs = [], []
-    for name in names:
-        if _remote_isdir(join(top, name), ftp):
-            dirs.append(name)
-        else:
-            nondirs.append(name)
-
-    if topdown:
-        yield top, dirs, nondirs
-
-    for name in dirs:
-        path = join(top, name)
-        if followlinks or not _remote_islink(path, ftp):
-            for x in _remote_walk(path, ftp, topdown, onerror, followlinks):
-                yield x
-    if not topdown:
-        yield top, dirs, nondirs
-
-def _get_dir(rpath, lpath, ftp):
-    if os.path.basename(rpath):
-        strip = os.path.dirname(rpath)
-    else:
-        strip = os.path.dirname(os.path.dirname(rpath))
-
-    print 'rpath is', rpath ,'strip is', strip
-    for context, dirs, files in _remote_walk(rpath, ftp):
-        print 'context is', context,
-        lcontext = context.replace(strip,'')
-        lcontext = lcontext.lstrip('/')
-        lcontext = os.path.join(lpath, lcontext)
-        print "lcontext is", lcontext
-
-        if not os.path.exists(lcontext):
-            os.mkdir(lcontext)
-        for d in dirs:
-            n = os.path.join(lcontext, d)
-            if not os.path.exists(n):
-                os.mkdir(n)
-        for f in files:
-            rpath = os.path.join(context, f)
-            n = os.path.join(lcontext, f)
-            _get_file(rpath, n, ftp)
-
-def _get_file(rpath, lpath, ftp):
-    if os.path.isdir(lpath):
-        lpath = os.path.join(lpath, os.path.basename(rpath))
-    if output.running:
-        print("[%s] download: %s <- %s" % (
-            env.host_string, lpath, rpath
-        ))
-    # Handle any raised exceptions (no return code to inspect here)
-    try:
-        ftp.get(rpath, lpath)
-    except Exception, e:
-        msg = "get() encountered an exception while downloading '%s'"
-        _handle_failure(message=msg % rpath, exception=e)
+                    print 'not remote dir'
+                    ftp.get(rpath, lpath)
+            except Exception, e:
+                msg = "get() encountered an exception while downloading '%s'"
+                _handle_failure(message=msg % rpath, exception=e)
 
 
 def _sudo_prefix(user):
