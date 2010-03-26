@@ -6,7 +6,6 @@ or performing indenting on multiline output.
 import sys
 import textwrap
 
-
 def abort(msg):
     """
     Abort execution, printing given message and exiting with error status.
@@ -19,7 +18,7 @@ def abort(msg):
         print >> sys.stderr, "\nAborting."
     sys.exit(1)
 
-    
+
 def warn(msg):
     """
     Print warning message, but do not abort execution.
