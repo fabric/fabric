@@ -493,4 +493,3 @@ you: it iterates over all open connections and closes them just before it exits
 
 Library users will need to ensure they explicitly close all open connections
 before their program exits, though we plan to makes this easier in the future.
-An example of this can be seen in `the tutorial <library-usage>`.
