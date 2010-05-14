@@ -65,7 +65,7 @@ def puts(text, show_prefix=True, end="\n", flush=False):
     hide its output if the ``user`` :doc:`output level
     </usage/output_controls>` is set to ``False``.
 
-    If ``show_prefix=False``, `puts` will omit the leading ``[hostname] ``
+    If ``show_prefix=False``, `puts` will omit the leading ``[hostname]``
     which it tacks on by default. (It will also omit this prefix if
     ``env.host_string`` is empty.)
 
