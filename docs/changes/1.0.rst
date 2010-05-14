@@ -16,8 +16,8 @@ Fabric.
 * The `~fabric.operations.reboot` operation has been added, providing a way for
   Fabric to issue a reboot command and then reconnect after the system has
   restarted.
-* Added a `~fabric.utils.fastprint` utility function equivalent to
-  ``sys.stdout.write(text); sys.stdout.flush()``.
+* Added a `~fabric.utils.puts` utility function, which allows greater control
+  over fabfile output as well as a convenient way to effect output flushing.
 * `~fabric.operations.local` now returns the same "rich" string object as
   `~fabric.operations.run`/`~fabric.operations.sudo` do, so that it is a
   string containing the command's stdout (if ``capture=True``) or the empty

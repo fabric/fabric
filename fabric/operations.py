@@ -19,7 +19,7 @@ from contextlib import closing
 from fabric.context_managers import settings
 from fabric.network import output_thread, needs_host
 from fabric.state import env, connections, output
-from fabric.utils import abort, indent, warn, fastprint
+from fabric.utils import abort, indent, warn
 
 
 def _handle_failure(message, exception=None):
@@ -678,9 +678,9 @@ def reboot(wait):
     client.close()
     del connections[env.host_string]
     if output.running:
-        fastprint("Waiting for reboot: ")
+        puts("Waiting for reboot: ", flush=True)
         per_tick = 5
         for second in range(int(wait / per_tick)):
-            fastprint(".")
+            puts(".", show_prefix=False, flush=True)
             time.sleep(per_tick)
-        fastprint("done.\n")
+        puts("done.\n", show_prefix=False, flush=True)

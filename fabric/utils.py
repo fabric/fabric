@@ -57,24 +57,6 @@ def indent(text, spaces=4, strip=False):
     return output
 
 
-def fastprint(text):
-    """
-    Uses sys.stdout.flush() to get around buffer/cache behavior of stdout.
-
-    Does not append newline characters.
-
-    This function's output may be controlled via the ``user`` :doc:`output
-    level </usage/output_controls>` (which is visible by default.)
-
-    .. versionchanged:: 1.0
-        Added this function's output to the ``user`` output level.
-    """
-    from fabric.state import output
-    if output.user:
-        sys.stdout.write(text)
-        sys.stdout.flush()
-
-
 def puts(text, show_prefix=True, end="\n", flush=False):
     """
     An alias for ``print`` whose output is managed by Fabric's output controls.
