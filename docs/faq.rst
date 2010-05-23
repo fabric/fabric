@@ -59,6 +59,12 @@ Such a call will effectively fork the ``yes`` program into a detached
 ``screen`` session, which will no longer be associated with the calling shell,
 and thus your Fabric task will continue executing as intended.
 
+.. note::
+
+    There are also alternatives to ``screen`` which serve the same purpose,
+    such as ``dtach``. As long as the program can ensure that the process in
+    question is detached from your shell process, it should suffice.
+
 
 My remote system doesn't have ``bash`` installed by default, do I need to install ``bash``?
 ===========================================================================================
@@ -74,7 +80,7 @@ where ``/bin/bash -l -c`` is the default value of ``env.shell``.
 
 .. note::
 
-    The ``-l`` argument specifices a login shell and is not absolutely
+    The ``-l`` argument specifies a login shell and is not absolutely
     required, merely convenient in many situations. Some shells lack the option
     entirely and it may be safely omitted in such cases.
 
