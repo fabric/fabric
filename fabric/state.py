@@ -150,7 +150,7 @@ env_options = [
 
     make_option('-f', '--fabfile',
         default='fabfile.py',
-        help="name of fabfile to load, e.g. 'fabfile.py' or '../other.py'"
+        help="Python module file to import, e.g. '../other.py'"
     ),
 
     make_option('-w', '--warn-only',
