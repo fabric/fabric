@@ -1,0 +1,8 @@
+========================
+Changes in version 0.9.1
+========================
+
+The following changes were implemented in Fabric 0.9.1:
+
+* `#127 <http://code.fabfile.org/issues/show/127>`_: Added note to install docs
+  re: ActiveState's PyPM. Thanks to Sridhar Ratnakumar for the tip. 
