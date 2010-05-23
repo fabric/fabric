@@ -9,6 +9,23 @@ reading the rest of the documentation, especially the :ref:`usage docs
 answered here.
 
 
+Fabric sometimes takes a long time to disconnect at the end of a session. Why?
+==============================================================================
+
+If you're on Python 2.6.5, the issue may be a change in that version of Python
+which triggered a latent bug in our SSH layer, Paramiko. Fabric currently
+bundles Paramiko 1.7.4, but users report that upgrading to Paramiko 1.7.6
+(which will overwrite the bundled version) seems to fix the problem.
+
+The quickest way to upgrade Paramiko is to use ``easy_install`` or ``pip``,
+e.g.::
+
+    $ pip install -U paramiko
+
+Fabric will likely drop its bundled Paramiko version in the near future; see
+:issue:`86` for more.
+
+
 Why do I sometimes see ``err: stdin: is not a tty``?
 ====================================================
 
