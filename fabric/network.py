@@ -6,6 +6,7 @@ from functools import wraps
 import getpass
 import re
 import threading
+import select
 import socket
 import sys
 
@@ -291,6 +292,20 @@ def prompt_for_password(previous=None, prompt=None):
         password_prompt = base_password_prompt + ": "
         new_password = getpass.getpass(password_prompt)
     return new_password
+
+
+def input_thread(chan):
+    def inputter(chan):
+        while not chan.exit_status_ready():
+            readers, writers, exceptions = select.select(
+                [sys.stdin], [], [], 0.0
+            )
+            for fd in readers:
+                chan.sendall(fd.readline())
+    thread = threading.Thread(None, inputter, "input", (chan,))
+    thread.setDaemon(True)
+    thread.start()
+    return thread
 
 
 def output_thread(prefix, chan, stderr=False, capture=None):
