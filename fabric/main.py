@@ -255,13 +255,14 @@ def parse_arguments(arguments):
         kwargs = {}
         hosts = []
         roles = []
+        exclude_hosts = []
         if ':' in cmd:
             cmd, argstr = cmd.split(':', 1)
             for pair in argstr.split(','):
                 k, _, v = pair.partition('=')
                 if v:
-                    # Catch, interpret host/hosts/role/roles kwargs
-                    if k in ['host', 'hosts', 'role', 'roles']:
+                    # Catch, interpret host/hosts/role/roles/exclude_hosts kwargs
+                    if k in ['host', 'hosts', 'role', 'roles','exclude_hosts']:
                         if k == 'host':
                             hosts = [v.strip()]
                         elif k == 'hosts':
@@ -270,12 +271,14 @@ def parse_arguments(arguments):
                             roles = [v.strip()]
                         elif k == 'roles':
                             roles = [x.strip() for x in v.split(';')]
+                        elif k == 'exclude_hosts':
+                            exclude_hosts = [x.strip() for x in v.split(';')]
                     # Otherwise, record as usual
                     else:
                         kwargs[k] = v
                 else:
                     args.append(k)
-        cmds.append((cmd, args, kwargs, hosts, roles))
+        cmds.append((cmd, args, kwargs, hosts, roles, exclude_hosts))
     return cmds
 
 
@@ -286,7 +289,7 @@ def parse_remainder(arguments):
     return ' '.join(arguments)
 
 
-def _merge(hosts, roles):
+def _merge(hosts, roles, exclude=[]):
     """
     Merge given host and role lists into one list of deduped hosts.
     """
@@ -305,11 +308,17 @@ def _merge(hosts, roles):
         if callable(value):
             value = value()
         role_hosts += value
+
+    merged_list = list(set(hosts + role_hosts))
+    for exclude_host in exclude:
+        if exclude_host in merged_list:
+            merged_list.remove(exclude_host)
+
     # Return deduped combo of hosts and role_hosts
-    return list(set(hosts + role_hosts))
+    return merged_list
 
 
-def get_hosts(command, cli_hosts, cli_roles):
+def get_hosts(command, cli_hosts, cli_roles, cli_exclude_hosts):
     """
     Return the host list the given command should be using.
 
@@ -318,17 +327,18 @@ def get_hosts(command, cli_hosts, cli_roles):
     """
     # Command line per-command takes precedence over anything else.
     if cli_hosts or cli_roles:
-        return _merge(cli_hosts, cli_roles)
+        return _merge(cli_hosts, cli_roles, cli_exclude_hosts)
     # Decorator-specific hosts/roles go next
     func_hosts = getattr(command, 'hosts', [])
     func_roles = getattr(command, 'roles', [])
+    func_exclude_hosts = getattr(command, 'exclude_hosts', [])
     if func_hosts or func_roles:
-        return _merge(func_hosts, func_roles)
+        return _merge(func_hosts, func_roles, func_exclude_hosts)
     # Finally, the env is checked (which might contain globally set lists from
     # the CLI or from module-level code). This will be the empty list if these
     # have not been set -- which is fine, this method should return an empty
     # list if no hosts have been set anywhere.
-    return _merge(state.env['hosts'], state.env['roles'])
+    return _merge(state.env['hosts'], state.env['roles'], state.env['exclude_hosts'])
 
 
 def update_output_levels(show, hide):
@@ -366,8 +376,8 @@ def main():
         for option in env_options:
             state.env[option.dest] = getattr(options, option.dest)
 
-        # Handle --hosts, --roles (comma separated string => list)
-        for key in ['hosts', 'roles']:
+        # Handle --hosts, --roles, --exclude-hosts (comma separated string => list)
+        for key in ['hosts', 'roles', 'exclude_hosts']:
             if key in state.env and isinstance(state.env[key], str):
                 state.env[key] = state.env[key].split(',')
 
@@ -440,14 +450,14 @@ def main():
             commands_to_run.append((r, [], {}, [], []))
 
         # At this point all commands must exist, so execute them in order.
-        for name, args, kwargs, cli_hosts, cli_roles in commands_to_run:
+        for name, args, kwargs, cli_hosts, cli_roles, cli_exclude_hosts in commands_to_run:
             # Get callable by itself
             command = commands[name]
             # Set current command name (used for some error messages)
             state.env.command = name
             # Set host list (also copy to env)
             state.env.all_hosts = hosts = get_hosts(
-                command, cli_hosts, cli_roles)
+                command, cli_hosts, cli_roles, cli_exclude_hosts)
             # If hosts found, execute the function on each host in turn
             for host in hosts:
                 # Preserve user
