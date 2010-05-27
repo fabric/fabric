@@ -149,8 +149,8 @@ env_options = [
     ),
 
     make_option('-f', '--fabfile',
-        default='fabfile',
-        help="name of or path to a fabfile module or package, e.g. 'path/to/fabfile.py' or 'myfab'"
+        default='fabfile.py',
+        help="Python module file to import, e.g. '../other.py'"
     ),
 
     make_option('-w', '--warn-only',

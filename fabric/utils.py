@@ -9,9 +9,14 @@ import textwrap
 
 def abort(msg):
     """
-    Abort execution, printing given message and exiting with error status.
-    When not invoked as the ``fab`` command line tool, raise an exception
-    instead.
+    Abort execution, print ``msg`` to stderr and exit with error status (1.)
+
+    This function currently makes use of `sys.exit`_, which raises 
+    `SystemExit`_. Therefore, it's possible to detect and recover from inner
+    calls to `abort` by using ``except SystemExit`` or similar.
+
+    .. _sys.exit: http://docs.python.org/library/sys.html#sys.exit
+    .. _SystemExit: http://docs.python.org/library/exceptions.html#exceptions.SystemExit
     """
     from fabric.state import output
     if output.aborts:
@@ -23,6 +28,11 @@ def abort(msg):
 def warn(msg):
     """
     Print warning message, but do not abort execution.
+
+    This function honors Fabric's :doc:`output controls
+    <../../usage/output_controls>` and will print the given ``msg`` to stderr,
+    provided that the ``warnings`` output level (which is active by default) is
+    turned on.
     """
     from fabric.state import output
     if output.warnings:
@@ -31,7 +41,7 @@ def warn(msg):
 
 def indent(text, spaces=4, strip=False):
     """
-    Returns text indented by the given number of spaces.
+    Return ``text`` indented by the given number of spaces.
 
     If text is not a string, it is assumed to be a list of lines and will be
     joined by ``\\n`` prior to indenting.

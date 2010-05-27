@@ -1,0 +1,17 @@
+========================
+Changes in version 0.9.1
+========================
+
+The following changes were implemented in Fabric 0.9.1:
+
+* A number of minor documentation tweaks which had no specific Redmine ticket
+  associated with them.
+* :issue:`127`: Added note to install docs
+  re: ActiveState's PyPM. Thanks to Sridhar Ratnakumar for the tip. 
+* :issue:`120`: Tweaked documentation, help strings to make it more obvious
+  that fabfiles are simply Python modules.
+* :issue:`17`: Added note to FAQ re: use of ``dtach`` as alternative to
+  ``screen``. Thanks to Erich Heine for the tip.
+* :issue:`64`: Updated docs to clarify where package maintainers should be
+  downloading tarballs from. Thanks to James Pearson for providing the
+  necessary perspective.
