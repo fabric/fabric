@@ -346,6 +346,12 @@ def main():
             print("Fabric %s" % state.env.version)
             sys.exit(0)
 
+        # Handle case where we were called bare, i.e. just "fab", and print
+        # a help message.
+        if not (options.list_commands or options.display or arguments):
+            parser.print_help()
+            sys.exit(1)
+
         # Load settings from user settings file, into shared env dict.
         state.env.update(load_settings(state.env.rcfile))
 
