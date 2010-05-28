@@ -32,3 +32,4 @@ Documentation updates
 * :issue:`64`: Updated docs to clarify where package maintainers should be
   downloading tarballs from. Thanks to James Pearson for providing the
   necessary perspective.
+* :issue:`110`: Alphabetized ``fab`` command reference. Thanks to Erich Heine.
