@@ -113,15 +113,6 @@ below.
     used as the default password when making SSH connections or calling the
     ``sudo`` program.
 
-.. cmdoption:: --pty
-
-    Sets :ref:`env.always_use_pty <always-use-pty>` to ``True``, causing all
-    `~fabric.operations.run`/`~fabric.operations.sudo` calls to behave as if
-    one had specified ``pty=True`` (forcing a pseudoterminal on the remote
-    end.)
-
-    .. versionadded:: 1.0
-
 .. cmdoption:: -r, --reject-unknown-hosts
 
     Sets :ref:`env.reject_unknown_hosts <reject-unknown-hosts>` to ``True``,
