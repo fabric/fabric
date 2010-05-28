@@ -91,6 +91,8 @@ packages:
 
 .. _Mercurial: http://mercurial.selenic.com/wiki/
 
+.. _downloads:
+
 Downloads
 =========
 
