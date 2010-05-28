@@ -158,8 +158,16 @@ def connect(user, host, port):
     while not connected:
         # Attempt connection
         try:
-            client.connect(host, int(port), user, password,
-                key_filename=env.key_filename, timeout=10)
+            client.connect(
+                hostname=host,
+                port=int(port),
+                username=user,
+                password=password,
+                key_filename=env.key_filename,
+                timeout=10,
+                allow_agent=not env.no_agent,
+                look_for_keys=not env.no_keys
+            )
             connected = True
             return client
         # BadHostKeyException corresponds to key mismatch, i.e. what on the

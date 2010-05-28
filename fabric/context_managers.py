@@ -83,8 +83,10 @@ def _setenv(**kwargs):
     for key, value in kwargs.iteritems():
         previous[key] = env[key]
         env[key] = value
-    yield
-    env.update(previous)
+    try:
+        yield
+    finally:
+        env.update(previous)
 
 
 def settings(*args, **kwargs):
@@ -185,7 +187,7 @@ def cd(path):
         such directory names easier.
     """
     path = path.replace(' ', '\ ')
-    if env.get('cwd'):
+    if env.get('cwd') and not path.startswith('/'):
         new_cwd = env.cwd + '/' + path
     else:
         new_cwd = path
