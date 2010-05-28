@@ -28,6 +28,8 @@ Documentation updates
 * :issue:`64`: Updated docs to clarify where package maintainers should be
   downloading tarballs from. Thanks to James Pearson for providing the
   necessary perspective.
+* :issue:`95`: Add a link to a given version's changelog on the PyPI page
+  (technically, to the ``setup.py`` ``long_description`` field).
 * :issue:`110`: Alphabetized ``fab`` command reference. Thanks to Erich Heine.
 * :issue:`120`: Tweaked documentation, help strings to make it more obvious
   that fabfiles are simply Python modules.
