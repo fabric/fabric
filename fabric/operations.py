@@ -651,8 +651,8 @@ def local(command, capture=True):
             stderr=err_stream)
     (stdout, stderr) = p.communicate()
     # Handle error condition (deal with stdout being None, too)
-    out = _AttributeString(stdout or "")
-    err = _AttributeString(stderr or "")
+    out = _AttributeString(stdout.strip() if stdout else "")
+    err = _AttributeString(stderr.strip() if stderr else "")
     out.failed = False
     out.return_code = p.returncode
     out.stderr = err
