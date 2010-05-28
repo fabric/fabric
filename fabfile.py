@@ -44,6 +44,7 @@ def push_docs():
     """
     build_docs(clean='yes')
     remote_loc = '/var/www/docs.fabfile/%s/' % _version('short')
+    run('mkdir -p %s' % remote_loc)
     rsync_project(remote_loc, 'docs/_build/html/', delete=True)
 
 
