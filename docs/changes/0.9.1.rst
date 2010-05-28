@@ -10,6 +10,7 @@ Feature additions
 * :issue:`112`: Print fabfile module-level docstring, if it exists, when
   displaying ``--list`` output.
 
+
 Bugfixes
 ========
 
@@ -19,6 +20,9 @@ Bugfixes
   instead of displaying help.
 * :issue:`130`: Context managers now correctly clean up ``env`` if they
   encounter an exception. Thanks to Carl Meyer for catch + patch.
+* :issue:`132`: `~fabric.operations.local` now calls ``strip`` on its stdout,
+  matching the behavior of `~fabric.operations.run`/`~fabric.operations.sudo`.
+  Thanks to Carl Meyer again on this one.
 
 
 Documentation updates

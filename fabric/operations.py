@@ -602,7 +602,7 @@ def local(command, capture=True):
             stderr=err_stream)
     (stdout, stderr) = p.communicate()
     # Handle error condition (deal with stdout being None, too)
-    out = _AttributeString(stdout or "")
+    out = _AttributeString(stdout.strip() if stdout else "")
     out.failed = False
     out.return_code = p.returncode
     if p.returncode != 0:
