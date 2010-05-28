@@ -7,7 +7,8 @@ The following changes were implemented in Fabric 0.9.1:
 Feature additions
 =================
 
-* None.
+* :issue:`112`: Print fabfile module-level docstring, if it exists, when
+  displaying ``--list`` output.
 
 Bugfixes
 ========
