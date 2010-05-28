@@ -7,10 +7,11 @@ The following changes were implemented in Fabric 0.9.1:
 Feature additions
 =================
 
-* :issue:`112`: Print fabfile module-level docstring, if it exists, when
-  displaying ``--list`` output.
-* :issue:`141`: Allow access to additional Paramiko connection parameters via
-  CLI flags and env vars.
+* :issue:`112`: ``fab --list`` now prints out the fabfile's module-level
+  docstring as a header, if there is one.
+* :issue:`141`: Added some more CLI args/env vars to allow user configuration
+  of the Paramiko ``connect`` call -- specifically :ref:`no_agent` and
+  :ref:`no_keys`.
 
 
 Bugfixes
@@ -40,7 +41,7 @@ Documentation updates
 * :issue:`64`: Updated docs to clarify where package maintainers should be
   downloading tarballs from. Thanks to James Pearson for providing the
   necessary perspective.
-* :issue:`95`: Add a link to a given version's changelog on the PyPI page
+* :issue:`95`: Added a link to a given version's changelog on the PyPI page
   (technically, to the ``setup.py`` ``long_description`` field).
 * :issue:`110`: Alphabetized ``fab`` command reference. Thanks to Erich Heine.
 * :issue:`120`: Tweaked documentation, help strings to make it more obvious
