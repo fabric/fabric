@@ -83,8 +83,10 @@ def _setenv(**kwargs):
     for key, value in kwargs.iteritems():
         previous[key] = env[key]
         env[key] = value
-    yield
-    env.update(previous)
+    try:
+        yield
+    finally:
+        env.update(previous)
 
 
 def settings(*args, **kwargs):

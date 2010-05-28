@@ -17,6 +17,8 @@ Bugfixes
   prints help, even when no fabfile can be found. Previously, calling ``fab``
   in a location with no fabfile would complain about the lack of fabfile
   instead of displaying help.
+* :issue:`130`: Context managers now correctly clean up ``env`` if they
+  encounter an exception. Thanks to Carl Meyer for catch + patch.
 
 
 Documentation updates
