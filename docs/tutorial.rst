@@ -37,8 +37,9 @@ This wouldn't be a proper tutorial without "the usual"::
     def hello():
         print("Hello world!")
 
-Placed in a file called ``fabfile.py``, that function can be executed with the
-``fab`` tool (installed as part of Fabric) and does just what you'd expect::
+Placed in a Python module file named ``fabfile.py``, that function can be
+executed with the ``fab`` tool (installed as part of Fabric) and does just what
+you'd expect::
 
     $ fab hello
     Hello world!
@@ -47,6 +48,12 @@ Placed in a file called ``fabfile.py``, that function can be executed with the
 
 That's all there is to it. This functionality allows Fabric to be used as a
 (very) basic build tool even without importing any of its API.
+
+.. note::
+
+    The ``fab`` tool simply imports your fabfile and executes the function or
+    functions you instruct it to. There's nothing magic about it -- anything
+    you can do in a normal Python script can be done in a fabfile!
 
 .. seealso:: :ref:`execution-strategy`, :ref:`tasks-and-imports`, :doc:`usage/fab`
 

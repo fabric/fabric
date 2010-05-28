@@ -50,8 +50,14 @@ The standard, atomic output levels/groups are as follows:
 
 * **stderr**: Local, or remote, stderr, i.e. error-related output from commands.
 
+* **user**: User-generated output, i.e. local output printed by fabfile code
+  via use of the `~fabric.utils.fastprint` or `~fabric.utils.puts` functions.
+
 .. versionchanged:: 1.0
     Added "Executing task" lines to the ``running`` output level.
+
+.. versionchanged:: 1.0
+    Added the ``user`` output level.
 
 Debug output
 ------------
@@ -100,8 +106,8 @@ toggle all of the levels they are mapped to.
 * **output**: Maps to both ``stdout`` and ``stderr``. Useful for when you only
   care to see the 'running' lines and your own print statements (and warnings).
 
-* **everything**: Includes ``warnings``, ``running`` and ``output`` (see
-  above.) Thus, when turning off ``everything``, you will only see a bare
+* **everything**: Includes ``warnings``, ``running``, ``user`` and ``output``
+  (see above.) Thus, when turning off ``everything``, you will only see a bare
   minimum of output (just ``status`` and ``debug`` if it's on), along with your
   own print statements.
 

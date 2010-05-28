@@ -148,9 +148,23 @@ env_options = [
         help="path to SSH private key file. May be repeated."
     ),
 
+    # Use -a here to mirror ssh(1) options.
+    make_option('-a', '--no_agent',
+        action='store_true',
+        default=False,
+        help="don't use the running SSH agent"
+    ),
+
+    # No matching option for ssh(1) so just picked something appropriate.
+    make_option('-k', '--no-keys',
+        action='store_true',
+        default=False,
+        help="don't load private key files from ~/.ssh/"
+    ),
+
     make_option('-f', '--fabfile',
         default='fabfile',
-        help="name of or path to a fabfile module or package, e.g. 'path/to/fabfile.py' or 'myfab'"
+        help="Python module file to import, e.g. '../other.py'"
     ),
 
     make_option('-w', '--warn-only',
@@ -320,9 +334,9 @@ output = _AliasDict({
     'running': True,
     'stdout': True,
     'stderr': True,
-    'debug': False
-
+    'debug': False,
+    'user': True
 }, aliases={
-    'everything': ['warnings', 'running', 'output'],
+    'everything': ['warnings', 'running', 'user', 'output'],
     'output': ['stdout', 'stderr']
 })
