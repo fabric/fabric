@@ -9,6 +9,8 @@ Feature additions
 
 * :issue:`112`: Print fabfile module-level docstring, if it exists, when
   displaying ``--list`` output.
+* :issue:`141`: Allow access to additional Paramiko connection parameters via
+  CLI flags and env vars.
 
 
 Bugfixes
@@ -40,5 +42,5 @@ Documentation updates
 * :issue:`110`: Alphabetized ``fab`` command reference. Thanks to Erich Heine.
 * :issue:`120`: Tweaked documentation, help strings to make it more obvious
   that fabfiles are simply Python modules.
-* :issue:`127`: Added note to install docs
-  re: ActiveState's PyPM. Thanks to Sridhar Ratnakumar for the tip. 
+* :issue:`127`: Added note to install docs re: ActiveState's PyPM. Thanks to
+  Sridhar Ratnakumar for the tip. 
