@@ -49,6 +49,8 @@ below.
     Sets :ref:`env.no_agent <no_agent>` to ``True``, forcing Paramiko not to
     talk to the SSH agent when trying to unlock private key files.
 
+    .. versionadded:: 0.9.1
+
 .. cmdoption:: -c RCFILE, --config=RCFILE
 
     Sets :ref:`env.rcfile <rcfile>` to the given file path, which Fabric will
@@ -101,11 +103,16 @@ below.
     Sets :ref:`env.no_keys <no_keys>` to ``True``, forcing Paramiko to not look
     for SSH private key files in one's home directory.
 
+    .. versionadded:: 0.9.1
+
 .. cmdoption:: -l, --list
 
     Imports a fabfile as normal, but then prints a list of all discovered tasks
     and exits. Will also print the first line of each task's docstring, if it
     has one, next to it (truncating if necessary.)
+
+    .. versionchanged:: 0.9.1
+        Added docstring to output.
 
 .. cmdoption:: -p PASSWORD, --password=PASSWORD
 

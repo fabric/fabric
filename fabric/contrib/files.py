@@ -258,6 +258,9 @@ def append(text, filename, use_sudo=False, partial=True):
     backslash-escaped.
 
     If ``use_sudo`` is True, will use `sudo` instead of `run`.
+
+    .. versionchanged:: 0.9.1
+        Added the ``partial`` keyword argument.
     """
     func = use_sudo and sudo or run
     # Normalize non-list input to be a list

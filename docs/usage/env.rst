@@ -212,6 +212,8 @@ set/appended to with :option:`-i`.
 If ``True``, will tell Paramiko not to seek out running SSH agents when using
 key-based authentication.
 
+.. versionadded:: 0.9.1
+
 .. _no_keys:
 
 ``no_keys``
@@ -222,6 +224,8 @@ key-based authentication.
 If ``True``, will tell Paramiko not to load any private key files from one's
 ``$HOME/.ssh/`` folder. (Key files explicitly loaded via ``fab -i`` will still
 be used, of course.)
+
+.. versionadded:: 0.9.1
 
 .. _password:
 
