@@ -24,3 +24,17 @@ def test_error_handling():
     finally:
         with cd('else'):
             eq_(env.cwd, 'else')
+
+
+def test_cwd_with_absolute_paths():
+    """
+    cd() should append arg if non-absolute or overwrite otherwise
+    """
+    existing = '/some/existing/path' 
+    additional = 'another'
+    absolute = '/absolute/path'
+    env.cwd = existing
+    with cd(absolute):
+        eq_(env.cwd, absolute)
+    with cd(additional):
+        eq_(env.cwd, existing + '/' + additional)

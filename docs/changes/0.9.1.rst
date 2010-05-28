@@ -25,6 +25,9 @@ Bugfixes
 * :issue:`132`: `~fabric.operations.local` now calls ``strip`` on its stdout,
   matching the behavior of `~fabric.operations.run`/`~fabric.operations.sudo`.
   Thanks to Carl Meyer again on this one.
+* :issue:`166`: `~fabric.context_managers.cd` now correctly overwrites
+  ``env.cwd`` when given an absolute path, instead of naively appending its
+  argument to ``env.cwd``'s previous value.
 
 
 Documentation updates

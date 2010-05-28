@@ -181,7 +181,7 @@ def cd(path):
         the *behavior* of `cd` will have any guarantee of backwards
         compatibility.
     """
-    if env.get('cwd'):
+    if env.get('cwd') and not path.startswith('/'):
         new_cwd = env.cwd + '/' + path
     else:
         new_cwd = path
