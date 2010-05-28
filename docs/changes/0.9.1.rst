@@ -4,6 +4,23 @@ Changes in version 0.9.1
 
 The following changes were implemented in Fabric 0.9.1:
 
+Feature additions
+=================
+
+* None.
+
+Bugfixes
+========
+
+* :issue:`75`: ``fab``, when called with no arguments or (useful) options, now
+  prints help, even when no fabfile can be found. Previously, calling ``fab``
+  in a location with no fabfile would complain about the lack of fabfile
+  instead of displaying help.
+
+
+Documentation updates
+=====================
+
 * A number of minor documentation tweaks which had no specific Redmine ticket
   associated with them.
 * :issue:`127`: Added note to install docs
