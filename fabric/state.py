@@ -149,7 +149,7 @@ env_options = [
     ),
 
     # Use -a here to mirror ssh(1) options.
-    make_option('-a', '--disallow_agent',
+    make_option('-a', '--no_agent',
         action='store_true',
         default=False,
         help="don't use the running SSH agent"

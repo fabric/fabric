@@ -162,7 +162,7 @@ def connect(user, host, port):
                 password=password,
                 key_filename=env.key_filename,
                 timeout=10,
-                allow_agent=not env.disallow_agent,
+                allow_agent=not env.no_agent,
                 look_for_keys=not env.no_keys
             )
             connected = True

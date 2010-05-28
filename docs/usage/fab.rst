@@ -44,6 +44,11 @@ below.
 
 .. _optparse: http://docs.python.org/library/optparse.html
 
+.. cmdoption:: -a
+
+    Sets :ref:`env.no_agent <no_agent>` to ``True``, forcing Paramiko not to
+    talk to the SSH agent when trying to unlock private key files.
+
 .. cmdoption:: -c RCFILE, --config=RCFILE
 
     Sets :ref:`env.rcfile <rcfile>` to the given file path, which Fabric will
@@ -90,6 +95,11 @@ below.
     When set to a file path, will load the given file as an SSH identity file
     (usually a private key.) This option may be repeated multiple times. Sets
     (or appends to) :ref:`env.key_filename <key-filename>`.
+
+.. cmdoption:: -k
+
+    Sets :ref:`env.no_keys <no_keys>` to ``True``, forcing Paramiko to not look
+    for SSH private key files in one's home directory.
 
 .. cmdoption:: -l, --list
 

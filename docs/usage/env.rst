@@ -202,6 +202,27 @@ set/appended to with :option:`-i`.
 
 .. seealso:: `Paramiko's documentation for SSHClient.connect() <http://www.lag.net/paramiko/docs/paramiko.SSHClient-class.html#connect>`_
 
+.. _no_agent:
+
+``no_agent``
+------------------
+
+**Default:** ``False``
+
+If ``True``, will tell Paramiko not to seek out running SSH agents when using
+key-based authentication.
+
+.. _no_keys:
+
+``no_keys``
+------------------
+
+**Default:** ``False``
+
+If ``True``, will tell Paramiko not to load any private key files from one's
+``$HOME/.ssh/`` folder. (Key files explicitly loaded via ``fab -i`` will still
+be used, of course.)
+
 .. _password:
 
 ``password``
