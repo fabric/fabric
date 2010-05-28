@@ -239,17 +239,20 @@ def contains(text, filename, exact=False, use_sudo=False):
         ))
 
 
-def append(text, filename, use_sudo=False):
+def append(text, filename, use_sudo=False, partial=True):
     """
     Append string (or list of strings) ``text`` to ``filename``.
 
     When a list is given, each string inside is handled independently (but in
     the order given.)
 
-    If ``text`` is already found as a discrete line in ``filename``, the append
-    is not run, and None is returned immediately. Otherwise, the given text is
-    appended to the end of the given ``filename`` via e.g. ``echo '$text' >>
-    $filename``.
+    If ``text`` is already found in ``filename``, the append is not run, and
+    None is returned immediately. Otherwise, the given text is appended to the
+    end of the given ``filename`` via e.g. ``echo '$text' >> $filename``.
+
+    The test for whether ``text`` already exists defaults to being partial
+    only, as in ``^<text>``. Specifying ``partial=False`` will change the
+    effective regex to ``^<text>$``.
 
     Because ``text`` is single-quoted, single quotes will be transparently 
     backslash-escaped.
@@ -261,7 +264,7 @@ def append(text, filename, use_sudo=False):
     if isinstance(text, str):
         text = [text]
     for line in text:
-        if (contains('^' + re.escape(line), filename, use_sudo=use_sudo)
+        if (contains('^' + re.escape(line) + ('' if partial else '$'), filename, use_sudo=use_sudo)
             and line):
             continue
         func("echo '%s' >> %s" % (line.replace("'", r'\''), filename))
