@@ -61,6 +61,14 @@ below.
     Sets :ref:`env.disable_known_hosts <disable-known-hosts>` to ``True``,
     preventing Fabric from loading the user's SSH known_hosts file.
 
+.. cmdoption:: -f FABFILE, --fabfile=FABFILE
+
+    The fabfile name pattern to search for (defaults to ``fabfile.py``), or
+    alternately an explicit file path to load as the fabfile (e.g.
+    ``/path/to/my/fabfile.py``.)
+
+.. seealso:: :doc:`fabfiles`
+
 .. cmdoption:: -h, --help
 
     Displays a standard help message, with all possible options and a brief
@@ -82,14 +90,6 @@ below.
     When set to a file path, will load the given file as an SSH identity file
     (usually a private key.) This option may be repeated multiple times. Sets
     (or appends to) :ref:`env.key_filename <key-filename>`.
-
-.. cmdoption:: -f FABFILE, --fabfile=FABFILE
-
-    The fabfile name pattern to search for (defaults to ``fabfile.py``), or
-    alternately an explicit file path to load as the fabfile (e.g.
-    ``/path/to/my/fabfile.py``.)
-
-.. seealso:: :doc:`fabfiles`
 
 .. cmdoption:: -l, --list
 
@@ -118,15 +118,6 @@ below.
     causing Fabric to abort when connecting to hosts not found in the user's SSH
     known_hosts file.
 
-.. cmdoption:: -u USER, --user=USER
-
-    Sets :ref:`env.user <user>` to the given string; it will then be used as the
-    default username when making SSH connections.
-
-.. cmdoption:: -V, --version
-
-    Displays Fabric's version number, then exits.
-
 .. cmdoption:: -R ROLES, --roles=ROLES
 
     Sets :ref:`env.roles <roles>` to the given comma-separated list of role
@@ -137,12 +128,21 @@ below.
     Sets :ref:`env.shell <shell>` to the given string, overriding the default
     shell wrapper used to execute remote commands.
 
-.. seealso:: `~fabric.operations.run`, `~fabric.operations.sudo`
-
 .. cmdoption:: --show=LEVELS
 
     A comma-separated list of :doc:`output levels <output_controls>` to show by
     default.
+
+.. seealso:: `~fabric.operations.run`, `~fabric.operations.sudo`
+
+.. cmdoption:: -u USER, --user=USER
+
+    Sets :ref:`env.user <user>` to the given string; it will then be used as the
+    default username when making SSH connections.
+
+.. cmdoption:: -V, --version
+
+    Displays Fabric's version number, then exits.
 
 .. cmdoption:: -w, --warn-only
 
