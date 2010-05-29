@@ -53,6 +53,8 @@ There are multiple ways to deal with this problem:
   less cranky.
 
 
+.. _faq-daemonize:
+
 Why can't I run programs in the background with ``&``? It makes Fabric hang.
 ============================================================================
 
