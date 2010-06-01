@@ -281,8 +281,8 @@ def append(filename, text, use_sudo=False, partial=True):
     if isinstance(text, str):
         text = [text]
     for line in text:
-        if (contains('^' + re.escape(line) + ('' if partial else '$'), filename, use_sudo=use_sudo)
-            and line
-            and exists(filename)):
+        regex = '^' + re.escape(line) + ('' if partial else '$')
+        if (exists(filename) and line
+            and contains(filename, regex, use_sudo=use_sudo)):
             continue
         func("echo '%s' >> %s" % (line.replace("'", r'\''), filename))
