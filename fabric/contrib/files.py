@@ -312,9 +312,8 @@ def write_to_file(filename, text, use_sudo=False, partial=True, via=run, overwri
         text = [text]
     for line in text:
         regex = '^' + re.escape(line) + ('' if partial else '$')
-        if (contains(filename, '^' + re.escape(line), use_sudo=use_sudo, via=via)
-            and line
-            and exists(filename, via=via)):
+        if (exists(filename) and line
+            and contains(filename, regex, use_sudo=use_sudo, via=via)):
             continue
         func('echo "%s" %s %s' % (line.replace('"', '\\"'), operator, filename))
 
