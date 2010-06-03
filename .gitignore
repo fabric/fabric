@@ -11,3 +11,7 @@ docs/_build
 dist
 build/*
 src/*
+bin/*
+include/*
+lib/*
+man/*
