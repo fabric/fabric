@@ -18,6 +18,8 @@ Fabric.
   restarted.
 * Added a `~fabric.utils.puts` utility function, which allows greater control
   over fabfile output as well as a convenient way to effect output flushing.
+* Also added `~fabric.utils.fastprint`, an alias to `~fabric.utils.puts`
+  allowing for convenient unbuffered, non-newline-terminated printing.
 * `~fabric.operations.local` now returns the same "rich" string object as
   `~fabric.operations.run`/`~fabric.operations.sudo` do, so that it is a
   string containing the command's stdout (if ``capture=True``) or the empty
