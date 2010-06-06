@@ -85,12 +85,6 @@ def puts(text, show_prefix=True, end="\n", flush=False):
     You may force output flushing (e.g. to bypass output buffering) by setting
     ``flush=True``.
 
-    .. note::
-        due to what appears to be a bug in the otherwise amazing Sphinx
-        documentation generator, the reported default value for ``end`` in the
-        above function signature is incorrect. The actual default value is a
-        newline, ``"\\n"``.
-
     .. versionadded:: 1.0
     """
     from fabric.state import output, env
