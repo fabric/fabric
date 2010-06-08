@@ -468,6 +468,19 @@ def _execute_remotely(command, sudo=False, shell=True, pty=False, user=None):
     Used to drive `~fabric.operations.run` and `~fabric.operations.sudo`.
     """
 
+def _write(byte, pipe, prefix):
+    """
+    Print ``byte`` to ``pipe`` and flush. Also print prefix if newline found.
+
+    Returns ``byte``.
+    """
+    pipe.write(byte)
+    pipe.flush()
+    if byte in ("\n", "\r"):
+        pipe.write("[%s] " % prefix)
+        pipe.flush()
+    return byte
+
 
 def _run_command(command, shell=True, pty=False, sudo=False, user=None):
     """
@@ -507,7 +520,7 @@ def _run_command(command, shell=True, pty=False, sudo=False, user=None):
         channel.exec_command(wrapped_command)
 
         # I/O loop
-        capture_stdout = capture_stderr = ""
+        stdout, stderr = "", ""
         while not channel.exit_status_ready() \
             or channel.recv_ready() or channel.recv_stderr_ready():
             readers, writers, exceptions = select.select(
@@ -517,27 +530,32 @@ def _run_command(command, shell=True, pty=False, sudo=False, user=None):
                 if reader is sys.stdin:
                     byte = sys.stdin.read(1)
                     channel.sendall(byte)
+                    # Echo
                     sys.stdout.write(byte)
                     sys.stdout.flush()
                 elif reader is channel:
                     for func in ('recv_stderr', 'recv'):
-                        pipe = sys.stdout if (func == 'recv') else sys.stderr
                         if getattr(channel, '%s_ready' % func)():
-                            if (func == 'recv' and output.stdout) \
-                                or (func == 'recv_stderr' and output.stderr):
-                                byte = getattr(channel, func)(1)
-                                pipe.write(byte)
-                                pipe.flush()
+                            byte = getattr(channel, func)(1)
+                            # Stdout
+                            if func == 'recv':
+                                stdout += _write(byte, sys.stdout, "out")
+                            # Stderr
+                            else:
+                                stderr += _write(byte, sys.stderr, "err")
 
         # Close when done
         status = channel.recv_exit_status()
+
+        # Print a newline to tie things off
+        print("")
         
         # Close channel
         channel.close()
 
         # Assemble output string
-        out = _AttributeString(capture_stdout.strip())
-        err = _AttributeString(capture_stderr.strip())
+        out = _AttributeString(stdout.strip())
+        err = _AttributeString(stderr.strip())
 
         # Error handling
         out.failed = False
