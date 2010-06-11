@@ -36,7 +36,7 @@ class FabSFTP(object):
         dirpart, pat = os.path.split(pat)
         rlist = self.ftp.listdir(dirpart)
 
-        print "rlist is", rlist
+        #print "rlist is", rlist
         names = fnfilter([f for f in rlist if not f[0] == '.'], pat)
         if len(names):
             return [os.path.join(dirpart, name) for name in names]
@@ -82,7 +82,7 @@ class FabSFTP(object):
         if os.path.isdir(lpath):
             lpath = os.path.join(lpath, os.path.basename(rpath))
         if output.running:
-            print("[%s] download: %s <- %s" % (
+            #print("[%s] download: %s <- %s" % (
                 env.host_string, lpath, rpath
             ))
         # Handle any raised exceptions (no return code to inspect here)
@@ -120,7 +120,7 @@ class FabSFTP(object):
         if self.isdir(rpath):
             rpath = os.path.join(rpath, os.path.basename(lpath))
         if output.running:
-            print 'lpath:', lpath, 'rpath:',rpath,'pre:', pre
+            #print 'lpath:', lpath, 'rpath:',rpath,'pre:', pre
             print("[%s] put: %s -> %s" % (
                 env.host_string, lpath, os.path.join(pre, rpath)
             ))
