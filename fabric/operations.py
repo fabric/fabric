@@ -348,16 +348,15 @@ def get(rpath, lpath, recursive=False):
         # append a suffix to the downloaded file to prevent clobbering.
         if len(env.all_hosts) > 1:
             if os.path.isdir(lpath):
-                lpath = os.path.join(lpath, env.hostname)
-                os.mkdir(lpath)
+                lpath = os.path.join(lpath, env.host)
             else:
                 if os.path.exists(lpath):
                     warn("Local file exists, but writing new file per host")
-                lpath = lpath + "." + env.hostname
+                lpath = lpath + "." + env.host
 
         # setup glob
         names =  ftp.glob(rpath)
-        print 'rpath', rpath, 'names', names
+        #print 'rpath', rpath, 'names', names
         # sanity check
         if len(names) > 1 and os.path.exists(lpath) and not os.path.isdir(lpath):
             es = "[%s] %s not a directory, but multiple files to be fetched"
@@ -366,15 +365,15 @@ def get(rpath, lpath, recursive=False):
         for rpath in names:
             try:
                 if ftp.isdir(rpath):
-                    print 'remote dir!'
+                    #print 'remote dir!'
                     if recursive:
-                        print 'recursive'
+                        #print 'recursive'
                         ftp.get_dir(rpath, lpath)
                     else:
                         warn("[%s] %s is a directory, skipping" % \
                             (env.host_string, rpath))
                 else:
-                    print 'not remote dir'
+                    #print 'not remote dir'
                     ftp.get(rpath, lpath)
             except Exception, e:
                 msg = "get() encountered an exception while downloading '%s'"
