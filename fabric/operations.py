@@ -466,17 +466,34 @@ def _execute_remotely(command, sudo=False, shell=True, pty=False, user=None):
     Used to drive `~fabric.operations.run` and `~fabric.operations.sudo`.
     """
 
-def _write(byte, pipe, prefix):
+def _write(byte, pipe, prefix="", initial=False):
     """
-    Print ``byte`` to ``pipe`` and flush. Also print prefix if newline found.
+    Print ``byte`` to ``pipe`` and flush.
+
+    If ``prefix`` is given and ``byte`` is a newline character, ``prefix`` will
+    be printed after ``byte``, surrounded by square brackets and suffixed by a
+    space.
+
+    If ``initial`` is True, it is assumed that this is the first byte to be
+    printed in a stream of bytes, and thus ``prefix`` will be prefixed to
+    ``byte``.
+
+    (It is possible for ``prefix`` to be printed twice if ``byte`` is a newline
+    *and* ``initial`` is True.)
 
     Returns ``byte``.
     """
-    pipe.write(byte)
-    pipe.flush()
+    # Tweak prefix to be nicer looking
+    if prefix:
+        prefix = "[%s] " % prefix
+    # Print initial prefix if necessary
+    if initial:
+        pipe.write(prefix); pipe.flush()
+    # Print byte itself
+    pipe.write(byte); pipe.flush()
+    # Print trailing prefix to start off next line, if necessary
     if byte in ("\n", "\r"):
-        pipe.write("[%s] " % prefix)
-        pipe.flush()
+        pipe.write(prefix); pipe.flush()
     return byte
 
 
@@ -546,10 +563,20 @@ def _run_command(command, shell=True, pty=False, sudo=False, user=None):
                             byte = getattr(channel, func)(1)
                             # Stdout
                             if func == 'recv':
-                                stdout += _write(byte, sys.stdout, "out")
+                                stdout += _write(
+                                    byte,
+                                    sys.stdout,
+                                    "out",
+                                    stdout == ""
+                                )
                             # Stderr
                             else:
-                                stderr += _write(byte, sys.stderr, "err")
+                                stderr += _write(
+                                    byte,
+                                    sys.stderr,
+                                    "err",
+                                    stderr == ""
+                                )
 
     # Tie off "loose" output by printing a newline. Helps to ensure any
     # following print()s aren't on the same line as a trailing line prefix or
