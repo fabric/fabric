@@ -7,6 +7,8 @@ Context managers for use with the ``with`` statement.
     Python 2.6+.)
 """
 
+import termios
+import tty
 from contextlib import contextmanager, nested
 
 from fabric.state import env, output
@@ -278,3 +280,16 @@ def prefix(command):
     Contrived, but hopefully illustrative.
     """
     return _setenv(command_prefixes=env.command_prefixes + [command])
+
+
+@contextmanager
+def char_buffered(pipe):
+    """
+    Force local terminal ``pipe`` be character, not line, buffered.
+    """
+    old_settings = termios.tcgetattr(pipe)
+    tty.setcbreak(pipe)
+    try:
+        yield
+    finally:
+        termios.tcsetattr(pipe, termios.TCSADRAIN, old_settings)

@@ -11,15 +11,13 @@ import select
 import stat
 import subprocess
 import sys
-import termios
 import time
-import tty
 from glob import glob
 from traceback import format_exc
 
 from contextlib import closing
 
-from fabric.context_managers import settings
+from fabric.context_managers import settings, char_buffered
 from fabric.network import needs_host
 from fabric.state import env, connections, output
 from fabric.utils import abort, indent, warn, puts
@@ -486,53 +484,61 @@ def _run_command(command, shell=True, pty=False, sudo=False, user=None):
     """
     Underpinnings of `run` and `sudo`. See their docstrings for more info.
     """
-    # Tweak stdin to be character-oriented
-    old_stdin_settings = termios.tcgetattr(sys.stdin)
-    tty.setcbreak(sys.stdin)
-    try:
-        # Set up new var so original argument can be displayed verbatim later.
-        given_command = command
-        # Handle context manager modifications, and shell wrapping
-        wrapped_command = _shell_wrap(
-            _prefix_commands(_prefix_env_vars(command)),
-            shell,
-            _sudo_prefix(user) if sudo else None
-        )
-        # Execute info line
-        which = 'sudo' if sudo else 'run'
-        if output.debug:
-            print("[%s] %s: %s" % (env.host_string, which, wrapped_command))
-        elif output.running:
-            print("[%s] %s: %s" % (env.host_string, which, given_command))
+    # Set up new var so original argument can be displayed verbatim later.
+    given_command = command
+    # Handle context manager modifications, and shell wrapping
+    wrapped_command = _shell_wrap(
+        _prefix_commands(_prefix_env_vars(command)),
+        shell,
+        _sudo_prefix(user) if sudo else None
+    )
+    # Execute info line
+    which = 'sudo' if sudo else 'run'
+    if output.debug:
+        print("[%s] %s: %s" % (env.host_string, which, wrapped_command))
+    elif output.running:
+        print("[%s] %s: %s" % (env.host_string, which, given_command))
 
-        # Get channel (gives us a more useful API than the client object)
-        channel = connections[env.host_string].get_transport().open_session()
+    # Get channel (gives us a more useful API than the client object)
+    channel = connections[env.host_string].get_transport().open_session()
 
-        # Combine stdout and stderr to get around oddball mixing issues
-        channel.set_combine_stderr(True)
+    # Combine stdout and stderr to get around oddball mixing issues
+    channel.set_combine_stderr(True)
 
-        # Create pty if necessary (using Paramiko default options, which as of
-        # 1.7.4 is vt100 $TERM @ 80x24 characters)
-        if pty or env.always_use_pty:
-            channel.get_pty()
+    # Create pty if necessary (using Paramiko default options, which as of
+    # 1.7.4 is vt100 $TERM @ 80x24 characters)
+    if pty or env.always_use_pty:
+        channel.get_pty()
 
-        # Kick off remote command
-        channel.exec_command(wrapped_command)
+    # Kick off remote command
+    channel.exec_command(wrapped_command)
 
-        # I/O loop
-        stdout, stderr = "", ""
+    # Init stdout, stderr capturing
+    stdout = stderr = ""
+
+    # Set stdin to be character buffered
+    with char_buffered(sys.stdin):
+        # Loop until all possible reasons to loop (program exited, data to read
+        # from remote pipes) return False
         while not channel.exit_status_ready() \
             or channel.recv_ready() or channel.recv_stderr_ready():
+            # Select on stdin and the channel (which will appear ready for
+            # both stdout and/or stderr) for non-threaded, somewhat
+            # non-blocking I/O
             readers, writers, exceptions = select.select(
                 [sys.stdin, channel], [], [channel], 0.0
             )
             for reader in readers:
                 if reader is sys.stdin:
+                    # Send all local stdin to remote end's stdin
                     byte = sys.stdin.read(1)
                     channel.sendall(byte)
-                    # Echo
-                    sys.stdout.write(byte)
-                    sys.stdout.flush()
+                    # Optionally echo locally, if needed.
+                    if env.echo_stdin or not env.combine_stderr:
+                        # Not using fastprint() here -- it prints as 'user'
+                        # output level, don't want it to be accidentally hidden
+                        sys.stdout.write(byte)
+                        sys.stdout.flush()
                 elif reader is channel:
                     for func in ('recv_stderr', 'recv'):
                         if getattr(channel, '%s_ready' % func)():
@@ -544,40 +550,34 @@ def _run_command(command, shell=True, pty=False, sudo=False, user=None):
                             else:
                                 stderr += _write(byte, sys.stderr, "err")
 
-        # Close when done
-        status = channel.recv_exit_status()
+    # Obtain exit code of remote program now that we're done.
+    status = channel.recv_exit_status()
 
-        # Print a newline to tie things off
-        print("")
-        
-        # Close channel
-        channel.close()
+    # Close channel
+    channel.close()
 
-        # Assemble output string
-        out = _AttributeString(stdout.strip())
-        err = _AttributeString(stderr.strip())
+    # Assemble output string
+    out = _AttributeString(stdout.strip())
+    err = _AttributeString(stderr.strip())
 
-        # Error handling
-        out.failed = False
-        if status != 0:
-            out.failed = True
-            msg = "%s() encountered an error (return code %s) while executing '%s'" % (which, status, command)
-            _handle_failure(message=msg)
+    # Error handling
+    out.failed = False
+    if status != 0:
+        out.failed = True
+        msg = "%s() encountered an error (return code %s) while executing '%s'" % (which, status, command)
+        _handle_failure(message=msg)
 
-        # Attach return code to output string so users who have set things to warn
-        # only, can inspect the error code.
-        out.return_code = status
+    # Attach return code to output string so users who have set things to
+    # warn only, can inspect the error code.
+    out.return_code = status
 
-        # Convenience mirror of .failed
-        out.succeeded = not out.failed
+    # Convenience mirror of .failed
+    out.succeeded = not out.failed
 
-        # Attach stderr for anyone interested in that.
-        out.stderr = err
+    # Attach stderr for anyone interested in that.
+    out.stderr = err
 
-        return out
-    finally:
-        # Restore stdin to its original state
-        termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_stdin_settings)
+    return out
 
 
 @needs_host
