@@ -503,7 +503,8 @@ def _run_command(command, shell=True, pty=False, sudo=False, user=None):
     channel = connections[env.host_string].get_transport().open_session()
 
     # Combine stdout and stderr to get around oddball mixing issues
-    channel.set_combine_stderr(True)
+    if env.combine_stderr:
+        channel.set_combine_stderr(True)
 
     # Create pty if necessary (using Paramiko default options, which as of
     # 1.7.4 is vt100 $TERM @ 80x24 characters)

@@ -221,9 +221,11 @@ env_options = [
 env = _AttributeDict({
     'again_prompt': 'Sorry, try again.\n',
     'all_hosts': None, 
+    'combine_stderr': True
     'command': None,
     'command_prefixes': [],
     'cwd': '', # Must be empty string, not None, for concatenation purposes
+    'echo_stdin': True,
     'host': None,
     'host_string': None,
     'local_user': _get_system_username(),
