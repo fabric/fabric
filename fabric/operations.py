@@ -575,7 +575,8 @@ def _run_command(command, shell=True, pty=False, sudo=False, user=None):
     # Tie off "loose" output by printing a newline. Helps to ensure any
     # following print()s aren't on the same line as a trailing line prefix or
     # similar.
-    print("")
+    if output.running:
+        print("")
 
     # Obtain exit code of remote program now that we're done.
     status = channel.recv_exit_status()
