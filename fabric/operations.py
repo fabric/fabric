@@ -466,28 +466,32 @@ def _execute_remotely(command, sudo=False, shell=True, pty=False, user=None):
     Used to drive `~fabric.operations.run` and `~fabric.operations.sudo`.
     """
 
-def _write(byte, pipe, prefix="", initial=False):
+def _write(byte, which, buffer):
     """
-    Print ``byte`` to ``pipe`` and flush.
+    Print ``byte`` to appropriate system pipe, and flush.
 
-    If ``prefix`` is given and ``byte`` is a newline character, ``prefix`` will
-    be printed after ``byte``, surrounded by square brackets and suffixed by a
-    space.
+    ``which`` should be one of (``'stdout'``, ``'stderr'``), causing ``_write``
+    to interact with ``sys.stdout`` or ``sys.stderr`` respectively, and also
+    causing it to use an appropriate line prefix. It will also omit printing
+    entirely depending on output controls.
 
-    If ``initial`` is True, it is assumed that this is the first byte to be
-    printed in a stream of bytes, and thus ``prefix`` will be prefixed to
-    ``byte``.
-
-    (It is possible for ``prefix`` to be printed twice if ``byte`` is a newline
-    *and* ``initial`` is True.)
+    ``buffer`` should be the capture buffer for the stream in question; if
+    ``_write`` determines that the buffer is currently empty, it will print an
+    initial prefix in addition to any newline-trailing one.
 
     Returns ``byte``.
     """
-    # Tweak prefix to be nicer looking
-    if prefix:
-        prefix = "[%s] " % prefix
+    if not getattr(output, which):
+        return byte
+    if which == "stdout":
+        prefix = "out"
+        pipe = sys.stdout
+    else:
+        prefix = "err"
+        pipe = sys.stderr
+    prefix = "[%s] " % prefix
     # Print initial prefix if necessary
-    if initial:
+    if not buffer:
         pipe.write(prefix); pipe.flush()
     # Print byte itself
     pipe.write(byte); pipe.flush()
@@ -563,20 +567,10 @@ def _run_command(command, shell=True, pty=False, sudo=False, user=None):
                             byte = getattr(channel, func)(1)
                             # Stdout
                             if func == 'recv':
-                                stdout += _write(
-                                    byte,
-                                    sys.stdout,
-                                    "out",
-                                    stdout == ""
-                                )
+                                stdout += _write(byte, "stdout", stdout)
                             # Stderr
                             else:
-                                stderr += _write(
-                                    byte,
-                                    sys.stderr,
-                                    "err",
-                                    stderr == ""
-                                )
+                                stderr += _write(byte, "stderr", stderr)
 
     # Tie off "loose" output by printing a newline. Helps to ensure any
     # following print()s aren't on the same line as a trailing line prefix or
