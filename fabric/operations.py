@@ -7,13 +7,14 @@ from __future__ import with_statement
 import os
 import os.path
 import re
-import select
 import stat
 import subprocess
 import sys
+import threading
 import time
 from glob import glob
 from traceback import format_exc
+from select import select
 
 from contextlib import closing
 
@@ -470,10 +471,10 @@ def _write(byte, which, buffer):
     """
     Print ``byte`` to appropriate system pipe, and flush.
 
-    ``which`` should be one of (``'stdout'``, ``'stderr'``), causing ``_write``
-    to interact with ``sys.stdout`` or ``sys.stderr`` respectively, and also
-    causing it to use an appropriate line prefix. It will also omit printing
-    entirely depending on output controls.
+    ``which`` should be one of (``'recv'``, ``'recv_stderr'``), causing
+    ``_write`` to interact with ``sys.stdout`` or ``sys.stderr`` respectively,
+    and also causing it to use an appropriate line prefix. It will also omit
+    printing entirely depending on output controls.
 
     ``buffer`` should be the capture buffer for the stream in question; if
     ``_write`` determines that the buffer is currently empty, it will print an
@@ -481,9 +482,9 @@ def _write(byte, which, buffer):
 
     Returns ``byte``.
     """
-    if not getattr(output, which):
+    if not getattr(output, 'stdout' if (which == 'recv') else 'stderr'):
         return byte
-    if which == "stdout":
+    if which == 'recv':
         prefix = "out"
         pipe = sys.stdout
     else:
@@ -499,6 +500,42 @@ def _write(byte, which, buffer):
     if byte in ("\n", "\r"):
         pipe.write(prefix); pipe.flush()
     return byte
+
+
+def _output_loop(chan, which, capture):
+    from state import env, output
+
+    def outputter(chan, which, capture):
+        func = getattr(chan, which)
+        byte = None
+        while byte != "":
+            byte = func(1)
+            capture += _write(byte, which, capture)
+
+    thread = threading.Thread(None, outputter, which, (chan, which, capture))
+    thread.setDaemon(True)
+    thread.start()
+    return thread
+
+
+def _input_loop(chan):
+    def inputter(chan):
+        with char_buffered(sys.stdin):
+            while not chan.exit_status_ready():
+                if select([sys.stdin], [], [], 0.0) == [[sys.stdin], [], []]:
+                    # Send all local stdin to remote end's stdin
+                    byte = sys.stdin.read(1)
+                    chan.sendall(byte)
+                    # Optionally echo locally, if needed.
+                    if env.echo_stdin or not env.combine_stderr:
+                        # Not using fastprint() here -- it prints as 'user'
+                        # output level, don't want it to be accidentally hidden
+                        sys.stdout.write(byte)
+                        sys.stdout.flush()
+    thread = threading.Thread(None, inputter, "input", (chan,))
+    thread.setDaemon(True)
+    thread.start()
+    return thread
 
 
 def _run_command(command, shell=True, pty=False, sudo=False, user=None):
@@ -535,42 +572,14 @@ def _run_command(command, shell=True, pty=False, sudo=False, user=None):
     # Kick off remote command
     channel.exec_command(wrapped_command)
 
-    # Init stdout, stderr capturing
-    stdout = stderr = ""
+    # Init stdout, stderr capturing. Must use lists instead of strings as
+    # strings are immutable and we're using these as pass-by-reference /
+    # globals
+    stdout, stderr = [], []
 
-    # Set stdin to be character buffered
-    with char_buffered(sys.stdin):
-        # Loop until all possible reasons to loop (program exited, data to read
-        # from remote pipes) return False
-        while not channel.exit_status_ready() \
-            or channel.recv_ready() or channel.recv_stderr_ready():
-            # Select on stdin and the channel (which will appear ready for
-            # both stdout and/or stderr) for non-threaded, somewhat
-            # non-blocking I/O
-            readers, writers, exceptions = select.select(
-                [sys.stdin, channel], [], [channel], 0.0
-            )
-            for reader in readers:
-                if reader is sys.stdin:
-                    # Send all local stdin to remote end's stdin
-                    byte = sys.stdin.read(1)
-                    channel.sendall(byte)
-                    # Optionally echo locally, if needed.
-                    if env.echo_stdin or not env.combine_stderr:
-                        # Not using fastprint() here -- it prints as 'user'
-                        # output level, don't want it to be accidentally hidden
-                        sys.stdout.write(byte)
-                        sys.stdout.flush()
-                elif reader is channel:
-                    for func in ('recv_stderr', 'recv'):
-                        if getattr(channel, '%s_ready' % func)():
-                            byte = getattr(channel, func)(1)
-                            # Stdout
-                            if func == 'recv':
-                                stdout += _write(byte, "stdout", stdout)
-                            # Stderr
-                            else:
-                                stderr += _write(byte, "stderr", stderr)
+    out_thread = _output_loop(channel, "recv", stdout)
+    err_thread = _output_loop(channel, "recv_stderr", stderr)
+    in_thread = _input_loop(channel)
 
     # Tie off "loose" output by printing a newline. Helps to ensure any
     # following print()s aren't on the same line as a trailing line prefix or
@@ -581,12 +590,17 @@ def _run_command(command, shell=True, pty=False, sudo=False, user=None):
     # Obtain exit code of remote program now that we're done.
     status = channel.recv_exit_status()
 
+    # Wait for threads to exit so we aren't left with stale threads
+    out_thread.join()
+    err_thread.join()
+    in_thread.join()
+
     # Close channel
     channel.close()
 
     # Assemble output string
-    out = _AttributeString(stdout.strip())
-    err = _AttributeString(stderr.strip())
+    out = _AttributeString(''.join(stdout).strip())
+    err = _AttributeString(''.join(stderr).strip())
 
     # Error handling
     out.failed = False
