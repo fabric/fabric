@@ -19,7 +19,7 @@ from select import select
 from contextlib import closing
 
 from fabric.context_managers import settings, char_buffered
-from fabric.network import needs_host
+from fabric.network import needs_host, prompt_for_password
 from fabric.state import env, connections, output
 from fabric.utils import abort, indent, warn, puts
 
@@ -502,17 +502,44 @@ def _write(byte, which, buffer):
     return byte
 
 
+def _endswith(char_list, substring):
+    return char_list[-1*len(substring):] == list(substring)
+
+
 def _output_loop(chan, which, capture):
     from state import env, output
 
     def outputter(chan, which, capture):
         func = getattr(chan, which)
         byte = None
+        password = env.password
         while True:
             byte = func(1)
             if byte == '':
                 break
             capture += _write(byte, which, capture)
+            # Handle password jazz
+            initial = _endswith(capture, env.sudo_prompt)
+            try_again = _endswith(capture, env.again_prompt)
+            if initial or try_again:
+                # Remove the prompt itself from the capture buffer. This is
+                # backwards compatible with Fabric 0.9.x behavior; the user
+                # will still see the prompt on their screen (no way to avoid
+                # this) but at least it won't clutter up the captured text.
+                if initial:
+                    capture = capture[:len(env.sudo_prompt)]
+                if try_again:
+                    capture = capture[:len(env.again_prompt)]
+                # Prompt user if nothing to try, or if stored password failed
+                if not password or try_again:
+                    # Save entered password in local and global password var.
+                    # Will have to re-enter when password changes per host, but
+                    # this way a given password will persist for as long as
+                    # it's valid.
+                    env.password = password = prompt_for_password(password)
+                # Send current password down the pipe
+                chan.sendall(password + '\n')
+
 
     thread = threading.Thread(None, outputter, which, (chan, which, capture))
     thread.setDaemon(True)
