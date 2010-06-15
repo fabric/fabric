@@ -508,8 +508,10 @@ def _output_loop(chan, which, capture):
     def outputter(chan, which, capture):
         func = getattr(chan, which)
         byte = None
-        while byte != "":
+        while True:
             byte = func(1)
+            if byte == '':
+                break
             capture += _write(byte, which, capture)
 
     thread = threading.Thread(None, outputter, which, (chan, which, capture))
@@ -581,12 +583,6 @@ def _run_command(command, shell=True, pty=False, sudo=False, user=None):
     err_thread = _output_loop(channel, "recv_stderr", stderr)
     in_thread = _input_loop(channel)
 
-    # Tie off "loose" output by printing a newline. Helps to ensure any
-    # following print()s aren't on the same line as a trailing line prefix or
-    # similar.
-    if output.running:
-        print("")
-
     # Obtain exit code of remote program now that we're done.
     status = channel.recv_exit_status()
 
@@ -594,6 +590,12 @@ def _run_command(command, shell=True, pty=False, sudo=False, user=None):
     out_thread.join()
     err_thread.join()
     in_thread.join()
+
+    # Tie off "loose" output by printing a newline. Helps to ensure any
+    # following print()s aren't on the same line as a trailing line prefix or
+    # similar.
+    if output.running:
+        print("")
 
     # Close channel
     channel.close()
