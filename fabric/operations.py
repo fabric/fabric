@@ -520,27 +520,28 @@ def _output_loop(chan, which, capture):
     return thread
 
 
-def _input_loop(chan):
-    def inputter(chan):
+def _input_loop(chan, using_pty):
+    def inputter(chan, using_pty):
         with char_buffered(sys.stdin):
             while not chan.exit_status_ready():
-                if select([sys.stdin], [], [], 0.0) == [[sys.stdin], [], []]:
+                r, w, x = select([sys.stdin], [], [], 0.0)
+                if r and r[0] == sys.stdin:
                     # Send all local stdin to remote end's stdin
                     byte = sys.stdin.read(1)
                     chan.sendall(byte)
                     # Optionally echo locally, if needed.
-                    if env.echo_stdin or not env.combine_stderr:
+                    if not using_pty and env.echo_stdin:
                         # Not using fastprint() here -- it prints as 'user'
                         # output level, don't want it to be accidentally hidden
                         sys.stdout.write(byte)
                         sys.stdout.flush()
-    thread = threading.Thread(None, inputter, "input", (chan,))
+    thread = threading.Thread(None, inputter, "input", (chan, using_pty))
     thread.setDaemon(True)
     thread.start()
     return thread
 
 
-def _run_command(command, shell=True, pty=False, sudo=False, user=None):
+def _run_command(command, shell=True, pty=True, sudo=False, user=None):
     """
     Underpinnings of `run` and `sudo`. See their docstrings for more info.
     """
@@ -568,8 +569,10 @@ def _run_command(command, shell=True, pty=False, sudo=False, user=None):
 
     # Create pty if necessary (using Paramiko default options, which as of
     # 1.7.4 is vt100 $TERM @ 80x24 characters)
+    using_pty = False
     if pty or env.always_use_pty:
         channel.get_pty()
+        using_pty = True
 
     # Kick off remote command
     channel.exec_command(wrapped_command)
@@ -581,7 +584,7 @@ def _run_command(command, shell=True, pty=False, sudo=False, user=None):
 
     out_thread = _output_loop(channel, "recv", stdout)
     err_thread = _output_loop(channel, "recv_stderr", stderr)
-    in_thread = _input_loop(channel)
+    in_thread = _input_loop(channel, using_pty)
 
     # Obtain exit code of remote program now that we're done.
     status = channel.recv_exit_status()
@@ -625,7 +628,7 @@ def _run_command(command, shell=True, pty=False, sudo=False, user=None):
 
 
 @needs_host
-def run(command, shell=True, pty=False):
+def run(command, shell=True, pty=True):
     """
     Run a shell command on a remote host.
 
@@ -663,7 +666,7 @@ def run(command, shell=True, pty=False):
 
 
 @needs_host
-def sudo(command, shell=True, pty=False, user=None):
+def sudo(command, shell=True, pty=True, user=None):
     """
     Run a shell command on a remote host, with superuser privileges.
 
