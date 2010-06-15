@@ -490,7 +490,7 @@ def _write(byte, which, buffer):
     else:
         prefix = "err"
         pipe = sys.stderr
-    prefix = "[%s] " % prefix
+    prefix = "[%s] %s: " % (env.host_string, prefix)
     # Print initial prefix if necessary
     if not buffer:
         pipe.write(prefix); pipe.flush()
