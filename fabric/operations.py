@@ -515,6 +515,7 @@ def _output_loop(chan, which, capture):
         func = getattr(chan, which)
         byte = None
         password = env.password
+        reprompt = False
         while True:
             byte = func(1)
             if byte == '':
@@ -529,20 +530,22 @@ def _output_loop(chan, which, capture):
                 # backwards compatible with Fabric 0.9.x behavior; the user
                 # will still see the prompt on their screen (no way to avoid
                 # this) but at least it won't clutter up the captured text.
-                if initial:
-                    capture = capture[:len(env.sudo_prompt)]
-                if try_again:
-                    capture = capture[:len(env.again_prompt)]
-                # Prompt user if nothing to try, or if stored password failed
-                if not password or try_again:
+                capture = capture[:len(env.sudo_prompt)]
+                if (not password) or reprompt:
                     # Save entered password in local and global password var.
                     # Will have to re-enter when password changes per host, but
                     # this way a given password will persist for as long as
                     # it's valid.
                     env.password = password = prompt_for_password(password)
+                    # Reset reprompt flag
+                    reprompt = False
                 # Send current password down the pipe
                 chan.sendall(password + '\n')
-
+            elif try_again:
+                # Remove text from capture buffer
+                capture = capture[:len(env.again_prompt)]
+                # Set state so we re-prompt the user at the next prompt.
+                reprompt = True
 
     thread = threading.Thread(None, outputter, which, (chan, which, capture))
     thread.setDaemon(True)
