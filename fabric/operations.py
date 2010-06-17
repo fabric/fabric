@@ -536,7 +536,13 @@ def _output_loop(chan, which, capture):
                     # Will have to re-enter when password changes per host, but
                     # this way a given password will persist for as long as
                     # it's valid.
-                    env.password = password = prompt_for_password(password)
+                    # Give empty prompt so the initial display "hides" just
+                    # after the actually-displayed prompt from the remote end.
+                    env.password = password = prompt_for_password(
+                        previous=password,
+                        prompt="",
+                        no_colon=True
+                    )
                     # Reset reprompt flag
                     reprompt = False
                 # Send current password down the pipe

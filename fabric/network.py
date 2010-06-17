@@ -243,7 +243,7 @@ def connect(user, host, port):
             )
 
 
-def prompt_for_password(previous=None, prompt=None):
+def prompt_for_password(previous=None, prompt=None, no_colon=False):
     """
     Prompts for and returns a new password if required; otherwise, returns None.
 
@@ -251,6 +251,8 @@ def prompt_for_password(previous=None, prompt=None):
     with ``env.password``, though it may be empty or None if ``env.password``
     was not set and no password has previously been entered during this
     session.
+
+    A trailing colon is appended unless ``no_colon`` is True.
 
     When non-empty, ``previous`` will be used as a default if the user hits
     Enter without entering a new password, and the displayed password prompt
@@ -278,7 +280,8 @@ def prompt_for_password(previous=None, prompt=None):
     # option of trying that again.
     if previous:
         password_prompt += " [Enter for previous]"
-    password_prompt += ": "
+    if not no_colon:
+        password_prompt += ": "
     # Get new password value
     new_password = getpass.getpass(password_prompt)
     # See if user wants us to use the previous password and return right away
