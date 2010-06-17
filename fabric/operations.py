@@ -521,38 +521,44 @@ def _output_loop(chan, which, capture):
             byte = func(1)
             if byte == '':
                 break
-            capture += _write(byte, which, capture)
-            # Handle password jazz
-            prompt = _endswith(capture, env.sudo_prompt)
-            try_again = _endswith(capture, env.again_prompt + '\n') \
-                or _endswith(capture, env.again_prompt + '\r\n')
-            if prompt:
-                # Remove the prompt itself from the capture buffer. This is
-                # backwards compatible with Fabric 0.9.x behavior; the user
-                # will still see the prompt on their screen (no way to avoid
-                # this) but at least it won't clutter up the captured text.
-                capture = capture[:len(env.sudo_prompt)]
-                if (not password) or reprompt:
-                    # Save entered password in local and global password var.
-                    # Will have to re-enter when password changes per host, but
-                    # this way a given password will persist for as long as
-                    # it's valid.
-                    # Give empty prompt so the initial display "hides" just
-                    # after the actually-displayed prompt from the remote end.
-                    env.password = password = prompt_for_password(
-                        previous=password,
-                        prompt="",
-                        no_colon=True
-                    )
-                    # Reset reprompt flag
-                    reprompt = False
-                # Send current password down the pipe
-                chan.sendall(password + '\n')
-            elif try_again:
-                # Remove text from capture buffer
-                capture = capture[:len(env.again_prompt)]
-                # Set state so we re-prompt the user at the next prompt.
-                reprompt = True
+            if capture is None:
+                # Just print directly -- no prefixes, no capturing, nada
+                # And since we know we're using a pty in this mode, just go
+                # straight to stdout.
+                sys.stdout.write(byte); sys.stdout.flush()
+            else:
+                capture += _write(byte, which, capture)
+                # Handle password jazz
+                prompt = _endswith(capture, env.sudo_prompt)
+                try_again = (_endswith(capture, env.again_prompt + '\n')
+                    or _endswith(capture, env.again_prompt + '\r\n'))
+                if prompt:
+                    # Remove the prompt itself from the capture buffer. This is
+                    # backwards compatible with Fabric 0.9.x behavior; the user
+                    # will still see the prompt on their screen (no way to avoid
+                    # this) but at least it won't clutter up the captured text.
+                    capture = capture[:len(env.sudo_prompt)]
+                    if (not password) or reprompt:
+                        # Save entered password in local and global password
+                        # var.  Will have to re-enter when password changes per
+                        # host, but this way a given password will persist for
+                        # as long as it's valid.  Give empty prompt so the
+                        # initial display "hides" just after the
+                        # actually-displayed prompt from the remote end.
+                        env.password = password = prompt_for_password(
+                            previous=password,
+                            prompt="",
+                            no_colon=True
+                        )
+                        # Reset reprompt flag
+                        reprompt = False
+                    # Send current password down the pipe
+                    chan.sendall(password + '\n')
+                elif try_again:
+                    # Remove text from capture buffer
+                    capture = capture[:len(env.again_prompt)]
+                    # Set state so we re-prompt the user at the next prompt.
+                    reprompt = True
 
     thread = threading.Thread(None, outputter, which, (chan, which, capture))
     thread.setDaemon(True)
@@ -581,25 +587,7 @@ def _input_loop(chan, using_pty):
     return thread
 
 
-def _run_command(command, shell=True, pty=True, sudo=False, user=None):
-    """
-    Underpinnings of `run` and `sudo`. See their docstrings for more info.
-    """
-    # Set up new var so original argument can be displayed verbatim later.
-    given_command = command
-    # Handle context manager modifications, and shell wrapping
-    wrapped_command = _shell_wrap(
-        _prefix_commands(_prefix_env_vars(command)),
-        shell,
-        _sudo_prefix(user) if sudo else None
-    )
-    # Execute info line
-    which = 'sudo' if sudo else 'run'
-    if output.debug:
-        print("[%s] %s: %s" % (env.host_string, which, wrapped_command))
-    elif output.running:
-        print("[%s] %s: %s" % (env.host_string, which, given_command))
-
+def _execute(command, pty=True, invoke_shell=False):
     # Get channel (gives us a more useful API than the client object)
     channel = connections[env.host_string].get_transport().open_session()
 
@@ -610,17 +598,24 @@ def _run_command(command, shell=True, pty=True, sudo=False, user=None):
     # Create pty if necessary (using Paramiko default options, which as of
     # 1.7.4 is vt100 $TERM @ 80x24 characters)
     using_pty = False
-    if pty or env.always_use_pty:
+    if pty or env.always_use_pty or invoke_shell:
         channel.get_pty()
         using_pty = True
 
     # Kick off remote command
-    channel.exec_command(wrapped_command)
+    if invoke_shell:
+        channel.invoke_shell()
+        if command:
+            channel.sendall(command + "\n")
+    else:
+        channel.exec_command(command)
 
     # Init stdout, stderr capturing. Must use lists instead of strings as
     # strings are immutable and we're using these as pass-by-reference /
     # globals
     stdout, stderr = [], []
+    if invoke_shell:
+        stdout = stderr = None
 
     out_thread = _output_loop(channel, "recv", stdout)
     err_thread = _output_loop(channel, "recv_stderr", stderr)
@@ -642,6 +637,57 @@ def _run_command(command, shell=True, pty=True, sudo=False, user=None):
 
     # Close channel
     channel.close()
+
+    # Return stdout, stderr and exit status
+    return stdout, stderr, status
+
+
+def open_shell(command=None):
+    """
+    Invoke a fully interactive shell on the remote end.
+
+    If ``command`` is given, it will be sent down the pipe before handing
+    control over to the invoking user.
+
+    This function is most useful for when you need to interact with a heavily
+    shell-based command or series of commands, such as when debugging or when
+    fully interactive recovery is required upon remote program failure.
+
+    It should be considered an easy way to work an interactive session into the
+    middle of a Fabric script and is *not* a drop-in replacement for
+    `~fabric.operations.run`, which is capable of interacting with the remote
+    end, and has much stronger programmatic abilities such as error handling
+    and stdout/stderr capture.
+
+    Specifically, `~fabric.options.open_shell` provides a better interactive
+    experience, but use of a full remote shell prevents Fabric from determining
+    whether programs run within the shell have failed, and pollutes the
+    stdout/stderr stream with shell output such as login banners, prompts and
+    echoed stdin.
+    """
+    _execute(command=command, pty=True, invoke_shell=True)
+
+
+def _run_command(command, shell=True, pty=True, sudo=False, user=None):
+    """
+    Underpinnings of `run` and `sudo`. See their docstrings for more info.
+    """
+    # Set up new var so original argument can be displayed verbatim later.
+    given_command = command
+    # Handle context manager modifications, and shell wrapping
+    wrapped_command = _shell_wrap(
+        _prefix_commands(_prefix_env_vars(command)),
+        shell,
+        _sudo_prefix(user) if sudo else None
+    )
+    # Execute info line
+    which = 'sudo' if sudo else 'run'
+    if output.debug:
+        print("[%s] %s: %s" % (env.host_string, which, wrapped_command))
+    elif output.running:
+        print("[%s] %s: %s" % (env.host_string, which, given_command))
+
+    stdout, stderr, status = _execute(wrapped_command, pty)
 
     # Assemble output string
     out = _AttributeString(''.join(stdout).strip())
