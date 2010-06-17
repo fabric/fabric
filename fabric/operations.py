@@ -521,9 +521,10 @@ def _output_loop(chan, which, capture):
                 break
             capture += _write(byte, which, capture)
             # Handle password jazz
-            initial = _endswith(capture, env.sudo_prompt)
-            try_again = _endswith(capture, env.again_prompt)
-            if initial or try_again:
+            prompt = _endswith(capture, env.sudo_prompt)
+            try_again = _endswith(capture, env.again_prompt + '\n') \
+                or _endswith(capture, env.again_prompt + '\r\n')
+            if prompt:
                 # Remove the prompt itself from the capture buffer. This is
                 # backwards compatible with Fabric 0.9.x behavior; the user
                 # will still see the prompt on their screen (no way to avoid
