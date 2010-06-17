@@ -503,7 +503,9 @@ def _write(byte, which, buffer):
 
 
 def _endswith(char_list, substring):
-    return char_list[-1*len(substring):] == list(substring)
+    tail = char_list[-1*len(substring):]
+    substring = list(substring)
+    return tail == substring
 
 
 def _output_loop(chan, which, capture):
