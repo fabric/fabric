@@ -517,6 +517,7 @@ def _output_loop(chan, which, capture):
         password = env.password
         reprompt = False
         while True:
+            # Handle actual read/write
             byte = func(1)
             if byte == '':
                 break
