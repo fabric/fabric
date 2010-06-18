@@ -14,8 +14,11 @@ from fabric.version import get_version
 # Win32 flag
 #
 
-# Impacts a handful of platform specific behaviors.
-win32 = sys.platform in ['win32', 'cygwin']
+# Impacts a handful of platform specific behaviors. Note that Cygwin's Python
+# is actually close enough to "real" UNIXes that it doesn't need (or want!) to
+# use PyWin32 -- so we only test for literal Win32 setups (vanilla Python,
+# ActiveState etc) here.
+win32 = (sys.platform == 'win32')
 
 
 #
