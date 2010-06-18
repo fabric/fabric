@@ -7,11 +7,13 @@ Context managers for use with the ``with`` statement.
     Python 2.6+.)
 """
 
-import termios
-import tty
 from contextlib import contextmanager, nested
 
-from fabric.state import env, output
+from fabric.state import env, output, win32
+
+if not win32:
+    import termios
+    import tty
 
 
 def _set_output(groups, which):
@@ -286,10 +288,15 @@ def prefix(command):
 def char_buffered(pipe):
     """
     Force local terminal ``pipe`` be character, not line, buffered.
+
+    Only applies on Unix-based systems; on Windows this is a no-op.
     """
-    old_settings = termios.tcgetattr(pipe)
-    tty.setcbreak(pipe)
-    try:
+    if win32:
         yield
-    finally:
-        termios.tcsetattr(pipe, termios.TCSADRAIN, old_settings)
+    else:
+        old_settings = termios.tcgetattr(pipe)
+        tty.setcbreak(pipe)
+        try:
+            yield
+        finally:
+            termios.tcsetattr(pipe, termios.TCSADRAIN, old_settings)

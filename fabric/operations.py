@@ -20,8 +20,11 @@ from contextlib import closing
 
 from fabric.context_managers import settings, char_buffered
 from fabric.network import needs_host, prompt_for_password
-from fabric.state import env, connections, output
+from fabric.state import env, connections, output, win32
 from fabric.utils import abort, indent, warn, puts
+
+if win32:
+    import msvcrt
 
 
 def _handle_failure(message, exception=None):
@@ -570,10 +573,14 @@ def _input_loop(chan, using_pty):
     def inputter(chan, using_pty):
         with char_buffered(sys.stdin):
             while not chan.exit_status_ready():
-                r, w, x = select([sys.stdin], [], [], 0.0)
-                if r and r[0] == sys.stdin:
+                if win32:
+                    have_char = msvcrt.kbhit()
+                else:
+                    r, w, x = select([sys.stdin], [], [], 0.0)
+                    have_char = (r and r[0] == sys.stdin)
+                if have_char:
                     # Send all local stdin to remote end's stdin
-                    byte = sys.stdin.read(1)
+                    byte = msvcrt.getch() if win32 else sys.stdin.read(1)
                     chan.sendall(byte)
                     # Optionally echo locally, if needed.
                     if not using_pty and env.echo_stdin:
