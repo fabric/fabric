@@ -1,0 +1,23 @@
+========================
+Changes in version 0.9.2
+========================
+
+The following changes were implemented in Fabric 0.9.2:
+
+Feature additions
+=================
+
+* N/A
+
+
+Bugfixes
+========
+
+* N/A
+
+
+Documentation updates
+=====================
+
+* :issue:`173`: Simple but rather embarrassing typo fix in README. Thanks to
+  Ted Nyman for the catch.
