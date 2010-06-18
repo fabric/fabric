@@ -9,8 +9,10 @@ from nose.tools import eq_, with_setup
 from fudge import Fake, clear_calls, clear_expectations, patch_object, verify, \
     with_patched_object, patched_context
 
+from fabric.context_managers import settings
 from fabric.network import (HostConnectionCache, join_host_strings, normalize,
-    denormalize, output_thread)
+    denormalize)
+from fabric.io import output_loop
 import fabric.network # So I can call patch_object correctly. Sigh.
 from fabric.state import env, _get_system_username, output as state_output
 
@@ -214,21 +216,16 @@ fabfile.pyc
 fabric
 requirements.txt
 setup.py
-tests
-"""
-    # Setup for calling output_thread
+tests"""
+    # Setup for calling output_loop
     capture = []
-    prefix = "[localhost]"
-    # TODO: fix below two lines, duplicates inner workings of output_thread
-    full_prefix = prefix + ": "
-    expected_output = (full_prefix
-        + ('\n' + full_prefix).join(output_string.splitlines())
-    ) + '\n'
+    prefix = "[localhost] out: "
+    # TODO: fix below line, duplicates inner workings of output_loop
+    expected = prefix + ('\n' + prefix).join(output_string.split('\n'))
     # Create, tie off thread
-    thread = output_thread(prefix, FakeChannel(output_string), capture=capture)
-    thread.join()
-    # Test equivalence of expected, received output
-    eq_(
-        expected_output,
-        sys.stdout.getvalue()
-    )
+    with settings(host_string='localhost'):
+        thread = output_loop(FakeChannel(output_string), which='recv',
+            capture=capture)
+        thread.join()
+        # Test equivalence of expected, received output
+        eq_(expected, sys.stdout.getvalue())
