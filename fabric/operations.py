@@ -525,17 +525,23 @@ def open_shell(command=None):
     shell-based command or series of commands, such as when debugging or when
     fully interactive recovery is required upon remote program failure.
 
-    It should be considered an easy way to work an interactive session into the
-    middle of a Fabric script and is *not* a drop-in replacement for
-    `~fabric.operations.run`, which is capable of interacting with the remote
-    end, and has much stronger programmatic abilities such as error handling
-    and stdout/stderr capture.
+    It should be considered an easy way to work an interactive shell session
+    into the middle of a Fabric script and is *not* a drop-in replacement for
+    `~fabric.operations.run`, which is also capable of interacting with the
+    remote end (albeit only while its given command is executing) and has much
+    stronger programmatic abilities such as error handling and stdout/stderr
+    capture.
 
-    Specifically, `~fabric.options.open_shell` provides a better interactive
-    experience, but use of a full remote shell prevents Fabric from determining
-    whether programs run within the shell have failed, and pollutes the
-    stdout/stderr stream with shell output such as login banners, prompts and
-    echoed stdin.
+    Specifically, `~fabric.operations.open_shell` provides a better interactive
+    experience than `~fabric.operations.run`, but use of a full remote shell
+    prevents Fabric from determining whether programs run within the shell have
+    failed, and pollutes the stdout/stderr stream with shell output such as
+    login banners, prompts and echoed stdin.
+
+    Thus, this function does not have a return value and will not trigger
+    Fabric's failure handling if any remote programs result in errors.
+
+    .. versionadded:: 1.0
     """
     _execute(command=command, pty=True, combine_stderr=True, invoke_shell=True)
 
@@ -604,12 +610,25 @@ def run(command, shell=True, pty=True, combine_stderr=True):
     succeeded, and will also include the return code as the ``return_code``
     attribute.
 
-    Standard error will also be attached, as a string, to this return value as
-    the ``stderr`` attribute.
+    Any text entered in your local terminal will be forwarded to the remote
+    program as it runs, thus allowing you to interact with password or other
+    prompts naturally. For more on how this works, see
+    :doc:`/usage/interactivity`.
 
-    You may pass ``pty=True`` to force allocation of a pseudo tty on
-    the remote end. This is not normally required, but some programs may
-    complain (or, even more rarely, refuse to run) if a tty is not present.
+    You may pass ``pty=False`` to forego creation of a pseudo-terminal on the
+    remote end in case the presence of one causes problems for the command in
+    question. However, this will force Fabric itself to echo any  and all input
+    you type while the command is running, including sensitive passwords. (With
+    ``pty=True``, the remote pseudo-terminal will echo for you, and will
+    intelligently handle password-style prompts.) See :ref:`pseudottys` for
+    details.
+
+    Similarly, if you need to programmatically examine the stderr stream of the
+    remote program (exhibited as the ``stderr`` attribute on this function's
+    return value), you may set ``combine_stderr=False``. Doing so has a high
+    chance of causing garbled output to appear on your terminal (though the
+    resulting strings returned by `~fabric.operations.run` will be properly
+    separated). For more info, please read :ref:`combine_streams`.
 
     Examples::
     
@@ -617,10 +636,12 @@ def run(command, shell=True, pty=True, combine_stderr=True):
         run("ls /home/myuser", shell=False)
         output = run('ls /var/www/site1')
     
+    .. versionadded:: 1.0
+        The ``succeeded`` and ``stderr`` return value attributes, the
+        ``combine_stderr`` kwarg, and interactive behavior.
+
     .. versionchanged:: 1.0
-        Added the ``succeeded`` attribute.
-    .. versionchanged:: 1.0
-        Added the ``stderr`` attribute.
+        The default value of ``pty`` is now ``True``.
     """
     return _run_command(command, shell, pty, combine_stderr)
 
@@ -646,6 +667,8 @@ def sudo(command, shell=True, pty=True, combine_stderr=True, user=None):
         sudo("ls /home/jdoe", user=1001)
         result = sudo("ls /tmp/")
     
+    .. versionchanged:: 1.0
+        See the changed and added notes for `~fabric.operations.run`.
     """
     return _run_command(command, shell, pty, combine_stderr, sudo=True,
         user=user)
