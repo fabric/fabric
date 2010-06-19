@@ -120,7 +120,7 @@ def sed(filename, before, after, limit='', use_sudo=False, backup='.bak'):
     <filename>"``.
 
     For convenience, ``before`` and ``after`` will automatically escape forward
-    slashes (and **only** forward slashes) for you, so you don't need to
+    slashes, single quotes and parentheses for you, so you don't need to
     specify e.g.  ``http:\/\/foo\.com``, instead just using ``http://foo\.com``
     is fine.
 
