@@ -458,12 +458,12 @@ def _prefix_env_vars(command):
     return path + command
 
 
-def _execute(command, pty=True, invoke_shell=False):
+def _execute(command, pty=True, combine_stderr=True, invoke_shell=False):
     # Get channel (gives us a more useful API than the client object)
     channel = connections[env.host_string].get_transport().open_session()
 
     # Combine stdout and stderr to get around oddball mixing issues
-    if env.combine_stderr:
+    if combine_stderr or env.combine_stderr:
         channel.set_combine_stderr(True)
 
     # Create pty if necessary (using Paramiko default options, which as of
@@ -513,6 +513,7 @@ def _execute(command, pty=True, invoke_shell=False):
     return stdout, stderr, status
 
 
+@needs_host
 def open_shell(command=None):
     """
     Invoke a fully interactive shell on the remote end.
@@ -536,10 +537,11 @@ def open_shell(command=None):
     stdout/stderr stream with shell output such as login banners, prompts and
     echoed stdin.
     """
-    _execute(command=command, pty=True, invoke_shell=True)
+    _execute(command=command, pty=True, combine_stderr=True, invoke_shell=True)
 
 
-def _run_command(command, shell=True, pty=True, sudo=False, user=None):
+def _run_command(command, shell=True, pty=True, combine_stderr=True,
+    sudo=False, user=None):
     """
     Underpinnings of `run` and `sudo`. See their docstrings for more info.
     """
@@ -559,7 +561,7 @@ def _run_command(command, shell=True, pty=True, sudo=False, user=None):
         print("[%s] %s: %s" % (env.host_string, which, given_command))
 
     # Actual execution, stdin/stdout/stderr handling, and termination
-    stdout, stderr, status = _execute(wrapped_command, pty)
+    stdout, stderr, status = _execute(wrapped_command, pty, combine_stderr)
 
     # Assemble output string
     out = _AttributeString(''.join(stdout).strip())
@@ -586,7 +588,7 @@ def _run_command(command, shell=True, pty=True, sudo=False, user=None):
 
 
 @needs_host
-def run(command, shell=True, pty=True):
+def run(command, shell=True, pty=True, combine_stderr=True):
     """
     Run a shell command on a remote host.
 
@@ -620,11 +622,11 @@ def run(command, shell=True, pty=True):
     .. versionchanged:: 1.0
         Added the ``stderr`` attribute.
     """
-    return _run_command(command, shell, pty)
+    return _run_command(command, shell, pty, combine_stderr)
 
 
 @needs_host
-def sudo(command, shell=True, pty=True, user=None):
+def sudo(command, shell=True, pty=True, combine_stderr=True, user=None):
     """
     Run a shell command on a remote host, with superuser privileges.
 
@@ -645,7 +647,8 @@ def sudo(command, shell=True, pty=True, user=None):
         result = sudo("ls /tmp/")
     
     """
-    return _run_command(command, shell, pty, sudo=True, user=user) 
+    return _run_command(command, shell, pty, combine_stderr, sudo=True,
+        user=user)
 
 
 def local(command, capture=True):
@@ -719,6 +722,7 @@ def local(command, capture=True):
     return out
 
 
+@needs_host
 def reboot(wait):
     """
     Reboot the remote system, disconnect, and wait for ``wait`` seconds.
