@@ -55,6 +55,10 @@ Feature additions
 * :ref:`env.local_user <local-user>` was added, providing easy and permanent
   access to the local system username, even if an alternate remote username has
   been specified.
+* :issue:`7`: `~fabric.operations.run`/`~fabric.operations.sudo` now allow full
+  interactivity with the remote end, and are accompanied by a new interactive
+  shell function, `~fabric.operations.open_shell`. See also
+  :doc:`interactivity`.
 * :issue:`23`: Added `~fabric.context_managers.prefix` context manager for
   easier management of persistent state across commands.
 * :issue:`27`: Added environment variable (:ref:`always-use-pty`) and
