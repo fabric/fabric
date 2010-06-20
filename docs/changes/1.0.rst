@@ -25,6 +25,11 @@ Backwards-incompatible changes
 The below changes are **backwards incompatible** and have the potential to
 break your 0.9.x based fabfiles!
 
+* As part of the changes made in :issue:`7`, `~fabric.operations.run` and
+  `~fabric.operations.sudo` have had the default value of their ``pty`` kwargs
+  changed from ``False`` to ``True``. This, plus the addition of the
+  :ref:`combine-stderr` kwarg/env var, may result in significant behavioral
+  changes in some remote programs.
 * `~fabric.contrib.files.contains` and `~fabric.contrib.files.append`
   previously had the ``filename`` argument in the second position, whereas all
   other functions in the `contrib.files <fabric.contrib.files>` module had
@@ -36,9 +41,6 @@ break your 0.9.x based fabfiles!
 * The ``user`` and ``pty`` kwargs in `~fabric.operations.sudo`'s signature have
   had their order swapped around to more closely match
   `~fabric.operations.run`.
-* As part of the changes made in :issue:`7`, `~fabric.operations.run` and
-  `~fabric.operations.sudo` have had the default value of their ``pty`` kwargs
-  changed from ``False`` to ``True``.
 
 
 Feature additions
