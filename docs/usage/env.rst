@@ -119,14 +119,26 @@ informational purposes only.
 ``always_use_pty``
 ------------------
 
-**Default:** ``False``
+**Default:** ``True``
 
-When set to ``True``, causes `~fabric.operations.run`/`~fabric.operations.sudo`
-to act as if they have been called with ``pty=True``. (To disable on a
-per-invocation basis, manually specify ``pty=False``.)
+When set to ``False``, causes `~fabric.operations.run`/`~fabric.operations.sudo`
+to act as if they have been called with ``pty=False``.
 
-The command-line flag :option:`--pty`, if given, will set this env var to
-``True``.
+The command-line flag :option:`--no-pty`, if given, will set this env var to
+``False``.
+
+.. versionadded:: 1.0
+
+.. _combine-stderr:
+
+``combine_stderr``
+------------------
+
+**Default**: ``True``
+
+Causes the SSH layer to merge a remote program's stdout and stderr streams to
+avoid becoming meshed together when printed. See :ref:`combine_streams` for
+details on why this is needed and what its effects are.
 
 .. versionadded:: 1.0
 
