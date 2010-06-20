@@ -466,12 +466,15 @@ def _execute(command, pty=True, combine_stderr=True, invoke_shell=False):
     if combine_stderr or env.combine_stderr:
         channel.set_combine_stderr(True)
 
-    # Create pty if necessary (using Paramiko default options, which as of
-    # 1.7.4 is vt100 $TERM @ 80x24 characters)
-    using_pty = False
-    if pty or env.always_use_pty or invoke_shell:
+    # Assume pty use, and allow overriding of this either via kwarg or env var.
+    # (invoke_shell always wants a pty too.)
+    using_pty = True
+    if not pty or not env.always_use_pty or invoke_shell:
+        using_pty = False
+    if using_pty:
+        # Create pty if necessary (using Paramiko default options, which as of
+        # 1.7.4 is vt100 $TERM @ 80x24 characters)
         channel.get_pty()
-        using_pty = True
 
     # Kick off remote command
     if invoke_shell:
