@@ -118,3 +118,31 @@ hiding of stdin and does not echo anything itself.
 
 For situations requiring the pty behavior turned off, the :option:`--no-pty`
 command-line argument and :ref:`always-use-pty` env var may be used.
+
+
+Combining the two
+=================
+
+As a final note, keep in mind that use of pseudo-terminals effectively implies
+combining stdout and stderr -- in much the same way as the :ref:`combine_stderr
+<combine_streams>` setting does. This is because a terminal device naturally
+sends both stdout and stderr to the same place -- the user's display -- thus
+making it impossible to differentiate between them.
+
+However, at the Fabric level, the two groups of settings are distinct from one
+another and may be combined in various ways. The default is for both to be set
+to ``True``; the other combinations are as follows:
+
+* ``run("cmd", pty=False, combine_stderr=True)``: will cause Fabric to echo all
+  stdin itself, including passwords, as well as potentially altering ``cmd``'s
+  behavior. Useful if ``cmd`` behaves undesirably when run under a pty and
+  you're not concerned about password prompts.
+* ``run("cmd", pty=False, combine_stderr=False)``: with both settings
+  ``False``, Fabric will echo stdin and won't issue a pty -- and this is highly
+  likely to result in undesired behavior for all but the simplest commands.
+  However, it is also the only way to access a distinct stderr stream, which is
+  occasionally useful.
+* ``run("cmd", pty=True, combine_stderr=False)``: valid, but won't really make
+  much of a difference, as ``pty=True`` will still result in merged streams.
+  May be useful for avoiding any edge case problems in ``combine_stderr`` (none
+  are presently known).
