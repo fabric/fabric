@@ -201,7 +201,7 @@ env_options = [
     make_option('--no-pty',
         dest='always_use_pty',
         action='store_false',
-        default=False,
+        default=True,
         help="do not use pseudo-terminal in run/sudo"
     )
     

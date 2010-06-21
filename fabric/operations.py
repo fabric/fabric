@@ -467,9 +467,9 @@ def _execute(command, pty=True, combine_stderr=True, invoke_shell=False):
         channel.set_combine_stderr(True)
 
     # Assume pty use, and allow overriding of this either via kwarg or env var.
-    # (invoke_shell always wants a pty too.)
+    # (invoke_shell always wants a pty no matter what.)
     using_pty = True
-    if not pty or not env.always_use_pty or invoke_shell:
+    if not invoke_shell and (not pty or not env.always_use_pty):
         using_pty = False
     if using_pty:
         # Create pty if necessary (using Paramiko default options, which as of
