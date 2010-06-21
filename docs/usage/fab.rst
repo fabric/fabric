@@ -159,12 +159,11 @@ below.
     used as the default password when making SSH connections or calling the
     ``sudo`` program.
 
-.. cmdoption:: --pty
+.. cmdoption:: --no-pty
 
-    Sets :ref:`env.always_use_pty <always-use-pty>` to ``True``, causing all
+    Sets :ref:`env.always_use_pty <always-use-pty>` to ``False``, causing all
     `~fabric.operations.run`/`~fabric.operations.sudo` calls to behave as if
-    one had specified ``pty=True`` (forcing a pseudoterminal on the remote
-    end.)
+    one had specified ``pty=False``.
 
     .. versionadded:: 1.0
 

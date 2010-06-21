@@ -198,11 +198,11 @@ env_options = [
     ),
 
     # Global PTY flag for run/sudo
-    make_option('--pty',
+    make_option('--no-pty',
         dest='always_use_pty',
-        action='store_true',
+        action='store_false',
         default=False,
-        help="force use of pseudo-terminal in run/sudo"
+        help="do not use pseudo-terminal in run/sudo"
     )
     
 ]
