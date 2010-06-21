@@ -221,7 +221,7 @@ env_options = [
 env = _AttributeDict({
     'again_prompt': 'Sorry, try again.',
     'all_hosts': None, 
-    'combine_stderr': True
+    'combine_stderr': True,
     'command': None,
     'command_prefixes': [],
     'cwd': '', # Must be empty string, not None, for concatenation purposes
@@ -241,7 +241,7 @@ env = _AttributeDict({
     'sudo_prompt': 'sudo password:',
     'use_shell': True,
     'user': None,
-    'version': get_version('short'),
+    'version': get_version('short')
 })
 
 # Add in option defaults
