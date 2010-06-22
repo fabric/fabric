@@ -19,7 +19,7 @@ from contextlib import closing
 from fabric.context_managers import settings, char_buffered
 from fabric.io import output_loop, input_loop
 from fabric.network import needs_host
-from fabric.state import env, connections, output, win32
+from fabric.state import env, connections, output, win32, default_channel
 from fabric.utils import abort, indent, warn, puts
 
 
@@ -458,10 +458,23 @@ def _prefix_env_vars(command):
     return path + command
 
 
-def _execute(command, pty=True, combine_stderr=True, invoke_shell=False):
-    # Get channel (gives us a more useful API than the client object)
-    channel = connections[env.host_string].get_transport().open_session()
+def _execute(channel, command, pty=True, combine_stderr=True,
+    invoke_shell=False):
+    """
+    Execute ``command`` over ``channel``.
 
+    ``pty`` controls whether a pseudo-terminal is created.
+
+    ``combine_stderr`` controls whether we call ``channel.set_combine_stderr``.
+
+    ``invoke_shell`` controls whether we use ``exec_command`` or
+    ``invoke_shell`` (plus a handful of other things, such as always forcing a
+    pty.)
+
+    Returns a three-tuple of (``stdout``, ``stderr``, ``status``), where
+    ``stdout``/``stderr`` are captured output strings and ``status`` is the
+    program's return code, if applicable.
+    """
     # Combine stdout and stderr to get around oddball mixing issues
     if combine_stderr or env.combine_stderr:
         channel.set_combine_stderr(True)
@@ -513,6 +526,8 @@ def _execute(command, pty=True, combine_stderr=True, invoke_shell=False):
     channel.close()
 
     # Return stdout, stderr and exit status
+    stdout = ''.join(stdout).strip()
+    stderr = ''.join(stderr).strip()
     return stdout, stderr, status
 
 
@@ -546,7 +561,7 @@ def open_shell(command=None):
 
     .. versionadded:: 1.0
     """
-    _execute(command=command, pty=True, combine_stderr=True, invoke_shell=True)
+    _execute(default_channel(), command, True, True, True)
 
 
 def _run_command(command, shell=True, pty=True, combine_stderr=True,
@@ -570,11 +585,12 @@ def _run_command(command, shell=True, pty=True, combine_stderr=True,
         print("[%s] %s: %s" % (env.host_string, which, given_command))
 
     # Actual execution, stdin/stdout/stderr handling, and termination
-    stdout, stderr, status = _execute(wrapped_command, pty, combine_stderr)
+    stdout, stderr, status = _execute(default_channel(), wrapped_command, pty,
+        combine_stderr)
 
     # Assemble output string
-    out = _AttributeString(''.join(stdout).strip())
-    err = _AttributeString(''.join(stderr).strip())
+    out = _AttributeString(stdout)
+    err = _AttributeString(stderr)
 
     # Error handling
     out.failed = False
