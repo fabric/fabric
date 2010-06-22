@@ -12,39 +12,9 @@ if win32:
     import msvcrt
 
 
-def _write(byte, which, buffer):
-    """
-    Print ``byte`` to appropriate system pipe, and flush.
-
-    ``which`` should be one of (``'recv'``, ``'recv_stderr'``), causing
-    ``_write`` to interact with ``sys.stdout`` or ``sys.stderr`` respectively,
-    and also causing it to use an appropriate line prefix. It will also omit
-    printing entirely depending on output controls.
-
-    ``buffer`` should be the capture buffer for the stream in question; if
-    ``_write`` determines that the buffer is currently empty, it will print an
-    initial prefix in addition to any newline-trailing one.
-
-    Returns ``byte``.
-    """
-    if not getattr(output, 'stdout' if (which == 'recv') else 'stderr'):
-        return byte
-    if which == 'recv':
-        prefix = "out"
-        pipe = sys.stdout
-    else:
-        prefix = "err"
-        pipe = sys.stderr
-    prefix = "[%s] %s: " % (env.host_string, prefix)
-    # Print initial prefix if necessary
-    if not buffer:
-        pipe.write(prefix); pipe.flush()
-    # Print byte itself
-    pipe.write(byte); pipe.flush()
-    # Print trailing prefix to start off next line, if necessary
-    if byte in ("\n", "\r"):
-        pipe.write(prefix); pipe.flush()
-    return byte
+def _flush(pipe, text):
+    pipe.write(text)
+    pipe.flush()
 
 
 def _endswith(char_list, substring):
@@ -55,8 +25,16 @@ def _endswith(char_list, substring):
 
 def output_loop(chan, which, capture):
     def outputter(chan, which, capture):
+        # Obtain stdout or stderr related values
         func = getattr(chan, which)
-        byte = None
+        if which == 'recv':
+            prefix = "out"
+            pipe = sys.stdout
+        else:
+            prefix = "err"
+            pipe = sys.stderr
+        printing = getattr(output, 'stdout' if (which == 'recv') else 'stderr')
+        # Initialize loop variables
         password = env.password
         reprompt = False
         while True:
@@ -64,14 +42,29 @@ def output_loop(chan, which, capture):
             byte = func(1)
             if byte == '':
                 break
+            # A None capture variable implies that we're in open_shell()
             if capture is None:
                 # Just print directly -- no prefixes, no capturing, nada
                 # And since we know we're using a pty in this mode, just go
                 # straight to stdout.
-                sys.stdout.write(byte); sys.stdout.flush()
+                _flush(sys.stdout, byte)
+            # Otherwise, we're in run/sudo and need to handle capturing and
+            # prompts.
             else:
-                capture += _write(byte, which, capture)
-                # Handle password jazz
+                _prefix = "[%s] %s: " % (env.host_string, prefix)
+                # Print to user
+                if printing:
+                    # Initial prefix
+                    if not capture:
+                        _flush(pipe, _prefix)
+                    # Byte itself
+                    _flush(pipe, byte)
+                    # Trailing prefix to start off next line
+                    if byte in ("\n", "\r"):
+                        _flush(pipe, _prefix)
+                # Store in capture buffer
+                capture += byte
+                # Handle prompts
                 prompt = _endswith(capture, env.sudo_prompt)
                 try_again = (_endswith(capture, env.again_prompt + '\n')
                     or _endswith(capture, env.again_prompt + '\r\n'))
@@ -81,11 +74,22 @@ def output_loop(chan, which, capture):
                     # will still see the prompt on their screen (no way to avoid
                     # this) but at least it won't clutter up the captured text.
                     capture = capture[:len(env.sudo_prompt)]
+                    # If no saved password exists or the one we just tried was
+                    # bad, prompt the user again.
                     if (not password) or reprompt:
+                        # Print the prompt and/or the "try again" notice if
+                        # output is being hidden. In other words, since we need
+                        # the user's input, they need to see why we're
+                        # prompting them.
+                        if not printing:
+                            _flush(pipe, _prefix)
+                            if reprompt:
+                                _flush(pipe, env.again_prompt + '\n' + _prefix)
+                            _flush(pipe, env.sudo_prompt)
                         # Save entered password in local and global password
-                        # var.  Will have to re-enter when password changes per
+                        # var. Will have to re-enter when password changes per
                         # host, but this way a given password will persist for
-                        # as long as it's valid.  Give empty prompt so the
+                        # as long as it's valid. Give empty prompt so the
                         # initial display "hides" just after the
                         # actually-displayed prompt from the remote end.
                         env.password = password = prompt_for_password(
