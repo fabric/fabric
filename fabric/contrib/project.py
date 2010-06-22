@@ -39,7 +39,8 @@ def rsync_project(remote_dir, local_dir=None, exclude=(), delete=False,
       the resulting project directory will be ``/home/username/myproject/``.
     * ``local_dir``: by default, ``rsync_project`` uses your current working
       directory as the source directory; you may override this with
-      ``local_dir``, which should be a directory path.
+      ``local_dir``, which should be a directory path, or list of paths in a
+      single string.
     * ``exclude``: optional, may be a single string, or an iterable of strings,
       and is used to pass one or more ``--exclude`` options to ``rsync``.
     * ``delete``: a boolean controlling whether ``rsync``'s ``--delete`` option
