@@ -15,7 +15,7 @@ from fabric.network import (HostConnectionCache, join_host_strings, normalize,
 from fabric.io import output_loop
 import fabric.network # So I can call patch_object correctly. Sigh.
 from fabric.state import env, _get_system_username, output as state_output
-from fabric.operations import run
+from fabric.operations import run, sudo
 
 from utils import mock_streams, response
 from server import serve_response
@@ -208,3 +208,13 @@ tests"""
         eq_(expected, sys.stdout.getvalue())
         # Also test that the captured value matches, too.
         eq_(output_string, result)
+
+
+def test_sudo_prompt_kills_capturing():
+    """
+    Sudo prompts shouldn't screw up output capturing
+    """
+    cmd = "ls"
+    output = "lol output"
+    with settings(response(cmd, output), password='foo'):
+        eq_(sudo(cmd, shell=False), output)
