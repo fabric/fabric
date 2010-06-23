@@ -52,63 +52,61 @@ def _equalize(lists, fillval=None):
     return lists
 
 
-def serve_response(expected, stdout, stderr="", status=0):
-    def inner(expected, stdout, stderr, status):
-        # Set up socket on high numbered port
+def serve_response(expected, stdout, stderr="", status=0, port=2200):
+    def inner(expected, stdout, stderr, status, port):
+        # Networking!
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        sock.bind(('', 2200))
-
-        # Listen for an incoming connection
+        sock.bind(('', port))
         sock.listen(100)
         client, addr = sock.accept()
 
-        # Perform SSH stuff on the connection
         try:
-            t = paramiko.Transport(client)
-            t.add_server_key(paramiko.RSAKey(filename=os.path.join(
+            # More networking!
+            transport = paramiko.Transport(client)
+            transport.add_server_key(paramiko.RSAKey(filename=os.path.join(
                 os.path.dirname(__file__),
                 'server.key'
             )))
             server = Server()
-            t.start_server(server=server)
-
-            # wait for auth
-            chan = t.accept(20)
+            transport.start_server(server=server)
+            channel = transport.accept(20)
             server.event.wait(10)
-            # Perform actual interaction logic
+
+            # SSH! (responding to exec_command())
             if server.command:
-                # Handle sudo
+                # Separate out sudo prompt
                 prefix = _sudo_prefix(None)
                 regex = r'^(%s)?(.*)$' % (re.escape(prefix.rstrip()) + ' +')
                 result = re.findall(regex, server.command)[0]
                 sudo_prompt, server.command = result
                 if server.command == expected:
+                    # Send prompt, wait for response, if sudo detected
                     if sudo_prompt:
-                       chan.send(env.sudo_prompt)
-                       chan.recv(65535)
-                    # Actual output loop
+                       channel.send(env.sudo_prompt)
+                       channel.recv(65535)
+                    # Send command output, exit status
                     stdout, stderr = _equalize((stdout, stderr))
                     for out, err in zip(stdout, stderr):
                         if out is not None:
-                            chan.send(out)
+                            channel.send(out)
                         if err is not None:
-                            chan.send_stderr(err)
-                    chan.send_exit_status(status)
+                            channel.send_stderr(err)
+                    channel.send_exit_status(status)
                 else:
-                    chan.send("Sorry, I don't recognize that command.\n")
-                    chan.send("Expected '%s', got '%s'" % (expected,
+                    channel.send("Sorry, I don't recognize that command.\n")
+                    channel.send("Expected '%s', got '%s'" % (expected,
                         server.command))
-                    chan.send_exit_status(0)
+                    channel.send_exit_status(0)
 
-            chan.close()
+            channel.close()
 
         except Exception, e:
-            t.close()
+            transport.close()
             raise e
 
     thread = threading.Thread(None, inner, "server", (expected, stdout, stderr,
-        status))
+        status, port))
     thread.setDaemon(True)
     thread.start()
     return thread
