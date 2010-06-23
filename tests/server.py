@@ -1,10 +1,14 @@
 import itertools
 import os
+import re
 import socket
 import sys
 import threading
 
 import paramiko
+
+from fabric.operations import _sudo_prefix
+from fabric.api import env
 
 
 class Server (paramiko.ServerInterface):
@@ -48,8 +52,8 @@ def _equalize(lists, fillval=None):
     return lists
 
 
-def serve_response(command, stdout, stderr="", status=0):
-    def inner(command, stdout, stderr, status):
+def serve_response(expected, stdout, stderr="", status=0):
+    def inner(expected, stdout, stderr, status):
         # Set up socket on high numbered port
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -74,9 +78,17 @@ def serve_response(command, stdout, stderr="", status=0):
             server.event.wait(10)
             # Perform actual interaction logic
             if server.command:
-                if command == server.command:
-                    stdout, stderr = _equalize((stdout, stderr))
+                # Handle sudo
+                prefix = _sudo_prefix(None)
+                regex = r'^(%s)?(.*)$' % (re.escape(prefix.rstrip()) + ' +')
+                result = re.findall(regex, server.command)[0]
+                sudo_prompt, server.command = result
+                if server.command == expected:
+                    if sudo_prompt:
+                       chan.send(env.sudo_prompt)
+                       chan.recv(65535)
                     # Actual output loop
+                    stdout, stderr = _equalize((stdout, stderr))
                     for out, err in zip(stdout, stderr):
                         if out is not None:
                             chan.send(out)
@@ -85,7 +97,7 @@ def serve_response(command, stdout, stderr="", status=0):
                     chan.send_exit_status(status)
                 else:
                     chan.send("Sorry, I don't recognize that command.\n")
-                    chan.send("Expected '%s', got '%s'" % (command,
+                    chan.send("Expected '%s', got '%s'" % (expected,
                         server.command))
                     chan.send_exit_status(0)
 
@@ -95,7 +107,7 @@ def serve_response(command, stdout, stderr="", status=0):
             t.close()
             raise e
 
-    thread = threading.Thread(None, inner, "server", (command, stdout, stderr,
+    thread = threading.Thread(None, inner, "server", (expected, stdout, stderr,
         status))
     thread.setDaemon(True)
     thread.start()
