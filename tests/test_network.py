@@ -17,7 +17,7 @@ import fabric.network # So I can call patch_object correctly. Sigh.
 from fabric.state import env, _get_system_username, output as state_output
 from fabric.operations import run
 
-from utils import mock_streams
+from utils import mock_streams, response
 from server import serve_response
 
 
@@ -202,9 +202,7 @@ tests"""
     prefix = "[%s] out: " % host_string
     expected = prefix + ('\n' + prefix).join(output_string.split('\n'))
     # Create, tie off thread
-    with settings(hide('running'), host_string=host_string,
-        disable_known_hosts=True):
-        serve_response(cmd, output_string)
+    with settings(hide('running'), response(cmd, output_string)):
         result = run(cmd, shell=False)
         # Test equivalence of expected, received output
         eq_(expected, sys.stdout.getvalue())
