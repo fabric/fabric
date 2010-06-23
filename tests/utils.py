@@ -50,9 +50,14 @@ def response(command, stdout, stderr="", status=0, port=2200):
     Convenience callback to server.serve_response().
 
     In addition to calling serve_response(), also sets host string
-    appropriately and disables known_hosts.
+    appropriately, sets nonempty password (just so *a* password is sent in for
+    any sudo prompts) and disables known_hosts.
     """
-    with settings(host_string='localhost:%s' % port, disable_known_hosts=True):
+    with settings(
+        host_string='localhost:%s' % port,
+        disable_known_hosts=True,
+        password='anything'
+    ):
         thread = serve_response(command, stdout, stderr, status, port)
         yield
         thread.join()

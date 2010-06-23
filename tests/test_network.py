@@ -215,6 +215,6 @@ def test_sudo_prompt_kills_capturing():
     Sudo prompts shouldn't screw up output capturing
     """
     cmd = "ls"
-    output = "lol output"
-    with settings(response(cmd, output), password='foo'):
+    output = "some output"
+    with settings(response(cmd, output)):
         eq_(sudo(cmd, shell=False), output)
