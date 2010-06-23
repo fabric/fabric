@@ -9,14 +9,16 @@ from nose.tools import eq_, with_setup
 from fudge import Fake, clear_calls, clear_expectations, patch_object, verify, \
     with_patched_object, patched_context
 
-from fabric.context_managers import settings
+from fabric.context_managers import settings, hide
 from fabric.network import (HostConnectionCache, join_host_strings, normalize,
     denormalize)
 from fabric.io import output_loop
 import fabric.network # So I can call patch_object correctly. Sigh.
 from fabric.state import env, _get_system_username, output as state_output
+from fabric.operations import run
 
 from utils import mock_streams
+from server import serve_response
 
 
 #
@@ -172,36 +174,13 @@ def test_prompts_for_password_without_good_authentication():
                 clear_expectations()
 
 
-class FakeChannel(object):
-    """
-    Does what it says on the tin. Fakes a paramiko.Channel object.
-
-    Currently only fakes what is necessary for the following test and is not a
-    full drop-in replacement.
-    """
-    def __init__(self, stdout_text, stderr_text=""):
-        self.stdout = stdout_text
-        self.stderr = stderr_text
-
-    def _recv(self, which, num_bytes):
-        obj = getattr(self, which)
-        chunk = obj[:num_bytes]
-        setattr(self, which, obj[num_bytes:])
-        return chunk
-
-    def recv(self, num_bytes):
-        return self._recv('stdout', num_bytes)
-
-    def recv_stderr(self, num_bytes):
-        return self._recv('stderr', num_bytes)
-
-
 @mock_streams('stdout')
 def test_trailing_newline_line_drop():
     """
     Trailing newlines shouldn't cause last line to be dropped.
     """
     # Multiline output with trailing newline
+    cmd = "ls"
     output_string = """AUTHORS
 FAQ
 Fabric.egg-info
@@ -218,18 +197,18 @@ requirements.txt
 setup.py
 tests"""
     # Setup for calling output_loop
-    capture = []
-    prefix = "[localhost] out: "
-    # TODO: fix below line, duplicates inner workings of output_loop
+    host_string = 'localhost:2200'
+    # TODO: fix below lines, duplicates inner workings of tested code
+    prefix = "[%s] out: " % host_string
     expected = prefix + ('\n' + prefix).join(output_string.split('\n'))
     # Create, tie off thread
-    with settings(host_string='localhost'):
-        thread = output_loop(FakeChannel(output_string), which='recv',
-            capture=capture)
-        thread.join()
+    with settings(hide('running'), host_string=host_string,
+        disable_known_hosts=True):
+        serve_response(cmd, output_string)
+        result = run(cmd, shell=False)
         # Test equivalence of expected, received output
         eq_(expected, sys.stdout.getvalue())
         # Also test that the captured value matches, too.
         # TODO: this also duplicates real code, this time near the end of
         # _run_command()
-        eq_(output_string, ''.join(capture).strip())
+        eq_(output_string, result)

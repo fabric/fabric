@@ -23,7 +23,8 @@ def test(args=None):
     """
     if args is None:
         args = ""
-    print(local('nosetests -sv --with-doctest %s' % args, capture=False))
+    local('nosetests -sv --with-doctest --nologcapture %s' % args,
+        capture=False)
 
 
 def build_docs(clean='no', browse='no'):
