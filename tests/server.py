@@ -38,6 +38,16 @@ class Server (paramiko.ServerInterface):
         return 'password,publickey'
 
 
+def _equalize(lists, fillval=None):
+    lists = map(list, lists)
+    upper = max(len(x) for x in lists)
+    for lst in lists:
+        diff = upper - len(lst)
+        if diff:
+            lst.extend([fillval] * diff)
+    return lists
+
+
 def serve_response(command, stdout, stderr="", status=0):
     def inner(command, stdout, stderr, status):
         # Set up socket on high numbered port
@@ -65,15 +75,7 @@ def serve_response(command, stdout, stderr="", status=0):
             # Perform actual interaction logic
             if server.command:
                 if command == server.command:
-                    # No izip_longest in 2.5 :(
-                    stdout = list(stdout)
-                    stderr = list(stderr)
-                    stdout_gt = len(stdout) - len(stderr)
-                    stderr_gt = len(stderr) - len(stdout)
-                    if stdout_gt:
-                        stderr.extend([None] * stdout_gt)
-                    elif stderr_gt:
-                        stdout.extend([None] * stderr_gt)
+                    stdout, stderr = _equalize((stdout, stderr))
                     # Actual output loop
                     for out, err in zip(stdout, stderr):
                         if out is not None:
