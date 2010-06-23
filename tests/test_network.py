@@ -209,6 +209,4 @@ tests"""
         # Test equivalence of expected, received output
         eq_(expected, sys.stdout.getvalue())
         # Also test that the captured value matches, too.
-        # TODO: this also duplicates real code, this time near the end of
-        # _run_command()
         eq_(output_string, result)

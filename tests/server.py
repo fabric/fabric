@@ -98,7 +98,3 @@ def serve_response(command, stdout, stderr="", status=0):
     thread.setDaemon(True)
     thread.start()
     return thread
-
-
-if __name__ == '__main__':
-    serve_response('foo', 'bar')
