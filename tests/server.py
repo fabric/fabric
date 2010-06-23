@@ -85,6 +85,8 @@ def serve_response(expected, stdout, stderr="", status=0, port=2200):
                     if sudo_prompt:
                        channel.send(env.sudo_prompt)
                        channel.recv(65535)
+                       # Spit back newline to fake the echo of user's newline
+                       channel.send('\n')
                     # Send command output, exit status
                     stdout, stderr = _equalize((stdout, stderr))
                     for out, err in zip(stdout, stderr):
