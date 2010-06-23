@@ -100,12 +100,14 @@ def serve_response(expected, stdout, stderr="", status=0, port=2200):
                     channel.send("Expected '%s', got '%s'" % (expected,
                         server.command))
                     channel.send_exit_status(0)
-
-            channel.close()
-
         except Exception, e:
-            transport.close()
+            print e
             raise e
+
+        finally:
+            channel.close()
+            transport.close()
+            sock.close()
 
     thread = threading.Thread(None, inner, "server", (expected, stdout, stderr,
         status, port))

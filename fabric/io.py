@@ -73,7 +73,7 @@ def output_loop(chan, which, capture):
                     # backwards compatible with Fabric 0.9.x behavior; the user
                     # will still see the prompt on their screen (no way to avoid
                     # this) but at least it won't clutter up the captured text.
-                    capture = capture[:len(env.sudo_prompt)]
+                    del capture[-1*len(env.sudo_prompt):]
                     # If no saved password exists or the one we just tried was
                     # bad, prompt the user again.
                     if (not password) or reprompt:
