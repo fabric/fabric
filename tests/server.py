@@ -1,3 +1,4 @@
+from __future__ import with_statement
 import itertools
 import os
 import re
@@ -9,6 +10,10 @@ import paramiko
 
 from fabric.operations import _sudo_prefix
 from fabric.api import env
+
+def _log(txt):
+    with open('/tmp/fablog', 'a') as fd:
+        fd.write(txt + '\n')
 
 
 class Server (paramiko.ServerInterface):
@@ -70,42 +75,58 @@ def serve_response(expected, stdout, stderr="", status=0, port=2200):
             )))
             server = Server()
             transport.start_server(server=server)
-            channel = transport.accept(20)
-            server.event.wait(10)
 
-            # SSH! (responding to exec_command())
-            if server.command:
-                # Separate out sudo prompt
-                prefix = _sudo_prefix(None)
-                regex = r'^(%s)?(.*)$' % (re.escape(prefix.rstrip()) + ' +')
-                result = re.findall(regex, server.command)[0]
-                sudo_prompt, server.command = result
-                if server.command == expected:
-                    # Send prompt, wait for response, if sudo detected
-                    if sudo_prompt:
-                       channel.send(env.sudo_prompt)
-                       channel.recv(65535)
-                       # Spit back newline to fake the echo of user's newline
-                       channel.send('\n')
-                    # Send command output, exit status
-                    stdout, stderr = _equalize((stdout, stderr))
-                    for out, err in zip(stdout, stderr):
-                        if out is not None:
-                            channel.send(out)
-                        if err is not None:
-                            channel.send_stderr(err)
-                    channel.send_exit_status(status)
-                else:
-                    channel.send("Sorry, I don't recognize that command.\n")
-                    channel.send("Expected '%s', got '%s'" % (expected,
-                        server.command))
-                    channel.send_exit_status(0)
-        except Exception, e:
-            print e
-            raise e
+            # Looping!
+            while transport.is_active():
+                _log('top of transport')
+                # Wait 3 seconds for a new channel to be opened by the client,
+                # before terminating. Should be long enough to handle running a
+                # number of tests in between ones that use this server, but not
+                # so long that we have to wait forever once everything is done.
+                channel = transport.accept(3)
+                if not channel:
+                    _log('no channel')
+                    break
+                _log('channel')
+                server.event.wait(10)
+
+                # SSH! (responding to exec_command())
+                if server.command:
+                    _log('got cmd: %s' % server.command)
+                    # Separate out sudo prompt
+                    prefix = re.escape(_sudo_prefix(None).rstrip()) + ' +'
+                    regex = r'^(%s)?(.*)$' % prefix
+                    result = re.findall(regex, server.command)[0]
+                    sudo_prompt, server.command = result
+                    # Respond to known commands
+                    if server.command == expected:
+                        # Send prompt, wait for response, if sudo detected
+                        if sudo_prompt:
+                           channel.send(env.sudo_prompt)
+                           channel.recv(65535)
+                           # Spit back newline to fake the echo of user's
+                           # newline
+                           channel.send('\n')
+                        # Send command output, exit status
+                        stdout, stderr = _equalize((stdout, stderr))
+                        for out, err in zip(stdout, stderr):
+                            if out is not None:
+                                channel.send(out)
+                            if err is not None:
+                                channel.send_stderr(err)
+                        channel.send_exit_status(status)
+                    # Error out if command unknown
+                    else:
+                        channel.send("Sorry, I don't recognize that command.\n")
+                        channel.send("Expected '%s', got '%s'" % (expected,
+                            server.command))
+                        channel.send_exit_status(1)
+                    # Close up shop
+                    _log('closing channel')
+                    channel.close()
 
         finally:
-            channel.close()
+            _log('finishing')
             transport.close()
             sock.close()
 

@@ -22,6 +22,17 @@ from server import serve_response
 
 
 #
+# Setup/teardown
+#
+
+def setup():
+    port = 2200
+    env.host_string = 'localhost:%s' % port
+    env.disable_known_hosts = True
+    env.password = 'anything'
+
+
+#
 # Subroutines, e.g. host string normalization
 #
 
