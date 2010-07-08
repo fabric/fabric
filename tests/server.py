@@ -11,10 +11,6 @@ import paramiko
 from fabric.operations import _sudo_prefix
 from fabric.api import env
 
-def _log(txt):
-    with open('/tmp/fablog', 'a') as fd:
-        fd.write(txt + '\n')
-
 
 class Server (paramiko.ServerInterface):
     def __init__(self):
@@ -77,22 +73,19 @@ def serve_response(expected, stdout, stderr="", status=0, port=2200):
             transport.start_server(server=server)
 
             # Looping!
+            waiting_for_command = False
             while transport.is_active():
-                _log('top of transport')
-                # Wait 3 seconds for a new channel to be opened by the client,
-                # before terminating. Should be long enough to handle running a
-                # number of tests in between ones that use this server, but not
-                # so long that we have to wait forever once everything is done.
-                channel = transport.accept(3)
-                if not channel:
-                    _log('no channel')
-                    break
-                _log('channel')
+                # Set timeout to long enough to deal with network hiccups but
+                # no so long that final wrapup takes forever.
+                # Also, don't overwrite channel if we're waiting for a command.
+                if not waiting_for_command:
+                    channel = transport.accept(1)
+                    if not channel:
+                        continue
                 server.event.wait(10)
 
                 # SSH! (responding to exec_command())
                 if server.command:
-                    _log('got cmd: %s' % server.command)
                     # Separate out sudo prompt
                     prefix = re.escape(_sudo_prefix(None).rstrip()) + ' +'
                     regex = r'^(%s)?(.*)$' % prefix
@@ -122,11 +115,16 @@ def serve_response(expected, stdout, stderr="", status=0, port=2200):
                             server.command))
                         channel.send_exit_status(1)
                     # Close up shop
-                    _log('closing channel')
+                    server.command = None
+                    waiting_for_command = False
                     channel.close()
+                else:
+                    # If we're here, server.command was False or None, but we
+                    # do have a valid Channel object. Thus we're waiting for
+                    # the command to show up.
+                    waiting_for_command = True
 
         finally:
-            _log('finishing')
             transport.close()
             sock.close()
 
