@@ -17,8 +17,7 @@ import fabric.network # So I can call patch_object correctly. Sigh.
 from fabric.state import env, _get_system_username, output as state_output
 from fabric.operations import run, sudo
 
-from utils import mock_streams, response
-from server import serve_response
+from utils import mock_streams#, response
 
 
 #
@@ -191,7 +190,7 @@ def test_trailing_newline_line_drop():
     Trailing newlines shouldn't cause last line to be dropped.
     """
     # Multiline output with trailing newline
-    cmd = "ls"
+    cmd = "ls /"
     output_string = """AUTHORS
 FAQ
 Fabric.egg-info
@@ -207,13 +206,11 @@ fabric
 requirements.txt
 setup.py
 tests"""
-    # Setup for calling output_loop
-    host_string = 'localhost:2200'
     # TODO: fix below lines, duplicates inner workings of tested code
-    prefix = "[%s] out: " % host_string
+    prefix = "[%s] out: " % env.host_string
     expected = prefix + ('\n' + prefix).join(output_string.split('\n'))
     # Create, tie off thread
-    with settings(hide('running'), response(cmd, output_string)):
+    with hide('running'):
         result = run(cmd, shell=False)
         # Test equivalence of expected, received output
         eq_(expected, sys.stdout.getvalue())
@@ -225,7 +222,6 @@ def test_sudo_prompt_kills_capturing():
     """
     Sudo prompts shouldn't screw up output capturing
     """
-    cmd = "ls"
+    cmd = "ls /simple"
     output = "some output"
-    with settings(response(cmd, output)):
-        eq_(sudo(cmd, shell=False), output)
+    eq_(sudo(cmd, shell=False), output)

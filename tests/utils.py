@@ -6,8 +6,6 @@ import sys
 
 from fabric.context_managers import settings
 
-from server import serve_response
-
 
 def mock_streams(*which):
     """
@@ -42,22 +40,3 @@ def mock_streams(*which):
             return result
         return inner_wrapper
     return mocked_streams_decorator
-
-
-@contextmanager
-def response(command, stdout, stderr="", status=0, port=2200):
-    """
-    Convenience callback to server.serve_response().
-
-    In addition to calling serve_response(), also sets host string
-    appropriately, sets nonempty password (just so *a* password is sent in for
-    any sudo prompts) and disables known_hosts.
-    """
-    with settings(
-        host_string='localhost:%s' % port,
-        disable_known_hosts=True,
-        password='anything'
-    ):
-        thread = serve_response(command, stdout, stderr, status, port)
-        yield
-        thread.join()

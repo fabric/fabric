@@ -5,6 +5,7 @@ import re
 import socket
 import sys
 import threading
+import types
 
 import paramiko
 
@@ -53,8 +54,9 @@ def _equalize(lists, fillval=None):
     return lists
 
 
-def serve_response(expected, stdout, stderr="", status=0, port=2200):
-    def inner(expected, stdout, stderr, status, port):
+def serve_responses(mapping, port):
+    all_done = threading.Event()
+    def inner(mapping, port):
         # Networking!
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -74,7 +76,7 @@ def serve_response(expected, stdout, stderr="", status=0, port=2200):
 
             # Looping!
             waiting_for_command = False
-            while transport.is_active():
+            while not all_done.isSet():
                 # Set timeout to long enough to deal with network hiccups but
                 # no so long that final wrapup takes forever.
                 # Also, don't overwrite channel if we're waiting for a command.
@@ -92,7 +94,21 @@ def serve_response(expected, stdout, stderr="", status=0, port=2200):
                     result = re.findall(regex, server.command)[0]
                     sudo_prompt, server.command = result
                     # Respond to known commands
-                    if server.command == expected:
+                    if server.command in mapping:
+                        # Parse out response info: (stdout, [stderr, [status]])
+                        result = mapping[server.command]
+                        stderr = ""
+                        status = 0
+                        if isinstance(result, types.StringTypes):
+                            stdout = result
+                        else:
+                            size = len(result)
+                            if size == 1:
+                                stdout = result[0]
+                            elif size == 2:
+                                stdout, stderr = result
+                            elif size == 3:
+                                stdout, stderr, status = result
                         # Send prompt, wait for response, if sudo detected
                         if sudo_prompt:
                            channel.send(env.sudo_prompt)
@@ -110,9 +126,7 @@ def serve_response(expected, stdout, stderr="", status=0, port=2200):
                         channel.send_exit_status(status)
                     # Error out if command unknown
                     else:
-                        channel.send("Sorry, I don't recognize that command.\n")
-                        channel.send("Expected '%s', got '%s'" % (expected,
-                            server.command))
+                        channel.send_stderr("Sorry, I don't recognize that command.\n")
                         channel.send_exit_status(1)
                     # Close up shop
                     server.command = None
@@ -128,8 +142,7 @@ def serve_response(expected, stdout, stderr="", status=0, port=2200):
             transport.close()
             sock.close()
 
-    thread = threading.Thread(None, inner, "server", (expected, stdout, stderr,
-        status, port))
+    thread = threading.Thread(None, inner, "server", (mapping, port))
     thread.setDaemon(True)
     thread.start()
-    return thread
+    return thread, all_done
