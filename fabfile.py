@@ -21,10 +21,9 @@ def test(args=None):
 
     Specify string argument ``args`` for additional args to ``nosetests``.
     """
-    if args is None:
-        args = ""
-    local('nosetests -sv --with-doctest --nologcapture %s' % args,
-        capture=False)
+    default_args = "-sv --with-doctest --nologcapture --with-color"
+    default_args += (" " + args) if args else ""
+    local('nosetests %s' % default_args, capture=False)
 
 
 def build_docs(clean='no', browse='no'):
