@@ -17,18 +17,8 @@ import fabric.network # So I can call patch_object correctly. Sigh.
 from fabric.state import env, _get_system_username, output as state_output
 from fabric.operations import run, sudo
 
-from utils import mock_streams#, response
+from utils import mock_streams
 from tests import responses
-
-#
-# Setup/teardown
-#
-
-def setup():
-    port = 2200
-    env.host_string = 'localhost:%s' % port
-    env.disable_known_hosts = True
-    env.password = 'anything'
 
 
 #
