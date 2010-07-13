@@ -81,7 +81,7 @@ def test_puts_with_user_output_on():
     """
     s = "string!"
     output.user = True
-    puts(s)
+    puts(s, show_prefix=False)
     eq_(sys.stdout.getvalue(), s + "\n")
 
 
