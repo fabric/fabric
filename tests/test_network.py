@@ -18,7 +18,7 @@ from fabric.state import env, _get_system_username, output as state_output
 from fabric.operations import run, sudo
 
 from utils import mock_streams#, response
-
+from tests import responses
 
 #
 # Setup/teardown
@@ -191,21 +191,7 @@ def test_trailing_newline_line_drop():
     """
     # Multiline output with trailing newline
     cmd = "ls /"
-    output_string = """AUTHORS
-FAQ
-Fabric.egg-info
-INSTALL
-LICENSE
-MANIFEST
-README
-build
-docs
-fabfile.py
-fabfile.pyc
-fabric
-requirements.txt
-setup.py
-tests"""
+    output_string = responses[cmd]
     # TODO: fix below lines, duplicates inner workings of tested code
     prefix = "[%s] out: " % env.host_string
     expected = prefix + ('\n' + prefix).join(output_string.split('\n'))
@@ -223,5 +209,5 @@ def test_sudo_prompt_kills_capturing():
     Sudo prompts shouldn't screw up output capturing
     """
     cmd = "ls /simple"
-    output = "some output"
-    eq_(sudo(cmd, shell=False), output)
+    with hide('everything'):
+        eq_(sudo(cmd, shell=False), responses[cmd])
