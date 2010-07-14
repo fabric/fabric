@@ -22,6 +22,32 @@ from fabric.network import needs_host
 from fabric.state import env, connections, output, win32, default_channel
 from fabric.utils import abort, indent, warn, puts
 
+# For terminal size logic below
+if not win32:
+    import fcntl
+    import termios
+    import struct
+
+
+def _pty_size():
+    """
+    Obtain (rows, cols) tuple for sizing a pty on the remote end.
+
+    Defaults to 80x24 (which is also the Paramiko default) but will detect
+    local (stdout-based) terminal window size on non-Windows platforms.
+    """
+    rows, cols = 24, 80
+    if not win32:
+        # We want two short unsigned integers (rows, cols)
+        fmt = 'HH'
+        # Create an empty (zeroed) buffer for ioctl to map onto. Yay for C!
+        buffer = struct.pack(fmt, 0, 0)
+        # Call TIOCGWINSZ to get window size of stdout, returns our filled buffer
+        result = fcntl.ioctl(sys.stdout.fileno(), termios.TIOCGWINSZ, buffer)
+        # Unpack buffer back into Python data types
+        rows, cols = struct.unpack(fmt, result)
+    return rows, cols
+
 
 def _handle_failure(message, exception=None):
     """
@@ -484,10 +510,11 @@ def _execute(channel, command, pty=True, combine_stderr=True,
     using_pty = True
     if not invoke_shell and (not pty or not env.always_use_pty):
         using_pty = False
+    # Request pty with size params (default to 80x24, obtain real parameters if
+    # on POSIX platform)
     if using_pty:
-        # Create pty if necessary (using Paramiko default options, which as of
-        # 1.7.4 is vt100 $TERM @ 80x24 characters)
-        channel.get_pty()
+        rows, cols = _pty_size()
+        channel.get_pty(width=cols, height=rows)
 
     # Kick off remote command
     if invoke_shell:
