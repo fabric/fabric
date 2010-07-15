@@ -74,6 +74,12 @@ development environment such as `Cygwin <http://cygwin.com>`_ or obtaining a
 precompiled Win32 PyCrypto package from `voidspace's Python modules page
 <http://www.voidspace.org.uk/python/modules.shtml#pycrypto>`_.
 
+.. note::
+    Some Windows users whose Python is 64-bit have found that the PyCrypto
+    dependency ``winrandom`` may not install properly, leading to ImportErrors.
+    In this scenario, you'll probably need to compile ``winrandom`` yourself
+    via e.g. MS Visual Studio.  See :issue:`194` for info.
+
 Development dependencies
 ------------------------
 
