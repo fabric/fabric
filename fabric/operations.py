@@ -43,9 +43,15 @@ def _pty_size():
         # Create an empty (zeroed) buffer for ioctl to map onto. Yay for C!
         buffer = struct.pack(fmt, 0, 0)
         # Call TIOCGWINSZ to get window size of stdout, returns our filled buffer
-        result = fcntl.ioctl(sys.stdout.fileno(), termios.TIOCGWINSZ, buffer)
-        # Unpack buffer back into Python data types
-        rows, cols = struct.unpack(fmt, result)
+        try:
+            result = fcntl.ioctl(sys.stdout.fileno(), termios.TIOCGWINSZ,
+                buffer)
+            # Unpack buffer back into Python data types
+            rows, cols = struct.unpack(fmt, result)
+        # Deal with e.g. sys.stdout being monkeypatched, such as in testing.
+        # Or termios not having a TIOCGWINSZ.
+        except AttributeError:
+            pass
     return rows, cols
 
 
