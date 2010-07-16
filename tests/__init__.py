@@ -2,6 +2,7 @@ from threading import Event
 
 from fabric.api import env
 from fabric.network import interpret_host_string
+from fabric.utils import daemon_thread
 
 from server import serve_responses
 
@@ -44,7 +45,9 @@ def setup():
     # value)
     env.use_pubkeys = Event()
     env.use_pubkeys.set()
-    thread, all_done = serve_responses(responses, users, port, env.use_pubkeys)
+    all_done = Event()
+    thread = daemon_thread('server', serve_responses,
+        responses, users, port, env.use_pubkeys, all_done)
 
 
 def teardown():

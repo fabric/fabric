@@ -5,6 +5,7 @@ or performing indenting on multiline output.
 
 import sys
 import textwrap
+import threading
 
 
 def abort(msg):
@@ -122,3 +123,10 @@ def fastprint(text, show_prefix=False, end="", flush=True):
     .. seealso:: `~fabric.utils.puts`
     """
     return puts(text=text, show_prefix=show_prefix, end=end, flush=flush)
+
+
+def daemon_thread(name, callable, *args, **kwargs):
+    thread = threading.Thread(None, callable, name, args, kwargs)
+    thread.setDaemon(True)
+    thread.start()
+    return thread

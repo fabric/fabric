@@ -20,7 +20,7 @@ from fabric.context_managers import settings, char_buffered
 from fabric.io import output_loop, input_loop
 from fabric.network import needs_host
 from fabric.state import env, connections, output, win32, default_channel
-from fabric.utils import abort, indent, warn, puts
+from fabric.utils import abort, indent, warn, puts, daemon_thread
 
 # For terminal size logic below
 if not win32:
@@ -537,9 +537,10 @@ def _execute(channel, command, pty=True, combine_stderr=True,
     if invoke_shell:
         stdout = stderr = None
 
-    out_thread = output_loop(channel, "recv", stdout)
-    err_thread = output_loop(channel, "recv_stderr", stderr)
-    in_thread = input_loop(channel, using_pty)
+    out_thread = daemon_thread('out', output_loop, channel, "recv", stdout)
+    err_thread = daemon_thread('err', output_loop, channel, "recv_stderr",
+        stderr)
+    in_thread = daemon_thread('in', input_loop, channel, using_pty)
 
     # Obtain exit code of remote program now that we're done.
     status = channel.recv_exit_status()
