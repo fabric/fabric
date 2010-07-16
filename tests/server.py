@@ -7,20 +7,22 @@ import sys
 import threading
 import types
 
-import paramiko
+import paramiko as ssh
 
 from fabric.operations import _sudo_prefix
 from fabric.api import env
 
 
-class Server (paramiko.ServerInterface):
-    def __init__(self):
+class Server(ssh.ServerInterface):
+    def __init__(self, user_mapping, pubkeys):
         self.event = threading.Event()
+        self.user_mapping = user_mapping
+        self.pubkeys = pubkeys
 
     def check_channel_request(self, kind, chanid):
         if kind == 'session':
-            return paramiko.OPEN_SUCCEEDED
-        return paramiko.OPEN_FAILED_ADMINISTRATIVELY_PROHIBITED
+            return ssh.OPEN_SUCCEEDED
+        return ssh.OPEN_FAILED_ADMINISTRATIVELY_PROHIBITED
 
     def check_channel_exec_request(self, channel, command):
         self.command = command
@@ -35,10 +37,13 @@ class Server (paramiko.ServerInterface):
         return True
 
     def check_auth_password(self, username, password):
-        return paramiko.AUTH_SUCCESSFUL
+        self.username = username
+        passed = self.user_mapping[username] == password
+        return ssh.AUTH_SUCCESSFUL if passed else ssh.AUTH_FAILED
 
     def check_auth_publickey(self, username, key):
-        return paramiko.AUTH_SUCCESSFUL
+        self.username = username
+        return ssh.AUTH_SUCCESSFUL if self.pubkeys.isSet() else ssh.AUTH_FAILED 
 
     def get_allowed_auths(self, username):
         return 'password,publickey'
@@ -54,9 +59,9 @@ def _equalize(lists, fillval=None):
     return lists
 
 
-def serve_responses(mapping, port):
+def serve_responses(mapping, user_mapping, port, pubkeys):
     all_done = threading.Event()
-    def inner(mapping, port):
+    def inner(mapping, user_mapping, port, pubkeys):
         # Networking!
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -66,12 +71,12 @@ def serve_responses(mapping, port):
 
         try:
             # More networking!
-            transport = paramiko.Transport(client)
-            transport.add_server_key(paramiko.RSAKey(filename=os.path.join(
+            transport = ssh.Transport(client)
+            transport.add_server_key(ssh.RSAKey(filename=os.path.join(
                 os.path.dirname(__file__),
                 'server.key'
             )))
-            server = Server()
+            server = Server(user_mapping, pubkeys)
             transport.start_server(server=server)
 
             # Looping!
@@ -111,11 +116,23 @@ def serve_responses(mapping, port):
                                 stdout, stderr, status = result
                         # Send prompt, wait for response, if sudo detected
                         if sudo_prompt:
-                           channel.send(env.sudo_prompt)
-                           channel.recv(65535)
-                           # Spit back newline to fake the echo of user's
-                           # newline
-                           channel.send('\n')
+                            # Give user 3 tries, as is typical
+                            passed = False
+                            for x in range(3):
+                                channel.send(env.sudo_prompt)
+                                password = channel.recv(65535).strip()
+                                # Spit back newline to fake the echo of user's
+                                # newline
+                                channel.send('\n')
+                                # Test password
+                                if password == user_mapping[server.username]:
+                                    passed = True
+                                    break
+                                # If here, password was bad.
+                                channel.send("Sorry, try again.\n")
+                            if not passed:
+                                channel.send("sudo: 3 incorrect password attempts\n")
+                                break # out of outer loop
                         # Send command output, exit status
                         stdout, stderr = _equalize((stdout, stderr))
                         for out, err in zip(stdout, stderr):
@@ -142,7 +159,8 @@ def serve_responses(mapping, port):
             transport.close()
             sock.close()
 
-    thread = threading.Thread(None, inner, "server", (mapping, port))
+    thread = threading.Thread(None, inner, "server", (mapping, user_mapping,
+        port, pubkeys))
     thread.setDaemon(True)
     thread.start()
     return thread, all_done
