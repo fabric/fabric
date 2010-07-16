@@ -1,7 +1,10 @@
 from threading import Event
 
 from fabric.api import env
+from fabric.network import interpret_host_string
+
 from server import serve_responses
+
 
 thread, all_done = None, None
 
@@ -33,7 +36,7 @@ users = {
 def setup():
     global thread, all_done
     port = 2200
-    env.host_string = 'jforcier@localhost:%s' % port 
+    interpret_host_string('jforcier@localhost:%s' % port)
     env.disable_known_hosts = True
     env.password = users['jforcier']
     # Threading event added to env (so that the tests, within our thread, may

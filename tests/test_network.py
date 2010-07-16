@@ -201,3 +201,21 @@ def test_sudo_prompt_kills_capturing():
     cmd = "ls /simple"
     with hide('everything'):
         eq_(sudo(cmd, shell=False), responses[cmd])
+
+
+def _to_user(user):
+    return join_host_strings(user, env.host, env.port)
+
+
+def test_password_memory_on_user_switch():
+    """
+    Switching users mid-session should not screw up password memory
+    """
+    user1 = 'root'
+    user2 = 'jforcier'
+    with settings(host_string=_to_user(user1)):
+        print "first! %s" % env.host_string
+        run("ls /simple")
+    with settings(host_string=_to_user(user1)):
+        print "second!"
+        run("ls /simple")

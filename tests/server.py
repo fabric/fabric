@@ -1,5 +1,6 @@
 from __future__ import with_statement
 import itertools
+import logging
 import os
 import re
 import socket
@@ -11,6 +12,14 @@ import paramiko as ssh
 
 from fabric.operations import _sudo_prefix
 from fabric.api import env
+
+
+logging.basicConfig(
+    filename='/tmp/test_server.log',
+    level=logging.DEBUG,
+    datefmt='%H:%M:%S',
+    format='[%(asctime)s] %(levelname)-8s %(message)s'
+)
 
 
 class Server(ssh.ServerInterface):
@@ -25,6 +34,7 @@ class Server(ssh.ServerInterface):
         return ssh.OPEN_FAILED_ADMINISTRATIVELY_PROHIBITED
 
     def check_channel_exec_request(self, channel, command):
+        logging.debug("Got exec request w/ command: '%s'" % command)
         self.command = command
         self.event.set()
         return True
@@ -37,11 +47,13 @@ class Server(ssh.ServerInterface):
         return True
 
     def check_auth_password(self, username, password):
+        logging.debug("Password auth: %s:%s" % (username, password))
         self.username = username
         passed = self.user_mapping[username] == password
         return ssh.AUTH_SUCCESSFUL if passed else ssh.AUTH_FAILED
 
     def check_auth_publickey(self, username, key):
+        logging.debug("Pubkey auth: %s" % username)
         self.username = username
         return ssh.AUTH_SUCCESSFUL if self.pubkeys.isSet() else ssh.AUTH_FAILED 
 
@@ -81,18 +93,26 @@ def serve_responses(mapping, user_mapping, port, pubkeys):
 
             # Looping!
             waiting_for_command = False
+            logging.debug("Entering main loop")
             while not all_done.isSet():
+                logging.debug("Top of loop")
                 # Set timeout to long enough to deal with network hiccups but
                 # no so long that final wrapup takes forever.
                 # Also, don't overwrite channel if we're waiting for a command.
                 if not waiting_for_command:
+                    logging.debug("Waiting for a new client to connect")
                     channel = transport.accept(1)
                     if not channel:
+                        logging.debug("No client found")
                         continue
+                    else:
+                        logging.debug("Client channel obtained")
                 server.event.wait(10)
 
                 # SSH! (responding to exec_command())
                 if server.command:
+                    logging.debug("In loop, see server command '%s'" %
+                            server.command)
                     # Separate out sudo prompt
                     prefix = re.escape(_sudo_prefix(None).rstrip()) + ' +'
                     regex = r'^(%s)?(.*)$' % prefix
@@ -156,8 +176,10 @@ def serve_responses(mapping, user_mapping, port, pubkeys):
                     waiting_for_command = True
 
         finally:
+            logging.debug("In finally block")
             transport.close()
             sock.close()
+            logging.debug("Closed socket, transport")
 
     thread = threading.Thread(None, inner, "server", (mapping, user_mapping,
         port, pubkeys))
