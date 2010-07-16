@@ -13,7 +13,9 @@ Feature additions
 Bugfixes
 ========
 
-* N/A
+* :issue:`123`: Removed Cygwin from the "are we on Windows" test; now, only
+  Python installs whose ``sys.platform`` says ``'win32'`` will use Windows-only
+  code paths (e.g. importing of ``pywin32``).
 
 
 Documentation updates
@@ -21,3 +23,5 @@ Documentation updates
 
 * :issue:`173`: Simple but rather embarrassing typo fix in README. Thanks to
   Ted Nyman for the catch.
+* :issue:`194`: Added a note to :doc:`the install docs </installation>` about a
+  possible edge case some Windows 64-bit Python users may encounter.
