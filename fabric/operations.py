@@ -560,8 +560,9 @@ def _execute(channel, command, pty=True, combine_stderr=True,
     channel.close()
 
     # Return stdout, stderr and exit status
-    stdout = ''.join(stdout).strip()
-    stderr = ''.join(stderr).strip()
+    if not invoke_shell:
+        stdout = ''.join(stdout).strip()
+        stderr = ''.join(stderr).strip()
     return stdout, stderr, status
 
 
