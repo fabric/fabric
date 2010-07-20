@@ -213,9 +213,10 @@ def test_password_memory_on_user_switch():
     """
     user1 = 'root'
     user2 = 'jforcier'
-    with settings(host_string=_to_user(user1)):
-        print "first! %s" % env.host_string
-        run("ls /simple")
-    with settings(host_string=_to_user(user1)):
-        print "second!"
-        run("ls /simple")
+    with settings(warn_only=True):
+        with settings(host_string=_to_user(user1)):
+            print "first! %s" % env.host_string
+            run("ls /simple")
+        with settings(host_string=_to_user(user1)):
+            print "second!"
+            run("ls /simple")

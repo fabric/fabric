@@ -7,7 +7,7 @@ from fabric.utils import daemon_thread
 from server import serve_responses
 
 
-thread, all_done = None, None
+server = None
 
 responses = {
     "ls /simple": "some output",
@@ -35,7 +35,7 @@ users = {
 
 
 def setup():
-    global thread, all_done
+    global server
     port = 2200
     interpret_host_string('jforcier@localhost:%s' % port)
     env.disable_known_hosts = True
@@ -46,11 +46,9 @@ def setup():
     env.use_pubkeys = Event()
     env.use_pubkeys.set()
     all_done = Event()
-    thread = daemon_thread('server', serve_responses,
-        responses, users, port, env.use_pubkeys, all_done)
-
+    server = serve_responses(responses, users, port, env.use_pubkeys)
+    daemon_thread('server', server.serve_forever)
 
 def teardown():
-    global thread, all_done
-    all_done.set()
-    thread.join()
+    global server
+    server.shutdown()
