@@ -30,16 +30,16 @@ tests"""
 
 users = {
     'root': 'root',
-    'jforcier': 'jforcier'
+    env.local_user: 'password'
 }
 
 
 def setup():
     global server
     port = 2200
-    interpret_host_string('jforcier@localhost:%s' % port)
+    interpret_host_string('%s@localhost:%s' % (env.local_user, port))
     env.disable_known_hosts = True
-    env.password = users['jforcier']
+    env.password = users[env.local_user]
     # Threading event added to env (so that the tests, within our thread, may
     # manipulate it) and passed into the server thread (so it can also see the
     # value)
