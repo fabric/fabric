@@ -18,7 +18,7 @@ from fabric.state import env, _get_system_username, output as state_output
 from fabric.operations import run, sudo
 
 from utils import mock_streams
-from tests import responses
+from tests import responses, users
 
 
 #
@@ -212,11 +212,10 @@ def test_password_memory_on_user_switch():
     Switching users mid-session should not screw up password memory
     """
     user1 = 'root'
-    user2 = 'jforcier'
-    with settings(warn_only=True):
-        with settings(host_string=_to_user(user1)):
-            print "first! %s" % env.host_string
-            run("ls /simple")
-        with settings(host_string=_to_user(user1)):
-            print "second!"
-            run("ls /simple")
+    user2 = env.local_user
+    env.use_pubkeys.clear()
+    with settings(host_string=_to_user(user1), password=users[user1]):
+        run("ls /simple", shell=False)
+    with settings(host_string=_to_user(user2), password=users[user2]):
+        sudo("ls /simple", shell=False)
+    env.use_pubkeys.set()
