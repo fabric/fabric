@@ -214,8 +214,9 @@ def test_password_memory_on_user_switch():
     user1 = 'root'
     user2 = env.local_user
     env.use_pubkeys.clear()
-    with settings(host_string=_to_user(user1), password=users[user1]):
-        run("ls /simple", shell=False)
-    with settings(host_string=_to_user(user2), password=users[user2]):
-        sudo("ls /simple", shell=False)
+    with settings(password=None):
+        with settings(host_string=_to_user(user1)):
+            run("ls /simple", shell=False)
+        with settings(host_string=_to_user(user2)):
+            sudo("ls /simple", shell=False)
     env.use_pubkeys.set()
