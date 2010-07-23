@@ -109,16 +109,16 @@ def serve_responses(mapping, user_mapping, port, pubkeys):
             )))
             server = ParamikoServer(user_mapping, pubkeys)
             transport.start_server(server=server)
-            self.server = server
+            self.ssh_server = server
             self.transport = transport
 
         def split_sudo_prompt(self):
             prefix = re.escape(_sudo_prefix(None).rstrip()) + ' +'
-            result = re.findall(r'^(%s)?(.*)$' % prefix, self.server.command)[0]
-            self.sudo_prompt, self.server.command = result
+            result = re.findall(r'^(%s)?(.*)$' % prefix, self.command)[0]
+            self.sudo_prompt, self.command = result
 
         def response(self):
-            result = mapping[self.server.command]
+            result = mapping[self.command]
             stderr = ""
             status = 0
             if isinstance(result, types.StringTypes):
@@ -144,7 +144,7 @@ def serve_responses(mapping, user_mapping, port, pubkeys):
                 # newline
                 self.channel.send('\n')
                 # Test password
-                if password == user_mapping[self.server.username]:
+                if password == user_mapping[self.ssh_server.username]:
                     passed = True
                     break
                 # If here, password was bad.
@@ -163,17 +163,20 @@ def serve_responses(mapping, user_mapping, port, pubkeys):
             try:
                 self.init_transport()
                 self.waiting_for_command = False
-                while True:
+                while not self.server.all_done.isSet():
+                    logging.debug("thread %s, all_done: %s: all_done not set" %
+                            (id(self), id(self.server.all_done)))
                     # Don't overwrite channel if we're waiting for a command.
                     if not self.waiting_for_command:
                         self.channel = self.transport.accept(1)
                         if not self.channel:
                             continue
-                    self.server.event.wait(10)
-                    if self.server.command:
-                        # Set self.sudo_prompt, update self.server.command
+                    self.ssh_server.event.wait(10)
+                    if self.ssh_server.command:
+                        self.command = self.ssh_server.command
+                        # Set self.sudo_prompt, update self.command
                         self.split_sudo_prompt()
-                        if self.server.command in mapping:
+                        if self.command in mapping:
                             self.stdout, self.stderr, self.status = \
                                 self.response()
                             if self.sudo_prompt and not self.sudo_password():
@@ -184,15 +187,18 @@ def serve_responses(mapping, user_mapping, port, pubkeys):
                             channel.send_stderr("Sorry, I don't recognize that command.\n")
                             channel.send_exit_status(1)
                         # Close up shop
-                        self.server.command = None
+                        self.command = self.ssh_server.command = None
                         self.waiting_for_command = False
                         self.channel.close()
                     else:
-                        # If we're here, self.server.command was False or None,
+                        # If we're here, self.command was False or None,
                         # but we do have a valid Channel object. Thus we're
                         # waiting for the command to show up.
                         self.waiting_for_command = True
+
             finally:
+                logging.debug("Trying to close Paramiko transport")
                 self.transport.close()
+                logging.debug("Closed Paramiko transport")
 
     return SSHServer(('localhost', port), SSHHandler)

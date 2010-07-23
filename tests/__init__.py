@@ -1,4 +1,5 @@
 from threading import Event
+import logging
 
 from fabric.api import env
 from fabric.network import interpret_host_string
@@ -47,8 +48,14 @@ def setup():
     env.use_pubkeys.set()
     all_done = Event()
     server = serve_responses(responses, users, port, env.use_pubkeys)
+    server.all_done = Event()
+    logging.debug("setup: all_done: %s" % id(server.all_done))
     daemon_thread('server', server.serve_forever)
 
 def teardown():
     global server
+    logging.debug("teardown: all_done: %s" % id(server.all_done))
+    server.all_done.set()
+    import time
+    time.sleep(1)
     server.shutdown()
