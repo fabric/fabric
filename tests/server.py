@@ -84,9 +84,9 @@ class ParamikoServer(ssh.ServerInterface):
 
 class SSHServer(ThreadingMixIn, TCPServer):
     """
-    Just a silly empty subclass to make a threading TCP server.
+    Threading TCPServer subclass.
     """
-    pass
+    allow_reuse_address = True
 
 
 def serve_responses(mapping, user_mapping, port, pubkeys):
