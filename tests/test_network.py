@@ -207,7 +207,10 @@ def _to_user(user):
     return join_host_strings(user, env.host, env.port)
 
 def _response(response):
-    p_f_p = Fake('prompt_for_password', callable=True).returns(response)
+    p_f_p = (
+        Fake('prompt_for_password', callable=True)
+        .next_call().returns(response)
+    )
     return patched_context(fabric.network, 'prompt_for_password', p_f_p)
 
 def test_password_memory_on_user_switch():
@@ -220,10 +223,22 @@ def test_password_memory_on_user_switch():
     import logging
     logging.basicConfig(filename="/tmp/fablog", level=logging.DEBUG)
     with settings(password=None):
-        # This should run fine
+        # Connect as user1 (thus populating both the fallback and user-specific
+        # caches)
         with settings(_response(users[user1]), host_string=_to_user(user1)):
             run("ls /simple", shell=False)
-        # This should NOT reprompt / say "sorry, try again"
+        # Connect as user2:
+        # * First cxn attempt will use fallback cache, which contains user1's
+        # password, and thus fail
+        # * Second cxn attempt will prompt user, and succeed due to mocked p4p
+        #   * but will NOT overwrite fallback cache
         with settings(_response(users[user2]), host_string=_to_user(user2)):
+            # Just to trigger connection
+            run("ls /simple", shell=False)
+        # * Sudo call should use cached user2 password, NOT fallback cache, and
+        # thus succeed. (I.e. p_f_p should NOT be called here.)
+        p_f_p = Fake(callable=True).times_called(0)
+        context = patched_context(fabric.network, 'prompt_for_password', p_f_p)
+        with settings(context, host_string=_to_user(user2)):
             sudo("ls /simple", shell=False)
     env.use_pubkeys.set()

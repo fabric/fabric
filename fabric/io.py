@@ -36,6 +36,7 @@ def output_loop(chan, which, capture):
     reprompt = False
     password = env.password
     while True:
+        bloo
         # Handle actual read/write
         byte = func(1)
         if byte == '':
