@@ -1,11 +1,10 @@
 from __future__ import with_statement
 
-import threading
 import sys
 from select import select
 
 from fabric.context_managers import settings, char_buffered
-from fabric.network import prompt_for_password
+import fabric.network
 from fabric.state import env, output, win32
 
 if win32:
@@ -34,8 +33,8 @@ def output_loop(chan, which, capture):
         pipe = sys.stderr
     printing = getattr(output, 'stdout' if (which == 'recv') else 'stderr')
     # Initialize loop variables
-    password = env.password
     reprompt = False
+    password = env.password
     while True:
         # Handle actual read/write
         byte = func(1)
@@ -68,13 +67,14 @@ def output_loop(chan, which, capture):
             try_again = (_endswith(capture, env.again_prompt + '\n')
                 or _endswith(capture, env.again_prompt + '\r\n'))
             if prompt:
+                # Obtain cached password, if any
+                #password = env.passwords.get(env.host_string, env.password)
                 # Remove the prompt itself from the capture buffer. This is
                 # backwards compatible with Fabric 0.9.x behavior; the user
                 # will still see the prompt on their screen (no way to avoid
                 # this) but at least it won't clutter up the captured text.
                 del capture[-1*len(env.sudo_prompt):]
-                # If no saved password exists or the one we just tried was
-                # bad, prompt the user again.
+                # If the password we just tried was bad, prompt the user again.
                 if (not password) or reprompt:
                     # Print the prompt and/or the "try again" notice if
                     # output is being hidden. In other words, since we need
@@ -85,17 +85,18 @@ def output_loop(chan, which, capture):
                         if reprompt:
                             _flush(pipe, env.again_prompt + '\n' + _prefix)
                         _flush(pipe, env.sudo_prompt)
-                    # Save entered password in local and global password
-                    # var. Will have to re-enter when password changes per
-                    # host, but this way a given password will persist for
-                    # as long as it's valid. Give empty prompt so the
-                    # initial display "hides" just after the
-                    # actually-displayed prompt from the remote end.
-                    env.password = password = prompt_for_password(
-                        previous=password,
-                        prompt="",
-                        no_colon=True
-                    )
+                    # Prompt for, and store, password. Give empty prompt so the
+                    # initial display "hides" just after the actually-displayed
+                    # prompt from the remote end.
+                    import logging
+                    logging.debug("id of p4p in io: %s" %
+                            id(fabric.network.prompt_for_password))
+                    env.password = password = fabric.network.prompt_for_password(previous=password, prompt="", no_colon=True)
+                    # Update env.password, env.passwords if necessary
+                    #if not env.password:
+                    #    env.password = password
+                    #if not env.passwords.get(env.host_string):
+                    #    env.passwords[env.host_string] = password
                     # Reset reprompt flag
                     reprompt = False
                 # Send current password down the pipe

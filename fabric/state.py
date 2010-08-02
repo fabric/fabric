@@ -229,6 +229,7 @@ env = _AttributeDict({
     'host': None,
     'host_string': None,
     'local_user': _get_system_username(),
+    'passwords': {},
     'path': '',
     'path_behavior': 'append',
     'port': None,

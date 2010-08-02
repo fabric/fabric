@@ -206,17 +206,24 @@ def test_sudo_prompt_kills_capturing():
 def _to_user(user):
     return join_host_strings(user, env.host, env.port)
 
+def _response(response):
+    p_f_p = Fake('prompt_for_password', callable=True).returns(response)
+    return patched_context(fabric.network, 'prompt_for_password', p_f_p)
 
-#def test_password_memory_on_user_switch():
-#    """
-#    Switching users mid-session should not screw up password memory
-#    """
-#    user1 = 'root'
-#    user2 = env.local_user
-#    env.use_pubkeys.clear()
-#    with settings(password=None):
-#        with settings(host_string=_to_user(user1)):
-#            run("ls /simple", shell=False)
-#        with settings(host_string=_to_user(user2)):
-#            sudo("ls /simple", shell=False)
-#    env.use_pubkeys.set()
+def test_password_memory_on_user_switch():
+    """
+    Switching users mid-session should not screw up password memory
+    """
+    user1 = 'root'
+    user2 = env.local_user
+    env.use_pubkeys.clear()
+    import logging
+    logging.basicConfig(filename="/tmp/fablog", level=logging.DEBUG)
+    with settings(password=None):
+        # This should run fine
+        with settings(_response(users[user1]), host_string=_to_user(user1)):
+            run("ls /simple", shell=False)
+        # This should NOT reprompt / say "sorry, try again"
+        with settings(_response(users[user2]), host_string=_to_user(user2)):
+            sudo("ls /simple", shell=False)
+    env.use_pubkeys.set()
