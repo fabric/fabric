@@ -220,8 +220,6 @@ def test_password_memory_on_user_switch():
     user1 = 'root'
     user2 = env.local_user
     env.use_pubkeys.clear()
-    import logging
-    logging.basicConfig(filename="/tmp/fablog", level=logging.DEBUG)
     with settings(password=None):
         # Connect as user1 (thus populating both the fallback and user-specific
         # caches)

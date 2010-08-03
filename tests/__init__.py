@@ -2,12 +2,12 @@ from threading import Event
 
 from fabric.api import env
 from fabric.network import interpret_host_string
-from fabric.utils import daemon_thread
+from fabric.thread_handling import ThreadHandler
 
 from server import serve_responses
 
 
-server = None
+server, server_thread = None, None
 
 responses = {
     "ls /simple": "some output",
@@ -35,7 +35,7 @@ users = {
 
 
 def setup():
-    global server
+    global server, server_thread
     port = 2200
     # Setup environment
     interpret_host_string('%s@localhost:%s' % (env.local_user, port))
@@ -46,9 +46,10 @@ def setup():
     env.use_pubkeys.set()
     server = serve_responses(responses, users, port, env.use_pubkeys)
     server.all_done = Event()
-    daemon_thread('server', server.serve_forever)
+    server_thread = ThreadHandler('server', server.serve_forever)
 
 def teardown():
-    global server
+    global server, server_thread
     server.all_done.set()
     server.shutdown()
+    server_thread.join()

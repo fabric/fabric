@@ -89,9 +89,6 @@ def output_loop(chan, which, capture):
                     # Prompt for, and store, password. Give empty prompt so the
                     # initial display "hides" just after the actually-displayed
                     # prompt from the remote end.
-                    import logging
-                    logging.debug("id of p4p in io: %s" %
-                            id(fabric.network.prompt_for_password))
                     env.password = password = fabric.network.prompt_for_password(previous=password, prompt="", no_colon=True)
                     # Update env.password, env.passwords if necessary
                     #if not env.password:
