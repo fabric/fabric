@@ -508,71 +508,72 @@ def _execute(channel, command, pty=True, combine_stderr=True,
     ``stdout``/``stderr`` are captured output strings and ``status`` is the
     program's return code, if applicable.
     """
-    # Combine stdout and stderr to get around oddball mixing issues
-    if combine_stderr or env.combine_stderr:
-        channel.set_combine_stderr(True)
+    with char_buffered(sys.stdin):
+        # Combine stdout and stderr to get around oddball mixing issues
+        if combine_stderr or env.combine_stderr:
+            channel.set_combine_stderr(True)
 
-    # Assume pty use, and allow overriding of this either via kwarg or env var.
-    # (invoke_shell always wants a pty no matter what.)
-    using_pty = True
-    if not invoke_shell and (not pty or not env.always_use_pty):
-        using_pty = False
-    # Request pty with size params (default to 80x24, obtain real parameters if
-    # on POSIX platform)
-    if using_pty:
-        rows, cols = _pty_size()
-        channel.get_pty(width=cols, height=rows)
+        # Assume pty use, and allow overriding of this either via kwarg or env
+        # var.  (invoke_shell always wants a pty no matter what.)
+        using_pty = True
+        if not invoke_shell and (not pty or not env.always_use_pty):
+            using_pty = False
+        # Request pty with size params (default to 80x24, obtain real
+        # parameters if on POSIX platform)
+        if using_pty:
+            rows, cols = _pty_size()
+            channel.get_pty(width=cols, height=rows)
 
-    # Kick off remote command
-    if invoke_shell:
-        channel.invoke_shell()
-        if command:
-            channel.sendall(command + "\n")
-    else:
-        channel.exec_command(command)
-
-    # Init stdout, stderr capturing. Must use lists instead of strings as
-    # strings are immutable and we're using these as pass-by-reference /
-    # globals
-    stdout, stderr = [], []
-    if invoke_shell:
-        stdout = stderr = None
-
-    workers = (
-        ThreadHandler('out', output_loop, channel, "recv", stdout),
-        ThreadHandler('err', output_loop, channel, "recv_stderr", stderr),
-        ThreadHandler('in', input_loop, channel, using_pty)
-    )
-
-    while True:
-        if channel.exit_status_ready():
-            break
+        # Kick off remote command
+        if invoke_shell:
+            channel.invoke_shell()
+            if command:
+                channel.sendall(command + "\n")
         else:
-            for worker in workers:
-                if worker.exception:
-                    raise worker.exception
+            channel.exec_command(command)
 
-    # Obtain exit code of remote program now that we're done.
-    status = channel.recv_exit_status()
+        # Init stdout, stderr capturing. Must use lists instead of strings as
+        # strings are immutable and we're using these as pass-by-reference /
+        # globals
+        stdout, stderr = [], []
+        if invoke_shell:
+            stdout = stderr = None
 
-    # Wait for threads to exit so we aren't left with stale threads
-    for worker in workers:
-        worker.thread.join()
+        workers = (
+            ThreadHandler('out', output_loop, channel, "recv", stdout),
+            ThreadHandler('err', output_loop, channel, "recv_stderr", stderr),
+            ThreadHandler('in', input_loop, channel, using_pty)
+        )
 
-    # Tie off "loose" output by printing a newline. Helps to ensure any
-    # following print()s aren't on the same line as a trailing line prefix or
-    # similar.
-    if output.running:
-        print("")
+        while True:
+            if channel.exit_status_ready():
+                break
+            else:
+                for worker in workers:
+                    if worker.exception:
+                        raise worker.exception
 
-    # Close channel
-    channel.close()
+        # Obtain exit code of remote program now that we're done.
+        status = channel.recv_exit_status()
 
-    # Return stdout, stderr and exit status
-    if not invoke_shell:
-        stdout = ''.join(stdout).strip()
-        stderr = ''.join(stderr).strip()
-    return stdout, stderr, status
+        # Wait for threads to exit so we aren't left with stale threads
+        for worker in workers:
+            worker.thread.join()
+
+        # Tie off "loose" output by printing a newline. Helps to ensure any
+        # following print()s aren't on the same line as a trailing line prefix
+        # or similar.
+        if output.running:
+            print("")
+
+        # Close channel
+        channel.close()
+
+        # Return stdout, stderr and exit status
+        if not invoke_shell:
+            stdout = ''.join(stdout).strip()
+            stderr = ''.join(stderr).strip()
+        return stdout, stderr, status
 
 
 @needs_host

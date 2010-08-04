@@ -36,7 +36,6 @@ def output_loop(chan, which, capture):
     reprompt = False
     password = env.password
     while True:
-        bloo
         # Handle actual read/write
         byte = func(1)
         if byte == '':
@@ -107,20 +106,19 @@ def output_loop(chan, which, capture):
 
 
 def input_loop(chan, using_pty):
-    with char_buffered(sys.stdin):
-        while not chan.exit_status_ready():
-            if win32:
-                have_char = msvcrt.kbhit()
-            else:
-                r, w, x = select([sys.stdin], [], [], 0.0)
-                have_char = (r and r[0] == sys.stdin)
-            if have_char:
-                # Send all local stdin to remote end's stdin
-                byte = msvcrt.getch() if win32 else sys.stdin.read(1)
-                chan.sendall(byte)
-                # Optionally echo locally, if needed.
-                if not using_pty and env.echo_stdin:
-                    # Not using fastprint() here -- it prints as 'user'
-                    # output level, don't want it to be accidentally hidden
-                    sys.stdout.write(byte)
-                    sys.stdout.flush()
+    while not chan.exit_status_ready():
+        if win32:
+            have_char = msvcrt.kbhit()
+        else:
+            r, w, x = select([sys.stdin], [], [], 0.0)
+            have_char = (r and r[0] == sys.stdin)
+        if have_char:
+            # Send all local stdin to remote end's stdin
+            byte = msvcrt.getch() if win32 else sys.stdin.read(1)
+            chan.sendall(byte)
+            # Optionally echo locally, if needed.
+            if not using_pty and env.echo_stdin:
+                # Not using fastprint() here -- it prints as 'user'
+                # output level, don't want it to be accidentally hidden
+                sys.stdout.write(byte)
+                sys.stdout.flush()
