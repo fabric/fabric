@@ -538,18 +538,26 @@ def _execute(channel, command, pty=True, combine_stderr=True,
     if invoke_shell:
         stdout = stderr = None
 
-    out_thread = ThreadHandler('out', output_loop, channel, "recv", stdout)
-    err_thread = ThreadHandler('err', output_loop, channel, "recv_stderr",
-        stderr)
-    in_thread = ThreadHandler('in', input_loop, channel, using_pty)
+    workers = (
+        ThreadHandler('out', output_loop, channel, "recv", stdout),
+        ThreadHandler('err', output_loop, channel, "recv_stderr", stderr),
+        ThreadHandler('in', input_loop, channel, using_pty)
+    )
+
+    while True:
+        if channel.exit_status_ready():
+            break
+        else:
+            for worker in workers:
+                if worker.exception:
+                    raise worker.exception
 
     # Obtain exit code of remote program now that we're done.
     status = channel.recv_exit_status()
 
     # Wait for threads to exit so we aren't left with stale threads
-    out_thread.join()
-    err_thread.join()
-    in_thread.join()
+    for worker in workers:
+        worker.thread.join()
 
     # Tie off "loose" output by printing a newline. Helps to ensure any
     # following print()s aren't on the same line as a trailing line prefix or

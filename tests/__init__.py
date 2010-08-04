@@ -7,7 +7,7 @@ from fabric.thread_handling import ThreadHandler
 from server import serve_responses
 
 
-server, server_thread = None, None
+server, server_worker = None, None
 
 responses = {
     "ls /simple": "some output",
@@ -35,7 +35,7 @@ users = {
 
 
 def setup():
-    global server, server_thread
+    global server, server_worker
     port = 2200
     # Setup environment
     interpret_host_string('%s@localhost:%s' % (env.local_user, port))
@@ -46,10 +46,12 @@ def setup():
     env.use_pubkeys.set()
     server = serve_responses(responses, users, port, env.use_pubkeys)
     server.all_done = Event()
-    server_thread = ThreadHandler('server', server.serve_forever)
+    server_worker = ThreadHandler('server', server.serve_forever)
 
 def teardown():
-    global server, server_thread
+    global server, server_worker
     server.all_done.set()
     server.shutdown()
-    server_thread.join()
+    server_worker.thread.join()
+    if server_worker.exception:
+        raise server_worker.exception
