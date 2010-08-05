@@ -153,7 +153,7 @@ def connect(user, host, port):
 
     # Initialize loop variables
     connected = False
-    password = env.password
+    password = env.passwords.get(env.host_string, env.password)
 
     # Loop until successful connect (keep prompting for new password)
     while not connected:
@@ -221,9 +221,11 @@ def connect(user, host, port):
                 # which one raised the exception. Best not to try.
                 text = "Please enter passphrase for private key"
             password = prompt_for_password(password, text)
-            # Update env.password if it was empty
+            # Update env.password, env.passwords if empty
             if not env.password:
                 env.password = password
+            if not env.passwords.get(env.host_string):
+                env.passwords[env.host_string] = password
         # Ctrl-D / Ctrl-C for exit
         except (EOFError, TypeError):
             # Print a newline (in case user was sitting at prompt)
@@ -241,7 +243,6 @@ def connect(user, host, port):
             abort('Low level socket error connecting to host %s: %s' % (
                 host, e[1])
             )
-
 
 def prompt_for_password(previous=None, prompt=None, no_colon=False):
     """

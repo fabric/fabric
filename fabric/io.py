@@ -68,7 +68,7 @@ def output_loop(chan, which, capture):
                 or _endswith(capture, env.again_prompt + '\r\n'))
             if prompt:
                 # Obtain cached password, if any
-                #password = env.passwords.get(env.host_string, env.password)
+                password = env.passwords.get(env.host_string, env.password)
                 # Remove the prompt itself from the capture buffer. This is
                 # backwards compatible with Fabric 0.9.x behavior; the user
                 # will still see the prompt on their screen (no way to avoid
@@ -88,12 +88,14 @@ def output_loop(chan, which, capture):
                     # Prompt for, and store, password. Give empty prompt so the
                     # initial display "hides" just after the actually-displayed
                     # prompt from the remote end.
-                    env.password = password = fabric.network.prompt_for_password(previous=password, prompt="", no_colon=True)
+                    password = fabric.network.prompt_for_password(
+                        previous=password, prompt="", no_colon=True
+                    )
                     # Update env.password, env.passwords if necessary
-                    #if not env.password:
-                    #    env.password = password
-                    #if not env.passwords.get(env.host_string):
-                    #    env.passwords[env.host_string] = password
+                    if not env.password:
+                        env.password = password
+                    if not env.passwords.get(env.host_string):
+                        env.passwords[env.host_string] = password
                     # Reset reprompt flag
                     reprompt = False
                 # Send current password down the pipe
