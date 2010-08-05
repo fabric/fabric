@@ -120,9 +120,9 @@ def upload_project(local_dir=None, remote_dir=""):
     """
     if not local_dir:
         local_dir = os.getcwd()
-    else:
-        # Remove final '/' in local_dir so that basename() works
-        local_dir = local_dir[:-1] if local_dir[-1] == os.sep else local_dir
+
+    # Remove final '/' in local_dir so that basename() works
+    local_dir = local_dir.strip(os.sep)
 
     local_path, local_name = os.path.split(local_dir)
 
