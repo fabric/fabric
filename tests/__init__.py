@@ -53,5 +53,6 @@ def teardown():
     server.all_done.set()
     server.shutdown()
     server_worker.thread.join()
-    if server_worker.exception:
-        raise server_worker.exception
+    e = server_worker.exception
+    if e:
+        raise e[0], e[1], e[2]

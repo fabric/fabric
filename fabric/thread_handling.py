@@ -1,4 +1,5 @@
 import threading
+import sys
 
 
 class ThreadHandler(object):
@@ -8,8 +9,8 @@ class ThreadHandler(object):
         def wrapper(*args, **kwargs):
             try:
                 callable(*args, **kwargs)
-            except BaseException, e:
-                self.exception = e
+            except BaseException:
+                self.exception = sys.exc_info()
         # Kick off thread
         thread = threading.Thread(None, wrapper, name, args, kwargs)
         thread.setDaemon(True)

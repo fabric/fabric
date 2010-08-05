@@ -550,8 +550,9 @@ def _execute(channel, command, pty=True, combine_stderr=True,
                 break
             else:
                 for worker in workers:
-                    if worker.exception:
-                        raise worker.exception
+                    e = worker.exception
+                    if e:
+                        raise e[0], e[1], e[2]
 
         # Obtain exit code of remote program now that we're done.
         status = channel.recv_exit_status()
