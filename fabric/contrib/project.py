@@ -3,12 +3,15 @@ Useful non-core functionality, e.g. functions composing multiple operations.
 """
 
 from os import getcwd, sep
+import os.path
 from datetime import datetime
+from tempfile import mkdtemp
 
 from fabric.network import needs_host
 from fabric.operations import local, run, put
 from fabric.state import env, output
 
+__all__ = ['rsync_project', 'upload_project']
 
 @needs_host
 def rsync_project(remote_dir, local_dir=None, exclude=(), delete=False,
@@ -100,23 +103,44 @@ def rsync_project(remote_dir, local_dir=None, exclude=(), delete=False,
     return local(cmd)
 
 
-def upload_project():
+def upload_project(local_dir=None, remote_dir=""):
     """
     Upload the current project to a remote system, tar/gzipping during the move.
 
-    This function makes use of the ``/tmp/`` directory and the ``tar`` and
-    ``gzip`` programs/libraries; thus it will not work too well on Win32
-    systems unless one is using Cygwin or something similar.
+    This function makes use of the ``tar`` and ``gzip`` programs/libraries, thus
+    it will not work too well on Win32 systems unless one is using Cygwin or
+    something similar.
 
-    ``upload_project`` will attempt to clean up the tarfiles when it finishes
-    executing.
+    ``upload_project`` will attempt to clean up the local and remote tarfiles
+    when it finishes executing, even in the event of a failure.
+
+    :param local_dir: default current working directory, the project folder to
+        upload
+
     """
-    tar_file = "/tmp/fab.%s.tar" % datetime.utcnow().strftime(
-        '%Y_%m_%d_%H-%M-%S')
-    cwd_name = getcwd().split(sep)[-1]
-    tgz_name = cwd_name + ".tar.gz"
-    local("tar -czf %s ." % tar_file)
-    put(tar_file, cwd_name + ".tar.gz")
-    local("rm -f " + tar_file)
-    run("tar -xzf " + tgz_name)
-    run("rm -f " + tgz_name)
+    if not local_dir:
+        local_dir = os.getcwd()
+    else:
+        # Remove final '/' in local_dir so that basename() works
+        local_dir = local_dir[:-1] if local_dir[-1] == os.sep else local_dir
+
+    local_path, local_name = os.path.split(local_dir)
+
+    tar_file = "%s.tar.gz" % local_name
+    target_tar = os.path.join(remote_dir, tar_file)
+
+    tmp_folder = mkdtemp()
+    try:
+        tar_path = os.path.join(tmp_folder, tar_file)
+        local("tar -czf %s -C %s %s" % (tar_path, local_path, local_name))
+        put(tar_path, target_tar)
+        
+        try:
+            run("tar -xzf %s" % tar_file)
+
+        finally:
+            run("rm -f %s" % tar_file)
+
+    finally:
+        local("rm -rf %s" % tmp_folder)
+
