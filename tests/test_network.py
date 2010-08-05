@@ -1,6 +1,7 @@
 from __future__ import with_statement
 
 from datetime import datetime
+import copy
 import getpass
 import sys
 
@@ -19,6 +20,7 @@ from fabric.operations import run, sudo
 
 from utils import mock_streams
 from tests import responses, users
+import tests
 
 
 #
@@ -28,12 +30,10 @@ from tests import responses, users
 
 class TestNetwork(object):
     def setup(self):
-        self.previous_env = {}
-        for key, value in env.iteritems():
-            self.previous_env[key] = value
+        self.previous_env = copy.deepcopy(env)
 
     def teardown(self):
-        env.update(self.previous_env)
+        env = copy.deepcopy(self.previous_env)
 
     def test_host_string_normalization(self):
         username = _get_system_username()
@@ -102,7 +102,8 @@ class TestNetwork(object):
     # Connection caching
     #
 
-    def check_connection_calls(self, host_strings, num_calls):
+    @staticmethod
+    def check_connection_calls(host_strings, num_calls):
         # Clear Fudge call stack
         clear_calls()
         # Patch connect() with Fake obj set to expect num_calls calls
@@ -135,8 +136,8 @@ class TestNetwork(object):
             ("Same host twice, different users, two connections",
                 ('user1@localhost', 'user2@localhost'), 2),
         ):
-            self.check_connection_calls.description = description
-            yield self.check_connection_calls, host_strings, num_calls
+            TestNetwork.check_connection_calls.description = description
+            yield TestNetwork.check_connection_calls, host_strings, num_calls
 
 
     #
@@ -213,23 +214,23 @@ class TestNetwork(object):
             eq_(sudo(cmd, shell=False), responses[cmd])
 
 
-    def _to_user(user):
-        return join_host_strings(user, env.host, env.port)
-
-    def _response(response):
-        p_f_p = (
-            Fake('prompt_for_password', callable=True)
-            .next_call().returns(response)
-        )
-        return patched_context(fabric.network, 'prompt_for_password', p_f_p)
-
     def test_password_memory_on_user_switch(self):
         """
         Switching users mid-session should not screw up password memory
         """
+        def _to_user(user):
+            return join_host_strings(user, env.host, env.port)
+
+        def _response(response):
+            p_f_p = (
+                Fake('prompt_for_password', callable=True)
+                .next_call().returns(response)
+            )
+            return patched_context(fabric.network, 'prompt_for_password', p_f_p)
+
         user1 = 'root'
         user2 = env.local_user
-        env.use_pubkeys.clear()
+        tests.use_pubkeys.clear()
         with settings(hide('everything'), password=None):
             # Connect as user1 (thus populating both the fallback and user-specific
             # caches)
@@ -249,4 +250,4 @@ class TestNetwork(object):
             context = patched_context(fabric.network, 'prompt_for_password', p_f_p)
             with settings(context, host_string=_to_user(user2)):
                 sudo("ls /simple", shell=False)
-        env.use_pubkeys.set()
+        tests.use_pubkeys.set()

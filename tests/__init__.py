@@ -7,7 +7,7 @@ from fabric.thread_handling import ThreadHandler
 from server import serve_responses
 
 
-server, server_worker = None, None
+server, server_worker, use_pubkeys = None, None, None
 
 responses = {
     "ls /simple": "some output",
@@ -35,16 +35,16 @@ users = {
 
 
 def setup():
-    global server, server_worker
+    global server, server_worker, use_pubkeys
     port = 2200
     # Setup environment
     interpret_host_string('%s@localhost:%s' % (env.local_user, port))
     env.disable_known_hosts = True
     env.password = users[env.local_user]
     # Threading events to control server processes from teardown() or test code
-    env.use_pubkeys = Event()
-    env.use_pubkeys.set()
-    server = serve_responses(responses, users, port, env.use_pubkeys)
+    use_pubkeys = Event()
+    use_pubkeys.set()
+    server = serve_responses(responses, users, port, use_pubkeys)
     server.all_done = Event()
     server_worker = ThreadHandler('server', server.serve_forever)
 
