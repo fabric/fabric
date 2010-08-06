@@ -10,7 +10,7 @@ from nose.tools import eq_, with_setup
 from fudge import Fake, clear_calls, clear_expectations, patch_object, verify, \
     with_patched_object, patched_context
 
-from fabric.context_managers import settings, hide
+from fabric.context_managers import settings, hide, show
 from fabric.network import (HostConnectionCache, join_host_strings, normalize,
     denormalize)
 from fabric.io import output_loop
@@ -197,7 +197,7 @@ class TestNetwork(object):
         prefix = "[%s] out: " % env.host_string
         expected = prefix + ('\n' + prefix).join(output_string.split('\n'))
         # Create, tie off thread
-        with hide('running'):
+        with settings(show('everything'), hide('running')):
             result = run(cmd, shell=False)
             # Test equivalence of expected, received output
             eq_(expected, sys.stdout.getvalue())
