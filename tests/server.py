@@ -1,4 +1,6 @@
 from __future__ import with_statement
+
+from functools import wraps
 import itertools
 import os
 import re
@@ -12,6 +14,11 @@ import paramiko as ssh
 
 from fabric.operations import _sudo_prefix
 from fabric.api import env
+from fabric.thread_handling import ThreadHandler
+from fabric.network import disconnect_all
+
+
+PORT = 2200
 
 
 def _equalize(lists, fillval=None):
@@ -37,9 +44,9 @@ class ParamikoServer(ssh.ServerInterface):
     The bulk of the actual server side logic is handled in the
     ``serve_responses`` function and its ``SSHHandler`` class.
     """
-    def __init__(self, user_mapping, pubkeys):
+    def __init__(self, users, pubkeys):
         self.event = threading.Event()
-        self.user_mapping = user_mapping
+        self.users = users
         self.pubkeys = pubkeys
         self.command = None
 
@@ -62,12 +69,12 @@ class ParamikoServer(ssh.ServerInterface):
 
     def check_auth_password(self, username, password):
         self.username = username
-        passed = self.user_mapping.get(username) == password
+        passed = self.users.get(username) == password
         return ssh.AUTH_SUCCESSFUL if passed else ssh.AUTH_FAILED
 
     def check_auth_publickey(self, username, key):
         self.username = username
-        return ssh.AUTH_SUCCESSFUL if self.pubkeys.isSet() else ssh.AUTH_FAILED 
+        return ssh.AUTH_SUCCESSFUL if self.pubkeys else ssh.AUTH_FAILED 
 
     def get_allowed_auths(self, username):
         return 'password,publickey'
@@ -81,15 +88,15 @@ class SSHServer(ThreadingMixIn, TCPServer):
     allow_reuse_address = True
 
 
-def serve_responses(mapping, user_mapping, port, pubkeys):
+def serve_responses(mapping, users, pubkeys, port):
     """
     Return a threading TCP based SocketServer listening on ``port``.
 
     Used as a fake SSH server which will respond to commands given in
-    ``mapping`` and allow connections for users listed in ``user_mapping``.
+    ``mapping`` and allow connections for users listed in ``user``.
 
-    ``pubkeys`` is a ``threading.Event`` which will allow public key auth when
-    set and disallow it when cleared.
+    ``pubkeys`` is a Boolean value determining whether the server will allow
+    pubkey auth or not.
     """
     # Define handler class inline so it can access serve_responses' args
     class SSHHandler(BaseRequestHandler):
@@ -137,7 +144,7 @@ def serve_responses(mapping, user_mapping, port, pubkeys):
                 os.path.dirname(__file__),
                 'server.key'
             )))
-            server = ParamikoServer(user_mapping, pubkeys)
+            server = ParamikoServer(users, pubkeys)
             transport.start_server(server=server)
             self.ssh_server = server
             self.transport = transport
@@ -174,7 +181,7 @@ def serve_responses(mapping, user_mapping, port, pubkeys):
                 # newline
                 self.channel.send('\n')
                 # Test password
-                if password == user_mapping[self.ssh_server.username]:
+                if password == users[self.ssh_server.username]:
                     passed = True
                     break
                 # If here, password was bad.
@@ -190,3 +197,36 @@ def serve_responses(mapping, user_mapping, port, pubkeys):
             self.channel.send_exit_status(self.status)
 
     return SSHServer(('localhost', port), SSHHandler)
+
+
+def server(mapping, users, pubkeys=False, port=PORT):
+    """
+    Returns a decorator that runs an SSH server during function execution.
+
+    Direct passthrough to ``serve_responses``.
+    """
+    def run_server(func):
+        @wraps(func)
+        def inner(*args, **kwargs):
+            # Start server
+            _server = serve_responses(mapping, users, pubkeys, port)
+            _server.all_done = threading.Event()
+            worker = ThreadHandler('server', _server.serve_forever)
+            # Execute function
+            try:
+                return func(*args, **kwargs)
+            finally:
+                # Clean up client side connections
+                disconnect_all()
+                # Stop server
+                _server.all_done.set()
+                _server.shutdown()
+                # Why this is not called in shutdown() is beyond me.
+                _server.server_close()
+                worker.thread.join()
+                # Handle subthread exceptions
+                e = worker.exception
+                if e:
+                    raise e[0], e[1], e[2]
+        return inner
+    return run_server

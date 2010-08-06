@@ -12,15 +12,43 @@ from fudge import Fake, clear_calls, clear_expectations, patch_object, verify, \
 
 from fabric.context_managers import settings, hide, show
 from fabric.network import (HostConnectionCache, join_host_strings, normalize,
-    denormalize)
+    denormalize, interpret_host_string)
 from fabric.io import output_loop
 import fabric.network # So I can call patch_object correctly. Sigh.
 from fabric.state import env, _get_system_username, output as state_output
 from fabric.operations import run, sudo
 
 from utils import mock_streams
-from tests import responses, users
-import tests
+from server import server, PORT
+
+
+#
+# Default test server response info
+#
+
+mapping = {
+    "ls /simple": "some output",
+    "ls /": """AUTHORS
+FAQ
+Fabric.egg-info
+INSTALL
+LICENSE
+MANIFEST
+README
+build
+docs
+fabfile.py
+fabfile.pyc
+fabric
+requirements.txt
+setup.py
+tests"""
+}
+
+users = {
+    'root': 'root',
+    env.local_user: 'password'
+}
 
 
 #
@@ -31,6 +59,10 @@ import tests
 class TestNetwork(object):
     def setup(self):
         self.previous_env = copy.deepcopy(env)
+        # Network stuff
+        env.disable_known_hosts = True
+        interpret_host_string('%s@localhost:%s' % (env.local_user, PORT))
+        env.password = users[env.local_user]
 
     def teardown(self):
         env = copy.deepcopy(self.previous_env)
@@ -186,13 +218,14 @@ class TestNetwork(object):
 
 
     @mock_streams('stdout')
+    @server(mapping, users)
     def test_trailing_newline_line_drop(self):
         """
         Trailing newlines shouldn't cause last line to be dropped.
         """
         # Multiline output with trailing newline
         cmd = "ls /"
-        output_string = responses[cmd]
+        output_string = mapping[cmd]
         # TODO: fix below lines, duplicates inner workings of tested code
         prefix = "[%s] out: " % env.host_string
         expected = prefix + ('\n' + prefix).join(output_string.split('\n'))
@@ -205,15 +238,17 @@ class TestNetwork(object):
             eq_(output_string, result)
 
 
+    @server(mapping, users)
     def test_sudo_prompt_kills_capturing(self):
         """
         Sudo prompts shouldn't screw up output capturing
         """
         cmd = "ls /simple"
         with hide('everything'):
-            eq_(sudo(cmd, shell=False), responses[cmd])
+            eq_(sudo(cmd, shell=False), mapping[cmd])
 
 
+    @server(mapping, users)
     def test_password_memory_on_user_switch(self):
         """
         Switching users mid-session should not screw up password memory
@@ -226,28 +261,33 @@ class TestNetwork(object):
                 Fake('prompt_for_password', callable=True)
                 .next_call().returns(response)
             )
-            return patched_context(fabric.network, 'prompt_for_password', p_f_p)
+            return patched_context(fabric.network, 'prompt_for_password',
+                p_f_p)
 
         user1 = 'root'
         user2 = env.local_user
-        tests.use_pubkeys.clear()
         with settings(hide('everything'), password=None):
-            # Connect as user1 (thus populating both the fallback and user-specific
-            # caches)
-            with settings(_response(users[user1]), host_string=_to_user(user1)):
+            # Connect as user1 (thus populating both the fallback and
+            # user-specific caches)
+            with settings(
+                _response(users[user1]),
+                host_string=_to_user(user1)
+            ):
                 run("ls /simple", shell=False)
-            # Connect as user2:
-            # * First cxn attempt will use fallback cache, which contains user1's
-            # password, and thus fail
-            # * Second cxn attempt will prompt user, and succeed due to mocked p4p
-            #   * but will NOT overwrite fallback cache
-            with settings(_response(users[user2]), host_string=_to_user(user2)):
+            # Connect as user2: * First cxn attempt will use fallback cache,
+            # which contains user1's password, and thus fail * Second cxn
+            # attempt will prompt user, and succeed due to mocked p4p * but
+            # will NOT overwrite fallback cache
+            with settings(
+                _response(users[user2]),
+                host_string=_to_user(user2)
+            ):
                 # Just to trigger connection
                 run("ls /simple", shell=False)
-            # * Sudo call should use cached user2 password, NOT fallback cache, and
-            # thus succeed. (I.e. p_f_p should NOT be called here.)
+            # * Sudo call should use cached user2 password, NOT fallback cache,
+            # and thus succeed. (I.e. p_f_p should NOT be called here.)
             p_f_p = Fake(callable=True).times_called(0)
-            context = patched_context(fabric.network, 'prompt_for_password', p_f_p)
+            context = patched_context(fabric.network, 'prompt_for_password',
+                p_f_p)
             with settings(context, host_string=_to_user(user2)):
                 sudo("ls /simple", shell=False)
-        tests.use_pubkeys.set()

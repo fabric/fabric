@@ -358,5 +358,6 @@ def disconnect_all():
         if output.status:
             print "Disconnecting from %s..." % denormalize(key),
         connections[key].close()
+        del connections[key]
         if output.status:
             print "done."
