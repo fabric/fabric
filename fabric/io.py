@@ -4,8 +4,9 @@ import sys
 from select import select
 
 from fabric.context_managers import settings, char_buffered
-import fabric.network
 from fabric.state import env, output, win32
+from fabric.auth import get_password, set_password
+import fabric.network
 
 if win32:
     import msvcrt
@@ -34,7 +35,6 @@ def output_loop(chan, which, capture):
     printing = getattr(output, 'stdout' if (which == 'recv') else 'stderr')
     # Initialize loop variables
     reprompt = False
-    password = env.password
     while True:
         # Handle actual read/write
         byte = func(1)
@@ -68,7 +68,7 @@ def output_loop(chan, which, capture):
                 or _endswith(capture, env.again_prompt + '\r\n'))
             if prompt:
                 # Obtain cached password, if any
-                password = env.passwords.get(env.host_string, env.password)
+                password = get_password()
                 # Remove the prompt itself from the capture buffer. This is
                 # backwards compatible with Fabric 0.9.x behavior; the user
                 # will still see the prompt on their screen (no way to avoid
@@ -92,10 +92,7 @@ def output_loop(chan, which, capture):
                         previous=password, prompt="", no_colon=True
                     )
                     # Update env.password, env.passwords if necessary
-                    if not env.password:
-                        env.password = password
-                    if not env.passwords.get(env.host_string):
-                        env.passwords[env.host_string] = password
+                    set_password(password)
                     # Reset reprompt flag
                     reprompt = False
                 # Send current password down the pipe

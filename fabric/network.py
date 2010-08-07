@@ -11,6 +11,7 @@ import socket
 import sys
 
 from fabric.utils import abort
+from fabric.auth import get_password, set_password
 
 try:
     import warnings
@@ -153,7 +154,7 @@ def connect(user, host, port):
 
     # Initialize loop variables
     connected = False
-    password = env.passwords.get(env.host_string, env.password)
+    password = get_password()
 
     # Loop until successful connect (keep prompting for new password)
     while not connected:
@@ -222,10 +223,7 @@ def connect(user, host, port):
                 text = "Please enter passphrase for private key"
             password = prompt_for_password(password, text)
             # Update env.password, env.passwords if empty
-            if not env.password:
-                env.password = password
-            if not env.passwords.get(env.host_string):
-                env.passwords[env.host_string] = password
+            set_password(password)
         # Ctrl-D / Ctrl-C for exit
         except (EOFError, TypeError):
             # Print a newline (in case user was sitting at prompt)
