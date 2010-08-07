@@ -179,7 +179,7 @@ class TestNetwork(FabricTest):
 
 
     @mock_streams('stdout')
-    @server(mapping, users)
+    @server()
     def test_trailing_newline_line_drop(self):
         """
         Trailing newlines shouldn't cause last line to be dropped.
@@ -199,7 +199,7 @@ class TestNetwork(FabricTest):
             eq_(output_string, result)
 
 
-    @server(mapping, users)
+    @server()
     def test_sudo_prompt_kills_capturing(self):
         """
         Sudo prompts shouldn't screw up output capturing
@@ -209,7 +209,7 @@ class TestNetwork(FabricTest):
             eq_(sudo(cmd, shell=False), mapping[cmd])
 
 
-    @server(mapping, users)
+    @server()
     def test_password_memory_on_user_switch(self):
         """
         Switching users mid-session should not screw up password memory

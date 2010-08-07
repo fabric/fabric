@@ -227,7 +227,7 @@ def serve_responses(mapping, users, pubkeys, port):
     return SSHServer(('localhost', port), SSHHandler)
 
 
-def server(mapping, users, pubkeys=False, port=PORT):
+def server(mapping=mapping, users=users, pubkeys=False, port=PORT):
     """
     Returns a decorator that runs an SSH server during function execution.
 
