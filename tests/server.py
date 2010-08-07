@@ -13,7 +13,7 @@ from Python26SocketServer import BaseRequestHandler, ThreadingMixIn, TCPServer
 import paramiko as ssh
 
 from fabric.operations import _sudo_prefix
-from fabric.api import env
+from fabric.api import env, hide
 from fabric.thread_handling import ThreadHandler
 from fabric.network import disconnect_all
 
@@ -217,7 +217,8 @@ def server(mapping, users, pubkeys=False, port=PORT):
                 return func(*args, **kwargs)
             finally:
                 # Clean up client side connections
-                disconnect_all()
+                with hide('status'):
+                    disconnect_all()
                 # Stop server
                 _server.all_done.set()
                 _server.shutdown()
