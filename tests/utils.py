@@ -1,10 +1,31 @@
 from __future__ import with_statement
+
+from StringIO import StringIO # No need for cStringIO at this time
 from contextlib import contextmanager
 from functools import wraps
-from StringIO import StringIO # No need for cStringIO at this time
+import copy
 import sys
 
 from fabric.context_managers import settings
+from fabric.network import interpret_host_string
+from fabric.state import env
+
+from server import PORT, mapping, users
+
+
+class FabricTest(object):
+    """
+    Nose-oriented test runner class that wipes env after every test.
+    """
+    def setup(self):
+        self.previous_env = copy.deepcopy(env)
+        # Network stuff
+        env.disable_known_hosts = True
+        interpret_host_string('%s@localhost:%s' % (env.local_user, PORT))
+        env.password = users[env.local_user]
+
+    def teardown(self):
+        env = copy.deepcopy(self.previous_env)
 
 
 def mock_streams(*which):

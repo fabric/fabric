@@ -18,7 +18,35 @@ from fabric.thread_handling import ThreadHandler
 from fabric.network import disconnect_all
 
 
+#
+# Constants
+#
+
 PORT = 2200
+
+mapping = {
+    "ls /simple": "some output",
+    "ls /": """AUTHORS
+FAQ
+Fabric.egg-info
+INSTALL
+LICENSE
+MANIFEST
+README
+build
+docs
+fabfile.py
+fabfile.pyc
+fabric
+requirements.txt
+setup.py
+tests"""
+}
+
+users = {
+    'root': 'root',
+    env.local_user: 'password'
+}
 
 
 def _equalize(lists, fillval=None):

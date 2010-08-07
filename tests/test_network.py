@@ -12,43 +12,14 @@ from fudge import Fake, clear_calls, clear_expectations, patch_object, verify, \
 
 from fabric.context_managers import settings, hide, show
 from fabric.network import (HostConnectionCache, join_host_strings, normalize,
-    denormalize, interpret_host_string)
+    denormalize)
 from fabric.io import output_loop
 import fabric.network # So I can call patch_object correctly. Sigh.
 from fabric.state import env, _get_system_username, output as state_output
 from fabric.operations import run, sudo
 
-from utils import mock_streams
-from server import server, PORT
-
-
-#
-# Default test server response info
-#
-
-mapping = {
-    "ls /simple": "some output",
-    "ls /": """AUTHORS
-FAQ
-Fabric.egg-info
-INSTALL
-LICENSE
-MANIFEST
-README
-build
-docs
-fabfile.py
-fabfile.pyc
-fabric
-requirements.txt
-setup.py
-tests"""
-}
-
-users = {
-    'root': 'root',
-    env.local_user: 'password'
-}
+from utils import mock_streams, FabricTest
+from server import server, PORT, mapping, users
 
 
 #
@@ -56,17 +27,7 @@ users = {
 #
 
 
-class TestNetwork(object):
-    def setup(self):
-        self.previous_env = copy.deepcopy(env)
-        # Network stuff
-        env.disable_known_hosts = True
-        interpret_host_string('%s@localhost:%s' % (env.local_user, PORT))
-        env.password = users[env.local_user]
-
-    def teardown(self):
-        env = copy.deepcopy(self.previous_env)
-
+class TestNetwork(FabricTest):
     def test_host_string_normalization(self):
         username = _get_system_username()
         for description, input, output in (
