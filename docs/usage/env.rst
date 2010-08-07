@@ -20,9 +20,9 @@ commonly-modified env vars include:
 * ``user``: Fabric defaults to your local username when making SSH connections,
   but you can use ``env.user`` to override this if necessary. The :doc:`execution`
   documentation also has info on how to specify usernames on a per-host basis.
-* ``password``: Used to explicitly set your connection or sudo password if
-  desired. Fabric will prompt you when necessary if this isn't set or doesn't
-  appear to be valid.
+* ``password``: Used to explicitly set your default connection or sudo password
+  if desired. Fabric will prompt you when necessary if this isn't set or
+  doesn't appear to be valid.
 * ``warn_only``: a Boolean setting determining whether Fabric exits when
   detecting errors on the remote end. See :doc:`execution` for more on this
   behavior.
@@ -282,19 +282,27 @@ be used, of course.)
 
 **Default:** ``None``
 
-The password used by the SSH layer when connecting to remote hosts, **and/or**
-when answering `~fabric.operations.sudo` prompts.
+The default password used by the SSH layer when connecting to remote hosts,
+**and/or** when answering `~fabric.operations.sudo` prompts.
 
-When empty, the user will be prompted, with the result stored in this env
-variable and used for connecting/sudoing. (In other words, setting this prior
-to runtime is not required, though it may be convenient in some cases.)
+.. seealso:: :ref:`passwords`
+.. seealso:: :ref:`password-management`
 
-Given a session where multiple different passwords are used, only the first one
-will be stored into ``env.password``. Put another way, the only time
-``env.password`` is written to by Fabric itself is when it is empty. This may
-change in the future.
+.. _passwords:
 
-.. seealso:: :doc:`execution`
+``passwords``
+-------------
+
+**Default:** ``{}``
+
+This dictionary is largely for internal use, and is filled automatically as a
+per-host-string password cache. Keys are full :ref:`host strings
+<host-strings>` and values are passwords (strings).
+
+.. seealso:: :ref:`password-management`
+
+.. versionadded:: 1.0
+
 
 ``port``
 --------
