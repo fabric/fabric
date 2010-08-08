@@ -147,12 +147,16 @@ def serve_responses(mapping, users, pubkeys, port):
                             self.stdout, self.stderr, self.status = \
                                 self.response()
                             if self.sudo_prompt and not self.sudo_password():
-                                self.channel.send("sudo: 3 incorrect password attempts\n")
+                                self.channel.send(
+                                    "sudo: 3 incorrect password attempts\n"
+                                )
                                 break
                             self.respond()
                         else:
-                            channel.send_stderr("Sorry, I don't recognize that command.\n")
-                            channel.send_exit_status(1)
+                            self.channel.send_stderr(
+                                "Sorry, I don't recognize that command.\n"
+                            )
+                            self.channel.send_exit_status(1)
                         # Close up shop
                         self.command = self.ssh_server.command = None
                         self.waiting_for_command = False
