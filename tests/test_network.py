@@ -18,7 +18,7 @@ import fabric.network # So I can call patch_object correctly. Sigh.
 from fabric.state import env, _get_system_username, output as state_output
 from fabric.operations import run, sudo
 
-from utils import mock_streams, FabricTest
+from utils import mock_streams, FabricTest, password_response
 from server import server, PORT, mapping, users
 
 
@@ -217,21 +217,13 @@ class TestNetwork(FabricTest):
         def _to_user(user):
             return join_host_strings(user, env.host, env.port)
 
-        def _response(response):
-            p_f_p = (
-                Fake('prompt_for_password', callable=True)
-                .next_call().returns(response)
-            )
-            return patched_context(fabric.network, 'prompt_for_password',
-                p_f_p)
-
         user1 = 'root'
         user2 = env.local_user
         with settings(hide('everything'), password=None):
             # Connect as user1 (thus populating both the fallback and
             # user-specific caches)
             with settings(
-                _response(users[user1]),
+                password_response(users[user1]),
                 host_string=_to_user(user1)
             ):
                 run("ls /simple", shell=False)
@@ -240,7 +232,7 @@ class TestNetwork(FabricTest):
             # attempt will prompt user, and succeed due to mocked p4p * but
             # will NOT overwrite fallback cache
             with settings(
-                _response(users[user2]),
+                password_response(users[user2]),
                 host_string=_to_user(user2)
             ):
                 # Just to trigger connection

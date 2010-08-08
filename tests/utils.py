@@ -6,9 +6,12 @@ from functools import wraps
 import copy
 import sys
 
+from fudge import Fake, patched_context
+
 from fabric.context_managers import settings
 from fabric.network import interpret_host_string
 from fabric.state import env
+import fabric.network
 
 from server import PORT, mapping, users
 
@@ -61,3 +64,12 @@ def mock_streams(*which):
             return result
         return inner_wrapper
     return mocked_streams_decorator
+
+
+def password_response(response):
+    p_f_p = (
+        Fake('prompt_for_password', callable=True)
+        .next_call().returns(response)
+    )
+    return patched_context(fabric.network, 'prompt_for_password',
+        p_f_p)
