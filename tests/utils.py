@@ -5,6 +5,7 @@ from contextlib import contextmanager
 from functools import wraps
 import copy
 import getpass
+import re
 import sys
 
 from fudge import Fake, patched_context, clear_expectations
@@ -87,3 +88,18 @@ def password_response(password, times_called=None):
     if times_called:
         fake = fake.times_called(times_called)
     return patched_context(getpass, 'getpass', fake)
+
+
+def assert_contains(needle, haystack):
+    """
+    Asserts ``haystack`` contains ``needle``.
+
+    Raises with useful traceback/message, similar to nose/unittest.
+
+    Turns on ``re.MULTILINE``.
+    """
+    if not re.search(needle, haystack, re.M):
+        raise AssertionError("r'%s' not found in '%s'" % (
+            needle,
+            haystack
+        ))
