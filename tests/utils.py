@@ -77,16 +77,20 @@ def mock_streams(which):
     return mocked_streams_decorator
 
 
-def password_response(password, times_called=None):
+def password_response(password, times_called=None, silent=True):
     """
     Context manager which patches ``getpass.getpass`` to return ``password``.
 
     If ``times_called`` is given, it is used to add a ``Fake.times_called``
     clause to the mock object, e.g. ``.times_called(1)``.
+
+    If ``silent`` is True, no prompt will be printed to ``sys.stderr``.
     """
     fake = Fake('getpass', callable=True).returns(password)
     if times_called:
         fake = fake.times_called(times_called)
+    if not silent:
+        fake = fake.calls(lambda x: sys.stderr.write(x))
     return patched_context(getpass, 'getpass', fake)
 
 
