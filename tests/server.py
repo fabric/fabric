@@ -48,6 +48,14 @@ users = {
     env.local_user: 'password'
 }
 
+def local_file(filename):
+    return os.path.join(os.path.dirname(__file__), filename)
+
+SERVER_PRIVKEY = local_file('server.key')
+CLIENT_PUBKEY = local_file('client.key.pub')
+CLIENT_PRIVKEY = local_file('client.key')
+CLIENT_PRIVKEY_PASSPHRASE = "passphrase"
+
 
 def _equalize(lists, fillval=None):
     """
@@ -172,10 +180,7 @@ def serve_responses(mapping, users, pubkeys, port):
 
         def init_transport(self):
             transport = ssh.Transport(self.request)
-            transport.add_server_key(ssh.RSAKey(filename=os.path.join(
-                os.path.dirname(__file__),
-                'server.key'
-            )))
+            transport.add_server_key(ssh.RSAKey(filename=SERVER_PRIVKEY))
             server = ParamikoServer(users, pubkeys)
             transport.start_server(server=server)
             self.ssh_server = server
