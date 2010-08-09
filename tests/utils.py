@@ -12,7 +12,7 @@ from fudge import Fake, patched_context, clear_expectations
 
 from fabric.context_managers import settings
 from fabric.network import interpret_host_string
-from fabric.state import env
+from fabric.state import env, output
 import fabric.network
 
 from server import PORT, PASSWORDS
@@ -25,8 +25,11 @@ class FabricTest(object):
     def setup(self):
         # Clear Fudge mock expectations
         clear_expectations()
-        # Copy env for restoration in teardown
+        # Copy env, output for restoration in teardown
         self.previous_env = copy.deepcopy(env)
+        # Deepcopy doesn't work well on AliasDicts; but they're only one layer
+        # deep anyways, so...
+        self.previous_output = output.items()
         # Set up default networking for test server
         env.disable_known_hosts = True
         interpret_host_string('%s@localhost:%s' % (env.local_user, PORT))
@@ -37,6 +40,7 @@ class FabricTest(object):
 
     def teardown(self):
         env.update(self.previous_env)
+        output.update(self.previous_output)
 
 
 def mock_streams(which):

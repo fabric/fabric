@@ -15,7 +15,7 @@ from fabric.network import (HostConnectionCache, join_host_strings, normalize,
     denormalize)
 from fabric.io import output_loop
 import fabric.network # So I can call patch_object correctly. Sigh.
-from fabric.state import env, _get_system_username, output as state_output
+from fabric.state import env, output, _get_system_username
 from fabric.operations import run, sudo
 
 from utils import mock_streams, FabricTest, password_response, assert_contains
@@ -30,7 +30,7 @@ from server import server, PORT, RESPONSES, PASSWORDS
 class TestNetwork(FabricTest):
     def test_host_string_normalization(self):
         username = _get_system_username()
-        for description, input, output in (
+        for description, input, output_ in (
             ("Sanity check: equal strings remain equal",
                 'localhost', 'localhost'),
             ("Empty username is same as get_system_username",
@@ -41,7 +41,7 @@ class TestNetwork(FabricTest):
                 'localhost', username + '@localhost:22'),
         ):
             eq_.description = "Host-string normalization: %s" % description
-            yield eq_, normalize(input), normalize(output)
+            yield eq_, normalize(input), normalize(output_)
             del eq_.description
 
     def test_normalization_without_port(self):
@@ -223,7 +223,8 @@ class TestNetwork(FabricTest):
         """
         env.password = None
         env.no_agent = env.no_keys = True
-        with settings(password_response(PASSWORDS[env.user], silent=False)):
+        output.everything = False
+        with password_response(PASSWORDS[env.user], silent=False):
             run("ls /simple")
         regex = r'^Password for %s@%s' % (env.user, env.host)
         assert_contains(regex, sys.stderr.getvalue())
