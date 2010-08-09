@@ -21,14 +21,18 @@ class FabricTest(object):
     Nose-oriented test runner class that wipes env after every test.
     """
     def setup(self):
+        # Copy env for restoration in teardown
         self.previous_env = copy.deepcopy(env)
-        # Network stuff
+        # Set up default networking for test server
         env.disable_known_hosts = True
         interpret_host_string('%s@localhost:%s' % (env.local_user, PORT))
         env.password = users[env.local_user]
+        # Command response mocking is easier without having to account for
+        # shell wrapping everywhere.
+        env.use_shell = False
 
     def teardown(self):
-        env = copy.deepcopy(self.previous_env)
+        env.update(self.previous_env)
 
 
 def mock_streams(*which):
