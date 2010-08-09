@@ -8,7 +8,7 @@ import sys
 import paramiko
 from nose.tools import eq_, with_setup
 from fudge import Fake, clear_calls, clear_expectations, patch_object, verify, \
-    with_patched_object, patched_context
+    with_patched_object, patched_context, with_fakes
 
 from fabric.context_managers import settings, hide, show
 from fabric.network import (HostConnectionCache, join_host_strings, normalize,
@@ -153,29 +153,14 @@ class TestNetwork(FabricTest):
             cache = HostConnectionCache()
             eq_(cache['localhost'], f)
 
+
+    @server()
+    @with_fakes
     def test_prompts_for_password_without_good_authentication(self):
-        # Fake client whose connect() raises an AuthenticationException on first
-        # call, mimicing behavior when auth is bad or doesn't exist yet
-        f = (
-            Fake('SSHClient')
-            .provides('__init__')
-            .provides('connect').raises(
-                paramiko.AuthenticationException
-            ).next_call().returns(True)
-            .provides('load_system_host_keys')
-            .provides('set_missing_host_key_policy')
-        )
-        with patched_context('paramiko', 'SSHClient', f):
-            # Fake builtin getpass() method which expects to be called once
-            f2 = Fake('getpass', expect_call=True).times_called(1).returns('passwd')
-            with patched_context('getpass', 'getpass', f2):
-                try:
-                    # Connect attempt will result in getpass() being called
-                    cache = HostConnectionCache()
-                    cache['localhost']
-                    verify()
-                finally:
-                    clear_expectations()
+        env.password = None
+        with password_response(users[env.user], times_called=1):
+            cache = HostConnectionCache()
+            cache[env.host_string]
 
 
     @mock_streams('stdout')

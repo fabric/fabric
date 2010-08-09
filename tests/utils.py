@@ -4,9 +4,10 @@ from StringIO import StringIO # No need for cStringIO at this time
 from contextlib import contextmanager
 from functools import wraps
 import copy
+import getpass
 import sys
 
-from fudge import Fake, patched_context
+from fudge import Fake, patched_context, clear_expectations
 
 from fabric.context_managers import settings
 from fabric.network import interpret_host_string
@@ -21,6 +22,8 @@ class FabricTest(object):
     Nose-oriented test runner class that wipes env after every test.
     """
     def setup(self):
+        # Clear Fudge mock expectations
+        clear_expectations()
         # Copy env for restoration in teardown
         self.previous_env = copy.deepcopy(env)
         # Set up default networking for test server
@@ -70,10 +73,14 @@ def mock_streams(*which):
     return mocked_streams_decorator
 
 
-def password_response(response):
-    p_f_p = (
-        Fake('prompt_for_password', callable=True)
-        .next_call().returns(response)
-    )
-    return patched_context(fabric.network, 'prompt_for_password',
-        p_f_p)
+def password_response(password, times_called=None):
+    """
+    Context manager which patches ``getpass.getpass`` to return ``password``.
+
+    If ``times_called`` is given, it is used to add a ``Fake.times_called``
+    clause to the mock object, e.g. ``.times_called(1)``.
+    """
+    fake = Fake('getpass', callable=True).returns(password)
+    if times_called:
+        fake = fake.times_called(times_called)
+    return patched_context(getpass, 'getpass', fake)
