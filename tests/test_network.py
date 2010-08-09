@@ -19,7 +19,7 @@ from fabric.state import env, _get_system_username, output as state_output
 from fabric.operations import run, sudo
 
 from utils import mock_streams, FabricTest, password_response, assert_contains
-from server import server, PORT, mapping, users
+from server import server, PORT, RESPONSES, PASSWORDS
 
 
 #
@@ -142,7 +142,7 @@ class TestNetwork(FabricTest):
     @with_fakes
     def test_prompts_for_password_without_good_authentication(self):
         env.password = None
-        with password_response(users[env.user], times_called=1):
+        with password_response(PASSWORDS[env.user], times_called=1):
             cache = HostConnectionCache()
             cache[env.host_string]
 
@@ -155,7 +155,7 @@ class TestNetwork(FabricTest):
         """
         # Multiline output with trailing newline
         cmd = "ls /"
-        output_string = mapping[cmd]
+        output_string = RESPONSES[cmd]
         # TODO: fix below lines, duplicates inner workings of tested code
         prefix = "[%s] out: " % env.host_string
         expected = prefix + ('\n' + prefix).join(output_string.split('\n'))
@@ -175,7 +175,7 @@ class TestNetwork(FabricTest):
         """
         cmd = "ls /simple"
         with hide('everything'):
-            eq_(sudo(cmd), mapping[cmd])
+            eq_(sudo(cmd), RESPONSES[cmd])
 
 
     @server()
@@ -192,7 +192,7 @@ class TestNetwork(FabricTest):
             # Connect as user1 (thus populating both the fallback and
             # user-specific caches)
             with settings(
-                password_response(users[user1]),
+                password_response(PASSWORDS[user1]),
                 host_string=_to_user(user1)
             ):
                 run("ls /simple")
@@ -201,7 +201,7 @@ class TestNetwork(FabricTest):
             # attempt will prompt user, and succeed due to mocked p4p * but
             # will NOT overwrite fallback cache
             with settings(
-                password_response(users[user2]),
+                password_response(PASSWORDS[user2]),
                 host_string=_to_user(user2)
             ):
                 # Just to trigger connection
@@ -223,7 +223,7 @@ class TestNetwork(FabricTest):
         """
         env.password = None
         env.no_agent = env.no_keys = True
-        with settings(password_response(users[env.user], silent=False)):
+        with settings(password_response(PASSWORDS[env.user], silent=False)):
             run("ls /simple")
         regex = r'^Password for %s@%s' % (env.user, env.host)
         assert_contains(regex, sys.stderr.getvalue())

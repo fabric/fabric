@@ -23,8 +23,7 @@ from fabric.network import disconnect_all
 #
 
 PORT = 2200
-
-mapping = {
+RESPONSES = {
     "ls /simple": "some output",
     "ls /": """AUTHORS
 FAQ
@@ -42,8 +41,7 @@ requirements.txt
 setup.py
 tests"""
 }
-
-users = {
+PASSWORDS = {
     'root': 'root',
     env.local_user: 'password'
 }
@@ -80,9 +78,9 @@ class ParamikoServer(ssh.ServerInterface):
     The bulk of the actual server side logic is handled in the
     ``serve_responses`` function and its ``SSHHandler`` class.
     """
-    def __init__(self, users, pubkeys):
+    def __init__(self, passwords, pubkeys):
         self.event = threading.Event()
-        self.users = users
+        self.passwords = passwords
         self.pubkeys = pubkeys
         self.command = None
 
@@ -105,7 +103,7 @@ class ParamikoServer(ssh.ServerInterface):
 
     def check_auth_password(self, username, password):
         self.username = username
-        passed = self.users.get(username) == password
+        passed = self.passwords.get(username) == password
         return ssh.AUTH_SUCCESSFUL if passed else ssh.AUTH_FAILED
 
     def check_auth_publickey(self, username, key):
@@ -124,12 +122,12 @@ class SSHServer(ThreadingMixIn, TCPServer):
     allow_reuse_address = True
 
 
-def serve_responses(mapping, users, pubkeys, port):
+def serve_responses(responses, passwords, pubkeys, port):
     """
     Return a threading TCP based SocketServer listening on ``port``.
 
     Used as a fake SSH server which will respond to commands given in
-    ``mapping`` and allow connections for users listed in ``user``.
+    ``responses`` and allow connections for users listed in ``passwords``.
 
     ``pubkeys`` is a Boolean value determining whether the server will allow
     pubkey auth or not.
@@ -151,7 +149,7 @@ def serve_responses(mapping, users, pubkeys, port):
                         self.command = self.ssh_server.command
                         # Set self.sudo_prompt, update self.command
                         self.split_sudo_prompt()
-                        if self.command in mapping:
+                        if self.command in responses:
                             self.stdout, self.stderr, self.status = \
                                 self.response()
                             if self.sudo_prompt and not self.sudo_password():
@@ -181,7 +179,7 @@ def serve_responses(mapping, users, pubkeys, port):
         def init_transport(self):
             transport = ssh.Transport(self.request)
             transport.add_server_key(ssh.RSAKey(filename=SERVER_PRIVKEY))
-            server = ParamikoServer(users, pubkeys)
+            server = ParamikoServer(passwords, pubkeys)
             transport.start_server(server=server)
             self.ssh_server = server
             self.transport = transport
@@ -192,7 +190,7 @@ def serve_responses(mapping, users, pubkeys, port):
             self.sudo_prompt, self.command = result
 
         def response(self):
-            result = mapping[self.command]
+            result = responses[self.command]
             stderr = ""
             status = 0
             if isinstance(result, types.StringTypes):
@@ -218,7 +216,7 @@ def serve_responses(mapping, users, pubkeys, port):
                 # newline
                 self.channel.send('\n')
                 # Test password
-                if password == users[self.ssh_server.username]:
+                if password == passwords[self.ssh_server.username]:
                     passed = True
                     break
                 # If here, password was bad.
@@ -236,7 +234,7 @@ def serve_responses(mapping, users, pubkeys, port):
     return SSHServer(('localhost', port), SSHHandler)
 
 
-def server(mapping=mapping, users=users, pubkeys=False, port=PORT):
+def server(responses=RESPONSES, passwords=PASSWORDS, pubkeys=False, port=PORT):
     """
     Returns a decorator that runs an SSH server during function execution.
 
@@ -246,7 +244,7 @@ def server(mapping=mapping, users=users, pubkeys=False, port=PORT):
         @wraps(func)
         def inner(*args, **kwargs):
             # Start server
-            _server = serve_responses(mapping, users, pubkeys, port)
+            _server = serve_responses(responses, passwords, pubkeys, port)
             _server.all_done = threading.Event()
             worker = ThreadHandler('server', _server.serve_forever)
             # Execute function
