@@ -18,7 +18,7 @@ import fabric.network # So I can call patch_object correctly. Sigh.
 from fabric.state import env, _get_system_username, output as state_output
 from fabric.operations import run, sudo
 
-from utils import mock_streams, FabricTest, password_response
+from utils import mock_streams, FabricTest, password_response, assert_contains
 from server import server, PORT, mapping, users
 
 
@@ -213,3 +213,17 @@ class TestNetwork(FabricTest):
                 host_string=_to_user(user2)
             ):
                 sudo("ls /simple")
+
+
+    @mock_streams('stderr')
+    @server()
+    def test_password_prompt_displays_host_string(self):
+        """
+        Password prompt lines should include the user/host in question
+        """
+        env.password = None
+        env.no_agent = env.no_keys = True
+        with settings(password_response(users[env.user], silent=False)):
+            run("ls /simple")
+        regex = r'^Password for %s@%s' % (env.user, env.host)
+        assert_contains(regex, sys.stderr.getvalue())
