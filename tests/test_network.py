@@ -68,9 +68,8 @@ class TestNetwork(FabricTest):
             ("empty string", ''),
             ("None", None)
         ):
-            eq_.description = "normalize() returns empty strings for %s input" % (
-                description
-            )
+            template = "normalize() returns empty strings for %s input"
+            eq_.description = template % description
             yield eq_, normalize(input), empties
             del eq_.description
 
@@ -96,9 +95,9 @@ class TestNetwork(FabricTest):
     #
 
     @staticmethod
+    @with_fakes
     def check_connection_calls(host_strings, num_calls):
         # Clear Fudge call stack
-        clear_calls()
         # Patch connect() with Fake obj set to expect num_calls calls
         patched_connect = patch_object('fabric.network', 'connect',
             Fake('connect', expect_call=True).times_called(num_calls)
@@ -110,13 +109,9 @@ class TestNetwork(FabricTest):
             for host_string in host_strings:
                 # Obtain connection from cache, potentially calling connect()
                 cache[host_string]
-            # Verify expected calls matches up with actual calls
-            verify()
         finally:
             # Restore connect()
             patched_connect.restore()
-            # Clear expectation stack
-            clear_expectations()
 
     def test_connection_caching(self):
         for description, host_strings, num_calls in (
@@ -137,21 +132,10 @@ class TestNetwork(FabricTest):
     # Connection loop flow
     #
 
+    @server()
     def test_saved_authentication_returns_client_object(self):
-        # Fake client whose connect() doesn't raise any errors.
-        # Note that we don't need verify/clear_calls/etc as this Fake isn't
-        # expecting anything.
-        f = (
-            Fake('SSHClient')
-            .provides('__init__')
-            .provides('connect')
-            .provides('load_system_host_keys')
-            .provides('set_missing_host_key_policy')
-        )
-        with patched_context('paramiko', 'SSHClient', f):
-            # Any connection attempts will "succeed" and return the client object
-            cache = HostConnectionCache()
-            eq_(cache['localhost'], f)
+        cache = HostConnectionCache()
+        assert isinstance(cache[env.host_string], paramiko.SSHClient)
 
 
     @server()
@@ -177,7 +161,7 @@ class TestNetwork(FabricTest):
         expected = prefix + ('\n' + prefix).join(output_string.split('\n'))
         # Create, tie off thread
         with settings(show('everything'), hide('running')):
-            result = run(cmd, shell=False)
+            result = run(cmd)
             # Test equivalence of expected, received output
             eq_(expected, sys.stdout.getvalue())
             # Also test that the captured value matches, too.
@@ -191,7 +175,7 @@ class TestNetwork(FabricTest):
         """
         cmd = "ls /simple"
         with hide('everything'):
-            eq_(sudo(cmd, shell=False), mapping[cmd])
+            eq_(sudo(cmd), mapping[cmd])
 
 
     @server()
@@ -211,7 +195,7 @@ class TestNetwork(FabricTest):
                 password_response(users[user1]),
                 host_string=_to_user(user1)
             ):
-                run("ls /simple", shell=False)
+                run("ls /simple")
             # Connect as user2: * First cxn attempt will use fallback cache,
             # which contains user1's password, and thus fail * Second cxn
             # attempt will prompt user, and succeed due to mocked p4p * but
@@ -221,11 +205,11 @@ class TestNetwork(FabricTest):
                 host_string=_to_user(user2)
             ):
                 # Just to trigger connection
-                run("ls /simple", shell=False)
+                run("ls /simple")
             # * Sudo call should use cached user2 password, NOT fallback cache,
             # and thus succeed. (I.e. p_f_p should NOT be called here.)
-            p_f_p = Fake(callable=True).times_called(0)
-            context = patched_context(fabric.network, 'prompt_for_password',
-                p_f_p)
-            with settings(context, host_string=_to_user(user2)):
-                sudo("ls /simple", shell=False)
+            with settings(
+                password_response('whatever', times_called=0),
+                host_string=_to_user(user2)
+            ):
+                sudo("ls /simple")
