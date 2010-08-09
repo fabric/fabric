@@ -38,7 +38,7 @@ class FabricTest(object):
         env.update(self.previous_env)
 
 
-def mock_streams(*which):
+def mock_streams(which):
     """
     Replaces a stream with a ``StringIO`` during the test, then restores after.
 
@@ -52,10 +52,13 @@ def mock_streams(*which):
         def func():
             pass
 
-        @mock_streams('stdout', 'stderr')
+        @mock_streams('both')
         def func()
             pass
     """
+    which = [which]
+    if which == ['both']:
+        which = ['stdout', 'stderr']
     def mocked_streams_decorator(func):
         @wraps(func)
         def inner_wrapper(*args, **kwargs):
