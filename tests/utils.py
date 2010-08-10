@@ -106,7 +106,7 @@ def password_response(password, times_called=None, silent=True):
         passwords = [password]
     else:
         passwords = list(password)
-    echo = lambda x: sys.stderr.write(x)
+    echo = lambda x: sys.stderr.write(x + "\n")
     # Always return first (only?) password right away
     fake = fake.returns(passwords.pop(0))
     if not silent:
