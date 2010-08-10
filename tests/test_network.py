@@ -18,7 +18,7 @@ import fabric.network # So I can call patch_object correctly. Sigh.
 from fabric.state import env, output, _get_system_username
 from fabric.operations import run, sudo
 
-from utils import mock_streams, FabricTest, password_response, assert_contains
+from utils import *
 from server import (server, PORT, RESPONSES, PASSWORDS, CLIENT_PRIVKEY,
     CLIENT_PRIVKEY_PASSPHRASE)
 
@@ -245,3 +245,26 @@ class TestNetwork(FabricTest):
             run("ls /simple")
         regex = r'^\[%s\] Passphrase for private key: ' % env.host_string
         assert_contains(regex, sys.stderr.getvalue())
+
+
+    @mock_streams('both')
+    @server(pubkeys=True)
+    def test_sudo_prompt_display_passthrough(self):
+        """
+        Sudo prompt should passthrough when stdout/stderr shown
+        """
+        env.password = None
+        env.no_agent = True
+        env.key_filename = CLIENT_PRIVKEY
+        output.running = False
+        with password_response(
+            (CLIENT_PRIVKEY_PASSPHRASE, PASSWORDS[env.user]),
+            silent=False
+        ):
+            sudo("ls /simple")
+        assert_not_contains('Login password', sys.stderr.getvalue())
+
+
+    """
+    Sudo prompt should be manually printed when stdout/stderr hidden 
+    """

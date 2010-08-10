@@ -2,7 +2,8 @@ from __future__ import with_statement
 
 from StringIO import StringIO # No need for cStringIO at this time
 from contextlib import contextmanager
-from functools import wraps
+from functools import wraps, partial
+from types import StringTypes
 import copy
 import getpass
 import re
@@ -85,29 +86,50 @@ def password_response(password, times_called=None, silent=True):
     """
     Context manager which patches ``getpass.getpass`` to return ``password``.
 
+    ``password`` may be a single string or an iterable of strings:
+
+    * If single string, given password is returned every time ``getpass`` is
+      called.
+    * If iterable, iterated over for each call to ``getpass``, after which
+      ``getpass`` will error.
+
     If ``times_called`` is given, it is used to add a ``Fake.times_called``
-    clause to the mock object, e.g. ``.times_called(1)``.
+    clause to the mock object, e.g. ``.times_called(1)``. Specifying
+    ``times_called`` alongside an iterable ``password`` list is unsupported
+    (see Fudge docs on ``Fake.next_call``).
 
     If ``silent`` is True, no prompt will be printed to ``sys.stderr``.
     """
-    fake = Fake('getpass', callable=True).returns(password)
+    fake = Fake('getpass', callable=True)
+    # Assume stringtype or iterable, turn into mutable iterable
+    if isinstance(password, StringTypes):
+        passwords = [password]
+    else:
+        passwords = list(password)
+    echo = lambda x: sys.stderr.write(x)
+    # Always return first (only?) password right away
+    fake = fake.returns(passwords.pop(0))
+    if not silent:
+        fake = fake.calls(echo)
+    # If we had >1, return those afterwards
+    for pw in passwords:
+        fake = fake.next_call().returns(pw)
+        if not silent:
+            fake = fake.calls(echo)
+    # Passthrough times_called
     if times_called:
         fake = fake.times_called(times_called)
-    if not silent:
-        fake = fake.calls(lambda x: sys.stderr.write(x))
     return patched_context(getpass, 'getpass', fake)
 
 
-def assert_contains(needle, haystack):
-    """
-    Asserts ``haystack`` contains ``needle``.
-
-    Raises with useful traceback/message, similar to nose/unittest.
-
-    Turns on ``re.MULTILINE``.
-    """
-    if not re.search(needle, haystack, re.M):
-        raise AssertionError("r'%s' not found in '%s'" % (
+def _assert_contains(needle, haystack, invert):
+    matched = re.search(needle, haystack, re.M)
+    if (invert and matched) or (not invert and not matched):
+        raise AssertionError("r'%s' %sfound in '%s'" % (
             needle,
+            "" if invert else "not ",
             haystack
         ))
+
+assert_contains = partial(_assert_contains, invert=False)
+assert_not_contains = partial(_assert_contains, invert=True)

@@ -268,7 +268,7 @@ def prompt_for_password(previous=None, prompt=None, no_colon=False):
     from fabric.state import env
     # Construct prompt
     default = "[%s] Login password" % env.host_string
-    password_prompt = prompt or default
+    password_prompt = prompt if (prompt is not None) else default
     # If the caller knew of a previously given password, give the user the
     # option of trying that again.
     if previous:
