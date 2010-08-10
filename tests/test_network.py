@@ -7,8 +7,8 @@ import sys
 
 import paramiko
 from nose.tools import eq_, with_setup
-from fudge import Fake, clear_calls, clear_expectations, patch_object, verify, \
-    with_patched_object, patched_context, with_fakes
+from fudge import (Fake, clear_calls, clear_expectations, patch_object, verify,
+    with_patched_object, patched_context, with_fakes)
 
 from fabric.context_managers import settings, hide, show
 from fabric.network import (HostConnectionCache, join_host_strings, normalize,
@@ -19,7 +19,8 @@ from fabric.state import env, output, _get_system_username
 from fabric.operations import run, sudo
 
 from utils import mock_streams, FabricTest, password_response, assert_contains
-from server import server, PORT, RESPONSES, PASSWORDS
+from server import (server, PORT, RESPONSES, PASSWORDS, CLIENT_PRIVKEY,
+    CLIENT_PRIVKEY_PASSPHRASE)
 
 
 #
@@ -226,5 +227,21 @@ class TestNetwork(FabricTest):
         output.everything = False
         with password_response(PASSWORDS[env.user], silent=False):
             run("ls /simple")
-        regex = r'^Password for %s@%s' % (env.user, env.host)
+        regex = r'^\[%s\] Login password: ' % env.host_string
+        assert_contains(regex, sys.stderr.getvalue())
+
+
+    @mock_streams('stderr')
+    @server(pubkeys=True)
+    def test_passphrase_prompt_displays_host_string(self):
+        """
+        Passphrase prompt lines should include the user/host in question
+        """
+        env.password = None
+        env.no_agent = True
+        env.key_filename = CLIENT_PRIVKEY
+        output.everything = False
+        with password_response(CLIENT_PRIVKEY_PASSPHRASE, silent=False):
+            run("ls /simple")
+        regex = r'^\[%s\] Passphrase for private key: ' % env.host_string
         assert_contains(regex, sys.stderr.getvalue())

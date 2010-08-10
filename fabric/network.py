@@ -220,7 +220,8 @@ def connect(user, host, port):
                 # because Paramiko doesn't provide us with that info, and
                 # env.key_filename may be a list of keys, so we can't know
                 # which one raised the exception. Best not to try.
-                text = "Please enter passphrase for private key"
+                prompt = "[%s] Passphrase for private key"
+                text = prompt % env.host_string
             password = prompt_for_password(password, text)
             # Update env.password, env.passwords if empty
             set_password(password)
@@ -265,16 +266,9 @@ def prompt_for_password(previous=None, prompt=None, no_colon=False):
     for ``prompt``.
     """
     from fabric.state import env
-    # Construct the prompt we will display to the user (using host if available)
-    if 'host' in env:
-        host = join_host_strings(*normalize(env.host_string, omit_port=True))
-        base_password_prompt = "Password for %s" % host
-    else:
-        base_password_prompt = "Password"
-    password_prompt = base_password_prompt
-    # Handle prompt text override
-    if prompt is not None:
-        password_prompt = prompt
+    # Construct prompt
+    default = "[%s] Login password" % env.host_string
+    password_prompt = prompt or default
     # If the caller knew of a previously given password, give the user the
     # option of trying that again.
     if previous:
