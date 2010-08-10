@@ -247,24 +247,29 @@ class TestNetwork(FabricTest):
         assert_contains(regex, sys.stderr.getvalue())
 
 
-    @mock_streams('both')
-    @server(pubkeys=True)
     def test_sudo_prompt_display_passthrough(self):
         """
-        Sudo prompt should passthrough when stdout/stderr shown
+        Sudo prompt should display (via passthrough) when stdout/stderr shown
         """
+        TestNetwork._prompt_display(True)
+
+    def test_sudo_prompt_display_directly(self):
+        """
+        Sudo prompt should display (manually) when stdout/stderr hidden
+        """
+        TestNetwork._prompt_display(False)
+
+    @staticmethod
+    @mock_streams('both')
+    @server(pubkeys=True)
+    def _prompt_display(display_output):
         env.password = None
         env.no_agent = True
         env.key_filename = CLIENT_PRIVKEY
-        output.running = False
+        output.output = display_output
         with password_response(
             (CLIENT_PRIVKEY_PASSPHRASE, PASSWORDS[env.user]),
             silent=False
         ):
             sudo("ls /simple")
-        assert_not_contains('Login password', sys.stderr.getvalue())
-
-
-    """
-    Sudo prompt should be manually printed when stdout/stderr hidden 
-    """
+        assert_contains(env.sudo_prompt, sys.stdout.getvalue())
