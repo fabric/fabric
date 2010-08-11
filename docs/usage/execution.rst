@@ -234,7 +234,7 @@ is imported::
 Such a fabfile, run simply as ``fab mytask``, will run ``mytask`` on ``host1``
 followed by ``host2``.
 
-Since the env vars are checked for *each* host, this means that if you have the
+Since the env vars are checked for *each* task, this means that if you have the
 need, you can actually modify ``env`` in one task and it will affect all
 following tasks::
 
