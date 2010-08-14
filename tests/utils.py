@@ -167,3 +167,17 @@ def _assert_contains(needle, haystack, invert):
 
 assert_contains = partial(_assert_contains, invert=False)
 assert_not_contains = partial(_assert_contains, invert=True)
+
+
+def line_prefix(prefix, string):
+    """
+    Return ``string`` with all lines prefixed by ``prefix``.
+    """
+    return "\n".join(prefix + x for x in string.splitlines())
+
+
+def eq_(a, b, msg=None):
+    """
+    Shadow of the Nose builtin which presents easier to read multiline output.
+    """
+    assert a == b, msg or "\n\n%s\n     !=\n%s" % (a, b)

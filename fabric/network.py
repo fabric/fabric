@@ -222,7 +222,7 @@ def connect(user, host, port):
                 # which one raised the exception. Best not to try.
                 prompt = "[%s] Passphrase for private key"
                 text = prompt % env.host_string
-            password = prompt_for_password(password, text)
+            password = prompt_for_password(text)
             # Update env.password, env.passwords if empty
             set_password(password)
         # Ctrl-D / Ctrl-C for exit
@@ -243,24 +243,14 @@ def connect(user, host, port):
                 host, e[1])
             )
 
-def prompt_for_password(previous=None, prompt=None, no_colon=False,
-    stream=None):
+def prompt_for_password(prompt=None, no_colon=False, stream=None):
     """
     Prompts for and returns a new password if required; otherwise, returns None.
 
-    ``previous`` should be the last known password, and is typically "primed"
-    with ``env.password``, though it may be empty or None if ``env.password``
-    was not set and no password has previously been entered during this
-    session.
-
     A trailing colon is appended unless ``no_colon`` is True.
 
-    When non-empty, ``previous`` will be used as a default if the user hits
-    Enter without entering a new password, and the displayed password prompt
-    will reflect this.
-
-    If the user supplies an empty password **and** ``previous`` is also empty,
-    the user will be re-prompted until they enter a non-empty password.
+    If the user supplies an empty password, the user will be re-prompted until
+    they enter a non-empty password.
 
     ``prompt_for_password`` autogenerates the user prompt based on the current
     host being connected to. To override this, specify a string value for
@@ -274,18 +264,10 @@ def prompt_for_password(previous=None, prompt=None, no_colon=False,
     # Construct prompt
     default = "[%s] Login password" % env.host_string
     password_prompt = prompt if (prompt is not None) else default
-    # If the caller knew of a previously given password, give the user the
-    # option of trying that again.
-    if previous:
-        password_prompt += " [Enter for previous]"
     if not no_colon:
         password_prompt += ": "
     # Get new password value
     new_password = getpass.getpass(password_prompt, stream)
-    # See if user wants us to use the previous password and return right away
-    # if so.
-    if (not new_password) and previous:
-        return previous
     # Otherwise, loop until user gives us a non-empty password (to prevent
     # returning the empty string, and to avoid unnecessary network overhead.)
     while not new_password:

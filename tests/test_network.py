@@ -6,7 +6,7 @@ import getpass
 import sys
 
 import paramiko
-from nose.tools import eq_, with_setup
+from nose.tools import with_setup
 from fudge import (Fake, clear_calls, clear_expectations, patch_object, verify,
     with_patched_object, patched_context, with_fakes)
 
@@ -267,9 +267,23 @@ class TestNetwork(FabricTest):
         env.no_agent = True
         env.key_filename = CLIENT_PRIVKEY
         output.output = display_output
+        cmd = "ls /simple"
         with password_response(
             (CLIENT_PRIVKEY_PASSPHRASE, PASSWORDS[env.user]),
             silent=False
         ):
-            sudo("ls /simple")
-        assert_contains(env.sudo_prompt + " ", sys.stdall.getvalue())
+            sudo(cmd)
+        prefix = "[%s] " % env.host_string
+        first_prompt = "out: sudo password:\n" if display_output else ""
+        expected = """sudo: ls /simple
+Passphrase for private key: 
+%sout: Sorry, try again.
+out: sudo password: """ % first_prompt
+        expected = line_prefix(prefix, expected)
+        if display_output:
+            expected += "\n\n"
+            expected += line_prefix(prefix, "out: %s" % (RESPONSES[cmd]))
+        else:
+            expected += "\n"
+        expected += "\n"
+        eq_(expected, sys.stdall.getvalue())

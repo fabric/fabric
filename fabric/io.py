@@ -35,6 +35,7 @@ def output_loop(chan, which, capture):
     printing = getattr(output, 'stdout' if (which == 'recv') else 'stderr')
     # Initialize loop variables
     reprompt = False
+    initial_prefix_printed = False
     while True:
         # Handle actual read/write
         byte = func(1)
@@ -53,8 +54,9 @@ def output_loop(chan, which, capture):
             # Print to user
             if printing:
                 # Initial prefix
-                if not capture:
+                if not initial_prefix_printed:
                     _flush(pipe, _prefix)
+                    initial_prefix_printed = True
                 # Byte itself
                 _flush(pipe, byte)
                 # Trailing prefix to start off next line
@@ -89,8 +91,7 @@ def output_loop(chan, which, capture):
                     # initial display "hides" just after the actually-displayed
                     # prompt from the remote end.
                     password = fabric.network.prompt_for_password(
-                        previous=password, prompt=" ", no_colon=True,
-                        stream=pipe
+                        prompt=" ", no_colon=True, stream=pipe
                     )
                     # Update env.password, env.passwords if necessary
                     set_password(password)
