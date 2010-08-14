@@ -89,7 +89,8 @@ def output_loop(chan, which, capture):
                     # initial display "hides" just after the actually-displayed
                     # prompt from the remote end.
                     password = fabric.network.prompt_for_password(
-                        previous=password, prompt="", no_colon=True
+                        previous=password, prompt=" ", no_colon=True,
+                        stream=pipe
                     )
                     # Update env.password, env.passwords if necessary
                     set_password(password)

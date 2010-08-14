@@ -243,7 +243,8 @@ def connect(user, host, port):
                 host, e[1])
             )
 
-def prompt_for_password(previous=None, prompt=None, no_colon=False):
+def prompt_for_password(previous=None, prompt=None, no_colon=False,
+    stream=None):
     """
     Prompts for and returns a new password if required; otherwise, returns None.
 
@@ -261,11 +262,15 @@ def prompt_for_password(previous=None, prompt=None, no_colon=False):
     If the user supplies an empty password **and** ``previous`` is also empty,
     the user will be re-prompted until they enter a non-empty password.
 
-    Finally, ``prompt_for_password`` autogenerates the user prompt based on the
-    current host being connected to. To override this, specify a string value
-    for ``prompt``.
+    ``prompt_for_password`` autogenerates the user prompt based on the current
+    host being connected to. To override this, specify a string value for
+    ``prompt``.
+
+    ``stream`` is the stream the prompt will be printed to; if not given,
+    defaults to ``sys.stderr``.
     """
     from fabric.state import env
+    stream = stream or sys.stderr
     # Construct prompt
     default = "[%s] Login password" % env.host_string
     password_prompt = prompt if (prompt is not None) else default
@@ -276,7 +281,7 @@ def prompt_for_password(previous=None, prompt=None, no_colon=False):
     if not no_colon:
         password_prompt += ": "
     # Get new password value
-    new_password = getpass.getpass(password_prompt)
+    new_password = getpass.getpass(password_prompt, stream)
     # See if user wants us to use the previous password and return right away
     # if so.
     if (not new_password) and previous:
@@ -286,7 +291,7 @@ def prompt_for_password(previous=None, prompt=None, no_colon=False):
     while not new_password:
         print("Sorry, you can't enter an empty password. Please try again.")
         password_prompt = base_password_prompt + ": "
-        new_password = getpass.getpass(password_prompt)
+        new_password = getpass.getpass(password_prompt, stream)
     return new_password
 
 
