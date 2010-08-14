@@ -228,6 +228,41 @@ set/appended to with :option:`-i`.
 
 .. seealso:: `Paramiko's documentation for SSHClient.connect() <http://www.lag.net/paramiko/docs/paramiko.SSHClient-class.html#connect>`_
 
+.. _local-user:
+
+``local_user``
+--------------
+
+A read-only value containing the local system username. This is the same value
+as :ref:`user`'s initial value, but whereas :ref:`user` may be altered by CLI
+arguments, Python code or specific host strings, :ref:`local-user` will always
+contain the same value.
+
+.. _no_agent:
+
+``no_agent``
+------------------
+
+**Default:** ``False``
+
+If ``True``, will tell Paramiko not to seek out running SSH agents when using
+key-based authentication.
+
+.. versionadded:: 0.9.1
+
+.. _no_keys:
+
+``no_keys``
+------------------
+
+**Default:** ``False``
+
+If ``True``, will tell Paramiko not to load any private key files from one's
+``$HOME/.ssh/`` folder. (Key files explicitly loaded via ``fab -i`` will still
+be used, of course.)
+
+.. versionadded:: 0.9.1
+
 .. _password:
 
 ``password``

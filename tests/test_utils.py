@@ -1,11 +1,16 @@
+from __future__ import with_statement
+
 import sys
 
+from fudge import Fake, patched_context, verify, clear_expectations
 from fudge.patcher import with_patched_object
 from nose.tools import eq_
 from nose.tools import raises
 
-from fabric.state import output
-from fabric.utils import warn, indent, abort, fastprint
+from fabric.state import output, env
+from fabric.utils import warn, indent, abort, puts, fastprint
+from fabric import utils # For patching
+from fabric.context_managers import settings
 from utils import mock_streams
 
 
@@ -68,12 +73,62 @@ def test_abort_message():
     result = sys.stderr.getvalue()
     eq_("\nFatal error: Test\n\nAborting.\n", result)
    
+
 @mock_streams('stdout')
-def test_fastprint():
+def test_puts_with_user_output_on():
     """
-    fastprint() should print its input to sys.stdout
+    puts() should print input to sys.stdout if "user" output level is on
     """
-    s = 'zoom!'
-    fastprint(s)
-    result = sys.stdout.getvalue()
-    eq_(result, s)
+    s = "string!"
+    output.user = True
+    puts(s)
+    eq_(sys.stdout.getvalue(), s + "\n")
+
+
+@mock_streams('stdout')
+def test_puts_with_user_output_off():
+    """
+    puts() shouldn't print input to sys.stdout if "user" output level is off
+    """
+    output.user = False
+    puts("You aren't reading this.")
+    eq_(sys.stdout.getvalue(), "")
+
+
+@mock_streams('stdout')
+def test_puts_with_prefix():
+    """
+    puts() should prefix output with env.host_string if non-empty
+    """
+    s = "my output"
+    h = "localhost"
+    with settings(host_string=h):
+        puts(s)
+    eq_(sys.stdout.getvalue(), "[%s] %s" % (h, s + "\n"))
+
+
+@mock_streams('stdout')
+def test_puts_without_prefix():
+    """
+    puts() shouldn't prefix output with env.host_string if show_prefix is False
+    """
+    s = "my output"
+    h = "localhost"
+    puts(s, show_prefix=False)
+    eq_(sys.stdout.getvalue(), "%s" % (s + "\n"))
+
+
+def test_fastprint_calls_puts():
+    """
+    fastprint() is just an alias to puts()
+    """
+    text = "Some output"
+    fake_puts = Fake('puts', expect_call=True).with_args(
+        text=text, show_prefix=False, end="", flush=True
+    )
+    with patched_context(utils, 'puts', fake_puts):
+        try:
+            fastprint(text)
+            verify()
+        finally:
+            clear_expectations()

@@ -15,7 +15,8 @@ def git_sha():
     p = Popen(
         "cd \"%s\" && git log -1 --format=format:%%h" % loc,
         shell=True,
-        stdout=PIPE
+        stdout=PIPE,
+        stderr=PIPE
     )
     return p.communicate()[0]
 
@@ -46,7 +47,8 @@ def get_version(form='short'):
     final = (type_ == "final")
     type_num = VERSION[4]
     firsts = "".join([x[0] for x in type_.split()])
-    sha1 = " (%s)" % git_sha()
+    sha = git_sha()
+    sha1 = (" (%s)" % sha) if sha else ""
 
     # Branch
     versions['branch'] = branch

@@ -9,9 +9,14 @@ import textwrap
 
 def abort(msg):
     """
-    Abort execution, printing given message and exiting with error status.
-    When not invoked as the ``fab`` command line tool, raise an exception
-    instead.
+    Abort execution, print ``msg`` to stderr and exit with error status (1.)
+
+    This function currently makes use of `sys.exit`_, which raises 
+    `SystemExit`_. Therefore, it's possible to detect and recover from inner
+    calls to `abort` by using ``except SystemExit`` or similar.
+
+    .. _sys.exit: http://docs.python.org/library/sys.html#sys.exit
+    .. _SystemExit: http://docs.python.org/library/exceptions.html#exceptions.SystemExit
     """
     from fabric.state import output
     if output.aborts:
@@ -23,6 +28,11 @@ def abort(msg):
 def warn(msg):
     """
     Print warning message, but do not abort execution.
+
+    This function honors Fabric's :doc:`output controls
+    <../../usage/output_controls>` and will print the given ``msg`` to stderr,
+    provided that the ``warnings`` output level (which is active by default) is
+    turned on.
     """
     from fabric.state import output
     if output.warnings:
@@ -31,7 +41,7 @@ def warn(msg):
 
 def indent(text, spaces=4, strip=False):
     """
-    Returns text indented by the given number of spaces.
+    Return ``text`` indented by the given number of spaces.
 
     If text is not a string, it is assumed to be a list of lines and will be
     joined by ``\\n`` prior to indenting.
@@ -57,11 +67,58 @@ def indent(text, spaces=4, strip=False):
     return output
 
 
-def fastprint(text):
+def puts(text, show_prefix=True, end="\n", flush=False):
     """
-    Uses sys.stdout.flush() to get around buffer/cache behavior of stdout.
+    An alias for ``print`` whose output is managed by Fabric's output controls.
 
-    Does not append newline characters.
+    In other words, this function simply prints to ``sys.stdout``, but will
+    hide its output if the ``user`` :doc:`output level
+    </usage/output_controls>` is set to ``False``.
+
+    If ``show_prefix=False``, `puts` will omit the leading ``[hostname]``
+    which it tacks on by default. (It will also omit this prefix if
+    ``env.host_string`` is empty.)
+
+    Newlines may be disabled by setting ``end`` to the empty string (``''``).
+    (This intentionally mirrors Python 3's ``print`` syntax.)
+
+    You may force output flushing (e.g. to bypass output buffering) by setting
+    ``flush=True``.
+
+    .. versionadded:: 1.0
+    .. seealso:: `~fabric.utils.fastprint`
     """
-    sys.stdout.write(text)
-    sys.stdout.flush()
+    from fabric.state import output, env
+    if output.user:
+        prefix = ""
+        if env.host_string and show_prefix:
+            prefix = "[%s] " % env.host_string
+        sys.stdout.write(prefix + str(text) + end)
+        if flush:
+            sys.stdout.flush()
+
+
+def fastprint(text, show_prefix=False, end="", flush=True):
+    """
+    Print ``text`` immediately, without any prefix or line ending.
+
+    This function is simply an alias of `~fabric.utils.puts` with different
+    default argument values, such that the ``text`` is printed without any
+    embellishment and immediately flushed.
+
+    It is useful for any situation where you wish to print text which might
+    otherwise get buffered by Python's output buffering (such as within a
+    processor intensive ``for`` loop). Since such use cases typically also
+    require a lack of line endings (such as printing a series of dots to
+    signify progress) it also omits the traditional newline by default.
+
+    .. note::
+
+        Since `~fabric.utils.fastprint` calls `~fabric.utils.puts`, it is
+        likewise subject to the ``user`` :doc:`output level
+        </usage/output_controls>`.
+
+    .. versionadded:: 1.0
+    .. seealso:: `~fabric.utils.puts`
+    """
+    return puts(text=text, show_prefix=show_prefix, end=end, flush=flush)

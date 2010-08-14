@@ -60,8 +60,8 @@ Paramiko (which Fabric uses internally for SSH support), providing the
 low-level (C-based) encryption algorithms used to run SSH. You will need
 version 1.9 or newer, and may install PyCrypto from ``easy_install`` or ``pip``
 without worry. However, unless you are installing from a precompiled source
-such as a Debian apt repository or RedHat RPM, you will need the ability to
-build Python C-based modules from source -- read on.
+such as a Debian apt repository or RedHat RPM, or using :ref:`pypm <pypm>` you
+will need the ability to build Python C-based modules from source -- read on.
 
 Users on **Unix-based platforms** such as Ubuntu or Mac OS X will need the
 traditional C build toolchain installed (e.g. Developer Tools / XCode Tools on
@@ -69,10 +69,16 @@ the Mac, or the ``build-essential`` package on Ubuntu or Debian Linux --
 basically, anything with ``gcc``, ``make`` and so forth) as well as the Python
 development libraries, often named ``python-dev`` or similar.
 
-For **Windows** users we recommend either installing a C development environment
-such as `Cygwin <http://cygwin.com>`_ or obtaining a precompiled Win32 PyCrypto
-package from `voidspace's Python modules page
+For **Windows** users we recommend using :ref:`pypm`, installing a C
+development environment such as `Cygwin <http://cygwin.com>`_ or obtaining a
+precompiled Win32 PyCrypto package from `voidspace's Python modules page
 <http://www.voidspace.org.uk/python/modules.shtml#pycrypto>`_.
+
+.. note::
+    Some Windows users whose Python is 64-bit have found that the PyCrypto
+    dependency ``winrandom`` may not install properly, leading to ImportErrors.
+    In this scenario, you'll probably need to compile ``winrandom`` yourself
+    via e.g. MS Visual Studio.  See :issue:`194` for info.
 
 Development dependencies
 ------------------------
@@ -90,6 +96,8 @@ packages:
 * `Sphinx <http://sphinx.pocoo.org/>`_ >= 0.6.1
 
 .. _Mercurial: http://mercurial.selenic.com/wiki/
+
+.. _downloads:
 
 Downloads
 =========
@@ -149,3 +157,25 @@ listed above (note, that's *development* requirements -- not necessary for
 simply using the software.) At time of writing, some of the listed third-party
 packages don't play well with ``pip``, so we aren't officially recommending use
 of the requirements file just yet.
+
+
+.. _pypm:
+
+ActivePython and PyPM
+=====================
+
+Windows users who already have ActiveState's `ActivePython
+<http://www.activestate.com/activepython>`_ distribution installed may find
+Fabric is best installed with its package manager, ``pypm``. Below is example
+output from an installation of Fabric 0.9.0 via ``pypm``::
+
+    C:\> pypm install fabric
+    Ready to perform these actions:
+    The following packages will be installed:
+    fabric-0.9.0 pycrypto-2.0.1
+    Get: [pypm.activestate.com] fabric 0.9.0-1
+    Get: [pypm.activestate.com] pycrypto 2.0.1-1
+    Installing fabric-0.9.0
+    Fixing script
+    C:\Users\<username>\AppData\Roaming\Python\Scripts\fab-script.py
+    Installing pycrypto-2.0.1

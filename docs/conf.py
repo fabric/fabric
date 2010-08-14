@@ -13,6 +13,18 @@
 
 import sys, os
 
+# Custom ReST roles.
+from docutils.parsers.rst import roles
+from docutils import nodes, utils
+
+def issues_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
+    issue_no = utils.unescape(text)
+    ref = "http://code.fabfile.org/issues/show/" + issue_no
+    node = nodes.reference(rawtext, '#' + issue_no, refuri=ref, **options)
+    return [node], []
+
+roles.register_local_role("issue", issues_role)
+
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.

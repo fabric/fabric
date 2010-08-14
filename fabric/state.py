@@ -14,8 +14,11 @@ from fabric.version import get_version
 # Win32 flag
 #
 
-# Impacts a handful of platform specific behaviors.
-win32 = sys.platform in ['win32', 'cygwin']
+# Impacts a handful of platform specific behaviors. Note that Cygwin's Python
+# is actually close enough to "real" UNIXes that it doesn't need (or want!) to
+# use PyWin32 -- so we only test for literal Win32 setups (vanilla Python,
+# ActiveState etc) here.
+win32 = (sys.platform == 'win32')
 
 
 #
@@ -148,9 +151,23 @@ env_options = [
         help="path to SSH private key file. May be repeated."
     ),
 
+    # Use -a here to mirror ssh(1) options.
+    make_option('-a', '--no_agent',
+        action='store_true',
+        default=False,
+        help="don't use the running SSH agent"
+    ),
+
+    # No matching option for ssh(1) so just picked something appropriate.
+    make_option('-k', '--no-keys',
+        action='store_true',
+        default=False,
+        help="don't load private key files from ~/.ssh/"
+    ),
+
     make_option('-f', '--fabfile',
         default='fabfile',
-        help="name of or path to a fabfile module or package, e.g. 'path/to/fabfile.py' or 'myfab'"
+        help="Python module file to import, e.g. '../other.py'"
     ),
 
     make_option('-w', '--warn-only',
@@ -202,26 +219,27 @@ env_options = [
 # preserving DRY: anything in here is generally not settable via the command
 # line.
 env = _AttributeDict({
+    'again_prompt': 'Sorry, try again.\n',
     'all_hosts': None, 
     'command': None,
+    'command_prefixes': [],
     'cwd': '', # Must be empty string, not None, for concatenation purposes
     'host': None,
     'host_string': None,
+    'local_user': _get_system_username(),
+    'path': '',
+    'path_behavior': 'append',
     'port': None,
     'real_fabfile': None,
     'roledefs': {},
-    'sudo_prompt': 'sudo password:',
+    'roledefs': {},
     # -S so sudo accepts passwd via stdin, -p with our known-value prompt for
     # later detection (thus %s -- gets filled with env.sudo_prompt at runtime)
     'sudo_prefix': "sudo -S -p '%s' ",
-    'again_prompt': 'Sorry, try again.\n',
+    'sudo_prompt': 'sudo password:',
     'use_shell': True,
-    'roledefs': {},
-    'path': '',
-    'path_behavior': 'append',
     'user': None,
     'version': get_version('short'),
-    'command_prefixes': [],
 })
 
 # Add in option defaults
@@ -320,9 +338,9 @@ output = _AliasDict({
     'running': True,
     'stdout': True,
     'stderr': True,
-    'debug': False
-
+    'debug': False,
+    'user': True
 }, aliases={
-    'everything': ['warnings', 'running', 'output'],
+    'everything': ['warnings', 'running', 'user', 'output'],
     'output': ['stdout', 'stderr']
 })

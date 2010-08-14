@@ -26,14 +26,15 @@ There are a number of ways to get involved with Fabric:
   `ticket tracker <http://code.fabfile.org>`_ first, though, when submitting
   feature ideas.)
 * **Report bugs.** Pretty much a special case of the previous item: if you
-  think you've found a bug in Fabric, check on the `ticket tracker
+  think you've found a bug in Fabric, check on the `Redmine ticket tracker
   <http://code.fabfile.org>`_ to see if anyone's reported it yet, and if not --
   file a bug! If possible, try to make sure you can replicate it repeatedly,
   and let us know the circumstances (what version of Fabric you're using, what
   platform you're on, and what exactly you were doing when the bug cropped up.)
 * **Submit patches or new features.** See the :ref:`source-code-checkouts`
   documentation, grab a Git clone of the source, and either email a patch to
-  the mailing list or make your own GitHub fork and send us a pull request.
+  the mailing list or make your own GitHub fork and post a link to your fork
+  (or a specific commit on a fork) in the appropriate Redmine ticket.
   While we may not always reply promptly, we do try to make time eventually to
   inspect all contributions and either incorporate them or explain why we don't
   feel the change is a good fit.
