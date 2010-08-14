@@ -272,4 +272,4 @@ class TestNetwork(FabricTest):
             silent=False
         ):
             sudo("ls /simple")
-        assert_contains(env.sudo_prompt + " ", sys.stdout.getvalue())
+        assert_contains(env.sudo_prompt + " ", sys.stdall.getvalue())

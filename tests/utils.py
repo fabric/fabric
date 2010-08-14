@@ -44,6 +44,30 @@ class FabricTest(object):
         output.update(self.previous_output)
 
 
+class CarbonCopy(StringIO):
+    """
+    A StringIO capable of multiplexing its writes to other buffer objects.
+    """
+
+    def __init__(self, buffer='', cc=None):
+        """
+        If ``cc`` is given and is a file-like object or an iterable of same,
+        it/they will be written to whenever this StringIO instance is written
+        to.
+        """
+        StringIO.__init__(self, buffer)
+        if cc is None:
+            cc = []
+        elif hasattr(cc, 'write'):
+            cc = [cc]
+        self.cc = cc
+
+    def write(self, s):
+        StringIO.write(self, s)
+        for writer in self.cc:
+            writer.write(s)
+
+
 def mock_streams(which):
     """
     Replaces a stream with a ``StringIO`` during the test, then restores after.
@@ -61,17 +85,27 @@ def mock_streams(which):
         @mock_streams('both')
         def func()
             pass
+
+    If ``'both'`` is specified, not only will both streams be replaced with
+    StringIOs, but a new combined-streams output (another StringIO) will appear
+    at ``sys.stdall``. This StringIO will resemble what a user sees at a
+    terminal, i.e. both streams intermingled.
     """
     which = [which]
     if which == ['both']:
+        sys.stdall = StringIO()
+        fake_stdout = CarbonCopy(cc=sys.stdall)
+        fake_stderr = CarbonCopy(cc=sys.stdall)
         which = ['stdout', 'stderr']
+    else:
+        fake_stdout, fake_stderr = StringIO(), StringIO()
     def mocked_streams_decorator(func):
         @wraps(func)
         def inner_wrapper(*args, **kwargs):
             if 'stdout' in which:
-                my_stdout, sys.stdout = sys.stdout, StringIO()
+                my_stdout, sys.stdout = sys.stdout, fake_stdout
             if 'stderr' in which:
-                my_stderr, sys.stderr = sys.stderr, StringIO()
+                my_stderr, sys.stderr = sys.stderr, fake_stderr
             result = func(*args, **kwargs)
             if 'stderr' in which:
                 sys.stderr = my_stderr
