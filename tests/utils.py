@@ -91,27 +91,31 @@ def mock_streams(which):
     at ``sys.stdall``. This StringIO will resemble what a user sees at a
     terminal, i.e. both streams intermingled.
     """
-    which = [which]
-    if which == ['both']:
-        sys.stdall = StringIO()
-        fake_stdout = CarbonCopy(cc=sys.stdall)
-        fake_stderr = CarbonCopy(cc=sys.stdall)
-        which = ['stdout', 'stderr']
-    else:
-        fake_stdout, fake_stderr = StringIO(), StringIO()
+    both = (which == 'both')
+    stdout = (which == 'stdout') or both
+    stderr = (which == 'stderr') or both
     def mocked_streams_decorator(func):
         @wraps(func)
         def inner_wrapper(*args, **kwargs):
-            if 'stdout' in which:
+            if both:
+                sys.stdall = StringIO()
+                fake_stdout = CarbonCopy(cc=sys.stdall)
+                fake_stderr = CarbonCopy(cc=sys.stdall)
+            else:
+                fake_stdout, fake_stderr = StringIO(), StringIO()
+            if stdout:
                 my_stdout, sys.stdout = sys.stdout, fake_stdout
-            if 'stderr' in which:
+            if stderr:
                 my_stderr, sys.stderr = sys.stderr, fake_stderr
-            result = func(*args, **kwargs)
-            if 'stderr' in which:
-                sys.stderr = my_stderr
-            if 'stdout' in which:
-                sys.stdout = my_stdout
-            return result
+            try:
+                ret = func(*args, **kwargs)
+            finally:
+                if stdout:
+                    sys.stdout = my_stdout
+                if stderr:
+                    sys.stderr = my_stderr
+                if both:
+                    del sys.stdall
         return inner_wrapper
     return mocked_streams_decorator
 
