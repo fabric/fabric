@@ -318,7 +318,7 @@ Passphrase for private key:
 out: sudo password:
 out: Sorry, try again.
 out: sudo password: """ % cmd1
-        expected = line_prefix(prefix, expected) + "\n\n"
+        expected = line_prefix(prefix, expected) + "\n"
         expected += line_prefix(prefix, "out: %s" % (RESPONSES[cmd1])) + "\n"
         expected += line_prefix(prefix, "sudo: %s" % cmd2) + "\n"
         expected += line_prefix(prefix, "out: sudo password:") + "\n"
