@@ -29,6 +29,8 @@ from server import (server, PORT, RESPONSES, PASSWORDS, CLIENT_PRIVKEY,
 
 
 class TestNetwork(FabricTest):
+
+
     def test_host_string_normalization(self):
         username = _get_system_username()
         for description, input, output_ in (
@@ -286,4 +288,39 @@ out: sudo password: """ % first_prompt
         else:
             expected += "\n"
         expected += "\n"
+        eq_(expected, sys.stdall.getvalue())
+
+
+    @mock_streams('both')
+    @server(pubkeys=True)
+    def test_consecutive_sudos_should_not_have_blank_line(self):
+        """
+        Consecutive sudo() calls should not incur a blank line in-between
+        """
+        env.password = None
+        env.no_agent = True
+        env.key_filename = CLIENT_PRIVKEY
+        cmd1 = "ls /simple"
+        cmd2 = "ls /"
+        with password_response(
+            (
+                CLIENT_PRIVKEY_PASSPHRASE,
+                PASSWORDS[env.user],
+                PASSWORDS[env.user]
+            ),
+            silent=False
+        ):
+            sudo(cmd1)
+            sudo(cmd2)
+        prefix = "[%s] " % env.host_string
+        expected = """sudo: %s
+Passphrase for private key: 
+out: sudo password:
+out: Sorry, try again.
+out: sudo password: """ % cmd1
+        expected = line_prefix(prefix, expected) + "\n\n"
+        expected += line_prefix(prefix, "out: %s" % (RESPONSES[cmd1])) + "\n"
+        expected += line_prefix(prefix, "sudo: %s" % cmd2) + "\n"
+        expected += line_prefix(prefix, "out: sudo password:") + "\n"
+        expected += line_prefix(prefix + "out: ", RESPONSES[cmd2]) + "\n"
         eq_(expected, sys.stdall.getvalue())
