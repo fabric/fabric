@@ -9,7 +9,4 @@ def get_password():
 
 def set_password(password):
     from fabric.state import env
-    if not env.password:
-        env.password = password
-    if not env.passwords.get(env.host_string):
-        env.passwords[env.host_string] = password
+    env.password = env.passwords[env.host_string] = password

@@ -541,6 +541,10 @@ connect to, you may find setting either or both of these env vars to be useful.
 However, Fabric will automatically fill them in as necessary without any
 additional configuration.
 
+Specifically, each time a password prompt is presented to the user, the value
+entered is used to update both the single default password cache, and the cache
+value for the current value of ``env.host_string``.
+
 .. [#] We highly recommend the use of SSH `key-based access
     <http://en.wikipedia.org/wiki/Public_key>`_ instead of relying on
     homogeneous password setups, as it's significantly more secure.
