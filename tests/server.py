@@ -23,6 +23,7 @@ from fabric.network import disconnect_all
 #
 
 PORT = 2200
+USER = 'username'
 RESPONSES = {
     "ls /simple": "some output",
     "ls /": """AUTHORS
@@ -43,7 +44,7 @@ tests"""
 }
 PASSWORDS = {
     'root': 'root',
-    env.local_user: 'password'
+    USER: 'password'
 }
 
 def local_file(filename):
