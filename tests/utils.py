@@ -144,6 +144,7 @@ def password_response(password, times_called=None, silent=True):
         passwords = [password]
     else:
         passwords = list(password)
+    # Optional echoing of prompt to mimic real behavior of getpass
     echo = lambda x, y: y.write(x + "\n")
     # Always return first (only?) password right away
     fake = fake.returns(passwords.pop(0))

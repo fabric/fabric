@@ -294,7 +294,11 @@ out: sudo password: """ % first_prompt
     @mock_streams('both')
     @server(
         pubkeys=True,
-        responses={'oneliner': 'result', 'twoliner': 'result1\nresult2'}
+        responses={
+            'oneliner': 'result',
+            'twoliner': 'result1\nresult2',
+            'another oneliner': 'different result'
+        }
     )
     def test_consecutive_sudos_should_not_have_blank_line(self):
         """
@@ -305,11 +309,12 @@ out: sudo password: """ % first_prompt
         env.key_filename = CLIENT_PRIVKEY
         env.warn_only = True
         with password_response(
-            (CLIENT_PRIVKEY_PASSPHRASE, 'password', 'password'),
+            (CLIENT_PRIVKEY_PASSPHRASE, 'password'),
             silent=False
         ):
             sudo('oneliner')
             sudo('twoliner')
+            sudo('another oneliner')
         expected = """
 [%(prefix)s] sudo: oneliner
 [%(prefix)s] Passphrase for private key:
@@ -321,5 +326,8 @@ out: sudo password: """ % first_prompt
 [%(prefix)s] out: sudo password:
 [%(prefix)s] out: result1
 [%(prefix)s] out: result2
+[%(prefix)s] sudo: another oneliner
+[%(prefix)s] out: sudo password:
+[%(prefix)s] out: different result
 """ % {'prefix': env.host_string}
         eq_(expected[1:], sys.stdall.getvalue())
