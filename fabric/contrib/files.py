@@ -120,7 +120,7 @@ def sed(filename, before, after, limit='', use_sudo=False, backup='.bak'):
     <filename>"``.
 
     For convenience, ``before`` and ``after`` will automatically escape forward
-    slashes (and **only** forward slashes) for you, so you don't need to
+    slashes, single quotes and parentheses for you, so you don't need to
     specify e.g.  ``http:\/\/foo\.com``, instead just using ``http://foo\.com``
     is fine.
 
@@ -281,8 +281,8 @@ def append(filename, text, use_sudo=False, partial=True):
     if isinstance(text, str):
         text = [text]
     for line in text:
-        if (contains('^' + re.escape(line) + ('' if partial else '$'), filename, use_sudo=use_sudo)
-            and line
-            and exists(filename)):
+        regex = '^' + re.escape(line) + ('' if partial else '$')
+        if (exists(filename) and line
+            and contains(filename, regex, use_sudo=use_sudo)):
             continue
         func("echo '%s' >> %s" % (line.replace("'", r'\''), filename))

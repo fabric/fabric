@@ -84,13 +84,8 @@ def puts(text, show_prefix=True, end="\n", flush=False):
     You may force output flushing (e.g. to bypass output buffering) by setting
     ``flush=True``.
 
-    .. note::
-        due to what appears to be a bug in the otherwise amazing Sphinx
-        documentation generator, the reported default value for ``end`` in the
-        above function signature is incorrect. The actual default value is a
-        newline, ``"\\n"``.
-
     .. versionadded:: 1.0
+    .. seealso:: `~fabric.utils.fastprint`
     """
     from fabric.state import output, env
     if output.user:
@@ -100,3 +95,29 @@ def puts(text, show_prefix=True, end="\n", flush=False):
         sys.stdout.write(prefix + str(text) + end)
         if flush:
             sys.stdout.flush()
+
+
+def fastprint(text, show_prefix=False, end="", flush=True):
+    """
+    Print ``text`` immediately, without any prefix or line ending.
+
+    This function is simply an alias of `~fabric.utils.puts` with different
+    default argument values, such that the ``text`` is printed without any
+    embellishment and immediately flushed.
+
+    It is useful for any situation where you wish to print text which might
+    otherwise get buffered by Python's output buffering (such as within a
+    processor intensive ``for`` loop). Since such use cases typically also
+    require a lack of line endings (such as printing a series of dots to
+    signify progress) it also omits the traditional newline by default.
+
+    .. note::
+
+        Since `~fabric.utils.fastprint` calls `~fabric.utils.puts`, it is
+        likewise subject to the ``user`` :doc:`output level
+        </usage/output_controls>`.
+
+    .. versionadded:: 1.0
+    .. seealso:: `~fabric.utils.puts`
+    """
+    return puts(text=text, show_prefix=show_prefix, end=end, flush=flush)

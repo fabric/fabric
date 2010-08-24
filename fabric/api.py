@@ -11,4 +11,4 @@ from fabric.decorators import hosts, roles, runs_once
 from fabric.operations import (require, prompt, put, get, run, sudo, local,
     reboot)
 from fabric.state import env, output
-from fabric.utils import abort, warn, puts
+from fabric.utils import abort, warn, puts, fastprint

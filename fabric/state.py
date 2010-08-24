@@ -14,8 +14,11 @@ from fabric.version import get_version
 # Win32 flag
 #
 
-# Impacts a handful of platform specific behaviors.
-win32 = sys.platform in ['win32', 'cygwin']
+# Impacts a handful of platform specific behaviors. Note that Cygwin's Python
+# is actually close enough to "real" UNIXes that it doesn't need (or want!) to
+# use PyWin32 -- so we only test for literal Win32 setups (vanilla Python,
+# ActiveState etc) here.
+win32 = (sys.platform == 'win32')
 
 
 #
@@ -216,26 +219,27 @@ env_options = [
 # preserving DRY: anything in here is generally not settable via the command
 # line.
 env = _AttributeDict({
+    'again_prompt': 'Sorry, try again.\n',
     'all_hosts': None, 
     'command': None,
+    'command_prefixes': [],
     'cwd': '', # Must be empty string, not None, for concatenation purposes
     'host': None,
     'host_string': None,
+    'local_user': _get_system_username(),
+    'path': '',
+    'path_behavior': 'append',
     'port': None,
     'real_fabfile': None,
     'roledefs': {},
-    'sudo_prompt': 'sudo password:',
+    'roledefs': {},
     # -S so sudo accepts passwd via stdin, -p with our known-value prompt for
     # later detection (thus %s -- gets filled with env.sudo_prompt at runtime)
     'sudo_prefix': "sudo -S -p '%s' ",
-    'again_prompt': 'Sorry, try again.\n',
+    'sudo_prompt': 'sudo password:',
     'use_shell': True,
-    'roledefs': {},
-    'path': '',
-    'path_behavior': 'append',
     'user': None,
     'version': get_version('short'),
-    'command_prefixes': [],
 })
 
 # Add in option defaults

@@ -8,9 +8,53 @@ reading the rest of the documentation, especially the :ref:`usage docs
 <usage-docs>`, so please make sure you check those out if your question is not
 answered here.
 
+.. _one-shell-per-command:
 
-Fabric sometimes takes a long time to disconnect at the end of a session. Why?
-==============================================================================
+My (``cd``/``workon``/``export``/etc) calls don't seem to work!
+===============================================================
+
+While Fabric can be used for many shell-script-like tasks, there's a slightly
+unintuitive catch: each `~fabric.operations.run` or `~fabric.operations.sudo`
+call has its own distinct shell session. This is required in order for Fabric
+to reliably figure out, after your command has run, what its standard out/error
+and return codes were.
+
+Unfortunately, it means that code like the following doesn't behave as you
+might assume::
+
+    def deploy():
+        run("cd /path/to/application")
+        run("./update.sh")
+
+If that were a shell script, the second `~fabric.operations.run` call would
+have executed with a current working directory of ``/path/to/application/`` --
+but because both commands are run in their own distinct session over SSH, it
+actually tries to execute ``$HOME/update.sh`` instead (since your remote home
+directory is the default working directory).
+
+A simple workaround is to make use of shell logic operations such as ``&&``,
+which link multiple expressions together (provided the left hand side executed
+without error) like so::
+
+    def deploy():
+        run("cd /path/to/application && ./update.sh")
+
+Fabric provides a convenient shortcut for this specific use case, in fact:
+`~fabric.context_managers.cd`.
+
+.. note::
+    You might also get away with an absolute path and skip directory changing
+    altogether::
+
+        def deploy():
+            run("/path/to/application/update.sh")
+
+    However, this requires that the command in question makes no assumptions
+    about your current working directory!
+
+
+Fabric sometimes takes a long time to disconnect at the end of a session.
+=========================================================================
 
 If you're on Python 2.6.5, the issue may be a change in that version of Python
 which triggered a latent bug in our SSH layer, Paramiko. Fabric currently
@@ -53,15 +97,16 @@ There are multiple ways to deal with this problem:
   less cranky.
 
 
+.. _faq-daemonize:
+
 Why can't I run programs in the background with ``&``? It makes Fabric hang.
 ============================================================================
 
 Because Fabric executes a shell on the remote end for each invocation of
-``run`` or ``sudo``, techniques like backgrounding (or using ``cd``, but see
-the `cd` context manager for help on that) will not work as expected.
-Backgrounded processes still prevent the calling shell from exiting until they
-stop running, and this in turn prevents Fabric from continuing on with its own
-execution.
+``run`` or ``sudo`` (:ref:`see also <one-shell-per-command>`), backgrounding a
+process via the shell will not work as expected. Backgrounded processes still
+prevent the calling shell from exiting until they stop running, and this in
+turn prevents Fabric from continuing on with its own execution.
 
 If you truly need to run a process in the "background" and are unable to
 properly `daemonize
@@ -79,8 +124,8 @@ and thus your Fabric task will continue executing as intended.
 .. note::
 
     There are also alternatives to ``screen`` which serve the same purpose,
-    such as ``dtach``. As long as the program can ensure that the process in
-    question is detached from your shell process, it should suffice.
+    such as ``tmux`` or ``dtach``. As long as the program can ensure that the
+    process in question is detached from your shell process, it should suffice.
 
 
 My remote system doesn't have ``bash`` installed by default, do I need to install ``bash``?
