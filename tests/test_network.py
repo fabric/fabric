@@ -19,7 +19,7 @@ from fabric.state import env, output, _get_system_username
 from fabric.operations import run, sudo
 
 from utils import *
-from server import (server, PORT, RESPONSES, PASSWORDS, CLIENT_PRIVKEY,
+from server import (server, PORT, RESPONSES, PASSWORDS, CLIENT_PRIVKEY, USER,
     CLIENT_PRIVKEY_PASSPHRASE)
 
 
@@ -285,7 +285,7 @@ class TestNetwork(FabricTest):
 """ % {'prefix': env.host_string}
         else:
             # Note lack of first sudo prompt (as it's autoresponded to) and of
-            # course the actualy result output.
+            # course the actual result output.
             expected = """
 [%(prefix)s] sudo: oneliner
 [%(prefix)s] Passphrase for private key: 
@@ -307,9 +307,8 @@ class TestNetwork(FabricTest):
         env.password = None
         env.no_agent = True
         env.key_filename = CLIENT_PRIVKEY
-        env.warn_only = True
         with password_response(
-            (CLIENT_PRIVKEY_PASSPHRASE, 'password'),
+            (CLIENT_PRIVKEY_PASSPHRASE, PASSWORDS[USER]),
             silent=False
         ):
             sudo('oneliner')

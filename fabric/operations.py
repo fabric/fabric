@@ -533,8 +533,7 @@ def _execute(channel, command, pty=True, combine_stderr=True,
             channel.exec_command(command)
 
         # Init stdout, stderr capturing. Must use lists instead of strings as
-        # strings are immutable and we're using these as pass-by-reference /
-        # globals
+        # strings are immutable and we're using these as pass-by-reference
         stdout, stderr = [], []
         if invoke_shell:
             stdout = stderr = None
