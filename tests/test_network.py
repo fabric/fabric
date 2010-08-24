@@ -326,3 +326,33 @@ class TestNetwork(FabricTest):
 [%(prefix)s] out: result2
 """ % {'prefix': env.host_string}
         eq_(expected[1:], sys.stdall.getvalue())
+
+
+    @mock_streams('both')
+    @server(pubkeys=True, responses={'silent': '', 'normal': 'foo'})
+    def test_silent_commands_should_not_have_blank_line(self):
+        """
+        Silent commands should not generate an extra trailing blank line
+
+        After the move to interactive I/O, it was noticed that while run/sudo
+        commands which had non-empty stdout worked normally (consecutive such
+        commands were totally adjacent), those with no stdout (i.e. silent
+        commands like ``test`` or ``mkdir``) resulted in spurious blank lines
+        after the "run:" line. This looks quite ugly in real world scripts.
+        """
+        env.password = None
+        env.no_agent = True
+        env.key_filename = CLIENT_PRIVKEY
+        with password_response(CLIENT_PRIVKEY_PASSPHRASE, silent=False):
+            run('normal')
+        run('silent')
+        run('normal')
+        expected = """
+[%(prefix)s] run: normal
+[%(prefix)s] Passphrase for private key: 
+[%(prefix)s] out: foo
+[%(prefix)s] run: silent
+[%(prefix)s] run: normal
+[%(prefix)s] out: foo
+""" % {'prefix': env.host_string}
+        eq_(expected[1:], sys.stdall.getvalue())
