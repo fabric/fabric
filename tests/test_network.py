@@ -263,41 +263,42 @@ class TestNetwork(FabricTest):
 
     @staticmethod
     @mock_streams('both')
-    @server(pubkeys=True)
+    @server(pubkeys=True, responses={'oneliner': 'result'})
     def _prompt_display(display_output):
         env.password = None
         env.no_agent = True
         env.key_filename = CLIENT_PRIVKEY
         output.output = display_output
-        cmd = "ls /simple"
         with password_response(
             (CLIENT_PRIVKEY_PASSPHRASE, PASSWORDS[env.user]),
             silent=False
         ):
-            sudo(cmd)
-        prefix = "[%s] " % env.host_string
-        first_prompt = "out: sudo password:\n" if display_output else ""
-        expected = """sudo: ls /simple
-Passphrase for private key: 
-%sout: Sorry, try again.
-out: sudo password: """ % first_prompt
-        expected = line_prefix(prefix, expected)
+            sudo('oneliner')
         if display_output:
-            expected += "\n\n"
-            expected += line_prefix(prefix, "out: %s" % (RESPONSES[cmd]))
+            expected = """
+[%(prefix)s] sudo: oneliner
+[%(prefix)s] Passphrase for private key: 
+[%(prefix)s] out: sudo password:
+[%(prefix)s] out: Sorry, try again.
+[%(prefix)s] out: sudo password: 
+[%(prefix)s] out: result
+""" % {'prefix': env.host_string}
         else:
-            expected += "\n"
-        expected += "\n"
-        eq_(expected, sys.stdall.getvalue())
+            # Note lack of first sudo prompt (as it's autoresponded to) and of
+            # course the actualy result output.
+            expected = """
+[%(prefix)s] sudo: oneliner
+[%(prefix)s] Passphrase for private key: 
+[%(prefix)s] out: Sorry, try again.
+[%(prefix)s] out: sudo password: 
+""" % {'prefix': env.host_string}
+        eq_(expected[1:], sys.stdall.getvalue())
 
 
     @mock_streams('both')
     @server(
         pubkeys=True,
-        responses={
-            'oneliner': 'result',
-            'twoliner': 'result1\nresult2'
-        }
+        responses={'oneliner': 'result', 'twoliner': 'result1\nresult2'}
     )
     def test_consecutive_sudos_should_not_have_blank_line(self):
         """
