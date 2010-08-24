@@ -1,3 +1,4 @@
+from functools import wraps
 
 class Task(object):
     """
@@ -26,4 +27,14 @@ class WrappedCallableTask(Task):
 
     def __call__(self, *args, **kwargs):
         return self.run(*args, **kwargs)
+
+def taskdecorator(taskmodifier):
+    @wraps(taskmodifier)
+    def taskfactory(target_task):
+        if not isinstance(target_task, Task):
+            target_task = WrappedCallableTask(target_task)
+        return taskmodifier(target_task)
+    return taskfactory
+
+
 
