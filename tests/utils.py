@@ -187,4 +187,19 @@ def eq_(a, b, msg=None):
     """
     Shadow of the Nose builtin which presents easier to read multiline output.
     """
-    assert a == b, msg or "\n\n%s\n     !=\n%s" % (a, b)
+    default_msg = """
+Expected:
+%s
+
+Got:
+%s
+
+--------------------------------- aka -----------------------------------------
+
+Expected:
+%r
+
+Got:
+%r
+""" % (a, b, a, b)
+    assert a == b, msg or default_msg
