@@ -345,8 +345,8 @@ class TestNetwork(FabricTest):
         env.key_filename = CLIENT_PRIVKEY
         with password_response(CLIENT_PRIVKEY_PASSPHRASE, silent=False):
             run('normal')
-        run('silent')
-        run('normal')
+            run('silent')
+            run('normal')
         expected = """
 [%(prefix)s] run: normal
 [%(prefix)s] Passphrase for private key: 
