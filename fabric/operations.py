@@ -560,19 +560,24 @@ def _execute(channel, command, pty=True, combine_stderr=True,
         for worker in workers:
             worker.thread.join()
 
-        # Tie off "loose" output by printing a newline. Helps to ensure any
-        # following print()s aren't on the same line as a trailing line prefix
-        # or similar.
-        if output.running:
-            print("")
-
         # Close channel
         channel.close()
 
-        # Return stdout, stderr and exit status
+        # Update stdout/stderr with captured values if applicable
         if not invoke_shell:
             stdout = ''.join(stdout).strip()
             stderr = ''.join(stderr).strip()
+
+        # Tie off "loose" output by printing a newline. Helps to ensure any
+        # following print()s aren't on the same line as a trailing line prefix
+        # or similar. However, don't add an extra newline if we've already
+        # ended up with one, as that adds a entire blank line instead.
+        if output.running \
+            and (output.stdout and stdout and not stdout.endswith("\n")) \
+            or (output.stderr and stderr and not stderr.endswith("\n")) \
+            or not (output.stderr or output.stdout):
+            print("")
+
         return stdout, stderr, status
 
 
