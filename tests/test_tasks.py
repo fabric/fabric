@@ -66,3 +66,33 @@ class TestOfWrappedCallableTask(unittest.TestCase):
         task = tasks.WrappedCallableTask(foo)
         self.assertEqual(task(), task.run())
 
+
+# Reminder: decorator syntax, e.g.:
+#     @foo
+#     def bar():...
+#
+# is semantically equivalent to:
+#     def bar():...
+#     bar = foo(bar)
+#
+# this simplifies testing :)
+
+def test_decorator_incompatibility_on_task():
+    from fabric.decorators import task, hosts, runs_once, roles
+    def foo(): return "foo"
+    foo = task(foo)
+
+    # since we aren't setting foo to be the newly decorated thing, its cool
+    hosts('me@localhost')(foo)
+    runs_once(foo)
+    roles('www')(foo)
+
+def test_decorator_closure_hiding():
+    from fabric.decorators import task, hosts
+    def foo(): print env.host_string
+    foo = hosts("me@localhost")(foo)
+    foo = task(foo)
+
+    # this broke in the old way, due to closure stuff hiding in the
+    # function, but task making an object
+    eq_(["me@localhost"], foo.hosts)
