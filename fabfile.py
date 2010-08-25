@@ -15,6 +15,7 @@ _version = fabric.version.get_version
 docs_host = 'jforcier@fabfile.org'
 
 
+@task
 def test(args=None):
     """
     Run all unit tests and doctests.
@@ -26,6 +27,7 @@ def test(args=None):
     local('nosetests %s' % default_args, capture=False)
 
 
+@task
 def build_docs(clean='no', browse='no'):
     """
     Generate the Sphinx documentation.
@@ -78,6 +80,7 @@ def _commits_since_tag():
     """
     return local("git log %s.." % _version('short'))
 
+@task
 def tag(force='no', push='no'):
     """
     Tag a new release.
@@ -120,6 +123,7 @@ def tag(force='no', push='no'):
             local("git push origin %s" % _version('short'), capture=False)
 
 
+@task
 def build():
     """
     Build (but don't upload) via setup.py
@@ -127,6 +131,7 @@ def build():
     local('python setup.py sdist', capture=False)
 
 
+@task
 def upload():
     """
     Build, register and upload to PyPI
@@ -134,6 +139,7 @@ def upload():
     local('python setup.py sdist register upload', capture=False)
 
 
+@task
 def release(force='no'):
     """
     Tag/push, build, upload new version and build/upload documentation.
