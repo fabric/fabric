@@ -290,8 +290,7 @@ class TestNetwork(FabricTest):
 [%(prefix)s] sudo: oneliner
 [%(prefix)s] Passphrase for private key: 
 [%(prefix)s] out: Sorry, try again.
-[%(prefix)s] out: sudo password: 
-""" % {'prefix': env.host_string}
+[%(prefix)s] out: sudo password: """ % {'prefix': env.host_string}
         eq_(expected[1:], sys.stdall.getvalue())
 
 
@@ -347,6 +346,9 @@ class TestNetwork(FabricTest):
             run('normal')
             run('silent')
             run('normal')
+            with hide('everything'):
+                run('normal')
+                run('silent')
         expected = """
 [%(prefix)s] run: normal
 [%(prefix)s] Passphrase for private key: 

@@ -574,8 +574,7 @@ def _execute(channel, command, pty=True, combine_stderr=True,
         # ended up with one, as that adds a entire blank line instead.
         if output.running \
             and (output.stdout and stdout and not stdout.endswith("\n")) \
-            or (output.stderr and stderr and not stderr.endswith("\n")) \
-            or not (output.stderr or output.stdout):
+            or (output.stderr and stderr and not stderr.endswith("\n")):
             print("")
 
         return stdout, stderr, status
