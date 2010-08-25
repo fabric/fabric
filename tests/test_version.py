@@ -9,8 +9,8 @@ import fabric.version
 
 def test_get_version():
     get_version = fabric.version.get_version
-    sha = fabric.version.git_sha()
-    sha1 = (" (%s)" % sha) if sha else ""
+    sha1 = fabric.version.git_sha()
+    sha1 = " (%s)" % sha1 if sha1 else ""
     for tup, short, normal, verbose in [
         ((0, 9, 0, 'final', 0), '0.9.0', '0.9', '0.9 final'),
         ((0, 9, 1, 'final', 0), '0.9.1', '0.9.1', '0.9.1 final'),
