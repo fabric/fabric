@@ -7,6 +7,7 @@ import re
 import socket
 import sys
 import threading
+import time
 import types
 from Python26SocketServer import BaseRequestHandler, ThreadingMixIn, TCPServer
 
@@ -167,6 +168,7 @@ def serve_responses(responses, passwords, pubkeys, port):
                         # Close up shop
                         self.command = self.ssh_server.command = None
                         self.waiting_for_command = False
+                        time.sleep(0.5)
                         self.channel.close()
                     else:
                         # If we're here, self.command was False or None,
