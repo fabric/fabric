@@ -31,7 +31,6 @@ Feature additions
   of a Git clone of the Fabric source code repository.
 * Added `~fabric.context_managers.path` context manager for modifying commands'
   effective ``$PATH``.
-* Added support for lazy (callable) role definition values in ``env.roledefs``.
 * Added convenience ``.succeeded`` attribute to the return values of
   `~fabric.operations.run`/`~fabric.operations.sudo`/`~fabric.operations.local`
   which is simply the opposite of the ``.failed`` attribute.
