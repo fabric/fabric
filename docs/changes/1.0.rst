@@ -26,9 +26,6 @@ The below changes are **backwards incompatible** and are likely to break your
 Feature additions
 =================
 
-* The `~fabric.operations.reboot` operation has been added, providing a way for
-  Fabric to issue a reboot command and then reconnect after the system has
-  restarted.
 * ``python setup.py test`` now runs Fabric's test suite (provided you have all
   the prerequisites from the ``requirements.txt`` installed). Thanks to Eric
   Holscher for the patch.
