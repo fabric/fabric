@@ -13,6 +13,9 @@ Feature additions
 * ``python setup.py test`` now runs Fabric's test suite (provided you have all
   the prerequisites from the ``requirements.txt`` installed). Thanks to Eric
   Holscher for the patch.
+* Added functionality for loading fabfiles which are Python packages
+  (directories) instead of just modules (single files.) See
+  :ref:`fabfile-discovery`.
 * :issue:`151`: Added a `~fabric.utils.puts` utility function, which allows
   greater control over fabfile-generated (as opposed to Fabric-generated)
   output. Also added `~fabric.utils.fastprint`, an alias to

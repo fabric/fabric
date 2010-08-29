@@ -166,7 +166,7 @@ env_options = [
     ),
 
     make_option('-f', '--fabfile',
-        default='fabfile.py',
+        default='fabfile',
         help="Python module file to import, e.g. '../other.py'"
     ),
 
