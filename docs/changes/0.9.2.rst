@@ -7,7 +7,11 @@ The following changes were implemented in Fabric 0.9.2:
 Feature additions
 =================
 
-* N/A
+* :issue:`151`: Added a `~fabric.utils.puts` utility function, which allows
+  greater control over fabfile-generated (as opposed to Fabric-generated)
+  output. Also added `~fabric.utils.fastprint`, an alias to
+  `~fabric.utils.puts` allowing for convenient unbuffered,
+  non-newline-terminated printing.
 
 
 Bugfixes

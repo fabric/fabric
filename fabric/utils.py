@@ -85,7 +85,7 @@ def puts(text, show_prefix=True, end="\n", flush=False):
     You may force output flushing (e.g. to bypass output buffering) by setting
     ``flush=True``.
 
-    .. versionadded:: 1.0
+    .. versionadded:: 0.9.2
     .. seealso:: `~fabric.utils.fastprint`
     """
     from fabric.state import output, env
@@ -118,7 +118,7 @@ def fastprint(text, show_prefix=False, end="", flush=True):
         likewise subject to the ``user`` :doc:`output level
         </usage/output_controls>`.
 
-    .. versionadded:: 1.0
+    .. versionadded:: 0.9.2
     .. seealso:: `~fabric.utils.puts`
     """
     return puts(text=text, show_prefix=show_prefix, end=end, flush=flush)

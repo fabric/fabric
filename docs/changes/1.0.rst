@@ -77,11 +77,6 @@ Feature additions
   is a string containing the command's stdout (if ``capture=True``) or the
   empty string (if ``capture=False``) which exposes the ``.failed`` and
   ``.return_code`` attributes, and so forth.
-* :issue:`151`: Added a `~fabric.utils.puts` utility function, which allows
-  greater control over fabfile-generated (as opposed to Fabric-generated)
-  output. Also added `~fabric.utils.fastprint`, an alias to
-  `~fabric.utils.puts` allowing for convenient unbuffered,
-  non-newline-terminated printing.
 
 
 Bugfixes
