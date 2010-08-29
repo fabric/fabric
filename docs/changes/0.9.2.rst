@@ -18,6 +18,7 @@ Feature additions
   :ref:`fabfile-discovery`.
 * Added output lines informing the user of which tasks are being executed (e.g.
   ``[myserver] Executing task 'foo'``.)
+* Added support for lazy (callable) role definition values in ``env.roledefs``.
 * :issue:`151`: Added a `~fabric.utils.puts` utility function, which allows
   greater control over fabfile-generated (as opposed to Fabric-generated)
   output. Also added `~fabric.utils.fastprint`, an alias to
