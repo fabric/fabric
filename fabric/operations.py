@@ -672,6 +672,8 @@ def reboot(wait):
     After calling this operation, further execution of `run` or `sudo` will
     result in a normal reconnection to the server, including any password
     prompts.
+
+    .. versionadded:: 0.9.2
     """
     sudo('reboot')
     client = connections[env.host_string]
