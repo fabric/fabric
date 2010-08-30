@@ -216,6 +216,7 @@ env = _AttributeDict({
     'cwd': '', # Must be empty string, not None, for concatenation purposes
     'host': None,
     'host_string': None,
+    'local_user': _get_system_username(),
     'port': None,
     'real_fabfile': None,
     'roledefs': {},

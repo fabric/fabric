@@ -202,6 +202,16 @@ set/appended to with :option:`-i`.
 
 .. seealso:: `Paramiko's documentation for SSHClient.connect() <http://www.lag.net/paramiko/docs/paramiko.SSHClient-class.html#connect>`_
 
+.. _local-user:
+
+``local_user``
+--------------
+
+A read-only value containing the local system username. This is the same value
+as :ref:`user`'s initial value, but whereas :ref:`user` may be altered by CLI
+arguments, Python code or specific host strings, :ref:`local-user` will always
+contain the same value.
+
 .. _no_agent:
 
 ``no_agent``
