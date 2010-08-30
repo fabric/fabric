@@ -34,8 +34,6 @@ Feature additions
 * Added convenience ``.succeeded`` attribute to the return values of
   `~fabric.operations.run`/`~fabric.operations.sudo`/`~fabric.operations.local`
   which is simply the opposite of the ``.failed`` attribute.
-* Added `contrib.django <fabric.contrib.django>` module with basic Django
-  integration.
 * Refactored SSH disconnection code out of the main ``fab`` loop into
   `~fabric.network.disconnect_all`, allowing library users to avoid problems
   with non-fabfile Python scripts hanging after execution finishes.
