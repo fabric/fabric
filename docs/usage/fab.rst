@@ -25,6 +25,45 @@ flexible, by using the provided options and/or passing arguments to individual
 tasks.
 
 
+.. _arbitrary-commands:
+
+Arbitrary remote shell commands
+===============================
+
+.. versionadded:: 0.9.2
+
+Fabric leverages a lesser-known command line convention and may be called in
+the following manner::
+
+    $ fab [options] -- [shell command]
+
+where everything after the ``--`` is turned into a temporary
+`~fabric.operations.run` call, and is not parsed for ``fab`` options. If you've
+defined a host list at the module level or on the command line, this usage will
+act like a one-line anonymous task.
+
+For example, let's say you just wanted to get the kernel info for a bunch of
+systems; you could do this::
+
+    $ fab -H system1,system2,system3 -- uname -a
+
+which would be literally equivalent to the following fabfile::
+
+    from fabric.api import run
+
+    def anonymous():
+        run("uname -a")
+
+as if it were executed thusly::
+
+    $ fab -H system1,system2,system3 anonymous
+
+Most of the time you will want to just write out the task in your fabfile
+(anything you use once, you're likely to use again) but this feature provides a
+handy, fast way to quickly dash off an SSH-borne command while leveraging your
+fabfile's connection settings.
+
+
 .. _command-line-options:
 
 Command-line options
