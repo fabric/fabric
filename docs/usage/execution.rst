@@ -200,7 +200,7 @@ time when calling e.g. ``fab --list``.)
 Use of roles is not required in any way -- it's simply a convenience in
 situations where you have common groupings of servers.
 
-.. versionchanged:: 1.0
+.. versionchanged:: 0.9.2
     Added ability to use callables as ``roledefs`` values.
 
 .. _host-lists:
