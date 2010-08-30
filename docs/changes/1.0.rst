@@ -43,8 +43,6 @@ Feature additions
 * :issue:`27`: Added environment variable (:ref:`always-use-pty`) and
   command-line flag (:option:`--pty`) for global control over the
   `~fabric.operations.run`/`~fabric.operations.sudo` ``pty`` argument.
-* :issue:`52`: Full tracebacks during aborts are now displayed if the user has
-  opted to see debug-level output.
 * :issue:`55`: `~fabric.operations.run`, `~fabric.operations.sudo` and
   `~fabric.operations.local` now provide access to their standard error
   (stderr) as an attribute on the return value, alongside e.g. ``.failed``.

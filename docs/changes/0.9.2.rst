@@ -26,6 +26,8 @@ Feature additions
   been specified.
 * :issue:`29`: Added support for arbitrary command-line-driven anonymous tasks
   via ``fab [options] -- [shell command]``. See :ref:`arbitrary-commands`.
+* :issue:`52`: Full tracebacks during aborts are now displayed if the user has
+  opted to see debug-level output.
 * :issue:`151`: Added a `~fabric.utils.puts` utility function, which allows
   greater control over fabfile-generated (as opposed to Fabric-generated)
   output. Also added `~fabric.utils.fastprint`, an alias to
