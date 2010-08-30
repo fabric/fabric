@@ -30,7 +30,7 @@ tasks.
 Arbitrary remote shell commands
 ===============================
 
-.. versionadded:: 1.0
+.. versionadded:: 0.9.2
 
 Fabric leverages a lesser-known command line convention and may be called in
 the following manner::
