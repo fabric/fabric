@@ -24,6 +24,8 @@ Feature additions
 * :ref:`env.local_user <local-user>` was added, providing easy and permanent
   access to the local system username, even if an alternate remote username has
   been specified.
+* :issue:`29`: Added support for arbitrary command-line-driven anonymous tasks
+  via ``fab [options] -- [shell command]``. See :ref:`arbitrary-commands`.
 * :issue:`151`: Added a `~fabric.utils.puts` utility function, which allows
   greater control over fabfile-generated (as opposed to Fabric-generated)
   output. Also added `~fabric.utils.fastprint`, an alias to
