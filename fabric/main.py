@@ -390,7 +390,8 @@ def main():
 
         # Handle case where we were called bare, i.e. just "fab", and print
         # a help message.
-        if not (options.list_commands or options.display or arguments):
+        if not (options.list_commands or options.display or arguments
+            or remainder_arguments):
             parser.print_help()
             sys.exit(1)
 
