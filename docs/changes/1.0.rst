@@ -38,9 +38,6 @@ Feature additions
   `~fabric.network.disconnect_all`, allowing library users to avoid problems
   with non-fabfile Python scripts hanging after execution finishes.
 * `~fabric.operations.local` now honors `~fabric.context_managers.cd`.
-* :ref:`env.local_user <local-user>` was added, providing easy and permanent
-  access to the local system username, even if an alternate remote username has
-  been specified.
 * :issue:`23`: Added `~fabric.context_managers.prefix` context manager for
   easier management of persistent state across commands.
 * :issue:`27`: Added environment variable (:ref:`always-use-pty`) and
