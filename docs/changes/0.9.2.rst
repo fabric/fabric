@@ -28,6 +28,9 @@ Feature additions
   via ``fab [options] -- [shell command]``. See :ref:`arbitrary-commands`.
 * :issue:`52`: Full tracebacks during aborts are now displayed if the user has
   opted to see debug-level output.
+* :issue:`101`: Added `~fabric.colors` module with basic color output support.
+  (:issue:`101` is still open: we plan to leverage the new module in Fabric's
+  own output in the future.)
 * :issue:`151`: Added a `~fabric.utils.puts` utility function, which allows
   greater control over fabfile-generated (as opposed to Fabric-generated)
   output. Also added `~fabric.utils.fastprint`, an alias to
