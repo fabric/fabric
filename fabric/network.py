@@ -386,6 +386,26 @@ def needs_host(func):
     @wraps(func)
     def host_prompting_wrapper(*args, **kwargs):
         while not env.get('host_string', False):
-            env.host_string = raw_input("No hosts found. Please specify (single) host string for connection: ")
+            host_string = raw_input("No hosts found. Please specify (single) host string for connection: ")
+            interpret_host_string(host_string)
         return func(*args, **kwargs)
     return host_prompting_wrapper
+
+
+def interpret_host_string(host_string):
+    """
+    Apply given host string to the env dict.
+
+    Split it into hostname, username and port (using
+    `~fabric.network.normalize`) and store the full host string plus its
+    constituent parts into the appropriate env vars.
+
+    Returns the parts as split out by ``normalize`` for convenience.
+    """
+    from fabric.state import env
+    username, hostname, port = normalize(host_string)
+    env.host_string = host_string
+    env.host = hostname
+    env.user = username
+    env.port = port
+    return username, hostname, port

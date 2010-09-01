@@ -41,6 +41,9 @@ Feature additions
 Bugfixes
 ========
 
+* The interactive "what host to connect to?" prompt now correctly updates the
+  appropriate environment variables (hostname, username, port) based on user
+  input.
 * :issue:`123`: Removed Cygwin from the "are we on Windows" test; now, only
   Python installs whose ``sys.platform`` says ``'win32'`` will use Windows-only
   code paths (e.g. importing of ``pywin32``).
