@@ -10,6 +10,8 @@ class Task(object):
     """
     name = 'undefined'
 
+    def __init__(self):
+        self.use_decorated = False
     def run(self):
         raise NotImplementedError
 
@@ -21,6 +23,7 @@ class WrappedCallableTask(Task):
     Generally used via the `@task` decorator.
     """
     def __init__(self, callable):
+        super(WrappedCallableTask, self).__init__()
         self.run = callable
         self.name = callable.__name__
         self.__doc__ = callable.__doc__

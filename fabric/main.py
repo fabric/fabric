@@ -166,7 +166,7 @@ def extract_tasks(imported_vars):
     using_decorated_tasks = False
     for tup in imported_vars:
         name, callable = tup
-        if isinstance(callable, Task):
+        if isinstance(callable, Task) and callable.use_decorated:
             using_decorated_tasks = True
             tasks[callable.name] = callable
         elif is_task(tup):
