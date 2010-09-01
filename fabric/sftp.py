@@ -82,7 +82,7 @@ class FabSFTP(object):
         if os.path.isdir(lpath):
             lpath = os.path.join(lpath, os.path.basename(rpath))
         if output.running:
-            #print("[%s] download: %s <- %s" % (
+            print("[%s] download: %s <- %s" % (
                 env.host_string, lpath, rpath
             ))
         # Handle any raised exceptions (no return code to inspect here)
