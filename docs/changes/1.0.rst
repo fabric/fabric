@@ -56,9 +56,6 @@ Feature additions
 Bugfixes
 ========
 
-* The interactive "what host to connect to?" prompt now correctly updates the
-  appropriate environment variables (hostname, username, port) based on user
-  input.
 * Fixed a bug where Fabric's own internal fabfile would pre-empt the user's
   fabfile due to a PYTHONPATH order issue. User fabfiles are now always loaded
   at the front of the PYTHONPATH during import.
