@@ -46,9 +46,6 @@ Feature additions
 * :issue:`55`: `~fabric.operations.run`, `~fabric.operations.sudo` and
   `~fabric.operations.local` now provide access to their standard error
   (stderr) as an attribute on the return value, alongside e.g. ``.failed``.
-* :issue:`101`: Added `~fabric.colors` module with basic color output support.
-  (:issue:`101` is still open: we plan to leverage the new module in Fabric's
-  own output in the future.)
 * :issue:`112`: :option:`fab -d <-d>` now displays a well formatted message for
   tasks that have no docstring defined.
 * :issue:`148`: `~fabric.operations.local` now returns the same "rich" string
