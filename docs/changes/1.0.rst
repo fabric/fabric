@@ -46,20 +46,11 @@ break your 0.9.x based fabfiles!
 Feature additions
 =================
 
-* The `~fabric.operations.reboot` operation has been added, providing a way for
-  Fabric to issue a reboot command and then reconnect after the system has
-  restarted.
-* ``python setup.py test`` now runs Fabric's test suite (provided you have all
-  the prerequisites from the ``requirements.txt`` installed). Thanks to Eric
-  Holscher for the patch.
 * Prerelease versions of Fabric (starting with the 1.0 prereleases) will now
   print the Git SHA1 hash of the current checkout, if the user is working off
   of a Git clone of the Fabric source code repository.
-* Added output lines informing the user of which tasks are being executed (e.g.
-  ``[myserver] Executing task 'foo'``.)
 * Added `~fabric.context_managers.path` context manager for modifying commands'
   effective ``$PATH``.
-* Added support for lazy (callable) role definition values in ``env.roledefs``.
 * Added convenience ``.succeeded`` attribute to the return values of
   `~fabric.operations.run`/`~fabric.operations.sudo`/`~fabric.operations.local`
   which is simply the opposite of the ``.failed`` attribute.
@@ -67,28 +58,14 @@ Feature additions
   `~fabric.network.disconnect_all`, allowing library users to avoid problems
   with non-fabfile Python scripts hanging after execution finishes.
 * `~fabric.operations.local` now honors `~fabric.context_managers.cd`.
-* Added `contrib.django <fabric.contrib.django>` module with basic Django
-  integration.
-* :ref:`env.local_user <local-user>` was added, providing easy and permanent
-  access to the local system username, even if an alternate remote username has
-  been specified.
 * :issue:`23`: Added `~fabric.context_managers.prefix` context manager for
   easier management of persistent state across commands.
 * :issue:`27`: Added environment variable (:ref:`always-use-pty`) and
   command-line flag (:option:`--no-pty`) for global control over the
   `~fabric.operations.run`/`~fabric.operations.sudo` ``pty`` argument.
-* :issue:`29`: Added support for arbitrary command-line-driven anonymous tasks
-  via ``fab [options] -- [shell command]``. See :ref:`arbitrary-commands`.
-* :issue:`52`: Full tracebacks during aborts are now displayed if the user has
-  opted to see debug-level output.
 * :issue:`55`: `~fabric.operations.run`, `~fabric.operations.sudo` and
   `~fabric.operations.local` now provide access to their standard error
   (stderr) as an attribute on the return value, alongside e.g. ``.failed``.
-* :issue:`101`: Added `~fabric.colors` module with basic color output support.
-  (:issue:`101` is still open: we plan to leverage the new module in Fabric's
-  own output in the future.)
-* :issue:`112`: :option:`fab -d <-d>` now displays a well formatted message for
-  tasks that have no docstring defined.
 * :issue:`148`: `~fabric.operations.local` now returns the same "rich" string
   object as `~fabric.operations.run`/`~fabric.operations.sudo` do, so that it
   is a string containing the command's stdout (if ``capture=True``) or the
@@ -108,18 +85,7 @@ Feature additions
 Bugfixes
 ========
 
-* The interactive "what host to connect to?" prompt now correctly updates the
-  appropriate environment variables (hostname, username, port) based on user
-  input.
-* Fixed a bug where Fabric's own internal fabfile would pre-empt the user's
-  fabfile due to a PYTHONPATH order issue. User fabfiles are now always loaded
-  at the front of the PYTHONPATH during import.
-* Disabled some DeprecationWarnings thrown by Paramiko when that library is
-  imported into Fabric under Python 2.6.
-* :issue:`44`, :issue:`63`: Modified `~fabric.contrib.project.rsync_project` to
-  honor the SSH port and identity file settings. Thanks to Mitch Matuson
-  and Morgan Goose.
-
+* N/A
 
 Documentation updates
 =====================
