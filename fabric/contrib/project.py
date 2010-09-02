@@ -76,7 +76,7 @@ def rsync_project(remote_dir, local_dir=None, exclude=(), delete=False,
             keys = [keys]
         key_string = "-i " + " -i ".join(keys)
     # Honor nonstandard port
-    port_string = ("-p %s" % env.port) if env.port else ""
+    port_string = ("-p %s" % env.port) if (env.port != '22') else ""
     # RSH
     rsh_string = ""
     if key_string or port_string:
