@@ -56,8 +56,6 @@ Feature additions
 Bugfixes
 ========
 
-* Disabled some DeprecationWarnings thrown by Paramiko when that library is
-  imported into Fabric under Python 2.6.
 * :issue:`44`, :issue:`63`: Modified `~fabric.contrib.project.rsync_project` to
   honor the SSH port and identity file settings. Thanks to Mitch Matuson
   and Morgan Goose.
