@@ -56,10 +56,7 @@ Feature additions
 Bugfixes
 ========
 
-* :issue:`44`, :issue:`63`: Modified `~fabric.contrib.project.rsync_project` to
-  honor the SSH port and identity file settings. Thanks to Mitch Matuson
-  and Morgan Goose.
-
+* N/A
 
 Documentation updates
 =====================
