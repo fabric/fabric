@@ -56,9 +56,6 @@ Feature additions
 Bugfixes
 ========
 
-* Fixed a bug where Fabric's own internal fabfile would pre-empt the user's
-  fabfile due to a PYTHONPATH order issue. User fabfiles are now always loaded
-  at the front of the PYTHONPATH during import.
 * Disabled some DeprecationWarnings thrown by Paramiko when that library is
   imported into Fabric under Python 2.6.
 * :issue:`44`, :issue:`63`: Modified `~fabric.contrib.project.rsync_project` to
