@@ -41,12 +41,14 @@ Feature additions
 Bugfixes
 ========
 
-* Fixed a bug where Fabric's own internal fabfile would pre-empt the user's
-  fabfile due to a PYTHONPATH order issue. User fabfiles are now always loaded
-  at the front of the PYTHONPATH during import.
 * The interactive "what host to connect to?" prompt now correctly updates the
   appropriate environment variables (hostname, username, port) based on user
   input.
+* Fixed a bug where Fabric's own internal fabfile would pre-empt the user's
+  fabfile due to a PYTHONPATH order issue. User fabfiles are now always loaded
+  at the front of the PYTHONPATH during import.
+* Disabled some DeprecationWarnings thrown by Paramiko when that library is
+  imported into Fabric under Python 2.6.
 * :issue:`123`: Removed Cygwin from the "are we on Windows" test; now, only
   Python installs whose ``sys.platform`` says ``'win32'`` will use Windows-only
   code paths (e.g. importing of ``pywin32``).
