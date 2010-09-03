@@ -636,26 +636,6 @@ def _run_command(command, shell=True, pty=True, combine_stderr=True,
         print("[%s] %s: %s" % (env.host_string, which, wrapped_command))
     elif output.running:
         print("[%s] %s: %s" % (env.host_string, which, given_command))
-    channel = connections[env.host_string]._transport.open_session()
-    # Create pty if necessary (using Paramiko default options, which as of
-    # 1.7.4 is vt100 $TERM @ 80x24 characters)
-    if pty or env.always_use_pty:
-        channel.get_pty()
-    channel.exec_command(wrapped_command)
-    capture_stdout = []
-    capture_stderr = []
-
-    out_thread = output_thread("[%s] out" % env.host_string, channel,
-        capture=capture_stdout)
-    err_thread = output_thread("[%s] err" % env.host_string, channel,
-        stderr=True, capture=capture_stderr)
-
-    # Close when done
-    status = channel.recv_exit_status()
-
-    # Wait for threads to exit so we aren't left with stale threads
-    out_thread.join()
-    err_thread.join()
 
     # Actual execution, stdin/stdout/stderr handling, and termination
     stdout, stderr, status = _execute(default_channel(), wrapped_command, pty,
