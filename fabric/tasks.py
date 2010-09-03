@@ -9,9 +9,8 @@ class Task(object):
     directly.
     """
     name = 'undefined'
+    use_decorated = False
 
-    def __init__(self):
-        self.use_decorated = False
     def run(self):
         raise NotImplementedError
 

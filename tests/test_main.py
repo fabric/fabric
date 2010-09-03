@@ -211,3 +211,11 @@ def test_modules_pay_attention_to_task_decorator():
     docs, funcs = load_fabfile(module)
     eq_(2, len(funcs))
 
+def test_class_based_tasks_are_found_with_proper_name():
+    module = support_fabfile('decorated_fabfile_with_classbased_task.py')
+    sys.path[0:0] = [os.path.dirname(module),]
+
+    docs, funcs = load_fabfile(module)
+    print funcs
+    eq_(1, len(funcs))
+    ok_('foo' in funcs)
