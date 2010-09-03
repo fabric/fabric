@@ -208,7 +208,8 @@ Answering both these needs is the concept of "per-task arguments", which is a
 special syntax you can tack onto the end of any task name:
 
 * Use a colon (``:``) to separate the task name from its arguments;
-* Use commas (``,``) to separate arguments from one another;
+* Use commas (``,``) to separate arguments from one another (may be escaped
+  by using a backslash, i.e. ``\,``);
 * Use equals signs (``=``) for keyword arguments, or omit them for positional
   arguments;
 
@@ -216,10 +217,11 @@ Additionally, since this process involves string parsing, all values will end
 up as Python strings, so plan accordingly. (We hope to improve upon this in
 future versions of Fabric, provided an intuitive syntax can be found.)
 
-For example, a "create a new user" task might be defined like so (omitting the
-actual logic for brevity)::
+For example, a "create a new user" task might be defined like so (omitting most
+of the actual logic for brevity)::
 
-    def new_user(username, admin='no'):
+    def new_user(username, admin='no', comment="No comment provided"):
+        log_action("New User (%s): %s" % (username, comment))
         pass
 
 You can specify just the username::
@@ -238,10 +240,20 @@ Or mix and match, just like in Python::
 
     $ fab new_user:myusername,admin=yes
 
+The ``log_action`` call above is useful for illustrating escaped commas, like
+so::
+
+    $ fab new_user:myusername,admin=no,comment='Gary\, new developer (starts Monday)'
+
+.. note::
+    Quoting the backslash-escaped comma is required, as not doing so will cause
+    shell syntax errors. Quotes are also needed whenever an argument involves
+    other shell-related characters such as spaces.
+
 All of the above are translated into the expected Python function calls. For
 example, the last call above would become::
 
-    >>> new_user('myusername', admin='yes')
+    >>> new_user('myusername', admin='yes', comment='Gary, new developer (starts Monday)')
 
 Roles and hosts
 ---------------
