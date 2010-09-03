@@ -211,7 +211,7 @@ env_options = [
 # preserving DRY: anything in here is generally not settable via the command
 # line.
 env = _AttributeDict({
-    'all_hosts': None, 
+    'all_hosts': [],
     'command': None,
     'cwd': '', # Must be empty string, not None, for concatenation purposes
     'host': None,
