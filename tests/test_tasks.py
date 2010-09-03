@@ -18,7 +18,7 @@ class TestOfWrappedCallableTask(unittest.TestCase):
         def foo(): pass
 
         task = tasks.WrappedCallableTask(foo)
-        self.assertEqual(task.run, foo)
+        self.assertEqual(task.wrapped, foo)
 
     def test_name_is_the_name_of_the_wrapped_callable(self):
         def foo(): pass

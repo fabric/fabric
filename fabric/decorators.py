@@ -37,6 +37,7 @@ def hosts(*host_list):
         Allow a single, iterable argument (``@hosts(iterable)``) to be used
         instead of requiring ``@hosts(*iterable)``.
     """
+    @task
     def attach_hosts(func):
         @wraps(func)
         def inner_decorator(*args, **kwargs):
@@ -77,6 +78,7 @@ def roles(*role_list):
         Allow a single, iterable argument to be used (same as
         `~fabric.decorators.hosts`).
     """
+    @task
     def attach_roles(func):
         @wraps(func)
         def inner_decorator(*args, **kwargs):
@@ -90,6 +92,7 @@ def roles(*role_list):
     return attach_roles
 
 
+@task
 def runs_once(func):
     """
     Decorator preventing wrapped function from running more than once.
