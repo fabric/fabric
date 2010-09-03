@@ -4,7 +4,6 @@ Functions to be used in fabfiles and other non-core code, such as run()/sudo().
 
 from __future__ import with_statement
 
-from glob import glob
 import os
 import os.path
 import re
@@ -12,15 +11,51 @@ import stat
 import subprocess
 import sys
 import time
+from glob import glob
 from traceback import format_exc
 
 from contextlib import closing
 
-from fabric.context_managers import settings
-from fabric.network import output_thread, needs_host
-from fabric.state import env, connections, output
-from fabric.utils import abort, indent, warn
+from fabric.context_managers import settings, char_buffered
+from fabric.io import output_loop, input_loop
+from fabric.network import needs_host
+from fabric.state import env, connections, output, win32, default_channel
+from fabric.utils import abort, indent, warn, puts
+from fabric.thread_handling import ThreadHandler
 from fabric.sftp import FabSFTP
+
+# For terminal size logic below
+if not win32:
+    import fcntl
+    import termios
+    import struct
+
+
+def _pty_size():
+    """
+    Obtain (rows, cols) tuple for sizing a pty on the remote end.
+
+    Defaults to 80x24 (which is also the Paramiko default) but will detect
+    local (stdout-based) terminal window size on non-Windows platforms.
+    """
+    rows, cols = 24, 80
+    if not win32:
+        # We want two short unsigned integers (rows, cols)
+        fmt = 'HH'
+        # Create an empty (zeroed) buffer for ioctl to map onto. Yay for C!
+        buffer = struct.pack(fmt, 0, 0)
+        # Call TIOCGWINSZ to get window size of stdout, returns our filled buffer
+        try:
+            result = fcntl.ioctl(sys.stdout.fileno(), termios.TIOCGWINSZ,
+                buffer)
+            # Unpack buffer back into Python data types
+            rows, cols = struct.unpack(fmt, result)
+        # Deal with e.g. sys.stdout being monkeypatched, such as in testing.
+        # Or termios not having a TIOCGWINSZ.
+        except AttributeError:
+            pass
+    return rows, cols
+
 
 def _handle_failure(message, exception=None):
     """
@@ -47,8 +82,6 @@ def _handle_failure(message, exception=None):
             underlying = exception
         message += "\n\nUnderlying exception message:\n" + indent(underlying)
     return func(message)
-
-
 
 
 def _shell_escape(string):
@@ -462,15 +495,130 @@ def _prefix_env_vars(command):
     return path + command
 
 
-def _execute_remotely(command, sudo=False, shell=True, pty=False, user=None):
+def _execute(channel, command, pty=True, combine_stderr=True,
+    invoke_shell=False):
     """
-    Execute remote shell command, either "normally" or via ``sudo``.
+    Execute ``command`` over ``channel``.
 
-    Used to drive `~fabric.operations.run` and `~fabric.operations.sudo`.
+    ``pty`` controls whether a pseudo-terminal is created.
+
+    ``combine_stderr`` controls whether we call ``channel.set_combine_stderr``.
+
+    ``invoke_shell`` controls whether we use ``exec_command`` or
+    ``invoke_shell`` (plus a handful of other things, such as always forcing a
+    pty.)
+
+    Returns a three-tuple of (``stdout``, ``stderr``, ``status``), where
+    ``stdout``/``stderr`` are captured output strings and ``status`` is the
+    program's return code, if applicable.
     """
+    with char_buffered(sys.stdin):
+        # Combine stdout and stderr to get around oddball mixing issues
+        if combine_stderr or env.combine_stderr:
+            channel.set_combine_stderr(True)
+
+        # Assume pty use, and allow overriding of this either via kwarg or env
+        # var.  (invoke_shell always wants a pty no matter what.)
+        using_pty = True
+        if not invoke_shell and (not pty or not env.always_use_pty):
+            using_pty = False
+        # Request pty with size params (default to 80x24, obtain real
+        # parameters if on POSIX platform)
+        if using_pty:
+            rows, cols = _pty_size()
+            channel.get_pty(width=cols, height=rows)
+
+        # Kick off remote command
+        if invoke_shell:
+            channel.invoke_shell()
+            if command:
+                channel.sendall(command + "\n")
+        else:
+            channel.exec_command(command)
+
+        # Init stdout, stderr capturing. Must use lists instead of strings as
+        # strings are immutable and we're using these as pass-by-reference
+        stdout, stderr = [], []
+        if invoke_shell:
+            stdout = stderr = None
+
+        workers = (
+            ThreadHandler('out', output_loop, channel, "recv", stdout),
+            ThreadHandler('err', output_loop, channel, "recv_stderr", stderr),
+            ThreadHandler('in', input_loop, channel, using_pty)
+        )
+
+        while True:
+            if channel.exit_status_ready():
+                break
+            else:
+                for worker in workers:
+                    e = worker.exception
+                    if e:
+                        raise e[0], e[1], e[2]
+
+        # Obtain exit code of remote program now that we're done.
+        status = channel.recv_exit_status()
+
+        # Wait for threads to exit so we aren't left with stale threads
+        for worker in workers:
+            worker.thread.join()
+
+        # Close channel
+        channel.close()
+
+        # Update stdout/stderr with captured values if applicable
+        if not invoke_shell:
+            stdout = ''.join(stdout).strip()
+            stderr = ''.join(stderr).strip()
+
+        # Tie off "loose" output by printing a newline. Helps to ensure any
+        # following print()s aren't on the same line as a trailing line prefix
+        # or similar. However, don't add an extra newline if we've already
+        # ended up with one, as that adds a entire blank line instead.
+        if output.running \
+            and (output.stdout and stdout and not stdout.endswith("\n")) \
+            or (output.stderr and stderr and not stderr.endswith("\n")):
+            print("")
+
+        return stdout, stderr, status
 
 
-def _run_command(command, shell=True, pty=False, sudo=False, user=None):
+@needs_host
+def open_shell(command=None):
+    """
+    Invoke a fully interactive shell on the remote end.
+
+    If ``command`` is given, it will be sent down the pipe before handing
+    control over to the invoking user.
+
+    This function is most useful for when you need to interact with a heavily
+    shell-based command or series of commands, such as when debugging or when
+    fully interactive recovery is required upon remote program failure.
+
+    It should be considered an easy way to work an interactive shell session
+    into the middle of a Fabric script and is *not* a drop-in replacement for
+    `~fabric.operations.run`, which is also capable of interacting with the
+    remote end (albeit only while its given command is executing) and has much
+    stronger programmatic abilities such as error handling and stdout/stderr
+    capture.
+
+    Specifically, `~fabric.operations.open_shell` provides a better interactive
+    experience than `~fabric.operations.run`, but use of a full remote shell
+    prevents Fabric from determining whether programs run within the shell have
+    failed, and pollutes the stdout/stderr stream with shell output such as
+    login banners, prompts and echoed stdin.
+
+    Thus, this function does not have a return value and will not trigger
+    Fabric's failure handling if any remote programs result in errors.
+
+    .. versionadded:: 1.0
+    """
+    _execute(default_channel(), command, True, True, True)
+
+
+def _run_command(command, shell=True, pty=True, combine_stderr=True,
+    sudo=False, user=None):
     """
     Underpinnings of `run` and `sudo`. See their docstrings for more info.
     """
@@ -482,6 +630,7 @@ def _run_command(command, shell=True, pty=False, sudo=False, user=None):
         shell,
         _sudo_prefix(user) if sudo else None
     )
+    # Execute info line
     which = 'sudo' if sudo else 'run'
     if output.debug:
         print("[%s] %s: %s" % (env.host_string, which, wrapped_command))
@@ -508,12 +657,13 @@ def _run_command(command, shell=True, pty=False, sudo=False, user=None):
     out_thread.join()
     err_thread.join()
 
-    # Close channel
-    channel.close()
+    # Actual execution, stdin/stdout/stderr handling, and termination
+    stdout, stderr, status = _execute(default_channel(), wrapped_command, pty,
+        combine_stderr)
 
     # Assemble output string
-    out = _AttributeString("".join(capture_stdout).strip())
-    err = _AttributeString("".join(capture_stderr).strip())
+    out = _AttributeString(stdout)
+    err = _AttributeString(stderr)
 
     # Error handling
     out.failed = False
@@ -522,8 +672,8 @@ def _run_command(command, shell=True, pty=False, sudo=False, user=None):
         msg = "%s() encountered an error (return code %s) while executing '%s'" % (which, status, command)
         _handle_failure(message=msg)
 
-    # Attach return code to output string so users who have set things to warn
-    # only, can inspect the error code.
+    # Attach return code to output string so users who have set things to
+    # warn only, can inspect the error code.
     out.return_code = status
 
     # Convenience mirror of .failed
@@ -536,7 +686,7 @@ def _run_command(command, shell=True, pty=False, sudo=False, user=None):
 
 
 @needs_host
-def run(command, shell=True, pty=False):
+def run(command, shell=True, pty=True, combine_stderr=True):
     """
     Run a shell command on a remote host.
 
@@ -552,12 +702,25 @@ def run(command, shell=True, pty=False):
     succeeded, and will also include the return code as the ``return_code``
     attribute.
 
-    Standard error will also be attached, as a string, to this return value as
-    the ``stderr`` attribute.
+    Any text entered in your local terminal will be forwarded to the remote
+    program as it runs, thus allowing you to interact with password or other
+    prompts naturally. For more on how this works, see
+    :doc:`/usage/interactivity`.
 
-    You may pass ``pty=True`` to force allocation of a pseudo tty on
-    the remote end. This is not normally required, but some programs may
-    complain (or, even more rarely, refuse to run) if a tty is not present.
+    You may pass ``pty=False`` to forego creation of a pseudo-terminal on the
+    remote end in case the presence of one causes problems for the command in
+    question. However, this will force Fabric itself to echo any  and all input
+    you type while the command is running, including sensitive passwords. (With
+    ``pty=True``, the remote pseudo-terminal will echo for you, and will
+    intelligently handle password-style prompts.) See :ref:`pseudottys` for
+    details.
+
+    Similarly, if you need to programmatically examine the stderr stream of the
+    remote program (exhibited as the ``stderr`` attribute on this function's
+    return value), you may set ``combine_stderr=False``. Doing so has a high
+    chance of causing garbled output to appear on your terminal (though the
+    resulting strings returned by `~fabric.operations.run` will be properly
+    separated). For more info, please read :ref:`combine_streams`.
 
     Examples::
 
@@ -565,16 +728,18 @@ def run(command, shell=True, pty=False):
         run("ls /home/myuser", shell=False)
         output = run('ls /var/www/site1')
 
+    .. versionadded:: 1.0
+        The ``succeeded`` and ``stderr`` return value attributes, the
+        ``combine_stderr`` kwarg, and interactive behavior.
+
     .. versionchanged:: 1.0
-        Added the ``succeeded`` attribute.
-    .. versionchanged:: 1.0
-        Added the ``stderr`` attribute.
+        The default value of ``pty`` is now ``True``.
     """
-    return _run_command(command, shell, pty)
+    return _run_command(command, shell, pty, combine_stderr)
 
 
 @needs_host
-def sudo(command, shell=True, pty=False, user=None):
+def sudo(command, shell=True, pty=True, combine_stderr=True, user=None):
     """
     Run a shell command on a remote host, with superuser privileges.
 
@@ -594,8 +759,11 @@ def sudo(command, shell=True, pty=False, user=None):
         sudo("ls /home/jdoe", user=1001)
         result = sudo("ls /tmp/")
 
+    .. versionchanged:: 1.0
+        See the changed and added notes for `~fabric.operations.run`.
     """
-    return _run_command(command, shell, pty, sudo=True, user=user)
+    return _run_command(command, shell, pty, combine_stderr, sudo=True,
+        user=user)
 
 
 def local(command, capture=True):
@@ -669,6 +837,7 @@ def local(command, capture=True):
     return out
 
 
+@needs_host
 def reboot(wait):
     """
     Reboot the remote system, disconnect, and wait for ``wait`` seconds.
@@ -676,15 +845,17 @@ def reboot(wait):
     After calling this operation, further execution of `run` or `sudo` will
     result in a normal reconnection to the server, including any password
     prompts.
+
+    .. versionadded:: 0.9.2
     """
     sudo('reboot')
     client = connections[env.host_string]
     client.close()
     del connections[env.host_string]
     if output.running:
-        puts("Waiting for reboot: ", flush=True)
+        puts("Waiting for reboot: ", flush=True, end='')
         per_tick = 5
         for second in range(int(wait / per_tick)):
-            puts(".", show_prefix=False, flush=True)
+            puts(".", show_prefix=False, flush=True, end='')
             time.sleep(per_tick)
         puts("done.\n", show_prefix=False, flush=True)
