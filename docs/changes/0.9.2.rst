@@ -31,6 +31,8 @@ Feature additions
 * :issue:`101`: Added `~fabric.colors` module with basic color output support.
   (:issue:`101` is still open: we plan to leverage the new module in Fabric's
   own output in the future.)
+* :issue:`137`: Commas used to separate per-task arguments may now be escaped
+  with a backslash. Thanks to Erich Heine for the patch.
 * :issue:`151`: Added a `~fabric.utils.puts` utility function, which allows
   greater control over fabfile-generated (as opposed to Fabric-generated)
   output. Also added `~fabric.utils.fastprint`, an alias to
