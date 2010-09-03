@@ -2,7 +2,7 @@ from fudge.patcher import with_patched_object
 from nose.tools import eq_, raises
 
 from fabric.decorators import hosts, roles
-from fabric.main import get_hosts, parse_arguments, _merge
+from fabric.main import get_hosts, parse_arguments, _merge, _escape_split
 import fabric.state
 from fabric.state import _AttributeDict
 
@@ -117,3 +117,14 @@ def test_lazy_roles():
     def command():
         pass
     eq_hosts(command, ['a', 'b'])
+
+
+def test_escaped_task_arg_split():
+    """
+    Allow backslashes to escape the task argument separator character
+    """
+    argstr = r"foo,bar\,biz\,baz,what comes after baz?"
+    eq_(
+        _escape_split(',', argstr),
+        ['foo', 'bar,biz,baz', 'what comes after baz?']
+    )
