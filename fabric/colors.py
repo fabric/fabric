@@ -1,5 +1,5 @@
 """
-.. versionadded:: 1.0
+.. versionadded:: 0.9.2
 
 Functions for wrapping strings in ANSI color codes.
 

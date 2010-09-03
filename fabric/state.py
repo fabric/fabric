@@ -198,11 +198,11 @@ env_options = [
     ),
 
     # Global PTY flag for run/sudo
-    make_option('--pty',
+    make_option('--no-pty',
         dest='always_use_pty',
-        action='store_true',
-        default=False,
-        help="force use of pseudo-terminal in run/sudo"
+        action='store_false',
+        default=True,
+        help="do not use pseudo-terminal in run/sudo"
     )
     
 ]
@@ -219,14 +219,17 @@ env_options = [
 # preserving DRY: anything in here is generally not settable via the command
 # line.
 env = _AttributeDict({
-    'again_prompt': 'Sorry, try again.\n',
+    'again_prompt': 'Sorry, try again.',
     'all_hosts': None, 
+    'combine_stderr': True,
     'command': None,
     'command_prefixes': [],
     'cwd': '', # Must be empty string, not None, for concatenation purposes
+    'echo_stdin': True,
     'host': None,
     'host_string': None,
     'local_user': _get_system_username(),
+    'passwords': {},
     'path': '',
     'path_behavior': 'append',
     'port': None,
@@ -239,7 +242,7 @@ env = _AttributeDict({
     'sudo_prompt': 'sudo password:',
     'use_shell': True,
     'user': None,
-    'version': get_version('short'),
+    'version': get_version('short')
 })
 
 # Add in option defaults
@@ -261,6 +264,12 @@ commands = {}
 #
 
 connections = HostConnectionCache()
+
+def default_channel():
+    """
+    Return a channel object based on ``env.host_string``.
+    """
+    return connections[env.host_string].get_transport().open_session()
 
 
 #

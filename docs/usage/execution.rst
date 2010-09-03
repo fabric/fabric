@@ -146,6 +146,8 @@ specify remote hosts on which to execute them. There are a number of ways to do
 so, with scopes varying from global to per-task, and it's possible mix and
 match as needed.
 
+.. _host-strings:
+
 Hosts
 -----
 
@@ -200,7 +202,7 @@ time when calling e.g. ``fab --list``.)
 Use of roles is not required in any way -- it's simply a convenience in
 situations where you have common groupings of servers.
 
-.. versionchanged:: 1.0
+.. versionchanged:: 0.9.2
     Added ability to use callables as ``roledefs`` values.
 
 .. _host-lists:
@@ -509,3 +511,40 @@ before their program exits. This can be accomplished by calling
     `~fabric.network.disconnect_all` may be moved to a more public location in
     the future; we're still working on making the library aspects of Fabric
     more solidified and organized.
+
+
+.. _password-management:
+
+Password management
+===================
+
+Fabric maintains an in-memory, two-tier password cache to help remember your
+login and sudo passwords in certain situations; this helps avoid tedious
+re-entry when multiple systems share the same password [#]_, or if a remote
+system's ``sudo`` configuration doesn't do its own caching.
+
+The first layer is a simple default or fallback password cache,
+:ref:`env.password <password>`. This env var stores a single password which (if
+non-empty) will be tried in the event that the host-specific cache (see below)
+has no entry for the current :ref:`host string <host_string>`.
+
+:ref:`env.passwords <passwords>` (plural!) serves as a per-user/per-host cache,
+storing the most recently entered password for every unique user/host/port
+combination.  Due to this cache, connections to multiple different users and/or
+hosts in the same session will only require a single password entry for each.
+(Previous versions of Fabric used only the single, default password cache and
+thus required password re-entry every time the previously entered password
+became invalid.)
+
+Depending on your configuration and the number of hosts your session will
+connect to, you may find setting either or both of these env vars to be useful.
+However, Fabric will automatically fill them in as necessary without any
+additional configuration.
+
+Specifically, each time a password prompt is presented to the user, the value
+entered is used to update both the single default password cache, and the cache
+value for the current value of ``env.host_string``.
+
+.. [#] We highly recommend the use of SSH `key-based access
+    <http://en.wikipedia.org/wiki/Public_key>`_ instead of relying on
+    homogeneous password setups, as it's significantly more secure.

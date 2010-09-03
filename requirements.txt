@@ -8,6 +8,7 @@
 
 pycrypto >= 1.9
 nose
+rudolf
 coverage
 pylint
 -e hg+http://bitbucket.org/kumar303/fudge/#egg=Fudge

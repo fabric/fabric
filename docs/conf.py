@@ -11,7 +11,9 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys, os
+import os
+import sys
+from datetime import datetime
 
 # Custom ReST roles.
 from docutils.parsers.rst import roles
@@ -50,7 +52,8 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Fabric'
-copyright = u'2009, Christian Vest Hansen and Jeffrey E. Forcier'
+year = datetime.now().year
+copyright = u'%d, Christian Vest Hansen and Jeffrey E. Forcier' % year
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
