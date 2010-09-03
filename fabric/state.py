@@ -220,7 +220,7 @@ env_options = [
 # line.
 env = _AttributeDict({
     'again_prompt': 'Sorry, try again.',
-    'all_hosts': None, 
+    'all_hosts': [],
     'combine_stderr': True,
     'command': None,
     'command_prefixes': [],
