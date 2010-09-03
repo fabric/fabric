@@ -240,12 +240,12 @@ class TestNetwork(FabricTest):
         Passphrase prompt lines should include the user/host in question
         """
         env.password = None
-        env.no_agent = True
+        env.no_agent = env.no_keys = True
         env.key_filename = CLIENT_PRIVKEY
         output.everything = False
         with password_response(CLIENT_PRIVKEY_PASSPHRASE, silent=False):
             run("ls /simple")
-        regex = r'^\[%s\] Passphrase for private key: ' % env.host_string
+        regex = r'^\[%s\] Login password: ' % env.host_string
         assert_contains(regex, sys.stderr.getvalue())
 
 
@@ -266,7 +266,7 @@ class TestNetwork(FabricTest):
     @server(pubkeys=True, responses={'oneliner': 'result'})
     def _prompt_display(display_output):
         env.password = None
-        env.no_agent = True
+        env.no_agent = env.no_keys = True
         env.key_filename = CLIENT_PRIVKEY
         output.output = display_output
         with password_response(
@@ -277,7 +277,7 @@ class TestNetwork(FabricTest):
         if display_output:
             expected = """
 [%(prefix)s] sudo: oneliner
-[%(prefix)s] Passphrase for private key: 
+[%(prefix)s] Login password: 
 [%(prefix)s] out: sudo password:
 [%(prefix)s] out: Sorry, try again.
 [%(prefix)s] out: sudo password: 
@@ -288,7 +288,7 @@ class TestNetwork(FabricTest):
             # course the actual result output.
             expected = """
 [%(prefix)s] sudo: oneliner
-[%(prefix)s] Passphrase for private key: 
+[%(prefix)s] Login password: 
 [%(prefix)s] out: Sorry, try again.
 [%(prefix)s] out: sudo password: """ % {'prefix': env.host_string}
         eq_(expected[1:], sys.stdall.getvalue())
@@ -304,7 +304,7 @@ class TestNetwork(FabricTest):
         Consecutive sudo() calls should not incur a blank line in-between
         """
         env.password = None
-        env.no_agent = True
+        env.no_agent = env.no_keys = True
         env.key_filename = CLIENT_PRIVKEY
         with password_response(
             (CLIENT_PRIVKEY_PASSPHRASE, PASSWORDS[USER]),
@@ -314,7 +314,7 @@ class TestNetwork(FabricTest):
             sudo('twoliner')
         expected = """
 [%(prefix)s] sudo: oneliner
-[%(prefix)s] Passphrase for private key: 
+[%(prefix)s] Login password: 
 [%(prefix)s] out: sudo password:
 [%(prefix)s] out: Sorry, try again.
 [%(prefix)s] out: sudo password: 
@@ -340,7 +340,7 @@ class TestNetwork(FabricTest):
         after the "run:" line. This looks quite ugly in real world scripts.
         """
         env.password = None
-        env.no_agent = True
+        env.no_agent = env.no_keys = True
         env.key_filename = CLIENT_PRIVKEY
         with password_response(CLIENT_PRIVKEY_PASSPHRASE, silent=False):
             run('normal')
@@ -351,7 +351,7 @@ class TestNetwork(FabricTest):
                 run('silent')
         expected = """
 [%(prefix)s] run: normal
-[%(prefix)s] Passphrase for private key: 
+[%(prefix)s] Login password: 
 [%(prefix)s] out: foo
 [%(prefix)s] run: silent
 [%(prefix)s] run: normal
