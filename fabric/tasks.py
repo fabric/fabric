@@ -24,6 +24,7 @@ class WrappedCallableTask(Task):
     """
     def __init__(self, callable):
         super(WrappedCallableTask, self).__init__()
+        self.use_decorated = True
         self.wrapped = callable
         self.__name__ = self.name = callable.__name__
         self.__doc__ = callable.__doc__
