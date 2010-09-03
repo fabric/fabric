@@ -1,7 +1,7 @@
 from fudge.patcher import with_patched_object
 from nose.tools import ok_, eq_, raises
 
-from fabric.decorators import hosts, roles
+from fabric.decorators import hosts, roles, task
 from fabric.main import get_hosts, parse_arguments, _merge, _escape_split, load_fabfile
 import fabric.state
 from fabric.state import _AttributeDict
@@ -88,6 +88,27 @@ def test_hosts_decorator_overrides_env_hosts():
     If @hosts is used it replaces any env.hosts value
     """
     @hosts('bar')
+    def command():
+        pass
+    eq_hosts(command, ['bar'])
+    assert 'foo' not in get_hosts(command, [], [])
+
+@with_patched_object('fabric.state', 'env', {'hosts': ['foo']})
+def test_hosts_decorator_overrides_env_hosts_with_task_decorator_first():
+    """
+    If @hosts is used it replaces any env.hosts value even with @task
+    """
+    @task
+    @hosts('bar')
+    def command():
+        pass
+    eq_hosts(command, ['bar'])
+    assert 'foo' not in get_hosts(command, [], [])
+
+@with_patched_object('fabric.state', 'env', {'hosts': ['foo']})
+def test_hosts_decorator_overrides_env_hosts_with_task_decorator_last():
+    @hosts('bar')
+    @task
     def command():
         pass
     eq_hosts(command, ['bar'])
