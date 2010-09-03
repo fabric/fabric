@@ -9,7 +9,7 @@ class Task(object):
     directly.
     """
     name = 'undefined'
-    use_decorated = False
+    use_decorated = True
 
     # TODO: make it so that this wraps other decorators as expected 
     # TODO: turn use_decorated to True by default so all classes that extend
@@ -28,7 +28,6 @@ class WrappedCallableTask(Task):
     """
     def __init__(self, callable):
         super(WrappedCallableTask, self).__init__()
-        self.use_decorated = True
         self.wrapped = callable
         self.__name__ = self.name = callable.__name__
         self.__doc__ = callable.__doc__
