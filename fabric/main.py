@@ -176,6 +176,14 @@ def parse_options():
         help="print list of possible commands and exit"
     )
 
+    # Like --list, but text processing friendly
+    parser.add_option('--shortlist',
+        action='store_true',
+        dest='shortlist',
+        default=False,
+        help="print non-verbose list of possible commands and exit"
+    )
+
     # Display info about a specific command
     parser.add_option('-d', '--display',
         metavar='COMMAND',
@@ -198,6 +206,10 @@ def parse_options():
     return parser, opts, args
 
 
+def _command_names():
+    return sorted(commands.keys())
+
+
 def list_commands(docstring):
     """
     Print all found commands/tasks, then exit. Invoked with ``-l/--list.``
@@ -212,8 +224,7 @@ def list_commands(docstring):
     max_len = reduce(lambda a, b: max(a, len(b)), commands.keys(), 0)
     sep = '  '
     trail = '...'
-    names = sorted(commands.keys())
-    for name in names:
+    for name in _command_names():
         output = None
         # Print first line of docstring
         func = commands[name]
@@ -229,6 +240,14 @@ def list_commands(docstring):
         else:
             output = name
         print(indent(output))
+    sys.exit(0)
+
+
+def shortlist():
+    """
+    Print all task names separated by newlines with no embellishment.
+    """
+    print("\n".join(_command_names()))
     sys.exit(0)
 
 
@@ -417,8 +436,9 @@ def main():
 
         # Handle case where we were called bare, i.e. just "fab", and print
         # a help message.
-        if not (options.list_commands or options.display or arguments
-            or remainder_arguments):
+        actions = (options.list_commands, options.shortlist, options.display,
+            arguments, remainder_arguments)
+        if not any(actions):
             parser.print_help()
             sys.exit(1)
 
@@ -446,6 +466,10 @@ def main():
         # Now that we're settled on a fabfile, inform user.
         if state.output.debug:
             print("Using fabfile '%s'" % fabfile)
+
+        # Non-verbose command list
+        if options.shortlist:
+            shortlist()
 
         # Handle list-commands option (now that commands are loaded)
         if options.list_commands:

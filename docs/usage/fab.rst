@@ -152,6 +152,7 @@ below.
 
     .. versionchanged:: 0.9.1
         Added docstring to output.
+    .. seealso:: :option:`--shortlist`
 
 .. cmdoption:: -p PASSWORD, --password=PASSWORD
 
@@ -174,6 +175,14 @@ below.
 
     Sets :ref:`env.shell <shell>` to the given string, overriding the default
     shell wrapper used to execute remote commands.
+
+.. cmdoption:: --shortlist
+
+    Similar to :option:`--list <-l>`, but without any embellishment, just task
+    names separated by newlines with no indentation or docstrings.
+
+    .. versionadded:: 0.9.2
+    .. seealso:: :option:`--list <-l>`
 
 .. cmdoption:: --show=LEVELS
 
