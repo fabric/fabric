@@ -357,14 +357,26 @@ decorators. These decorators take a variable argument list, like so::
     def mytask():
         run('ls /var/www')
 
-When used, they override any checks of ``env`` for that particular task's host
-list (though ``env`` is not modified in any way -- it is simply ignored.) Thus,
-even if the above fabfile had defined ``env.hosts`` or the call to :doc:`fab
-<fab>` uses :option:`--hosts/-H <-H>`, ``mytask`` would still run on a host list of
-``['host1', 'host2']``.
+They will also take an single iterable argument, e.g.::
+
+    my_hosts = ('host1', 'host2')
+    @hosts(my_hosts)
+    def mytask():
+        # ...
+
+When used, these decorators override any checks of ``env`` for that particular
+task's host list (though ``env`` is not modified in any way -- it is simply
+ignored.) Thus, even if the above fabfile had defined ``env.hosts`` or the call
+to :doc:`fab <fab>` uses :option:`--hosts/-H <-H>`, ``mytask`` would still run
+on a host list of ``['host1', 'host2']``.
 
 However, decorator host lists do **not** override per-task command-line
 arguments, as given in the previous section.
+
+.. versionchanged: 0.9.2
+    Allowed single, iterable arguments to be used in
+    `~fabric.decorators.hosts`/~fabric.decorators.roles`.
+
 
 Order of precedence
 ~~~~~~~~~~~~~~~~~~~

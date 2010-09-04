@@ -3,6 +3,7 @@ Convenience decorators for use in fabfiles.
 """
 
 from functools import wraps
+from types import StringTypes
 
 
 def hosts(*host_list):
@@ -17,14 +18,26 @@ def hosts(*host_list):
         def my_func():
             pass
 
+    `~fabric.decorators.hosts` may be invoked with either an argument list
+    (``@hosts('host1')``, ``@hosts('host1', 'host2')``) or a single, iterable
+    argument (``@hosts(['host1', 'host2'])``).
+
     Note that this decorator actually just sets the function's ``.hosts``
     attribute, which is then read prior to executing the function.
+
+    .. versionchanged:: 0.9.2
+        Allow a single, iterable argument (``@hosts(iterable)``) to be used
+        instead of requiring ``@hosts(*iterable)``.
     """
     def attach_hosts(func):
         @wraps(func)
         def inner_decorator(*args, **kwargs):
             return func(*args, **kwargs)
-        inner_decorator.hosts = list(host_list)
+        _hosts = host_list
+        # Allow for single iterable argument as well as *args
+        if len(_hosts) == 1 and not isinstance(_hosts[0], StringTypes):
+            _hosts = _hosts[0]
+        inner_decorator.hosts = list(_hosts)
         return inner_decorator
     return attach_hosts
 
@@ -47,14 +60,24 @@ def roles(*role_list):
         def my_func():
             pass
 
-    Note that this decorator actually just sets the function's ``.roles``
-    attribute, which is then read prior to executing the function.
+    As with `~fabric.decorators.hosts`, `~fabric.decorators.roles` may be
+    invoked with either an argument list or a single, iterable argument.
+    Similarly, this decorator uses the same mechanism as
+    `~fabric.decorators.hosts` and simply sets ``<function>.roles``.
+
+    .. versionchanged:: 0.9.2
+        Allow a single, iterable argument to be used (same as
+        `~fabric.decorators.hosts`).
     """
     def attach_roles(func):
         @wraps(func)
         def inner_decorator(*args, **kwargs):
             return func(*args, **kwargs)
-        inner_decorator.roles = list(role_list)
+        _roles = role_list
+        # Allow for single iterable argument as well as *args
+        if len(_roles) == 1 and not isinstance(_roles[0], StringTypes):
+            _roles = _roles[0]
+        inner_decorator.roles = list(_roles)
         return inner_decorator
     return attach_roles
 

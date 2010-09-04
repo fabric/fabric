@@ -33,6 +33,9 @@ Feature additions
   own output in the future.)
 * :issue:`137`: Commas used to separate per-task arguments may now be escaped
   with a backslash. Thanks to Erich Heine for the patch.
+* :issue:`144`: `~fabric.decorators.hosts` (and `~fabric.decorators.roles`)
+  will now expand a single, iterable argument instead of requiring one to use
+  e.g.  ``@hosts(*iterable)``.
 * :issue:`151`: Added a `~fabric.utils.puts` utility function, which allows
   greater control over fabfile-generated (as opposed to Fabric-generated)
   output. Also added `~fabric.utils.fastprint`, an alias to

@@ -92,6 +92,28 @@ def test_hosts_decorator_overrides_env_hosts():
     assert 'foo' not in get_hosts(command, [], [])
 
 
+def test_hosts_decorator_expands_single_iterable():
+    """
+    @hosts(iterable) should behave like @hosts(*iterable)
+    """
+    host_list = ['foo', 'bar']
+    @hosts(host_list)
+    def command():
+        pass
+    eq_(command.hosts, host_list)
+
+
+def test_roles_decorator_expands_single_iterable():
+    """
+    @roles(iterable) should behave like @roles(*iterable)
+    """
+    role_list = ['foo', 'bar']
+    @roles(role_list)
+    def command():
+        pass
+    eq_(command.roles, role_list)
+
+
 @with_patched_object(
     'fabric.state', 'env', _AttributeDict({'roledefs': fake_roles})
 )
