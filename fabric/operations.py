@@ -38,7 +38,7 @@ def _pty_size():
     local (stdout-based) terminal window size on non-Windows platforms.
     """
     rows, cols = 24, 80
-    if not win32:
+    if not win32 and sys.stdin.isatty():
         # We want two short unsigned integers (rows, cols)
         fmt = 'HH'
         # Create an empty (zeroed) buffer for ioctl to map onto. Yay for C!
