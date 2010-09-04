@@ -41,6 +41,10 @@ Feature additions
   output. Also added `~fabric.utils.fastprint`, an alias to
   `~fabric.utils.puts` allowing for convenient unbuffered,
   non-newline-terminated printing.
+* :issue:`208`: Users rolling their own shell completion or who otherwise find
+  themselves performing text manipulation on the output of :option:`--list
+  <-l>` may now use :option:`--shortlist` to get a plain, newline-separated
+  list of task names.
 
 
 Bugfixes
