@@ -371,10 +371,6 @@ on a host list of ``['host1', 'host2']``.
 However, decorator host lists do **not** override per-task command-line
 arguments, as given in the previous section.
 
-.. versionchanged: 0.9.2
-    Allowed single, iterable arguments to be used in
-    `~fabric.decorators.hosts`/~fabric.decorators.roles`.
-
 
 Order of precedence
 ~~~~~~~~~~~~~~~~~~~
