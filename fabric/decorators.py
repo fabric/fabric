@@ -91,13 +91,12 @@ def runs_once(func):
     typical use means "once per invocation of the ``fab`` program".
 
     Any function wrapped with this decorator will silently fail to execute the
-    2nd, 3rd, ..., Nth time it is called, and will return None in that instance.
+    2nd, 3rd, ..., Nth time it is called, and will return the value of the
+    original run.
     """
     @wraps(func)
     def decorated(*args, **kwargs):
-        if hasattr(decorated, 'has_run'):
-            return
-        else:
-            decorated.has_run = True
-            return func(*args, **kwargs)
+        if not hasattr(decorated, 'return_value'):
+            decorated.return_value = func(*args, **kwargs)
+        return decorated.return_value
     return decorated
