@@ -25,11 +25,6 @@ Backwards-incompatible changes
 The below changes are **backwards incompatible** and have the potential to
 break your 0.9.x based fabfiles!
 
-* As part of the changes made in :issue:`7`, `~fabric.operations.run` and
-  `~fabric.operations.sudo` have had the default value of their ``pty`` kwargs
-  changed from ``False`` to ``True``. This, plus the addition of the
-  :ref:`combine-stderr` kwarg/env var, may result in significant behavioral
-  changes in some remote programs.
 * `~fabric.contrib.files.contains` and `~fabric.contrib.files.append`
   previously had the ``filename`` argument in the second position, whereas all
   other functions in the `contrib.files <fabric.contrib.files>` module had
@@ -41,7 +36,15 @@ break your 0.9.x based fabfiles!
 * The ``user`` and ``pty`` kwargs in `~fabric.operations.sudo`'s signature have
   had their order swapped around to more closely match
   `~fabric.operations.run`.
-
+* As part of the changes made in :issue:`7`, `~fabric.operations.run` and
+  `~fabric.operations.sudo` have had the default value of their ``pty`` kwargs
+  changed from ``False`` to ``True``. This, plus the addition of the
+  :ref:`combine-stderr` kwarg/env var, may result in significant behavioral
+  changes in remote programs which operate differently when attached to a tty.
+* :issue:`221`: `~fabric.decorators.runs_once` now memoizes the wrapped task's
+  return value and returns that value on subsequent invocations, instead of
+  returning None. Thanks to Jacob Kaplan-Moss and Travis Swicegood for catch +
+  patch.
 
 Feature additions
 =================
@@ -80,10 +83,6 @@ Feature additions
   multi-connection scenarios.
 * :issue:`193`: When requesting a remote pseudo-terminal, use the invoking
   terminal's dimensions instead of going with the default.
-* :issue:`221`: `~fabric.decorators.runs_once` now memoizes the wrapped task's
-  return value and returns that value on subsequent invocations, instead of
-  returning None. Thanks to Jacob Kaplan-Moss and Travis Swicegood for catch +
-  patch.
 
 
 Bugfixes
