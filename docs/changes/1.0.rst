@@ -80,6 +80,10 @@ Feature additions
   multi-connection scenarios.
 * :issue:`193`: When requesting a remote pseudo-terminal, use the invoking
   terminal's dimensions instead of going with the default.
+* :issue:`221`: `~fabric.decorators.runs_once` now memoizes the wrapped task's
+  return value and returns that value on subsequent invocations, instead of
+  returning None. Thanks to Jacob Kaplan-Moss and Travis Swicegood for catch +
+  patch.
 
 
 Bugfixes
