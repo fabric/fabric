@@ -87,28 +87,28 @@ Why can't I run programs in the background with ``&``? It makes Fabric hang.
 
 Because Fabric executes a shell on the remote end for each invocation of
 ``run`` or ``sudo`` (:ref:`see also <one-shell-per-command>`), backgrounding a
-process via the shell will not work as expected. Backgrounded processes still
-prevent the calling shell from exiting until they stop running, and this in
-turn prevents Fabric from continuing on with its own execution.
+process via the shell will not work as expected. Backgrounded processes may
+still prevent the calling shell from exiting until they stop running, and this
+in turn prevents Fabric from continuing on with its own execution.
 
-If you truly need to run a process in the "background" and are unable to
-properly `daemonize
-<http://en.wikipedia.org/wiki/Daemon_(computer_software)>`_, you may want to
-look into GNU Screen (widely available in package managers or preinstalled)
-which can easily serve the same purpose. A trivial example (``yes`` is a
-simple Unix app that simply prints the word "yes" forever until killed)::
+The key to fixing this is to ensure that your process' standard pipes are all
+disassociated from the calling shell, which may be done in a number of ways:
 
-    run('screen -d -m "yes"')
+* Use a pre-existing daemonization technique if one exists for the program at
+  hand -- for example, calling an init script instead of directly invoking a
+  server binary.
+* Run the program under ``nohup`` and redirect stdin, stdout and stderr to
+  ``/dev/null`` (or to your file of choice, if you need the output later)::
 
-Such a call will effectively fork the ``yes`` program into a detached
-``screen`` session, which will no longer be associated with the calling shell,
-and thus your Fabric task will continue executing as intended.
+    run("nohup yes >& /dev/null < /dev/null &")
 
-.. note::
+  (``yes`` is simply an example of a program that may run for a long time or
+  forever; ``>&``, ``<`` and ``&`` are Bash syntax for pipe redirection and
+  backgrounding, respectively -- see your shell's man page for details.)
 
-    There are also alternatives to ``screen`` which serve the same purpose,
-    such as ``tmux`` or ``dtach``. As long as the program can ensure that the
-    process in question is detached from your shell process, it should suffice.
+* Use ``tmux``, ``screen`` or ``dtach`` to fully detach the process from the
+  running shell; these tools have the benefit of allowing you to reattach to
+  the process later on if needed (among many other such benefits).
 
 
 My remote system doesn't have ``bash`` installed by default, do I need to install ``bash``?
