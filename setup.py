@@ -31,7 +31,7 @@ setup(
     packages=find_packages(),
     test_suite='nose.collector',
     tests_require=['nose', 'fudge'],
-    install_requires=['pycrypto >=1.9', 'paramiko >=1.7.6'],
+    install_requires=['pycrypto <2.1', 'paramiko >=1.7.6'],
     entry_points={
         'console_scripts': [
             'fab = fabric.main:main',
