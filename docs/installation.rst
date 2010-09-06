@@ -5,7 +5,7 @@ Installation
 The most direct way to install Fabric is to obtain the source code and run
 ``python setup.py install``. This method works for both release and development
 versions of the code, and requires nothing but a basic Python installation and
-the `setuptools`_ library.
+the `setuptools`_ library (as well as Fabric's handful of dependencies).
 
 .. note::
 
@@ -37,8 +37,7 @@ and notes about other Python versions:
 * Fabric has not yet been tested on **Python 3.x** and is thus likely to be
   incompatible with that line of development. However, we try to be at least
   somewhat forward-looking (e.g. using ``print()`` instead of ``print``) and
-  will definitely be porting to 3.x in the future once our dependencies and the
-  rest of the ecosystem does so as well.
+  will definitely be porting to 3.x in the future once our dependencies do.
 
 setuptools
 ----------
