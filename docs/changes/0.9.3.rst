@@ -1,0 +1,24 @@
+========================
+Changes in version 0.9.3
+========================
+
+The following changes were implemented in Fabric 0.9.3:
+
+Feature additions
+=================
+
+* N/A
+
+
+Bugfixes
+========
+
+* :issue:`230`: Arbitrary or remainder commands (``fab <opts> -- <run command
+  here>``) will no longer blow up when invoked with no fabfile present. Thanks
+  to IRC user ``orkaa`` for the report.
+
+
+Documentation updates
+=====================
+
+* N/A

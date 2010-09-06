@@ -447,7 +447,7 @@ def main():
 
         # Find local fabfile path or abort
         fabfile = find_fabfile()
-        if not fabfile:
+        if not fabfile and not remainder_arguments:
             abort("Couldn't find any fabfiles!")
 
         # Store absolute path to fabfile in case anyone needs it
@@ -456,8 +456,9 @@ def main():
         # Load fabfile (which calls its module-level code, including
         # tweaks to env values) and put its commands in the shared commands
         # dict
-        docstring, callables = load_fabfile(fabfile)
-        commands.update(callables)
+        if fabfile:
+            docstring, callables = load_fabfile(fabfile)
+            commands.update(callables)
 
         # Abort if no commands found
         if not commands and not remainder_arguments:
@@ -465,7 +466,10 @@ def main():
 
         # Now that we're settled on a fabfile, inform user.
         if state.output.debug:
-            print("Using fabfile '%s'" % fabfile)
+            if fabfile:
+                print("Using fabfile '%s'" % fabfile)
+            else:
+                print("No fabfile loaded -- remainder command only")
 
         # Non-verbose command list
         if options.shortlist:
@@ -506,6 +510,10 @@ def main():
             r = '<remainder>'
             commands[r] = lambda: api.run(remainder_command)
             commands_to_run.append((r, [], {}, [], []))
+
+        if state.output.debug:
+            names = ", ".join(x[0] for x in commands_to_run)
+            print("Commands to run: %s" % names)
 
         # At this point all commands must exist, so execute them in order.
         for name, args, kwargs, cli_hosts, cli_roles in commands_to_run:
