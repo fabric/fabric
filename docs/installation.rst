@@ -69,15 +69,16 @@ Package tools
 Current best practices in the Python packaging world involve using the ``pip``
 tool, which in most cases offers significant advantages over the older but more
 common ``easy_install``. Unfortunately, at the time of writing, recent versions
-of PyCrypto (2.1 and above) conflict with ``pip`` and do not install correctly.
+of PyCrypto (2.1 and above) conflict with ``pip`` and do not install correctly,
+under Python 2.5. (Thankfully, the problem does not appear to affect Python
+2.6.)
 
-Thankfully, Fabric and Paramiko only require PyCrypto 1.9 or newer, and
-PyCrypto 2.0.1 (which also happens to be the oldest release available on the
-Python package index) installs just fine via ``pip``. As such, Fabric's
-packaging settings are currently set to require PyCrypto 2.0.1.
+Fabric and Paramiko will work correctly with any PyCrypto 1.9 or newer, and
+PyCrypto 2.0.1 installs just fine via ``pip``. As such, Fabric's packaging
+settings are currently set to require PyCrypto 2.0.1 if you're on Python 2.5.x.
 
 However, Fabric will work fine with PyCrypto 2.1 and up -- you'll just need to
-install it individually, via ``easy_install``, after installing Fabric.
+upgrade it, via ``easy_install``, after installing Fabric itself.
 
 C extension
 ~~~~~~~~~~~
