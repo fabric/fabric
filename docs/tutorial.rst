@@ -289,7 +289,7 @@ Thus, we can modify it at module level near the top of our fabfile like so::
     env.hosts = ['my_server']
 
     def test():
-    [...]
+        do_test_stuff()
 
 When ``fab`` loads up our fabfile, our modification of ``env`` will execute,
 storing our settings change. The end result is exactly as above: our ``deploy``
