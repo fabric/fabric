@@ -13,6 +13,8 @@ Feature additions
 Bugfixes
 ========
 
+* :issue:`228`: We discovered that the pip + PyCrypto installation problem was
+  limited to Python 2.5 only, and have updated our ``setup.py`` accordingly.
 * :issue:`230`: Arbitrary or remainder commands (``fab <opts> -- <run command
   here>``) will no longer blow up when invoked with no fabfile present. Thanks
   to IRC user ``orkaa`` for the report.
