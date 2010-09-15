@@ -203,8 +203,15 @@ env_options = [
         action='store_false',
         default=True,
         help="do not use pseudo-terminal in run/sudo"
+    ),
+
+    # Enable dry run
+    make_option('--dry-run',
+        action='store_true',
+        dest='dry_run',
+        default=False,
+        help="write commands but don't execute them",
     )
-    
 ]
 
 
@@ -242,7 +249,8 @@ env = _AttributeDict({
     'sudo_prompt': 'sudo password:',
     'use_shell': True,
     'user': None,
-    'version': get_version('short')
+    'version': get_version('short'),
+    'dry_run': False,
 })
 
 # Add in option defaults

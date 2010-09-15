@@ -632,6 +632,8 @@ def _run_command(command, shell=True, pty=True, combine_stderr=True,
         print("[%s] %s: %s" % (env.host_string, which, wrapped_command))
     elif output.running:
         print("[%s] %s: %s" % (env.host_string, which, given_command))
+    if env.dry_run:
+        return
 
     # Actual execution, stdin/stdout/stderr handling, and termination
     stdout, stderr, status = _execute(default_channel(), wrapped_command, pty,
