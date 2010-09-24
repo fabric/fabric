@@ -708,7 +708,7 @@ def run(command, shell=True, pty=True, combine_stderr=True):
         run("ls /var/www/")
         run("ls /home/myuser", shell=False)
         output = run('ls /var/www/site1')
-    
+
     .. versionadded:: 1.0
         The ``succeeded`` and ``stderr`` return value attributes, the
         ``combine_stderr`` kwarg, and interactive behavior.
@@ -739,7 +739,7 @@ def sudo(command, shell=True, pty=True, combine_stderr=True, user=None):
         sudo("mkdir /var/www/new_docroot", user="www-data")
         sudo("ls /home/jdoe", user=1001)
         result = sudo("ls /tmp/")
-    
+
     .. versionchanged:: 1.0
         See the changed and added notes for `~fabric.operations.run`.
     """
