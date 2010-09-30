@@ -49,12 +49,13 @@ PASSWORDS = {
     USER: 'password'
 }
 
-def local_file(filename):
+
+def _local_file(filename):
     return os.path.join(os.path.dirname(__file__), filename)
 
-SERVER_PRIVKEY = local_file('private.key')
-CLIENT_PUBKEY = local_file('client.key.pub')
-CLIENT_PRIVKEY = local_file('client.key')
+SERVER_PRIVKEY = _local_file('private.key')
+CLIENT_PUBKEY = _local_file('client.key.pub')
+CLIENT_PRIVKEY = _local_file('client.key')
 CLIENT_PRIVKEY_PASSPHRASE = "passphrase"
 
 

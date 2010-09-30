@@ -29,8 +29,6 @@ from server import (server, PORT, RESPONSES, PASSWORDS, CLIENT_PRIVKEY, USER,
 
 
 class TestNetwork(FabricTest):
-
-
     def test_host_string_normalization(self):
         username = _get_system_username()
         for description, input, output_ in (
