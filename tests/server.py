@@ -43,6 +43,7 @@ requirements.txt
 setup.py
 tests"""
 }
+FILES = {}
 PASSWORDS = {
     'root': 'root',
     USER: 'password'
@@ -124,7 +125,7 @@ class SSHServer(ThreadingMixIn, TCPServer):
     allow_reuse_address = True
 
 
-def serve_responses(responses, passwords, pubkeys, port):
+def serve_responses(responses, files, passwords, pubkeys, port):
     """
     Return a threading TCP based SocketServer listening on ``port``.
 
@@ -237,7 +238,13 @@ def serve_responses(responses, passwords, pubkeys, port):
     return SSHServer(('localhost', port), SSHHandler)
 
 
-def server(responses=RESPONSES, passwords=PASSWORDS, pubkeys=False, port=PORT):
+def server(
+        responses=RESPONSES,
+        files=FILES,
+        passwords=PASSWORDS,
+        pubkeys=False,
+        port=PORT
+    ):
     """
     Returns a decorator that runs an SSH server during function execution.
 
@@ -247,7 +254,8 @@ def server(responses=RESPONSES, passwords=PASSWORDS, pubkeys=False, port=PORT):
         @wraps(func)
         def inner(*args, **kwargs):
             # Start server
-            _server = serve_responses(responses, passwords, pubkeys, port)
+            _server = serve_responses(responses, files, passwords, pubkeys,
+                port)
             _server.all_done = threading.Event()
             worker = ThreadHandler('server', _server.serve_forever)
             # Execute function
