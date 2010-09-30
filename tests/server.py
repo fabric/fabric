@@ -4,7 +4,6 @@ from functools import wraps
 import itertools
 import os
 import re
-import socket
 import sys
 import threading
 import time
@@ -23,6 +22,7 @@ from fabric.network import disconnect_all
 # Constants
 #
 
+HOST = '127.0.0.1'
 PORT = 2200
 USER = 'username'
 RESPONSES = {
