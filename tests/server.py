@@ -51,7 +51,7 @@ PASSWORDS = {
 def local_file(filename):
     return os.path.join(os.path.dirname(__file__), filename)
 
-SERVER_PRIVKEY = local_file('server.key')
+SERVER_PRIVKEY = local_file('private.key')
 CLIENT_PUBKEY = local_file('client.key.pub')
 CLIENT_PRIVKEY = local_file('client.key')
 CLIENT_PRIVKEY_PASSPHRASE = "passphrase"
