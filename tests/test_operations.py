@@ -1,6 +1,10 @@
 from __future__ import with_statement
 
+import os
+j = os.path.join
+import shutil
 import sys
+import tempfile
 
 from nose.tools import raises, eq_
 from fudge import with_patched_object
@@ -8,8 +12,11 @@ from fudge import with_patched_object
 from fabric.state import env
 from fabric.operations import require, prompt, _sudo_prefix, _shell_wrap, \
     _shell_escape
-from utils import mock_streams
+from fabric.api import get, put
 
+from utils import *
+from server import (server, PORT, RESPONSES, FILES, PASSWORDS, CLIENT_PRIVKEY,
+    USER, CLIENT_PRIVKEY_PASSPHRASE)
 
 #
 # require()
@@ -180,3 +187,23 @@ def test_shell_escape_escapes_backticks():
     """
     cmd = "touch test.pid && kill `cat test.pid`"
     eq_(_shell_escape(cmd), "touch test.pid && kill \`cat test.pid\`")
+
+
+#
+# get() and put()
+#
+
+class TestGetPut(FabricTest):
+    def setup(self):
+        super(TestGetPut, self).setup()
+        self.tmpdir = tempfile.mkdtemp()
+
+    def teardown(self):
+        super(TestGetPut, self).teardown()
+        shutil.rmtree(self.tmpdir)
+
+    @server()
+    def test_get_single_file(self):
+        remote = 'file.txt'
+        get(self.tmpdir, remote)
+        eq_(j(self.tmpdir, remote), FILES[remote].contents)
