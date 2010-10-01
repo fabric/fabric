@@ -4,6 +4,7 @@ from functools import wraps
 import itertools
 import os
 import re
+import stat
 import sys
 import threading
 import time
@@ -154,7 +155,16 @@ class SFTPServer(object):
     def mkdir(self, path):
         pass
 
+class FakeSFTPServer(ssh.SFTPServerInterface):
+    def __init__(self, server, *args, **kwargs):
+        self.server = server
 
+    def list_folder(self, path):
+        a = ssh.SFTPAttributes()
+        a.st_mode = stat.S_IFREG
+        a.st_size = 4096
+        a.filename = "lol.txt"
+        return [a]
 
 def serve_responses(responses, files, passwords, pubkeys, port):
     """
@@ -214,6 +224,8 @@ def serve_responses(responses, files, passwords, pubkeys, port):
         def init_transport(self):
             transport = ssh.Transport(self.request)
             transport.add_server_key(ssh.RSAKey(filename=SERVER_PRIVKEY))
+            transport.set_subsystem_handler('sftp', ssh.SFTPServer,
+                sftp_si=FakeSFTPServer)
             server = ParamikoServer(passwords, pubkeys)
             transport.start_server(server=server)
             self.ssh_server = server
