@@ -193,13 +193,13 @@ def test_shell_escape_escapes_backticks():
 # get() and put()
 #
 
-class TestGetPut(FabricTest):
+class TestFileTransfers(FabricTest):
     def setup(self):
-        super(TestGetPut, self).setup()
+        super(TestFileTransfers, self).setup()
         self.tmpdir = tempfile.mkdtemp()
 
     def teardown(self):
-        super(TestGetPut, self).teardown()
+        super(TestFileTransfers, self).teardown()
         shutil.rmtree(self.tmpdir)
 
     @server()
