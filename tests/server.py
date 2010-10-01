@@ -126,6 +126,36 @@ class SSHServer(ThreadingMixIn, TCPServer):
     allow_reuse_address = True
 
 
+class SFTPStat(object):
+    def __init__(self, path):
+        self.path = path
+
+    def st_mode(self):
+        return 1 # or whatever maps to file/dir/symlink/etc
+
+class SFTPServer(object):
+    def lstat(self, path):
+        return SFTPStat(path)
+
+    def listdir(self, path):
+        return ['list', 'of', 'file', 'paths']
+
+    def get(self, server_path, client_path):
+        # Actually download the file?
+        pass
+
+    def getcwd(self):
+        return "/current/working/directory"
+
+    def put(self, client_path, server_path):
+        # Actually upload?
+        return SFTPStat(server_path)
+
+    def mkdir(self, path):
+        pass
+
+
+
 def serve_responses(responses, files, passwords, pubkeys, port):
     """
     Return a threading TCP based SocketServer listening on ``port``.
