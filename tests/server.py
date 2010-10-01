@@ -9,6 +9,7 @@ import sys
 import threading
 import time
 import types
+from cStringIO import StringIO
 from Python26SocketServer import BaseRequestHandler, ThreadingMixIn, TCPServer
 
 import paramiko as ssh
@@ -127,44 +128,35 @@ class SSHServer(ThreadingMixIn, TCPServer):
     allow_reuse_address = True
 
 
-class SFTPStat(object):
-    def __init__(self, path):
-        self.path = path
+def mkattr(filename, ftype, size):
+    a = ssh.SFTPAttributes()
+    a.st_mode = {'file': stat.S_IFREG, 'dir': stat.S_IFDIR}[ftype]
+    a.st_size = size
+    a.filename = filename
+    return a
 
-    def st_mode(self):
-        return 1 # or whatever maps to file/dir/symlink/etc
 
-class SFTPServer(object):
-    def lstat(self, path):
-        return SFTPStat(path)
+class FakeSFTPHandle(ssh.SFTPHandle):
+    def stat(self):
+        return mkattr('foo.txt', 'file', 4096)
 
-    def listdir(self, path):
-        return ['list', 'of', 'file', 'paths']
-
-    def get(self, server_path, client_path):
-        # Actually download the file?
-        pass
-
-    def getcwd(self):
-        return "/current/working/directory"
-
-    def put(self, client_path, server_path):
-        # Actually upload?
-        return SFTPStat(server_path)
-
-    def mkdir(self, path):
-        pass
 
 class FakeSFTPServer(ssh.SFTPServerInterface):
     def __init__(self, server, *args, **kwargs):
         self.server = server
+        self.fakefile = mkattr('foo.txt', 'file', 4096)
 
     def list_folder(self, path):
-        a = ssh.SFTPAttributes()
-        a.st_mode = stat.S_IFREG
-        a.st_size = 4096
-        a.filename = "lol.txt"
-        return [a]
+        return [self.fakefile]
+
+    def open(self, path, flags, attr):
+        f = FakeSFTPHandle()
+        f.readfile = f.writefile = StringIO("foo")
+        return f
+
+    def stat(self, path):
+        return self.fakefile
+
 
 def serve_responses(responses, files, passwords, pubkeys, port):
     """
