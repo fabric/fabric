@@ -205,5 +205,6 @@ class TestFileTransfers(FabricTest):
     @server()
     def test_get_single_file(self):
         remote = 'file.txt'
-        get(self.tmpdir, remote)
-        eq_(j(self.tmpdir, remote), FILES[remote].contents)
+        local = j(self.tmpdir, remote)
+        get(remote, local)
+        eq_(open(local).read(), FILES[remote])

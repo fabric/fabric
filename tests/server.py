@@ -1,6 +1,6 @@
 from __future__ import with_statement
 
-from functools import wraps
+import copy
 import itertools
 import os
 import re
@@ -10,6 +10,7 @@ import threading
 import time
 import types
 from cStringIO import StringIO
+from functools import wraps
 from Python26SocketServer import BaseRequestHandler, ThreadingMixIn, TCPServer
 
 import paramiko as ssh
@@ -45,7 +46,11 @@ requirements.txt
 setup.py
 tests"""
 }
-FILES = {}
+FILES = {
+    'file.txt': 'contents',
+    'folder/file2.txt': 'contents2',
+    'empty_folder': None
+}
 PASSWORDS = {
     'root': 'root',
     USER: 'password'
@@ -84,10 +89,11 @@ class ParamikoServer(ssh.ServerInterface):
     The bulk of the actual server side logic is handled in the
     ``serve_responses`` function and its ``SSHHandler`` class.
     """
-    def __init__(self, passwords, pubkeys):
+    def __init__(self, passwords, pubkeys, files):
         self.event = threading.Event()
         self.passwords = passwords
         self.pubkeys = pubkeys
+        self.files = files
         self.command = None
 
     def check_channel_request(self, kind, chanid):
@@ -128,12 +134,6 @@ class SSHServer(ThreadingMixIn, TCPServer):
     allow_reuse_address = True
 
 
-def mkattr(filename, ftype, size):
-    a = ssh.SFTPAttributes()
-    a.st_mode = {'file': stat.S_IFREG, 'dir': stat.S_IFDIR}[ftype]
-    a.st_size = size
-    a.filename = filename
-    return a
 
 
 class FakeSFTPHandle(ssh.SFTPHandle):
@@ -141,13 +141,20 @@ class FakeSFTPHandle(ssh.SFTPHandle):
         return mkattr('foo.txt', 'file', 4096)
 
 
+import logging
+logging.basicConfig(filename='/tmp/fab.log', level=logging.DEBUG)
+logger = logging.getLogger('server.py')
+
 class FakeSFTPServer(ssh.SFTPServerInterface):
     def __init__(self, server, *args, **kwargs):
         self.server = server
-        self.fakefile = mkattr('foo.txt', 'file', 4096)
+        self.files = copy.deepcopy(self.server.files)
 
     def list_folder(self, path):
-        return [self.fakefile]
+        paths = [x for x in self.files if x.startswith(path)]
+        results = [self.stat(x) for x in paths]
+        bad = not results or any(x == ssh.SFTP_NO_SUCH_FILE for x in results)
+        return ssh.SFTP_NO_SUCH_FILE if bad else results
 
     def open(self, path, flags, attr):
         f = FakeSFTPHandle()
@@ -155,7 +162,21 @@ class FakeSFTPServer(ssh.SFTPServerInterface):
         return f
 
     def stat(self, path):
-        return self.fakefile
+        try:
+            contents = self.files[path]
+        except KeyError:
+            return ssh.SFTP_NO_SUCH_FILE
+        if contents is None:
+            ftype = 'dir'
+            size = 4096
+        else:
+            ftype = 'file'
+            size = len(contents)
+        a = ssh.SFTPAttributes()
+        a.st_mode = {'file': stat.S_IFREG, 'dir': stat.S_IFDIR}[ftype]
+        a.st_size = size
+        a.filename = os.path.basename(path)
+        return a
 
 
 def serve_responses(responses, files, passwords, pubkeys, port):
@@ -218,7 +239,7 @@ def serve_responses(responses, files, passwords, pubkeys, port):
             transport.add_server_key(ssh.RSAKey(filename=SERVER_PRIVKEY))
             transport.set_subsystem_handler('sftp', ssh.SFTPServer,
                 sftp_si=FakeSFTPServer)
-            server = ParamikoServer(passwords, pubkeys)
+            server = ParamikoServer(passwords, pubkeys, files)
             transport.start_server(server=server)
             self.ssh_server = server
             self.transport = transport
