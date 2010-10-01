@@ -22,6 +22,15 @@ from fabric.network import disconnect_all
 
 
 #
+# Debugging
+#
+
+import logging
+logging.basicConfig(filename='/tmp/fab.log', level=logging.DEBUG)
+logger = logging.getLogger('server.py')
+
+
+#
 # Constants
 #
 
@@ -134,16 +143,21 @@ class SSHServer(ThreadingMixIn, TCPServer):
     allow_reuse_address = True
 
 
-
-
 class FakeSFTPHandle(ssh.SFTPHandle):
+    """
+    Extremely basic way to get SFTPHandle working with our fake setup.
+    """
+    def __init__(self, *args, **kwargs):
+        super(FakeSFTPHandle, self).__init__(*args, **kwargs)
+        self.attr = None
+
+    def chattr(self, attr):
+        self.attr = attr
+        return ssh.SFTP_OK
+
     def stat(self):
-        return mkattr('foo.txt', 'file', 4096)
+        return self.attr or ssh.SFTP_NO_SUCH_FILE
 
-
-import logging
-logging.basicConfig(filename='/tmp/fab.log', level=logging.DEBUG)
-logger = logging.getLogger('server.py')
 
 class FakeSFTPServer(ssh.SFTPServerInterface):
     def __init__(self, server, *args, **kwargs):
@@ -158,8 +172,23 @@ class FakeSFTPServer(ssh.SFTPServerInterface):
 
     def open(self, path, flags, attr):
         f = FakeSFTPHandle()
-        f.readfile = f.writefile = StringIO("foo")
+        # Looks like we're passed an attr obj even when NOT trying to create a
+        # new file (interface API says that's what that kwarg is for).
+        # Debugging shows that in this scenario, when we're opening an existing
+        # file at least, all flags are None, so for now we'll just test
+        # st_mode.
+        if not attr or attr.st_mode is None:
+            # Using chattr to update this Handle object's attributes; we can't
+            # pass in our fake's info via Handle.init for some reason.
+            f.chattr(self.stat(path))
+        f.readfile = f.writefile = StringIO(self.file_contents(path))
         return f
+
+    def file_contents(self, path):
+        # Specifically NOT using SFTP_NO_SUCH_FILE here; this is used by our
+        # code only, want more obvious tracebacks if something calls this with
+        # a bad path.
+        return self.files[path]
 
     def stat(self, path):
         try:
