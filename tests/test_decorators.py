@@ -1,4 +1,4 @@
-from nose.tools import eq_
+from nose.tools import eq_, ok_
 from fudge import Fake, with_fakes
 
 from fabric import decorators, tasks
