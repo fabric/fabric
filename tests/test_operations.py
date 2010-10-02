@@ -12,7 +12,7 @@ from fudge import with_patched_object
 from fabric.state import env
 from fabric.operations import require, prompt, _sudo_prefix, _shell_wrap, \
     _shell_escape
-from fabric.api import get, put
+from fabric.api import get, put, hide
 
 from utils import *
 from server import (server, PORT, RESPONSES, FILES, PASSWORDS, CLIENT_PRIVKEY,
@@ -206,5 +206,6 @@ class TestFileTransfers(FabricTest):
     def test_get_single_file(self):
         remote = 'file.txt'
         local = j(self.tmpdir, remote)
-        get(remote, local)
+        with hide('everything'):
+            get(remote, local)
         eq_(open(local).read(), FILES[remote])
