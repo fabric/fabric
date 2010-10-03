@@ -209,3 +209,12 @@ class TestFileTransfers(FabricTest):
         with hide('everything'):
             get(remote, local)
         eq_(open(local).read(), FILES[remote])
+
+    @server()
+    def test_get_sibling_globs(self):
+        remotes = ['file.txt', 'file2.txt']
+        with hide('everything'):
+            get('file*.txt', self.tmpdir)
+        for remote in remotes:
+            local = j(self.tmpdir, remote)
+            eq_(open(local).read(), FILES[remote])

@@ -57,7 +57,8 @@ tests"""
 }
 FILES = {
     'file.txt': 'contents',
-    'folder/file2.txt': 'contents2',
+    'file2.txt': 'contents2',
+    'folder/file3.txt': 'contents3',
     'empty_folder': None
 }
 PASSWORDS = {
@@ -165,7 +166,7 @@ class FakeSFTPServer(ssh.SFTPServerInterface):
         self.files = copy.deepcopy(self.server.files)
 
     def list_folder(self, path):
-        paths = [x for x in self.files if x.startswith(path)]
+        paths = [x for x in self.files if os.path.dirname(x) == path]
         results = [self.stat(x) for x in paths]
         bad = not results or any(x == ssh.SFTP_NO_SUCH_FILE for x in results)
         return ssh.SFTP_NO_SUCH_FILE if bad else results
