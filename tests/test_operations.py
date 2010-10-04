@@ -226,3 +226,15 @@ class TestFileTransfers(FabricTest):
         for remote in remotes:
             local = j(self.tmpdir, remote)
             eq_(open(local).read(), FILES[remote])
+
+
+    @server()
+    def test_get_recursively(self):
+        """
+        Recursively get() a folder containing one file
+        """
+        remote = 'folder/file3.txt'
+        with hide('everything'):
+            get('folder', self.tmpdir)
+        eq_(open(j(self.tmpdir, remote)), FILES[remote])
+        assert len(files_in_self.tmpdir+folder) == 1
