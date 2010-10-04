@@ -202,16 +202,24 @@ class TestFileTransfers(FabricTest):
         super(TestFileTransfers, self).teardown()
         shutil.rmtree(self.tmpdir)
 
+
     @server()
     def test_get_single_file(self):
+        """
+        get() with a single non-globbed filename
+        """
         remote = 'file.txt'
         local = j(self.tmpdir, remote)
         with hide('everything'):
             get(remote, local)
         eq_(open(local).read(), FILES[remote])
 
+
     @server()
     def test_get_sibling_globs(self):
+        """
+        get() with globbed files, but no directories
+        """
         remotes = ['file.txt', 'file2.txt']
         with hide('everything'):
             get('file*.txt', self.tmpdir)
