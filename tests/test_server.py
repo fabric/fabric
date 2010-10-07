@@ -18,37 +18,66 @@ class AttrHolder(object):
     pass
 
 
-def test_list_folder_in_homedir():
-    for desc, file_map, expected in (
+def test_list_folder():
+    for desc, file_map, arg, expected in (
         (
             "Single file",
             {'file.txt': 'contents'},
+            '',
+            ['file.txt']
+        ),
+        (
+            "Single absolute file",
+            {'/file.txt': 'contents'},
+            '/',
             ['file.txt']
         ),
         (
             "Multiple files",
             {'file1.txt': 'contents', 'file2.txt': 'contents2'},
+            '',
             ['file1.txt', 'file2.txt']
         ),
         (
             "Single empty folder",
             {'folder': None},
+            '',
             ['folder']
         ),
         (
             "Empty subfolders",
-            {'folder/subfolder': None},
+            {'folder': None, 'folder/subfolder': None},
+            '',
             ['folder']
         ),
         (
-            "Mixed files, folders empty and non-empty",
+            "Non-empty sub-subfolder",
+            {'folder/subfolder/subfolder2/file.txt': 'contents'},
+            "folder/subfolder/subfolder2",
+            ['file.txt']
+        ),
+        (
+            "Mixed files, folders empty and non-empty, in homedir",
             {
                 'file.txt': 'contents',
                 'file2.txt': 'contents2',
                 'folder/file3.txt': 'contents3',
                 'empty_folder': None
             },
+            '',
             ['file.txt', 'file2.txt', 'folder', 'empty_folder']
+        ),
+        (
+            "Mixed files, folders empty and non-empty, in subdir",
+            {
+                'file.txt': 'contents',
+                'file2.txt': 'contents2',
+                'folder/file3.txt': 'contents3',
+                'folder/subfolder/file4.txt': 'contents4',
+                'empty_folder': None
+            },
+            "folder",
+            ['file3.txt', 'subfolder']
         ),
     ):
         # Pass in fake server obj. (Can't easily clean up API to be more
@@ -56,8 +85,7 @@ def test_list_folder_in_homedir():
         server = AttrHolder()
         server.files = file_map
         interface = FakeSFTPServer(server)
-        # list_folder("") uses implicit homedir, as do all inputs
-        results = interface.list_folder("")
+        results = interface.list_folder(arg)
         # In this particular suite of tests, all results should be a file list,
         # not "no files found"
         ok_(results != ssh.SFTP_NO_SUCH_FILE)

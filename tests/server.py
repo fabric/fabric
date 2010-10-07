@@ -160,14 +160,67 @@ class FakeSFTPHandle(ssh.SFTPHandle):
         return self.attr or ssh.SFTP_NO_SUCH_FILE
 
 
+class PrependList(list):
+    def prepend(self, val):
+        self.insert(0, val)
+
+def expand(path):
+    """
+    '/foo/bar/biz' => ('/', 'foo', 'bar', 'biz')
+    'relative/path' => ('relative', 'path')
+    """
+    # Base case
+    if path in ['', os.path.sep]:
+        return [path]
+    ret = PrependList()
+    directory, filename = os.path.split(path)
+    while directory and directory != os.path.sep:
+        ret.prepend(filename)
+        directory, filename = os.path.split(directory)
+    ret.prepend(filename)
+    # Handle absolute vs relative paths
+    ret.prepend(directory if directory == os.path.sep else '')
+    return ret
+
+def contains(folder, path):
+    """
+    contains(('a', 'b', 'c'), ('a', 'b')) => True
+    contains('a', 'b', 'c'), ('f',)) => False
+    """
+    return False if len(path) >= len(folder) else folder[:len(path)] == path
+
+def missing_folders(paths):
+    """
+    f_m_s(['a/b/c']) => ['a', 'a/b', 'a/b/c']
+    """
+    ret = []
+    pool = set(paths)
+    for path in paths:
+        expanded = expand(path)
+        for i in range(len(expanded)):
+            folder = os.path.join(*expanded[:len(expanded)-i])
+            if folder and folder not in pool:
+                pool.add(folder)
+                ret.append(folder)
+    return ret
+
+
 class FakeSFTPServer(ssh.SFTPServerInterface):
     def __init__(self, server, *args, **kwargs):
         self.server = server
-        self.files = copy.deepcopy(self.server.files)
+        files = copy.deepcopy(self.server.files)
+        # Expand such that omitted, implied folders get added explicitly
+        for folder in missing_folders(files.keys()):
+            files[folder] = None
+        self.files = files
+
 
     def list_folder(self, path):
-        paths = [x for x in self.files if os.path.dirname(x) == path]
-        results = [self.stat(x) for x in paths]
+        expanded_files = map(expand, self.files)
+        expanded_path = expand(path)
+        candidates = [x for x in expanded_files if contains(x, expanded_path)]
+        children = [x[:len(expanded_path)+1] for x in candidates]
+        results = [self.stat(os.path.join(*x)) for x in children]
         bad = not results or any(x == ssh.SFTP_NO_SUCH_FILE for x in results)
         return ssh.SFTP_NO_SUCH_FILE if bad else results
 
