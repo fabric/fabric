@@ -264,6 +264,9 @@ class FakeSFTPServer(ssh.SFTPServerInterface):
         a.filename = os.path.basename(path)
         return a
 
+    # Don't care about links right now
+    lstat = stat
+
 
 def serve_responses(responses, files, passwords, pubkeys, port):
     """

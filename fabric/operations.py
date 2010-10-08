@@ -377,7 +377,6 @@ def get(rpath, lpath, recursive=False):
         rpath = rpath.replace('~', ftp.normalize('.'))
         lpath = os.path.expanduser(lpath)
 
-
         # If the current run appears to be scheduled for multiple hosts,
         # append a suffix to the downloaded file to prevent clobbering.
         if len(env.all_hosts) > 1:
