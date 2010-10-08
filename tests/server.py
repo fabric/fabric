@@ -214,12 +214,15 @@ class FakeSFTPServer(ssh.SFTPServerInterface):
             files[folder] = None
         self.files = files
 
-
     def list_folder(self, path):
         expanded_files = map(expand, self.files)
         expanded_path = expand(path)
         candidates = [x for x in expanded_files if contains(x, expanded_path)]
-        children = [x[:len(expanded_path)+1] for x in candidates]
+        children = []
+        for candidate in candidates:
+            cut = candidate[:len(expanded_path)+1]
+            if cut not in children:
+                children.append(cut)
         results = [self.stat(os.path.join(*x)) for x in children]
         bad = not results or any(x == ssh.SFTP_NO_SUCH_FILE for x in results)
         return ssh.SFTP_NO_SUCH_FILE if bad else results
