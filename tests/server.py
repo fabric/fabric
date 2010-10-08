@@ -191,7 +191,7 @@ def contains(folder, path):
 
 def missing_folders(paths):
     """
-    f_m_s(['a/b/c']) => ['a', 'a/b', 'a/b/c']
+    missing_folders(['a/b/c']) => ['a', 'a/b', 'a/b/c']
     """
     ret = []
     pool = set(paths)
