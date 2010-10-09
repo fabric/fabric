@@ -235,6 +235,18 @@ class TestFileTransfers(FabricTest):
         """
         remote = 'folder/file3.txt'
         with hide('everything'):
-            get('folder', self.tmpdir)
-        eq_(open(j(self.tmpdir, remote)), FILES[remote])
-        assert len(files_in_self.tmpdir+folder) == 1
+            get('folder', self.tmpdir, recursive=True)
+        eq_(open(j(self.tmpdir, remote)).read(), FILES[remote])
+
+
+    @server()
+    @mock_streams('both')
+    def test_get_folder_non_recursively(self):
+        """
+        get(folder, recursive=False) should warn and skip
+        """
+        target = 'folder'
+        remote = 'folder/file3.txt'
+        get(target, self.tmpdir)
+        assert ("%s is a directory" % target) in sys.stderr.getvalue()
+        assert not os.path.exists(j(self.tmpdir, target))
