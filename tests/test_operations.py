@@ -229,7 +229,7 @@ class TestFileTransfers(FabricTest):
 
 
     @server()
-    def test_get_recursively(self):
+    def test_get_single_file_recursively(self):
         """
         Recursively get() a folder containing one file
         """
@@ -250,3 +250,31 @@ class TestFileTransfers(FabricTest):
         get(target, self.tmpdir)
         assert ("%s is a directory" % target) in sys.stderr.getvalue()
         assert not os.path.exists(j(self.tmpdir, target))
+
+
+    @server(
+        files={
+            'tree/file1.txt': 'x',
+            'tree/file2.txt': 'y',
+            'tree/subfolder/file3.txt': 'z'
+        }
+    )
+    def test_get_tree_recursively(self):
+        """
+        Download entire tree, recursively
+        """
+        with hide('everything'):
+            get('tree', self.tmpdir, recursive=True)
+        eq_(open(j(self.tmpdir, 'tree', 'file1.txt')).read(), 'x')
+        eq_(open(j(self.tmpdir, 'tree', 'file2.txt')).read(), 'y')
+        eq_(open(j(self.tmpdir, 'tree', 'subfolder', 'file3.txt')).read(), 'z')
+
+
+    @server(files={'/etc/apache2/apache2.conf': 'Include other.conf'})
+    def test_get_single_file_absolutely(self):
+        """
+        get() a single file, using absolute file path
+        """
+        with hide('everything'):
+            get('/etc/apache2/apache2.conf', self.tmpdir)
+        eq_(open(j(self.tmpdir, 'apache2.conf')).read(), 'Include other.conf')
