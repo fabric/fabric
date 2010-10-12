@@ -305,18 +305,21 @@ class TestFileTransfers(FabricTest):
             get(target, local)
         assert "%s already exists" % local in sys.stderr.getvalue()
         eq_contents(local, FILES[target])
-#
-#
-#    @server()
-#    def test_get_file_to_directory(self):
-#        """
-#        Directory as target path should result in joined pathname
-#
-#        (Yes, this is duplicated in most of the other tests -- but good to have
-#        a default in case those tests change how they work later!)
-#        """
-#        assert False
-#
+
+
+    @server()
+    def test_get_file_to_directory(self):
+        """
+        Directory as target path should result in joined pathname
+
+        (Yes, this is duplicated in most of the other tests -- but good to have
+        a default in case those tests change how they work later!)
+        """
+        target = 'file.txt'
+        with hide('everything'):
+            get(target, self.tmpdir)
+        eq_contents(self.path(target), FILES[target])
+
 #
 #    @server()
 #    def test_get_files_from_multiple_servers(self):
