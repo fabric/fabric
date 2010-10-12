@@ -296,7 +296,7 @@ class TestFileTransfers(FabricTest):
 
 
     @server()
-    @mock_streams('both')
+    @mock_streams('stderr')
     def test_get_file_with_existing_file_target(self):
         """
         Clobbering existing local file should overwrite, with warning
@@ -304,8 +304,9 @@ class TestFileTransfers(FabricTest):
         local = j(self.tmpdir, 'target.txt')
         with open(local, 'w') as fd:
             fd.write("foo")
-        get('file.txt', local)
-        assert ("%s already exists" % local) in sys.stderr.getvalue()
+        with hide('stdout', 'running'):
+            get('file.txt', local)
+        assert_contains("%s already exists" % local, sys.stderr.getvalue())
         eq_(open(local).read(), 'contents')
 #
 #

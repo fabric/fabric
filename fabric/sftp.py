@@ -1,7 +1,10 @@
-from fabric.state import output, connections, env
 import stat
 import os
 from fnmatch import filter as fnfilter
+
+from fabric.state import output, connections, env
+from fabric.utils import warn
+
 
 class FabSFTP(object):
     def __init__(self, hoststr):
@@ -85,6 +88,9 @@ class FabSFTP(object):
             print("[%s] download: %s <- %s" % (
                 env.host_string, lpath, rpath
             ))
+        if os.path.exists(lpath):
+            msg = "Local file %s already exists and is being overwritten."
+            warn(msg % lpath)
         # Handle any raised exceptions (no return code to inspect here)
         self.ftp.get(rpath, lpath)
 
