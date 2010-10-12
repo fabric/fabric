@@ -203,3 +203,8 @@ Got:
 %r
 """ % (a, b, a, b)
     assert a == b, msg or default_msg
+
+
+def eq_contents(path, text):
+    with open(path) as fd:
+        eq_(fd.read(), text)

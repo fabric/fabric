@@ -1,7 +1,6 @@
 from __future__ import with_statement
 
 import os
-j = os.path.join
 import shutil
 import sys
 import tempfile
@@ -202,6 +201,8 @@ class TestFileTransfers(FabricTest):
         super(TestFileTransfers, self).teardown()
         shutil.rmtree(self.tmpdir)
 
+    def path(self, *path_parts):
+        return os.path.join(self.tmpdir, *path_parts)
 
     #
     # get()
@@ -213,10 +214,10 @@ class TestFileTransfers(FabricTest):
         get() with a single non-globbed filename
         """
         remote = 'file.txt'
-        local = j(self.tmpdir, remote)
+        local = self.path(remote)
         with hide('everything'):
             get(remote, local)
-        eq_(open(local).read(), FILES[remote])
+        eq_contents(local, FILES[remote])
 
 
     @server()
@@ -228,8 +229,7 @@ class TestFileTransfers(FabricTest):
         with hide('everything'):
             get('file*.txt', self.tmpdir)
         for remote in remotes:
-            local = j(self.tmpdir, remote)
-            eq_(open(local).read(), FILES[remote])
+            eq_contents(self.path(remote), FILES[remote])
 
 
     @server()
@@ -240,7 +240,7 @@ class TestFileTransfers(FabricTest):
         remote = 'folder/file3.txt'
         with hide('everything'):
             get('folder', self.tmpdir, recursive=True)
-        eq_(open(j(self.tmpdir, remote)).read(), FILES[remote])
+        eq_contents(self.path(remote), FILES[remote])
 
 
     @server()
@@ -253,35 +253,30 @@ class TestFileTransfers(FabricTest):
         remote = 'folder/file3.txt'
         get(target, self.tmpdir)
         assert ("%s is a directory" % target) in sys.stderr.getvalue()
-        assert not os.path.exists(j(self.tmpdir, target))
+        assert not os.path.exists(self.path(target))
 
 
-    @server(
-        files={
-            'tree/file1.txt': 'x',
-            'tree/file2.txt': 'y',
-            'tree/subfolder/file3.txt': 'z'
-        }
-    )
+    @server()
     def test_get_tree_recursively(self):
         """
         Download entire tree, recursively
         """
         with hide('everything'):
             get('tree', self.tmpdir, recursive=True)
-        eq_(open(j(self.tmpdir, 'tree', 'file1.txt')).read(), 'x')
-        eq_(open(j(self.tmpdir, 'tree', 'file2.txt')).read(), 'y')
-        eq_(open(j(self.tmpdir, 'tree', 'subfolder', 'file3.txt')).read(), 'z')
+        leaves = filter(lambda x: x[0].startswith('tree'), FILES.items())
+        for path, contents in leaves:
+            eq_contents(self.path(path), contents)
 
 
-    @server(files={'/etc/apache2/apache2.conf': 'Include other.conf'})
+    @server()
     def test_get_single_file_absolutely(self):
         """
         get() a single file, using absolute file path
         """
+        target = '/etc/apache2/apache2.conf'
         with hide('everything'):
-            get('/etc/apache2/apache2.conf', self.tmpdir)
-        eq_(open(j(self.tmpdir, 'apache2.conf')).read(), 'Include other.conf')
+            get(target, self.tmpdir)
+        eq_contents(self.path(os.path.basename(target)), FILES[target])
 
 
     @server()
@@ -289,10 +284,11 @@ class TestFileTransfers(FabricTest):
         """
         Missing target path on single file download => effectively a rename
         """
-        local = j(self.tmpdir, 'otherfile.txt')
+        local = self.path('otherfile.txt')
+        target = 'file.txt'
         with hide('everything'):
-            get('file.txt', local)
-        eq_(open(local).read(), 'contents')
+            get(target, local)
+        eq_contents(local, FILES[target])
 
 
     @server()
@@ -301,13 +297,14 @@ class TestFileTransfers(FabricTest):
         """
         Clobbering existing local file should overwrite, with warning
         """
-        local = j(self.tmpdir, 'target.txt')
+        local = self.path('target.txt')
+        target = 'file.txt'
         with open(local, 'w') as fd:
             fd.write("foo")
         with hide('stdout', 'running'):
-            get('file.txt', local)
-        assert_contains("%s already exists" % local, sys.stderr.getvalue())
-        eq_(open(local).read(), 'contents')
+            get(target, local)
+        assert "%s already exists" % local in sys.stderr.getvalue()
+        eq_contents(local, FILES[target])
 #
 #
 #    @server()

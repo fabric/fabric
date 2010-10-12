@@ -59,7 +59,11 @@ FILES = {
     'file.txt': 'contents',
     'file2.txt': 'contents2',
     'folder/file3.txt': 'contents3',
-    'empty_folder': None
+    'empty_folder': None,
+    'tree/file1.txt': 'x',
+    'tree/file2.txt': 'y',
+    'tree/subfolder/file3.txt': 'z',
+    '/etc/apache2/apache2.conf': 'Include other.conf'
 }
 PASSWORDS = {
     'root': 'root',
