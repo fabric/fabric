@@ -203,6 +203,10 @@ class TestFileTransfers(FabricTest):
         shutil.rmtree(self.tmpdir)
 
 
+    #
+    # get()
+    #
+
     @server()
     def test_get_single_file(self):
         """
@@ -278,3 +282,59 @@ class TestFileTransfers(FabricTest):
         with hide('everything'):
             get('/etc/apache2/apache2.conf', self.tmpdir)
         eq_(open(j(self.tmpdir, 'apache2.conf')).read(), 'Include other.conf')
+
+
+    @server()
+    def test_get_file_with_nonexistent_target(self):
+        """
+        Missing target path on single file download => effectively a rename
+        """
+        local = j(self.tmpdir, 'otherfile.txt')
+        with hide('everything'):
+            get('file.txt', local)
+        eq_(open(local).read(), 'contents')
+
+
+    @server()
+    @mock_streams('both')
+    def test_get_file_with_existing_file_target(self):
+        """
+        Clobbering existing local file should overwrite, with warning
+        """
+        local = j(self.tmpdir, 'target.txt')
+        with open(local, 'w') as fd:
+            fd.write("foo")
+        get('file.txt', local)
+        assert ("%s already exists" % local) in sys.stderr.getvalue()
+        eq_(open(local).read(), 'contents')
+#
+#
+#    @server()
+#    def test_get_file_to_directory(self):
+#        """
+#        Directory as target path should result in joined pathname
+#
+#        (Yes, this is duplicated in most of the other tests -- but good to have
+#        a default in case those tests change how they work later!)
+#        """
+#        assert False
+#
+#
+#    @server()
+#    def test_get_files_from_multiple_servers(self):
+#        """
+#        Hopefully two @server uses with different ports will work as expected
+#        """
+#        assert False
+#
+#
+#    #
+#    # put()
+#    #
+#
+#    @server()
+#    def test_put_file_blah_blah(self):
+#        """
+#        what
+#        """
+#        assert False
