@@ -164,9 +164,9 @@ def password_response(password, times_called=None, silent=True):
 
 
 def _assert_contains(needle, haystack, invert):
-    matched = re.search(needle, haystack, re.M)
+    matched = re.search(re.escape(needle), haystack, re.M)
     if (invert and matched) or (not invert and not matched):
-        raise AssertionError("r'%s' %sfound in '%s'" % (
+        raise AssertionError("'%s' %sfound in '%s'" % (
             needle,
             "" if invert else "not ",
             haystack
