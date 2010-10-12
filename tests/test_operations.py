@@ -329,13 +329,16 @@ class TestFileTransfers(FabricTest):
 #        assert False
 #
 #
-#    #
-#    # put()
-#    #
-#
-#    @server()
-#    def test_put_file_blah_blah(self):
-#        """
-#        what
-#        """
-#        assert False
+    #
+    # put()
+    #
+
+    @server()
+    def test_put_file_to_existing_directory(self):
+        """
+        put() a single file into an existing remote directory
+        """
+        local = self.path('foo.txt')
+        with open(local, 'w') as fd:
+            fd.write("foo!")
+        put(local, '')
