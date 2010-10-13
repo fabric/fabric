@@ -334,6 +334,7 @@ def put(local_path, remote_path, recursive=True):
                 else:
                     ftp.put(lpath, remote_path)
             except Exception, e:
+                raise e
                 msg = "put() encountered an exception while uploading '%s'"
                 _handle_failure(message=msg % lpath, exception=e)
 

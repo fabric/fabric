@@ -9,7 +9,7 @@ import sys
 import threading
 import time
 import types
-from cStringIO import StringIO
+from StringIO import StringIO
 from functools import wraps
 from Python26SocketServer import BaseRequestHandler, ThreadingMixIn, TCPServer
 
@@ -239,10 +239,16 @@ class FakeSFTPServer(ssh.SFTPServerInterface):
         # file at least, all flags are None, so for now we'll just test
         # st_mode.
         if not attr or attr.st_mode is None:
+            logger.debug("No attr? %r" % attr)
             # Using chattr to update this Handle object's attributes; we can't
             # pass in our fake's info via Handle.init for some reason.
             f.chattr(self.stat(path))
-        f.readfile = f.writefile = StringIO(self.file_contents(path))
+        else:
+            logger.debug("CHATTRING: %r" % attr)
+            f.chattr(attr)
+        # Set up readfile/writefile as appropriate
+        contents = self.file_contents(path) if path in self.files else ""
+        f.readfile = f.writefile = StringIO(contents)
         return f
 
     def file_contents(self, path):
