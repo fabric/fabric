@@ -153,8 +153,10 @@ class FakeSFTPHandle(ssh.SFTPHandle):
     Extremely basic way to get SFTPHandle working with our fake setup.
     """
     def __init__(self, *args, **kwargs):
+        self.attr = kwargs.pop('__attr') if '__attr' in kwargs else None
+        self.server = kwargs.pop('__server')
+        self.path = kwargs.pop('__path')
         super(FakeSFTPHandle, self).__init__(*args, **kwargs)
-        self.attr = None
 
     def chattr(self, attr):
         self.attr = attr
@@ -162,6 +164,10 @@ class FakeSFTPHandle(ssh.SFTPHandle):
 
     def stat(self):
         return self.attr or ssh.SFTP_NO_SUCH_FILE
+
+    def close(self, *args, **kwargs):
+        self.server.files[self.path] = self.writefile.getvalue()
+        return super(FakeSFTPHandle, self).close(*args, **kwargs)
 
 
 class PrependList(list):
@@ -232,20 +238,12 @@ class FakeSFTPServer(ssh.SFTPServerInterface):
         return ssh.SFTP_NO_SUCH_FILE if bad else results
 
     def open(self, path, flags, attr):
-        f = FakeSFTPHandle()
-        # Looks like we're passed an attr obj even when NOT trying to create a
-        # new file (interface API says that's what that kwarg is for).
-        # Debugging shows that in this scenario, when we're opening an existing
-        # file at least, all flags are None, so for now we'll just test
-        # st_mode.
-        if not attr or attr.st_mode is None:
-            logger.debug("No attr? %r" % attr)
-            # Using chattr to update this Handle object's attributes; we can't
-            # pass in our fake's info via Handle.init for some reason.
-            f.chattr(self.stat(path))
-        else:
-            logger.debug("CHATTRING: %r" % attr)
-            f.chattr(attr)
+        # attr always seems to be empty regardless of whether the file is being
+        # opened for reading or writing. If the file exists, pass in its stat
+        # info, otherwise just pass through the empty object given to us.
+        if path in self.files:
+            attr = self.stat(path)
+        f = FakeSFTPHandle(__attr=attr, __server=self, __path=path)
         # Set up readfile/writefile as appropriate
         contents = self.file_contents(path) if path in self.files else ""
         f.readfile = f.writefile = StringIO(contents)
@@ -276,6 +274,10 @@ class FakeSFTPServer(ssh.SFTPServerInterface):
 
     # Don't care about links right now
     lstat = stat
+
+    def chattr(self, path, attr):
+        # Just a no-op for now; will be replacing this later.
+        return ssh.SFTP_OK
 
 
 def serve_responses(responses, files, passwords, pubkeys, port):
