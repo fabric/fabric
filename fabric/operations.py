@@ -292,6 +292,9 @@ def put(local_path, remote_path, recursive=True):
     directory, but tilde expansion (e.g. ``~/.ssh/``) will also be performed if
     necessary.
 
+    An empty string, in either path argument, will be replaced by the
+    appropriate end's current working directory.
+
     By default, `put` preserves file modes when uploading. However, you can
     also set the mode explicitly by specifying the ``mode`` keyword argument,
     which sets the numeric mode of the remote file. See the ``os.chmod``
@@ -306,12 +309,18 @@ def put(local_path, remote_path, recursive=True):
     """
     ftp = FabSFTP(env.host_string)
 
-
     with closing(ftp) as ftp:
-
         # Expand tildes (assumption: default remote cwd is user $HOME)
-        remote_path = remote_path.replace('~', ftp.normalize('.'))
+        home = ftp.normalize('.')
+        remote_path = remote_path.replace('~', home)
+        # Edge case: empty remote path implies cwd
+        if not remote_path:
+            remote_path = home
+        # Also expand local paths
         local_path = os.path.expanduser(local_path)
+        # And handle that empty case too
+        if not local_path:
+            local_path = os.getcwd()
 
         # get filenames from glob
         names = glob(local_path)

@@ -329,6 +329,22 @@ class TestFileTransfers(FabricTest):
 #        assert False
 #
 #
+    @server()
+    def test_get_from_empty_directory_uses_cwd(self):
+        """
+        get() expands empty remote arg to remote cwd
+        """
+        assert False
+
+
+    @server()
+    def test_get_to_empty_directory_uses_cwd(self):
+        """
+        get() expands empty local arg to local cwd
+        """
+        assert False
+
+
     #
     # put()
     #
@@ -342,3 +358,19 @@ class TestFileTransfers(FabricTest):
         with open(local, 'w') as fd:
             fd.write("foo!")
         put(local, '')
+
+
+    @server()
+    def test_put_to_empty_directory_uses_cwd(self):
+        """
+        put() expands empty remote arg to remote cwd
+        """
+        assert False
+
+
+    @server()
+    def test_put_from_empty_directory_uses_cwd(self):
+        """
+        put() expands empty local arg to local cwd
+        """
+        assert False
