@@ -207,4 +207,4 @@ Got:
 
 def eq_contents(path, text):
     with open(path) as fd:
-        eq_(fd.read(), text)
+        eq_(text, fd.read())

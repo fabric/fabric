@@ -1,6 +1,7 @@
 import os
 import stat
 from StringIO import StringIO
+from types import StringTypes
 
 import paramiko as ssh
 
@@ -25,7 +26,13 @@ class FakeFile(StringIO):
     def __str__(self):
         return self.getvalue()
 
+    def write(self, value):
+        StringIO.write(self, value)
+        self.attributes.st_size = len(self.getvalue())
+
 
 class FakeFilesystem(dict):
     def __setitem__(self, key, value):
-        super(FakeFilesystem, self).__setitem__(key, FakeFile(value, key))
+        if isinstance(value, StringTypes) or value is None:
+            value = FakeFile(value, key)
+        super(FakeFilesystem, self).__setitem__(key, value)

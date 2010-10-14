@@ -20,7 +20,7 @@ from fabric.api import env, hide
 from fabric.thread_handling import ThreadHandler
 from fabric.network import disconnect_all
 
-from fake_filesystem import FakeFilesystem
+from fake_filesystem import FakeFilesystem, FakeFile
 
 #
 # Debugging
@@ -153,22 +153,12 @@ class FakeSFTPHandle(ssh.SFTPHandle):
     """
     Extremely basic way to get SFTPHandle working with our fake setup.
     """
-    def __init__(self, *args, **kwargs):
-        self.attr = kwargs.pop('__attr') if '__attr' in kwargs else None
-        self.server = kwargs.pop('__server')
-        self.path = kwargs.pop('__path')
-        super(FakeSFTPHandle, self).__init__(*args, **kwargs)
-
     def chattr(self, attr):
-        self.attr = attr
+        self.readfile.attributes = attr
         return ssh.SFTP_OK
 
     def stat(self):
-        return self.attr or ssh.SFTP_NO_SUCH_FILE
-
-    def close(self, *args, **kwargs):
-        self.server.files[self.path] = self.writefile.getvalue()
-        return super(FakeSFTPHandle, self).close(*args, **kwargs)
+        return self.readfile.attributes
 
 
 class PrependList(list):
@@ -239,22 +229,13 @@ class FakeSFTPServer(ssh.SFTPServerInterface):
         return ssh.SFTP_NO_SUCH_FILE if bad else results
 
     def open(self, path, flags, attr):
-        # attr always seems to be empty regardless of whether the file is being
-        # opened for reading or writing. If the file exists, pass in its stat
-        # info, otherwise just pass through the empty object given to us.
-        if path in self.files:
-            attr = self.stat(path)
-        f = FakeSFTPHandle(__attr=attr, __server=self, __path=path)
-        # Set up readfile/writefile as appropriate
-        contents = self.file_contents(path) if path in self.files else ""
-        f.readfile = f.writefile = StringIO(contents)
+        try:
+            fobj = self.files[path]
+        except KeyError:
+            self.files[path] = fobj = FakeFile("", path)
+        f = FakeSFTPHandle()
+        f.readfile = f.writefile = fobj
         return f
-
-    def file_contents(self, path):
-        # Specifically NOT using SFTP_NO_SUCH_FILE here; this is used by our
-        # code only, want more obvious tracebacks if something calls this with
-        # a bad path.
-        return self.files[path]
 
     def stat(self, path):
         try:
