@@ -232,7 +232,10 @@ class FakeSFTPServer(ssh.SFTPServerInterface):
         try:
             fobj = self.files[path]
         except KeyError:
-            self.files[path] = fobj = FakeFile("", path)
+            if flags & os.O_WRONLY:
+                self.files[path] = fobj = FakeFile("", path)
+            else:
+                return ssh.SFTP_NO_SUCH_FILE
         f = FakeSFTPHandle()
         f.readfile = f.writefile = fobj
         return f
