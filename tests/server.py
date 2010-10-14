@@ -20,6 +20,7 @@ from fabric.api import env, hide
 from fabric.thread_handling import ThreadHandler
 from fabric.network import disconnect_all
 
+from fake_filesystem import FakeFilesystem
 
 #
 # Debugging
@@ -107,7 +108,7 @@ class ParamikoServer(ssh.ServerInterface):
         self.event = threading.Event()
         self.passwords = passwords
         self.pubkeys = pubkeys
-        self.files = files
+        self.files = FakeFilesystem(files)
         self.command = None
 
     def check_channel_request(self, kind, chanid):
@@ -257,28 +258,21 @@ class FakeSFTPServer(ssh.SFTPServerInterface):
 
     def stat(self, path):
         try:
-            contents = self.files[path]
+            fobj = self.files[path]
         except KeyError:
             return ssh.SFTP_NO_SUCH_FILE
-        if contents is None:
-            ftype = 'dir'
-            size = 4096
-        else:
-            ftype = 'file'
-            size = len(contents)
-        a = ssh.SFTPAttributes()
-        a.st_mode = {'file': stat.S_IFREG, 'dir': stat.S_IFDIR}[ftype]
-        a.st_size = size
-        a.filename = os.path.basename(path)
-        return a
+        return fobj.attributes
 
     # Don't care about links right now
     lstat = stat
 
     def chattr(self, path, attr):
-        # Just a no-op for now; will be replacing this later.
+        try:
+            fobj = self.files[path]
+        except KeyError:
+            return ssh.SFTP_NO_SUCH_FILE
+        fobj.attributes = attr
         return ssh.SFTP_OK
-
 
 def serve_responses(responses, files, passwords, pubkeys, port):
     """
