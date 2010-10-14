@@ -267,11 +267,9 @@ class FakeSFTPServer(ssh.SFTPServerInterface):
     lstat = stat
 
     def chattr(self, path, attr):
-        try:
-            fobj = self.files[path]
-        except KeyError:
+        if path not in self.files:
             return ssh.SFTP_NO_SUCH_FILE
-        fobj.attributes = attr
+        self.files[path].attributes = attr
         return ssh.SFTP_OK
 
 def serve_responses(responses, files, passwords, pubkeys, port):
