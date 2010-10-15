@@ -57,13 +57,13 @@ setup.py
 tests"""
 }
 FILES = {
-    'file.txt': 'contents',
-    'file2.txt': 'contents2',
-    'folder/file3.txt': 'contents3',
-    'empty_folder': None,
-    'tree/file1.txt': 'x',
-    'tree/file2.txt': 'y',
-    'tree/subfolder/file3.txt': 'z',
+    '/file.txt': 'contents',
+    '/file2.txt': 'contents2',
+    '/folder/file3.txt': 'contents3',
+    '/empty_folder': None,
+    '/tree/file1.txt': 'x',
+    '/tree/file2.txt': 'y',
+    '/tree/subfolder/file3.txt': 'z',
     '/etc/apache2/apache2.conf': 'Include other.conf'
 }
 PASSWORDS = {
@@ -209,7 +209,7 @@ def missing_folders(paths):
 class FakeSFTPServer(ssh.SFTPServerInterface):
     def __init__(self, server, *args, **kwargs):
         self.server = server
-        files = copy.deepcopy(self.server.files)
+        files = self.server.files
         # Expand such that omitted, implied folders get added explicitly
         for folder in missing_folders(files.keys()):
             files[folder] = None

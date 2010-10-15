@@ -32,6 +32,12 @@ class FakeFile(StringIO):
 
 
 class FakeFilesystem(dict):
+    def __init__(self, d=None):
+        # Replicate input dictionary using our custom __setitem__
+        d = d or {}
+        for key, value in d.iteritems():
+            self[key] = value
+
     def __setitem__(self, key, value):
         if isinstance(value, StringTypes) or value is None:
             value = FakeFile(value, key)
