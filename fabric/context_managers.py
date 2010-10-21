@@ -142,16 +142,16 @@ def settings(*args, **kwargs):
 
 def cd(path):
     """
-    Context manager that keeps directory state when calling `run`/`sudo`.
+    Context manager that keeps directory state when calling operations.
 
-    Any calls to `run` or `sudo` within the wrapped block will implicitly have
-    a string similar to ``"cd <path> && "`` prefixed in order to give the sense
-    that there is actually statefulness involved.
+    Any calls to `run`, `sudo` or `local` within the wrapped block will
+    implicitly have a string similar to ``"cd <path> && "`` prefixed in order
+    to give the sense that there is actually statefulness involved.
 
-    Because use of `cd` affects all `run` and `sudo` invocations, any code
-    making use of `run` and/or `sudo`, such as much of the ``contrib`` section,
-    will also be affected by use of `cd`. However, at this time, `get` and
-    `put` do not honor `cd`; we expect this to be fixed in future releases.
+    Because use of `cd` affects all such invocations, any code making use of
+    `run`/`sudo`/`local`, such as much of the ``contrib`` section, will also be
+    affected by use of `cd`. However, at this time, `get` and `put` do not
+    honor `cd`; we expect this to be addressed in future releases.
 
     Like the actual 'cd' shell builtin, `cd` may be called with relative paths
     (keep in mind that your default starting directory is your remote user's
