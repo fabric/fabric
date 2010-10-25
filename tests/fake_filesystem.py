@@ -30,6 +30,12 @@ class FakeFile(StringIO):
         StringIO.write(self, value)
         self.attributes.st_size = len(self.getvalue())
 
+    def close(self):
+        """
+        Always hold fake files open.
+        """
+        pass
+
 
 class FakeFilesystem(dict):
     def __init__(self, d=None):
