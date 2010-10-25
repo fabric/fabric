@@ -364,22 +364,34 @@ class TestFileTransfers(FabricTest):
         """
         put() a single file into an existing remote directory
         """
+        text = "foo!"
         local = self.path('foo.txt')
         local2 = self.path('foo2.txt')
         with open(local, 'w') as fd:
-            fd.write("foo!")
+            fd.write(text)
         with hide('everything'):
             put(local, '/')
             get('/foo.txt', local2)
-        eq_contents(local2, "foo!")
+        eq_contents(local2, text)
 
 
     @server()
     def test_put_to_empty_directory_uses_cwd(self):
         """
         put() expands empty remote arg to remote cwd
+
+        Not a terribly sharp test -- we just get() with a relative path and are
+        testing to make sure they match up -- but should still suffice.
         """
-        assert False
+        text = "foo!"
+        local = self.path('foo.txt')
+        local2 = self.path('foo2.txt')
+        with open(local, 'w') as fd:
+            fd.write(text)
+        with hide('everything'):
+            put(local, '')
+            get('foo.txt', local2)
+        eq_contents(local2, text)
 
 
     @server()
