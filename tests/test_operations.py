@@ -399,4 +399,23 @@ class TestFileTransfers(FabricTest):
         """
         put() expands empty local arg to local cwd
         """
-        assert False
+        text = 'foo!'
+        # Don't use the current cwd since that's a whole lotta files to upload
+        old_cwd = os.getcwd()
+        os.chdir(self.tmpdir)
+        # Write out file right here
+        with open('file.txt', 'w') as fd:
+            fd.write(text)
+        with hide('everything'):
+            # Put, recursively, our cwd (which should only contain the file we
+            # just created)
+            put('', '/', recursive=True)
+            # Get it back under a new name (noting that when we use a truly
+            # empty put() local call, it makes a directory remotely with the
+            # name of the cwd)
+            remote = os.path.join(os.path.basename(self.tmpdir), 'file.txt')
+            get(remote, 'file2.txt')
+        # Compare for sanity test
+        eq_contents('file2.txt', text)
+        # Restore cwd
+        os.chdir(old_cwd)

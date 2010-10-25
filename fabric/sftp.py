@@ -35,16 +35,16 @@ class FabSFTP(object):
             return False
         return True
 
-    def glob(self, pat):
-        dirpart, pat = os.path.split(pat)
+    def glob(self, path):
+        dirpart, pattern = os.path.split(path)
         rlist = self.ftp.listdir(dirpart)
 
         #print "rlist is", rlist
-        names = fnfilter([f for f in rlist if not f[0] == '.'], pat)
+        names = fnfilter([f for f in rlist if not f[0] == '.'], pattern)
         if len(names):
             return [os.path.join(dirpart, name) for name in names]
         else:
-            return [dirpart]
+            return [path]
 
     def walk(self, top, topdown=True, onerror=None, followlinks=False):
         from os.path import join, isdir, islink

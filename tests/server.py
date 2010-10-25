@@ -267,6 +267,10 @@ class FakeSFTPServer(ssh.SFTPServerInterface):
                 setattr(self.files[path].attributes, attname, incoming)
         return ssh.SFTP_OK
 
+    def mkdir(self, path, attr):
+        self.files[path] = None
+        return ssh.SFTP_OK
+
 def serve_responses(responses, files, passwords, pubkeys, port):
     """
     Return a threading TCP based SocketServer listening on ``port``.
