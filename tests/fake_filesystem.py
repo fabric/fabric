@@ -36,6 +36,10 @@ class FakeFile(StringIO):
         """
         pass
 
+    def __cmp__(self, other):
+        me = str(self) if isinstance(other, StringTypes) else self
+        return cmp(me, other)
+
 
 class FakeFilesystem(dict):
     def __init__(self, d=None):
@@ -48,3 +52,19 @@ class FakeFilesystem(dict):
         if isinstance(value, StringTypes) or value is None:
             value = FakeFile(value, key)
         super(FakeFilesystem, self).__setitem__(key, value)
+
+    def normalize(self, path):
+        """
+        Normalize relative paths.
+
+        In our case, the "home" directory is just the root, /.
+
+        I expect real servers do this as well but with the user's home
+        directory.
+        """
+        if not path.startswith(os.path.sep):
+            path = os.path.join(os.path.sep, path)
+        return path
+
+    def __getitem__(self, key):
+        return super(FakeFilesystem, self).__getitem__(self.normalize(key))

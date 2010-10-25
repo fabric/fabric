@@ -56,7 +56,7 @@ requirements.txt
 setup.py
 tests"""
 }
-FILES = {
+FILES = FakeFilesystem({
     '/file.txt': 'contents',
     '/file2.txt': 'contents2',
     '/folder/file3.txt': 'contents3',
@@ -65,7 +65,7 @@ FILES = {
     '/tree/file2.txt': 'y',
     '/tree/subfolder/file3.txt': 'z',
     '/etc/apache2/apache2.conf': 'Include other.conf'
-}
+})
 PASSWORDS = {
     'root': 'root',
     USER: 'password'
@@ -216,6 +216,7 @@ class FakeSFTPServer(ssh.SFTPServerInterface):
         self.files = files
 
     def list_folder(self, path):
+        path = self.files.normalize(path)
         expanded_files = map(expand, self.files)
         expanded_path = expand(path)
         candidates = [x for x in expanded_files if contains(x, expanded_path)]
@@ -229,6 +230,7 @@ class FakeSFTPServer(ssh.SFTPServerInterface):
         return ssh.SFTP_NO_SUCH_FILE if bad else results
 
     def open(self, path, flags, attr):
+        path = self.files.normalize(path)
         try:
             fobj = self.files[path]
         except KeyError:
@@ -241,6 +243,7 @@ class FakeSFTPServer(ssh.SFTPServerInterface):
         return f
 
     def stat(self, path):
+        path = self.files.normalize(path)
         try:
             fobj = self.files[path]
         except KeyError:
@@ -251,6 +254,7 @@ class FakeSFTPServer(ssh.SFTPServerInterface):
     lstat = stat
 
     def chattr(self, path, attr):
+        path = self.files.normalize(path)
         if path not in self.files:
             return ssh.SFTP_NO_SUCH_FILE
         # Attempt to gracefully update instead of overwrite, since things like
