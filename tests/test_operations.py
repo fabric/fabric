@@ -358,8 +358,9 @@ class TestFileTransfers(FabricTest):
         local2 = self.path('foo2.txt')
         with open(local, 'w') as fd:
             fd.write("foo!")
-        put(local, '/')
-        get('/foo.txt', local2)
+        with hide('everything'):
+            put(local, '/')
+            get('/foo.txt', local2)
         eq_contents(local2, "foo!")
 
 
