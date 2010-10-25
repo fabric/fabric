@@ -334,7 +334,11 @@ class TestFileTransfers(FabricTest):
         """
         get() expands empty remote arg to remote cwd
         """
-        assert False
+        with hide('everything'):
+            get('', self.tmpdir, recursive=True)
+        # Spot checks
+        for x in "file.txt file2.txt tree/file1.txt".split():
+            assert os.path.exists(os.path.join(self.tmpdir, x))
 
 
     @server()
