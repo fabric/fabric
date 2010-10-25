@@ -383,8 +383,13 @@ def get(rpath, lpath, recursive=False):
     ftp = FabSFTP(env.host_string)
 
     with closing (ftp) as ftp:
+        # Expand home directory markers
         rpath = rpath.replace('~', ftp.normalize('.'))
         lpath = os.path.expanduser(lpath)
+
+        # Handle empty local path
+        if not lpath:
+            lpath = os.getcwd()
 
         # If the current run appears to be scheduled for multiple hosts,
         # append a suffix to the downloaded file to prevent clobbering.

@@ -346,7 +346,13 @@ class TestFileTransfers(FabricTest):
         """
         get() expands empty local arg to local cwd
         """
-        assert False
+        path = 'file.txt'
+        with hide('everything'):
+            get(path, '')
+        target = os.path.join(os.getcwd(), path)
+        assert os.path.exists(target)
+        # Clean up, since we're not using our tmpdir
+        os.remove(target)
 
 
     #
