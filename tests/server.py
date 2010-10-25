@@ -253,7 +253,14 @@ class FakeSFTPServer(ssh.SFTPServerInterface):
     def chattr(self, path, attr):
         if path not in self.files:
             return ssh.SFTP_NO_SUCH_FILE
-        self.files[path].attributes = attr
+        # Attempt to gracefully update instead of overwrite, since things like
+        # chmod will call us with an SFTPAttributes object that only exhibits
+        # e.g. st_mode, and we don't want to lose our filename or size...
+        for which in "size uid gid mode atime mtime".split():
+            attname = "st_" + which
+            incoming = getattr(attr, attname)
+            if incoming is not None:
+                setattr(self.files[path].attributes, attname, incoming)
         return ssh.SFTP_OK
 
 def serve_responses(responses, files, passwords, pubkeys, port):
