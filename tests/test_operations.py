@@ -323,21 +323,27 @@ class TestFileTransfers(FabricTest):
 
     @server(port=2200)
     @server(port=2201)
-    def test_get_files_from_multiple_servers(self):
-        """
-        Multi-server download should create per-host directories
-        """
-        # Set all_hosts since that's currently how we detect a multi-host run
+    def multi_get(self, target, leaf):
         with settings(all_hosts=['localhost:2200', 'localhost:2201']):
             for port in [2200, 2201]:
                 with settings(
                     hide('everything'), host_string='localhost:%s' % port
                 ):
-                    get('file.txt', self.tmpdir)
-                local_path = os.path.join(
-                    self.tmpdir, 'localhost-%s' % port, 'file.txt'
-                )
-                assert os.path.exists(local_path)
+                    get('file.txt', target)
+                assert os.path.exists(os.path.join(self.tmpdir, leaf % port))
+
+    def test_get_from_multiple_servers_to_dir(self):
+        """
+        Multi-server download should create per-host directories
+        """
+        self.multi_get(self.tmpdir, 'localhost-%s/file.txt')
+
+    def test_get_from_multiple_servers_to_file(self):
+        """
+        Multi-server get() to file should append to filenames
+        """
+        self.multi_get(self.path('file.txt'), 'file.txt.localhost-%s')
+
 
 
     @server()
