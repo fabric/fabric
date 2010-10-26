@@ -395,14 +395,21 @@ def get(rpath, lpath, recursive=False):
         # append a suffix to the downloaded file to prevent clobbering.
         if len(env.all_hosts) > 1:
             if os.path.isdir(lpath):
-                lpath = os.path.join(lpath, env.host)
+                # Use host_string instead of host for maximum granularity,
+                # translating the port colon into a dash to prevent problems on
+                # some filesystems.
+                lpath = os.path.join(lpath, env.host_string.replace(':', '-'))
+                # Create directory if it doesn't exist. (Not recursively,
+                # though -- that's a bit much.
+                if not os.path.exists(lpath):
+                    os.mkdir(lpath)
             else:
                 if os.path.exists(lpath):
                     warn("Local file exists, but writing new file per host")
                 lpath = lpath + "." + env.host
 
         # setup glob
-        names =  ftp.glob(rpath)
+        names = ftp.glob(rpath)
         #print 'rpath', rpath, 'names', names
         # sanity check
         if len(names) > 1 and os.path.exists(lpath) and not os.path.isdir(lpath):

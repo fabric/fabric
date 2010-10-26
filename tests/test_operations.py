@@ -320,15 +320,26 @@ class TestFileTransfers(FabricTest):
             get(target, self.tmpdir)
         eq_contents(self.path(target), FILES[target])
 
-#
-#    @server()
-#    def test_get_files_from_multiple_servers(self):
-#        """
-#        Hopefully two @server uses with different ports will work as expected
-#        """
-#        assert False
-#
-#
+
+    @server(port=2200)
+    @server(port=2201)
+    def test_get_files_from_multiple_servers(self):
+        """
+        Multi-server download should create per-host directories
+        """
+        # Set all_hosts since that's currently how we detect a multi-host run
+        with settings(all_hosts=['localhost:2200', 'localhost:2201']):
+            for port in [2200, 2201]:
+                with settings(
+                    hide('everything'), host_string='localhost:%s' % port
+                ):
+                    get('file.txt', self.tmpdir)
+                local_path = os.path.join(
+                    self.tmpdir, 'localhost-%s' % port, 'file.txt'
+                )
+                assert os.path.exists(local_path)
+
+
     @server()
     def test_get_from_empty_directory_uses_cwd(self):
         """
