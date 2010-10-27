@@ -339,8 +339,8 @@ def put(local_path, remote_path, mode=None):
                 # Actually do the upload
                 rattrs = ftp.put(lpath, _remote_path)
                 # and finally set the file mode
-                lmode = (mode or os.stat(lpath).st_mode) & 0777
-                rmode = rattrs.st_mode & 0777
+                lmode = (mode or os.stat(lpath).st_mode) & 07777
+                rmode = rattrs.st_mode & 07777
                 if lmode != rmode:
                     ftp.chmod(_remote_path, lmode)
             except Exception, e:
