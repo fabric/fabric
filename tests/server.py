@@ -120,8 +120,41 @@ class SSHServer(ThreadingMixIn, TCPServer):
     """
     Threading TCPServer subclass.
     """
-    # Prevent "address already in use" errors when running tests 2x in a row.
-    allow_reuse_address = True
+    def _socket_info(self, addr_tup):
+        """
+        Clone of the very top of Paramiko (1.7.6) SSHClient.connect().
+
+        We must use this in order to make sure that our address family matches
+        up with the client side (which we cannot control, and which varies
+        depending on individual computers and their network settings).
+        """
+        hostname, port = addr_tup
+        addr_info = socket.getaddrinfo(hostname, port, socket.AF_UNSPEC,
+            socket.SOCK_STREAM)
+        for (family, socktype, proto, canonname, sockaddr) in addr_info:
+            if socktype == socket.SOCK_STREAM:
+                af = family
+                addr = sockaddr
+                break
+        else:
+            # some OS like AIX don't indicate SOCK_STREAM support, so just
+            # guess. :(
+            af, _, _, _, addr = socket.getaddrinfo(hostname, port,
+                socket.AF_UNSPEC, socket.SOCK_STREAM)
+        return af, addr
+
+    def __init__(
+        self, server_address, RequestHandlerClass, bind_and_activate=True
+    ):
+        # Prevent "address already in use" errors when running tests 2x in a
+        # row.
+        self.allow_reuse_address = True
+
+        # Handle network family/host addr (see docstring for _socket_info)
+        family, addr = self._socket_info(server_address)
+        self.address_family = family
+        TCPServer.__init__(self, addr, RequestHandlerClass,
+            bind_and_activate)
 
 
 def serve_responses(responses, passwords, pubkeys, port):
