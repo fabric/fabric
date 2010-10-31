@@ -4,6 +4,7 @@ import copy
 import itertools
 import os
 import re
+import socket
 import stat
 import sys
 import threading
@@ -35,7 +36,7 @@ logger = logging.getLogger('server.py')
 # Constants
 #
 
-HOST = '127.0.0.1'
+HOST = 'localhost'
 PORT = 2200
 USER = 'username'
 RESPONSES = {
@@ -416,7 +417,7 @@ def serve_responses(responses, files, passwords, pubkeys, port):
                     self.channel.send_stderr(err)
             self.channel.send_exit_status(self.status)
 
-    return SSHServer(('localhost', port), SSHHandler)
+    return SSHServer((HOST, port), SSHHandler)
 
 
 def server(
