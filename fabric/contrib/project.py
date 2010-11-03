@@ -54,7 +54,7 @@ def rsync_project(remote_dir, local_dir=None, exclude=(), delete=False,
     specified port and/or SSH key filename(s).
 
     For reference, the approximate ``rsync`` command-line call that is
-    constructed by this function is the following:
+    constructed by this function is the following::
 
         rsync [--delete] [--exclude exclude[0][, --exclude[1][, ...]]] \\
             -pthrvz [extra_opts] <local_dir> <host_string>:<remote_dir>
