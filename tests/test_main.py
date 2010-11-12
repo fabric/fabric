@@ -29,6 +29,9 @@ def test_argument_parsing():
         # Note: in a real shell, one would need to quote or escape "foo;bar".
         # But in pure-Python that would get interpreted literally, so we don't.
         ('abc:hosts=foo;bar', ('abc', [], {}, ['foo', 'bar'], [])),
+        # Empty string args
+        ("task:x=y,z=", ('task', [], {'x': 'y', 'z': ''}, [], [])),
+        ("task:foo,,x=y", ('task', ['foo', ''], {'x': 'y'}, [], [])),
     ]:
         yield eq_, parse_arguments([args]), [output]
 
