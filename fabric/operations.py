@@ -581,13 +581,19 @@ def local(command, capture=True):
 
     `local` will, by default, capture and return the contents of the command's
     stdout as a string, and will not print anything to the user (the command's
-    stderr is captured but discarded.)
+    stderr is captured but discarded). 
     
     .. note::
         This differs from the default behavior of `run` and `sudo` due to the
         different mechanisms involved: it is difficult to simultaneously
         capture and print local commands, so we have to choose one or the
         other. We hope to address this in later releases.
+
+    `local`'s return value, like that of `~fabric.operations.run`, exhibits the
+    attributes ``succeeded``/``failed`` (booleans), ``stderr`` (string) and
+    ``return_code`` (integer). Please see `~fabric.operations.run`'s API docs
+    for details, and remember that this return value is only set when
+    ``capture=True``, as above.
 
     If you need full interactivity with the command being run (and are willing
     to accept the loss of captured stdout) you may specify ``capture=False`` so
@@ -597,6 +603,9 @@ def local(command, capture=True):
     When ``capture`` is False, global output controls (``output.stdout`` and
     ``output.stderr`` will be used to determine what is printed and what is
     discarded.
+
+    .. versionchanged:: 0.9.3
+        Added the ``succeeded`` and ``stderr`` return code attributes.
     """
     # Handle cd() context manager
     cwd = env.get('cwd', '')
@@ -624,12 +633,15 @@ def local(command, capture=True):
     (stdout, stderr) = p.communicate()
     # Handle error condition (deal with stdout being None, too)
     out = _AttributeString(stdout.strip() if stdout else "")
+    err = _AttributeString(stderr.strip() if stderr else "")
     out.failed = False
+    out.stderr = err
     out.return_code = p.returncode
     if p.returncode != 0:
         out.failed = True
         msg = "local() encountered an error (return code %s) while executing '%s'" % (p.returncode, command)
         _handle_failure(message=msg)
+    out.succeeded = not out.failed
     # If we were capturing, this will be a string; otherwise it will be None.
     return out
 

@@ -7,6 +7,8 @@ The following changes were implemented in Fabric 0.9.3:
 Feature additions
 =================
 
+* :issue:`255`: Added ``stderr`` and ``succeeded`` attributes to
+  `~fabric.operations.local`.
 * :issue:`254`: Backported the ``.stderr`` and ``.succeeded`` attributes on
   `~fabric.operations.run`/`~fabric.operations.sudo` return values, from the
   Git master/pre-1.0 branch. Please see those functions' API docs for details.
