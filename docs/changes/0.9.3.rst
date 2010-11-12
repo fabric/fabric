@@ -22,6 +22,8 @@ Bugfixes
 * :issue:`230`: Arbitrary or remainder commands (``fab <opts> -- <run command
   here>``) will no longer blow up when invoked with no fabfile present. Thanks
   to IRC user ``orkaa`` for the report.
+* :issue:`242`: Empty string values in task CLI args now parse correctly.
+  Thanks to Aaron Levy for the catch + patch.
 
 
 Documentation updates

@@ -314,7 +314,7 @@ def parse_arguments(arguments):
             cmd, argstr = cmd.split(':', 1)
             for pair in _escape_split(',', argstr):
                 k, _, v = pair.partition('=')
-                if v:
+                if _:
                     # Catch, interpret host/hosts/role/roles kwargs
                     if k in ['host', 'hosts', 'role', 'roles']:
                         if k == 'host':
