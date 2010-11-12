@@ -27,4 +27,5 @@ Bugfixes
 Documentation updates
 =====================
 
-* N/A
+* :issue:`239`: Fixed typo in execution usage docs. Thanks to Pradeep Gowda and
+  Turicas for the catch.
