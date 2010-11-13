@@ -101,7 +101,7 @@ def is_task(tup):
     )
 
 
-def load_fabfile(path):
+def load_fabfile(path, importer=None):
     """
     Import given fabfile path and return (docstring, callables).
 
@@ -109,6 +109,8 @@ def load_fabfile(path):
     dictionary of ``{'name': callable}`` containing all callables which pass
     the "is a Fabric task" test.
     """
+    if importer is None:
+        importer = __import__
     # Get directory and fabfile name
     directory, fabfile = os.path.split(path)
     # If the directory isn't in the PYTHONPATH, add it so our import will work
@@ -129,7 +131,7 @@ def load_fabfile(path):
             sys.path.insert(0, directory)
             del sys.path[i + 1]
     # Perform the import (trimming off the .py)
-    imported = __import__(os.path.splitext(fabfile)[0])
+    imported = importer(os.path.splitext(fabfile)[0])
     # Remove directory from path if we added it ourselves (just to be neat)
     if added_to_path:
         del sys.path[0]
