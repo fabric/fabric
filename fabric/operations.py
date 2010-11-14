@@ -326,10 +326,10 @@ def put(local_path, remote_path, recursive=True):
         if not local_path:
             local_path = os.getcwd()
 
-        # get filenames from glob
+        # Glob local path
         names = glob(local_path)
 
-        # sanity check and wierd cases
+        # Sanity check and wierd cases
         if ftp.exists(remote_path):
             if recursive and len(names) != 1 and \
                     not ftp.isdir(remote_path):
@@ -341,7 +341,7 @@ def put(local_path, remote_path, recursive=True):
             try:
                 if os.path.isdir(lpath):
                     if not recursive:
-                        warn('%s is a directory, skipping.' % lpath)
+                        warn('%s is a directory but recursive=False, skipping.' % lpath)
                     else:
                         ftp.put_dir(lpath, remote_path)
                 else:
@@ -399,7 +399,7 @@ def get(remote_path, local_path, recursive=False):
     ftp = FabSFTP(env.host_string)
 
     with closing (ftp) as ftp:
-        # Expand home directory markers
+        # Expand home directory markers (tildes, etc)
         remote_path = remote_path.replace('~', ftp.normalize('.'))
         local_path = os.path.expanduser(local_path)
 
@@ -421,30 +421,26 @@ def get(remote_path, local_path, recursive=False):
                 if not os.path.exists(local_path):
                     os.mkdir(local_path)
             else:
-                if os.path.exists(local_path):
-                    warn("Local file exists, but writing new file per host")
                 local_path = local_path + "." + label
 
-        # setup glob
+        # Glob remote path
         names = ftp.glob(remote_path)
-        #print 'remote_path', remote_path, 'names', names
-        # sanity check
-        if len(names) > 1 and os.path.exists(local_path) and not os.path.isdir(local_path):
+        # Sanity check for globbed remote path to non-directory local path
+        if (len(names) > 1
+            and os.path.exists(local_path)
+            and not os.path.isdir(local_path)):
             es = "[%s] %s not a directory, but multiple files to be fetched"
             raise ValueError(es % (env.host, local_path))
 
         for remote_path in names:
             try:
                 if ftp.isdir(remote_path):
-                    #print 'remote dir!'
                     if recursive:
-                        #print 'recursive'
                         ftp.get_dir(remote_path, local_path)
                     else:
-                        warn("[%s] %s is a directory, skipping" % \
+                        warn("[%s] %s is a directory but recursive=False, skipping" % \
                             (env.host_string, remote_path))
                 else:
-                    #print 'not remote dir'
                     ftp.get(remote_path, local_path)
             except Exception, e:
                 msg = "get() encountered an exception while downloading '%s'"
