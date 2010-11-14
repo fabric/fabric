@@ -23,7 +23,7 @@ from fabric.network import needs_host
 from fabric.state import env, connections, output, win32, default_channel
 from fabric.utils import abort, indent, warn, puts
 from fabric.thread_handling import ThreadHandler
-from fabric.sftp import FabSFTP
+from fabric.sftp import SFTP
 
 # For terminal size logic below
 if not win32:
@@ -311,13 +311,13 @@ def put(local_path, remote_path, recursive=True):
         put('index.html', 'index.html', mode=0755)
 
     """
-    ftp = FabSFTP(env.host_string)
+    ftp = SFTP(env.host_string)
 
     with closing(ftp) as ftp:
         # Expand tildes (assumption: default remote cwd is user $HOME)
         home = ftp.normalize('.')
         remote_path = remote_path.replace('~', home)
-        # Edge case: empty remote path implies cwd
+        # Empty remote path implies cwd
         if not remote_path:
             remote_path = home
         # Also expand local paths
@@ -341,7 +341,7 @@ def put(local_path, remote_path, recursive=True):
             try:
                 if os.path.isdir(lpath):
                     if not recursive:
-                        warn('%s is a directory but recursive=False, skipping.' % lpath)
+                        warn('Skipping directory %s (recursive=False)' % lpath)
                     else:
                         ftp.put_dir(lpath, remote_path)
                 else:
@@ -396,7 +396,7 @@ def get(remote_path, local_path, recursive=False):
         instead, for compatibility with some filesystems, so e.g.
         ``filename.hostname-222`` for a host string of ``"hostname:222"``.
     """
-    ftp = FabSFTP(env.host_string)
+    ftp = SFTP(env.host_string)
 
     with closing (ftp) as ftp:
         # Expand home directory markers (tildes, etc)
