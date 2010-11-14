@@ -295,6 +295,10 @@ def put(local_path, remote_path, recursive=True):
     An empty string, in either path argument, will be replaced by the
     appropriate end's current working directory.
 
+    ``recursive``, if set to ``True``, will recursively upload any local
+    directories specified in ``local_path``. In this mode, ``remote_path`` must
+    point to a remote directory and not a file.
+
     By default, `put` preserves file modes when uploading. However, you can
     also set the mode explicitly by specifying the ``mode`` keyword argument,
     which sets the numeric mode of the remote file. See the ``os.chmod``
@@ -348,25 +352,33 @@ def put(local_path, remote_path, recursive=True):
 
 
 @needs_host
-def get(rpath, lpath, recursive=False):
+def get(remote_path, local_path, recursive=False):
     """
-    Download a file from a remote host.
+    Download one or more files from a remote host.
 
-    ``remote_path`` should point to a specific file, while ``local_path`` may
-    be a directory (in which case the remote filename is preserved) or
-    something else (in which case the downloaded file is renamed). Tilde
-    expansion is performed on both ends.
+    ``remote_path`` is the remote file path to download, which may contain
+    shell glob syntax, e.g. ``"/var/log/apache2/*.log"``, provided
+    ``local_path`` points to a directory and not a file.
 
-    For example, ``get('~/info.txt', '/tmp/')`` will create a new file,
-    ``/tmp/info.txt``, because ``/tmp`` is a directory. However, a call such as
-    ``get('~/info.txt', '/tmp/my_info.txt')`` would result in a new file named
-    ``/tmp/my_info.txt``, as that path didn't exist (and thus wasn't a
-    directory.)
+    ``local_path`` is the local file path where the downloaded file will be
+    stored. Like traditional ``cp``, it may be a directory or file path and
+    will behave accordingly: ``get(remote_file_name, local_directory)`` will
+    result in creating (or overwriting!) ``local_directory/remote_file_name``,
+    and so forth. This will also work for renaming files while downloading, if
+    you specify a ``local_path`` which does not currently exist.
 
-    If ``local_path`` names a file that already exists locally, that file
-    will be overwritten without complaint.
+    Tilde expansion is performed on both arguments, and an empty string in
+    either slot will be expanded to the appropriate current working directory
+    (so e.g. ``get('/var/log/syslog', '')`` would implicitly have a
+    ``local_path`` of ``"$HOME/syslog"``).
 
-    Finally, if `get` detects that it will be run on more than one host, it
+    If set to ``True``, ``recursive`` will cause recursive downloading of
+    ``remote_path``, assuming of course that ``remote_path`` is a directory or
+    a glob which resolves to one or more directories. Naturally,
+    ``local_path`` may not be an existing non-directory file when operating
+    in this mode.
+
+    When `get` detects that it will be run on more than one host, it
     will suffix the current host string to the local filename, to avoid
     clobbering when it is run multiple times.
 
@@ -377,19 +389,23 @@ def get(rpath, lpath, recursive=False):
         def my_download_task():
             get('/var/log/server.log', 'server.log')
 
-    However, with a single host (e.g. ``@hosts('host1')``), no suffixing is
-    performed, leaving you with a single, pristine ``server.log``.
+    .. note::
+        Host strings containing usernames will be suffixed as expected, e.g.
+        ``filename.username@hostname``. However, port numbers -- which are
+        usually specified with a colon -- will be specified with a dash
+        instead, for compatibility with some filesystems, so e.g.
+        ``filename.hostname-222`` for a host string of ``"hostname:222"``.
     """
     ftp = FabSFTP(env.host_string)
 
     with closing (ftp) as ftp:
         # Expand home directory markers
-        rpath = rpath.replace('~', ftp.normalize('.'))
-        lpath = os.path.expanduser(lpath)
+        remote_path = remote_path.replace('~', ftp.normalize('.'))
+        local_path = os.path.expanduser(local_path)
 
         # Handle empty local path
-        if not lpath:
-            lpath = os.getcwd()
+        if not local_path:
+            local_path = os.getcwd()
 
         # If the current run appears to be scheduled for multiple hosts,
         # append a suffix to the downloaded file to prevent clobbering.
@@ -398,41 +414,41 @@ def get(rpath, lpath, recursive=False):
             # translating the port colon into a dash to prevent problems on
             # some filesystems.
             label = env.host_string.replace(':', '-')
-            if os.path.isdir(lpath):
-                lpath = os.path.join(lpath, label)
+            if os.path.isdir(local_path):
+                local_path = os.path.join(local_path, label)
                 # Create directory if it doesn't exist. (Not recursively,
                 # though -- that's a bit much.
-                if not os.path.exists(lpath):
-                    os.mkdir(lpath)
+                if not os.path.exists(local_path):
+                    os.mkdir(local_path)
             else:
-                if os.path.exists(lpath):
+                if os.path.exists(local_path):
                     warn("Local file exists, but writing new file per host")
-                lpath = lpath + "." + label
+                local_path = local_path + "." + label
 
         # setup glob
-        names = ftp.glob(rpath)
-        #print 'rpath', rpath, 'names', names
+        names = ftp.glob(remote_path)
+        #print 'remote_path', remote_path, 'names', names
         # sanity check
-        if len(names) > 1 and os.path.exists(lpath) and not os.path.isdir(lpath):
+        if len(names) > 1 and os.path.exists(local_path) and not os.path.isdir(local_path):
             es = "[%s] %s not a directory, but multiple files to be fetched"
-            raise ValueError(es % (env.host, lpath))
+            raise ValueError(es % (env.host, local_path))
 
-        for rpath in names:
+        for remote_path in names:
             try:
-                if ftp.isdir(rpath):
+                if ftp.isdir(remote_path):
                     #print 'remote dir!'
                     if recursive:
                         #print 'recursive'
-                        ftp.get_dir(rpath, lpath)
+                        ftp.get_dir(remote_path, local_path)
                     else:
                         warn("[%s] %s is a directory, skipping" % \
-                            (env.host_string, rpath))
+                            (env.host_string, remote_path))
                 else:
                     #print 'not remote dir'
-                    ftp.get(rpath, lpath)
+                    ftp.get(remote_path, local_path)
             except Exception, e:
                 msg = "get() encountered an exception while downloading '%s'"
-                _handle_failure(message=msg % rpath, exception=e)
+                _handle_failure(message=msg % remote_path, exception=e)
 
 
 def _sudo_prefix(user):
