@@ -5,6 +5,8 @@ Convenience decorators for use in fabfiles.
 from functools import wraps
 from types import StringTypes
 
+from .context_managers import settings
+
 
 def hosts(*host_list):
     """
@@ -100,3 +102,13 @@ def runs_once(func):
             decorated.return_value = func(*args, **kwargs)
         return decorated.return_value
     return decorated
+
+
+def with_settings(**kw_settings):
+    def outer(func):
+        def inner(*args, **kwargs):
+            with settings(**kw_settings):
+                return func(*args, **kwargs)
+        return inner
+    return outer
+
