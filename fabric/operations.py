@@ -277,7 +277,8 @@ def prompt(text, key=None, default='', validate=None):
 
 
 @needs_host
-def put(local_path, remote_path, recursive=True, use_sudo=False):
+def put(local_path, remote_path, recursive=True, use_sudo=False,
+    mirror_local_mode=False, mode=None):
     """
     Upload one or more files to a remote host.
 
@@ -304,10 +305,12 @@ def put(local_path, remote_path, recursive=True, use_sudo=False):
     to upload the local files to a temporary location on the remote end, and
     then use `sudo` to move them to ``remote_path``.
 
-    By default, `put` preserves file modes when uploading. However, you can
-    also set the mode explicitly by specifying the ``mode`` keyword argument,
-    which sets the numeric mode of the remote file. See the ``os.chmod``
-    documentation or ``man chmod`` for the format of this argument.
+    In some use cases, it is desirable to force a newly uploaded file to match
+    the mode of its local counterpart (such as when uploading executable
+    scripts). To do this, specify ``mirror_local_mode=True``.
+
+    Alternately, you may use the ``mode`` kwarg to specify an exact mode, in
+    the same vein as ``os.chmod`` or the Unix ``chmod`` command.
 
     Examples::
 
@@ -348,10 +351,13 @@ def put(local_path, remote_path, recursive=True, use_sudo=False):
                     if not recursive:
                         warn('Skipping directory %s (recursive=False)' % lpath)
                     else:
-                        ftp.put_dir(lpath, remote_path, use_sudo)
+                        ftp.put_dir(lpath, remote_path, use_sudo,
+                            mirror_local_mode, mode)
                 else:
-                    ftp.put(lpath, remote_path, use_sudo)
+                    ftp.put(lpath, remote_path, use_sudo, mirror_local_mode,
+                        mode)
             except Exception, e:
+                raise e
                 msg = "put() encountered an exception while uploading '%s'"
                 _handle_failure(message=msg % lpath, exception=e)
 

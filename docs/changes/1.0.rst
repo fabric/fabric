@@ -41,6 +41,9 @@ break your 0.9.x based fabfiles!
   changed from ``False`` to ``True``. This, plus the addition of the
   :ref:`combine-stderr` kwarg/env var, may result in significant behavioral
   changes in remote programs which operate differently when attached to a tty.
+* :issue:`121`: `~fabric.operations.put` will no longer automatically attempt
+  to mirror local file modes. Instead, you'll need to specify
+  ``mirror_local_mode=True`` to get this behavior.
 * :issue:`221`: `~fabric.decorators.runs_once` now memoizes the wrapped task's
   return value and returns that value on subsequent invocations, instead of
   returning None. Thanks to Jacob Kaplan-Moss and Travis Swicegood for catch +

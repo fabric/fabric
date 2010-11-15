@@ -138,7 +138,8 @@ class SFTP(object):
                 self.get(remote_path, n)
 
 
-    def put(self, local_path, remote_path, use_sudo):
+    def put(self, local_path, remote_path, use_sudo, mirror_local_mode, mode):
+        from fabric.api import sudo, hide
         pre = self.ftp.getcwd()
         pre = pre if pre else ''
         if self.isdir(remote_path):
@@ -157,18 +158,26 @@ class SFTP(object):
             hasher.update(env.host_string)
             hasher.update(target_path)
             remote_path = hasher.hexdigest()
+        # Upload
         rattrs = self.ftp.put(local_path, remote_path)
-        # and finally set the file mode
-        lmode = os.stat(local_path).st_mode
-        if lmode != rattrs.st_mode:
-            self.ftp.chmod(remote_path, lmode)
+        # Handle modes if necessary
+        if mirror_local_mode or mode is not None:
+            lmode = os.stat(local_path).st_mode if mirror_local_mode else mode
+            lmode = lmode & 07777
+            rmode = rattrs.st_mode & 07777
+            if lmode != rmode:
+                if use_sudo:
+                    with hide('everything'):
+                        sudo('chmod %s \"%s\"' % (lmode, remote_path))
+                else:
+                    self.ftp.chmod(remote_path, lmode)
         if use_sudo:
-            from fabric.api import sudo, hide
             with hide('everything'):
                 sudo("mv \"%s\" \"%s\"" % (remote_path, target_path))
 
 
-    def put_dir(self, local_path, remote_path, use_sudo):
+    def put_dir(self, local_path, remote_path, use_sudo, mirror_local_mode,
+        mode):
         if os.path.basename(local_path):
             strip = os.path.dirname(local_path)
         else:
@@ -190,4 +199,4 @@ class SFTP(object):
             for f in files:
                 local_path = os.path.join(context,f)
                 n = os.path.join(rcontext,f)
-                self.put(local_path, n, use_sudo)
+                self.put(local_path, n, use_sudo, mirror_local_mode, mode)
