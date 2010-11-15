@@ -8,6 +8,7 @@ from fudge import with_patched_object
 from fabric.state import env
 from fabric.operations import require, prompt, _sudo_prefix, _shell_wrap, \
     _shell_escape
+from fabric.decorators import with_settings
 from utils import mock_streams
 
 
@@ -121,6 +122,7 @@ def test_sudo_prefix_without_user():
     eq_(_sudo_prefix(user=None), env.sudo_prefix % env.sudo_prompt)
 
 
+@with_settings(use_shell=True)
 def test_shell_wrap():
     prefix = "prefix"
     command = "command"
@@ -139,6 +141,7 @@ def test_shell_wrap():
         del eq_.description
 
 
+@with_settings(use_shell=True)
 def test_shell_wrap_escapes_command_if_shell_is_true():
     """
     _shell_wrap() escapes given command if shell=True
