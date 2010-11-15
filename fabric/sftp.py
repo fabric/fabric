@@ -7,13 +7,18 @@ from fabric.utils import warn
 
 
 class SFTP(object):
+    """
+    SFTP helper class, which is also a facade for paramiko.SFTPClient.
+    """
     def __init__(self, host_string):
         self.ftp = connections[host_string].open_sftp()
+
 
     # Recall that __getattr__ is the "fallback" attribute getter, and is thus
     # pretty safe to use for facade-like behavior as we're doing here.
     def __getattr__(self, attr):
         return getattr(self.ftp, attr)
+
 
     def isdir(self, path):
         try:
@@ -21,11 +26,13 @@ class SFTP(object):
         except IOError:
             return False
 
+
     def islink(self, path):
         try:
             return stat.S_ISLNK(self.ftp.lstat(path).st_mode)
         except IOError:
             return False
+
 
     def exists(self, path):
         try:
@@ -33,6 +40,7 @@ class SFTP(object):
         except IOError:
             return False
         return True
+
 
     def glob(self, path):
         dirpart, pattern = os.path.split(path)
@@ -43,6 +51,7 @@ class SFTP(object):
             return [os.path.join(dirpart, name) for name in names]
         else:
             return [path]
+
 
     def walk(self, top, topdown=True, onerror=None, followlinks=False):
         from os.path import join, isdir, islink
@@ -91,6 +100,7 @@ class SFTP(object):
             warn(msg % local_path)
         # Handle any raised exceptions (no return code to inspect here)
         self.ftp.get(remote_path, local_path)
+
 
     def get_dir(self, remote_path, local_path):
         if os.path.basename(remote_path):
