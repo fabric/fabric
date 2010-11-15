@@ -1,5 +1,8 @@
-import stat
+from __future__ import with_statement
+
+import hashlib
 import os
+import stat
 from fnmatch import filter as fnfilter
 
 from fabric.state import output, connections, env
@@ -88,6 +91,16 @@ class SFTP(object):
         if not topdown:
             yield top, dirs, nondirs
 
+
+    def mkdir(self, path, use_sudo):
+        from fabric.api import sudo, hide
+        if use_sudo:
+            with hide('everything'):
+                sudo('mkdir %s' % path)
+        else:
+            self.ftp.mkdir(path)
+
+
     def get(self, remote_path, local_path):
         if os.path.isdir(local_path):
             local_path = os.path.join(local_path, os.path.basename(remote_path))
@@ -124,10 +137,10 @@ class SFTP(object):
                 n = os.path.join(lcontext, f)
                 self.get(remote_path, n)
 
-    def put(self, local_path, remote_path):
+
+    def put(self, local_path, remote_path, use_sudo):
         pre = self.ftp.getcwd()
         pre = pre if pre else ''
-
         if self.isdir(remote_path):
             basename = os.path.basename(local_path)
             remote_path = os.path.join(remote_path, basename)
@@ -135,16 +148,27 @@ class SFTP(object):
             print("[%s] put: %s -> %s" % (
                 env.host_string, local_path, os.path.join(pre, remote_path)
             ))
-        # Try to catch raised exceptions (which is the only way to tell if
-        # this operation had problems; there's no return code) during upload
-        # Actually do the upload
+        # When using sudo, "bounce" the file through a guaranteed-unique file
+        # path in the default remote CWD (which, typically, the login user will
+        # have write permissions on) in order to sudo(mv) it later.
+        if use_sudo:
+            target_path = remote_path
+            hasher = hashlib.sha1()
+            hasher.update(env.host_string)
+            hasher.update(target_path)
+            remote_path = hasher.hexdigest()
         rattrs = self.ftp.put(local_path, remote_path)
         # and finally set the file mode
         lmode = os.stat(local_path).st_mode
         if lmode != rattrs.st_mode:
             self.ftp.chmod(remote_path, lmode)
+        if use_sudo:
+            from fabric.api import sudo, hide
+            with hide('everything'):
+                sudo("mv \"%s\" \"%s\"" % (remote_path, target_path))
 
-    def put_dir(self, local_path, remote_path):
+
+    def put_dir(self, local_path, remote_path, use_sudo):
         if os.path.basename(local_path):
             strip = os.path.dirname(local_path)
         else:
@@ -156,14 +180,14 @@ class SFTP(object):
             rcontext = os.path.join(remote_path, rcontext)
 
             if not self.exists(rcontext):
-                self.ftp.mkdir(rcontext)
+                self.mkdir(rcontext, use_sudo)
 
             for d in dirs:
                 n = os.path.join(rcontext,d)
                 if not self.exists(n):
-                    self.ftp.mkdir(n)
+                    self.mkdir(n, use_sudo)
 
             for f in files:
                 local_path = os.path.join(context,f)
                 n = os.path.join(rcontext,f)
-                self.put(local_path, n)
+                self.put(local_path, n, use_sudo)

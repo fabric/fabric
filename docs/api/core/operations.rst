@@ -8,7 +8,7 @@ Operations
 
     .. autofunction:: get(remote_path, local_path, recursive=False)
     .. autofunction:: open_shell(command=None)
-    .. autofunction:: put(local_path, remote_path, mode=None)
+    .. autofunction:: put(local_path, remote_path, mode=None, use_sudo=False)
     .. autofunction:: reboot(wait)
     .. autofunction:: run(command, shell=True, pty=True, combine_stderr=True)
     .. autofunction:: sudo(command, shell=True, pty=True, combine_stderr=True, user=None)

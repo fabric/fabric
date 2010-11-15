@@ -277,7 +277,7 @@ def prompt(text, key=None, default='', validate=None):
 
 
 @needs_host
-def put(local_path, remote_path, recursive=True):
+def put(local_path, remote_path, recursive=True, use_sudo=False):
     """
     Upload one or more files to a remote host.
 
@@ -297,6 +297,12 @@ def put(local_path, remote_path, recursive=True):
     ``recursive``, if set to ``True``, will recursively upload any local
     directories specified in ``local_path``. In this mode, ``remote_path`` must
     point to a remote directory and not a file.
+
+    While the SFTP protocol (which `put` uses) has no direct ability to upload
+    files to locations not owned by the connecting user, you may specify
+    ``use_sudo=True`` to work around this. When set, this setting causes `put`
+    to upload the local files to a temporary location on the remote end, and
+    then use `sudo` to move them to ``remote_path``.
 
     By default, `put` preserves file modes when uploading. However, you can
     also set the mode explicitly by specifying the ``mode`` keyword argument,
@@ -342,9 +348,9 @@ def put(local_path, remote_path, recursive=True):
                     if not recursive:
                         warn('Skipping directory %s (recursive=False)' % lpath)
                     else:
-                        ftp.put_dir(lpath, remote_path)
+                        ftp.put_dir(lpath, remote_path, use_sudo)
                 else:
-                    ftp.put(lpath, remote_path)
+                    ftp.put(lpath, remote_path, use_sudo)
             except Exception, e:
                 msg = "put() encountered an exception while uploading '%s'"
                 _handle_failure(message=msg % lpath, exception=e)

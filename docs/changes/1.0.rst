@@ -61,6 +61,9 @@ Feature additions
   `~fabric.network.disconnect_all`, allowing library users to avoid problems
   with non-fabfile Python scripts hanging after execution finishes.
 * `~fabric.operations.local` now honors `~fabric.context_managers.cd`.
+* :issue:`2`: Added ``use_sudo`` kwarg to `~fabric.operations.put` to allow
+  uploading of files to privileged locations. Thanks to Erich Heine and IRC
+  user ``npmap`` for suggestions and patches.
 * :issue:`23`: Added `~fabric.context_managers.prefix` context manager for
   easier management of persistent state across commands.
 * :issue:`27`: Added environment variable (:ref:`always-use-pty`) and
