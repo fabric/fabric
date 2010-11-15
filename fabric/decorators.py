@@ -105,6 +105,16 @@ def runs_once(func):
 
 
 def with_settings(**kw_settings):
+    """
+    Decorator equivalent of ``fabric.context_managers.settings``.
+
+    Allows you to wrap an entire function as if it was called inside a block
+    with the ``settings`` context manager.  Useful for retrofitting old code so
+    you don't have to change the indention to gain the behavior.
+
+    See ``fabric.context_managers.settings`` for more information about what
+    you can do with this.
+    """
     def outer(func):
         def inner(*args, **kwargs):
             with settings(**kw_settings):
