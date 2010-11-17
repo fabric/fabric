@@ -443,6 +443,7 @@ immediately. However, if ``env.warn_only`` is set to ``True`` at the time of
 failure -- with, say, the `~fabric.context_managers.settings` context
 manager -- Fabric will emit a warning message but continue executing.
 
+.. _connections:
 
 Connections
 ===========
