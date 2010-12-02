@@ -278,7 +278,7 @@ def append(filename, text, use_sudo=False, partial=True):
     """
     func = use_sudo and sudo or run
     # Normalize non-list input to be a list
-    if isinstance(text, str):
+    if isinstance(text, basestring):
         text = [text]
     for line in text:
         regex = '^' + re.escape(line) + ('' if partial else '$')
