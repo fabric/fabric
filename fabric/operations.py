@@ -324,7 +324,9 @@ def put(local_path, remote_path, recursive=True, use_sudo=False,
     with closing(ftp) as ftp:
         # Expand tildes (assumption: default remote cwd is user $HOME)
         home = ftp.normalize('.')
-        remote_path = remote_path.replace('~', home)
+        # But only leading ones
+        if remote_path.startswith('~'):
+            remote_path = remote_path.replace('~', home, 1)
         # Empty remote path implies cwd
         if not remote_path:
             remote_path = home
