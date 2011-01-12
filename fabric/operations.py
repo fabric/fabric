@@ -312,21 +312,33 @@ def put(local_path, remote_path, recursive=True, use_sudo=False,
     Alternately, you may use the ``mode`` kwarg to specify an exact mode, in
     the same vein as ``os.chmod`` or the Unix ``chmod`` command.
 
+    `~fabric.operations.put` will honor `~fabric.context_managers.cd`, so
+    relative values in ``remote_path`` will be prepended by the current remote
+    working directory, if applicable. Thus, for example, the below snippet
+    would attempt to upload to ``/tmp/files/test.txt`` instead of
+    ``~/files/test.txt``::
+
+        with cd('/tmp'):
+            put('/path/to/local/test.txt', 'files')
+
     Examples::
 
         put('bin/project.zip', '/tmp/project.zip')
         put('*.py', 'cgi-bin/')
         put('index.html', 'index.html', mode=0755)
 
+    .. versionchanged:: 1.0
+        Now honors the remote working directory as manipulated by
+        `~fabric.context_managers.cd`.
     """
     ftp = SFTP(env.host_string)
 
     with closing(ftp) as ftp:
         # Expand tildes (assumption: default remote cwd is user $HOME)
         home = ftp.normalize('.')
-        # But only leading ones
-        if remote_path.startswith('~'):
-            remote_path = remote_path.replace('~', home, 1)
+        # Honor cd() (assumes Unix style file paths on remote end)
+        if not os.path.isabs(remote_path) and env.get('cwd'):
+            remote_path = env.cwd.rstrip('/') + '/' + remote_path
         # Empty remote path implies cwd
         if not remote_path:
             remote_path = home
@@ -391,6 +403,15 @@ def get(remote_path, local_path, recursive=False):
     ``local_path`` may not be an existing non-directory file when operating
     in this mode.
 
+    `~fabric.operations.get` will honor `~fabric.context_managers.cd`, so
+    relative values in ``remote_path`` will be prepended by the current remote
+    working directory, if applicable. Thus, for example, the below snippet
+    would attempt to download ``/tmp/files/test.txt`` instead of
+    ``~/files/test.txt``::
+
+        with cd('/tmp'):
+            get('files/test.txt', '/path/to/local/files/')
+
     When `get` detects that it will be run on more than one host, it
     will suffix the current host string to the local filename, to avoid
     clobbering when it is run multiple times.
@@ -408,13 +429,22 @@ def get(remote_path, local_path, recursive=False):
         usually specified with a colon -- will be specified with a dash
         instead, for compatibility with some filesystems, so e.g.
         ``filename.hostname-222`` for a host string of ``"hostname:222"``.
+
+    .. versionchanged:: 1.0
+        Now honors the remote working directory as manipulated by
+        `~fabric.context_managers.cd`.
     """
     ftp = SFTP(env.host_string)
 
     with closing (ftp) as ftp:
         # Expand home directory markers (tildes, etc)
-        remote_path = remote_path.replace('~', ftp.normalize('.'))
+        if remote_path.startswith('~'):
+            remote_path = remote_path.replace('~', ftp.normalize('.'), 1)
         local_path = os.path.expanduser(local_path)
+
+        # Honor cd() (assumes Unix style file paths on remote end)
+        if not os.path.isabs(remote_path) and env.get('cwd'):
+            remote_path = env.cwd.rstrip('/') + '/' + remote_path
 
         # Handle empty local path
         if not local_path:

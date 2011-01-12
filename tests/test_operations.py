@@ -6,13 +6,16 @@ import sys
 import tempfile
 import types
 
+from contextlib import nested
+
 from nose.tools import raises, eq_
 from fudge import with_patched_object
 
 from fabric.state import env
 from fabric.operations import require, prompt, _sudo_prefix, _shell_wrap, \
     _shell_escape
-from fabric.api import get, put, hide
+from fabric.api import get, put, hide, cd
+from fabric.sftp import SFTP
 
 from utils import *
 from server import (server, PORT, RESPONSES, FILES, PASSWORDS, CLIENT_PRIVKEY,
@@ -204,6 +207,13 @@ class TestFileTransfers(FabricTest):
 
     def path(self, *path_parts):
         return os.path.join(self.tmpdir, *path_parts)
+
+    def exists_remotely(self, path):
+        return SFTP(env.host_string).exists(path)
+
+    def exists_locally(self, path):
+        return os.path.exists(path)
+
 
     #
     # get()
@@ -456,3 +466,56 @@ class TestFileTransfers(FabricTest):
         eq_contents('file2.txt', text)
         # Restore cwd
         os.chdir(old_cwd)
+
+
+    #
+    # Interactions with cd()
+    #
+
+    @server()
+    def test_cd_should_apply_to_put(self):
+        """
+        put() should honor env.cwd for relative remote paths
+        """
+        local = self.path('test.txt')
+        with open(local, 'w') as fd:
+            fd.write('test')
+        with nested(cd('/tmp'), hide('everything')):
+            put(local, 'test.txt')
+        assert self.exists_remotely('/tmp/test.txt')
+
+
+    @server(files={'/tmp/test.txt': 'test'})
+    def test_cd_should_apply_to_get(self):
+        """
+        get() should honor env.cwd for relative remote paths
+        """
+        local = self.path('test.txt')
+        with nested(cd('/tmp'), hide('everything')):
+            get('test.txt', local)
+        assert os.path.exists(local)
+
+
+    @server()
+    def test_cd_should_not_apply_to_absolute_put(self):
+        """
+        put() should not prepend env.cwd to absolute remote paths
+        """
+        local = self.path('test.txt')
+        with open(local, 'w') as fd:
+            fd.write('test')
+        with nested(cd('/tmp'), hide('everything')):
+            put(local, '/test.txt')
+        assert not self.exists_remotely('/tmp/test.txt')
+        assert self.exists_remotely('/test.txt')
+
+
+    @server(files={'/test.txt': 'test'})
+    def test_cd_should_not_apply_to_absolute_get(self):
+        """
+        get() should not prepend env.cwd to absolute remote paths
+        """
+        local = self.path('test.txt')
+        with nested(cd('/tmp'), hide('everything')):
+            get('/test.txt', local)
+        assert os.path.exists(local)

@@ -41,6 +41,10 @@ break your 0.9.x based fabfiles!
   changed from ``False`` to ``True``. This, plus the addition of the
   :ref:`combine-stderr` kwarg/env var, may result in significant behavioral
   changes in remote programs which operate differently when attached to a tty.
+* :issue:`61`: `~fabric.operations.put` and `~fabric.operations.get` now honor
+  the remote current-working-directory changes applied by
+  `~fabric.context_managers.cd`. Previously they would always treat relative
+  remote paths as being relative to the remote home directory.
 * :issue:`121`: `~fabric.operations.put` will no longer automatically attempt
   to mirror local file modes. Instead, you'll need to specify
   ``mirror_local_mode=True`` to get this behavior.
