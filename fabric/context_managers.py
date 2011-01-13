@@ -144,11 +144,10 @@ def cd(path):
     """
     Context manager that keeps directory state when calling operations.
 
-    Any calls to `run`, `sudo`, `get`, `put` or `local` within the wrapped
-    block will implicitly have a string similar to ``"cd <path> && "`` prefixed
-    in order to give the sense that there is actually statefulness involved.
-    `cd` only affects the remote paths for `get` and `put` -- local paths are
-    untouched.
+    Any calls to `run`, `sudo`, `get`, or `put` within the wrapped block will
+    implicitly have a string similar to ``"cd <path> && "`` prefixed in order
+    to give the sense that there is actually statefulness involved.  `cd` only
+    affects the remote paths for `get` and `put` -- local paths are untouched.
 
     Because use of `cd` affects all such invocations, any code making use of
     those operations, such as much of the ``contrib`` section, will also be
@@ -196,12 +195,30 @@ def cd(path):
         Applies to `get` and `put` in addition to the command-running
         operations.
     """
+    return _change_cwd('cwd', path)
+
+
+def lcd(path):
+    """
+    Context manager for updating local current working directory.
+
+    This context manager is identical to `~fabric.context_managers.cd`, except
+    that it changes a different env var (`lcwd`, instead of `cwd`) and thus
+    only affects the invocation of `~fabric.operations.local` and the local
+    arguments to `~fabric.operations.get`/`~fabric.operations.put`.
+
+    .. versionadded:: 1.0
+    """
+    return _change_cwd('lcwd', path)
+
+
+def _change_cwd(which, path):
     path = path.replace(' ', '\ ')
-    if env.get('cwd') and not path.startswith('/'):
-        new_cwd = env.cwd + '/' + path
+    if env.get(which) and not path.startswith('/'):
+        new_cwd = env.get(which) + '/' + path
     else:
         new_cwd = path
-    return _setenv(cwd=new_cwd)
+    return _setenv(**{which: new_cwd})
 
 
 def path(path, behavior='append'):

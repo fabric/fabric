@@ -321,6 +321,9 @@ def put(local_path, remote_path, recursive=True, use_sudo=False,
         with cd('/tmp'):
             put('/path/to/local/test.txt', 'files')
 
+    Use of `~fabric.context_managers.lcd` will affect ``local_path`` in the
+    same manner.
+
     Examples::
 
         put('bin/project.zip', '/tmp/project.zip')
@@ -329,7 +332,8 @@ def put(local_path, remote_path, recursive=True, use_sudo=False,
 
     .. versionchanged:: 1.0
         Now honors the remote working directory as manipulated by
-        `~fabric.context_managers.cd`.
+        `~fabric.context_managers.cd`, and the local working directory as
+        manipulated by `~fabric.context_managers.lcd`.
     """
     ftp = SFTP(env.host_string)
 
@@ -412,6 +416,9 @@ def get(remote_path, local_path, recursive=False):
         with cd('/tmp'):
             get('files/test.txt', '/path/to/local/files/')
 
+    Use of `~fabric.context_managers.lcd` will affect ``local_path`` in the
+    same manner.
+
     When `get` detects that it will be run on more than one host, it
     will suffix the current host string to the local filename, to avoid
     clobbering when it is run multiple times.
@@ -432,7 +439,8 @@ def get(remote_path, local_path, recursive=False):
 
     .. versionchanged:: 1.0
         Now honors the remote working directory as manipulated by
-        `~fabric.context_managers.cd`.
+        `~fabric.context_managers.cd`, and the local working directory as
+        manipulated by `~fabric.context_managers.lcd`.
     """
     ftp = SFTP(env.host_string)
 
@@ -527,7 +535,7 @@ def _shell_wrap(command, shell=True, sudo_prefix=None):
     return sudo_prefix + shell + command
 
 
-def _prefix_commands(command):
+def _prefix_commands(command, which):
     """
     Prefixes ``command`` with all prefixes found in ``env.command_prefixes``.
 
@@ -535,7 +543,9 @@ def _prefix_commands(command):
     `~fabric.context_managers.prefix` context manager.
 
     This function also handles a special-case prefix, ``cwd``, used by
-    `~fabric.context_managers.cd`.
+    `~fabric.context_managers.cd`. The ``which`` kwarg should be a string,
+    ``"local"`` or ``"remote"``, which will determine whether ``cwd`` or
+    ``lcwd`` is used.
     """
     # Local prefix list (to hold env.command_prefixes + any special cases)
     prefixes = list(env.command_prefixes)
@@ -544,8 +554,9 @@ def _prefix_commands(command):
     # string or lack thereof.
     # Also place it at the front of the list, in case user is expecting another
     # prefixed command to be "in" the current working directory.
-    if env.cwd:
-        prefixes.insert(0, 'cd %s' % env.cwd)
+    cwd = env.cwd if which == 'remote' else env.lcwd
+    if cwd:
+        prefixes.insert(0, 'cd %s' % cwd)
     glue = " && "
     prefix = (glue.join(prefixes) + glue) if prefixes else ""
     return prefix + command
@@ -703,7 +714,7 @@ def _run_command(command, shell=True, pty=True, combine_stderr=True,
     given_command = command
     # Handle context manager modifications, and shell wrapping
     wrapped_command = _shell_wrap(
-        _prefix_commands(_prefix_env_vars(command)),
+        _prefix_commands(_prefix_env_vars(command), 'remote'),
         shell,
         _sudo_prefix(user) if sudo else None
     )
@@ -851,16 +862,21 @@ def local(command, capture=True):
     ``output.stderr`` will be used to determine what is printed and what is
     discarded.
 
+    `~fabric.operations.local` will honor the `~fabric.context_managers.lcd`
+    context manager, allowing you to control its current working directory
+    independently of the remote end (which honors
+    `~fabric.context_managers.cd`).
+
     .. versionchanged:: 1.0
         Added the ``succeeded`` attribute.
     .. versionchanged:: 1.0
-        Now honors the `~fabric.context_managers.cd` context manager.
+        Now honors the `~fabric.context_managers.lcd` context manager.
     .. versionchanged:: 1.0
         Added the ``stderr`` attribute.
     """
     given_command = command
     # Apply cd(), path() etc
-    wrapped_command = _prefix_commands(_prefix_env_vars(command))
+    wrapped_command = _prefix_commands(_prefix_env_vars(command), 'local')
     if output.debug:
         print("[localhost] local: %s" % (wrapped_command))
     elif output.running:

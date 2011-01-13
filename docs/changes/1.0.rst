@@ -67,7 +67,6 @@ Feature additions
 * Refactored SSH disconnection code out of the main ``fab`` loop into
   `~fabric.network.disconnect_all`, allowing library users to avoid problems
   with non-fabfile Python scripts hanging after execution finishes.
-* `~fabric.operations.local` now honors `~fabric.context_managers.cd`.
 * :issue:`2`: Added ``use_sudo`` kwarg to `~fabric.operations.put` to allow
   uploading of files to privileged locations. Thanks to Erich Heine and IRC
   user ``npmap`` for suggestions and patches.
@@ -93,6 +92,10 @@ Feature additions
   multi-connection scenarios.
 * :issue:`193`: When requesting a remote pseudo-terminal, use the invoking
   terminal's dimensions instead of going with the default.
+* :issue:`245`: Added the `~fabric.context_managers.lcd` context manager for
+  controlling `~fabric.operations.local`'s current working directory and
+  `~fabric.operations.put`/`~fabric.operations.get`'s local working
+  directories.
 
 
 Bugfixes
