@@ -402,6 +402,18 @@ class TestFileTransfers(FabricTest):
         os.remove(target)
 
 
+    @server()
+    def test_get_should_accept_file_like_objects(self):
+        """
+        get()'s local_path arg should take file-like objects too
+        """
+        fake_file = StringIO()
+        target = '/file.txt'
+        get(target, fake_file)
+        eq_(fake_file.getvalue(), FILES[target])
+
+
+
     #
     # put()
     #

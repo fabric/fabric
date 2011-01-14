@@ -3,6 +3,7 @@ from __future__ import with_statement
 import hashlib
 import os
 import stat
+import tempfile
 from fnmatch import filter as fnfilter
 
 from fabric.state import output, connections, env
@@ -101,18 +102,25 @@ class SFTP(object):
             self.ftp.mkdir(path)
 
 
-    def get(self, remote_path, local_path):
-        if os.path.isdir(local_path):
+    def get(self, remote_path, local_path, local_is_path):
+        if local_is_path and os.path.isdir(local_path):
             local_path = os.path.join(local_path, os.path.basename(remote_path))
         if output.running:
             print("[%s] download: %s <- %s" % (
-                env.host_string, local_path, remote_path
+                env.host_string,
+                local_path if local_is_path else "<file obj>",
+                remote_path
             ))
-        if os.path.exists(local_path):
+        if local_is_path and os.path.exists(local_path):
             msg = "Local file %s already exists and is being overwritten."
             warn(msg % local_path)
-        # Handle any raised exceptions (no return code to inspect here)
-        self.ftp.get(remote_path, local_path)
+        # Have to bounce off FS if doing file-like objects
+        fd, real_local_path = None, local_path
+        if not local_is_path:
+            fd, real_local_path = tempfile.mkstemp()
+        self.ftp.get(remote_path, real_local_path)
+        if not local_is_path:
+            return os.fdopen(fd).read()
 
 
     def get_dir(self, remote_path, local_path):
@@ -135,7 +143,7 @@ class SFTP(object):
             for f in files:
                 remote_path = os.path.join(context, f)
                 n = os.path.join(lcontext, f)
-                self.get(remote_path, n)
+                self.get(remote_path, n, True)
 
 
     def put(self, local_path, remote_path, use_sudo, mirror_local_mode, mode):

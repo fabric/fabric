@@ -396,6 +396,18 @@ def get(remote_path, local_path, recursive=False):
     and so forth. This will also work for renaming files while downloading, if
     you specify a ``local_path`` which does not currently exist.
 
+    ``local_path`` may alternately be a file-like object, such as the result of
+    ``open('path', 'w')`` or a ``StringIO`` instance. Doing so will naturally
+    cause ``recursive=True`` to be ignored.
+
+    .. note::
+        Due to how our SSH layer works, a temporary file will still be written
+        to your hard disk even if you specify a file-like object such as a
+        StringIO for the ``local_path`` argument. Cleanup is performed,
+        however -- we just note this for users expecting straight-to-memory
+        transfers. (We hope to patch our SSH layer in the future to enable true
+        straight-to-memory downloads.)
+
     Tilde expansion is performed on both arguments, and an empty string in
     either slot will be expanded to the appropriate current working directory
     (so e.g. ``get('/var/log/syslog', '')`` would implicitly have a
@@ -441,22 +453,28 @@ def get(remote_path, local_path, recursive=False):
         Now honors the remote working directory as manipulated by
         `~fabric.context_managers.cd`, and the local working directory as
         manipulated by `~fabric.context_managers.lcd`.
+    .. versionchanged:: 1.0
+        Now allows file-like objects in the ``local_path`` argument.
     """
+    # Handle empty local path
+    if not local_path:
+        local_path = os.getcwd()
+
+    local_is_path = not (hasattr(local_path, 'write') \
+        and callable(local_path.write))
+
     ftp = SFTP(env.host_string)
 
     with closing (ftp) as ftp:
         # Expand home directory markers (tildes, etc)
         if remote_path.startswith('~'):
             remote_path = remote_path.replace('~', ftp.normalize('.'), 1)
-        local_path = os.path.expanduser(local_path)
+        if local_is_path:
+            local_path = os.path.expanduser(local_path)
 
         # Honor cd() (assumes Unix style file paths on remote end)
         if not os.path.isabs(remote_path) and env.get('cwd'):
             remote_path = env.cwd.rstrip('/') + '/' + remote_path
-
-        # Handle empty local path
-        if not local_path:
-            local_path = os.getcwd()
 
         # If the current run appears to be scheduled for multiple hosts,
         # append a suffix to the downloaded file to prevent clobbering.
@@ -465,23 +483,28 @@ def get(remote_path, local_path, recursive=False):
             # translating the port colon into a dash to prevent problems on
             # some filesystems.
             label = env.host_string.replace(':', '-')
-            if os.path.isdir(local_path):
-                local_path = os.path.join(local_path, label)
-                # Create directory if it doesn't exist. (Not recursively,
-                # though -- that's a bit much.
-                if not os.path.exists(local_path):
-                    os.mkdir(local_path)
-            else:
-                local_path = local_path + "." + label
+            if local_is_path:
+                if os.path.isdir(local_path):
+                    local_path = os.path.join(local_path, label)
+                    # Create directory if it doesn't exist. (Not recursively,
+                    # though -- that's a bit much.
+                    if not os.path.exists(local_path):
+                        os.mkdir(local_path)
+                else:
+                    local_path = local_path + "." + label
 
         # Glob remote path
         names = ftp.glob(remote_path)
         # Sanity check for globbed remote path to non-directory local path
-        if (len(names) > 1
-            and os.path.exists(local_path)
-            and not os.path.isdir(local_path)):
-            err = "[%s] %s not a directory, but multiple files to be fetched"
-            raise ValueError(err % (env.host, local_path))
+        if len(names) > 1:
+            err = None
+            if local_is_path:
+                if os.path.exists(local_path) and not os.path.isdir(local_path):
+                    err = "[%s] %s not a directory, but multiple files to be fetched" % (env.host, local_path)
+            else:
+                err = "[%s] Cannot fetch multiple remote files to local file-like object, must give directory path." % env.host
+            if err:
+                raise ValueError(err)
 
         for remote_path in names:
             try:
@@ -492,7 +515,9 @@ def get(remote_path, local_path, recursive=False):
                         warn("[%s] %s is a directory but recursive=False, skipping" % \
                             (env.host_string, remote_path))
                 else:
-                    ftp.get(remote_path, local_path)
+                    result = ftp.get(remote_path, local_path, local_is_path)
+                    if not local_is_path:
+                        local_path.write(result)
             except Exception, e:
                 msg = "get() encountered an exception while downloading '%s'"
                 _handle_failure(message=msg % remote_path, exception=e)
