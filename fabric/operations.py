@@ -480,8 +480,8 @@ def get(remote_path, local_path, recursive=False):
         if (len(names) > 1
             and os.path.exists(local_path)
             and not os.path.isdir(local_path)):
-            es = "[%s] %s not a directory, but multiple files to be fetched"
-            raise ValueError(es % (env.host, local_path))
+            err = "[%s] %s not a directory, but multiple files to be fetched"
+            raise ValueError(err % (env.host, local_path))
 
         for remote_path in names:
             try:
