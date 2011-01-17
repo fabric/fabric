@@ -196,6 +196,8 @@ doesn't make sense to set this in a fabfile, but it may be specified in a
 
 .. seealso:: :doc:`fab`
 
+.. _host_string:
+
 ``host_string``
 ---------------
 

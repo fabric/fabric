@@ -170,6 +170,13 @@ The best way to get help with using Fabric is via the `fab-user mailing list
 list contains an active community of other Fabric users and contributors as
 well.
 
+Twitter
+-------
+
+Fabric has an official Twitter account, `@pyfabric
+<http://twitter.com/pyfabric>`_, which is used for announcements and occasional
+related news tidbits (e.g. "Hey, check out this neat article on Fabric!").
+
 .. _bugs:
 
 Bugs/ticket tracker
