@@ -119,8 +119,16 @@ class SFTP(object):
         if not local_is_path:
             fd, real_local_path = tempfile.mkstemp()
         self.ftp.get(remote_path, real_local_path)
+        # Return the contents so the caller can actually take care of stuffing
+        # into the fd
         if not local_is_path:
-            return os.fdopen(fd).read()
+            file_obj = os.fdopen(fd)
+            result = file_obj.read()
+            # Clean up
+            file_obj.close()
+            os.remove(real_local_path)
+            # Return
+            return result
 
 
     def get_dir(self, remote_path, local_path):
@@ -146,16 +154,19 @@ class SFTP(object):
                 self.get(remote_path, n, True)
 
 
-    def put(self, local_path, remote_path, use_sudo, mirror_local_mode, mode):
+    def put(self, local_path, remote_path, use_sudo, mirror_local_mode, mode,
+        local_is_path):
         from fabric.api import sudo, hide
         pre = self.ftp.getcwd()
         pre = pre if pre else ''
-        if self.isdir(remote_path):
+        if local_is_path and self.isdir(remote_path):
             basename = os.path.basename(local_path)
             remote_path = os.path.join(remote_path, basename)
         if output.running:
             print("[%s] put: %s -> %s" % (
-                env.host_string, local_path, os.path.join(pre, remote_path)
+                env.host_string,
+                local_path if local_is_path else '<file obj>',
+                os.path.join(pre, remote_path)
             ))
         # When using sudo, "bounce" the file through a guaranteed-unique file
         # path in the default remote CWD (which, typically, the login user will
@@ -166,10 +177,21 @@ class SFTP(object):
             hasher.update(env.host_string)
             hasher.update(target_path)
             remote_path = hasher.hexdigest()
-        # Upload
-        rattrs = self.ftp.put(local_path, remote_path)
+        # Have to bounce off FS if doing file-like objects
+        fd, real_local_path = None, local_path
+        if not local_is_path:
+            fd, real_local_path = tempfile.mkstemp()
+            old_pointer = local_path.tell()
+            local_path.seek(0)
+            file_obj = os.fdopen(fd, 'wb')
+            file_obj.write(local_path.read())
+            file_obj.close()
+            local_path.seek(old_pointer)
+        rattrs = self.ftp.put(real_local_path, remote_path)
+        # Clean up
+        os.remove(real_local_path)
         # Handle modes if necessary
-        if mirror_local_mode or mode is not None:
+        if local_is_path and (mirror_local_mode or mode is not None):
             lmode = os.stat(local_path).st_mode if mirror_local_mode else mode
             lmode = lmode & 07777
             rmode = rattrs.st_mode & 07777
@@ -207,4 +229,4 @@ class SFTP(object):
             for f in files:
                 local_path = os.path.join(context,f)
                 n = os.path.join(rcontext,f)
-                self.put(local_path, n, use_sudo, mirror_local_mode, mode)
+                self.put(local_path, n, use_sudo, mirror_local_mode, mode, True)

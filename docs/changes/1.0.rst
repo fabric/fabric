@@ -92,6 +92,9 @@ Feature additions
   multi-connection scenarios.
 * :issue:`193`: When requesting a remote pseudo-terminal, use the invoking
   terminal's dimensions instead of going with the default.
+* :issue:`217`: `~fabric.operations.get`/`~fabric.operations.put` now accept
+  file-like objects as well as local file paths for their ``local_path``
+  arguments.
 * :issue:`245`: Added the `~fabric.context_managers.lcd` context manager for
   controlling `~fabric.operations.local`'s current working directory and
   `~fabric.operations.put`/`~fabric.operations.get`'s local working

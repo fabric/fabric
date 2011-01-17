@@ -287,6 +287,20 @@ def put(local_path, remote_path, recursive=True, use_sudo=False,
     Tilde expansion (as implemented by ``os.path.expanduser``) is also
     performed.
 
+    ``local_path`` may alternately be a file-like object, such as the result of
+    ``open('path')`` or a ``StringIO`` instance. Using a file-like object in
+    this way will naturally cause ``recursive=True`` to be ignored.
+
+    .. note::
+        In this case, `~fabric.operations.put` will attempt to read the entire
+        contents of the file-like object by rewinding it using ``seek`` (and
+        will use ``tell`` afterwards to preserve the previous file position).
+
+    .. note::
+        Use of a file-like object in `~fabric.operations.put`'s ``local_path``
+        argument will cause a temporary file to be utilized due to limitations
+        in our SSH layer's API.
+
     ``remote_path`` may also be a relative or absolute location, but applied to
     the remote host. Relative paths are relative to the remote user's home
     directory, but tilde expansion (e.g. ``~/.ssh/``) will also be performed if
@@ -334,38 +348,50 @@ def put(local_path, remote_path, recursive=True, use_sudo=False,
         Now honors the remote working directory as manipulated by
         `~fabric.context_managers.cd`, and the local working directory as
         manipulated by `~fabric.context_managers.lcd`.
+    .. versionchanged:: 1.0
+        Now allows file-like objects in the ``local_path`` argument.
     """
+    # Handle empty local path
+    if not local_path:
+        local_path = os.getcwd()
+
+    # Test whether local_path is a path or a file-like object
+    local_is_path = not (hasattr(local_path, 'read') \
+        and callable(local_path.read))
+
     ftp = SFTP(env.host_string)
 
     with closing(ftp) as ftp:
         # Expand tildes (assumption: default remote cwd is user $HOME)
         home = ftp.normalize('.')
-        # Honor cd() (assumes Unix style file paths on remote end)
-        if not os.path.isabs(remote_path) and env.get('cwd'):
-            remote_path = env.cwd.rstrip('/') + '/' + remote_path
+
         # Empty remote path implies cwd
         if not remote_path:
             remote_path = home
-        # Also expand local paths
-        local_path = os.path.expanduser(local_path)
-        # And handle that empty case too
-        if not local_path:
-            local_path = os.getcwd()
 
-        # Glob local path
-        names = glob(local_path)
+        # Honor cd() (assumes Unix style file paths on remote end)
+        if not os.path.isabs(remote_path) and env.get('cwd'):
+            remote_path = env.cwd.rstrip('/') + '/' + remote_path
+
+        if local_is_path:
+            # Also expand local paths
+            local_path = os.path.expanduser(local_path)
+
+            # Glob local path
+            names = glob(local_path)
+        else:
+            names = [local_path]
 
         # Sanity check and wierd cases
         if ftp.exists(remote_path):
-            if recursive and len(names) != 1 and \
+            if recursive and local_is_path and len(names) != 1 and \
                     not ftp.isdir(remote_path):
-                raise ValueError("'%s' is not a directory" \
-                    % remote_path)
+                raise ValueError("'%s' is not a directory" % remote_path)
 
         # Iterate over all given local files
         for lpath in names:
             try:
-                if os.path.isdir(lpath):
+                if local_is_path and os.path.isdir(lpath):
                     if not recursive:
                         warn('Skipping directory %s (recursive=False)' % lpath)
                     else:
@@ -373,9 +399,8 @@ def put(local_path, remote_path, recursive=True, use_sudo=False,
                             mirror_local_mode, mode)
                 else:
                     ftp.put(lpath, remote_path, use_sudo, mirror_local_mode,
-                        mode)
+                        mode, local_is_path)
             except Exception, e:
-                raise e
                 msg = "put() encountered an exception while uploading '%s'"
                 _handle_failure(message=msg % lpath, exception=e)
 
@@ -397,8 +422,16 @@ def get(remote_path, local_path, recursive=False):
     you specify a ``local_path`` which does not currently exist.
 
     ``local_path`` may alternately be a file-like object, such as the result of
-    ``open('path', 'w')`` or a ``StringIO`` instance. Doing so will naturally
-    cause ``recursive=True`` to be ignored.
+    ``open('path', 'w')`` or a ``StringIO`` instance. Using a file-like object
+    in this way will naturally cause ``recursive=True`` to be ignored.
+
+    .. note::
+        This function will use ``seek`` and ``tell`` to overwrite the entire
+        contents of the file-like object, in order to be consistent with the
+        behavior of `~fabric.operations.put` (which also considers the entire
+        file). However, unlike `~fabric.operations.put`, the file pointer will
+        not be restored to its previous location, as that doesn't make as much
+        sense here.
 
     .. note::
         Due to how our SSH layer works, a temporary file will still be written
@@ -460,6 +493,7 @@ def get(remote_path, local_path, recursive=False):
     if not local_path:
         local_path = os.getcwd()
 
+    # Test whether local_path is a path or a file-like object
     local_is_path = not (hasattr(local_path, 'write') \
         and callable(local_path.write))
 
@@ -517,6 +551,8 @@ def get(remote_path, local_path, recursive=False):
                 else:
                     result = ftp.get(remote_path, local_path, local_is_path)
                     if not local_is_path:
+                        # Overwrite entire contents of local_path
+                        local_path.seek(0)
                         local_path.write(result)
             except Exception, e:
                 msg = "get() encountered an exception while downloading '%s'"

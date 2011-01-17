@@ -409,7 +409,8 @@ class TestFileTransfers(FabricTest):
         """
         fake_file = StringIO()
         target = '/file.txt'
-        get(target, fake_file)
+        with hide('everything'):
+            get(target, fake_file)
         eq_(fake_file.getvalue(), FILES[target])
 
 
@@ -478,6 +479,25 @@ class TestFileTransfers(FabricTest):
         eq_contents('file2.txt', text)
         # Restore cwd
         os.chdir(old_cwd)
+
+
+    @server()
+    def test_put_should_accept_file_like_objects(self):
+        """
+        put()'s local_path arg should take file-like objects too
+        """
+        local = self.path('whatever')
+        fake_file = StringIO()
+        fake_file.write("testing file-like objects in put()")
+        pointer = fake_file.tell()
+        target = '/new_file.txt'
+        with hide('everything'):
+            put(fake_file, target)
+            get(target, local)
+        eq_contents(local, fake_file.getvalue())
+        # Sanity test of file pointer
+        eq_(pointer, fake_file.tell())
+
 
 
     #
