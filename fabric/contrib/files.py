@@ -60,7 +60,7 @@ def upload_template(filename, destination, context=None, use_jinja=False,
     templating library available, Jinja will be used to render the template
     instead. Templates will be loaded from the invoking user's current working
     directory by default, or from ``template_dir`` if given.
-    
+
     The resulting rendered file will be uploaded to the remote file path
     ``destination`` (which should include the desired remote filename.) If the
     destination file already exists, it will be renamed with a ``.bak``
@@ -192,7 +192,7 @@ def comment(filename, regex, use_sudo=False, char='#', backup='.bak'):
     sometimes do when inserted by hand. Neither will they have a trailing space
     unless you specify e.g. ``char='# '``.
 
-    .. note:: 
+    .. note::
 
         In order to preserve the line being commented out, this function will
         wrap your ``regex`` argument in parentheses, so you don't need to. It
@@ -264,7 +264,7 @@ def append(filename, text, use_sudo=False, partial=True):
     only, as in ``^<text>``. Specifying ``partial=False`` will change the
     effective regex to ``^<text>$``.
 
-    Because ``text`` is single-quoted, single quotes will be transparently 
+    Because ``text`` is single-quoted, single quotes will be transparently
     backslash-escaped.
 
     If ``use_sudo`` is True, will use `sudo` instead of `run`.
@@ -286,3 +286,21 @@ def append(filename, text, use_sudo=False, partial=True):
             and contains(filename, regex, use_sudo=use_sudo)):
             continue
         func("echo '%s' >> %s" % (line.replace("'", r'\''), filename))
+
+
+def sput(local_path, remote_path, mode=None):
+    """
+    Upload a file to a remote server when doing so requires root permissions;
+    this contrib will handle copying the file to the remote server and moving
+    it into place as root.
+    """
+
+    tmp_dir = run('mktemp -d -t fabric.sput')
+    remote_temp_path = os.path.join(tmp_dir,
+                                    os.path.basename(local_path))
+    try:
+        put(local_path, remote_temp_path)
+        sudo("mkdir -p '%s'" % os.path.dirname(remote_path))
+        sudo("mv '%s' '%s'" % (remote_temp_path, remote_path))
+    finally:
+        sudo("rm -rf '%s'" % tmp_dir)
