@@ -348,7 +348,6 @@ class TestFileTransfers(FabricTest):
                 for filepath in leaf:
                     local_file = self.path(filepath % port)
                     try:
-
                         assert os.path.exists(local_file)
                     except AssertionError, e:
                         raise e
