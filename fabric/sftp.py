@@ -103,14 +103,28 @@ class SFTP(object):
 
 
     def get(self, remote_path, local_path, local_is_path):
-        if local_is_path and os.path.isdir(local_path):
-            local_path = os.path.join(local_path, os.path.basename(remote_path))
+        # Handle format string interpolation (e.g. %(dirname)s)
+        path_vars = {
+            'host': env.host_string.replace(':', '-'),
+            'basename': os.path.basename(remote_path),
+            'dirname': os.path.dirname(remote_path),
+            'path': remote_path
+        }
+        if local_is_path:
+            local_path = local_path % path_vars
+            # Ensure we give Paramiko a file by prepending and/or creating
+            # directories as appropriate.
+            if os.path.isdir(local_path):
+                if not os.path.exists(local_path):
+                    os.mkdir(local_path)
+                local_path = os.path.join(local_path, path_vars['basename'])
         if output.running:
             print("[%s] download: %s <- %s" % (
                 env.host_string,
                 local_path if local_is_path else "<file obj>",
                 remote_path
             ))
+        # Warn about overwrites, but keep going
         if local_is_path and os.path.exists(local_path):
             msg = "Local file %s already exists and is being overwritten."
             warn(msg % local_path)

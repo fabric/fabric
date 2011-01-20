@@ -488,7 +488,7 @@ def get(remote_path, local_path=None, recursive=False):
 
     ftp = SFTP(env.host_string)
 
-    with closing (ftp) as ftp:
+    with closing(ftp) as ftp:
         # Expand home directory markers (tildes, etc)
         if remote_path.startswith('~'):
             remote_path = remote_path.replace('~', ftp.normalize('.'), 1)
@@ -499,53 +499,25 @@ def get(remote_path, local_path=None, recursive=False):
         if not os.path.isabs(remote_path) and env.get('cwd'):
             remote_path = env.cwd.rstrip('/') + '/' + remote_path
 
-        # If the current run appears to be scheduled for multiple hosts,
-        # append a suffix to the downloaded file to prevent clobbering.
-        if len(env.all_hosts) > 1:
-            # Use host_string instead of host for maximum granularity,
-            # translating the port colon into a dash to prevent problems on
-            # some filesystems.
-            label = env.host_string.replace(':', '-')
-            if local_is_path:
-                if os.path.isdir(local_path):
-                    local_path = os.path.join(local_path, label)
-                    # Create directory if it doesn't exist. (Not recursively,
-                    # though -- that's a bit much.
-                    if not os.path.exists(local_path):
-                        os.mkdir(local_path)
-                else:
-                    local_path = local_path + "." + label
-
         # Glob remote path
         names = ftp.glob(remote_path)
-        # Sanity check for globbed remote path to non-directory local path
-        if len(names) > 1:
-            err = None
-            if local_is_path:
-                if os.path.exists(local_path) and not os.path.isdir(local_path):
-                    err = "[%s] %s not a directory, but multiple files to be fetched" % (env.host, local_path)
-            else:
-                err = "[%s] Cannot fetch multiple remote files to local file-like object, must give directory path." % env.host
-            if err:
-                raise ValueError(err)
-
         for remote_path in names:
-            try:
-                if ftp.isdir(remote_path):
-                    if recursive:
-                        ftp.get_dir(remote_path, local_path)
-                    else:
-                        warn("[%s] %s is a directory but recursive=False, skipping" % \
-                            (env.host_string, remote_path))
+            #try:
+            if ftp.isdir(remote_path):
+                if recursive:
+                    ftp.get_dir(remote_path, local_path)
                 else:
-                    result = ftp.get(remote_path, local_path, local_is_path)
-                    if not local_is_path:
-                        # Overwrite entire contents of local_path
-                        local_path.seek(0)
-                        local_path.write(result)
-            except Exception, e:
-                msg = "get() encountered an exception while downloading '%s'"
-                _handle_failure(message=msg % remote_path, exception=e)
+                    warn("[%s] %s is a directory but recursive=False, skipping" % \
+                        (env.host_string, remote_path))
+            else:
+                result = ftp.get(remote_path, local_path, local_is_path)
+                if not local_is_path:
+                    # Overwrite entire contents of local_path
+                    local_path.seek(0)
+                    local_path.write(result)
+            #except Exception, e:
+            #    msg = "get() encountered an exception while downloading '%s'"
+            #    _handle_failure(message=msg % remote_path, exception=e)
 
 
 def _sudo_prefix(user):
