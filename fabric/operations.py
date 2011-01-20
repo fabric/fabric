@@ -406,7 +406,7 @@ def put(local_path, remote_path, recursive=True, use_sudo=False,
 
 
 @needs_host
-def get(remote_path, local_path="%(host)s/%(path)s", recursive=False):
+def get(remote_path, local_path=None, recursive=False):
     """
     Download one or more files from a remote host.
 
@@ -417,7 +417,8 @@ def get(remote_path, local_path="%(host)s/%(path)s", recursive=False):
     directory as manipulated by `~fabric.context_managers.cd`.
 
     ``local_path`` is the local file path where the downloaded file or files
-    will be stored. It may be interpolated with the following variables:
+    will be stored. It may be interpolated, using standard Python dict-based
+    interpolation, with the following variables:
 
     * ``host``: The value of ``env.host_string``, eg ``myhostname`` or
       ``user@myhostname-222`` (the colon between hostname and port is turned
@@ -428,8 +429,8 @@ def get(remote_path, local_path="%(host)s/%(path)s", recursive=False):
       ``access.log`` in ``/var/log/apache2/access.log``
     * ``path``: The full remote path, e.g. ``/var/log/apache2/access.log``.
 
-    See the default value for ``local_path`` as an example of how to use these
-    -- standard Python dict-based string interpolation will be performed.
+    If left blank, ``local_path`` defaults to ``"%(host)s/%(path)s"``, in order
+    to be safe for multi-host invocations.
 
     .. warning::
         If your ``local_path`` argument does not contain ``%(host)s`` and your
@@ -478,9 +479,8 @@ def get(remote_path, local_path="%(host)s/%(path)s", recursive=False):
         ``local_path`` may now contain interpolated path- and host-related
         variables.
     """
-    # Handle empty local path
-    if not local_path:
-        local_path = os.getcwd()
+    # Handle empty local path / default kwarg value
+    local_path = local_path or "%(host)s/%(path)s"
 
     # Test whether local_path is a path or a file-like object
     local_is_path = not (hasattr(local_path, 'write') \

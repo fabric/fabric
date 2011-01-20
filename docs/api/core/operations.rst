@@ -6,7 +6,7 @@ Operations
     :members:
     :exclude-members: sudo, put, run, get, reboot, open_shell
 
-    .. autofunction:: get(remote_path, local_path="%(host)s/%(path)s", recursive=False)
+    .. autofunction:: get(remote_path, local_path=None, recursive=False)
     .. autofunction:: open_shell(command=None)
     .. autofunction:: put(local_path, remote_path, recursive=True, use_sudo=False, mirror_local_mode=False, mode=None)
     .. autofunction:: reboot(wait)
