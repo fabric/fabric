@@ -406,20 +406,41 @@ def put(local_path, remote_path, recursive=True, use_sudo=False,
 
 
 @needs_host
-def get(remote_path, local_path, recursive=False):
+def get(remote_path, local_path="%(host)s/%(path)s", recursive=False):
     """
     Download one or more files from a remote host.
 
     ``remote_path`` is the remote file path to download, which may contain
-    shell glob syntax, e.g. ``"/var/log/apache2/*.log"``, provided
-    ``local_path`` points to a directory and not a file.
+    shell glob syntax, e.g. ``"/var/log/apache2/*.log"``, and will have tildes
+    replaced by the remote home directory. Relative paths will be considered
+    relative to the remote user's home directory, or the current remote working
+    directory as manipulated by `~fabric.context_managers.cd`.
 
-    ``local_path`` is the local file path where the downloaded file will be
-    stored. Like traditional ``cp``, it may be a directory or file path and
-    will behave accordingly: ``get(remote_file_name, local_directory)`` will
-    result in creating (or overwriting!) ``local_directory/remote_file_name``,
-    and so forth. This will also work for renaming files while downloading, if
-    you specify a ``local_path`` which does not currently exist.
+    ``local_path`` is the local file path where the downloaded file or files
+    will be stored. It may be interpolated with the following variables:
+
+    * ``host``: The value of ``env.host_string``, eg ``myhostname`` or
+      ``user@myhostname-222`` (the colon between hostname and port is turned
+      into a dash to maximize filesystem compatibility)
+    * ``dirname``: The directory path part of the remote file path, e.g. the
+      ``/var/log/apache2`` in ``/var/log/apache2/access.log``.
+    * ``basename``: The filename part of the remote file path, e.g. the
+      ``access.log`` in ``/var/log/apache2/access.log``
+    * ``path``: The full remote path, e.g. ``/var/log/apache2/access.log``.
+
+    See the default value for ``local_path`` as an example of how to use these
+    -- standard Python dict-based string interpolation will be performed.
+
+    .. warning::
+        If your ``local_path`` argument does not contain ``%(host)s`` and your
+        `~fabric.operations.get` call runs against multiple hosts, your local
+        files will be overwritten on each successive run!
+
+    If ``local_path`` does not make use of the above variables (i.e. if it is a
+    simple, explicit file path) it will act similar to ``scp`` or ``cp``,
+    overwriting pre-existing files if necessary, downloading into a directory
+    if given (e.g. ``get('remote_file.txt', 'local_directory')`` will create
+    ``local_directory/remote_file.txt``) and so forth.
 
     ``local_path`` may alternately be a file-like object, such as the result of
     ``open('path', 'w')`` or a ``StringIO`` instance. Using a file-like object
@@ -441,46 +462,11 @@ def get(remote_path, local_path, recursive=False):
         transfers. (We hope to patch our SSH layer in the future to enable true
         straight-to-memory downloads.)
 
-    Tilde expansion is performed on both arguments, and an empty string in
-    either slot will be expanded to the appropriate current working directory
-    (so e.g. ``get('/var/log/syslog', '')`` would implicitly have a
-    ``local_path`` of ``"$HOME/syslog"``).
-
     If set to ``True``, ``recursive`` will cause recursive downloading of
     ``remote_path``, assuming of course that ``remote_path`` is a directory or
     a glob which resolves to one or more directories. Naturally,
     ``local_path`` may not be an existing non-directory file when operating
     in this mode.
-
-    `~fabric.operations.get` will honor `~fabric.context_managers.cd`, so
-    relative values in ``remote_path`` will be prepended by the current remote
-    working directory, if applicable. Thus, for example, the below snippet
-    would attempt to download ``/tmp/files/test.txt`` instead of
-    ``~/files/test.txt``::
-
-        with cd('/tmp'):
-            get('files/test.txt', '/path/to/local/files/')
-
-    Use of `~fabric.context_managers.lcd` will affect ``local_path`` in the
-    same manner.
-
-    When `get` detects that it will be run on more than one host, it
-    will suffix the current host string to the local filename, to avoid
-    clobbering when it is run multiple times.
-
-    For example, the following snippet will produce two files on your local
-    system, called ``server.log.host1`` and ``server.log.host2`` respectively::
-
-        @hosts('host1', 'host2')
-        def my_download_task():
-            get('/var/log/server.log', 'server.log')
-
-    .. note::
-        Host strings containing usernames will be suffixed as expected, e.g.
-        ``filename.username@hostname``. However, port numbers -- which are
-        usually specified with a colon -- will be specified with a dash
-        instead, for compatibility with some filesystems, so e.g.
-        ``filename.hostname-222`` for a host string of ``"hostname:222"``.
 
     .. versionchanged:: 1.0
         Now honors the remote working directory as manipulated by
@@ -488,6 +474,9 @@ def get(remote_path, local_path, recursive=False):
         manipulated by `~fabric.context_managers.lcd`.
     .. versionchanged:: 1.0
         Now allows file-like objects in the ``local_path`` argument.
+    .. versionchanged:: 1.0
+        ``local_path`` may now contain interpolated path- and host-related
+        variables.
     """
     # Handle empty local path
     if not local_path:

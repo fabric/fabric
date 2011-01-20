@@ -388,17 +388,29 @@ class TestFileTransfers(FabricTest):
 
 
     @server()
-    def test_get_to_empty_directory_uses_cwd(self):
-        """
-        get() expands empty local arg to local cwd
-        """
+    def _get_to_cwd(self, arg):
         path = 'file.txt'
         with hide('everything'):
-            get(path, '')
-        target = os.path.join(os.getcwd(), path)
-        assert os.path.exists(target)
+            results = get(path, arg)
+        target = os.path.join(os.getcwd(), env.host, path)
+        try:
+            assert os.path.exists(target)
         # Clean up, since we're not using our tmpdir
-        os.remove(target)
+        finally:
+            for r in results:
+                os.remove(r)
+
+    def test_get_to_empty_string_uses_default_format_string(self):
+        """
+        get() expands empty local arg to local cwd + host + file
+        """
+        self._get_to_cwd('')
+
+    def test_get_to_None_uses_default_format_string(self):
+        """
+        get() expands empty local arg to local cwd + host + file
+        """
+        self._get_to_cwd(None)
 
 
     @server()
