@@ -417,8 +417,10 @@ def get(remote_path, local_path=None, recursive=False):
     directory as manipulated by `~fabric.context_managers.cd`.
 
     ``local_path`` is the local file path where the downloaded file or files
-    will be stored. It may be interpolated, using standard Python dict-based
-    interpolation, with the following variables:
+    will be stored. If relative, it will honor the local current working
+    directory as manipulated by `~fabric.context_managers.lcd`. It may be
+    interpolated, using standard Python dict-based interpolation, with the
+    following variables:
 
     * ``host``: The value of ``env.host_string``, eg ``myhostname`` or
       ``user@myhostname-222`` (the colon between hostname and port is turned
