@@ -334,7 +334,7 @@ class TestFileTransfers(FabricTest):
 
     @server(port=2200)
     @server(port=2201)
-    def multi_get(self, target, leaf, remote='file.txt'):
+    def test_get_from_multiple_servers(self):
         ports = [2200, 2201]
         hosts = map(lambda x: 'localhost:%s' % x, ports)
         with settings(all_hosts=hosts):
@@ -342,37 +342,19 @@ class TestFileTransfers(FabricTest):
                 with settings(
                     hide('everything'), host_string='localhost:%s' % port
                 ):
-                    get(remote, target)
-                if isinstance(leaf, types.StringTypes):
-                    leaf = [leaf]
-                for filepath in leaf:
-                    local_file = self.path(filepath % port)
-                    try:
-                        assert os.path.exists(local_file)
-                    except AssertionError, e:
-                        raise e
-
-    def test_get_from_multiple_servers_to_dir(self):
-        """
-        Multi-server get() should create per-host directories
-        """
-        self.multi_get(self.tmpdir, 'localhost-%s/file.txt')
-
-    def test_get_from_multiple_servers_to_file(self):
-        """
-        Multi-server get() to file should append to filenames
-        """
-        self.multi_get(self.path('file.txt'), 'file.txt.localhost-%s')
-
-    def test_remote_glob_files_get_from_multiple_servers(self):
-        """
-        Multi-server get() with remote globbed files should use host dirs
-        """
-        self.multi_get(
-            self.path(''),
-            ['localhost-%s/file.txt', 'localhost-%s/file2.txt'],
-            '/file*.txt'
-        )
+                    tmp = self.path('')
+                    local_path = os.path.join(tmp, "%(host)s", "%(path)s")
+                    # Top level file
+                    get('file.txt', local_path)
+                    assert self.exists_locally(os.path.join(
+                        tmp, "localhost-%s" % port, "file.txt"
+                    ))
+                    # Nested file
+                    path = 'tree/subfolder/file3.txt'
+                    get(path, local_path)
+                    assert self.exists_locally(os.path.join(
+                        tmp, "localhost-%s" % port, path
+                    ))
 
 
     @server()
