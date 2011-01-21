@@ -505,26 +505,26 @@ def get(remote_path, local_path=None, recursive=False):
         # Glob remote path
         names = ftp.glob(remote_path)
         for remote_path in names:
-            #try:
-            if ftp.isdir(remote_path):
-                if recursive:
-                    result = ftp.get_dir(remote_path, local_path)
-                    local_files.extend(result)
+            try:
+                if ftp.isdir(remote_path):
+                    if recursive:
+                        result = ftp.get_dir(remote_path, local_path)
+                        local_files.extend(result)
+                    else:
+                        warn("[%s] %s is a directory but recursive=False, skipping" % (env.host_string, remote_path))
                 else:
-                    warn("[%s] %s is a directory but recursive=False, skipping" % (env.host_string, remote_path))
-            else:
-                # Result here can be file contents (if not local_is_path)
-                # or final resultant file path (if local_is_path)
-                result = ftp.get(remote_path, local_path, local_is_path)
-                if not local_is_path:
-                    # Overwrite entire contents of local_path
-                    local_path.seek(0)
-                    local_path.write(result)
-                else:
-                    local_files.append(result)
-            #except Exception, e:
-            #    msg = "get() encountered an exception while downloading '%s'"
-            #    _handle_failure(message=msg % remote_path, exception=e)
+                    # Result here can be file contents (if not local_is_path)
+                    # or final resultant file path (if local_is_path)
+                    result = ftp.get(remote_path, local_path, local_is_path)
+                    if not local_is_path:
+                        # Overwrite entire contents of local_path
+                        local_path.seek(0)
+                        local_path.write(result)
+                    else:
+                        local_files.append(result)
+            except Exception, e:
+                msg = "get() encountered an exception while downloading '%s'"
+                _handle_failure(message=msg % remote_path, exception=e)
 
         return local_files if local_is_path else None
 
