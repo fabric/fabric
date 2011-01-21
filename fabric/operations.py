@@ -440,8 +440,8 @@ def get(remote_path, local_path=None, recursive=False):
     If ``local_path`` does not make use of the above variables (i.e. if it is a
     simple, explicit file path) it will act similar to ``scp`` or ``cp``,
     overwriting pre-existing files if necessary, downloading into a directory
-    if given (e.g. ``get('remote_file.txt', 'local_directory')`` will create
-    ``local_directory/remote_file.txt``) and so forth.
+    if given (e.g. ``get('/path/to/remote_file.txt', 'local_directory')`` will
+    create ``local_directory/remote_file.txt``) and so forth.
 
     ``local_path`` may alternately be a file-like object, such as the result of
     ``open('path', 'w')`` or a ``StringIO`` instance. Using a file-like object
@@ -499,25 +499,34 @@ def get(remote_path, local_path=None, recursive=False):
         if not os.path.isabs(remote_path) and env.get('cwd'):
             remote_path = env.cwd.rstrip('/') + '/' + remote_path
 
+        # Track final local destination files so we can return a list
+        local_files = []
+
         # Glob remote path
         names = ftp.glob(remote_path)
         for remote_path in names:
             #try:
             if ftp.isdir(remote_path):
                 if recursive:
-                    ftp.get_dir(remote_path, local_path)
+                    result = ftp.get_dir(remote_path, local_path)
+                    local_files.extend(result)
                 else:
-                    warn("[%s] %s is a directory but recursive=False, skipping" % \
-                        (env.host_string, remote_path))
+                    warn("[%s] %s is a directory but recursive=False, skipping" % (env.host_string, remote_path))
             else:
+                # Result here can be file contents (if not local_is_path)
+                # or final resultant file path (if local_is_path)
                 result = ftp.get(remote_path, local_path, local_is_path)
                 if not local_is_path:
                     # Overwrite entire contents of local_path
                     local_path.seek(0)
                     local_path.write(result)
+                else:
+                    local_files.append(result)
             #except Exception, e:
             #    msg = "get() encountered an exception while downloading '%s'"
             #    _handle_failure(message=msg % remote_path, exception=e)
+
+        return local_files if local_is_path else None
 
 
 def _sudo_prefix(user):

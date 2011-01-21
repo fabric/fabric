@@ -382,7 +382,8 @@ class TestFileTransfers(FabricTest):
         """
         with hide('everything'):
             get('', self.tmpdir, recursive=True)
-        # Spot checks
+        # Spot checks -- though it should've downloaded the entirety of
+        # server.FILES.
         for x in "file.txt file2.txt tree/file1.txt".split():
             assert os.path.exists(os.path.join(self.tmpdir, x))
 
@@ -392,13 +393,18 @@ class TestFileTransfers(FabricTest):
         path = 'file.txt'
         with hide('everything'):
             results = get(path, arg)
-        target = os.path.join(os.getcwd(), env.host, path)
+        host_dir = os.path.join(
+            os.getcwd(),
+            env.host_string.replace(':', '-'),
+        )
+        target = os.path.join(host_dir, path)
         try:
             assert os.path.exists(target)
         # Clean up, since we're not using our tmpdir
         finally:
             for r in results:
                 os.remove(r)
+            os.rmdir(host_dir)
 
     def test_get_to_empty_string_uses_default_format_string(self):
         """

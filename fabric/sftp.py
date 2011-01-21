@@ -112,11 +112,16 @@ class SFTP(object):
         }
         if local_is_path:
             local_path = local_path % path_vars
+            print "local_path: %r" % local_path
             # Ensure we give Paramiko a file by prepending and/or creating
-            # directories as appropriate.
+            # local directories as appropriate.
+            dirpath, filepath = os.path.split(local_path)
+            print "dir: %r, file: %r" % (dirpath, filepath)
+            print "%r is existing directory: %r" % (local_path,
+                    os.path.isdir(local_path))
+            if dirpath and not os.path.exists(dirpath):
+                os.makedirs(dirpath)
             if os.path.isdir(local_path):
-                if not os.path.exists(local_path):
-                    os.mkdir(local_path)
                 local_path = os.path.join(local_path, path_vars['basename'])
         if output.running:
             print("[%s] download: %s <- %s" % (
@@ -133,8 +138,9 @@ class SFTP(object):
         if not local_is_path:
             fd, real_local_path = tempfile.mkstemp()
         self.ftp.get(remote_path, real_local_path)
-        # Return the contents so the caller can actually take care of stuffing
-        # into the fd
+        # Return file contents (if it needs stuffing into a file-like obj)
+        # or the final local file path (otherwise)
+        result = None
         if not local_is_path:
             file_obj = os.fdopen(fd)
             result = file_obj.read()
@@ -142,7 +148,9 @@ class SFTP(object):
             file_obj.close()
             os.remove(real_local_path)
             # Return
-            return result
+        else:
+            result = real_local_path
+        return result
 
 
     def get_dir(self, remote_path, local_path):
