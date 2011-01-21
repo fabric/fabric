@@ -431,6 +431,23 @@ class TestFileTransfers(FabricTest):
         eq_(fake_file.getvalue(), FILES[target])
 
 
+    @server()
+    def test_get_interpolation_without_host(self):
+        """
+        local formatting should work w/o use of %(host)s when run on one host
+        """
+        with hide('everything'):
+            tmp = self.path('')
+            # dirname, basename
+            local_path = tmp + "/%(dirname)s/foo/%(basename)s"
+            get('/folder/file3.txt', local_path)
+            assert self.exists_locally(tmp + "/folder/foo/file3.txt")
+            # path
+            local_path = tmp + "bar/%(path)s"
+            get('/folder/file3.txt', local_path)
+            assert self.exists_locally(tmp + "bar/folder/file3.txt")
+
+
 
     #
     # put()

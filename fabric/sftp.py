@@ -111,7 +111,8 @@ class SFTP(object):
             'path': remote_path
         }
         if local_is_path:
-            local_path = local_path % path_vars
+            # Interpolate, then abspath (to make sure any /// are compressed)
+            local_path = os.path.abspath(local_path % path_vars)
             # Ensure we give Paramiko a file by prepending and/or creating
             # local directories as appropriate.
             dirpath, filepath = os.path.split(local_path)
