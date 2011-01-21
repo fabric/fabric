@@ -112,13 +112,9 @@ class SFTP(object):
         }
         if local_is_path:
             local_path = local_path % path_vars
-            print "local_path: %r" % local_path
             # Ensure we give Paramiko a file by prepending and/or creating
             # local directories as appropriate.
             dirpath, filepath = os.path.split(local_path)
-            print "dir: %r, file: %r" % (dirpath, filepath)
-            print "%r is existing directory: %r" % (local_path,
-                    os.path.isdir(local_path))
             if dirpath and not os.path.exists(dirpath):
                 os.makedirs(dirpath)
             if os.path.isdir(local_path):
@@ -144,10 +140,9 @@ class SFTP(object):
         if not local_is_path:
             file_obj = os.fdopen(fd)
             result = file_obj.read()
-            # Clean up
+            # Clean up temporary file
             file_obj.close()
             os.remove(real_local_path)
-            # Return
         else:
             result = real_local_path
         return result
@@ -159,6 +154,7 @@ class SFTP(object):
         else:
             strip = os.path.dirname(os.path.dirname(remote_path))
 
+        result = []
         for context, dirs, files in self.walk(remote_path):
             lcontext = context.replace(strip,'')
             lcontext = lcontext.lstrip('/')
@@ -173,7 +169,8 @@ class SFTP(object):
             for f in files:
                 remote_path = os.path.join(context, f)
                 n = os.path.join(lcontext, f)
-                self.get(remote_path, n, True)
+                result.append(self.get(remote_path, n, True))
+        return result
 
 
     def put(self, local_path, remote_path, use_sudo, mirror_local_mode, mode,
