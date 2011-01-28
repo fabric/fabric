@@ -50,13 +50,37 @@ def test_order_ensured():
     def command():
         pass
 
-    print hasattr(command, 'ensure_order')
-    print command.ensure_order
-    print fabric.state.env.ensure_order
-
+    print hasattr(command, '_ensure_order')
+    print command._ensure_order
+    print hasattr(command, '_sorted')
+    print command._sorted
+    #print fabric.state.env._ensure_order
+    eq_(command._ensure_order, True)
     eq_hosts(command, host_list)
+    print get_hosts(command, [], [])
     for i,h in enumerate(get_hosts(command, [], [])):
         eq_(host_list[i], h)
+
+def test_order_ensured_sorted():
+    """
+    Use of @ensure_order with sorted option
+    """
+    host_list = ['c', 'a', 'b', 'e']
+    sorted = ['c', 'a', 'b', 'e']
+    sorted.sort()
+    @ensure_order(sorted=True)
+    @hosts(*host_list)
+    def command():
+        pass
+
+    print hasattr(command, '_ensure_order')
+    print command._ensure_order
+    print hasattr(command, '_sorted')
+    print command._sorted
+    #print fabric.state.env._ensure_order
+    eq_(command._ensure_order, True)
+    eq_(command._sorted, True)
+    eq_hosts(command, sorted)
 
 
 def test_hosts_decorator_by_itself():
