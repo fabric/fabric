@@ -499,6 +499,15 @@ class TestFileTransfers(FabricTest):
         eq_(pointer, fake_file.tell())
 
 
+    @server()
+    @raises(ValueError)
+    def test_put_should_raise_exception_for_nonexistent_local_path(self):
+        """
+        put(nonexistent_file) should raise a ValueError
+        """
+        put('thisfiledoesnotexist', '/tmp')
+
+
 
     #
     # Interactions with cd()

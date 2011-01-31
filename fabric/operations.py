@@ -382,6 +382,11 @@ def put(local_path, remote_path, recursive=True, use_sudo=False,
         else:
             names = [local_path]
 
+        # Make sure local arg exists
+        if local_is_path and not names:
+            err = "'%s' is not a valid local path or glob." % local_path
+            raise ValueError(err)
+
         # Sanity check and wierd cases
         if ftp.exists(remote_path):
             if recursive and local_is_path and len(names) != 1 and \
