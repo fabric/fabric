@@ -209,7 +209,8 @@ class SFTP(object):
             local_path.seek(old_pointer)
         rattrs = self.ftp.put(real_local_path, remote_path)
         # Clean up
-        os.remove(real_local_path)
+        if not local_is_path:
+            os.remove(real_local_path)
         # Handle modes if necessary
         if local_is_path and (mirror_local_mode or mode is not None):
             lmode = os.stat(local_path).st_mode if mirror_local_mode else mode
