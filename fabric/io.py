@@ -51,6 +51,9 @@ def output_loop(chan, which, capture):
         # prompts.
         else:
             _prefix = "[%s] %s: " % (env.host_string, prefix)
+            # Allow prefix to be turned off.
+            if not env.output_prefix:
+                _prefix = ""
             # Print to user
             if printing:
                 # Initial prefix

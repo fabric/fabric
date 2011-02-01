@@ -356,3 +356,62 @@ class TestNetwork(FabricTest):
 [%(prefix)s] out: foo
 """ % {'prefix': env.host_string}
         eq_(expected[1:], sys.stdall.getvalue())
+
+
+    @mock_streams('both')
+    @server(
+        pubkeys=True,
+        responses={'oneliner': 'result', 'twoliner': 'result1\nresult2'}
+    )
+    def test_io_should_print_prefix_if_ouput_prefix_is_true(self):
+        """
+        run/sudo should print [host_string] if env.output_prefix == True
+        """
+        env.password = None
+        env.no_agent = env.no_keys = True
+        env.key_filename = CLIENT_PRIVKEY
+        with password_response(
+            (CLIENT_PRIVKEY_PASSPHRASE, PASSWORDS[USER]),
+            silent=False
+        ):
+            run('oneliner')
+            run('twoliner')
+        expected = """
+[%(prefix)s] run: oneliner
+[%(prefix)s] Login password: 
+[%(prefix)s] out: result
+[%(prefix)s] run: twoliner
+[%(prefix)s] out: result1
+[%(prefix)s] out: result2
+""" % {'prefix': env.host_string}
+        eq_(expected[1:], sys.stdall.getvalue())
+
+
+    @mock_streams('both')
+    @server(
+        pubkeys=True,
+        responses={'oneliner': 'result', 'twoliner': 'result1\nresult2'}
+    )
+    def test_io_should_not_print_prefix_if_ouput_prefix_is_false(self):
+        """
+        run/sudo shouldn't print [host_string] if env.output_prefix == False
+        """
+        env.password = None
+        env.no_agent = env.no_keys = True
+        env.key_filename = CLIENT_PRIVKEY
+        with password_response(
+            (CLIENT_PRIVKEY_PASSPHRASE, PASSWORDS[USER]),
+            silent=False
+        ):
+            with settings(output_prefix=False):
+                run('oneliner')
+                run('twoliner')
+        expected = """
+[%(prefix)s] run: oneliner
+[%(prefix)s] Login password: 
+result
+[%(prefix)s] run: twoliner
+result1
+result2
+""" % {'prefix': env.host_string}
+        eq_(expected[1:], sys.stdall.getvalue())
