@@ -50,11 +50,6 @@ def test_order_ensured():
     def command():
         pass
 
-    print hasattr(command, '_ensure_order')
-    print command._ensure_order
-    print hasattr(command, '_sorted')
-    print command._sorted
-    #print fabric.state.env._ensure_order
     eq_(command._ensure_order, True)
     eq_hosts(command, host_list)
     print get_hosts(command, [], [])
@@ -73,11 +68,6 @@ def test_order_ensured_sorted():
     def command():
         pass
 
-    print hasattr(command, '_ensure_order')
-    print command._ensure_order
-    print hasattr(command, '_sorted')
-    print command._sorted
-    #print fabric.state.env._ensure_order
     eq_(command._ensure_order, True)
     eq_(command._sorted, True)
     eq_hosts(command, sorted)
