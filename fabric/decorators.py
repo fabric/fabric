@@ -105,7 +105,21 @@ def runs_once(func):
 def ensure_order(sorted=False):
     """
     Decorator preventing wrapped function from using the set() operation to
-    dedupe the host list. Instead it will force fab to use X.
+    dedupe the host list. Instead it will force fab to iterate of the list of
+    hosts as combined from both `~fabric.decorators.hosts` and 
+    `~fabric.decorators.roles`. 
+
+    It also takes in a parameter sorted, to determine if this deduped list
+    should also then be sorted using the default python provided sort
+    mechanism.
+
+    Is used in conjunction with host lists and/or roles::
+
+        @ensure_order
+        @hosts('user1@host1', 'host2', 'user2@host3')
+        def my_func():
+            pass
+
     """
     def real_decorator(func):
         func._sorted = sorted
