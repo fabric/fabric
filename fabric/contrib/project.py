@@ -123,7 +123,7 @@ def upload_project(local_dir=None, remote_dir=""):
         local_dir = os.getcwd()
 
     # Remove final '/' in local_dir so that basename() works
-    local_dir = local_dir.strip(os.sep)
+    local_dir = local_dir.rstrip(os.sep)
 
     local_path, local_name = os.path.split(local_dir)
 
