@@ -1,7 +1,7 @@
 from fudge.patcher import with_patched_object
 from nose.tools import eq_, raises
 
-from fabric.decorators import hosts, roles
+from fabric.decorators import hosts, roles, ensure_order
 from fabric.main import get_hosts, parse_arguments, _merge, _escape_split
 import fabric.state
 from fabric.state import _AttributeDict
@@ -40,11 +40,65 @@ def eq_hosts(command, host_list):
     eq_(set(get_hosts(command, [], [])), set(host_list))
     
 
+def test_order_ensured():
+    """
+    Use of @ensure_order
+    """
+    host_list = ['c', 'b', 'a']
+    @ensure_order
+    @hosts(*host_list)
+    def command():
+        pass
+
+    print hasattr(command, '_ensure_order')
+    print command._ensure_order
+    print hasattr(command, '_sorted')
+    print command._sorted
+    #print fabric.state.env._ensure_order
+    eq_(command._ensure_order, True)
+    eq_hosts(command, host_list)
+    print get_hosts(command, [], [])
+    for i,h in enumerate(get_hosts(command, [], [])):
+        eq_(host_list[i], h)
+
+def test_order_ensured_sorted():
+    """
+    Use of @ensure_order with sorted option
+    """
+    host_list = ['c', 'a', 'b', 'e']
+    sorted = ['c', 'a', 'b', 'e']
+    sorted.sort()
+    @ensure_order(sorted=True)
+    @hosts(*host_list)
+    def command():
+        pass
+
+    print hasattr(command, '_ensure_order')
+    print command._ensure_order
+    print hasattr(command, '_sorted')
+    print command._sorted
+    #print fabric.state.env._ensure_order
+    eq_(command._ensure_order, True)
+    eq_(command._sorted, True)
+    eq_hosts(command, sorted)
+
+
 def test_hosts_decorator_by_itself():
     """
     Use of @hosts only
     """
     host_list = ['a', 'b']
+    @hosts(*host_list)
+    def command():
+        pass
+    eq_hosts(command, host_list)
+
+def test_hosts_decorator_by_itself_order_ensured():
+    """
+    Use of @hosts only order ensured
+    """
+    host_list = ['a', 'b']
+    @ensure_order
     @hosts(*host_list)
     def command():
         pass
@@ -68,6 +122,19 @@ def test_roles_decorator_by_itself():
         pass
     eq_hosts(command, ['a', 'b'])
 
+@with_patched_object(
+    'fabric.state', 'env', _AttributeDict({'roledefs': fake_roles})
+)
+def test_roles_decorator_by_itself_order_ensured():
+    """
+    Use of @roles only order ensured
+    """
+    @ensure_order
+    @roles('r1')
+    def command():
+        pass
+    eq_hosts(command, ['a', 'b'])
+
 
 @with_patched_object(
     'fabric.state', 'env', _AttributeDict({'roledefs': fake_roles})
@@ -82,12 +149,42 @@ def test_hosts_and_roles_together():
         pass
     eq_hosts(command, ['a', 'b', 'c'])
 
+@with_patched_object(
+    'fabric.state', 'env', _AttributeDict({'roledefs': fake_roles})
+)
+def test_hosts_and_roles_together_order_ensured():
+    """
+    Use of @roles and @hosts together results in union of both order ensured
+    """
+    @ensure_order
+    @roles('r1', 'r2')
+    @hosts('a')
+    def command():
+        pass
+    eq_hosts(command, ['a', 'b', 'c'])
 
-@with_patched_object('fabric.state', 'env', {'hosts': ['foo']})
+
+@with_patched_object(
+    'fabric.state', 'env', _AttributeDict({'hosts': ['foo']})
+)
 def test_hosts_decorator_overrides_env_hosts():
     """
     If @hosts is used it replaces any env.hosts value
     """
+    @hosts('bar')
+    def command():
+        pass
+    eq_hosts(command, ['bar'])
+    assert 'foo' not in get_hosts(command, [], [])
+
+@with_patched_object(
+    'fabric.state', 'env', _AttributeDict({'hosts': ['foo']})
+)
+def test_hosts_decorator_overrides_env_hosts_order_ensured():
+    """
+    If @hosts is used it replaces any env.hosts value order ensured
+    """
+    @ensure_order
     @hosts('bar')
     def command():
         pass
@@ -105,12 +202,34 @@ def test_hosts_decorator_expands_single_iterable():
         pass
     eq_(command.hosts, host_list)
 
+def test_hosts_decorator_expands_single_iterable_order_ensured():
+    """
+    @hosts(iterable) should behave like @hosts(*iterable) order ensured
+    """
+    host_list = ['foo', 'bar']
+    @ensure_order
+    @hosts(host_list)
+    def command():
+        pass
+    eq_(command.hosts, host_list)
+
 
 def test_roles_decorator_expands_single_iterable():
     """
     @roles(iterable) should behave like @roles(*iterable)
     """
     role_list = ['foo', 'bar']
+    @roles(role_list)
+    def command():
+        pass
+    eq_(command.roles, role_list)
+
+def test_roles_decorator_expands_single_iterable_order_ensured():
+    """
+    @roles(iterable) should behave like @roles(*iterable) order ensured
+    """
+    role_list = ['foo', 'bar']
+    @ensure_order
     @roles(role_list)
     def command():
         pass

@@ -100,3 +100,22 @@ def runs_once(func):
             decorated.return_value = func(*args, **kwargs)
         return decorated.return_value
     return decorated
+
+
+def ensure_order(sorted=False):
+    """
+    Decorator preventing wrapped function from using the set() operation to
+    dedupe the host list. Instead it will force fab to use X.
+    """
+    def real_decorator(func):
+        func._sorted = sorted
+        func._ensure_order = True
+        return func
+
+    # Trick to allow for both a dec w/ the optional setting without have to
+    # force it to use ()
+    if type(sorted) == type(real_decorator):
+        return real_decorator(sorted)
+
+    real_decorator._ensure_order = True
+    return real_decorator
