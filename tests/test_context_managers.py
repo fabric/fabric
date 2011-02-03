@@ -3,7 +3,7 @@ from __future__ import with_statement
 from nose.tools import eq_
 
 from fabric.state import env
-from fabric.context_managers import cd
+from fabric.context_managers import cd, settings
 
 
 #
@@ -33,8 +33,8 @@ def test_cwd_with_absolute_paths():
     existing = '/some/existing/path' 
     additional = 'another'
     absolute = '/absolute/path'
-    env.cwd = existing
-    with cd(absolute):
-        eq_(env.cwd, absolute)
-    with cd(additional):
-        eq_(env.cwd, existing + '/' + additional)
+    with settings(cwd=existing):
+        with cd(absolute):
+            eq_(env.cwd, absolute)
+        with cd(additional):
+            eq_(env.cwd, existing + '/' + additional)

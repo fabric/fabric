@@ -53,10 +53,10 @@ The standard, atomic output levels/groups are as follows:
 * **user**: User-generated output, i.e. local output printed by fabfile code
   via use of the `~fabric.utils.fastprint` or `~fabric.utils.puts` functions.
 
-.. versionchanged:: 1.0
+.. versionchanged:: 0.9.2
     Added "Executing task" lines to the ``running`` output level.
 
-.. versionchanged:: 1.0
+.. versionchanged:: 0.9.2
     Added the ``user`` output level.
 
 Debug output

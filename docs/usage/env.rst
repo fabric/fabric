@@ -20,9 +20,9 @@ commonly-modified env vars include:
 * ``user``: Fabric defaults to your local username when making SSH connections,
   but you can use ``env.user`` to override this if necessary. The :doc:`execution`
   documentation also has info on how to specify usernames on a per-host basis.
-* ``password``: Used to explicitly set your connection or sudo password if
-  desired. Fabric will prompt you when necessary if this isn't set or doesn't
-  appear to be valid.
+* ``password``: Used to explicitly set your default connection or sudo password
+  if desired. Fabric will prompt you when necessary if this isn't set or
+  doesn't appear to be valid.
 * ``warn_only``: a Boolean setting determining whether Fabric exits when
   detecting errors on the remote end. See :doc:`execution` for more on this
   behavior.
@@ -119,14 +119,26 @@ informational purposes only.
 ``always_use_pty``
 ------------------
 
-**Default:** ``False``
+**Default:** ``True``
 
-When set to ``True``, causes `~fabric.operations.run`/`~fabric.operations.sudo`
-to act as if they have been called with ``pty=True``. (To disable on a
-per-invocation basis, manually specify ``pty=False``.)
+When set to ``False``, causes `~fabric.operations.run`/`~fabric.operations.sudo`
+to act as if they have been called with ``pty=False``.
 
-The command-line flag :option:`--pty`, if given, will set this env var to
-``True``.
+The command-line flag :option:`--no-pty`, if given, will set this env var to
+``False``.
+
+.. versionadded:: 1.0
+
+.. _combine-stderr:
+
+``combine_stderr``
+------------------
+
+**Default**: ``True``
+
+Causes the SSH layer to merge a remote program's stdout and stderr streams to
+avoid becoming meshed together when printed. See :ref:`combine_streams` for
+details on why this is needed and what its effects are.
 
 .. versionadded:: 1.0
 
@@ -183,6 +195,8 @@ doesn't make sense to set this in a fabfile, but it may be specified in a
 ``.fabricrc`` file or on the command line.
 
 .. seealso:: :doc:`fab`
+
+.. _host_string:
 
 ``host_string``
 ---------------
@@ -270,19 +284,27 @@ be used, of course.)
 
 **Default:** ``None``
 
-The password used by the SSH layer when connecting to remote hosts, **and/or**
-when answering `~fabric.operations.sudo` prompts.
+The default password used by the SSH layer when connecting to remote hosts,
+**and/or** when answering `~fabric.operations.sudo` prompts.
 
-When empty, the user will be prompted, with the result stored in this env
-variable and used for connecting/sudoing. (In other words, setting this prior
-to runtime is not required, though it may be convenient in some cases.)
+.. seealso:: :ref:`passwords`
+.. seealso:: :ref:`password-management`
 
-Given a session where multiple different passwords are used, only the first one
-will be stored into ``env.password``. Put another way, the only time
-``env.password`` is written to by Fabric itself is when it is empty. This may
-change in the future.
+.. _passwords:
 
-.. seealso:: :doc:`execution`
+``passwords``
+-------------
+
+**Default:** ``{}``
+
+This dictionary is largely for internal use, and is filled automatically as a
+per-host-string password cache. Keys are full :ref:`host strings
+<host-strings>` and values are passwords (strings).
+
+.. seealso:: :ref:`password-management`
+
+.. versionadded:: 1.0
+
 
 ``port``
 --------

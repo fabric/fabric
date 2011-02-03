@@ -2,7 +2,7 @@ from fudge.patcher import with_patched_object
 from nose.tools import eq_, raises
 
 from fabric.decorators import hosts, roles
-from fabric.main import get_hosts, parse_arguments, _merge
+from fabric.main import get_hosts, parse_arguments, _merge, _escape_split
 import fabric.state
 from fabric.state import _AttributeDict
 
@@ -29,6 +29,9 @@ def test_argument_parsing():
         # Note: in a real shell, one would need to quote or escape "foo;bar".
         # But in pure-Python that would get interpreted literally, so we don't.
         ('abc:hosts=foo;bar', ('abc', [], {}, ['foo', 'bar'], [])),
+        # Empty string args
+        ("task:x=y,z=", ('task', [], {'x': 'y', 'z': ''}, [], [])),
+        ("task:foo,,x=y", ('task', ['foo', ''], {'x': 'y'}, [], [])),
     ]:
         yield eq_, parse_arguments([args]), [output]
 
@@ -92,6 +95,28 @@ def test_hosts_decorator_overrides_env_hosts():
     assert 'foo' not in get_hosts(command, [], [])
 
 
+def test_hosts_decorator_expands_single_iterable():
+    """
+    @hosts(iterable) should behave like @hosts(*iterable)
+    """
+    host_list = ['foo', 'bar']
+    @hosts(host_list)
+    def command():
+        pass
+    eq_(command.hosts, host_list)
+
+
+def test_roles_decorator_expands_single_iterable():
+    """
+    @roles(iterable) should behave like @roles(*iterable)
+    """
+    role_list = ['foo', 'bar']
+    @roles(role_list)
+    def command():
+        pass
+    eq_(command.roles, role_list)
+
+
 @with_patched_object(
     'fabric.state', 'env', _AttributeDict({'roledefs': fake_roles})
 )
@@ -117,3 +142,14 @@ def test_lazy_roles():
     def command():
         pass
     eq_hosts(command, ['a', 'b'])
+
+
+def test_escaped_task_arg_split():
+    """
+    Allow backslashes to escape the task argument separator character
+    """
+    argstr = r"foo,bar\,biz\,baz,what comes after baz?"
+    eq_(
+        _escape_split(',', argstr),
+        ['foo', 'bar,biz,baz', 'what comes after baz?']
+    )

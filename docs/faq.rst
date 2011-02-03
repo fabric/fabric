@@ -8,22 +8,49 @@ reading the rest of the documentation, especially the :ref:`usage docs
 <usage-docs>`, so please make sure you check those out if your question is not
 answered here.
 
+.. _one-shell-per-command:
 
-Fabric sometimes takes a long time to disconnect at the end of a session. Why?
-==============================================================================
+My (``cd``/``workon``/``export``/etc) calls don't seem to work!
+===============================================================
 
-If you're on Python 2.6.5, the issue may be a change in that version of Python
-which triggered a latent bug in our SSH layer, Paramiko. Fabric currently
-bundles Paramiko 1.7.4, but users report that upgrading to Paramiko 1.7.6
-(which will overwrite the bundled version) seems to fix the problem.
+While Fabric can be used for many shell-script-like tasks, there's a slightly
+unintuitive catch: each `~fabric.operations.run` or `~fabric.operations.sudo`
+call has its own distinct shell session. This is required in order for Fabric
+to reliably figure out, after your command has run, what its standard out/error
+and return codes were.
 
-The quickest way to upgrade Paramiko is to use ``easy_install`` or ``pip``,
-e.g.::
+Unfortunately, it means that code like the following doesn't behave as you
+might assume::
 
-    $ pip install -U paramiko
+    def deploy():
+        run("cd /path/to/application")
+        run("./update.sh")
 
-Fabric will likely drop its bundled Paramiko version in the near future; see
-:issue:`86` for more.
+If that were a shell script, the second `~fabric.operations.run` call would
+have executed with a current working directory of ``/path/to/application/`` --
+but because both commands are run in their own distinct session over SSH, it
+actually tries to execute ``$HOME/update.sh`` instead (since your remote home
+directory is the default working directory).
+
+A simple workaround is to make use of shell logic operations such as ``&&``,
+which link multiple expressions together (provided the left hand side executed
+without error) like so::
+
+    def deploy():
+        run("cd /path/to/application && ./update.sh")
+
+Fabric provides a convenient shortcut for this specific use case, in fact:
+`~fabric.context_managers.cd`.
+
+.. note::
+    You might also get away with an absolute path and skip directory changing
+    altogether::
+
+        def deploy():
+            run("/path/to/application/update.sh")
+
+    However, this requires that the command in question makes no assumptions
+    about your current working directory!
 
 
 Why do I sometimes see ``err: stdin: is not a tty``?
@@ -59,30 +86,29 @@ Why can't I run programs in the background with ``&``? It makes Fabric hang.
 ============================================================================
 
 Because Fabric executes a shell on the remote end for each invocation of
-``run`` or ``sudo``, techniques like backgrounding (or using ``cd``, but see
-the `cd` context manager for help on that) will not work as expected.
-Backgrounded processes still prevent the calling shell from exiting until they
-stop running, and this in turn prevents Fabric from continuing on with its own
-execution.
+``run`` or ``sudo`` (:ref:`see also <one-shell-per-command>`), backgrounding a
+process via the shell will not work as expected. Backgrounded processes may
+still prevent the calling shell from exiting until they stop running, and this
+in turn prevents Fabric from continuing on with its own execution.
 
-If you truly need to run a process in the "background" and are unable to
-properly `daemonize
-<http://en.wikipedia.org/wiki/Daemon_(computer_software)>`_, you may want to
-look into GNU Screen (widely available in package managers or preinstalled)
-which can easily serve the same purpose. A trivial example (``yes`` is a
-simple Unix app that simply prints the word "yes" forever until killed)::
+The key to fixing this is to ensure that your process' standard pipes are all
+disassociated from the calling shell, which may be done in a number of ways:
 
-    run('screen -d -m "yes"')
+* Use a pre-existing daemonization technique if one exists for the program at
+  hand -- for example, calling an init script instead of directly invoking a
+  server binary.
+* Run the program under ``nohup`` and redirect stdin, stdout and stderr to
+  ``/dev/null`` (or to your file of choice, if you need the output later)::
 
-Such a call will effectively fork the ``yes`` program into a detached
-``screen`` session, which will no longer be associated with the calling shell,
-and thus your Fabric task will continue executing as intended.
+    run("nohup yes >& /dev/null < /dev/null &")
 
-.. note::
+  (``yes`` is simply an example of a program that may run for a long time or
+  forever; ``>&``, ``<`` and ``&`` are Bash syntax for pipe redirection and
+  backgrounding, respectively -- see your shell's man page for details.)
 
-    There are also alternatives to ``screen`` which serve the same purpose,
-    such as ``dtach``. As long as the program can ensure that the process in
-    question is detached from your shell process, it should suffice.
+* Use ``tmux``, ``screen`` or ``dtach`` to fully detach the process from the
+  running shell; these tools have the benefit of allowing you to reattach to
+  the process later on if needed (among many other such benefits).
 
 
 My remote system doesn't have ``bash`` installed by default, do I need to install ``bash``?

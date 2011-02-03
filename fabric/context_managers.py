@@ -8,8 +8,13 @@ Context managers for use with the ``with`` statement.
 """
 
 from contextlib import contextmanager, nested
+import sys
 
-from fabric.state import env, output
+from fabric.state import env, output, win32
+
+if not win32:
+    import termios
+    import tty
 
 
 def _set_output(groups, which):
@@ -137,16 +142,16 @@ def settings(*args, **kwargs):
 
 def cd(path):
     """
-    Context manager that keeps directory state when calling `run`/`sudo`.
+    Context manager that keeps directory state when calling operations.
 
-    Any calls to `run` or `sudo` within the wrapped block will implicitly have
-    a string similar to ``"cd <path> && "`` prefixed in order to give the sense
-    that there is actually statefulness involved.
+    Any calls to `run`, `sudo` or `local` within the wrapped block will
+    implicitly have a string similar to ``"cd <path> && "`` prefixed in order
+    to give the sense that there is actually statefulness involved.
 
-    Because use of `cd` affects all `run` and `sudo` invocations, any code
-    making use of `run` and/or `sudo`, such as much of the ``contrib`` section,
-    will also be affected by use of `cd`. However, at this time, `get` and
-    `put` do not honor `cd`; we expect this to be fixed in future releases.
+    Because use of `cd` affects all such invocations, any code making use of
+    `run`/`sudo`/`local`, such as much of the ``contrib`` section, will also be
+    affected by use of `cd`. However, at this time, `get` and `put` do not
+    honor `cd`; we expect this to be addressed in future releases.
 
     Like the actual 'cd' shell builtin, `cd` may be called with relative paths
     (keep in mind that your default starting directory is your remote user's
@@ -278,3 +283,21 @@ def prefix(command):
     Contrived, but hopefully illustrative.
     """
     return _setenv(command_prefixes=env.command_prefixes + [command])
+
+
+@contextmanager
+def char_buffered(pipe):
+    """
+    Force local terminal ``pipe`` be character, not line, buffered.
+
+    Only applies on Unix-based systems; on Windows this is a no-op.
+    """
+    if win32 or not sys.stdin.isatty():
+        yield
+    else:
+        old_settings = termios.tcgetattr(pipe)
+        tty.setcbreak(pipe)
+        try:
+            yield
+        finally:
+            termios.tcsetattr(pipe, termios.TCSADRAIN, old_settings)

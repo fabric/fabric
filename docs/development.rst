@@ -85,24 +85,30 @@ contributors.
   development is performed in a central ``master`` branch and/or in
   feature-specific feature branches (e.g. a branch for reworking the internals
   to be threadsafe, or one for overhauling task dependencies, etc.)
+* Releases each get their own release branch, e.g. ``0.9``, ``1.0``, ``1.1``
+  etc, and from these the actual releases are tagged, e.g. ``0.9.3`` or
+  ``1.0.0``.
+* New feature work is typically done in feature branches, whose naming
+  convention is ``<ticket number>-<short-description>``. For example, ticket
+  #61, which concerned adding ``cd`` support to ``get`` and ``put``, was
+  developed in a branch named ``61-add-cd-to-get-put``.
 
-  * At time of writing, this means that Fabric maintains an ``0.9`` release
-    branch, from which all prerelease and final release versions of 0.9.x, e.g.
-    0.9rc1 and 0.9.0 and so forth, are cut.
-  * New features intended for the next major release (Fabric 1.0) will be kept
-    in the ``master`` branch. Once the 1.0 alpha or beta period begins, this
-    work will be split off into a ``1.0`` branch and ``master`` will start
-    forming Fabric 1.1.
-  * While we try our best not to commit broken code or change APIs without
-    warning, as with many other open-source projects we can only have a
-    guarantee of stability in the release branches. Only follow ``master`` if
-    you're willing to deal with a little pain.
-  * Conversely, because we try to keep release branches relatively stable, you
-    may find it easier to use Fabric from a source checkout of a release branch
-    instead of upgrading to new released versions. This can provide a decent
-    middle ground between stability and the ability to get bugfixes or
-    backported features easily.
+  * These branches are not intended for public use, and may be cleaned out of
+    the repositories periodically. Ideally, no one feature will be in
+    development long enough for its branch to become used in production!
 
+* Completed feature work is merged into the ``master`` branch, and once enough
+  new features are done, a new release branch is created and optionally used to
+  create prerelease versions for testing -- or simply released as-is.
+* While we try our best not to commit broken code or change APIs without
+  warning, as with many other open-source projects we can only have a guarantee
+  of stability in the release branches. Only follow ``master`` (or, even worse,
+  feature branches!) if you're willing to deal with a little pain.
+* Conversely, because we try to keep release branches relatively stable, you
+  may find it easier to use Fabric from a source checkout of a release branch
+  instead of manually upgrading to new released versions. This can provide a
+  decent middle ground between stability and the ability to get bugfixes or
+  backported features easily.
 * The core developers will take care of performing merging/branching on the
   official repositories. Since Git is Git, contributors may of course do
   whatever they wish in their own clones/forks.
@@ -110,7 +116,7 @@ contributors.
   ``master`` so that ``master`` is always up-to-date (or nearly so; while it's
   not mandatory to merge after every bugfix, doing so at least daily is a good
   idea.)
-* Feature branches, if used, should periodically merge in changes from
+* Feature branches should periodically merge in changes from
   ``master`` so that when it comes time for them to merge back into ``master``
   things aren't quite as painful.
 
