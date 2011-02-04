@@ -112,6 +112,14 @@ def with_settings(**kw_settings):
     with the ``settings`` context manager.  Useful for retrofitting old code so
     you don't have to change the indention to gain the behavior.
 
+    An example use being to set all fabric api functions in a task to not error
+    out on unexpected return codes::
+
+        @with_settings(warn_only=True)
+        @hosts('user1@host1', 'host2', 'user2@host3')
+        def foo():
+            pass
+
     See ``fabric.context_managers.settings`` for more information about what
     you can do with this.
     """
