@@ -4,6 +4,8 @@ Fabric's own fabfile.
 
 from __future__ import with_statement
 
+import nose
+
 from fabric.api import *
 from fabric.contrib.project import rsync_project
 # Need to import this as fabric.version for reload() purposes
@@ -21,9 +23,12 @@ def test(args=None):
 
     Specify string argument ``args`` for additional args to ``nosetests``.
     """
-    if args is None:
-        args = ""
-    print(local('nosetests -sv --with-doctest %s' % args, capture=False))
+    default_args = "-sv --with-doctest --nologcapture --with-color"
+    default_args += (" " + args) if args else ""
+    try:
+        nose.core.run(argv=[''] + default_args.split())
+    except SystemExit:
+        abort("Nose encountered an error; you may be missing newly added test dependencies. Try running 'pip install -r requirements.txt'.")
 
 
 def build_docs(clean='no', browse='no'):
@@ -45,7 +50,8 @@ def push_docs():
     Build and push the Sphinx docs to docs.fabfile.org
     """
     build_docs(clean='yes')
-    remote_loc = '/var/www/docs.fabfile/%s/' % _version('short')
+    remote_loc = '/var/www/docs.fabfile/%s/' % _version('short').split()[0]
+    run('mkdir -p %s' % remote_loc)
     rsync_project(remote_loc, 'docs/_build/html/', delete=True)
 
 

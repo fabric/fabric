@@ -1,0 +1,22 @@
+========================
+Changes in version 0.9.4
+========================
+
+The following changes were implemented in Fabric 0.9.4:
+
+Feature additions
+=================
+
+* Added :doc:`documentation </usage/library>` for using Fabric as a library.
+
+
+Bugfixes
+========
+
+* N/A
+
+
+Documentation updates
+=====================
+
+* N/A

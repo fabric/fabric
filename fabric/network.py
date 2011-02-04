@@ -6,10 +6,12 @@ from functools import wraps
 import getpass
 import re
 import threading
+import select
 import socket
 import sys
 
 from fabric.utils import abort
+from fabric.auth import get_password, set_password
 
 try:
     import warnings
@@ -152,14 +154,22 @@ def connect(user, host, port):
 
     # Initialize loop variables
     connected = False
-    password = env.password
+    password = get_password()
 
     # Loop until successful connect (keep prompting for new password)
     while not connected:
         # Attempt connection
         try:
-            client.connect(host, int(port), user, password,
-                key_filename=env.key_filename, timeout=10)
+            client.connect(
+                hostname=host,
+                port=int(port),
+                username=user,
+                password=password,
+                key_filename=env.key_filename,
+                timeout=10,
+                allow_agent=not env.no_agent,
+                look_for_keys=not env.no_keys
+            )
             connected = True
             return client
         # BadHostKeyException corresponds to key mismatch, i.e. what on the
@@ -210,11 +220,11 @@ def connect(user, host, port):
                 # because Paramiko doesn't provide us with that info, and
                 # env.key_filename may be a list of keys, so we can't know
                 # which one raised the exception. Best not to try.
-                text = "Please enter passphrase for private key"
-            password = prompt_for_password(password, text)
-            # Update env.password if it was empty
-            if not env.password:
-                env.password = password
+                prompt = "[%s] Passphrase for private key"
+                text = prompt % env.host_string
+            password = prompt_for_password(text)
+            # Update env.password, env.passwords if empty
+            set_password(password)
         # Ctrl-D / Ctrl-C for exit
         except (EOFError, TypeError):
             # Print a newline (in case user was sitting at prompt)
@@ -233,136 +243,38 @@ def connect(user, host, port):
                 host, e[1])
             )
 
-
-def prompt_for_password(previous=None, prompt=None):
+def prompt_for_password(prompt=None, no_colon=False, stream=None):
     """
     Prompts for and returns a new password if required; otherwise, returns None.
 
-    ``previous`` should be the last known password, and is typically "primed"
-    with ``env.password``, though it may be empty or None if ``env.password``
-    was not set and no password has previously been entered during this
-    session.
+    A trailing colon is appended unless ``no_colon`` is True.
 
-    When non-empty, ``previous`` will be used as a default if the user hits
-    Enter without entering a new password, and the displayed password prompt
-    will reflect this.
+    If the user supplies an empty password, the user will be re-prompted until
+    they enter a non-empty password.
 
-    If the user supplies an empty password **and** ``previous`` is also empty,
-    the user will be re-prompted until they enter a non-empty password.
+    ``prompt_for_password`` autogenerates the user prompt based on the current
+    host being connected to. To override this, specify a string value for
+    ``prompt``.
 
-    Finally, ``prompt_for_password`` autogenerates the user prompt based on the
-    current host being connected to. To override this, specify a string value
-    for ``prompt``.
+    ``stream`` is the stream the prompt will be printed to; if not given,
+    defaults to ``sys.stderr``.
     """
     from fabric.state import env
-    # Construct the prompt we will display to the user (using host if available)
-    if 'host' in env:
-        host = join_host_strings(*normalize(env.host_string, omit_port=True))
-        base_password_prompt = "Password for %s" % host
-    else:
-        base_password_prompt = "Password"
-    password_prompt = base_password_prompt
-    # Handle prompt text override
-    if prompt is not None:
-        password_prompt = prompt
-    # If the caller knew of a previously given password, give the user the
-    # option of trying that again.
-    if previous:
-        password_prompt += " [Enter for previous]"
-    password_prompt += ": "
+    stream = stream or sys.stderr
+    # Construct prompt
+    default = "[%s] Login password" % env.host_string
+    password_prompt = prompt if (prompt is not None) else default
+    if not no_colon:
+        password_prompt += ": "
     # Get new password value
-    new_password = getpass.getpass(password_prompt)
-    # See if user wants us to use the previous password and return right away
-    # if so.
-    if (not new_password) and previous:
-        return previous
+    new_password = getpass.getpass(password_prompt, stream)
     # Otherwise, loop until user gives us a non-empty password (to prevent
     # returning the empty string, and to avoid unnecessary network overhead.)
     while not new_password:
         print("Sorry, you can't enter an empty password. Please try again.")
         password_prompt = base_password_prompt + ": "
-        new_password = getpass.getpass(password_prompt)
+        new_password = getpass.getpass(password_prompt, stream)
     return new_password
-
-
-def output_thread(prefix, chan, stderr=False, capture=None):
-    """
-    Generates a thread/function capable of reading and optionally capturing
-    input from the given channel object ``chan``. ``stderr`` determines whether
-    the channel's stdout or stderr is the focus of this particular thread.
-    """
-    from state import env, output
-
-    def outputter(prefix, chan, stderr, capture):
-        # Read one "packet" at a time, which lets us get less-than-a-line
-        # chunks of text, such as sudo prompts. However, we still print
-        # them to the user one line at a time. (We also eat sudo prompts.)
-        leftovers = ""
-        password = env.password
-        if stderr:
-            recv = chan.recv_stderr
-        else:
-            recv = chan.recv
-        out = recv(65535)
-        while out != '':
-            # Detect password prompts
-            initial = re.findall(r'^%s$' % env.sudo_prompt, out, re.I|re.M)
-            try_again = re.findall(r'^%s' % env.again_prompt, out, re.I|re.M)
-            # Capture if necessary (omitting password prompts so captured
-            # stderr isn't gunked up)
-            if capture is not None:
-                if initial:
-                    out = out.replace(env.sudo_prompt, '')
-                if try_again:
-                    out = out.replace(env.again_prompt, '')
-                capture += out
-            # Deal with password prompts
-            if initial or try_again:
-                # Prompt user if nothing to try, or if stored password failed
-                if not password or try_again:
-                    # Save entered password in local and global password var.
-                    # Will have to re-enter when password changes per host, but
-                    # this way a given password will persist for as long as
-                    # it's valid.
-                    env.password = password = prompt_for_password(password)
-                # Send current password down the pipe
-                chan.sendall(password + '\n')
-                out = ""
-            # Deal with line breaks, printing all lines and storing the
-            # leftovers, if any.
-            if '\n' in out or '\r' in out:
-                # Break into list of lines/parts
-                parts = out.splitlines()
-                # Deal with edge case of trailing newline (messes up leftovers
-                # logic due to how splitlines() behaves)
-                if out[-1] in ['\n', '\r']:
-                    parts.append('')
-                # Initialize loop with first line
-                line = leftovers + parts.pop(0)
-                # Take off the last part, since it may be a partial line
-                if parts:
-                    leftovers = parts.pop()
-                while parts or line:
-                    # Write stderr to our own stderr.
-                    out_stream = stderr and sys.stderr or sys.stdout
-                    # But only write at all if we're supposed to.
-                    if ((not stderr and output.stdout)
-                        or (stderr and output.stderr)):
-                        out_stream.write("%s: %s\n" % (prefix, line)),
-                        out_stream.flush()
-                    if parts:
-                        line = parts.pop(0)
-                    else:
-                        line = ""
-            else: # add to leftovers buffer
-                leftovers += out
-            # Get next handful of bytes and continue the loop
-            out = recv(65535)
-    thread = threading.Thread(None, outputter, prefix,
-        (prefix, chan, stderr, capture))
-    thread.setDaemon(True)
-    thread.start()
-    return thread
 
 
 def needs_host(func):
@@ -425,5 +337,6 @@ def disconnect_all():
         if output.status:
             print "Disconnecting from %s..." % denormalize(key),
         connections[key].close()
+        del connections[key]
         if output.status:
             print "done."

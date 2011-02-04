@@ -1,0 +1,33 @@
+========================
+Changes in version 0.9.3
+========================
+
+The following changes were implemented in Fabric 0.9.3:
+
+Feature additions
+=================
+
+* :issue:`255`: Added ``stderr`` and ``succeeded`` attributes to
+  `~fabric.operations.local`.
+* :issue:`254`: Backported the ``.stderr`` and ``.succeeded`` attributes on
+  `~fabric.operations.run`/`~fabric.operations.sudo` return values, from the
+  Git master/pre-1.0 branch. Please see those functions' API docs for details.
+
+
+Bugfixes
+========
+
+* :issue:`228`: We discovered that the pip + PyCrypto installation problem was
+  limited to Python 2.5 only, and have updated our ``setup.py`` accordingly.
+* :issue:`230`: Arbitrary or remainder commands (``fab <opts> -- <run command
+  here>``) will no longer blow up when invoked with no fabfile present. Thanks
+  to IRC user ``orkaa`` for the report.
+* :issue:`242`: Empty string values in task CLI args now parse correctly.
+  Thanks to Aaron Levy for the catch + patch.
+
+
+Documentation updates
+=====================
+
+* :issue:`239`: Fixed typo in execution usage docs. Thanks to Pradeep Gowda and
+  Turicas for the catch.
