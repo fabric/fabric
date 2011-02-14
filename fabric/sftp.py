@@ -150,27 +150,41 @@ class SFTP(object):
 
 
     def get_dir(self, remote_path, local_path):
+        # Decide what needs to be stripped from remote paths so they're all
+        # relative to the given remote_path
         if os.path.basename(remote_path):
             strip = os.path.dirname(remote_path)
         else:
             strip = os.path.dirname(os.path.dirname(remote_path))
 
+        # Store all paths gotten so we can return them when done
         result = []
+        # Use our facsimile of os.walk to find all files within remote_path
         for context, dirs, files in self.walk(remote_path):
-            lcontext = context.replace(strip,'')
-            lcontext = lcontext.lstrip('/')
+            # Normalize current directory to be relative
+            # E.g. remote_path of /var/log and current dir of /var/log/apache2
+            # would be turned into just 'apache2'
+            lcontext = context.replace(strip, '').lstrip('/')
+            # Prepend local path to that to arrive at the local mirrored
+            # version of this directory. So if local_path was 'mylogs', we'd
+            # end up with 'mylogs/apache2'
             lcontext = os.path.join(local_path, lcontext)
 
-            if not os.path.exists(lcontext):
-                os.mkdir(lcontext)
-            for d in dirs:
-                n = os.path.join(lcontext, d)
-                if not os.path.exists(n):
-                    os.mkdir(n)
+            # Download any files in current directory
             for f in files:
+                # Construct full remote path to this file
                 remote_path = os.path.join(context, f)
-                n = os.path.join(lcontext, f)
-                result.append(self.get(remote_path, n, True))
+                # If local_path isn't using a format string that expands to
+                # include its remote path, we need to add it here.
+                if "%(path)s" not in local_path \
+                    and "%(dirname)s" not in local_path:
+                    lpath = os.path.join(lcontext, f)
+                # Otherwise, just passthrough local_path to self.get()
+                else:
+                    lpath = local_path
+                # Now we can make a call to self.get() with specific file paths
+                # on both ends.
+                result.append(self.get(remote_path, lpath, True))
         return result
 
 
