@@ -416,7 +416,7 @@ class TestFileTransfers(FabricTest):
 
     def test_get_to_None_uses_default_format_string(self):
         """
-        get() expands empty local arg to local cwd + host + file
+        get() expands None local arg to local cwd + host + file
         """
         self._get_to_cwd(None)
 
