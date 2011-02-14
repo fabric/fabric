@@ -449,7 +449,7 @@ def get(remote_path, local_path=None, recursive=False):
     .. warning::
         If ``remote_path`` contains an absolute path (such as
         ``/var/log/system.log``) and ``local_path`` starts with
-        ``%(basename)s`` or ``%(path)s``, Fabric will assume you know what
+        ``%(dirname)s`` or ``%(path)s``, Fabric will assume you know what
         you're doing and will write to e.g. your local
         ``/var/log/system.log``!  Specify an explicit prefix in your
         ``local_path`` (e.g.  ``myfolder/%(path)s`` or even just
