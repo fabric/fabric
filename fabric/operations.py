@@ -511,6 +511,12 @@ def get(remote_path, local_path=None, recursive=False):
 
         # Glob remote path
         names = ftp.glob(remote_path)
+
+        # Handle invalid local-file-object situations
+        if not local_is_path:
+            if len(names) > 1 or ftp.isdir(names[0]):
+                _handle_failure("[%s] %s is a glob or directory, but local_path is a file object!" % (env.host_string, remote_path))
+
         for remote_path in names:
             try:
                 if ftp.isdir(remote_path):

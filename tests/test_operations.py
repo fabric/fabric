@@ -5,8 +5,8 @@ import shutil
 import sys
 import tempfile
 import types
-
 from contextlib import nested
+from StringIO import StringIO
 
 from nose.tools import raises, eq_
 from fudge import with_patched_object
@@ -279,6 +279,24 @@ class TestFileTransfers(FabricTest):
             eq_contents(self.path(path[1:]), contents)
 
 
+    @server()
+    @mock_streams('stderr')
+    def _invalid_file_obj_situations(self, remote_path):
+        with settings(warn_only=True):
+            get(remote_path, StringIO())
+        assert_contains('is a glob or directory', sys.stderr.getvalue())
+
+    def test_glob_and_file_object_invalid(self):
+        """
+        Remote glob and local file object is invalid
+        """
+        self._invalid_file_obj_situations('/tree/*')
+
+    def test_directory_and_file_object_invalid(self):
+        """
+        Remote directory and local file object is invalid
+        """
+        self._invalid_file_obj_situations('/tree')
 
 
     @server()
