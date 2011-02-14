@@ -431,10 +431,12 @@ def get(remote_path, local_path=None, recursive=False):
       ``user@myhostname-222`` (the colon between hostname and port is turned
       into a dash to maximize filesystem compatibility)
     * ``dirname``: The directory path part of the remote file path, e.g. the
-      ``/var/log/apache2`` in ``/var/log/apache2/access.log``.
+      ``src/projectname`` in ``src/projectname/utils.py``.
     * ``basename``: The filename part of the remote file path, e.g. the
-      ``access.log`` in ``/var/log/apache2/access.log``
-    * ``path``: The full remote path, e.g. ``/var/log/apache2/access.log``.
+      ``utils.py`` in ``src/projectname/utils.py``
+    * ``path``: The full remote path, e.g. ``src/projectname/utils.py``. (For
+      non-recursive calls, this will thus be the same value as
+      ``remote_path``.)
 
     If left blank, ``local_path`` defaults to ``"%(host)s/%(path)s"``, in order
     to be safe for multi-host invocations.
@@ -443,6 +445,15 @@ def get(remote_path, local_path=None, recursive=False):
         If your ``local_path`` argument does not contain ``%(host)s`` and your
         `~fabric.operations.get` call runs against multiple hosts, your local
         files will be overwritten on each successive run!
+
+    .. warning::
+        If ``remote_path`` contains an absolute path (such as
+        ``/var/log/system.log``) and ``local_path`` starts with
+        ``%(basename)s`` or ``%(path)s``, Fabric will assume you know what
+        you're doing and will write to e.g. your local
+        ``/var/log/system.log``!  Specify an explicit prefix in your
+        ``local_path`` (e.g.  ``myfolder/%(path)s`` or even just
+        ``./%(path)s``) or make use of ``%(host)s``, if you want to avoid this.
 
     If ``local_path`` does not make use of the above variables (i.e. if it is a
     simple, explicit file path) it will act similar to ``scp`` or ``cp``,
