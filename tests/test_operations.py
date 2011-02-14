@@ -280,6 +280,23 @@ class TestFileTransfers(FabricTest):
 
 
     @server()
+    def test_get_tree_recursively_with_implicit_local_path(self):
+        """
+        Download entire tree, recursively, without specifying a local path
+        """
+        with hide('everything'):
+            get('tree', recursive=True)
+        leaves = filter(lambda x: x[0].startswith('/tree'), FILES.items())
+        dirname = env.host_string.replace(':', '-')
+        for path, contents in leaves:
+            path = os.path.join(dirname, path[1:])
+            eq_contents(path, contents)
+            os.remove(path)
+        # Cleanup
+        shutil.rmtree(dirname)
+
+
+    @server()
     @mock_streams('stderr')
     def _invalid_file_obj_situations(self, remote_path):
         with settings(warn_only=True):
