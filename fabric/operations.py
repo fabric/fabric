@@ -438,22 +438,31 @@ def get(remote_path, local_path=None, recursive=False):
       non-recursive calls, this will thus be the same value as
       ``remote_path``.)
 
-    If left blank, ``local_path`` defaults to ``"%(host)s/%(path)s"``, in order
+    .. note::
+        When ``recursive=True`` and ``remote_path`` is an absolute path, only
+        the inner directories will be recreated locally and passed into the
+        above variables. So for example, ``get('/var/log', '%(path)s',
+        recursive=True)`` would start writing out files like
+        ``apache2/access.log``, ``postgresql/8.4/postgresql.log``, etc, in the
+        local working directory. It would **not** write out e.g.
+        ``var/log/apache2/access.log``.
+
+        Additionally, when saving a single file, ``%(dirname)s`` and
+        ``%(path)s`` do not make as much sense and will be empty and equivalent
+        to ``%(basename)s``, respectively. Thus a call like
+        ``get('/var/log/apache2/access.log', '%(path)s')`` will save a local
+        file named ``access.log``, not ``var/log/apache2/access.log``.
+
+        This behavior is intended to be consistent with the command-line
+        ``scp`` program.
+
+    If left blank, ``local_path`` defaults to ``"%(host)s/%(path)s"`` in order
     to be safe for multi-host invocations.
 
     .. warning::
         If your ``local_path`` argument does not contain ``%(host)s`` and your
         `~fabric.operations.get` call runs against multiple hosts, your local
         files will be overwritten on each successive run!
-
-    .. warning::
-        If ``remote_path`` contains an absolute path (such as
-        ``/var/log/system.log``) and ``local_path`` starts with
-        ``%(dirname)s`` or ``%(path)s``, Fabric will assume you know what
-        you're doing and will write to e.g. your local
-        ``/var/log/system.log``!  Specify an explicit prefix in your
-        ``local_path`` (e.g.  ``myfolder/%(path)s`` or even just
-        ``./%(path)s``) or make use of ``%(host)s``, if you want to avoid this.
 
     If ``local_path`` does not make use of the above variables (i.e. if it is a
     simple, explicit file path) it will act similar to ``scp`` or ``cp``,
@@ -539,7 +548,8 @@ def get(remote_path, local_path=None, recursive=False):
                 else:
                     # Result here can be file contents (if not local_is_path)
                     # or final resultant file path (if local_is_path)
-                    result = ftp.get(remote_path, local_path, local_is_path)
+                    result = ftp.get(remote_path, local_path, local_is_path,
+                        os.path.basename(remote_path))
                     if not local_is_path:
                         # Overwrite entire contents of local_path
                         local_path.seek(0)

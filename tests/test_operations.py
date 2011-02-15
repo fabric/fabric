@@ -284,18 +284,42 @@ class TestFileTransfers(FabricTest):
         """
         Download entire tree, recursively, without specifying a local path
         """
-        with hide('everything'):
-            get('tree', recursive=True)
-        leaves = filter(lambda x: x[0].startswith('/tree'), FILES.items())
         dirname = env.host_string.replace(':', '-')
         try:
+            with hide('everything'):
+                get('tree', recursive=True)
+            leaves = filter(lambda x: x[0].startswith('/tree'), FILES.items())
             for path, contents in leaves:
                 path = os.path.join(dirname, path[1:])
                 eq_contents(path, contents)
                 os.remove(path)
         # Cleanup
         finally:
-            shutil.rmtree(dirname)
+            if os.path.exists(dirname):
+                shutil.rmtree(dirname)
+
+
+    @server()
+    def test_get_absolute_path_recursively_should_save_relative(self):
+        """
+        get(/x/y) recursively w/ %(path)s should save y, not x/y
+        """
+        lpath = self.path()
+        ltarget = os.path.join(lpath, "%(path)s")
+        get('/tree/subfolder', ltarget, recursive=True)
+        assert self.exists_locally(os.path.join(lpath, 'subfolder'))
+        assert not self.exists_locally(os.path.join(lpath, 'tree/subfolder'))
+
+
+    @server()
+    def test_path_formatstr_nonrecursively_is_just_filename(self):
+        """
+        get(x/y/z) nonrecursively w/ %(path)s should save y, not y/z
+        """
+        lpath = self.path()
+        ltarget = os.path.join(lpath, "%(path)s")
+        get('/tree/subfolder/file3.txt', ltarget, recursive=True)
+        assert self.exists_locally(os.path.join(lpath, 'file3.txt'))
 
 
     @server()
@@ -384,15 +408,15 @@ class TestFileTransfers(FabricTest):
                     tmp = self.path('')
                     local_path = os.path.join(tmp, "%(host)s", "%(path)s")
                     # Top level file
-                    get('file.txt', local_path)
-                    assert self.exists_locally(os.path.join(
-                        tmp, "localhost-%s" % port, "file.txt"
-                    ))
-                    # Nested file
-                    path = 'tree/subfolder/file3.txt'
+                    path = 'file.txt'
                     get(path, local_path)
                     assert self.exists_locally(os.path.join(
                         tmp, "localhost-%s" % port, path
+                    ))
+                    # Nested file
+                    get('tree/subfolder/file3.txt', local_path)
+                    assert self.exists_locally(os.path.join(
+                        tmp, "localhost-%s" % port, 'file3.txt'
                     ))
 
 
@@ -460,11 +484,11 @@ class TestFileTransfers(FabricTest):
             # dirname, basename
             local_path = tmp + "/%(dirname)s/foo/%(basename)s"
             get('/folder/file3.txt', local_path)
-            assert self.exists_locally(tmp + "/folder/foo/file3.txt")
+            assert self.exists_locally(tmp + "foo/file3.txt")
             # path
             local_path = tmp + "bar/%(path)s"
             get('/folder/file3.txt', local_path)
-            assert self.exists_locally(tmp + "bar/folder/file3.txt")
+            assert self.exists_locally(tmp + "bar/file3.txt")
 
 
 

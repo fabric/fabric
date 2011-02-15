@@ -102,13 +102,18 @@ class SFTP(object):
             self.ftp.mkdir(path)
 
 
-    def get(self, remote_path, local_path, local_is_path):
+    def get(self, remote_path, local_path, local_is_path, rremote=None):
+        # rremote => relative remote path, so get(/var/log, recursive=True)
+        # would result in this function being called with
+        # remote_path=/var/log/apache2/access.log and
+        # rremote=apache2/access.log
+        rremote = rremote if rremote is not None else remote_path
         # Handle format string interpolation (e.g. %(dirname)s)
         path_vars = {
             'host': env.host_string.replace(':', '-'),
-            'basename': os.path.basename(remote_path),
-            'dirname': os.path.dirname(remote_path),
-            'path': remote_path
+            'basename': os.path.basename(rremote),
+            'dirname': os.path.dirname(rremote),
+            'path': rremote
         }
         if local_is_path:
             # Interpolate, then abspath (to make sure any /// are compressed)
@@ -164,7 +169,7 @@ class SFTP(object):
             # Normalize current directory to be relative
             # E.g. remote_path of /var/log and current dir of /var/log/apache2
             # would be turned into just 'apache2'
-            lcontext = context.replace(strip, '').lstrip('/')
+            lcontext = rcontext = context.replace(strip, '').lstrip('/')
             # Prepend local path to that to arrive at the local mirrored
             # version of this directory. So if local_path was 'mylogs', we'd
             # end up with 'mylogs/apache2'
@@ -172,8 +177,9 @@ class SFTP(object):
 
             # Download any files in current directory
             for f in files:
-                # Construct full remote path to this file
-                remote_path = os.path.join(context, f)
+                # Construct full and relative remote paths to this file
+                rpath = os.path.join(context, f)
+                rremote = os.path.join(rcontext, f)
                 # If local_path isn't using a format string that expands to
                 # include its remote path, we need to add it here.
                 if "%(path)s" not in local_path \
@@ -184,7 +190,7 @@ class SFTP(object):
                     lpath = local_path
                 # Now we can make a call to self.get() with specific file paths
                 # on both ends.
-                result.append(self.get(remote_path, lpath, True))
+                result.append(self.get(rpath, lpath, True, rremote))
         return result
 
 
