@@ -288,12 +288,14 @@ class TestFileTransfers(FabricTest):
             get('tree', recursive=True)
         leaves = filter(lambda x: x[0].startswith('/tree'), FILES.items())
         dirname = env.host_string.replace(':', '-')
-        for path, contents in leaves:
-            path = os.path.join(dirname, path[1:])
-            eq_contents(path, contents)
-            os.remove(path)
+        try:
+            for path, contents in leaves:
+                path = os.path.join(dirname, path[1:])
+                eq_contents(path, contents)
+                os.remove(path)
         # Cleanup
-        shutil.rmtree(dirname)
+        finally:
+            shutil.rmtree(dirname)
 
 
     @server()
@@ -411,7 +413,7 @@ class TestFileTransfers(FabricTest):
     def _get_to_cwd(self, arg):
         path = 'file.txt'
         with hide('everything'):
-            results = get(path, arg)
+            get(path, arg)
         host_dir = os.path.join(
             os.getcwd(),
             env.host_string.replace(':', '-'),
@@ -421,9 +423,7 @@ class TestFileTransfers(FabricTest):
             assert os.path.exists(target)
         # Clean up, since we're not using our tmpdir
         finally:
-            for r in results:
-                os.remove(r)
-            os.rmdir(host_dir)
+            shutil.rmtree(host_dir)
 
     def test_get_to_empty_string_uses_default_format_string(self):
         """

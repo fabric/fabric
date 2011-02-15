@@ -430,7 +430,7 @@ def get(remote_path, local_path=None, recursive=False):
     * ``host``: The value of ``env.host_string``, eg ``myhostname`` or
       ``user@myhostname-222`` (the colon between hostname and port is turned
       into a dash to maximize filesystem compatibility)
-    * ``dirname``: The directory path part of the remote file path, e.g. the
+    * ``dirname``: The directory part of the remote file path, e.g. the
       ``src/projectname`` in ``src/projectname/utils.py``.
     * ``basename``: The filename part of the remote file path, e.g. the
       ``utils.py`` in ``src/projectname/utils.py``
