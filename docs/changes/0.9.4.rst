@@ -8,6 +8,8 @@ Feature additions
 =================
 
 * Added :doc:`documentation </usage/library>` for using Fabric as a library.
+* Mentioned our `Twitter account <https://twitter.com/pyfabric>`_ on the main
+  docs page.
 
 
 Bugfixes
