@@ -103,8 +103,8 @@ class SFTP(object):
 
 
     def get(self, remote_path, local_path, local_is_path, rremote=None):
-        # rremote => relative remote path, so get(/var/log, recursive=True)
-        # would result in this function being called with
+        # rremote => relative remote path, so get(/var/log) would result in
+        # this function being called with
         # remote_path=/var/log/apache2/access.log and
         # rremote=apache2/access.log
         rremote = rremote if rremote is not None else remote_path

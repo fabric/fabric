@@ -244,50 +244,37 @@ class TestFileTransfers(FabricTest):
 
 
     @server()
-    def test_get_single_file_recursively(self):
+    def test_get_single_file_in_folder(self):
         """
-        Recursively get() a folder containing one file
+        get() a folder containing one file
         """
         remote = 'folder/file3.txt'
         with hide('everything'):
-            get('folder', self.tmpdir, recursive=True)
+            get('folder', self.tmpdir)
         eq_contents(self.path(remote), FILES[remote])
 
 
     @server()
-    @mock_streams('both')
-    def test_get_folder_non_recursively(self):
+    def test_get_tree(self):
         """
-        get(folder, recursive=False) should warn and skip
-        """
-        target = 'folder'
-        remote = 'folder/file3.txt'
-        get(target, self.tmpdir)
-        assert ("%s is a directory" % target) in sys.stderr.getvalue()
-        assert not os.path.exists(self.path(target))
-
-
-    @server()
-    def test_get_tree_recursively(self):
-        """
-        Download entire tree, recursively
+        Download entire tree
         """
         with hide('everything'):
-            get('tree', self.tmpdir, recursive=True)
+            get('tree', self.tmpdir)
         leaves = filter(lambda x: x[0].startswith('/tree'), FILES.items())
         for path, contents in leaves:
             eq_contents(self.path(path[1:]), contents)
 
 
     @server()
-    def test_get_tree_recursively_with_implicit_local_path(self):
+    def test_get_tree_with_implicit_local_path(self):
         """
-        Download entire tree, recursively, without specifying a local path
+        Download entire tree without specifying a local path
         """
         dirname = env.host_string.replace(':', '-')
         try:
             with hide('everything'):
-                get('tree', recursive=True)
+                get('tree')
             leaves = filter(lambda x: x[0].startswith('/tree'), FILES.items())
             for path, contents in leaves:
                 path = os.path.join(dirname, path[1:])
@@ -300,14 +287,14 @@ class TestFileTransfers(FabricTest):
 
 
     @server()
-    def test_get_absolute_path_recursively_should_save_relative(self):
+    def test_get_absolute_path_should_save_relative(self):
         """
-        get(/x/y) recursively w/ %(path)s should save y, not x/y
+        get(/x/y) w/ %(path)s should save y, not x/y
         """
         lpath = self.path()
         ltarget = os.path.join(lpath, "%(path)s")
         with hide('everything'):
-            get('/tree/subfolder', ltarget, recursive=True)
+            get('/tree/subfolder', ltarget)
         assert self.exists_locally(os.path.join(lpath, 'subfolder'))
         assert not self.exists_locally(os.path.join(lpath, 'tree/subfolder'))
 
@@ -319,14 +306,14 @@ class TestFileTransfers(FabricTest):
         """
         lpath = self.path()
         ltarget = os.path.join(lpath, "%(path)s")
-        get('/tree/subfolder/file3.txt', ltarget, recursive=True)
+        get('/tree/subfolder/file3.txt', ltarget)
         assert self.exists_locally(os.path.join(lpath, 'file3.txt'))
 
 
     @server()
     @mock_streams('stderr')
     def _invalid_file_obj_situations(self, remote_path):
-        with settings(warn_only=True):
+        with settings(hide('stdout'), warn_only=True):
             get(remote_path, StringIO())
         assert_contains('is a glob or directory', sys.stderr.getvalue())
 
@@ -427,7 +414,7 @@ class TestFileTransfers(FabricTest):
         get() expands empty remote arg to remote cwd
         """
         with hide('everything'):
-            get('', self.tmpdir, recursive=True)
+            get('', self.tmpdir)
         # Spot checks -- though it should've downloaded the entirety of
         # server.FILES.
         for x in "file.txt file2.txt tree/file1.txt".split():
@@ -545,9 +532,8 @@ class TestFileTransfers(FabricTest):
         with open('file.txt', 'w') as fd:
             fd.write(text)
         with hide('everything'):
-            # Put, recursively, our cwd (which should only contain the file we
-            # just created)
-            put('', '/', recursive=True)
+            # Put our cwd (which should only contain the file we just created)
+            put('', '/')
             # Get it back under a new name (noting that when we use a truly
             # empty put() local call, it makes a directory remotely with the
             # name of the cwd)

@@ -277,19 +277,18 @@ def prompt(text, key=None, default='', validate=None):
 
 
 @needs_host
-def put(local_path, remote_path, recursive=True, use_sudo=False,
-    mirror_local_mode=False, mode=None):
+def put(local_path, remote_path, use_sudo=False, mirror_local_mode=False,
+    mode=None):
     """
     Upload one or more files to a remote host.
 
-    ``local_path`` may be a relative or absolute local file path, and may
-    contain shell-style wildcards, as understood by the Python ``glob`` module.
-    Tilde expansion (as implemented by ``os.path.expanduser``) is also
+    ``local_path`` may be a relative or absolute local file or directory path,
+    and may contain shell-style wildcards, as understood by the Python ``glob``
+    module.  Tilde expansion (as implemented by ``os.path.expanduser``) is also
     performed.
 
     ``local_path`` may alternately be a file-like object, such as the result of
-    ``open('path')`` or a ``StringIO`` instance. Using a file-like object in
-    this way will naturally cause ``recursive=True`` to be ignored.
+    ``open('path')`` or a ``StringIO`` instance.
 
     .. note::
         In this case, `~fabric.operations.put` will attempt to read the entire
@@ -308,10 +307,6 @@ def put(local_path, remote_path, recursive=True, use_sudo=False,
 
     An empty string, in either path argument, will be replaced by the
     appropriate end's current working directory.
-
-    ``recursive``, if set to ``True``, will recursively upload any local
-    directories specified in ``local_path``. In this mode, ``remote_path`` must
-    point to a remote directory and not a file.
 
     While the SFTP protocol (which `put` uses) has no direct ability to upload
     files to locations not owned by the connecting user, you may specify
@@ -350,6 +345,9 @@ def put(local_path, remote_path, recursive=True, use_sudo=False,
         manipulated by `~fabric.context_managers.lcd`.
     .. versionchanged:: 1.0
         Now allows file-like objects in the ``local_path`` argument.
+    .. versionchanged:: 1.0
+        Directories may be specified in the ``local_path`` argument and will
+        trigger recursive uploads.
     """
     # Handle empty local path
     if not local_path:
@@ -389,19 +387,15 @@ def put(local_path, remote_path, recursive=True, use_sudo=False,
 
         # Sanity check and wierd cases
         if ftp.exists(remote_path):
-            if recursive and local_is_path and len(names) != 1 and \
-                    not ftp.isdir(remote_path):
+            if local_is_path and len(names) != 1 and not ftp.isdir(remote_path):
                 raise ValueError("'%s' is not a directory" % remote_path)
 
         # Iterate over all given local files
         for lpath in names:
             try:
                 if local_is_path and os.path.isdir(lpath):
-                    if not recursive:
-                        warn('Skipping directory %s (recursive=False)' % lpath)
-                    else:
-                        ftp.put_dir(lpath, remote_path, use_sudo,
-                            mirror_local_mode, mode)
+                    ftp.put_dir(lpath, remote_path, use_sudo,
+                        mirror_local_mode, mode)
                 else:
                     ftp.put(lpath, remote_path, use_sudo, mirror_local_mode,
                         mode, local_is_path)
@@ -411,15 +405,17 @@ def put(local_path, remote_path, recursive=True, use_sudo=False,
 
 
 @needs_host
-def get(remote_path, local_path=None, recursive=False):
+def get(remote_path, local_path=None):
     """
     Download one or more files from a remote host.
 
-    ``remote_path`` is the remote file path to download, which may contain
-    shell glob syntax, e.g. ``"/var/log/apache2/*.log"``, and will have tildes
-    replaced by the remote home directory. Relative paths will be considered
-    relative to the remote user's home directory, or the current remote working
-    directory as manipulated by `~fabric.context_managers.cd`.
+    ``remote_path`` is the remote file or directory path to download, which may
+    contain shell glob syntax, e.g. ``"/var/log/apache2/*.log"``, and will have
+    tildes replaced by the remote home directory. Relative paths will be
+    considered relative to the remote user's home directory, or the current
+    remote working directory as manipulated by `~fabric.context_managers.cd`.
+    If the remote path points to a directory, that directory will be downloaded
+    recursively.
 
     ``local_path`` is the local file path where the downloaded file or files
     will be stored. If relative, it will honor the local current working
@@ -434,20 +430,17 @@ def get(remote_path, local_path=None, recursive=False):
       ``src/projectname`` in ``src/projectname/utils.py``.
     * ``basename``: The filename part of the remote file path, e.g. the
       ``utils.py`` in ``src/projectname/utils.py``
-    * ``path``: The full remote path, e.g. ``src/projectname/utils.py``. (For
-      non-recursive calls, this will thus be the same value as
-      ``remote_path``.)
+    * ``path``: The full remote path, e.g. ``src/projectname/utils.py``.
 
     .. note::
-        When ``recursive=True`` and ``remote_path`` is an absolute path, only
-        the inner directories will be recreated locally and passed into the
-        above variables. So for example, ``get('/var/log', '%(path)s',
-        recursive=True)`` would start writing out files like
-        ``apache2/access.log``, ``postgresql/8.4/postgresql.log``, etc, in the
-        local working directory. It would **not** write out e.g.
-        ``var/log/apache2/access.log``.
+        When ``remote_path`` is an absolute directory path, only the inner
+        directories will be recreated locally and passed into the above
+        variables. So for example, ``get('/var/log', '%(path)s')`` would start
+        writing out files like ``apache2/access.log``,
+        ``postgresql/8.4/postgresql.log``, etc, in the local working directory.
+        It would **not** write out e.g.  ``var/log/apache2/access.log``.
 
-        Additionally, when saving a single file, ``%(dirname)s`` and
+        Additionally, when downloading a single file, ``%(dirname)s`` and
         ``%(path)s`` do not make as much sense and will be empty and equivalent
         to ``%(basename)s``, respectively. Thus a call like
         ``get('/var/log/apache2/access.log', '%(path)s')`` will save a local
@@ -471,8 +464,11 @@ def get(remote_path, local_path=None, recursive=False):
     create ``local_directory/remote_file.txt``) and so forth.
 
     ``local_path`` may alternately be a file-like object, such as the result of
-    ``open('path', 'w')`` or a ``StringIO`` instance. Using a file-like object
-    in this way will naturally cause ``recursive=True`` to be ignored.
+    ``open('path', 'w')`` or a ``StringIO`` instance.
+
+    .. note::
+        Attempting to `get` a directory into a file-like object is not valid
+        and will result in an error.
 
     .. note::
         This function will use ``seek`` and ``tell`` to overwrite the entire
@@ -480,7 +476,7 @@ def get(remote_path, local_path=None, recursive=False):
         behavior of `~fabric.operations.put` (which also considers the entire
         file). However, unlike `~fabric.operations.put`, the file pointer will
         not be restored to its previous location, as that doesn't make as much
-        sense here.
+        sense here and/or may not even be possible.
 
     .. note::
         Due to how our SSH layer works, a temporary file will still be written
@@ -489,12 +485,6 @@ def get(remote_path, local_path=None, recursive=False):
         however -- we just note this for users expecting straight-to-memory
         transfers. (We hope to patch our SSH layer in the future to enable true
         straight-to-memory downloads.)
-
-    If set to ``True``, ``recursive`` will cause recursive downloading of
-    ``remote_path``, assuming of course that ``remote_path`` is a directory or
-    a glob which resolves to one or more directories. Naturally,
-    ``local_path`` may not be an existing non-directory file when operating
-    in this mode.
 
     .. versionchanged:: 1.0
         Now honors the remote working directory as manipulated by
@@ -505,6 +495,9 @@ def get(remote_path, local_path=None, recursive=False):
     .. versionchanged:: 1.0
         ``local_path`` may now contain interpolated path- and host-related
         variables.
+    .. versionchanged:: 1.0
+        Directories may be specified in the ``remote_path`` argument and will
+        trigger recursive downloads.
     """
     # Handle empty local path / default kwarg value
     local_path = local_path or "%(host)s/%(path)s"
@@ -540,11 +533,8 @@ def get(remote_path, local_path=None, recursive=False):
         for remote_path in names:
             try:
                 if ftp.isdir(remote_path):
-                    if recursive:
-                        result = ftp.get_dir(remote_path, local_path)
-                        local_files.extend(result)
-                    else:
-                        warn("[%s] %s is a directory but recursive=False, skipping" % (env.host_string, remote_path))
+                    result = ftp.get_dir(remote_path, local_path)
+                    local_files.extend(result)
                 else:
                     # Result here can be file contents (if not local_is_path)
                     # or final resultant file path (if local_is_path)
