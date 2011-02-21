@@ -306,7 +306,8 @@ class TestFileTransfers(FabricTest):
         """
         lpath = self.path()
         ltarget = os.path.join(lpath, "%(path)s")
-        get('/tree/subfolder', ltarget, recursive=True)
+        with hide('everything'):
+            get('/tree/subfolder', ltarget, recursive=True)
         assert self.exists_locally(os.path.join(lpath, 'subfolder'))
         assert not self.exists_locally(os.path.join(lpath, 'tree/subfolder'))
 
