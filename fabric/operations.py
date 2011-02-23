@@ -372,8 +372,11 @@ def put(local_path, remote_path, use_sudo=False, mirror_local_mode=False,
             remote_path = env.cwd.rstrip('/') + '/' + remote_path
 
         if local_is_path:
-            # Also expand local paths
+            # Expand local paths
             local_path = os.path.expanduser(local_path)
+            # Honor lcd() where it makes sense
+            if not os.path.isabs(local_path) and env.lcwd:
+                local_path = os.path.join(env.lcwd, local_path)
 
             # Glob local path
             names = glob(local_path)
@@ -505,6 +508,10 @@ def get(remote_path, local_path=None):
     # Test whether local_path is a path or a file-like object
     local_is_path = not (hasattr(local_path, 'write') \
         and callable(local_path.write))
+
+    # Honor lcd() where it makes sense
+    if local_is_path and not os.path.isabs(local_path) and env.lcwd:
+        local_path = os.path.join(env.lcwd, local_path)
 
     ftp = SFTP(env.host_string)
 

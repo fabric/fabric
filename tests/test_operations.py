@@ -14,7 +14,7 @@ from fudge import with_patched_object
 from fabric.state import env
 from fabric.operations import require, prompt, _sudo_prefix, _shell_wrap, \
     _shell_escape
-from fabric.api import get, put, hide, cd
+from fabric.api import get, put, hide, cd, lcd
 from fabric.sftp import SFTP
 
 from utils import *
@@ -624,3 +624,31 @@ class TestFileTransfers(FabricTest):
         with nested(cd('/tmp'), hide('everything')):
             get('/test.txt', local)
         assert os.path.exists(local)
+
+
+    @server()
+    def test_lcd_should_apply_to_put(self):
+        """
+        lcd() should apply to put()'s local_path argument
+        """
+        f = 'lcd_put_test.txt'
+        d = 'subdir'
+        local = self.path(d, f)
+        os.makedirs(os.path.dirname(local))
+        with open(local, 'w') as fd:
+            fd.write("contents")
+        with nested(lcd(self.path(d)), hide('everything')):
+            put(f, '/')
+        assert self.exists_remotely('/%s' % f)
+
+
+    @server()
+    def test_lcd_should_apply_to_get(self):
+        """
+        lcd() should apply to get()'s local_path argument
+        """
+        d = self.path('subdir')
+        f = 'file.txt'
+        with nested(lcd(d), hide('everything')):
+            get(f, f)
+        assert self.exists_locally(os.path.join(d, f))
