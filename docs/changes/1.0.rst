@@ -8,15 +8,25 @@ This page lists all changes made to Fabric in its 1.0.0 release.
 Highlights
 ==========
 
+* :issue:`7`: `~fabric.operations.run`/`~fabric.operations.sudo` now allow full
+  interactivity with the remote end. You can interact with remote prompts and
+  similar interfaces, making certain tasks much easier, and freeing you from
+  the need to find noninteractive solutions if you don't want to. See
+  :doc:`/usage/interactivity` for more on these changes.
+* `~fabric.operations.put` and `~fabric.operations.get` received many updates,
+  including but not limited to: recursion, globbing, inline ``sudo``
+  capability, and increased control over local file paths. See the individual
+  ticket line-items below for details. Erich Heine (``sophacles`` on IRC)
+  played a large part in implementing and/or collecting these changes and
+  deserves much of the credit.
 * Added functionality for loading fabfiles which are Python packages
   (directories) instead of just modules (single files). This allows for easier
   organization of nontrivial fabfiles and paves the way for task namespacing
   in the near future. See :ref:`fabfile-discovery` for details.
-* :issue:`7`: `~fabric.operations.run`/`~fabric.operations.sudo` now allow full
-  interactivity with the remote end. You can now interact with remote prompts
-  and similar interfaces, making certain tasks much easier, and freeing you
-  from the need to find noninteractive solutions if you don't want to. See
-  :doc:`/usage/interactivity` for more on these changes.
+* :issue:`185`: Mostly of interest to those contributing to Fabric itself,
+  Fabric now leverages Paramiko to provide a stub SSH and SFTP server for use
+  during runs of our test suite. This makes quick, configurable full-stack
+  testing of Fabric (and, to an extent, user fabfiles) possible.
 
 
 Backwards-incompatible changes
@@ -45,9 +55,15 @@ break your 0.9.x based fabfiles!
   the remote current-working-directory changes applied by
   `~fabric.context_managers.cd`. Previously they would always treat relative
   remote paths as being relative to the remote home directory.
+* :issue:`79`: `~fabric.operations.get` now allows increased control over local
+  filenames when downloading single or multiple files. This is backwards
+  incompatible because the default path/filename for downloaded files has
+  changed.  Thanks to Juha Mustonen, Erich Heine and Max Arnold for
+  brainstorming solutions.
 * :issue:`121`: `~fabric.operations.put` will no longer automatically attempt
   to mirror local file modes. Instead, you'll need to specify
-  ``mirror_local_mode=True`` to get this behavior.
+  ``mirror_local_mode=True`` to get this behavior. Thanks to Paul Smith for a
+  patch covering part of this change.
 * :issue:`221`: `~fabric.decorators.runs_once` now memoizes the wrapped task's
   return value and returns that value on subsequent invocations, instead of
   returning None. Thanks to Jacob Kaplan-Moss and Travis Swicegood for catch +
@@ -63,7 +79,8 @@ Feature additions
   effective ``$PATH``.
 * Added convenience ``.succeeded`` attribute to the return values of
   `~fabric.operations.run`/`~fabric.operations.sudo`/`~fabric.operations.local`
-  which is simply the opposite of the ``.failed`` attribute.
+  which is simply the opposite of the ``.failed`` attribute. (This addition has
+  also been backported to Fabric's 0.9 series.)
 * Refactored SSH disconnection code out of the main ``fab`` loop into
   `~fabric.network.disconnect_all`, allowing library users to avoid problems
   with non-fabfile Python scripts hanging after execution finishes.
@@ -75,6 +92,8 @@ Feature additions
 * :issue:`27`: Added environment variable (:ref:`always-use-pty`) and
   command-line flag (:option:`--no-pty`) for global control over the
   `~fabric.operations.run`/`~fabric.operations.sudo` ``pty`` argument.
+* :issue:`28`: Allow shell-style globbing in `~fabric.operations.get`. Thanks
+  to Erich Heine and Max Arnold.
 * :issue:`55`: `~fabric.operations.run`, `~fabric.operations.sudo` and
   `~fabric.operations.local` now provide access to their standard error
   (stderr) as an attribute on the return value, alongside e.g. ``.failed``.
