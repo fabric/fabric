@@ -282,6 +282,9 @@ def put(local_path, remote_path, use_sudo=False, mirror_local_mode=False,
     """
     Upload one or more files to a remote host.
 
+    `~fabric.operations.put` returns an iterable containing the absolute file
+    paths of all remote files uploaded.
+
     ``local_path`` may be a relative or absolute local file or directory path,
     and may contain shell-style wildcards, as understood by the Python ``glob``
     module.  Tilde expansion (as implemented by ``os.path.expanduser``) is also
@@ -411,6 +414,10 @@ def put(local_path, remote_path, use_sudo=False, mirror_local_mode=False,
 def get(remote_path, local_path=None):
     """
     Download one or more files from a remote host.
+
+    `~fabric.operations.get` returns an iterable containing the absolute paths
+    to all files downloaded, or ``None`` if ``local_path`` was a StringIO
+    object (see below for more on using StringIO).
 
     ``remote_path`` is the remote file or directory path to download, which may
     contain shell glob syntax, e.g. ``"/var/log/apache2/*.log"``, and will have

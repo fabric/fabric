@@ -118,6 +118,9 @@ Feature additions
   controlling `~fabric.operations.local`'s current working directory and
   `~fabric.operations.put`/`~fabric.operations.get`'s local working
   directories.
+* :issue:`274`: `~fabric.operations.put`/`~fabric.operations.get` now have
+  return values which may be iterated over to access the paths of files
+  uploaded remotely or downloaded locally, respectively.
 
 
 Bugfixes
