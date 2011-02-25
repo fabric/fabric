@@ -664,3 +664,27 @@ class TestFileTransfers(FabricTest):
             retval = get('tree', d)
         files = ['file1.txt', 'file2.txt', 'subfolder/file3.txt']
         eq_(map(lambda x: os.path.join(d, 'tree', x), files), retval)
+
+
+    @server()
+    def test_get_returns_None_for_stringio(self):
+        """
+        get() should return None if local_path is a StringIO
+        """
+        assert False
+
+
+    @server()
+    def test_put_returns_list_of_remote_paths(self):
+        """
+        put() should return an iterable of the remote files it created.
+        """
+        assert False
+
+
+    @server()
+    def test_put_returns_list_of_remote_paths_with_stringio(self):
+        """
+        put() should return a one-item iterable when uploading from a StringIO
+        """
+        assert False
