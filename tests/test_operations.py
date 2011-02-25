@@ -652,3 +652,15 @@ class TestFileTransfers(FabricTest):
         with nested(lcd(d), hide('everything')):
             get(f, f)
         assert self.exists_locally(os.path.join(d, f))
+
+
+    @server()
+    def test_get_returns_list_of_local_paths(self):
+        """
+        get() should return an iterable of the local files it created.
+        """
+        d = self.path()
+        with hide('everything'):
+            retval = get('tree', d)
+        files = ['file1.txt', 'file2.txt', 'subfolder/file3.txt']
+        eq_(map(lambda x: os.path.join(d, 'tree', x), files), retval)
