@@ -109,6 +109,13 @@ class _AttributeString(str):
         return str(self)
 
 
+class _AttributeList(list):
+    """
+    Like _AttributeString, but for lists.
+    """
+    pass
+
+
 # Can't wait till Python versions supporting 'def func(*args, foo=bar)' become
 # widespread :(
 def require(*keys, **kwargs):
@@ -410,7 +417,7 @@ def put(local_path=None, remote_path=None, use_sudo=False,
                 msg = "put() encountered an exception while uploading '%s'"
                 _handle_failure(message=msg % lpath, exception=e)
 
-        return remote_paths
+        return _AttributeList(remote_paths)
 
 
 @needs_host
@@ -567,7 +574,7 @@ def get(remote_path, local_path=None):
                 msg = "get() encountered an exception while downloading '%s'"
                 _handle_failure(message=msg % remote_path, exception=e)
 
-        return local_files if local_is_path else None
+        return _AttributeList(local_files) if local_is_path else None
 
 
 def _sudo_prefix(user):
