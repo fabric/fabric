@@ -249,7 +249,7 @@ def contains(filename, text, exact=False, use_sudo=False):
         ))
 
 
-def append(filename, text, use_sudo=False, partial=True):
+def append(filename, text, use_sudo=False, partial=False):
     """
     Append string (or list of strings) ``text`` to ``filename``.
 
@@ -260,9 +260,10 @@ def append(filename, text, use_sudo=False, partial=True):
     None is returned immediately. Otherwise, the given text is appended to the
     end of the given ``filename`` via e.g. ``echo '$text' >> $filename``.
 
-    The test for whether ``text`` already exists defaults to being partial
-    only, as in ``^<text>``. Specifying ``partial=False`` will change the
-    effective regex to ``^<text>$``.
+    The test for whether ``text`` already exists defaults to a full line match,
+    e.g. ``^<text>$``, as this seems to be the most sensible approach for the
+    "append lines to a file" use case. You may override this and force partial
+    searching (e.g. ``^<text>``) by specifying ``partial=True``.
 
     Because ``text`` is single-quoted, single quotes will be transparently 
     backslash-escaped.
@@ -275,6 +276,8 @@ def append(filename, text, use_sudo=False, partial=True):
     .. versionchanged:: 1.0
         Swapped the order of the ``filename`` and ``text`` arguments to be
         consistent with other functions in this module.
+    .. versionchanged:: 1.0
+        Changed default value of ``partial`` kwarg to be ``False``.
     """
     func = use_sudo and sudo or run
     # Normalize non-list input to be a list

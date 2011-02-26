@@ -69,6 +69,9 @@ break your 0.9.x based fabfiles!
   to mirror local file modes. Instead, you'll need to specify
   ``mirror_local_mode=True`` to get this behavior. Thanks to Paul Smith for a
   patch covering part of this change.
+* :issue:`172`: `~fabric.contrib.files.append` has changed the default value of
+  its ``partial`` kwarg from ``True`` to ``False`` in order to be safer/more
+  intuitive.
 * :issue:`221`: `~fabric.decorators.runs_once` now memoizes the wrapped task's
   return value and returns that value on subsequent invocations, instead of
   returning None. Thanks to Jacob Kaplan-Moss and Travis Swicegood for catch +
