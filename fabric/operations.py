@@ -937,7 +937,7 @@ def sudo(command, shell=True, pty=True, combine_stderr=True, user=None):
         user=user)
 
 
-def local(command, capture=True):
+def local(command, capture=False):
     """
     Run a command on the local system.
 
@@ -945,25 +945,22 @@ def local(command, capture=True):
     Python ``subprocess`` module with ``shell=True`` activated. If you need to
     do anything special, consider using the ``subprocess`` module directly.
 
-    `local` will, by default, capture and return the contents of the command's
-    stdout as a string, and will not print anything to the user. As with `run`
-    and `sudo`, this return value exhibits the ``return_code``, ``stderr``,
-    ``failed`` and ``succeeded`` attributes. See `run` for details.
+    `local` is not currently capable of simultaneously printing and
+    capturing output, as `~fabric.operations.run`/`~fabric.operations.sudo`
+    do. The ``capture`` kwarg allows you to switch between printing and
+    capturing as necessary, and defaults to ``False``.
 
-    .. note::
-        `local`'s capturing behavior differs from the default behavior of `run`
-        and `sudo` due to the different mechanisms involved: it is difficult to
-        simultaneously capture and print local commands, so we have to choose
-        one or the other. We hope to address this in later releases.
+    When ``capture=False``, the local subprocess' stdout and stderr streams are
+    hooked up directly to your terminal, though you may use the global
+    :doc:`output controls </usage/output_controls>` ``output.stdout`` and
+    ``output.stderr`` to hide one or both if desired. In this mode,
+    `~fabric.operations.local` returns None.
 
-    If you need full interactivity with the command being run (and are willing
-    to accept the loss of captured stdout) you may specify ``capture=False`` so
-    that the subprocess' stdout and stderr pipes are connected to your terminal
-    instead of captured by Fabric.
-
-    When ``capture`` is False, global output controls (``output.stdout`` and
-    ``output.stderr`` will be used to determine what is printed and what is
-    discarded.
+    When ``capture=True``, this function will return the contents of the
+    command's stdout as a string-like object; as with `~fabric.operations.run`
+    and `~fabric.operations.sudo`, this return value exhibits the
+    ``return_code``, ``stderr``, ``failed`` and ``succeeded`` attributes. See
+    `run` for details.
 
     `~fabric.operations.local` will honor the `~fabric.context_managers.lcd`
     context manager, allowing you to control its current working directory
@@ -971,11 +968,11 @@ def local(command, capture=True):
     `~fabric.context_managers.cd`).
 
     .. versionchanged:: 1.0
-        Added the ``succeeded`` attribute.
+        Added the ``succeeded`` and ``stderr`` attributes.
     .. versionchanged:: 1.0
         Now honors the `~fabric.context_managers.lcd` context manager.
     .. versionchanged:: 1.0
-        Added the ``stderr`` attribute.
+        Changed the default value of ``capture`` from ``True`` to ``False``.
     """
     given_command = command
     # Apply cd(), path() etc
@@ -984,13 +981,12 @@ def local(command, capture=True):
         print("[localhost] local: %s" % (wrapped_command))
     elif output.running:
         print("[localhost] local: " + given_command)
-    # By default, capture both stdout and stderr
-    PIPE = subprocess.PIPE
-    out_stream = PIPE
-    err_stream = PIPE
     # Tie in to global output controls as best we can; our capture argument
     # takes precedence over the output settings.
-    if not capture:
+    if capture:
+        out_stream = subprocess.PIPE
+        err_stream = subprocess.PIPE
+    else:
         if output.stdout:
             out_stream = None
         if output.stderr:
