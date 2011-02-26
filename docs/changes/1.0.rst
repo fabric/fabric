@@ -60,6 +60,11 @@ break your 0.9.x based fabfiles!
   incompatible because the default path/filename for downloaded files has
   changed.  Thanks to Juha Mustonen, Erich Heine and Max Arnold for
   brainstorming solutions.
+* :issue:`88`: `~fabric.operations.local` has changed the default value of its
+  ``capture`` kwarg, from ``True`` to ``False``. This was changed in order to
+  be more intuitive, at the cost of no longer defaulting to the same rich
+  return value as in `~fabric.operations.run`/`~fabric.operations.sudo` (which
+  is still available by specifying ``capture=True``.)
 * :issue:`121`: `~fabric.operations.put` will no longer automatically attempt
   to mirror local file modes. Instead, you'll need to specify
   ``mirror_local_mode=True`` to get this behavior. Thanks to Paul Smith for a
