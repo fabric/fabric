@@ -36,7 +36,7 @@ logger = logging.getLogger('server.py')
 # Constants
 #
 
-HOST = 'localhost'
+HOST = '127.0.0.1'
 PORT = 2200
 USER = 'username'
 RESPONSES = {
