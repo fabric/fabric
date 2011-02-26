@@ -120,7 +120,11 @@ Feature additions
   directories.
 * :issue:`274`: `~fabric.operations.put`/`~fabric.operations.get` now have
   return values which may be iterated over to access the paths of files
-  uploaded remotely or downloaded locally, respectively.
+  uploaded remotely or downloaded locally, respectively. These return values
+  also allow access to ``.failed`` and ``.succeeded`` attributes, just like
+  `~fabric.operations.run` and friends. (In this case, ``.failed`` is actually
+  a list itself containing any paths which failed to transfer, which naturally
+  acts as a boolean as well.)
 
 
 Bugfixes
