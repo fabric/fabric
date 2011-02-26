@@ -73,7 +73,8 @@ def upload_template(filename, destination, context=None, use_jinja=False,
     temp_destination = '/tmp/' + basename
 
     # This temporary file should not be automatically deleted on close, as we
-    # need it there to upload it (Windows locks the file for reading while open).
+    # need it there to upload it (Windows locks the file for reading while
+    # open).
     tempfile_fd, tempfile_name = tempfile.mkstemp()
     output = open(tempfile_name, "w+b")
     # Init
