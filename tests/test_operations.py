@@ -14,7 +14,7 @@ from fudge import with_patched_object
 from fabric.state import env
 from fabric.operations import require, prompt, _sudo_prefix, _shell_wrap, \
     _shell_escape
-from fabric.api import get, put, hide, cd, lcd
+from fabric.api import get, put, hide, show, cd, lcd
 from fabric.sftp import SFTP
 
 from utils import *
@@ -306,14 +306,15 @@ class TestFileTransfers(FabricTest):
         """
         lpath = self.path()
         ltarget = os.path.join(lpath, "%(path)s")
-        get('/tree/subfolder/file3.txt', ltarget)
+        with hide('everything'):
+            get('/tree/subfolder/file3.txt', ltarget)
         assert self.exists_locally(os.path.join(lpath, 'file3.txt'))
 
 
     @server()
     @mock_streams('stderr')
     def _invalid_file_obj_situations(self, remote_path):
-        with settings(hide('stdout'), warn_only=True):
+        with settings(hide('running'), warn_only=True):
             get(remote_path, StringIO())
         assert_contains('is a glob or directory', sys.stderr.getvalue())
 
