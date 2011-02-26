@@ -250,7 +250,7 @@ def contains(filename, text, exact=False, use_sudo=False):
         ))
 
 
-def append(filename, text, use_sudo=False, partial=False):
+def append(filename, text, use_sudo=False, partial=True, escape=True):
     """
     Append string (or list of strings) ``text`` to ``filename``.
 
@@ -267,7 +267,7 @@ def append(filename, text, use_sudo=False, partial=False):
     searching (e.g. ``^<text>``) by specifying ``partial=True``.
 
     Because ``text`` is single-quoted, single quotes will be transparently 
-    backslash-escaped.
+    backslash-escaped. This can be disabled with ``escape=False``.
 
     If ``use_sudo`` is True, will use `sudo` instead of `run`.
 
@@ -289,4 +289,5 @@ def append(filename, text, use_sudo=False, partial=False):
         if (exists(filename) and line
             and contains(filename, regex, use_sudo=use_sudo)):
             continue
-        func("echo '%s' >> %s" % (line.replace("'", r'\''), filename))
+        line = line.replace("'", r'\'') if escape else line
+        func("echo '%s' >> %s" % (line, filename))
