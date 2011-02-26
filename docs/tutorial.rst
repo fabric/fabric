@@ -119,8 +119,8 @@ app so we're ready for a deploy::
     from fabric.api import local
 
     def prepare_deploy():
-        local('./manage.py test my_app', capture=False)
-        local('tar czf /tmp/my_project.tgz .', capture=False)
+        local('./manage.py test my_app')
+        local('tar czf /tmp/my_project.tgz .')
 
 The output of which might look a bit like this::
 
@@ -157,10 +157,10 @@ subtasks::
     from fabric.api import local
 
     def test():
-        local('./manage.py test my_app', capture=False)
+        local('./manage.py test my_app')
 
     def pack():
-        local('tar czf /tmp/my_project.tgz .', capture=False)
+        local('tar czf /tmp/my_project.tgz .')
 
     def prepare_deploy():
         test()
@@ -224,7 +224,7 @@ result of the `~fabric.operations.local` call ourselves::
 
     def test():
         with settings(warn_only=True):
-            result = local('./manage.py test my_app', capture=False)
+            result = local('./manage.py test my_app')
         if result.failed and not confirm("Tests failed. Continue anyway?"):
             abort("Aborting at user request.")
 
@@ -341,12 +341,12 @@ its entirety::
 
     def test():
         with settings(warn_only=True):
-            result = local('./manage.py test my_app', capture=False)
+            result = local('./manage.py test my_app')
         if result.failed and not confirm("Tests failed. Continue anyway?"):
             abort("Aborting at user request.")
 
     def pack():
-        local('tar czf /tmp/my_project.tgz .', capture=False)
+        local('tar czf /tmp/my_project.tgz .')
 
     def prepare_deploy():
         test()
