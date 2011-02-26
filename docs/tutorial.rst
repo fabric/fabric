@@ -63,23 +63,31 @@ Task arguments
 
 It's often useful to pass runtime parameters into your tasks, just as you might
 during regular Python programming. Fabric has basic support for this using a
-shell-compatible notation: ``<task name>:<arg>,<kwarg>=<value>,...``. Let's say
-you want to make part of a Web app deployment task optional::
+shell-compatible notation: ``<task name>:<arg>,<kwarg>=<value>,...``. It's
+contrived, but let's extend the above example to say hello to you personally::
 
-    def deploy(migrate='yes'):
-        update_code()
-        symlink()
-        if migrate == 'yes':
-            migrate()
+    def hello(name="world"):
+        print("Hello %s!" % name)
 
-You could then disable running your database migrations like so::
+By default, calling ``fab hello`` will still behave as it did before; but now
+we can personalize it::
 
-    $ fab deploy:migrate=no
+    $ fab hello:name=Jeff
+    Hello Jeff!
 
-Those already used to programming in Python might guess that this invocation
-behaves exactly the same way::
+    Done.
 
-    $ fab deploy:no
+Those already used to programming in Python might have guessed that this
+invocation behaves exactly the same way::
+
+    $ fab hello:Jeff
+    Hello Jeff!
+
+    Done.
+
+For the time being, your argument values will always show up in Python as
+strings and may require a bit of string manipulation for complex types such
+as lists. Future versions may add a typecasting system to make this easier.
 
 .. seealso:: :ref:`task-arguments`
 
