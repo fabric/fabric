@@ -514,7 +514,7 @@ class TestFileTransfers(FabricTest):
         with open(local, 'w') as fd:
             fd.write(text)
         with hide('everything'):
-            put(local, '')
+            put(local)
             get('foo.txt', local2)
         eq_contents(local2, text)
 

@@ -277,8 +277,8 @@ def prompt(text, key=None, default='', validate=None):
 
 
 @needs_host
-def put(local_path, remote_path, use_sudo=False, mirror_local_mode=False,
-    mode=None):
+def put(local_path=None, remote_path=None, use_sudo=False,
+    mirror_local_mode=False, mode=None):
     """
     Upload one or more files to a remote host.
 
@@ -353,8 +353,7 @@ def put(local_path, remote_path, use_sudo=False, mirror_local_mode=False,
         trigger recursive uploads.
     """
     # Handle empty local path
-    if not local_path:
-        local_path = os.getcwd()
+    local_path = local_path or os.getcwd()
 
     # Test whether local_path is a path or a file-like object
     local_is_path = not (hasattr(local_path, 'read') \
@@ -367,8 +366,7 @@ def put(local_path, remote_path, use_sudo=False, mirror_local_mode=False,
         home = ftp.normalize('.')
 
         # Empty remote path implies cwd
-        if not remote_path:
-            remote_path = home
+        remote_path = remote_path or home
 
         # Honor cd() (assumes Unix style file paths on remote end)
         if not os.path.isabs(remote_path) and env.get('cwd'):
