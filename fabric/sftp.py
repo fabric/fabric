@@ -245,6 +245,7 @@ class SFTP(object):
         if use_sudo:
             with hide('everything'):
                 sudo("mv \"%s\" \"%s\"" % (remote_path, target_path))
+        return remote_path
 
 
     def put_dir(self, local_path, remote_path, use_sudo, mirror_local_mode,
@@ -253,6 +254,8 @@ class SFTP(object):
             strip = os.path.dirname(local_path)
         else:
             strip = os.path.dirname(os.path.dirname(local_path))
+
+        remote_paths = []
 
         for context, dirs, files in os.walk(local_path):
             rcontext = context.replace(strip,'')
@@ -270,4 +273,7 @@ class SFTP(object):
             for f in files:
                 local_path = os.path.join(context,f)
                 n = os.path.join(rcontext,f)
-                self.put(local_path, n, use_sudo, mirror_local_mode, mode, True)
+                p = self.put(local_path, n, use_sudo, mirror_local_mode, mode,
+                    True)
+                remote_paths.append(p)
+        return remote_paths

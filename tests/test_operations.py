@@ -667,11 +667,12 @@ class TestFileTransfers(FabricTest):
 
 
     @server()
-    def test_get_returns_None_for_stringio(self):
+    def test_get_returns_none_for_stringio(self):
         """
         get() should return None if local_path is a StringIO
         """
-        assert False
+        with hide('everything'):
+            eq_(get('/file.txt', StringIO()), None)
 
 
     @server()
@@ -679,7 +680,13 @@ class TestFileTransfers(FabricTest):
         """
         put() should return an iterable of the remote files it created.
         """
-        assert False
+        f = '/uploaded.txt'
+        p = self.path(f[1:])
+        with open(f, 'w') as fd:
+            fd.write("contents")
+        with hide('everything'):
+            retval = put(f, f)
+        eq_(retval, [f])
 
 
     @server()
@@ -687,4 +694,6 @@ class TestFileTransfers(FabricTest):
         """
         put() should return a one-item iterable when uploading from a StringIO
         """
-        assert False
+        f = '/uploaded.txt'
+        with hide('everything'):
+            eq_(put(StringIO('contents'), f), [f])

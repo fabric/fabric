@@ -397,17 +397,22 @@ def put(local_path, remote_path, use_sudo=False, mirror_local_mode=False,
                 raise ValueError("'%s' is not a directory" % remote_path)
 
         # Iterate over all given local files
+        remote_paths = []
         for lpath in names:
             try:
                 if local_is_path and os.path.isdir(lpath):
-                    ftp.put_dir(lpath, remote_path, use_sudo,
+                    p = ftp.put_dir(lpath, remote_path, use_sudo,
                         mirror_local_mode, mode)
+                    remote_paths.extend(p)
                 else:
-                    ftp.put(lpath, remote_path, use_sudo, mirror_local_mode,
+                    p = ftp.put(lpath, remote_path, use_sudo, mirror_local_mode,
                         mode, local_is_path)
+                    remote_paths.append(p)
             except Exception, e:
                 msg = "put() encountered an exception while uploading '%s'"
                 _handle_failure(message=msg % lpath, exception=e)
+
+        return remote_paths
 
 
 @needs_host
