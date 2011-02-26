@@ -58,6 +58,31 @@ That's all there is to it. This functionality allows Fabric to be used as a
 .. seealso:: :ref:`execution-strategy`, :ref:`tasks-and-imports`, :doc:`usage/fab`
 
 
+Task arguments
+==============
+
+It's often useful to pass runtime parameters into your tasks, just as you might
+during regular Python programming. Fabric has basic support for this using a
+shell-compatible notation: ``<task name>:<arg>,<kwarg>=<value>,...``. Let's say
+you want to make part of a Web app deployment task optional::
+
+    def deploy(migrate='yes'):
+        update_code()
+        symlink()
+        if migrate == 'yes':
+            migrate()
+
+You could then disable running your database migrations like so::
+
+    $ fab deploy:migrate=no
+
+Those already used to programming in Python might guess that this invocation
+behaves exactly the same way::
+
+    $ fab deploy:no
+
+.. seealso:: :ref:`task-arguments`
+
 Local commands
 ==============
 
