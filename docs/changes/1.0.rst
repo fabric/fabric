@@ -143,4 +143,6 @@ Bugfixes
 Documentation updates
 =====================
 
-Nothing new except updating usage docs and API docs for all the new features.
+* API, tutorial and usage docs updated with the above new features.
+* README now makes the Python 2.5+ requirement up front and explicit; some
+  folks were still assuming it would run on Python 2.4.
