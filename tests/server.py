@@ -269,7 +269,12 @@ class FakeSFTPServer(ssh.SFTPServerInterface):
             fobj = self.files[path]
         except KeyError:
             if flags & os.O_WRONLY:
+                # Only allow writes to files in existing directories.
+                if os.path.dirname(path) not in self.files:
+                    return ssh.SFTP_NO_SUCH_FILE
                 self.files[path] = fobj = FakeFile("", path)
+            # No write flag means a read, which means they tried to read a
+            # nonexistent file.
             else:
                 return ssh.SFTP_NO_SUCH_FILE
         f = FakeSFTPHandle()

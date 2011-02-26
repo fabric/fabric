@@ -583,12 +583,14 @@ class TestFileTransfers(FabricTest):
         """
         put() should honor env.cwd for relative remote paths
         """
-        local = self.path('test.txt')
+        f = 'test.txt'
+        d = '/empty_folder'
+        local = self.path(f)
         with open(local, 'w') as fd:
             fd.write('test')
-        with nested(cd('/tmp'), hide('everything')):
-            put(local, 'test.txt')
-        assert self.exists_remotely('/tmp/test.txt')
+        with nested(cd(d), hide('everything')):
+            put(local, f)
+        assert self.exists_remotely('%s/%s' % (d, f))
 
 
     @server(files={'/tmp/test.txt': 'test'})
@@ -673,7 +675,7 @@ class TestFileTransfers(FabricTest):
         get() should return None if local_path is a StringIO
         """
         with hide('everything'):
-            eq_(get('/file.txt', StringIO()), None)
+            eq_([], get('/file.txt', StringIO()))
 
 
     @server()
@@ -698,3 +700,26 @@ class TestFileTransfers(FabricTest):
         f = '/uploaded.txt'
         with hide('everything'):
             eq_(put(StringIO('contents'), f), [f])
+
+
+    @server()
+    def test_put_return_value_failed_attribute(self):
+        """
+        put()'s return value should indicate any paths which failed to upload.
+        """
+        with settings(hide('everything'), warn_only=True):
+            f = StringIO('contents')
+            retval = put(f, '/nonexistent/directory/structure')
+        eq_(["<StringIO>"], retval.failed)
+        assert not retval.succeeded
+
+
+    @server()
+    def test_get_return_value_failed_attribute(self):
+        """
+        get()'s return value should indicate any paths which failed to download.
+        """
+        with settings(hide('everything'), warn_only=True):
+            retval = get('/doesnt/exist', self.path())
+        eq_(['/doesnt/exist'], retval.failed)
+        assert not retval.succeeded

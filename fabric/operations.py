@@ -290,7 +290,10 @@ def put(local_path=None, remote_path=None, use_sudo=False,
     Upload one or more files to a remote host.
 
     `~fabric.operations.put` returns an iterable containing the absolute file
-    paths of all remote files uploaded.
+    paths of all remote files uploaded. This iterable also exhibits a
+    ``.failed`` attribute containing any local file paths which failed to
+    upload (and may thus be used as a boolean test.) You may also check
+    ``.succeeded`` which is equivalent to ``not .failed``.
 
     ``local_path`` may be a relative or absolute local file or directory path,
     and may contain shell-style wildcards, as understood by the Python ``glob``
@@ -358,6 +361,9 @@ def put(local_path=None, remote_path=None, use_sudo=False,
     .. versionchanged:: 1.0
         Directories may be specified in the ``local_path`` argument and will
         trigger recursive uploads.
+    .. versionchanged:: 1.0
+        Return value is now an iterable of uploaded remote file paths which
+        also exhibits the ``.failed`` and ``.succeeded`` attributes.
     """
     # Handle empty local path
     local_path = local_path or os.getcwd()
@@ -403,6 +409,7 @@ def put(local_path=None, remote_path=None, use_sudo=False,
 
         # Iterate over all given local files
         remote_paths = []
+        failed_local_paths = []
         for lpath in names:
             try:
                 if local_is_path and os.path.isdir(lpath):
@@ -415,9 +422,14 @@ def put(local_path=None, remote_path=None, use_sudo=False,
                     remote_paths.append(p)
             except Exception, e:
                 msg = "put() encountered an exception while uploading '%s'"
+                failure = lpath if local_is_path else "<StringIO>"
+                failed_local_paths.append(failure)
                 _handle_failure(message=msg % lpath, exception=e)
 
-        return _AttributeList(remote_paths)
+        ret = _AttributeList(remote_paths)
+        ret.failed = failed_local_paths
+        ret.succeeded = not ret.failed
+        return ret
 
 
 @needs_host
@@ -426,8 +438,11 @@ def get(remote_path, local_path=None):
     Download one or more files from a remote host.
 
     `~fabric.operations.get` returns an iterable containing the absolute paths
-    to all files downloaded, or ``None`` if ``local_path`` was a StringIO
-    object (see below for more on using StringIO).
+    to all files downloaded, which will be empty if ``local_path`` was a
+    StringIO object (see below for more on using StringIO). This object will
+    also exhibit a ``.failed`` attribute containing any remote file paths which
+    failed to download, and a ``.succeeded`` attribute equivalent to ``not
+    .failed``.
 
     ``remote_path`` is the remote file or directory path to download, which may
     contain shell glob syntax, e.g. ``"/var/log/apache2/*.log"``, and will have
@@ -518,6 +533,9 @@ def get(remote_path, local_path=None):
     .. versionchanged:: 1.0
         Directories may be specified in the ``remote_path`` argument and will
         trigger recursive downloads.
+    .. versionchanged:: 1.0
+        Return value is now an iterable of downloaded local file paths, which
+        also exhibits the ``.failed`` and ``.succeeded`` attributes.
     """
     # Handle empty local path / default kwarg value
     local_path = local_path or "%(host)s/%(path)s"
@@ -545,17 +563,18 @@ def get(remote_path, local_path=None):
 
         # Track final local destination files so we can return a list
         local_files = []
+        failed_remote_files = []
 
-        # Glob remote path
-        names = ftp.glob(remote_path)
+        try:
+            # Glob remote path
+            names = ftp.glob(remote_path)
 
-        # Handle invalid local-file-object situations
-        if not local_is_path:
-            if len(names) > 1 or ftp.isdir(names[0]):
-                _handle_failure("[%s] %s is a glob or directory, but local_path is a file object!" % (env.host_string, remote_path))
+            # Handle invalid local-file-object situations
+            if not local_is_path:
+                if len(names) > 1 or ftp.isdir(names[0]):
+                    _handle_failure("[%s] %s is a glob or directory, but local_path is a file object!" % (env.host_string, remote_path))
 
-        for remote_path in names:
-            try:
+            for remote_path in names:
                 if ftp.isdir(remote_path):
                     result = ftp.get_dir(remote_path, local_path)
                     local_files.extend(result)
@@ -570,11 +589,16 @@ def get(remote_path, local_path=None):
                         local_path.write(result)
                     else:
                         local_files.append(result)
-            except Exception, e:
-                msg = "get() encountered an exception while downloading '%s'"
-                _handle_failure(message=msg % remote_path, exception=e)
 
-        return _AttributeList(local_files) if local_is_path else None
+        except Exception, e:
+            failed_remote_files.append(remote_path)
+            msg = "get() encountered an exception while downloading '%s'"
+            _handle_failure(message=msg % remote_path, exception=e)
+
+        ret = _AttributeList(local_files if local_is_path else [])
+        ret.failed = failed_remote_files
+        ret.succeeded = not ret.failed
+        return ret
 
 
 def _sudo_prefix(user):
