@@ -1,0 +1,22 @@
+========================
+Changes in version 0.9.5
+========================
+
+The following changes were implemented in Fabric 0.9.5:
+
+Feature additions
+=================
+
+* N/A
+
+Bugfixes
+========
+
+* :issue:`264`: Fix edge case in `~fabric.operations.reboot` by gracefully
+  clearing connection cache.
+
+
+Documentation updates
+=====================
+
+* N/A
