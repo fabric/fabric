@@ -1023,7 +1023,8 @@ def reboot(wait):
     sudo('reboot')
     client = connections[env.host_string]
     client.close()
-    del connections[env.host_string]
+    if env.host_string in connections:
+        del connections[env.host_string]
     if output.running:
         puts("Waiting for reboot: ", flush=True, end='')
         per_tick = 5
