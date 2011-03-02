@@ -146,3 +146,5 @@ Documentation updates
 * API, tutorial and usage docs updated with the above new features.
 * README now makes the Python 2.5+ requirement up front and explicit; some
   folks were still assuming it would run on Python 2.4.
+* Added a link to Python's documentation for string interpolation in
+  `~fabric.contrib.files.upload_template`'s docstring.

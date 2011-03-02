@@ -52,9 +52,10 @@ def upload_template(filename, destination, context=None, use_jinja=False,
     """
     Render and upload a template text file to a remote host.
 
-    ``filename`` should be the path to a text file, which may contain Python
-    string interpolation formatting and will be rendered with the given context
-    dictionary ``context`` (if given.)
+    ``filename`` should be the path to a text file, which may contain `Python
+    string interpolation formatting
+    <http://docs.python.org/release/2.5.4/lib/typesseq-strings.html>`_ and will
+    be rendered with the given context dictionary ``context`` (if given.)
 
     Alternately, if ``use_jinja`` is set to True and you have the Jinja2
     templating library available, Jinja will be used to render the template
