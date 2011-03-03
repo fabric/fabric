@@ -2,15 +2,6 @@
 Fabric
 ======
 
-Status
-======
-
-This documentation is for Fabric's currently in-development version, which will
-eventually become Fabric 1.0. As such, it is subject to change and will not be
-set in stone until the beta release at the earliest. Additionally, the code and
-documentation may at times be out of sync, so please keep this in mind.
-
-
 About
 =====
 
