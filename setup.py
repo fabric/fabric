@@ -24,11 +24,6 @@ You can also install the <a class="reference external" href="https://github.com/
 For more information, please see the Fabric website or execute ``fab --help``.
 """ % (get_version('short'), readme)
 
-# PyCrypto>2.0 + Python 2.5 + pip == bad times.
-# We can't easily detect pip usage at this point, but we can at least limit our
-# "downgrade" of the PyCrypto requirement to 2.5-only.
-PYCRYPTO = "<2.1" if (sys.version_info[:2] == (2, 5)) else ">=1.9"
-
 setup(
     name='Fabric',
     version=get_version('short'),
@@ -40,7 +35,7 @@ setup(
     packages=find_packages(),
     test_suite='nose.collector',
     tests_require=['nose', 'fudge'],
-    install_requires=['pycrypto %s' % PYCRYPTO, 'paramiko >=1.7.6'],
+    install_requires=['pycrypto >= 1.9', 'paramiko >=1.7.6'],
     entry_points={
         'console_scripts': [
             'fab = fabric.main:main',
