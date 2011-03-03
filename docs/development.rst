@@ -2,12 +2,12 @@
 Development
 ===========
 
-The Fabric development team consists of two programmers, `Jeff Forcier
-<http://bitprophet.org>`_ and `Christian Vest Hansen
-<http://my.opera.com/karmazilla/blog/>`_, with Jeff taking the lead role.
-However, dozens of other developers pitch in by submitting patches and ideas,
-via individual emails, `Redmine <http://code.fabfile.org>`_, the `mailing list
-<http://lists.nongnu.org/mailman/listinfo/fab-user>`_ and `GitHub <http://github.com/bitprophet/fabric>`_.
+The Fabric development team is headed by `Jeff Forcier
+<http://bitprophet.org>`_, aka ``bitprophet``.  However, dozens of other
+developers pitch in by submitting patches and ideas, via individual emails,
+`Redmine <http://code.fabfile.org>`_, the `mailing list
+<http://lists.nongnu.org/mailman/listinfo/fab-user>`_ and `GitHub
+<http://github.com/bitprophet/fabric>`_.
 
 Get the code
 ============
