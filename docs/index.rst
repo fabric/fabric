@@ -11,7 +11,7 @@ About
 Installation
 ============
 
-Stable releases of Fabric are best installed via ``easy_install`` or ``pip``;
+Stable releases of Fabric are best installed via ``pip`` or ``easy_install``;
 or you may download TGZ or ZIP source archives from a couple of official
 locations. Detailed instructions and links may be found on the
 :doc:`installation` page.
