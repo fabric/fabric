@@ -683,13 +683,13 @@ class TestFileTransfers(FabricTest):
         """
         put() should return an iterable of the remote files it created.
         """
-        f = '/uploaded.txt'
-        p = self.path(f[1:])
+        p = 'uploaded.txt'
+        f = self.path(p)
         with open(f, 'w') as fd:
             fd.write("contents")
         with hide('everything'):
-            retval = put(f, f)
-        eq_(retval, [f])
+            retval = put(f, p)
+        eq_(retval, [p])
 
 
     @server()
@@ -697,7 +697,7 @@ class TestFileTransfers(FabricTest):
         """
         put() should return a one-item iterable when uploading from a StringIO
         """
-        f = '/uploaded.txt'
+        f = 'uploaded.txt'
         with hide('everything'):
             eq_(put(StringIO('contents'), f), [f])
 
