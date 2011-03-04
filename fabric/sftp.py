@@ -258,7 +258,7 @@ class SFTP(object):
         remote_paths = []
 
         for context, dirs, files in os.walk(local_path):
-            rcontext = context.replace(strip,'')
+            rcontext = context.replace(strip, '', 1)
             rcontext = rcontext.lstrip('/')
             rcontext = os.path.join(remote_path, rcontext)
 
