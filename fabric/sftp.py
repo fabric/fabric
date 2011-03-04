@@ -169,7 +169,7 @@ class SFTP(object):
             # Normalize current directory to be relative
             # E.g. remote_path of /var/log and current dir of /var/log/apache2
             # would be turned into just 'apache2'
-            lcontext = rcontext = context.replace(strip, '').lstrip('/')
+            lcontext = rcontext = context.replace(strip, '', 1).lstrip('/')
             # Prepend local path to that to arrive at the local mirrored
             # version of this directory. So if local_path was 'mylogs', we'd
             # end up with 'mylogs/apache2'
