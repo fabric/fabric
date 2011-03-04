@@ -388,11 +388,11 @@ class TestFileTransfers(FabricTest):
     @server(port=2201)
     def test_get_from_multiple_servers(self):
         ports = [2200, 2201]
-        hosts = map(lambda x: 'localhost:%s' % x, ports)
+        hosts = map(lambda x: '127.0.0.1:%s' % x, ports)
         with settings(all_hosts=hosts):
             for port in ports:
                 with settings(
-                    hide('everything'), host_string='localhost:%s' % port
+                    hide('everything'), host_string='127.0.0.1:%s' % port
                 ):
                     tmp = self.path('')
                     local_path = os.path.join(tmp, "%(host)s", "%(path)s")
@@ -400,12 +400,12 @@ class TestFileTransfers(FabricTest):
                     path = 'file.txt'
                     get(path, local_path)
                     assert self.exists_locally(os.path.join(
-                        tmp, "localhost-%s" % port, path
+                        tmp, "127.0.0.1-%s" % port, path
                     ))
                     # Nested file
                     get('tree/subfolder/file3.txt', local_path)
                     assert self.exists_locally(os.path.join(
-                        tmp, "localhost-%s" % port, 'file3.txt'
+                        tmp, "127.0.0.1-%s" % port, 'file3.txt'
                     ))
 
 
