@@ -194,6 +194,11 @@ def connect(user, host, port):
 
             # Otherwise, assume an auth exception, and prompt for new/better
             # password.
+            
+            # If enviroment specified that no interactive password should be asked
+            # abort directly with corresponding message.
+            if env.reject_interactive_password:
+                abort('Rejecting interactive passwords while trying to connect to %s' % host)
 
             # Paramiko doesn't handle prompting for locked private keys (i.e.
             # keys with a passphrase and not loaded into an agent) so we have
