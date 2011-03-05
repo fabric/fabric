@@ -480,6 +480,38 @@ class TestFileTransfers(FabricTest):
             assert self.exists_locally(tmp + "bar/file3.txt")
 
 
+    @server()
+    def test_get_returns_list_of_local_paths(self):
+        """
+        get() should return an iterable of the local files it created.
+        """
+        d = self.path()
+        with hide('everything'):
+            retval = get('tree', d)
+        files = ['file1.txt', 'file2.txt', 'subfolder/file3.txt']
+        eq_(map(lambda x: os.path.join(d, 'tree', x), files), retval)
+
+
+    @server()
+    def test_get_returns_none_for_stringio(self):
+        """
+        get() should return None if local_path is a StringIO
+        """
+        with hide('everything'):
+            eq_([], get('/file.txt', StringIO()))
+
+
+    @server()
+    def test_get_return_value_failed_attribute(self):
+        """
+        get()'s return value should indicate any paths which failed to download.
+        """
+        with settings(hide('everything'), warn_only=True):
+            retval = get('/doesnt/exist', self.path())
+        eq_(['/doesnt/exist'], retval.failed)
+        assert not retval.succeeded
+
+
 
     #
     # put()
@@ -573,6 +605,42 @@ class TestFileTransfers(FabricTest):
         put('thisfiledoesnotexist', '/tmp')
 
 
+    @server()
+    def test_put_returns_list_of_remote_paths(self):
+        """
+        put() should return an iterable of the remote files it created.
+        """
+        p = 'uploaded.txt'
+        f = self.path(p)
+        with open(f, 'w') as fd:
+            fd.write("contents")
+        with hide('everything'):
+            retval = put(f, p)
+        eq_(retval, [p])
+
+
+    @server()
+    def test_put_returns_list_of_remote_paths_with_stringio(self):
+        """
+        put() should return a one-item iterable when uploading from a StringIO
+        """
+        f = 'uploaded.txt'
+        with hide('everything'):
+            eq_(put(StringIO('contents'), f), [f])
+
+
+    @server()
+    def test_put_return_value_failed_attribute(self):
+        """
+        put()'s return value should indicate any paths which failed to upload.
+        """
+        with settings(hide('everything'), warn_only=True):
+            f = StringIO('contents')
+            retval = put(f, '/nonexistent/directory/structure')
+        eq_(["<StringIO>"], retval.failed)
+        assert not retval.succeeded
+
+
 
     #
     # Interactions with cd()
@@ -655,71 +723,3 @@ class TestFileTransfers(FabricTest):
         with nested(lcd(d), hide('everything')):
             get(f, f)
         assert self.exists_locally(os.path.join(d, f))
-
-
-    @server()
-    def test_get_returns_list_of_local_paths(self):
-        """
-        get() should return an iterable of the local files it created.
-        """
-        d = self.path()
-        with hide('everything'):
-            retval = get('tree', d)
-        files = ['file1.txt', 'file2.txt', 'subfolder/file3.txt']
-        eq_(map(lambda x: os.path.join(d, 'tree', x), files), retval)
-
-
-    @server()
-    def test_get_returns_none_for_stringio(self):
-        """
-        get() should return None if local_path is a StringIO
-        """
-        with hide('everything'):
-            eq_([], get('/file.txt', StringIO()))
-
-
-    @server()
-    def test_put_returns_list_of_remote_paths(self):
-        """
-        put() should return an iterable of the remote files it created.
-        """
-        p = 'uploaded.txt'
-        f = self.path(p)
-        with open(f, 'w') as fd:
-            fd.write("contents")
-        with hide('everything'):
-            retval = put(f, p)
-        eq_(retval, [p])
-
-
-    @server()
-    def test_put_returns_list_of_remote_paths_with_stringio(self):
-        """
-        put() should return a one-item iterable when uploading from a StringIO
-        """
-        f = 'uploaded.txt'
-        with hide('everything'):
-            eq_(put(StringIO('contents'), f), [f])
-
-
-    @server()
-    def test_put_return_value_failed_attribute(self):
-        """
-        put()'s return value should indicate any paths which failed to upload.
-        """
-        with settings(hide('everything'), warn_only=True):
-            f = StringIO('contents')
-            retval = put(f, '/nonexistent/directory/structure')
-        eq_(["<StringIO>"], retval.failed)
-        assert not retval.succeeded
-
-
-    @server()
-    def test_get_return_value_failed_attribute(self):
-        """
-        get()'s return value should indicate any paths which failed to download.
-        """
-        with settings(hide('everything'), warn_only=True):
-            retval = get('/doesnt/exist', self.path())
-        eq_(['/doesnt/exist'], retval.failed)
-        assert not retval.succeeded
