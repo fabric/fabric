@@ -245,6 +245,8 @@ class SFTP(object):
         if use_sudo:
             with hide('everything'):
                 sudo("mv \"%s\" \"%s\"" % (remote_path, target_path))
+            # Revert to original remote_path for return value's sake
+            remote_path = target_path
         return remote_path
 
 
