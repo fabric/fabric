@@ -47,14 +47,18 @@ class SFTP(object):
 
 
     def glob(self, path):
+        from fabric.state import win32
         dirpart, pattern = os.path.split(path)
         rlist = self.ftp.listdir(dirpart)
 
         names = fnfilter([f for f in rlist if not f[0] == '.'], pattern)
+        ret = [path]
         if len(names):
-            return [os.path.join(dirpart, name) for name in names]
-        else:
-            return [path]
+            s = '/'
+            ret = [dirpart.rstrip(s) + s + name.lstrip(s) for name in names]
+            if not win32:
+                ret = [os.path.join(dirpart, name) for name in names]
+        return ret
 
 
     def walk(self, top, topdown=True, onerror=None, followlinks=False):

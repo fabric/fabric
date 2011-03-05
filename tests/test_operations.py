@@ -523,6 +523,17 @@ class TestFileTransfers(FabricTest):
         assert not retval.succeeded
 
 
+    @server()
+    def test_get_should_not_use_windows_slashes_in_remote_paths(self):
+        """
+        sftp.glob() should always use Unix-style slashes.
+        """
+        with hide('everything'):
+            path = "/tree/file1.txt"
+            sftp = SFTP(env.host_string)
+            eq_(sftp.glob(path), [path])
+
+
 
     #
     # put()
