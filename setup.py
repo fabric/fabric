@@ -13,7 +13,9 @@ long_description = """
 To find out what's new in this version of Fabric, please see `the changelog
 <http://docs.fabfile.org/changes/%s.html>`_.
 
-You can also install the <a class="reference external" href="https://github.com/bitprophet/fabric/tarball/master#egg=fabric-dev">in-development version</a> using pip, with `pip install fabric==dev`.
+You can also install the `in-development version
+<https://github.com/bitprophet/fabric/tarball/master#egg=fabric-dev>`_ using
+pip, with `pip install fabric==dev`.
 
 ----
 
