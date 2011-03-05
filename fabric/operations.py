@@ -438,7 +438,7 @@ def get(remote_path, local_path=None):
     Download one or more files from a remote host.
 
     `~fabric.operations.get` returns an iterable containing the absolute paths
-    to all files downloaded, which will be empty if ``local_path`` was a
+    to all local files downloaded, which will be empty if ``local_path`` was a
     StringIO object (see below for more on using StringIO). This object will
     also exhibit a ``.failed`` attribute containing any remote file paths which
     failed to download, and a ``.succeeded`` attribute equivalent to ``not
