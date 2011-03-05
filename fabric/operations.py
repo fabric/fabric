@@ -559,8 +559,14 @@ def get(remote_path, local_path=None):
             local_path = os.path.expanduser(local_path)
 
         # Honor cd() (assumes Unix style file paths on remote end)
-        if not os.path.isabs(remote_path) and env.get('cwd'):
-            remote_path = env.cwd.rstrip('/') + '/' + remote_path
+        if not os.path.isabs(remote_path):
+            # Honor cwd if it's set (usually by with cd():)
+            if env.get('cwd'):
+                remote_path = env.cwd.rstrip('/') + '/' + remote_path
+            # Otherwise, be relative to remote home directory (SFTP server's
+            # '.')
+            else:
+                remote_path = os.path.join(home, remote_path)
 
         # Track final local destination files so we can return a list
         local_files = []
