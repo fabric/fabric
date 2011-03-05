@@ -39,6 +39,7 @@ logger = logging.getLogger('server.py')
 HOST = '127.0.0.1'
 PORT = 2200
 USER = 'username'
+HOME = '/'
 RESPONSES = {
     "ls /simple": "some output",
     "ls /": """AUTHORS
@@ -65,7 +66,8 @@ FILES = FakeFilesystem({
     '/tree/file1.txt': 'x',
     '/tree/file2.txt': 'y',
     '/tree/subfolder/file3.txt': 'z',
-    '/etc/apache2/apache2.conf': 'Include other.conf'
+    '/etc/apache2/apache2.conf': 'Include other.conf',
+    HOME: None # So $HOME is a directory
 })
 PASSWORDS = {
     'root': 'root',
@@ -105,11 +107,12 @@ class ParamikoServer(ssh.ServerInterface):
     The bulk of the actual server side logic is handled in the
     ``serve_responses`` function and its ``SSHHandler`` class.
     """
-    def __init__(self, passwords, pubkeys, files):
+    def __init__(self, passwords, home, pubkeys, files):
         self.event = threading.Event()
         self.passwords = passwords
         self.pubkeys = pubkeys
         self.files = FakeFilesystem(files)
+        self.home = home
         self.command = None
 
     def check_channel_request(self, kind, chanid):
@@ -240,6 +243,13 @@ def missing_folders(paths):
     return ret
 
 
+def canonicalize(path, home):
+    ret = path
+    if not os.path.isabs(path):
+        ret = os.path.normpath(os.path.join(home, path))
+    return ret
+
+
 class FakeSFTPServer(ssh.SFTPServerInterface):
     def __init__(self, server, *args, **kwargs):
         self.server = server
@@ -248,6 +258,12 @@ class FakeSFTPServer(ssh.SFTPServerInterface):
         for folder in missing_folders(files.keys()):
             files[folder] = None
         self.files = files
+
+    def canonicalize(self, path):
+        """
+        Make non-absolute paths relative to $HOME.
+        """
+        return canonicalize(path, self.server.home)
 
     def list_folder(self, path):
         path = self.files.normalize(path)
@@ -310,12 +326,13 @@ class FakeSFTPServer(ssh.SFTPServerInterface):
         self.files[path] = None
         return ssh.SFTP_OK
 
-def serve_responses(responses, files, passwords, pubkeys, port):
+def serve_responses(responses, files, passwords, home, pubkeys, port):
     """
     Return a threading TCP based SocketServer listening on ``port``.
 
     Used as a fake SSH server which will respond to commands given in
     ``responses`` and allow connections for users listed in ``passwords``.
+    ``home`` is used as the remote $HOME (mostly for SFTP purposes).
 
     ``pubkeys`` is a Boolean value determining whether the server will allow
     pubkey auth or not.
@@ -370,7 +387,7 @@ def serve_responses(responses, files, passwords, pubkeys, port):
             transport.add_server_key(ssh.RSAKey(filename=SERVER_PRIVKEY))
             transport.set_subsystem_handler('sftp', ssh.SFTPServer,
                 sftp_si=FakeSFTPServer)
-            server = ParamikoServer(passwords, pubkeys, files)
+            server = ParamikoServer(passwords, home, pubkeys, files)
             transport.start_server(server=server)
             self.ssh_server = server
             self.transport = transport
@@ -429,6 +446,7 @@ def server(
         responses=RESPONSES,
         files=FILES,
         passwords=PASSWORDS,
+        home=HOME,
         pubkeys=False,
         port=PORT
     ):
@@ -441,8 +459,8 @@ def server(
         @wraps(func)
         def inner(*args, **kwargs):
             # Start server
-            _server = serve_responses(responses, files, passwords, pubkeys,
-                port)
+            _server = serve_responses(responses, files, passwords, home,
+                pubkeys, port)
             _server.all_done = threading.Event()
             worker = ThreadHandler('server', _server.serve_forever)
             # Execute function
