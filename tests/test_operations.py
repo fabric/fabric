@@ -219,6 +219,16 @@ class TestFileTransfers(FabricTest):
     # get()
     #
 
+    @server(files={'/home/user/.bashrc': 'bash!'}, home='/home/user')
+    def test_get_relative_remote_dir_uses_home(self):
+        """
+        get('relative/path') should use remote $HOME
+        """
+        # Another if-it-doesn't-error-out-it-passed test; meh.
+        eq_(get('.bashrc', self.path()), [self.path('.bashrc')])
+
+
+
     @server()
     def test_get_single_file(self):
         """
