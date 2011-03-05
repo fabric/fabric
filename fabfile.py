@@ -44,17 +44,6 @@ def build_docs(clean='no', browse='no'):
     local('cd docs; make %shtml%s' % (c, b), capture=False)
 
 
-@hosts(docs_host)
-def push_docs():
-    """
-    Build and push the Sphinx docs to docs.fabfile.org
-    """
-    build_docs(clean='yes')
-    remote_loc = '/var/www/docs.fabfile/%s/' % _version('short').split()[0]
-    run('mkdir -p %s' % remote_loc)
-    rsync_project(remote_loc, 'docs/_build/html/', delete=True)
-
-
 def _code_version_is_tagged():
     return local('git tag | egrep "^%s$"' % _version('short'))
 
