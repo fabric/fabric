@@ -994,13 +994,16 @@ def local(command, capture=False):
         out_stream = subprocess.PIPE
         err_stream = subprocess.PIPE
     else:
-        if output.stdout:
-            out_stream = None
-        if output.stderr:
-            err_stream = None
-    p = subprocess.Popen([wrapped_command], shell=True, stdout=out_stream,
-            stderr=err_stream)
-    (stdout, stderr) = p.communicate()
+        # Non-captured, hidden streams are discarded.
+        dev_null = open(os.devnull, 'w+')
+        out_stream = None if output.stdout else dev_null
+        err_stream = None if output.stderr else dev_null
+    try:
+        p = subprocess.Popen([wrapped_command], shell=True, stdout=out_stream,
+                stderr=err_stream)
+        (stdout, stderr) = p.communicate()
+    finally:
+        dev_null.close()
     # Handle error condition (deal with stdout being None, too)
     out = _AttributeString(stdout.strip() if stdout else "")
     err = _AttributeString(stderr.strip() if stderr else "")

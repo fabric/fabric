@@ -14,7 +14,7 @@ from fudge import with_patched_object
 from fabric.state import env
 from fabric.operations import require, prompt, _sudo_prefix, _shell_wrap, \
     _shell_escape
-from fabric.api import get, put, hide, show, cd, lcd
+from fabric.api import get, put, hide, show, cd, lcd, local
 from fabric.sftp import SFTP
 
 from utils import *
@@ -745,3 +745,27 @@ class TestFileTransfers(FabricTest):
         with nested(lcd(d), hide('everything')):
             get(f, f)
         assert self.exists_locally(os.path.join(d, f))
+
+
+#
+# local()
+#
+
+@mock_streams('stdout')
+def test_local_hide_stdout():
+    """
+    local() should honor stdout hiding via output controls
+    """
+    with hide('stdout', 'running'):
+        local("echo 'foo'")
+    eq_("", sys.stdout.getvalue())
+
+
+@mock_streams('stderr')
+def test_local_hide_stderr():
+    """
+    local() should honor stderr hiding via output controls
+    """
+    with settings(hide('stderr', 'running', 'warnings'), warn_only=True):
+        local("ls /thisdoesnotexist")
+    eq_("", sys.stderr.getvalue())
