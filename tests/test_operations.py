@@ -224,8 +224,9 @@ class TestFileTransfers(FabricTest):
         """
         get('relative/path') should use remote $HOME
         """
-        # Another if-it-doesn't-error-out-it-passed test; meh.
-        eq_(get('.bashrc', self.path()), [self.path('.bashrc')])
+        with hide('everything'):
+            # Another if-it-doesn't-error-out-it-passed test; meh.
+            eq_(get('.bashrc', self.path()), [self.path('.bashrc')])
 
 
 
