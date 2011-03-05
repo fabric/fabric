@@ -551,9 +551,10 @@ def get(remote_path, local_path=None):
     ftp = SFTP(env.host_string)
 
     with closing(ftp) as ftp:
+        home = ftp.normalize('.')
         # Expand home directory markers (tildes, etc)
         if remote_path.startswith('~'):
-            remote_path = remote_path.replace('~', ftp.normalize('.'), 1)
+            remote_path = remote_path.replace('~', home, 1)
         if local_is_path:
             local_path = os.path.expanduser(local_path)
 
