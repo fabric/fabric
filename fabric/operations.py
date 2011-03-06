@@ -990,12 +990,12 @@ def local(command, capture=False):
         print("[localhost] local: " + given_command)
     # Tie in to global output controls as best we can; our capture argument
     # takes precedence over the output settings.
+    dev_null = open(os.devnull, 'w+')
     if capture:
         out_stream = subprocess.PIPE
         err_stream = subprocess.PIPE
     else:
         # Non-captured, hidden streams are discarded.
-        dev_null = open(os.devnull, 'w+')
         out_stream = None if output.stdout else dev_null
         err_stream = None if output.stderr else dev_null
     try:
