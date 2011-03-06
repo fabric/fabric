@@ -751,21 +751,27 @@ class TestFileTransfers(FabricTest):
 # local()
 #
 
-@mock_streams('stdout')
-def test_local_hide_stdout():
-    """
-    local() should honor stdout hiding via output controls
-    """
-    with hide('stdout', 'running'):
-        local("echo 'foo'")
-    eq_("", sys.stdout.getvalue())
+# TODO: figure out how to mock subprocess, if it's even possible.
+# For now, simply test to make sure local() does not raise exceptions with
+# various settings enabled/disabled.
 
-
-@mock_streams('stderr')
-def test_local_hide_stderr():
-    """
-    local() should honor stderr hiding via output controls
-    """
-    with settings(hide('stderr', 'running', 'warnings'), warn_only=True):
-        local("ls /thisdoesnotexist")
-    eq_("", sys.stderr.getvalue())
+def test_local_output_and_capture():
+    for capture in (True, False):
+        for stdout in (True, False):
+            for stderr in (True, False):
+                hides, shows = ['running'], []
+                if stdout:
+                    hides.append('stdout')
+                else:
+                    shows.append('stdout')
+                if stderr:
+                    hides.append('stderr')
+                else:
+                    shows.append('stderr')
+                with nested(hide(*hides), show(*shows)):
+                    d = "capture: %r, stdout: %r, stderr: %r" % (
+                        capture, stdout, stderr
+                    )
+                    local.description = d
+                    yield local, "echo 'foo' >/dev/null", capture
+                    del local.description
