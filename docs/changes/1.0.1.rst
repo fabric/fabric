@@ -8,3 +8,9 @@ Bugfixes
 * :issue:`301`: Fixed a bug in `~fabric.operations.local`'s behavior when
   ``capture=False`` and ``output.stdout`` (or ``.stderr``) was also ``False``.
   Thanks to Chris Rose for the catch.
+
+Documentation
+=============
+
+* Added a missing entry for :ref:`env.path <env-path>` in the usage
+  documentation.
