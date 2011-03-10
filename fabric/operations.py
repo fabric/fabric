@@ -383,10 +383,12 @@ def run(command, shell=True, pty=False):
     ``/bin/bash -l -c "<command>"``.) Any double-quote (``"``) characters in
     ``command`` will be automatically escaped when ``shell`` is True.
 
-    `run` will return the result of the remote program's stdout as a
-    single (likely multiline) string. This string will exhibit a ``failed``
-    boolean attribute specifying whether the command failed or succeeded, and
-    will also include the return code as the ``return_code`` attribute.
+    `run` will return the result of the remote program's stdout as a single
+    (likely multiline) string. This string will exhibit ``failed`` and
+    ``succeeded`` boolean attributes specifying whether the command failed or
+    succeeded, and will also include the return code as the ``return_code``
+    attribute. It will also have a ``stderr`` attribute containing the remote
+    standard error, if any.
 
     You may pass ``pty=True`` to force allocation of a pseudo tty on
     the remote end. This is not normally required, but some programs may
@@ -398,6 +400,8 @@ def run(command, shell=True, pty=False):
         run("ls /home/myuser", shell=False)
         output = run('ls /var/www/site1')
     
+    .. versionchanged:: 0.9.3
+        Added ``stderr`` and ``succeeded`` attributes to the return value.
     """
     # Set up new var so original argument can be displayed verbatim later.
     real_command = command
@@ -422,11 +426,12 @@ def run(command, shell=True, pty=False):
         channel.get_pty()
     channel.exec_command(real_command)
     capture = []
+    capture_stderr = []
 
     out_thread = output_thread("[%s] out" % env.host_string, channel,
         capture=capture)
     err_thread = output_thread("[%s] err" % env.host_string, channel,
-        stderr=True)
+        stderr=True, capture=capture_stderr)
     
     # Close when done
     status = channel.recv_exit_status()
@@ -440,6 +445,7 @@ def run(command, shell=True, pty=False):
 
     # Assemble output string
     out = _AttributeString("".join(capture).strip())
+    err = _AttributeString("".join(capture_stderr).strip())
 
     # Error handling
     out.failed = False
@@ -447,6 +453,9 @@ def run(command, shell=True, pty=False):
         out.failed = True
         msg = "run() encountered an error (return code %s) while executing '%s'" % (status, command)
         _handle_failure(message=msg)
+
+    out.succeeded = not out.failed
+    out.stderr = err
 
     # Attach return code to output string so users who have set things to warn
     # only, can inspect the error code.
@@ -476,10 +485,9 @@ def sudo(command, shell=True, user=None, pty=False):
     ``pty=True`` to `sudo` to force allocation of a pseudo tty on the remote
     end.
        
-    `sudo` will return the result of the remote program's stdout as a
-    single (likely multiline) string. This string will exhibit a ``failed``
-    boolean attribute specifying whether the command failed or succeeded, and
-    will also include the return code as the ``return_code`` attribute.
+    `sudo`'s return value is identical to that of `~fabric.operations.run`,
+    exhibiting all the same attributes (``.failed``, ``.stderr``, etc). Please
+    see `~fabric.operations.run`'s documentation for details.
 
     Examples::
     
@@ -488,6 +496,8 @@ def sudo(command, shell=True, user=None, pty=False):
         sudo("ls /home/jdoe", user=1001)
         result = sudo("ls /tmp/")
     
+    .. versionchanged:: 0.9.3
+        Added ``stderr`` and ``succeeded`` attributes to the return value.
     """
     # Construct sudo command, with user if necessary
     if user is not None:
@@ -524,9 +534,12 @@ def sudo(command, shell=True, user=None, pty=False):
     # Execute
     channel.exec_command(real_command)
     capture = []
+    capture_stderr = []
 
-    out_thread = output_thread("[%s] out" % env.host_string, channel, capture=capture)
-    err_thread = output_thread("[%s] err" % env.host_string, channel, stderr=True)
+    out_thread = output_thread("[%s] out" % env.host_string, channel,
+        capture=capture)
+    err_thread = output_thread("[%s] err" % env.host_string, channel,
+        stderr=True, capture=capture_stderr)
 
     # Close channel when done
     status = channel.recv_exit_status()
@@ -541,6 +554,7 @@ def sudo(command, shell=True, user=None, pty=False):
 
     # Assemble stdout string
     out = _AttributeString("".join(capture).strip())
+    err = _AttributeString("".join(capture_stderr).strip())
 
     # Error handling
     out.failed = False
@@ -548,6 +562,9 @@ def sudo(command, shell=True, user=None, pty=False):
         out.failed = True
         msg = "sudo() encountered an error (return code %s) while executing '%s'" % (status, command)
         _handle_failure(message=msg)
+
+    out.succeeded = not out.failed
+    out.stderr = err
 
     # Attach return code for convenience
     out.return_code = status
@@ -564,13 +581,19 @@ def local(command, capture=True):
 
     `local` will, by default, capture and return the contents of the command's
     stdout as a string, and will not print anything to the user (the command's
-    stderr is captured but discarded.)
+    stderr is captured but discarded). 
     
     .. note::
         This differs from the default behavior of `run` and `sudo` due to the
         different mechanisms involved: it is difficult to simultaneously
         capture and print local commands, so we have to choose one or the
         other. We hope to address this in later releases.
+
+    `local`'s return value, like that of `~fabric.operations.run`, exhibits the
+    attributes ``succeeded``/``failed`` (booleans), ``stderr`` (string) and
+    ``return_code`` (integer). Please see `~fabric.operations.run`'s API docs
+    for details, and remember that this return value is only set when
+    ``capture=True``, as above.
 
     If you need full interactivity with the command being run (and are willing
     to accept the loss of captured stdout) you may specify ``capture=False`` so
@@ -580,6 +603,9 @@ def local(command, capture=True):
     When ``capture`` is False, global output controls (``output.stdout`` and
     ``output.stderr`` will be used to determine what is printed and what is
     discarded.
+
+    .. versionchanged:: 0.9.3
+        Added the ``succeeded`` and ``stderr`` return code attributes.
     """
     # Handle cd() context manager
     cwd = env.get('cwd', '')
@@ -607,12 +633,15 @@ def local(command, capture=True):
     (stdout, stderr) = p.communicate()
     # Handle error condition (deal with stdout being None, too)
     out = _AttributeString(stdout.strip() if stdout else "")
+    err = _AttributeString(stderr.strip() if stderr else "")
     out.failed = False
+    out.stderr = err
     out.return_code = p.returncode
     if p.returncode != 0:
         out.failed = True
         msg = "local() encountered an error (return code %s) while executing '%s'" % (p.returncode, command)
         _handle_failure(message=msg)
+    out.succeeded = not out.failed
     # If we were capturing, this will be a string; otherwise it will be None.
     return out
 
@@ -630,7 +659,8 @@ def reboot(wait):
     sudo('reboot')
     client = connections[env.host_string]
     client.close()
-    del connections[env.host_string]
+    if env.host_string in connections:
+        del connections[env.host_string]
     if output.running:
         puts("Waiting for reboot: ", flush=True, end='')
         per_tick = 5

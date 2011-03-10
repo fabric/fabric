@@ -11,5 +11,5 @@ nose
 rudolf
 coverage
 pylint
--e hg+http://bitbucket.org/kumar303/fudge/#egg=Fudge
+Fudge < 1.0
 Sphinx >= 0.6

@@ -115,8 +115,8 @@ happens if we run :option:`fab --list <-l>` on this fabfile::
     $ fab --list
     Available commands:
 
-      my_task    List some directories.   
-      urlopen    urlopen(url [, data]) -> open file-like object
+      webservice_read   List some directories.   
+      urlopen           urlopen(url [, data]) -> open file-like object
 
 Our fabfile of only one task is showing two "tasks", which is bad enough, and
 an unsuspecting user might accidentally try to call ``fab urlopen``, which
@@ -156,8 +156,9 @@ strings specifying a username, hostname and port combination, in the form of
 username, and/or port 22, respectively. Thus, ``admin@foo.com:222``,
 ``deploy@website`` and ``nameserver1`` could all be valid host strings.
 
-In other words, Fabric expects the same format as the command-line ``ssh``
-program.
+.. note::
+    The user/hostname split occurs at the last ``@`` found, so e.g. email
+    address usernames are valid and will be parsed correctly.
 
 During execution, Fabric normalizes the host strings given and then stores each
 part (username/hostname/port) in the environment dictionary, for both its use
@@ -441,6 +442,7 @@ immediately. However, if ``env.warn_only`` is set to ``True`` at the time of
 failure -- with, say, the `~fabric.context_managers.settings` context
 manager -- Fabric will emit a warning message but continue executing.
 
+.. _connections:
 
 Connections
 ===========
