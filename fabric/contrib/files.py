@@ -251,7 +251,7 @@ def contains(filename, text, exact=False, use_sudo=False):
         ))
 
 
-def append(filename, text, use_sudo=False, partial=True, escape=True):
+def append(filename, text, use_sudo=False, partial=False, escape=True):
     """
     Append string (or list of strings) ``text`` to ``filename``.
 
