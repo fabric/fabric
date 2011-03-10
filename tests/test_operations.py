@@ -769,7 +769,7 @@ def test_local_output_and_capture():
                 else:
                     shows.append('stderr')
                 with nested(hide(*hides), show(*shows)):
-                    d = "capture: %r, stdout: %r, stderr: %r" % (
+                    d = "local(): capture: %r, stdout: %r, stderr: %r" % (
                         capture, stdout, stderr
                     )
                     local.description = d
