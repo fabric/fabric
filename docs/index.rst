@@ -2,15 +2,6 @@
 Fabric
 ======
 
-Status
-======
-
-This documentation is for Fabric's currently in-development version, which will
-eventually become Fabric 1.0. As such, it is subject to change and will not be
-set in stone until the beta release at the earliest. Additionally, the code and
-documentation may at times be out of sync, so please keep this in mind.
-
-
 About
 =====
 
@@ -20,7 +11,7 @@ About
 Installation
 ============
 
-Stable releases of Fabric are best installed via ``easy_install`` or ``pip``;
+Stable releases of Fabric are best installed via ``pip`` or ``easy_install``;
 or you may download TGZ or ZIP source archives from a couple of official
 locations. Detailed instructions and links may be found on the
 :doc:`installation` page.
@@ -29,9 +20,9 @@ We recommend using the latest stable version of Fabric; releases are made often
 to prevent any large gaps in functionality between the latest stable release
 and the development version.
 
-However, if you want to live on the edge, you can pull down the latest source
-code from our Git repository, or fork us on Github. The :doc:`installation`
-page has details for how to access the source code.
+However, if you want to live on the edge, you can pull down the source code
+from our Git repository, or fork us on Github. The :doc:`installation` page has
+details for how to access the source code.
 
 
 Development
@@ -51,11 +42,11 @@ Documentation
 Please note that all documentation is currently written with Python 2.5 users
 in mind, but with an eye for eventual Python 3.x compatibility. This leads to
 the following patterns that may throw off readers used to Python 2.4 or who
-have already upgraded to Python 2.6:
+have already upgraded to Python 2.6/2.7:
 
 * ``from __future__ import with_statement``: a "future import" required to
   use the ``with`` statement in Python 2.5 -- a feature you'll be using
-  frequently. Python 2.6 users don't need to do this.
+  frequently. Python 2.6+ users don't need to do this.
 * ``<true_value> if <expression> else <false_value>``: Python's relatively new
   ternary statement, available in 2.5 and newer. Python 2.4 and older used to
   fake this with ``<expression> and <true_value> or <false_value>`` (which
