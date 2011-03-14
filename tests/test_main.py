@@ -1,8 +1,13 @@
+import sys
+import copy
+
 from fudge.patcher import with_patched_object
+from fudge import Fake
 from nose.tools import eq_, raises
 
 from fabric.decorators import hosts, roles
-from fabric.main import get_hosts, parse_arguments, _merge, _escape_split
+from fabric.main import (get_hosts, parse_arguments, _merge, _escape_split,
+        load_fabfile)
 import fabric.state
 from fabric.state import _AttributeDict
 
@@ -153,3 +158,36 @@ def test_escaped_task_arg_split():
         _escape_split(',', argstr),
         ['foo', 'bar,biz,baz', 'what comes after baz?']
     )
+
+
+def run_load_fabfile(path, sys_path):
+    # Module-esque object
+    fake_module = Fake().has_attr(__dict__={})
+    # Fake __import__
+    importer = Fake(callable=True).returns(fake_module)
+    # Snapshot sys.path for restore
+    orig_path = copy.copy(sys.path)
+    # Update with fake path
+    sys.path = sys_path
+    # Test for side effects
+    load_fabfile(path, importer=importer)
+    eq_(sys.path, sys_path)
+    # Restore
+    sys.path = orig_path
+
+
+def test_load_fabfile_should_not_remove_real_path_elements():
+    for fabfile_path, sys_dot_path in (
+        # Directory not in path
+        ('subdir/fabfile.py', ['not_subdir']),
+        ('fabfile.py', ['nope']),
+        # Directory in path, but not at front
+        ('subdir/fabfile.py', ['not_subdir', 'subdir']),
+        ('fabfile.py', ['not_subdir', '']),
+        ('fabfile.py', ['not_subdir', '', 'also_not_subdir']),
+        # Directory in path, and at front already
+        ('subdir/fabfile.py', ['subdir']),
+        ('subdir/fabfile.py', ['subdir', 'not_subdir']),
+        ('fabfile.py', ['', 'some_dir', 'some_other_dir']),
+    ):
+            yield run_load_fabfile, fabfile_path, sys_dot_path

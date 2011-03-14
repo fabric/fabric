@@ -8,15 +8,25 @@ This page lists all changes made to Fabric in its 1.0.0 release.
 Highlights
 ==========
 
+* :issue:`7`: `~fabric.operations.run`/`~fabric.operations.sudo` now allow full
+  interactivity with the remote end. You can interact with remote prompts and
+  similar interfaces, making certain tasks much easier, and freeing you from
+  the need to find noninteractive solutions if you don't want to. See
+  :doc:`/usage/interactivity` for more on these changes.
+* `~fabric.operations.put` and `~fabric.operations.get` received many updates,
+  including but not limited to: recursion, globbing, inline ``sudo``
+  capability, and increased control over local file paths. See the individual
+  ticket line-items below for details. Erich Heine (``sophacles`` on IRC)
+  played a large part in implementing and/or collecting these changes and
+  deserves much of the credit.
 * Added functionality for loading fabfiles which are Python packages
   (directories) instead of just modules (single files). This allows for easier
   organization of nontrivial fabfiles and paves the way for task namespacing
   in the near future. See :ref:`fabfile-discovery` for details.
-* :issue:`7`: `~fabric.operations.run`/`~fabric.operations.sudo` now allow full
-  interactivity with the remote end. You can now interact with remote prompts
-  and similar interfaces, making certain tasks much easier, and freeing you
-  from the need to find noninteractive solutions if you don't want to. See
-  :doc:`/usage/interactivity` for more on these changes.
+* :issue:`185`: Mostly of interest to those contributing to Fabric itself,
+  Fabric now leverages Paramiko to provide a stub SSH and SFTP server for use
+  during runs of our test suite. This makes quick, configurable full-stack
+  testing of Fabric (and, to an extent, user fabfiles) possible.
 
 
 Backwards-incompatible changes
@@ -41,6 +51,27 @@ break your 0.9.x based fabfiles!
   changed from ``False`` to ``True``. This, plus the addition of the
   :ref:`combine-stderr` kwarg/env var, may result in significant behavioral
   changes in remote programs which operate differently when attached to a tty.
+* :issue:`61`: `~fabric.operations.put` and `~fabric.operations.get` now honor
+  the remote current-working-directory changes applied by
+  `~fabric.context_managers.cd`. Previously they would always treat relative
+  remote paths as being relative to the remote home directory.
+* :issue:`79`: `~fabric.operations.get` now allows increased control over local
+  filenames when downloading single or multiple files. This is backwards
+  incompatible because the default path/filename for downloaded files has
+  changed.  Thanks to Juha Mustonen, Erich Heine and Max Arnold for
+  brainstorming solutions.
+* :issue:`88`: `~fabric.operations.local` has changed the default value of its
+  ``capture`` kwarg, from ``True`` to ``False``. This was changed in order to
+  be more intuitive, at the cost of no longer defaulting to the same rich
+  return value as in `~fabric.operations.run`/`~fabric.operations.sudo` (which
+  is still available by specifying ``capture=True``.)
+* :issue:`121`: `~fabric.operations.put` will no longer automatically attempt
+  to mirror local file modes. Instead, you'll need to specify
+  ``mirror_local_mode=True`` to get this behavior. Thanks to Paul Smith for a
+  patch covering part of this change.
+* :issue:`172`: `~fabric.contrib.files.append` has changed the default value of
+  its ``partial`` kwarg from ``True`` to ``False`` in order to be safer/more
+  intuitive.
 * :issue:`221`: `~fabric.decorators.runs_once` now memoizes the wrapped task's
   return value and returns that value on subsequent invocations, instead of
   returning None. Thanks to Jacob Kaplan-Moss and Travis Swicegood for catch +
@@ -56,16 +87,21 @@ Feature additions
   effective ``$PATH``.
 * Added convenience ``.succeeded`` attribute to the return values of
   `~fabric.operations.run`/`~fabric.operations.sudo`/`~fabric.operations.local`
-  which is simply the opposite of the ``.failed`` attribute.
+  which is simply the opposite of the ``.failed`` attribute. (This addition has
+  also been backported to Fabric's 0.9 series.)
 * Refactored SSH disconnection code out of the main ``fab`` loop into
   `~fabric.network.disconnect_all`, allowing library users to avoid problems
   with non-fabfile Python scripts hanging after execution finishes.
-* `~fabric.operations.local` now honors `~fabric.context_managers.cd`.
+* :issue:`2`: Added ``use_sudo`` kwarg to `~fabric.operations.put` to allow
+  uploading of files to privileged locations. Thanks to Erich Heine and IRC
+  user ``npmap`` for suggestions and patches.
 * :issue:`23`: Added `~fabric.context_managers.prefix` context manager for
   easier management of persistent state across commands.
 * :issue:`27`: Added environment variable (:ref:`always-use-pty`) and
   command-line flag (:option:`--no-pty`) for global control over the
   `~fabric.operations.run`/`~fabric.operations.sudo` ``pty`` argument.
+* :issue:`28`: Allow shell-style globbing in `~fabric.operations.get`. Thanks
+  to Erich Heine and Max Arnold.
 * :issue:`55`: `~fabric.operations.run`, `~fabric.operations.sudo` and
   `~fabric.operations.local` now provide access to their standard error
   (stderr) as an attribute on the return value, alongside e.g. ``.failed``.
@@ -83,6 +119,20 @@ Feature additions
   multi-connection scenarios.
 * :issue:`193`: When requesting a remote pseudo-terminal, use the invoking
   terminal's dimensions instead of going with the default.
+* :issue:`217`: `~fabric.operations.get`/`~fabric.operations.put` now accept
+  file-like objects as well as local file paths for their ``local_path``
+  arguments.
+* :issue:`245`: Added the `~fabric.context_managers.lcd` context manager for
+  controlling `~fabric.operations.local`'s current working directory and
+  `~fabric.operations.put`/`~fabric.operations.get`'s local working
+  directories.
+* :issue:`274`: `~fabric.operations.put`/`~fabric.operations.get` now have
+  return values which may be iterated over to access the paths of files
+  uploaded remotely or downloaded locally, respectively. These return values
+  also allow access to ``.failed`` and ``.succeeded`` attributes, just like
+  `~fabric.operations.run` and friends. (In this case, ``.failed`` is actually
+  a list itself containing any paths which failed to transfer, which naturally
+  acts as a boolean as well.)
 
 
 Bugfixes
@@ -93,4 +143,8 @@ Bugfixes
 Documentation updates
 =====================
 
-Nothing new except updating usage docs and API docs for all the new features.
+* API, tutorial and usage docs updated with the above new features.
+* README now makes the Python 2.5+ requirement up front and explicit; some
+  folks were still assuming it would run on Python 2.4.
+* Added a link to Python's documentation for string interpolation in
+  `~fabric.contrib.files.upload_template`'s docstring.

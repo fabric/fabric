@@ -16,7 +16,7 @@ from fabric.network import interpret_host_string
 from fabric.state import env, output
 import fabric.network
 
-from server import PORT, PASSWORDS, USER
+from server import PORT, PASSWORDS, USER, HOST
 
 
 class FabricTest(object):
@@ -33,7 +33,7 @@ class FabricTest(object):
         self.previous_output = output.items()
         # Set up default networking for test server
         env.disable_known_hosts = True
-        interpret_host_string('%s@localhost:%s' % (USER, PORT))
+        interpret_host_string('%s@%s:%s' % (USER, HOST, PORT))
         env.password = PASSWORDS[USER]
         # Command response mocking is easier without having to account for
         # shell wrapping everywhere.
@@ -203,3 +203,8 @@ Got:
 %r
 """ % (a, b, a, b)
     assert a == b, msg or default_msg
+
+
+def eq_contents(path, text):
+    with open(path) as fd:
+        eq_(text, fd.read())

@@ -66,19 +66,28 @@ extension.
 Package tools
 ~~~~~~~~~~~~~
 
-Current best practices in the Python packaging world involve using the ``pip``
-tool, which in most cases offers significant advantages over the older but more
-common ``easy_install``. Unfortunately, at the time of writing, recent versions
-of PyCrypto (2.1 and above) conflict with ``pip`` and do not install correctly,
-under Python 2.5. (Thankfully, the problem does not appear to affect Python
-2.6.)
+We strongly recommend using ``pip`` to install Fabric as it is newer and
+generally better than ``easy_install``. However, a combination of bugs in
+specific versions of Python, ``pip`` and PyCrypto can prevent installation of
+PyCrypto. Specifically:
 
-Fabric and Paramiko will work correctly with any PyCrypto 1.9 or newer, and
-PyCrypto 2.0.1 installs just fine via ``pip``. As such, Fabric's packaging
-settings are currently set to require PyCrypto 2.0.1 if you're on Python 2.5.x.
+* Python = 2.5.x
+* PyCrypto >= 2.1
+* ``pip`` < 0.8.1
 
-However, Fabric will work fine with PyCrypto 2.1 and up -- you'll just need to
-upgrade it, via ``easy_install``, after installing Fabric itself.
+When all three criteria are met, you may encounter ``No such file or
+directory`` IOErrors when trying to ``pip install Fabric`` or ``pip install
+PyCrypto``.
+
+The fix is simply to make sure at least one of the above criteria is not met,
+by doing the following (in order of preference):
+
+* Upgrade to ``pip`` 0.8.1 or above, e.g. by running ``pip install -U pip``.
+* Explicitly install PyCrypto 2.0.1 (which is the latest version known to work with
+  Fabric which does not cause the installation problem) via ``pip install
+  PyCrypto==2.0.1``.
+* Upgrade to Python 2.6 or above.
+
 
 C extension
 ~~~~~~~~~~~
@@ -147,7 +156,8 @@ either of the following locations:
   of all tagged releases -- just click the 'Download' button near the top of
   the main page.
 * `Fabric's PyPI page <http://pypi.python.org/pypi/Fabric>`_ offers manual
-  downloads in addition to being the entry point for :ref:`easy-install`.
+  downloads in addition to being the entry point for ``pip`` and
+  ``easy-install``.
 
 
 .. _source-code-checkouts:
