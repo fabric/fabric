@@ -1,6 +1,6 @@
 from __future__ import with_statement
 
-from StringIO import StringIO # No need for cStringIO at this time
+from StringIO import StringIO  # No need for cStringIO at this time
 from contextlib import contextmanager
 from functools import wraps, partial
 from types import StringTypes
@@ -94,6 +94,7 @@ def mock_streams(which):
     both = (which == 'both')
     stdout = (which == 'stdout') or both
     stderr = (which == 'stderr') or both
+
     def mocked_streams_decorator(func):
         @wraps(func)
         def inner_wrapper(*args, **kwargs):

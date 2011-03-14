@@ -18,8 +18,8 @@ try:
     warnings.simplefilter('ignore', DeprecationWarning)
     import paramiko as ssh
 except ImportError:
-    abort("paramiko is a required module. Please install it:\n\t$ sudo easy_install paramiko")
-
+    abort("paramiko is a required module. Please install it:\n\t"
+          "$ sudo easy_install paramiko")
 
 
 host_pattern = r'((?P<user>.+)@)?(?P<host>[^:]+)(:(?P<port>\d+))?'
@@ -52,7 +52,7 @@ class HostConnectionCache(dict):
     ``user1@example.com`` will create a connection to ``example.com``, logged
     in as ``user1``; later specifying ``user2@example.com`` will create a new,
     2nd connection as ``user2``.
-    
+
     The same applies to ports: specifying two different ports will result in
     two different connections to the same host being made. If no port is given,
     22 is assumed, so ``example.com`` is equivalent to ``example.com:22``.
@@ -97,8 +97,8 @@ def denormalize(host_string):
     """
     Strips out default values for the given host string.
 
-    If the user part is the default user, it is removed; if the port is port 22,
-    it also is removed.
+    If the user part is the default user, it is removed;
+    if the port is port 22, it also is removed.
     """
     from state import env
     r = host_regex.match(host_string).groupdict()
@@ -115,8 +115,8 @@ def join_host_strings(user, host, port=None):
     """
     Turns user/host/port strings into ``user@host:port`` combined string.
 
-    This function is not responsible for handling missing user/port strings; for
-    that, see the ``normalize`` function.
+    This function is not responsible for handling missing user/port strings;
+    for that, see the ``normalize`` function.
 
     If ``port`` is omitted, the returned string will be of the form
     ``user@host``.
@@ -147,7 +147,6 @@ def connect(user, host, port):
     if not env.reject_unknown_hosts:
         client.set_missing_host_key_policy(ssh.AutoAddPolicy())
 
-
     #
     # Connection attempt loop
     #
@@ -176,7 +175,9 @@ def connect(user, host, port):
         # command line results in the big banner error about man-in-the-middle
         # attacks.
         except ssh.BadHostKeyException:
-            abort("Host key for %s did not match pre-existing key! Server's key was changed recently, or possible man-in-the-middle attack." % env.host)
+            abort("Host key for %s did not match pre-existing key! Server's"
+                   " key was changed recently, or possible man-in-the-middle"
+                   "attack." % env.host)
         # Prompt for new password to try on auth failure
         except (
             ssh.AuthenticationException,
@@ -243,9 +244,11 @@ def connect(user, host, port):
                 host, e[1])
             )
 
+
 def prompt_for_password(prompt=None, no_colon=False, stream=None):
     """
-    Prompts for and returns a new password if required; otherwise, returns None.
+    Prompts for and returns a new password if required; otherwise, returns
+    None.
 
     A trailing colon is appended unless ``no_colon`` is True.
 
@@ -285,7 +288,7 @@ def needs_host(func):
     This decorator is basically a safety net for silly users who forgot to
     specify the host/host list in one way or another. It should be used to wrap
     operations which require a network connection.
-    
+
     Due to how we execute commands per-host in ``main()``, it's not possible to
     specify multiple hosts at this point in time, so only a single host will be
     prompted for.
@@ -296,10 +299,12 @@ def needs_host(func):
     command (in the case where multiple commands have no hosts set, of course.)
     """
     from fabric.state import env
+
     @wraps(func)
     def host_prompting_wrapper(*args, **kwargs):
         while not env.get('host_string', False):
-            host_string = raw_input("No hosts found. Please specify (single) host string for connection: ")
+            host_string = raw_input("No hosts found. Please specify (single)"
+                                    " host string for connection: ")
             interpret_host_string(host_string)
         return func(*args, **kwargs)
     return host_prompting_wrapper

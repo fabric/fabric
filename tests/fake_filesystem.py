@@ -7,6 +7,7 @@ import paramiko as ssh
 
 
 class FakeFile(StringIO):
+
     def __init__(self, value=None, path=None):
         init = lambda x: StringIO.__init__(self, x)
         if value is None:

@@ -14,7 +14,7 @@ from fabric.context_managers import settings, hide, show
 from fabric.network import (HostConnectionCache, join_host_strings, normalize,
     denormalize)
 from fabric.io import output_loop
-import fabric.network # So I can call patch_object correctly. Sigh.
+import fabric.network  # So I can call patch_object correctly. Sigh.
 from fabric.state import env, output, _get_system_username
 from fabric.operations import run, sudo
 
@@ -95,14 +95,12 @@ class TestNetwork(FabricTest):
                 'localhost', username + '@localhost:22'),
         ):
             eq_.description = "Host-string denormalization: %s" % description
-            yield eq_, denormalize(string1), denormalize(string2) 
+            yield eq_, denormalize(string1), denormalize(string2)
             del eq_.description
-
 
     #
     # Connection caching
     #
-
     @staticmethod
     @with_fakes
     def check_connection_calls(host_strings, num_calls):
@@ -136,16 +134,13 @@ class TestNetwork(FabricTest):
             TestNetwork.check_connection_calls.description = description
             yield TestNetwork.check_connection_calls, host_strings, num_calls
 
-
     #
     # Connection loop flow
     #
-
     @server()
     def test_saved_authentication_returns_client_object(self):
         cache = HostConnectionCache()
         assert isinstance(cache[env.host_string], paramiko.SSHClient)
-
 
     @server()
     @with_fakes
@@ -154,7 +149,6 @@ class TestNetwork(FabricTest):
         with password_response(PASSWORDS[env.user], times_called=1):
             cache = HostConnectionCache()
             cache[env.host_string]
-
 
     @mock_streams('stdout')
     @server()
@@ -176,7 +170,6 @@ class TestNetwork(FabricTest):
             # Also test that the captured value matches, too.
             eq_(output_string, result)
 
-
     @server()
     def test_sudo_prompt_kills_capturing(self):
         """
@@ -185,7 +178,6 @@ class TestNetwork(FabricTest):
         cmd = "ls /simple"
         with hide('everything'):
             eq_(sudo(cmd), RESPONSES[cmd])
-
 
     @server()
     def test_password_memory_on_user_switch(self):
@@ -223,7 +215,6 @@ class TestNetwork(FabricTest):
             ):
                 sudo("ls /simple")
 
-
     @mock_streams('stderr')
     @server()
     def test_password_prompt_displays_host_string(self):
@@ -237,7 +228,6 @@ class TestNetwork(FabricTest):
             run("ls /simple")
         regex = r'^\[%s\] Login password: ' % env.host_string
         assert_contains(regex, sys.stderr.getvalue())
-
 
     @mock_streams('stderr')
     @server(pubkeys=True)
@@ -253,7 +243,6 @@ class TestNetwork(FabricTest):
             run("ls /simple")
         regex = r'^\[%s\] Login password: ' % env.host_string
         assert_contains(regex, sys.stderr.getvalue())
-
 
     def test_sudo_prompt_display_passthrough(self):
         """
@@ -299,7 +288,6 @@ class TestNetwork(FabricTest):
 [%(prefix)s] out: sudo password: """ % {'prefix': env.host_string}
         eq_(expected[1:], sys.stdall.getvalue())
 
-
     @mock_streams('both')
     @server(
         pubkeys=True,
@@ -331,7 +319,6 @@ class TestNetwork(FabricTest):
 [%(prefix)s] out: result2
 """ % {'prefix': env.host_string}
         eq_(expected[1:], sys.stdall.getvalue())
-
 
     @mock_streams('both')
     @server(pubkeys=True, responses={'silent': '', 'normal': 'foo'})
@@ -365,7 +352,6 @@ class TestNetwork(FabricTest):
 """ % {'prefix': env.host_string}
         eq_(expected[1:], sys.stdall.getvalue())
 
-
     @mock_streams('both')
     @server(
         pubkeys=True,
@@ -393,7 +379,6 @@ class TestNetwork(FabricTest):
 [%(prefix)s] out: result2
 """ % {'prefix': env.host_string}
         eq_(expected[1:], sys.stdall.getvalue())
-
 
     @mock_streams('both')
     @server(

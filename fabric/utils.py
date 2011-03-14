@@ -10,7 +10,7 @@ def abort(msg):
     """
     Abort execution, print ``msg`` to stderr and exit with error status (1.)
 
-    This function currently makes use of `sys.exit`_, which raises 
+    This function currently makes use of `sys.exit`_, which raises
     `SystemExit`_. Therefore, it's possible to detect and recover from inner
     calls to `abort` by using ``except SystemExit`` or similar.
 

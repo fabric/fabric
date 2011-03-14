@@ -6,6 +6,7 @@ class ThreadHandler(object):
     def __init__(self, name, callable, *args, **kwargs):
         # Set up exception handling
         self.exception = None
+
         def wrapper(*args, **kwargs):
             try:
                 callable(*args, **kwargs)

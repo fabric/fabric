@@ -16,14 +16,17 @@ Because these functions simply return modified strings, you can nest them::
 
     from fabric.colors import red, green
 
-    print(red("This sentence is red, except for " + green("these words, which are green") + "."))
+    print(red("This sentence is red, except for " + \
+          green("these words, which are green") + "."))
 
 If ``bold`` is set to ``True``, the ANSI flag for bolding will be flipped on
 for that particular invocation, which usually shows up as a bold or brighter
 version of the original color on most terminals.
 """
 
+
 def _wrap_with(code):
+
     def inner(text, bold=False):
         c = code
         if bold:

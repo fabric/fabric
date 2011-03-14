@@ -14,10 +14,10 @@ from optparse import OptionParser
 import os
 import sys
 
-from fabric import api # For checking callables against the API
-from fabric.contrib import console, files, project # Ditto
+from fabric import api  # For checking callables against the API
+from fabric.contrib import console, files, project  # Ditto
 from fabric.network import denormalize, interpret_host_string, disconnect_all
-from fabric import state # For easily-mockable access to roles, env and etc
+from fabric import state  # For easily-mockable access to roles, env and etc
 from fabric.state import commands, connections, env_options
 from fabric.utils import abort, indent
 
@@ -29,6 +29,7 @@ _internals = reduce(lambda x, y: x + filter(callable, vars(y).values()),
     _modules,
     []
 )
+
 
 def load_settings(path):
     """
@@ -158,7 +159,8 @@ def parse_options():
 
     #
     # Define options that don't become `env` vars (typically ones which cause
-    # Fabric to do something other than its normal execution, such as --version)
+    # Fabric to do something other than its normal execution, such as
+    # --version)
     #
 
     # Version number (optparse gives you --version but we have to do it
@@ -286,7 +288,7 @@ def _escape_split(sep, argstr):
         return argstr.split(sep)
 
     before, _, after = argstr.partition(escaped_sep)
-    startlist = before.split(sep) # a regular split is fine here
+    startlist = before.split(sep)  # a regular split is fine here
     unfinished = startlist[-1]
     startlist = startlist[:-1]
 
@@ -297,7 +299,7 @@ def _escape_split(sep, argstr):
     # part of the string sent in recursion is the rest of the escaped value.
     unfinished += sep + endlist[0]
 
-    return startlist + [unfinished] + endlist[1:] # put together all the parts
+    return startlist + [unfinished] + endlist[1:]  # put together all the parts
 
 
 def parse_arguments(arguments):
@@ -488,7 +490,7 @@ def main():
         # If user didn't specify any commands to run, show help
         if not (arguments or remainder_arguments):
             parser.print_help()
-            sys.exit(0) # Or should it exit with error (1)?
+            sys.exit(0)  # Or should it exit with error (1)?
 
         # Parse arguments into commands to run (plus args/kwargs/hosts)
         commands_to_run = parse_arguments(arguments)

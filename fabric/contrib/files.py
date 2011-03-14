@@ -61,7 +61,7 @@ def upload_template(filename, destination, context=None, use_jinja=False,
     templating library available, Jinja will be used to render the template
     instead. Templates will be loaded from the invoking user's current working
     directory by default, or from ``template_dir`` if given.
-    
+
     The resulting rendered file will be uploaded to the remote file path
     ``destination`` (which should include the desired remote filename.) If the
     destination file already exists, it will be renamed with a ``.bak``
@@ -194,7 +194,7 @@ def comment(filename, regex, use_sudo=False, char='#', backup='.bak'):
     sometimes do when inserted by hand. Neither will they have a trailing space
     unless you specify e.g. ``char='# '``.
 
-    .. note:: 
+    .. note::
 
         In order to preserve the line being commented out, this function will
         wrap your ``regex`` argument in parentheses, so you don't need to. It
@@ -267,7 +267,7 @@ def append(filename, text, use_sudo=False, partial=False, escape=True):
     "append lines to a file" use case. You may override this and force partial
     searching (e.g. ``^<text>``) by specifying ``partial=True``.
 
-    Because ``text`` is single-quoted, single quotes will be transparently 
+    Because ``text`` is single-quoted, single quotes will be transparently
     backslash-escaped. This can be disabled with ``escape=False``.
 
     If ``use_sudo`` is True, will use `sudo` instead of `run`.

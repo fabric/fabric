@@ -18,7 +18,7 @@ def _flush(pipe, text):
 
 
 def _endswith(char_list, substring):
-    tail = char_list[-1*len(substring):]
+    tail = char_list[-1 * len(substring):]
     substring = list(substring)
     return tail == substring
 
@@ -78,7 +78,7 @@ def output_loop(chan, which, capture):
                 # backwards compatible with Fabric 0.9.x behavior; the user
                 # will still see the prompt on their screen (no way to avoid
                 # this) but at least it won't clutter up the captured text.
-                del capture[-1*len(env.sudo_prompt):]
+                del capture[-1 * len(env.sudo_prompt):]
                 # If the password we just tried was bad, prompt the user again.
                 if (not password) or reprompt:
                     # Print the prompt and/or the "try again" notice if
