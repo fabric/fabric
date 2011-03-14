@@ -2,12 +2,12 @@
 Development
 ===========
 
-The Fabric development team consists of two programmers, `Jeff Forcier
-<http://bitprophet.org>`_ and `Christian Vest Hansen
-<http://my.opera.com/karmazilla/blog/>`_, with Jeff taking the lead role.
-However, dozens of other developers pitch in by submitting patches and ideas,
-via individual emails, `Redmine <http://code.fabfile.org>`_, the `mailing list
-<http://lists.nongnu.org/mailman/listinfo/fab-user>`_ and `GitHub <http://github.com/bitprophet/fabric>`_.
+The Fabric development team is headed by `Jeff Forcier
+<http://bitprophet.org>`_, aka ``bitprophet``.  However, dozens of other
+developers pitch in by submitting patches and ideas, via individual emails,
+`Redmine <http://code.fabfile.org>`_, the `mailing list
+<http://lists.nongnu.org/mailman/listinfo/fab-user>`_ and `GitHub
+<http://github.com/bitprophet/fabric>`_.
 
 Get the code
 ============
@@ -136,10 +136,10 @@ Major
 Major releases update the first number, e.g. going from 0.9 to 1.0, and
 indicate that the software has reached some very large milestone.
 
-For example, the upcoming 1.0 will mean that we feel Fabric has reached its
-primary design goals of a solid core API and well-defined area for additional
-functionality to live. Version 2.0 might, for example, indicate a rewrite using
-a new underlying network technology (though this isn't necessarily planned.)
+For example, the 1.0 release signified a commitment to a medium to long term
+API and some significant backwards incompatible (compared to the 0.9 series)
+features. Version 2.0 might indicate a rewrite using a new underlying network
+technology or an overhaul to be more object-oriented.
 
 Major releases will often be backwards-incompatible with the previous line of
 development, though this is not a requirement, just a usual happenstance.
@@ -149,9 +149,9 @@ when switching between major versions.
 Minor
 -----
 
-Minor releases, such as moving from 1.0 to 1.1, typically mean that a new,
-large feature has been added. They are also sometimes used to mark off the
-fact that a lot of bug fixes or small feature modifications have occurred
+Minor releases, such as moving from 1.0 to 1.1, typically mean that one or more
+new, large features has been added. They are also sometimes used to mark off
+the fact that a lot of bug fixes or small feature modifications have occurred
 since the previous minor release. (And, naturally, some of them will involve
 both at the same time.)
 
@@ -159,22 +159,12 @@ These releases are guaranteed to be backwards-compatible with all other
 releases containing the same major version number, so a fabfile that works
 with 1.0 should also work fine with 1.1 or even 1.9.
 
-.. note::
-
-    This policy marks a departure from early versions of Fabric, wherein the
-    minor release number was the backwards-compatibility boundary -- e.g.
-    Fabric 0.1 was incompatible with Fabric 0.0.x.
-
-    Fabric 0.1 to 0.9 also marked a rewrite of the software and a change of
-    hands, and so did break backwards compatibility. This will not happen
-    again.
-
 Bugfix/tertiary
 ---------------
 
 The third and final part of version numbers, such as the '3' in 1.0.3,
 generally indicate a release containing one or more bugfixes, although minor
-feature additions or modifications may sometimes occur.
+feature modifications may (rarely) occur.
 
 This third number is sometimes omitted for the first major or minor release in
 a series, e.g. 1.2 or 2.0, and in these cases it can be considered an implicit
@@ -182,14 +172,9 @@ zero (e.g. 2.0.0).
 
 .. note::
 
-    The 0.9.x branch of development will see more significant feature additions
-    than is planned for future lines. This is in order to backport some useful
-    features from the 1.0 branch so that the feature gap between 0.9 and 1.0 is
-    not as large as it was when 0.9.0 was released.
-
-    In 1.0.x and so forth, tertiary releases are more likely to contain just
-    bugfixes or tweaks, and not new functionality, as the window between minor
-    releases is expected to be shorter than that of 0.1 => 0.9.
+    The 0.9 series of development included more significant feature work than
+    is typically found in tertiary releases; from 1.0 onwards a more
+    traditional approach, as per the above, is used.
 
 
 Support of older releases
@@ -198,15 +183,16 @@ Support of older releases
 Major and minor releases do not mark the end of the previous line or lines of
 development:
 
-* The two most recent stable release branches will continue to receive critical
-  bugfixes. For example, once 1.0 is released, both it and 0.9 will likely see
-  tertiary releases until 1.1 is released, at which point only 1.1 and 1.0 will
-  get bugfixes.
+* The two most recent minor release branches will continue to receive critical
+  bugfixes. For example, if 1.1 were the latest minor release, it and 1.0 would
+  get bugfixes, but not 0.9 or earlier; and once 1.2 came out, this window
+  would then only extend back to 1.1.
 * Depending on the nature of bugs found and the difficulty in backporting them,
   older release lines may also continue to get bugfixes -- but there's no
-  longer a guarantee of any kind. Thus, if a bug is found in 1.1 that affects
-  0.9 and can be easily applied, we *may* cut a new 0.9.x release.
-* This policy may change in the future to accomodate more branches, depending
+  longer a guarantee of any kind. Thus, if a bug were found in 1.1 that
+  affected 0.9 and could be easily applied, a new 0.9.x version *might* be
+  released.
+* This policy may change in the future to accommodate more branches, depending
   on development speed.
 
 We hope that this policy will allow us to have a rapid minor release cycle (and

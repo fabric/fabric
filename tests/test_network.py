@@ -63,6 +63,14 @@ class TestNetwork(FabricTest):
             'user-with-hyphens'
         )
 
+    def test_at_symbol_in_username(self):
+        """
+        normalize() should allow '@' in usernames (i.e. last '@' is split char)
+        """
+        parts = normalize('user@example.com@www.example.com')
+        eq_(parts[0], 'user@example.com')
+        eq_(parts[1], 'www.example.com')
+
     def test_normalization_of_empty_input(self):
         empties = ('', '', '')
         for description, input in (

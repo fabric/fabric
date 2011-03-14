@@ -158,8 +158,9 @@ strings specifying a username, hostname and port combination, in the form of
 username, and/or port 22, respectively. Thus, ``admin@foo.com:222``,
 ``deploy@website`` and ``nameserver1`` could all be valid host strings.
 
-In other words, Fabric expects the same format as the command-line ``ssh``
-program.
+.. note::
+    The user/hostname split occurs at the last ``@`` found, so e.g. email
+    address usernames are valid and will be parsed correctly.
 
 During execution, Fabric normalizes the host strings given and then stores each
 part (username/hostname/port) in the environment dictionary, for both its use

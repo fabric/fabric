@@ -58,6 +58,39 @@ That's all there is to it. This functionality allows Fabric to be used as a
 .. seealso:: :ref:`execution-strategy`, :ref:`tasks-and-imports`, :doc:`usage/fab`
 
 
+Task arguments
+==============
+
+It's often useful to pass runtime parameters into your tasks, just as you might
+during regular Python programming. Fabric has basic support for this using a
+shell-compatible notation: ``<task name>:<arg>,<kwarg>=<value>,...``. It's
+contrived, but let's extend the above example to say hello to you personally::
+
+    def hello(name="world"):
+        print("Hello %s!" % name)
+
+By default, calling ``fab hello`` will still behave as it did before; but now
+we can personalize it::
+
+    $ fab hello:name=Jeff
+    Hello Jeff!
+
+    Done.
+
+Those already used to programming in Python might have guessed that this
+invocation behaves exactly the same way::
+
+    $ fab hello:Jeff
+    Hello Jeff!
+
+    Done.
+
+For the time being, your argument values will always show up in Python as
+strings and may require a bit of string manipulation for complex types such
+as lists. Future versions may add a typecasting system to make this easier.
+
+.. seealso:: :ref:`task-arguments`
+
 Local commands
 ==============
 
@@ -88,14 +121,14 @@ at the root of a project::
     We're using a Django application here, but only as an example -- Fabric is
     not tied to any external codebase, save for its SSH library.
 
-For starters, perhaps we want to run our tests and then pack up a copy of our
-app so we're ready for a deploy::
+For starters, perhaps we want to run our tests and commit to our VCS so we're
+ready for a deploy::
 
     from fabric.api import local
 
     def prepare_deploy():
-        local('./manage.py test my_app', capture=False)
-        local('tar czf /tmp/my_project.tgz .', capture=False)
+        local("./manage.py test my_app")
+        local("git add -p && git commit")
 
 The output of which might look a bit like this::
 
@@ -111,13 +144,15 @@ The output of which might look a bit like this::
     OK
     Destroying test database...
 
-    [localhost] run: tar czf /tmp/my_project.tgz .
+    [localhost] run: git add -p && git commit
+
+    <interactive Git add / git commit edit message session>
 
     Done.
 
 The code itself is straightforward: import a Fabric API function,
-`~fabric.operations.local`, and use it to run local shell commands. The rest of
-Fabric's API is similar -- it's all just Python.
+`~fabric.operations.local`, and use it to run and interact with local shell
+commands. The rest of Fabric's API is similar -- it's all just Python.
 
 .. seealso:: :doc:`api/core/operations`, :ref:`fabfile-discovery`
 
@@ -132,14 +167,14 @@ subtasks::
     from fabric.api import local
 
     def test():
-        local('./manage.py test my_app', capture=False)
+        local("./manage.py test my_app")
 
-    def pack():
-        local('tar czf /tmp/my_project.tgz .', capture=False)
+    def commit():
+        local("git add -p && git commit")
 
     def prepare_deploy():
         test()
-        pack()
+        commit()
 
 The ``prepare_deploy`` task can be called just as before, but now you can make
 a more granular call to one of the sub-tasks, if desired.
@@ -178,7 +213,7 @@ encounters an error::
     Aborting.
 
 Great! We didn't have to do anything ourselves: Fabric detected the failure and
-aborted, never running the ``pack`` task.
+aborted, never running the ``commit`` task.
 
 .. seealso:: :ref:`Failure handling (usage documentation) <failures>`
 
@@ -199,7 +234,7 @@ result of the `~fabric.operations.local` call ourselves::
 
     def test():
         with settings(warn_only=True):
-            result = local('./manage.py test my_app', capture=False)
+            result = local('./manage.py test my_app', capture=True)
         if result.failed and not confirm("Tests failed. Continue anyway?"):
             abort("Aborting at user request.")
 
@@ -212,8 +247,8 @@ In adding this new feature we've introduced a number of new things:
   `~fabric.contrib.console.confirm` function, used for simple yes/no prompts;
 * The `~fabric.context_managers.settings` context manager, used to apply
   settings to a specific block of code;
-* Command-running operations like `~fabric.operations.local` return objects
-  containing info about their result (such as ``.failed``, or also
+* Command-running operations like `~fabric.operations.local` can return objects
+  containing info about their result (such as ``.failed``, or
   ``.return_code``);
 * And the `~fabric.utils.abort` function, used to manually abort execution.
 
@@ -227,35 +262,36 @@ Making connections
 ==================
 
 Let's start wrapping up our fabfile by putting in the keystone: a ``deploy``
-task::
+task that ensures the code on our server is up to date::
 
     def deploy():
-        put('/tmp/my_project.tgz', '/tmp/')
-        with cd('/srv/django/my_project/'):
-            run('tar xzf /tmp/my_project.tgz')
-            run('touch app.wsgi')
+        code_dir = '/srv/django/myproject'
+        with cd(code_dir):
+            run("git pull")
+            run("touch app.wsgi")
 
-Here again, we introduce a handful of new functions:
+Here again, we introduce a handful of new concepts:
 
-* `~fabric.operations.put`, which simply uploads a file to a remote server;
+* Fabric is just Python -- so we can make liberal use of regular Python code
+  constructs such as variables and string interpolation;
 * `~fabric.context_managers.cd`, an easy way of prefixing commands with a
-  ``cd /to/some/directory`` call;
+  ``cd /to/some/directory`` call.
 * `~fabric.operations.run`, which is similar to `~fabric.operations.local` but
   runs remotely instead of locally.
 
-And because at this point, we're using a nontrivial number of Fabric's API
-functions, let's switch our API import to use ``*`` (as mentioned in the
-:doc:`fabfile <usage/fabfiles>` documentation)::
+We also need to make sure we import the new functions at the top of our file::
 
     from __future__ import with_statement
-    from fabric.api import *
+    from fabric.api import local, settings, abort, run, cd
     from fabric.contrib.console import confirm
 
 With these changes in place, let's deploy::
 
     $ fab deploy
     No hosts found. Please specify (single) host string for connection: my_server
-    [my_server] put: /tmp/my_project.tgz -> /tmp/my_project.tgz
+    [my_server] run: git pull
+    [my_server] out: Already up-to-date.
+    [my_server] out:
     [my_server] run: touch app.wsgi
 
     Done.
@@ -265,7 +301,65 @@ runtime. Connection definitions use SSH-like "host strings" (e.g.
 ``user@host:port``) and will use your local username as a default -- so in this
 example, we just had to specify the hostname, ``my_server``.
 
-.. seealso:: :ref:`importing-the-api`
+
+Remote interactivity
+--------------------
+
+``git pull`` works fine if you've already got a checkout of your source code --
+but what if this is the first deploy? It'd be nice to handle that case too and
+do the initial ``git clone``::
+
+    def deploy():
+        code_dir = '/srv/django/myproject'
+        with settings(warn_only=True):
+            if run("test -d %s" % code_dir).failed:
+                run("git clone user@vcshost:/path/to/repo/.git %s" % code_dir)
+        with cd(code_dir):
+            run("git pull")
+            run("touch app.wsgi")
+
+As with our calls to `~fabric.operations.local` above, `~fabric.operations.run`
+also lets us construct clean Python-level logic based on executed shell
+commands. However, the interesting part here is the ``git clone`` call: since
+we're using Git's SSH method of accessing the repository on our Git server,
+this means our remote `~fabric.operations.run` call will need to authenticate
+itself.
+
+Older versions of Fabric (and similar high level SSH libraries) run remote
+programs in limbo, unable to be touched from the local end. This is
+problematic when you have a serious need to enter passwords or otherwise
+interact with the remote program.
+
+Fabric 1.0 and later breaks down this wall and ensures you can always talk to
+the other side. Let's see what happens when we run our updated ``deploy`` task
+on a new server with no Git checkout::
+
+    $ fab deploy
+    No hosts found. Please specify (single) host string for connection: my_server
+    [my_server] run: test -d /srv/django/myproject
+
+    Warning: run() encountered an error (return code 1) while executing 'test -d /srv/django/myproject'
+
+    [my_server] run: git clone user@vcshost:/path/to/repo/.git /srv/django/myproject
+    [my_server] out: Cloning into /srv/django/myproject...
+    [my_server] out: Password: <enter password>
+    [my_server] out: remote: Counting objects: 6698, done.
+    [my_server] out: remote: Compressing objects: 100% (2237/2237), done.
+    [my_server] out: remote: Total 6698 (delta 4633), reused 6414 (delta 4412)
+    [my_server] out: Receiving objects: 100% (6698/6698), 1.28 MiB, done.
+    [my_server] out: Resolving deltas: 100% (4633/4633), done.
+    [my_server] out:
+    [my_server] run: git pull
+    [my_server] out: Already up-to-date.
+    [my_server] out:
+    [my_server] run: touch app.wsgi
+
+    Done.
+
+Notice the ``Password:`` prompt -- that was our remote ``git`` call on our Web server, asking for the password to the Git server. We were able to type it in and the clone continued normally.
+
+.. seealso:: :doc:`/usage/interactivity`
+
 
 .. _defining-connections:
 
@@ -316,12 +410,12 @@ its entirety::
 
     def test():
         with settings(warn_only=True):
-            result = local('./manage.py test my_app', capture=False)
+            result = local('./manage.py test my_app', capture=True)
         if result.failed and not confirm("Tests failed. Continue anyway?"):
             abort("Aborting at user request.")
 
     def pack():
-        local('tar czf /tmp/my_project.tgz .', capture=False)
+        local('tar czf /tmp/my_project.tgz .')
 
     def prepare_deploy():
         test()

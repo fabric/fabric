@@ -8,6 +8,10 @@ Feature additions
 =================
 
 * Added :doc:`documentation </usage/library>` for using Fabric as a library.
+* Mentioned our `Twitter account <https://twitter.com/pyfabric>`_ on the main
+  docs page.
+* :issue:`290`: Added ``escape`` kwarg to `~fabric.contrib.files.append` to
+  allow control over previously automatic single-quote escaping.
 
 
 Bugfixes

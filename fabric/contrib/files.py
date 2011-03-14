@@ -52,9 +52,10 @@ def upload_template(filename, destination, context=None, use_jinja=False,
     """
     Render and upload a template text file to a remote host.
 
-    ``filename`` should be the path to a text file, which may contain Python
-    string interpolation formatting and will be rendered with the given context
-    dictionary ``context`` (if given.)
+    ``filename`` should be the path to a text file, which may contain `Python
+    string interpolation formatting
+    <http://docs.python.org/release/2.5.4/lib/typesseq-strings.html>`_ and will
+    be rendered with the given context dictionary ``context`` (if given.)
 
     Alternately, if ``use_jinja`` is set to True and you have the Jinja2
     templating library available, Jinja will be used to render the template
@@ -73,7 +74,8 @@ def upload_template(filename, destination, context=None, use_jinja=False,
     temp_destination = '/tmp/' + basename
 
     # This temporary file should not be automatically deleted on close, as we
-    # need it there to upload it (Windows locks the file for reading while open).
+    # need it there to upload it (Windows locks the file for reading while
+    # open).
     tempfile_fd, tempfile_name = tempfile.mkstemp()
     output = open(tempfile_name, "w+b")
     # Init
@@ -249,7 +251,7 @@ def contains(filename, text, exact=False, use_sudo=False):
         ))
 
 
-def append(filename, text, use_sudo=False, partial=True):
+def append(filename, text, use_sudo=False, partial=False, escape=True):
     """
     Append string (or list of strings) ``text`` to ``filename``.
 
@@ -260,12 +262,13 @@ def append(filename, text, use_sudo=False, partial=True):
     None is returned immediately. Otherwise, the given text is appended to the
     end of the given ``filename`` via e.g. ``echo '$text' >> $filename``.
 
-    The test for whether ``text`` already exists defaults to being partial
-    only, as in ``^<text>``. Specifying ``partial=False`` will change the
-    effective regex to ``^<text>$``.
+    The test for whether ``text`` already exists defaults to a full line match,
+    e.g. ``^<text>$``, as this seems to be the most sensible approach for the
+    "append lines to a file" use case. You may override this and force partial
+    searching (e.g. ``^<text>``) by specifying ``partial=True``.
 
     Because ``text`` is single-quoted, single quotes will be transparently 
-    backslash-escaped.
+    backslash-escaped. This can be disabled with ``escape=False``.
 
     If ``use_sudo`` is True, will use `sudo` instead of `run`.
 
@@ -275,6 +278,8 @@ def append(filename, text, use_sudo=False, partial=True):
     .. versionchanged:: 1.0
         Swapped the order of the ``filename`` and ``text`` arguments to be
         consistent with other functions in this module.
+    .. versionchanged:: 1.0
+        Changed default value of ``partial`` kwarg to be ``False``.
     """
     func = use_sudo and sudo or run
     # Normalize non-list input to be a list
@@ -285,4 +290,5 @@ def append(filename, text, use_sudo=False, partial=True):
         if (exists(filename) and line
             and contains(filename, regex, use_sudo=use_sudo)):
             continue
-        func("echo '%s' >> %s" % (line.replace("'", r'\''), filename))
+        line = line.replace("'", r'\'') if escape else line
+        func("echo '%s' >> %s" % (line, filename))
