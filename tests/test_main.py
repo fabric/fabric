@@ -1,7 +1,6 @@
 import sys
 import copy
 
-from fudge.patcher import with_patched_object
 from fudge import Fake
 from nose.tools import eq_, raises
 
@@ -62,9 +61,7 @@ fake_roles = {
     'r2': ['b', 'c']
 }
 
-@with_patched_object(
-    'fabric.state', 'env', _AttributeDict({'roledefs': fake_roles})
-)
+@with_patched_state_env({'roledefs': fake_roles})
 def test_roles_decorator_by_itself():
     """
     Use of @roles only
@@ -75,9 +72,7 @@ def test_roles_decorator_by_itself():
     eq_hosts(command, ['a', 'b'])
 
 
-@with_patched_object(
-    'fabric.state', 'env', _AttributeDict({'roledefs': fake_roles})
-)
+@with_patched_state_env({'roledefs': fake_roles})
 def test_hosts_and_roles_together():
     """
     Use of @roles and @hosts together results in union of both
@@ -116,7 +111,7 @@ def test_hosts_as_tuples():
     eq_hosts(command, ['foo', 'bar'])
 
 
-@with_patched_object('fabric.state', 'env', {'hosts': ['foo']})
+@with_patched_state_env({'hosts': ['foo']})
 def test_hosts_decorator_overrides_env_hosts():
     """
     If @hosts is used it replaces any env.hosts value
@@ -150,9 +145,7 @@ def test_roles_decorator_expands_single_iterable():
     eq_(command.roles, role_list)
 
 
-@with_patched_object(
-    'fabric.state', 'env', _AttributeDict({'roledefs': fake_roles})
-)
+@with_patched_state_env({'roledefs': fake_roles})
 @raises(SystemExit)
 @mock_streams('stderr')
 def test_aborts_on_nonexistent_roles():
@@ -164,9 +157,7 @@ def test_aborts_on_nonexistent_roles():
 
 lazy_role = {'r1': lambda: ['a', 'b']}
 
-@with_patched_object(
-    'fabric.state', 'env', _AttributeDict({'roledefs': lazy_role})
-)
+@with_patched_state_env({'roledefs': lazy_role})
 def test_lazy_roles():
     """
     Roles may be callables returning lists, as well as regular lists
