@@ -1,0 +1,25 @@
+========================
+Changes in version 0.9.5
+========================
+
+The following changes were implemented in Fabric 0.9.5:
+
+Feature additions
+=================
+
+* N/A
+
+Bugfixes
+========
+
+* :issue:`264`: Fix edge case in `~fabric.operations.reboot` by gracefully
+  clearing connection cache.
+* :issue:`268`: Allow for ``@`` symbols in usernames, which is valid on some
+  systems. Fabric's host-string parser now splits username and hostname at the
+  last ``@`` found instead of the first.
+
+
+Documentation updates
+=====================
+
+* N/A

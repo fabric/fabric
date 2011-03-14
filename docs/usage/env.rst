@@ -306,6 +306,21 @@ per-host-string password cache. Keys are full :ref:`host strings
 .. versionadded:: 1.0
 
 
+.. _env-path:
+
+``path``
+--------
+
+**Default:** ``''``
+
+Used to set the remote ``$PATH`` when executing commands in
+`~fabric.operations.run`/`~fabric.operations.sudo`. It is recommended to use
+the `~fabric.context_managers.path` context manager for managing this value
+instead of setting it directly.
+
+.. versionadded:: 1.0
+
+
 ``port``
 --------
 

@@ -41,18 +41,7 @@ def build_docs(clean='no', browse='no'):
     b = ""
     if browse.lower() in ['yes', 'y']:
         b = " && open _build/html/index.html"
-    local('cd docs; make %shtml%s' % (c, b), capture=False)
-
-
-@hosts(docs_host)
-def push_docs():
-    """
-    Build and push the Sphinx docs to docs.fabfile.org
-    """
-    build_docs(clean='yes')
-    remote_loc = '/var/www/docs.fabfile/%s/' % _version('short').split()[0]
-    run('mkdir -p %s' % remote_loc)
-    rsync_project(remote_loc, 'docs/_build/html/', delete=True)
+    local('cd docs; make %shtml%s' % (c, b))
 
 
 def _code_version_is_tagged():
@@ -67,15 +56,15 @@ def _update_code_version(force):
     """
     version_file = "fabric/version.py"
     raw_input("Work has been done since last tag, version update is needed. Hit Enter to load version info in your editor: ")
-    local("$EDITOR %s" % version_file, capture=False)
+    local("$EDITOR %s" % version_file)
     # Try to detect whether user bailed out of the edit
     if not local("git diff -- %s" % version_file) and not force:
         abort("You seem to have aborted the file edit, so I'm aborting too.")
     # Reload version module to get new version
     reload(fabric.version)
     # Commit the version update
-    local("git add %s" % version_file, capture=False)
-    local("git commit -m \"Cut %s\"" % _version('verbose'), capture=False)
+    local("git add %s" % version_file)
+    local("git commit -m \"Cut %s\"" % _version('verbose'))
 
 def _commits_since_tag():
     """
@@ -119,24 +108,24 @@ def tag(force='no', push='no'):
             f,
             _version('verbose'),
             _version('short')
-        ), capture=False)
+        ))
         # And push to the central server, if we were told to
         if push.lower() in ['y', 'yes']:
-            local("git push origin %s" % _version('short'), capture=False)
+            local("git push origin %s" % _version('short'))
 
 
 def build():
     """
     Build (but don't upload) via setup.py
     """
-    local('python setup.py sdist', capture=False)
+    local('python setup.py sdist')
 
 
 def upload():
     """
     Build, register and upload to PyPI
     """
-    local('python setup.py sdist register upload', capture=False)
+    local('python setup.py sdist register upload')
 
 
 def release(force='no'):
@@ -145,5 +134,3 @@ def release(force='no'):
     """
     tag(force=force, push='yes')
     upload()
-    with settings(host_string=docs_host):
-        push_docs()

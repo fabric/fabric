@@ -213,6 +213,9 @@ below.
     Sets :ref:`env.warn_only <warn_only>` to ``True``, causing Fabric to
     continue execution even when commands encounter error conditions.
 
+
+.. _task-arguments:
+
 Per-task arguments
 ==================
 

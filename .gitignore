@@ -9,3 +9,6 @@ Fabric.egg-info
 .coverage
 docs/_build
 dist
+build/
+tags
+TAGS

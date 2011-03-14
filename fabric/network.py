@@ -22,7 +22,7 @@ except ImportError:
 
 
 
-host_pattern = r'((?P<user>[^@]+)@)?(?P<host>[^:]+)(:(?P<port>\d+))?'
+host_pattern = r'((?P<user>.+)@)?(?P<host>[^:]+)(:(?P<port>\d+))?'
 host_regex = re.compile(host_pattern)
 
 
