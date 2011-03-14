@@ -135,9 +135,9 @@ def require(*keys, **kwargs):
     so format it appropriately.
 
     The optional keyword argument ``provided_by`` may be a list of functions or
-    function names which the user should be able to execute in order to set the
-    key or keys; it will be included in the error output if requirements are
-    not met.
+    function names or a single function or function name which the user should
+    be able to execute in order to set the key or keys; it will be included in
+    the error output if requirements are not met.
 
     Note: it is assumed that the keyword arguments apply to all given keys as a
     group. If you feel the need to specify more than one ``used_for``, for
@@ -169,7 +169,9 @@ def require(*keys, **kwargs):
     # And print provided_by if given
     if 'provided_by' in kwargs:
         funcs = kwargs['provided_by']
-        # Pluralize this too
+        # non-iterable is given, treat it as a list of this single item
+        if not hasattr(funcs, '__iter__'):
+            funcs = [funcs]
         if len(funcs) > 1:
             command = "one of the following commands"
         else:
