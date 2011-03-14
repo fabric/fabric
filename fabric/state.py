@@ -236,7 +236,7 @@ env = _AttributeDict({
     'path_behavior': 'append',
     'port': None,
     'real_fabfile': None,
-    'roledefs': {},
+    'roles': [],
     'roledefs': {},
     # -S so sudo accepts passwd via stdin, -p with our known-value prompt for
     # later detection (thus %s -- gets filled with env.sudo_prompt at runtime)

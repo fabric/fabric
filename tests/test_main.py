@@ -12,6 +12,7 @@ import fabric.state
 from fabric.state import _AttributeDict
 
 from utils import mock_streams
+from utils import with_patched_state_env
 
 
 def test_argument_parsing():
@@ -43,7 +44,7 @@ def test_argument_parsing():
 
 def eq_hosts(command, host_list):
     eq_(set(get_hosts(command, [], [])), set(host_list))
-    
+
 
 def test_hosts_decorator_by_itself():
     """
@@ -86,6 +87,33 @@ def test_hosts_and_roles_together():
     def command():
         pass
     eq_hosts(command, ['a', 'b', 'c'])
+
+
+tuple_roles = {
+    'r1': ('a', 'b'),
+    'r2': ('b', 'c'),
+}
+
+
+@with_patched_state_env({'roledefs': tuple_roles})
+def test_roles_as_tuples():
+    """
+    Test that a list of roles as a tuple succeeds
+    """
+    @roles('r1')
+    def command():
+        pass
+    eq_hosts(command, ['a', 'b'])
+
+
+@with_patched_state_env({'hosts': ('foo', 'bar')})
+def test_hosts_as_tuples():
+    """
+    Test that a list of hosts as a tuple succeeds
+    """
+    def command():
+        pass
+    eq_hosts(command, ['foo', 'bar'])
 
 
 @with_patched_object('fabric.state', 'env', {'hosts': ['foo']})

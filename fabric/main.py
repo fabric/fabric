@@ -362,6 +362,11 @@ def _merge(hosts, roles):
         if callable(value):
             value = value()
         role_hosts += value
+
+    # make sure hosts is converted to a list to be able to append to the
+    # role_hosts list
+    hosts = list(hosts)
+
     # Return deduped combo of hosts and role_hosts
     return list(set(hosts + role_hosts))
 
