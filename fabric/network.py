@@ -52,7 +52,7 @@ class HostConnectionCache(dict):
     ``user1@example.com`` will create a connection to ``example.com``, logged
     in as ``user1``; later specifying ``user2@example.com`` will create a new,
     2nd connection as ``user2``.
-    
+
     The same applies to ports: specifying two different ports will result in
     two different connections to the same host being made. If no port is given,
     22 is assumed, so ``example.com`` is equivalent to ``example.com:22``.
@@ -260,9 +260,9 @@ def prompt_for_password(prompt=None, no_colon=False, stream=None):
     defaults to ``sys.stderr``.
     """
     from fabric.state import env
-    if not env.prompt:
-        abort("Needed to display password prompt but env.prompt was False. "
-              "(You specified --abort-on-prompt)")
+    env.prompt or abort(
+        "Needed to prompt for password, but env.prompt is False. "
+        "(You specified --abort-on-prompt)")
     stream = stream or sys.stderr
     # Construct prompt
     default = "[%s] Login password" % env.host_string
@@ -288,7 +288,7 @@ def needs_host(func):
     This decorator is basically a safety net for silly users who forgot to
     specify the host/host list in one way or another. It should be used to wrap
     operations which require a network connection.
-    
+
     Due to how we execute commands per-host in ``main()``, it's not possible to
     specify multiple hosts at this point in time, so only a single host will be
     prompted for.
@@ -301,6 +301,9 @@ def needs_host(func):
     from fabric.state import env
     @wraps(func)
     def host_prompting_wrapper(*args, **kwargs):
+        env.prompt or abort(
+            "Needed to prompt for host, but env.prompt is False. "
+            "(You specified --abort-on-prompt)")
         while not env.get('host_string', False):
             host_string = raw_input("No hosts found. Please specify (single) host string for connection: ")
             interpret_host_string(host_string)

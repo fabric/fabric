@@ -230,6 +230,10 @@ def prompt(text, key=None, default='', validate=None):
                 validate=r'^\w+-\d+(\.\d+)?$')
 
     """
+    # Abort immediately if explicitly set to never show prompts
+    env.prompt or abort(
+        "The prompt() function was used, but env.prompt is False. "
+        "(You specified --abort-on-prompt)")
     # Store previous env value for later display, if necessary
     if key:
         previous_value = env.get(key)

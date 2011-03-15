@@ -92,7 +92,7 @@ below.
 
 .. cmdoption:: --abort-on-prompt
 
-    When set, Fabric will abort instead of prompting for a password.
+    When set, Fabric will abort instead of prompting for a host, password, etc.
 
     .. versionadded:: 1.0.1
 

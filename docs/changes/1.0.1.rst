@@ -6,7 +6,7 @@ Bugfixes
 ========
 
 * :issue:`189`: Added option ``--abort-on-prompt`` to abort instead of prompting
-  for a password.
+  for host, password, etc.
 * :issue:`301`: Fixed a bug in `~fabric.operations.local`'s behavior when
   ``capture=False`` and ``output.stdout`` (or ``.stderr``) was also ``False``.
   Thanks to Chris Rose for the catch.

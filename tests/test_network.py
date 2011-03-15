@@ -16,7 +16,7 @@ from fabric.network import (HostConnectionCache, join_host_strings, normalize,
 from fabric.io import output_loop
 import fabric.network # So I can call patch_object correctly. Sigh.
 from fabric.state import env, output, _get_system_username
-from fabric.operations import run, sudo
+from fabric.operations import run, sudo, prompt
 
 from utils import *
 from server import (server, PORT, RESPONSES, PASSWORDS, CLIENT_PRIVKEY, USER,
@@ -156,30 +156,22 @@ class TestNetwork(FabricTest):
             cache[env.host_string]
 
 
-    @server()
-    @with_fakes
     @raises(SystemExit)
     @with_patched_object(output, 'aborts', False)
     def test_aborts_on_prompt_with_abort_on_prompt(self):
+        env.prompt = False
+        prompt("This will abort")
+
+
+    @server()
+    @raises(SystemExit)
+    @with_patched_object(output, 'aborts', False)
+    def test_aborts_on_password_prompt_with_abort_on_prompt(self):
         env.password = None
         env.prompt = False
         with password_response(PASSWORDS[env.user], times_called=1):
             cache = HostConnectionCache()
             cache[env.host_string]
-
-
-    @server()
-    @with_fakes
-    @raises(SystemExit)
-    @with_patched_object(output, 'aborts', False)
-    def test_aborts_on_sudo_prompt_with_abort_on_prompt(self):
-        env.prompt = False
-
-        with password_response(PASSWORDS[USER], times_called=1):
-            cache = HostConnectionCache()
-            cache[env.host_string]
-            env.password = None
-            sudo('ls /simple')
 
 
     @mock_streams('stdout')
