@@ -159,6 +159,7 @@ class TestNetwork(FabricTest):
     @server()
     @with_fakes
     @raises(SystemExit)
+    @with_patched_object(output, 'aborts', False)
     def test_aborts_on_prompt_with_abort_on_prompt(self):
         env.password = None
         env.prompt = False
@@ -170,6 +171,7 @@ class TestNetwork(FabricTest):
     @server()
     @with_fakes
     @raises(SystemExit)
+    @with_patched_object(output, 'aborts', False)
     def test_aborts_on_sudo_prompt_with_abort_on_prompt(self):
         env.prompt = False
 
