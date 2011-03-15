@@ -90,6 +90,12 @@ below.
 
     .. versionadded:: 0.9.1
 
+.. cmdoption:: --abort-on-prompt
+
+    When set, Fabric will abort instead of prompting for a password.
+
+    .. versionadded:: 1.0.1
+
 .. cmdoption:: -c RCFILE, --config=RCFILE
 
     Sets :ref:`env.rcfile <rcfile>` to the given file path, which Fabric will
@@ -124,7 +130,6 @@ below.
 
     A comma-separated list of :doc:`output levels <output_controls>` to hide by
     default.
-
 
 .. cmdoption:: -H HOSTS, --hosts=HOSTS
 
