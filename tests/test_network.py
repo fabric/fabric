@@ -6,7 +6,7 @@ import getpass
 import sys
 
 import paramiko
-from nose.tools import with_setup
+from nose.tools import with_setup, raises
 from fudge import (Fake, clear_calls, clear_expectations, patch_object, verify,
     with_patched_object, patched_context, with_fakes)
 
@@ -154,6 +154,30 @@ class TestNetwork(FabricTest):
         with password_response(PASSWORDS[env.user], times_called=1):
             cache = HostConnectionCache()
             cache[env.host_string]
+
+
+    @server()
+    @with_fakes
+    @raises(SystemExit)
+    def test_aborts_on_prompt_with_abort_on_prompt(self):
+        env.password = None
+        env.prompt = False
+        with password_response(PASSWORDS[env.user], times_called=1):
+            cache = HostConnectionCache()
+            cache[env.host_string]
+
+
+    @server()
+    @with_fakes
+    @raises(SystemExit)
+    def test_aborts_on_sudo_prompt_with_abort_on_prompt(self):
+        env.prompt = False
+
+        with password_response(PASSWORDS[USER], times_called=1):
+            cache = HostConnectionCache()
+            cache[env.host_string]
+            env.password = None
+            sudo('ls /simple')
 
 
     @mock_streams('stdout')
