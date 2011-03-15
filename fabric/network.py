@@ -260,6 +260,9 @@ def prompt_for_password(prompt=None, no_colon=False, stream=None):
     defaults to ``sys.stderr``.
     """
     from fabric.state import env
+    if not env.prompt:
+        abort("Needed to display password prompt but env.prompt was False. "
+              "(You specified --abort-on-prompt)")
     stream = stream or sys.stderr
     # Construct prompt
     default = "[%s] Login password" % env.host_string

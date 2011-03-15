@@ -197,6 +197,13 @@ env_options = [
         help="comma-separated list of output levels to show"
     ),
 
+    make_option('--abort-on-prompt',
+        dest='prompt',
+        action='store_false',
+        default=True,
+        help="Don't prompt for passphrase/password if authentication fails"
+    ),
+
     # Global PTY flag for run/sudo
     make_option('--no-pty',
         dest='always_use_pty',
