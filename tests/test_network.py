@@ -19,9 +19,10 @@ from fabric.state import env, output, _get_system_username
 from fabric.operations import run, sudo
 
 from utils import *
-from server import (server, PORT, RESPONSES, PASSWORDS, CLIENT_PRIVKEY, USER,
+from server import (PORT, RESPONSES, PASSWORDS, CLIENT_PRIVKEY, USER,
     CLIENT_PRIVKEY_PASSPHRASE)
 
+_multiprocess_can_split_ = True
 
 #
 # Subroutines, e.g. host string normalization
@@ -141,63 +142,60 @@ class TestNetwork(FabricTest):
     # Connection loop flow
     #
 
-    @server()
     def test_saved_authentication_returns_client_object(self):
-        cache = HostConnectionCache()
-        assert isinstance(cache[env.host_string], paramiko.SSHClient)
+        with server():
+            cache = HostConnectionCache()
+            assert isinstance(cache[env.host_string], paramiko.SSHClient)
 
 
-    @server()
     @with_fakes
     def test_prompts_for_password_without_good_authentication(self):
-        env.password = None
-        with password_response(PASSWORDS[env.user], times_called=1):
-            cache = HostConnectionCache()
-            cache[env.host_string]
+        with server():
+            env.password = None
+            with password_response(PASSWORDS[env.user], times_called=1):
+                cache = HostConnectionCache()
+                cache[env.host_string]
 
 
     @mock_streams('stdout')
-    @server()
     def test_trailing_newline_line_drop(self):
         """
         Trailing newlines shouldn't cause last line to be dropped.
         """
-        # Multiline output with trailing newline
-        cmd = "ls /"
-        output_string = RESPONSES[cmd]
-        # TODO: fix below lines, duplicates inner workings of tested code
-        prefix = "[%s] out: " % env.host_string
-        expected = prefix + ('\n' + prefix).join(output_string.split('\n'))
-        # Create, tie off thread
-        with settings(show('everything'), hide('running')):
-            result = run(cmd)
-            # Test equivalence of expected, received output
-            eq_(expected, sys.stdout.getvalue())
-            # Also test that the captured value matches, too.
-            eq_(output_string, result)
+        with server():
+            # Multiline output with trailing newline
+            cmd = "ls /"
+            output_string = RESPONSES[cmd]
+            # TODO: fix below lines, duplicates inner workings of tested code
+            prefix = "[%s] out: " % env.host_string
+            expected = prefix + ('\n' + prefix).join(output_string.split('\n'))
+            # Create, tie off thread
+            with settings(show('everything'), hide('running')):
+                result = run(cmd)
+                # Test equivalence of expected, received output
+                eq_(expected, sys.stdout.getvalue())
+                # Also test that the captured value matches, too.
+                eq_(output_string, result)
 
 
-    @server()
     def test_sudo_prompt_kills_capturing(self):
         """
         Sudo prompts shouldn't screw up output capturing
         """
         cmd = "ls /simple"
-        with hide('everything'):
+        with nested(server(), hide('everything')):
             eq_(sudo(cmd), RESPONSES[cmd])
 
 
-    @server()
     def test_password_memory_on_user_switch(self):
         """
         Switching users mid-session should not screw up password memory
         """
-        def _to_user(user):
-            return join_host_strings(user, env.host, env.port)
-
         user1 = 'root'
         user2 = USER
-        with settings(hide('everything'), password=None):
+        with settings(server(), hide('everything'), password=None):
+            def _to_user(user):
+                return join_host_strings(user, env.host, env.port)
             # Connect as user1 (thus populating both the fallback and
             # user-specific caches)
             with settings(
@@ -225,34 +223,18 @@ class TestNetwork(FabricTest):
 
 
     @mock_streams('stderr')
-    @server()
     def test_password_prompt_displays_host_string(self):
         """
         Password prompt lines should include the user/host in question
         """
-        env.password = None
-        env.no_agent = env.no_keys = True
-        output.everything = False
-        with password_response(PASSWORDS[env.user], silent=False):
-            run("ls /simple")
-        regex = r'^\[%s\] Login password: ' % env.host_string
-        assert_contains(regex, sys.stderr.getvalue())
-
-
-    @mock_streams('stderr')
-    @server(pubkeys=True)
-    def test_passphrase_prompt_displays_host_string(self):
-        """
-        Passphrase prompt lines should include the user/host in question
-        """
-        env.password = None
-        env.no_agent = env.no_keys = True
-        env.key_filename = CLIENT_PRIVKEY
-        output.everything = False
-        with password_response(CLIENT_PRIVKEY_PASSPHRASE, silent=False):
-            run("ls /simple")
-        regex = r'^\[%s\] Login password: ' % env.host_string
-        assert_contains(regex, sys.stderr.getvalue())
+        with server():
+            env.password = None
+            env.no_agent = env.no_keys = True
+            output.everything = False
+            with password_response(PASSWORDS[env.user], silent=False):
+                run("ls /simple")
+            regex = r'^\[%s\] Login password: ' % env.host_string
+            assert_contains(regex, sys.stderr.getvalue())
 
 
     def test_sudo_prompt_display_passthrough(self):
@@ -269,19 +251,19 @@ class TestNetwork(FabricTest):
 
     @staticmethod
     @mock_streams('both')
-    @server(pubkeys=True, responses={'oneliner': 'result'})
     def _prompt_display(display_output):
-        env.password = None
-        env.no_agent = env.no_keys = True
-        env.key_filename = CLIENT_PRIVKEY
-        output.output = display_output
-        with password_response(
-            (CLIENT_PRIVKEY_PASSPHRASE, PASSWORDS[env.user]),
-            silent=False
-        ):
-            sudo('oneliner')
-        if display_output:
-            expected = """
+        with server(pubkeys=True, responses={'oneliner': 'result'}):
+            env.password = None
+            env.no_agent = env.no_keys = True
+            env.key_filename = CLIENT_PRIVKEY
+            output.output = display_output
+            with password_response(
+                (CLIENT_PRIVKEY_PASSPHRASE, PASSWORDS[env.user]),
+                silent=False
+            ):
+                sudo('oneliner')
+            if display_output:
+                expected = """
 [%(prefix)s] sudo: oneliner
 [%(prefix)s] Login password: 
 [%(prefix)s] out: sudo password:
@@ -289,36 +271,36 @@ class TestNetwork(FabricTest):
 [%(prefix)s] out: sudo password: 
 [%(prefix)s] out: result
 """ % {'prefix': env.host_string}
-        else:
-            # Note lack of first sudo prompt (as it's autoresponded to) and of
-            # course the actual result output.
-            expected = """
+            else:
+                # Note lack of first sudo prompt (as it's autoresponded to) and
+                # of course the actual result output.
+                expected = """
 [%(prefix)s] sudo: oneliner
 [%(prefix)s] Login password: 
 [%(prefix)s] out: Sorry, try again.
 [%(prefix)s] out: sudo password: """ % {'prefix': env.host_string}
-        eq_(expected[1:], sys.stdall.getvalue())
+            eq_(expected[1:], sys.stdall.getvalue())
 
 
     @mock_streams('both')
-    @server(
-        pubkeys=True,
-        responses={'oneliner': 'result', 'twoliner': 'result1\nresult2'}
-    )
     def test_consecutive_sudos_should_not_have_blank_line(self):
         """
         Consecutive sudo() calls should not incur a blank line in-between
         """
-        env.password = None
-        env.no_agent = env.no_keys = True
-        env.key_filename = CLIENT_PRIVKEY
-        with password_response(
-            (CLIENT_PRIVKEY_PASSPHRASE, PASSWORDS[USER]),
-            silent=False
+        with server(
+            pubkeys=True,
+            responses={'oneliner': 'result', 'twoliner': 'result1\nresult2'}
         ):
-            sudo('oneliner')
-            sudo('twoliner')
-        expected = """
+            env.password = None
+            env.no_agent = env.no_keys = True
+            env.key_filename = CLIENT_PRIVKEY
+            with password_response(
+                (CLIENT_PRIVKEY_PASSPHRASE, PASSWORDS[USER]),
+                silent=False
+            ):
+                sudo('oneliner')
+                sudo('twoliner')
+            expected = """
 [%(prefix)s] sudo: oneliner
 [%(prefix)s] Login password: 
 [%(prefix)s] out: sudo password:
@@ -330,11 +312,10 @@ class TestNetwork(FabricTest):
 [%(prefix)s] out: result1
 [%(prefix)s] out: result2
 """ % {'prefix': env.host_string}
-        eq_(expected[1:], sys.stdall.getvalue())
+            eq_(expected[1:], sys.stdall.getvalue())
 
 
     @mock_streams('both')
-    @server(pubkeys=True, responses={'silent': '', 'normal': 'foo'})
     def test_silent_commands_should_not_have_blank_line(self):
         """
         Silent commands should not generate an extra trailing blank line
@@ -345,17 +326,18 @@ class TestNetwork(FabricTest):
         commands like ``test`` or ``mkdir``) resulted in spurious blank lines
         after the "run:" line. This looks quite ugly in real world scripts.
         """
-        env.password = None
-        env.no_agent = env.no_keys = True
-        env.key_filename = CLIENT_PRIVKEY
-        with password_response(CLIENT_PRIVKEY_PASSPHRASE, silent=False):
-            run('normal')
-            run('silent')
-            run('normal')
-            with hide('everything'):
+        with server(pubkeys=True, responses={'silent': '', 'normal': 'foo'}):
+            env.password = None
+            env.no_agent = env.no_keys = True
+            env.key_filename = CLIENT_PRIVKEY
+            with password_response(CLIENT_PRIVKEY_PASSPHRASE, silent=False):
                 run('normal')
                 run('silent')
-        expected = """
+                run('normal')
+                with hide('everything'):
+                    run('normal')
+                    run('silent')
+            expected = """
 [%(prefix)s] run: normal
 [%(prefix)s] Login password: 
 [%(prefix)s] out: foo
@@ -363,28 +345,28 @@ class TestNetwork(FabricTest):
 [%(prefix)s] run: normal
 [%(prefix)s] out: foo
 """ % {'prefix': env.host_string}
-        eq_(expected[1:], sys.stdall.getvalue())
+            eq_(expected[1:], sys.stdall.getvalue())
 
 
     @mock_streams('both')
-    @server(
-        pubkeys=True,
-        responses={'oneliner': 'result', 'twoliner': 'result1\nresult2'}
-    )
     def test_io_should_print_prefix_if_ouput_prefix_is_true(self):
         """
         run/sudo should print [host_string] if env.output_prefix == True
         """
-        env.password = None
-        env.no_agent = env.no_keys = True
-        env.key_filename = CLIENT_PRIVKEY
-        with password_response(
-            (CLIENT_PRIVKEY_PASSPHRASE, PASSWORDS[USER]),
-            silent=False
+        with server(
+            pubkeys=True,
+            responses={'oneliner': 'result', 'twoliner': 'result1\nresult2'}
         ):
-            run('oneliner')
-            run('twoliner')
-        expected = """
+            env.password = None
+            env.no_agent = env.no_keys = True
+            env.key_filename = CLIENT_PRIVKEY
+            with password_response(
+                (CLIENT_PRIVKEY_PASSPHRASE, PASSWORDS[USER]),
+                silent=False
+            ):
+                run('oneliner')
+                run('twoliner')
+            expected = """
 [%(prefix)s] run: oneliner
 [%(prefix)s] Login password: 
 [%(prefix)s] out: result
@@ -392,29 +374,29 @@ class TestNetwork(FabricTest):
 [%(prefix)s] out: result1
 [%(prefix)s] out: result2
 """ % {'prefix': env.host_string}
-        eq_(expected[1:], sys.stdall.getvalue())
+            eq_(expected[1:], sys.stdall.getvalue())
 
 
     @mock_streams('both')
-    @server(
-        pubkeys=True,
-        responses={'oneliner': 'result', 'twoliner': 'result1\nresult2'}
-    )
     def test_io_should_not_print_prefix_if_ouput_prefix_is_false(self):
         """
         run/sudo shouldn't print [host_string] if env.output_prefix == False
         """
-        env.password = None
-        env.no_agent = env.no_keys = True
-        env.key_filename = CLIENT_PRIVKEY
-        with password_response(
-            (CLIENT_PRIVKEY_PASSPHRASE, PASSWORDS[USER]),
-            silent=False
+        with server(
+            pubkeys=True,
+            responses={'oneliner': 'result', 'twoliner': 'result1\nresult2'}
         ):
-            with settings(output_prefix=False):
-                run('oneliner')
-                run('twoliner')
-        expected = """
+            env.password = None
+            env.no_agent = env.no_keys = True
+            env.key_filename = CLIENT_PRIVKEY
+            with password_response(
+                (CLIENT_PRIVKEY_PASSPHRASE, PASSWORDS[USER]),
+                silent=False
+            ):
+                with settings(output_prefix=False):
+                    run('oneliner')
+                    run('twoliner')
+            expected = """
 [%(prefix)s] run: oneliner
 [%(prefix)s] Login password: 
 result
@@ -422,4 +404,22 @@ result
 result1
 result2
 """ % {'prefix': env.host_string}
-        eq_(expected[1:], sys.stdall.getvalue())
+            eq_(expected[1:], sys.stdall.getvalue())
+
+
+    @mock_streams('stderr')
+    def test_passphrase_prompt_displays_host_string(self):
+        """
+        Passphrase prompt lines should include the user/host in question
+        """
+        with server(pubkeys=True):
+            env.password = None
+            env.no_agent = env.no_keys = True
+            env.key_filename = CLIENT_PRIVKEY
+            output.everything = False
+            with password_response(CLIENT_PRIVKEY_PASSPHRASE, silent=False):
+                run("ls /simple")
+            regex = r'^\[%s\] Login password: ' % env.host_string
+            assert_contains(regex, sys.stderr.getvalue())
+
+

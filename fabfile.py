@@ -17,13 +17,17 @@ _version = fabric.version.get_version
 docs_host = 'jforcier@fabfile.org'
 
 
-def test(args=None):
+def test(args=None, processes=None):
     """
     Run all unit tests and doctests.
 
     Specify string argument ``args`` for additional args to ``nosetests``.
     """
-    default_args = "-sv --with-doctest --nologcapture --with-color"
+    default_args = "-sv --with-doctest --nologcapture"
+    if processes is not None:
+        default_args += " --processes=%s" % processes
+    else:
+        default_args += " --with-color"
     default_args += (" " + args) if args else ""
     try:
         nose.core.run(argv=[''] + default_args.split())

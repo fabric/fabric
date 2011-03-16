@@ -13,6 +13,7 @@ import types
 from StringIO import StringIO
 from functools import wraps
 from Python26SocketServer import BaseRequestHandler, ThreadingMixIn, TCPServer
+from contextlib import contextmanager
 
 import paramiko as ssh
 
@@ -442,6 +443,7 @@ def serve_responses(responses, files, passwords, home, pubkeys, port):
     return SSHServer((HOST, port), SSHHandler)
 
 
+@contextmanager
 def server(
         responses=RESPONSES,
         files=FILES,
@@ -451,34 +453,29 @@ def server(
         port=PORT
     ):
     """
-    Returns a decorator that runs an SSH server during function execution.
+    Context manager that runs an SSH server during function execution.
 
     Direct passthrough to ``serve_responses``.
     """
-    def run_server(func):
-        @wraps(func)
-        def inner(*args, **kwargs):
-            # Start server
-            _server = serve_responses(responses, files, passwords, home,
-                pubkeys, port)
-            _server.all_done = threading.Event()
-            worker = ThreadHandler('server', _server.serve_forever)
-            # Execute function
-            try:
-                return func(*args, **kwargs)
-            finally:
-                # Clean up client side connections
-                with hide('status'):
-                    disconnect_all()
-                # Stop server
-                _server.all_done.set()
-                _server.shutdown()
-                # Why this is not called in shutdown() is beyond me.
-                _server.server_close()
-                worker.thread.join()
-                # Handle subthread exceptions
-                e = worker.exception
-                if e:
-                    raise e[0], e[1], e[2]
-        return inner
-    return run_server
+    # Start server
+    _server = serve_responses(responses, files, passwords, home,
+        pubkeys, port)
+    _server.all_done = threading.Event()
+    worker = ThreadHandler('server', _server.serve_forever)
+    # Execute
+    try:
+        yield
+    finally:
+        # Clean up client side connections
+        with hide('status'):
+            disconnect_all()
+        # Stop server
+        _server.all_done.set()
+        _server.shutdown()
+        # Why this is not called in shutdown() is beyond me.
+        _server.server_close()
+        worker.thread.join()
+        # Handle subthread exceptions
+        e = worker.exception
+        if e:
+            raise e[0], e[1], e[2]

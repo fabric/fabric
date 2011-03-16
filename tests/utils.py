@@ -1,11 +1,12 @@
 from __future__ import with_statement
 
 from StringIO import StringIO # No need for cStringIO at this time
-from contextlib import contextmanager
+from contextlib import contextmanager, nested
 from functools import wraps, partial
 from types import StringTypes
 import copy
 import getpass
+import random
 import re
 import sys
 
@@ -16,12 +17,13 @@ from fabric.network import interpret_host_string
 from fabric.state import env, output
 import fabric.network
 
-from server import PORT, PASSWORDS, USER, HOST
+from server import PASSWORDS, USER, HOST
+from server import server as _server
 
 
 class FabricTest(object):
     """
-    Nose-oriented test runner class that wipes env after every test.
+    Nose test runner which wipes env, chooses random network port, etc.
     """
     def setup(self):
         # Clear Fudge mock expectations
@@ -31,17 +33,15 @@ class FabricTest(object):
         # Deepcopy doesn't work well on AliasDicts; but they're only one layer
         # deep anyways, so...
         self.previous_output = output.items()
-        # Set up default networking for test server
-        env.disable_known_hosts = True
-        interpret_host_string('%s@%s:%s' % (USER, HOST, PORT))
-        env.password = PASSWORDS[USER]
-        # Command response mocking is easier without having to account for
-        # shell wrapping everywhere.
-        env.use_shell = False
 
     def teardown(self):
         env.update(self.previous_env)
         output.update(self.previous_output)
+
+    def server(self, *args, **kwargs):
+        if 'port' not in kwargs:
+            kwargs['port'] = self.port
+        return server_deco(*args, **kwargs)
 
 
 class CarbonCopy(StringIO):
@@ -208,3 +208,23 @@ Got:
 def eq_contents(path, text):
     with open(path) as fd:
         eq_(text, fd.read())
+
+
+@contextmanager
+def server(**kwargs):
+    e = {}
+    # Set up default networking for test server
+    e['disable_known_hosts'] = True
+    # Random should be good enough until we have thousands of tests.
+    # Explicitly testing if a port is open is kind of messy.
+    kwargs['port'] = random.randint(1025, 65535)
+    e['host_string'] = '%s@%s:%s' % (USER, HOST, kwargs['port'])
+    e['user'] = USER
+    e['host'] = HOST
+    e['port'] = kwargs['port']
+    e['password'] = PASSWORDS[USER]
+    # Command response mocking is easier without having to account for
+    # shell wrapping everywhere.
+    e['use_shell'] = False
+    with nested(settings(**e), _server(**kwargs)):
+        yield
