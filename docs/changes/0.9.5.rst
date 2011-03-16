@@ -22,4 +22,5 @@ Bugfixes
 Documentation updates
 =====================
 
-* N/A
+* :issue:`228`: Added description of the PyCrypto + pip + Python 2.5 problem to
+  the documentation and removed the Python 2.5 check from ``setup.py``.
