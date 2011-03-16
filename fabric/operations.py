@@ -628,7 +628,8 @@ def local(command, capture=True):
             out_stream = None
         if output.stderr:
             err_stream = None
-    p = subprocess.Popen([real_command], shell=True, stdout=out_stream,
+    cmd_arg = [real_command] if win32 else real_command
+    p = subprocess.Popen(cmd_arg, shell=True, stdout=out_stream,
             stderr=err_stream)
     (stdout, stderr) = p.communicate()
     # Handle error condition (deal with stdout being None, too)
