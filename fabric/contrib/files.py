@@ -204,14 +204,13 @@ def comment(filename, regex, use_sudo=False, char='#', backup='.bak'):
         "before" regex of ``r'^(foo)$'`` (and the "after" regex, naturally, of
         ``r'#\\1'``.)
     """
-    carot = ''
-    dollar = ''
+    carot, dollar = '', ''
     if regex.startswith('^'):
         carot = '^'
         regex = regex[1:]
     if regex.endswith('$'):
         dollar = '$'
-        regex = regex[:1]
+        regex = regex[:-1]
     regex = "%s(%s)%s" % (carot, regex, dollar)
     return sed(
         filename,
