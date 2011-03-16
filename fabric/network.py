@@ -285,7 +285,6 @@ def prompt_for_password(previous=None, prompt=None):
     # returning the empty string, and to avoid unnecessary network overhead.)
     while not new_password:
         print("Sorry, you can't enter an empty password. Please try again.")
-        password_prompt = base_password_prompt + ": "
         new_password = getpass.getpass(password_prompt)
     return new_password
 
