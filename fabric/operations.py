@@ -1000,8 +1000,9 @@ def local(command, capture=False):
         out_stream = None if output.stdout else dev_null
         err_stream = None if output.stderr else dev_null
     try:
-        p = subprocess.Popen([wrapped_command], shell=True, stdout=out_stream,
-                stderr=err_stream)
+        cmd_arg = [wrapped_command] if win32 else wrapped_command
+        p = subprocess.Popen(cmd_arg, shell=True, stdout=out_stream,
+            stderr=err_stream)
         (stdout, stderr) = p.communicate()
     finally:
         if dev_null is not None:

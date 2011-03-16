@@ -14,6 +14,9 @@ Bugfixes
 
 * :issue:`37`: Internal refactoring of a Paramiko call from ``_transport`` to
   ``get_transport()``.
+* :issue:`258`: Modify subprocess call on Windows platforms to avoid
+  space/quote problems in `~fabric.operations.local`. Thanks to Henrik
+  Heimbuerger and Raymond Cote for catch + suggested fixes.
 * :issue:`261`: Fix bug in `~fabric.contrib.files.comment` which truncated
   regexen ending with ``$``.
 * :issue:`264`: Fix edge case in `~fabric.operations.reboot` by gracefully
