@@ -419,7 +419,7 @@ def run(command, shell=True, pty=False):
         print("[%s] run: %s" % (env.host_string, real_command))
     elif output.running:
         print("[%s] run: %s" % (env.host_string, command))
-    channel = connections[env.host_string]._transport.open_session()
+    channel = connections[env.host_string].get_transport().open_session()
     # Create pty if necessary (using Paramiko default options, which as of
     # 1.7.4 is vt100 $TERM @ 80x24 characters)
     if pty:
@@ -526,7 +526,7 @@ def sudo(command, shell=True, user=None, pty=False):
         print("[%s] sudo: %s" % (env.host_string, real_command))
     elif output.running:
         print("[%s] sudo: %s" % (env.host_string, command))
-    channel = connections[env.host_string]._transport.open_session()
+    channel = connections[env.host_string].get_transport().open_session()
     # Create pty if necessary (using Paramiko default options, which as of
     # 1.7.4 is vt100 $TERM @ 80x24 characters)
     if pty:
