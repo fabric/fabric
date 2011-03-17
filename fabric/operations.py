@@ -16,7 +16,7 @@ from traceback import format_exc
 from contextlib import closing
 
 from fabric.network import output_thread, needs_host
-from fabric.state import env, connections, output
+from fabric.state import env, connections, output, win32
 from fabric.utils import abort, indent, warn, puts
 
 
