@@ -156,7 +156,7 @@ either of the following locations:
   of all tagged releases -- just click the 'Download' button near the top of
   the main page.
 * `Fabric's PyPI page <http://pypi.python.org/pypi/Fabric>`_ offers manual
-  downloads in addition to being the entry point for :ref:`easy-install`.
+  downloads in addition to being the entry point for ``easy_install``/``pip``.
 
 
 .. _source-code-checkouts:

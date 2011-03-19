@@ -24,7 +24,7 @@ Bugfixes
 * :issue:`268`: Allow for ``@`` symbols in usernames, which is valid on some
   systems. Fabric's host-string parser now splits username and hostname at the
   last ``@`` found instead of the first.
-* :issues:`287`: Fix bug in password prompt causing occasional tracebacks.
+* :issue:`287`: Fix bug in password prompt causing occasional tracebacks.
 
 
 Documentation updates
