@@ -29,7 +29,9 @@ Bugfixes
 * :issue:`287`: Fix bug in password prompt causing occasional tracebacks.
   Thanks to Antti Kaihola for the catch and Rick Harding for testing the
   proposed solution.
-
+* :issue:`316`: Use of `~fabric.context_managers.settings` with key names not
+  previously set in ``env`` no longer raises KeyErrors. Whoops. Thanks to Adam
+  Ernst for the catch.
 
 Documentation updates
 =====================
