@@ -29,6 +29,9 @@ Bugfixes
 * :issue:`287`: Fix bug in password prompt causing occasional tracebacks.
   Thanks to Antti Kaihola for the catch and Rick Harding for testing the
   proposed solution.
+* :issue:`288`: Use temporary files to work around the lack of a ``-i`` flag in
+  OpenBSD and NetBSD `~fabric.contrib.files.sed`. Thanks to Morgan Lefieux for
+  catch + patches.
 * :issue:`305`: Strip whitespace from hostnames to help prevent user error.
   Thanks to Michael Bravo for the report and Rick Harding for the patch.
 * :issue:`316`: Use of `~fabric.context_managers.settings` with key names not

@@ -4,11 +4,12 @@ Module providing easy API for working with remote files and folders.
 
 from __future__ import with_statement
 
+import hashlib
 import tempfile
 import re
 import os
 
-from fabric.api import run, sudo, settings, put, hide, abort
+from fabric.api import run, sudo, settings, put, hide, abort, env
 
 
 def exists(path, use_sudo=False, verbose=False):
@@ -130,12 +131,28 @@ def sed(filename, before, after, limit='', use_sudo=False, backup='.bak'):
     with many nested levels of quotes and backslashes.
     """
     func = use_sudo and sudo or run
-    expr = r"sed -i%s -r -e '%ss/%s/%s/g' %s"
     before = before.replace('/', r'\/')
     after = after.replace('/', r'\/')
     if limit:
         limit = r'/%s/ ' % limit
-    command = expr % (backup, limit, before, after, filename)
+    # Test the OS because of differences between sed versions
+    with hide('running', 'stdout'):
+        platform = run("uname")
+    if platform in ('NetBSD', 'OpenBSD'):
+        # Attempt to protect against failures/collisions
+        hasher = hashlib.sha1()
+        hasher.update(env.host_string)
+        hasher.update(filename)
+        tmp = "/tmp/%s" % hasher.hexdigest()
+        # Use temp file to work around lack of -i
+        expr = r"""cp -p %(filename)s %(tmp)s \
+&& sed -r -e '%(limit)ss/%(before)s/%(after)s/g' %(filename)s > %(tmp)s \
+&& cp -p %(filename)s %(filename)s%(backup)s \
+&& mv %(tmp)s %(filename)s"""
+        command = expr % locals()
+    else:
+        expr = r"sed -i%s -r -e '%ss/%s/%s/g' %s"
+        command = expr % (backup, limit, before, after, filename)
     return func(command, shell=False)
 
 
