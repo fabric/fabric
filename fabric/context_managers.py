@@ -81,7 +81,8 @@ def _setenv(**kwargs):
     """
     previous = {}
     for key, value in kwargs.iteritems():
-        previous[key] = env[key]
+        if key in env:
+            previous[key] = env[key]
         env[key] = value
     try:
         yield
