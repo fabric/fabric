@@ -2,6 +2,10 @@
 Changes in version 1.0.1
 ========================
 
+.. note::
+    This release also includes all applicable changes from the :doc:`0.9.5
+    release </changes/0.9.5>`.
+
 Bugfixes
 ========
 
