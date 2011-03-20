@@ -40,3 +40,5 @@ Documentation updates
 
 * :issue:`228`: Added description of the PyCrypto + pip + Python 2.5 problem to
   the documentation and removed the Python 2.5 check from ``setup.py``.
+* :issue:`291`: Updated the PyPM-related install docs re: recent changes in
+  PyPM and its download URLs. Thanks to Sridhar Ratnakumar for the patch.
