@@ -19,7 +19,8 @@ from contextlib import closing
 from fabric.context_managers import settings, char_buffered
 from fabric.io import output_loop, input_loop
 from fabric.network import needs_host
-from fabric.state import env, connections, output, win32, default_channel
+from fabric.state import (env, connections, output, win32, default_channel,
+    io_sleep)
 from fabric.utils import abort, indent, warn, puts
 from fabric.thread_handling import ThreadHandler
 from fabric.sftp import SFTP
@@ -756,6 +757,7 @@ def _execute(channel, command, pty=True, combine_stderr=True,
                     e = worker.exception
                     if e:
                         raise e[0], e[1], e[2]
+            time.sleep(io_sleep)
 
         # Obtain exit code of remote program now that we're done.
         status = channel.recv_exit_status()
