@@ -47,12 +47,11 @@ def build_docs(clean='no', browse='no'):
 @hosts(docs_host)
 def push_docs():
     """
-    Build and push the Sphinx docs to docs.fabfile.org
+    Build docs and zip for upload to RTD
     """
     build_docs(clean='yes')
-    remote_loc = '/var/www/docs.fabfile/%s/' % _version('short')
-    run('mkdir -p %s' % remote_loc)
-    rsync_project(remote_loc, 'docs/_build/html/', delete=True)
+    v = _version('short')
+    local("cd docs/_build/html && zip -r ../%s.zip ." % v)
 
 
 def _code_version_is_tagged():
