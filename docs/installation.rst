@@ -196,8 +196,8 @@ ActivePython and PyPM
 =====================
 
 Windows users who already have ActiveState's `ActivePython
-<http://www.activestate.com/activepython/downloads>`_ distribution installed may
-find Fabric is best installed with its (binary) package manager, `PyPM
+<http://www.activestate.com/activepython/downloads>`_ distribution installed
+may find Fabric is best installed with `its package manager, PyPM
 <http://code.activestate.com/pypm/>`_. Below is example output from an
 installation of Fabric 0.9.4 via ``pypm``::
 
