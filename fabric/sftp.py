@@ -243,7 +243,7 @@ class SFTP(object):
             if lmode != rmode:
                 if use_sudo:
                     with hide('everything'):
-                        sudo('chmod %s \"%s\"' % (lmode, remote_path))
+                        sudo('chmod %o \"%s\"' % (lmode, remote_path))
                 else:
                     self.ftp.chmod(remote_path, lmode)
         if use_sudo:
