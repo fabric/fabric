@@ -89,6 +89,8 @@ def upload_template(filename, destination, context=None, use_jinja=False,
         except ImportError, e:
             abort("tried to use Jinja2 but was unable to import: %s" % e)
     else:
+        if env.lcwd:
+            filename = os.path.join(env.lcwd, filename)
         with open(filename) as inputfile:
             text = inputfile.read()
         if context:

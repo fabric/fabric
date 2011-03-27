@@ -9,6 +9,7 @@ Context managers for use with the ``with`` statement.
 
 from contextlib import contextmanager, nested
 import sys
+import os.path
 
 from fabric.state import env, output, win32
 
@@ -215,8 +216,8 @@ def lcd(path):
 
 def _change_cwd(which, path):
     path = path.replace(' ', '\ ')
-    if env.get(which) and not path.startswith('/'):
-        new_cwd = env.get(which) + '/' + path
+    if env.get(which) and not os.path.isabs(path):
+        new_cwd = os.path.join(env.get(which), path)
     else:
         new_cwd = path
     return _setenv(**{which: new_cwd})
