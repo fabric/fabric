@@ -20,6 +20,7 @@ from fabric.network import denormalize, interpret_host_string, disconnect_all
 from fabric import state # For easily-mockable access to roles, env and etc
 from fabric.state import commands, connections, env_options
 from fabric.utils import abort, indent
+from fabric.logger import logger
 
 
 # One-time calculation of "all internal callables" to avoid doing this on every
@@ -220,8 +221,8 @@ def list_commands(docstring):
     """
     if docstring:
         trailer = "\n" if not docstring.endswith("\n") else ""
-        print(docstring + trailer)
-    print("Available commands:\n")
+        logger.info(docstring + trailer)
+    logger.info("Available commands:\n")
     # Want separator between name, description to be straight col
     max_len = reduce(lambda a, b: max(a, len(b)), commands.keys(), 0)
     sep = '  '
@@ -241,7 +242,7 @@ def list_commands(docstring):
         # Or nothing (so just the name)
         else:
             output = name
-        print(indent(output))
+        logger.info(indent(output))
     sys.exit(0)
 
 
@@ -249,7 +250,7 @@ def shortlist():
     """
     Print all task names separated by newlines with no embellishment.
     """
-    print("\n".join(_command_names()))
+    logger.info("\n".join(_command_names()))
     sys.exit(0)
 
 
@@ -263,13 +264,13 @@ def display_command(command):
     cmd = commands[command]
     # Print out nicely presented docstring if found
     if cmd.__doc__:
-        print("Displaying detailed information for command '%s':" % command)
-        print('')
-        print(indent(cmd.__doc__, strip=True))
-        print('')
+        logger.info("Displaying detailed information for command '%s':" % command)
+        logger.info('')
+        logger.info(indent(cmd.__doc__, strip=True))
+        logger.info('')
     # Or print notice if not
     else:
-        print("No detailed information available for command '%s':" % command)
+        logger.info("No detailed information available for command '%s':" % command)
     sys.exit(0)
 
 
@@ -440,7 +441,7 @@ def main():
 
         # Handle version number option
         if options.show_version:
-            print("Fabric %s" % state.env.version)
+            logger.info("Fabric %s" % state.env.version)
             sys.exit(0)
 
         # Handle case where we were called bare, i.e. just "fab", and print
@@ -476,9 +477,9 @@ def main():
         # Now that we're settled on a fabfile, inform user.
         if state.output.debug:
             if fabfile:
-                print("Using fabfile '%s'" % fabfile)
+                logger.info("Using fabfile '%s'" % fabfile)
             else:
-                print("No fabfile loaded -- remainder command only")
+                logger.info("No fabfile loaded -- remainder command only")
 
         # Non-verbose command list
         if options.shortlist:
@@ -522,7 +523,7 @@ def main():
 
         if state.output.debug:
             names = ", ".join(x[0] for x in commands_to_run)
-            print("Commands to run: %s" % names)
+            logger.info("Commands to run: %s" % names)
 
         # At this point all commands must exist, so execute them in order.
         for name, args, kwargs, cli_hosts, cli_roles in commands_to_run:
@@ -541,7 +542,7 @@ def main():
                 username, hostname, port = interpret_host_string(host)
                 # Log to stdout
                 if state.output.running:
-                    print("[%s] Executing task '%s'" % (host, name))
+                    logger.info("[%s] Executing task '%s'" % (host, name))
                 # Actually run command
                 commands[name](*args, **kwargs)
                 # Put old user back
@@ -551,7 +552,7 @@ def main():
                 commands[name](*args, **kwargs)
         # If we got here, no errors occurred, so print a final note.
         if state.output.status:
-            print("\nDone.")
+            logger.info("\nDone.")
     except SystemExit:
         # a number of internal functions might raise this one.
         raise

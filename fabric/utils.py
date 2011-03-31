@@ -5,6 +5,8 @@ or performing indenting on multiline output.
 
 import sys
 import textwrap
+from fabric.logger import logger
+
 
 def abort(msg):
     """
@@ -19,8 +21,8 @@ def abort(msg):
     """
     from fabric.state import output
     if output.aborts:
-        print >> sys.stderr, "\nFatal error: " + str(msg)
-        print >> sys.stderr, "\nAborting."
+        logger.error( "FATAL: %s" % msg )
+        logger.error( "Aborting." )
     sys.exit(1)
 
 
@@ -35,7 +37,7 @@ def warn(msg):
     """
     from fabric.state import output
     if output.warnings:
-        print >> sys.stderr, "\nWarning: %s\n" % msg
+        logger.warn( "%s" % msg )
 
 
 def indent(text, spaces=4, strip=False):
@@ -92,9 +94,7 @@ def puts(text, show_prefix=True, end="\n", flush=False):
         prefix = ""
         if env.host_string and show_prefix:
             prefix = "[%s] " % env.host_string
-        sys.stdout.write(prefix + str(text) + end)
-        if flush:
-            sys.stdout.flush()
+        logger.info( prefix + str(text) + end )
 
 
 def fastprint(text, show_prefix=False, end="", flush=True):

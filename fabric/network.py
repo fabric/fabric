@@ -12,6 +12,7 @@ import sys
 
 from fabric.utils import abort
 from fabric.auth import get_password, set_password
+from fabric.logger import logger
 
 try:
     import warnings
@@ -228,7 +229,7 @@ def connect(user, host, port):
         # Ctrl-D / Ctrl-C for exit
         except (EOFError, TypeError):
             # Print a newline (in case user was sitting at prompt)
-            print('')
+            logger.info('')
             sys.exit(0)
         # Handle timeouts
         except socket.timeout:
@@ -271,7 +272,7 @@ def prompt_for_password(prompt=None, no_colon=False, stream=None):
     # Otherwise, loop until user gives us a non-empty password (to prevent
     # returning the empty string, and to avoid unnecessary network overhead.)
     while not new_password:
-        print("Sorry, you can't enter an empty password. Please try again.")
+        logger.info("Sorry, you can't enter an empty password. Please try again.")
         new_password = getpass.getpass(password_prompt, stream)
     return new_password
 
