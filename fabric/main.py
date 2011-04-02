@@ -378,8 +378,14 @@ def _merge(hosts, roles):
         result_hosts = list(set(hosts + role_hosts))
 
 
-    return result_hosts
+    return _clean_hosts(result_hosts)
 
+
+def _clean_hosts(host_list):
+    """
+    Clean host strings to ensure no trailing whitespace, etc.
+    """
+    return [host.strip() for host in host_list]
 
 def get_hosts(command, cli_hosts, cli_roles):
     """
