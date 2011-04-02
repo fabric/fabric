@@ -197,17 +197,19 @@ ActivePython and PyPM
 =====================
 
 Windows users who already have ActiveState's `ActivePython
-<http://www.activestate.com/activepython>`_ distribution installed may find
-Fabric is best installed with its package manager, ``pypm``. Below is example
-output from an installation of Fabric 0.9.0 via ``pypm``::
+<http://www.activestate.com/activepython/downloads>`_ distribution installed
+may find Fabric is best installed with `its package manager, PyPM
+<http://code.activestate.com/pypm/>`_. Below is example output from an
+installation of Fabric 0.9.4 via ``pypm``::
 
     C:\> pypm install fabric
-    Ready to perform these actions:
-    The following packages will be installed:
-    fabric-0.9.0 pycrypto-2.0.1
-    Get: [pypm.activestate.com] fabric 0.9.0-1
-    Get: [pypm.activestate.com] pycrypto 2.0.1-1
-    Installing fabric-0.9.0
-    Fixing script
-    C:\Users\<username>\AppData\Roaming\Python\Scripts\fab-script.py
+    The following packages will be installed into "%APPDATA%\Python" (2.7):
+     paramiko-1.7.6 pycrypto-2.0.1 fabric-0.9.4
+    Get: [pypm-free.activestate.com] fabric 0.9.4
+    Get: [pypm-free.activestate.com] paramiko 1.7.6
+    Get: [pypm-free.activestate.com] pycrypto 2.0.1
+    Installing paramiko-1.7.6
     Installing pycrypto-2.0.1
+    Installing fabric-0.9.4
+    Fixing script %APPDATA%\Python\Scripts\fab-script.py
+    C:\>
