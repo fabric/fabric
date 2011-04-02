@@ -44,6 +44,16 @@ def build_docs(clean='no', browse='no'):
     local('cd docs; make %shtml%s' % (c, b))
 
 
+@hosts(docs_host)
+def push_docs():
+    """
+    Build docs and zip for upload to RTD
+    """
+    build_docs(clean='yes')
+    v = _version('short')
+    local("cd docs/_build/html && zip -r ../%s.zip ." % v)
+
+
 def _code_version_is_tagged():
     return local('git tag | egrep "^%s$"' % _version('short'))
 

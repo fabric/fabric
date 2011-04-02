@@ -38,3 +38,39 @@ def test_cwd_with_absolute_paths():
             eq_(env.cwd, absolute)
         with cd(additional):
             eq_(env.cwd, existing + '/' + additional)
+
+
+#
+# settings()
+#
+
+def test_setting_new_env_dict_key_should_not_raise_keyerror():
+    """
+    Using settings() with a previously nonexistent key should not error
+    """
+    # Nose has no obvious way to assert a NON-RAISED exception :( so ye olde
+    # "if it runs it passes" will have to do.
+    with settings(thiskeyreallyshouldnotexist='value'):
+        pass
+
+
+def test_settings():
+    """
+    settings() should temporarily override env dict with given key/value pair
+    """
+    env.testval = "outer value"
+    with settings(testval="inner value"):
+        eq_(env.testval, "inner value")
+    eq_(env.testval, "outer value")
+
+def test_settings_with_multiple_kwargs():
+    """
+    settings() should temporarily override env dict with given key/value pairS
+    """
+    env.testval1 = "outer 1"
+    env.testval2 = "outer 2"
+    with settings(testval1="inner 1", testval2="inner 2"):
+        eq_(env.testval1, "inner 1")
+        eq_(env.testval2, "inner 2")
+    eq_(env.testval1, "outer 1")
+    eq_(env.testval2, "outer 2")

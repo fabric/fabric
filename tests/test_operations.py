@@ -80,6 +80,30 @@ def test_require_mixed_state_keys_prints_missing_only():
         assert 'foo' in err
 
 
+@mock_streams('stderr')
+@raises(SystemExit)
+def test_require_iterable_provided_by_key():
+    """
+    When given a provided_by iterable value, require() raises SystemExit
+    """
+    # 'version' is one of the default values, so we know it'll be there
+    def fake_providing_function():
+        pass
+    require('foo', provided_by=[fake_providing_function])
+
+
+@mock_streams('stderr')
+@raises(SystemExit)
+def test_require_noniterable_provided_by_key():
+    """
+    When given a provided_by noniterable value, require() raises SystemExit
+    """
+    # 'version' is one of the default values, so we know it'll be there
+    def fake_providing_function():
+        pass
+    require('foo', provided_by=fake_providing_function)
+
+
 #
 # prompt()
 #

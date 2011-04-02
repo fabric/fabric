@@ -355,3 +355,10 @@ output = _AliasDict({
     'everything': ['warnings', 'running', 'user', 'output'],
     'output': ['stdout', 'stderr']
 })
+
+
+#
+# I/O loop sleep parameter (in seconds)
+#
+
+io_sleep = 0.01

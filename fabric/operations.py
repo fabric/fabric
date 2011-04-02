@@ -19,7 +19,8 @@ from contextlib import closing
 from fabric.context_managers import settings, char_buffered
 from fabric.io import output_loop, input_loop
 from fabric.network import needs_host
-from fabric.state import env, connections, output, win32, default_channel
+from fabric.state import (env, connections, output, win32, default_channel,
+    io_sleep)
 from fabric.utils import abort, indent, warn, puts
 from fabric.thread_handling import ThreadHandler
 from fabric.sftp import SFTP
@@ -135,9 +136,9 @@ def require(*keys, **kwargs):
     so format it appropriately.
 
     The optional keyword argument ``provided_by`` may be a list of functions or
-    function names which the user should be able to execute in order to set the
-    key or keys; it will be included in the error output if requirements are
-    not met.
+    function names or a single function or function name which the user should
+    be able to execute in order to set the key or keys; it will be included in
+    the error output if requirements are not met.
 
     Note: it is assumed that the keyword arguments apply to all given keys as a
     group. If you feel the need to specify more than one ``used_for``, for
@@ -169,7 +170,9 @@ def require(*keys, **kwargs):
     # And print provided_by if given
     if 'provided_by' in kwargs:
         funcs = kwargs['provided_by']
-        # Pluralize this too
+        # non-iterable is given, treat it as a list of this single item
+        if not hasattr(funcs, '__iter__'):
+            funcs = [funcs]
         if len(funcs) > 1:
             command = "one of the following commands"
         else:
@@ -754,6 +757,7 @@ def _execute(channel, command, pty=True, combine_stderr=True,
                     e = worker.exception
                     if e:
                         raise e[0], e[1], e[2]
+            time.sleep(io_sleep)
 
         # Obtain exit code of remote program now that we're done.
         status = channel.recv_exit_status()
@@ -1000,8 +1004,9 @@ def local(command, capture=False):
         out_stream = None if output.stdout else dev_null
         err_stream = None if output.stderr else dev_null
     try:
-        p = subprocess.Popen([wrapped_command], shell=True, stdout=out_stream,
-                stderr=err_stream)
+        cmd_arg = [wrapped_command] if win32 else wrapped_command
+        p = subprocess.Popen(cmd_arg, shell=True, stdout=out_stream,
+            stderr=err_stream)
         (stdout, stderr) = p.communicate()
     finally:
         if dev_null is not None:
