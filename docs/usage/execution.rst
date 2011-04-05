@@ -265,10 +265,11 @@ look up in ``env.roledefs``.
 Globally, via the command line
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In addition to modifying ``env.hosts`` and ``env.roles`` at the module level,
-you may define them by passing comma-separated string arguments to the
-command-line switches :option:`--hosts/-H <-H>` and :option:`--roles/-R <-R>`,
-e.g.::
+In addition to modifying ``env.hosts``, ``env.roles``, and
+``env.exclude_hosts`` at the module level, you may define them by passing 
+comma-separated string arguments to the command-line switches 
+:option:`--hosts/-H <-H>`, :option:`--roles/-R <-R>`, and
+:option:`--exclude-hosts/-x <-x>`, e.g.::
 
     $ fab -H host1,host2 mytask
 
@@ -300,6 +301,10 @@ instead::
 When this fabfile is run as ``fab -H host1,host2 mytask``, ``env.hosts`` will
 end contain ``['host1', 'host2', 'host3', 'host4']`` at the time that
 ``mytask`` is executed.
+
+For exclusions when this fabfile is run as ``fab -H host1,host2 -x host1
+mytask``, ``env.hosts`` will be the same, but the host list that gets executed
+will not have host1 included in it.
 
 .. note::
 
@@ -343,6 +348,11 @@ To specify per-task hosts for ``mytask``, execute it like so::
 
 This will override any other host list and ensure ``mytask`` always runs on
 just those two hosts.
+
+You are also able to exclude hosts like this::
+
+    $ fab mytask:hosts="host1;host2",exclude_hosts="host1"
+
 
 Per-task, via decorators
 ~~~~~~~~~~~~~~~~~~~~~~~~

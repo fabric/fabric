@@ -131,6 +131,11 @@ below.
     Sets :ref:`env.hosts <hosts>` to the given comma-delimited list of host
     strings.
 
+.. cmdoption:: -x HOSTS, --exclude-hosts=HOSTS
+
+    Sets :ref:`env.exclude_hosts` to the given comma-delimited list of host
+    strings to then keep out of the final host list.
+
 .. cmdoption:: -i KEY_FILENAME
 
     When set to a file path, will load the given file as an SSH identity file
