@@ -2,6 +2,10 @@
 Changes in version 1.0.1
 ========================
 
+.. note::
+    This release also includes all applicable changes from the :doc:`0.9.5
+    release </changes/0.9.5>`.
+
 Bugfixes
 ========
 
@@ -12,6 +16,9 @@ Bugfixes
   ``partial`` kwarg's default flipped from ``True`` to ``False``. However, only
   the documentation was altered. This has been fixed. Thanks to Adam Ernst for
   bringing it to our attention.
+* :issue:`312`: Tweak internal I/O related loops to prevent high CPU usage and
+  poor screen-printing behavior on some systems. Thanks to Redmine user ``cbr
+  grind`` for the initial patch.
 
 Documentation
 =============

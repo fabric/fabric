@@ -15,3 +15,14 @@
   })();
 </script>
 {% endblock %}
+
+
+{% block sidebarlogo %}
+{{ super() }}
+<h3>Project Versions</h3>
+<ul id="sidebar_versions">
+    {% for tag in fabric_tags %}
+    <li><a href="/en/{{ tag }}/">{{ tag }}</a></li>
+    {% endfor %}
+</ul>
+{% endblock %}

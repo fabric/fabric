@@ -1,0 +1,23 @@
+======================
+Changes in version 1.1
+======================
+
+This page lists all changes made to Fabric in its 1.1.0 release.
+
+
+Feature additions
+=================
+
+* :issue:`107`: `~fabric.operations.require`'s ``provided_by`` kwarg now
+  accepts iterables in addition to single values. Thanks to Thomas Ballinger
+  for the patch.
+
+Bugfixes
+========
+
+* N/A
+
+Documentation updates
+=====================
+
+* N/A
