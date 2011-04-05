@@ -4,6 +4,7 @@ Module providing easy API for working with remote files and folders.
 
 from __future__ import with_statement
 
+import hashlib
 import tempfile
 import re
 import os
@@ -52,9 +53,10 @@ def upload_template(filename, destination, context=None, use_jinja=False,
     """
     Render and upload a template text file to a remote host.
 
-    ``filename`` should be the path to a text file, which may contain Python
-    string interpolation formatting and will be rendered with the given context
-    dictionary ``context`` (if given.)
+    ``filename`` should be the path to a text file, which may contain `Python
+    string interpolation formatting
+    <http://docs.python.org/release/2.5.4/lib/typesseq-strings.html>`_ and will
+    be rendered with the given context dictionary ``context`` (if given.)
 
     Alternately, if ``use_jinja`` is set to True and you have the Jinja2
     templating library available, Jinja will be used to render the template
@@ -73,7 +75,8 @@ def upload_template(filename, destination, context=None, use_jinja=False,
     temp_destination = '/tmp/' + basename
 
     # This temporary file should not be automatically deleted on close, as we
-    # need it there to upload it (Windows locks the file for reading while open).
+    # need it there to upload it (Windows locks the file for reading while
+    # open).
     tempfile_fd, tempfile_name = tempfile.mkstemp()
     output = open(tempfile_name, "w+b")
     # Init
@@ -120,7 +123,7 @@ def sed(filename, before, after, limit='', use_sudo=False, backup='.bak'):
     <filename>"``.
 
     For convenience, ``before`` and ``after`` will automatically escape forward
-    slashes (and **only** forward slashes) for you, so you don't need to
+    slashes, single quotes and parentheses for you, so you don't need to
     specify e.g.  ``http:\/\/foo\.com``, instead just using ``http://foo\.com``
     is fine.
 
@@ -130,7 +133,6 @@ def sed(filename, before, after, limit='', use_sudo=False, backup='.bak'):
     with many nested levels of quotes and backslashes.
     """
     func = use_sudo and sudo or run
-    expr = r"sed -i%s -r -e '%ss/%s/%s/g' %s"
     # Characters to be escaped in both
     for char in "/'":
         before = before.replace(char, r'\%s' % char)
@@ -141,7 +143,24 @@ def sed(filename, before, after, limit='', use_sudo=False, backup='.bak'):
         after = after.replace(char, r'\%s' % char)
     if limit:
         limit = r'/%s/ ' % limit
-    command = expr % (backup, limit, before, after, filename)
+    # Test the OS because of differences between sed versions
+    with hide('running', 'stdout'):
+        platform = run("uname")
+    if platform in ('NetBSD', 'OpenBSD'):
+        # Attempt to protect against failures/collisions
+        hasher = hashlib.sha1()
+        hasher.update(env.host_string)
+        hasher.update(filename)
+        tmp = "/tmp/%s" % hasher.hexdigest()
+        # Use temp file to work around lack of -i
+        expr = r"""cp -p %(filename)s %(tmp)s \
+&& sed -r -e '%(limit)ss/%(before)s/%(after)s/g' %(filename)s > %(tmp)s \
+&& cp -p %(filename)s %(filename)s%(backup)s \
+&& mv %(tmp)s %(filename)s"""
+        command = expr % locals()
+    else:
+        expr = r"sed -i%s -r -e '%ss/%s/%s/g' %s"
+        command = expr % (backup, limit, before, after, filename)
     return func(command, shell=False)
 
 
@@ -202,14 +221,13 @@ def comment(filename, regex, use_sudo=False, char='#', backup='.bak'):
         "before" regex of ``r'^(foo)$'`` (and the "after" regex, naturally, of
         ``r'#\\1'``.)
     """
-    carot = ''
-    dollar = ''
+    carot, dollar = '', ''
     if regex.startswith('^'):
         carot = '^'
         regex = regex[1:]
     if regex.endswith('$'):
         dollar = '$'
-        regex = regex[:1]
+        regex = regex[:-1]
     regex = "%s(%s)%s" % (carot, regex, dollar)
     return sed(
         filename,
@@ -249,34 +267,44 @@ def contains(filename, text, exact=False, use_sudo=False):
         ))
 
 
-def append(filename, text, use_sudo=False):
+def append(filename, text, use_sudo=False, partial=False, escape=True):
     """
     Append string (or list of strings) ``text`` to ``filename``.
 
     When a list is given, each string inside is handled independently (but in
     the order given.)
 
-    If ``text`` is already found as a discrete line in ``filename``, the append
-    is not run, and None is returned immediately. Otherwise, the given text is
-    appended to the end of the given ``filename`` via e.g. ``echo '$text' >>
-    $filename``.
+    If ``text`` is already found in ``filename``, the append is not run, and
+    None is returned immediately. Otherwise, the given text is appended to the
+    end of the given ``filename`` via e.g. ``echo '$text' >> $filename``.
+
+    The test for whether ``text`` already exists defaults to a full line match,
+    e.g. ``^<text>$``, as this seems to be the most sensible approach for the
+    "append lines to a file" use case. You may override this and force partial
+    searching (e.g. ``^<text>``) by specifying ``partial=True``.
 
     Because ``text`` is single-quoted, single quotes will be transparently 
-    backslash-escaped.
+    backslash-escaped. This can be disabled with ``escape=False``.
 
     If ``use_sudo`` is True, will use `sudo` instead of `run`.
+
+    .. versionchanged:: 0.9.1
+        Added the ``partial`` keyword argument.
 
     .. versionchanged:: 1.0
         Swapped the order of the ``filename`` and ``text`` arguments to be
         consistent with other functions in this module.
+    .. versionchanged:: 1.0
+        Changed default value of ``partial`` kwarg to be ``False``.
     """
     func = use_sudo and sudo or run
     # Normalize non-list input to be a list
     if isinstance(text, str):
         text = [text]
     for line in text:
-        if (contains(filename, '^' + re.escape(line), use_sudo=use_sudo)
-            and line
-            and exists(filename)):
+        regex = '^' + re.escape(line) + ('' if partial else '$')
+        if (exists(filename) and line
+            and contains(filename, regex, use_sudo=use_sudo)):
             continue
-        func("echo '%s' >> %s" % (line.replace("'", r'\''), filename))
+        line = line.replace("'", r'\'') if escape else line
+        func("echo '%s' >> %s" % (line, filename))

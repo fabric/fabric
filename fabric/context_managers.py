@@ -8,8 +8,13 @@ Context managers for use with the ``with`` statement.
 """
 
 from contextlib import contextmanager, nested
+import sys
 
-from fabric.state import env, output
+from fabric.state import env, output, win32
+
+if not win32:
+    import termios
+    import tty
 
 
 def _set_output(groups, which):
@@ -81,10 +86,13 @@ def _setenv(**kwargs):
     """
     previous = {}
     for key, value in kwargs.iteritems():
-        previous[key] = env[key]
+        if key in env:
+            previous[key] = env[key]
         env[key] = value
-    yield
-    env.update(previous)
+    try:
+        yield
+    finally:
+        env.update(previous)
 
 
 def settings(*args, **kwargs):
@@ -135,16 +143,16 @@ def settings(*args, **kwargs):
 
 def cd(path):
     """
-    Context manager that keeps directory state when calling `run`/`sudo`.
+    Context manager that keeps directory state when calling operations.
 
-    Any calls to `run` or `sudo` within the wrapped block will implicitly have
-    a string similar to ``"cd <path> && "`` prefixed in order to give the sense
-    that there is actually statefulness involved.
+    Any calls to `run`, `sudo`, `get`, or `put` within the wrapped block will
+    implicitly have a string similar to ``"cd <path> && "`` prefixed in order
+    to give the sense that there is actually statefulness involved.  `cd` only
+    affects the remote paths for `get` and `put` -- local paths are untouched.
 
-    Because use of `cd` affects all `run` and `sudo` invocations, any code
-    making use of `run` and/or `sudo`, such as much of the ``contrib`` section,
-    will also be affected by use of `cd`. However, at this time, `get` and
-    `put` do not honor `cd`; we expect this to be fixed in future releases.
+    Because use of `cd` affects all such invocations, any code making use of
+    those operations, such as much of the ``contrib`` section, will also be
+    affected by use of `cd`.
 
     Like the actual 'cd' shell builtin, `cd` may be called with relative paths
     (keep in mind that your default starting directory is your remote user's
@@ -183,13 +191,35 @@ def cd(path):
 
         Space characters will be escaped automatically to make dealing with
         such directory names easier.
+
+    .. versionchanged:: 1.0
+        Applies to `get` and `put` in addition to the command-running
+        operations.
     """
+    return _change_cwd('cwd', path)
+
+
+def lcd(path):
+    """
+    Context manager for updating local current working directory.
+
+    This context manager is identical to `~fabric.context_managers.cd`, except
+    that it changes a different env var (`lcwd`, instead of `cwd`) and thus
+    only affects the invocation of `~fabric.operations.local` and the local
+    arguments to `~fabric.operations.get`/`~fabric.operations.put`.
+
+    .. versionadded:: 1.0
+    """
+    return _change_cwd('lcwd', path)
+
+
+def _change_cwd(which, path):
     path = path.replace(' ', '\ ')
-    if env.get('cwd'):
-        new_cwd = env.cwd + '/' + path
+    if env.get(which) and not path.startswith('/'):
+        new_cwd = env.get(which) + '/' + path
     else:
         new_cwd = path
-    return _setenv(cwd=new_cwd)
+    return _setenv(**{which: new_cwd})
 
 
 def path(path, behavior='append'):
@@ -276,3 +306,21 @@ def prefix(command):
     Contrived, but hopefully illustrative.
     """
     return _setenv(command_prefixes=env.command_prefixes + [command])
+
+
+@contextmanager
+def char_buffered(pipe):
+    """
+    Force local terminal ``pipe`` be character, not line, buffered.
+
+    Only applies on Unix-based systems; on Windows this is a no-op.
+    """
+    if win32 or not sys.stdin.isatty():
+        yield
+    else:
+        old_settings = termios.tcgetattr(pipe)
+        tty.setcbreak(pipe)
+        try:
+            yield
+        finally:
+            termios.tcsetattr(pipe, termios.TCSADRAIN, old_settings)

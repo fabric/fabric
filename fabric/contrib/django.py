@@ -1,5 +1,5 @@
 """
-.. versionadded:: 1.0
+.. versionadded:: 0.9.2
 
 These functions streamline the process of initializing Django's settings module
 environment variable. Once this is done, your fabfile may import from your

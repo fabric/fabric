@@ -14,7 +14,7 @@ from optparse import OptionParser
 import os
 import sys
 
-from fabric import api # For checking callables against the API 
+from fabric import api # For checking callables against the API
 from fabric.contrib import console, files, project # Ditto
 from fabric.network import denormalize, interpret_host_string, disconnect_all
 from fabric import state # For easily-mockable access to roles, env and etc
@@ -101,10 +101,16 @@ def is_task(tup):
     )
 
 
-def load_fabfile(path):
+def load_fabfile(path, importer=None):
     """
-    Import given fabfile path and return dictionary of its public callables.
+    Import given fabfile path and return (docstring, callables).
+
+    Specifically, the fabfile's ``__doc__`` attribute (a string) and a
+    dictionary of ``{'name': callable}`` containing all callables which pass
+    the "is a Fabric task" test.
     """
+    if importer is None:
+        importer = __import__
     # Get directory and fabfile name
     directory, fabfile = os.path.split(path)
     # If the directory isn't in the PYTHONPATH, add it so our import will work
@@ -125,7 +131,7 @@ def load_fabfile(path):
             sys.path.insert(0, directory)
             del sys.path[i + 1]
     # Perform the import (trimming off the .py)
-    imported = __import__(os.path.splitext(fabfile)[0])
+    imported = importer(os.path.splitext(fabfile)[0])
     # Remove directory from path if we added it ourselves (just to be neat)
     if added_to_path:
         del sys.path[0]
@@ -133,9 +139,9 @@ def load_fabfile(path):
     if index is not None:
         sys.path.insert(index + 1, directory)
         del sys.path[0]
-    # Return dictionary of callables only (and don't include Fab operations or
-    # underscored callables)
-    return dict(filter(is_task, vars(imported).items()))
+    # Return our two-tuple
+    tasks = dict(filter(is_task, vars(imported).items()))
+    return imported.__doc__, tasks
 
 
 def parse_options():
@@ -172,6 +178,14 @@ def parse_options():
         help="print list of possible commands and exit"
     )
 
+    # Like --list, but text processing friendly
+    parser.add_option('--shortlist',
+        action='store_true',
+        dest='shortlist',
+        default=False,
+        help="print non-verbose list of possible commands and exit"
+    )
+
     # Display info about a specific command
     parser.add_option('-d', '--display',
         metavar='COMMAND',
@@ -194,17 +208,25 @@ def parse_options():
     return parser, opts, args
 
 
-def list_commands():
+def _command_names():
+    return sorted(commands.keys())
+
+
+def list_commands(docstring):
     """
-    Print all found commands/tasks, then exit. Invoked with -l/--list.
+    Print all found commands/tasks, then exit. Invoked with ``-l/--list.``
+
+    If ``docstring`` is non-empty, it will be printed before the task list.
     """
+    if docstring:
+        trailer = "\n" if not docstring.endswith("\n") else ""
+        print(docstring + trailer)
     print("Available commands:\n")
     # Want separator between name, description to be straight col
     max_len = reduce(lambda a, b: max(a, len(b)), commands.keys(), 0)
     sep = '  '
     trail = '...'
-    names = sorted(commands.keys())
-    for name in names:
+    for name in _command_names():
         output = None
         # Print first line of docstring
         func = commands[name]
@@ -220,6 +242,14 @@ def list_commands():
         else:
             output = name
         print(indent(output))
+    sys.exit(0)
+
+
+def shortlist():
+    """
+    Print all task names separated by newlines with no embellishment.
+    """
+    print("\n".join(_command_names()))
     sys.exit(0)
 
 
@@ -243,6 +273,33 @@ def display_command(command):
     sys.exit(0)
 
 
+def _escape_split(sep, argstr):
+    """
+    Allows for escaping of the separator: e.g. task:arg='foo\, bar'
+
+    It should be noted that the way bash et. al. do command line parsing, those
+    single quotes are required.
+    """
+    escaped_sep = r'\%s' % sep
+
+    if escaped_sep not in argstr:
+        return argstr.split(sep)
+
+    before, _, after = argstr.partition(escaped_sep)
+    startlist = before.split(sep) # a regular split is fine here
+    unfinished = startlist[-1]
+    startlist = startlist[:-1]
+
+    # recurse because there may be more escaped separators
+    endlist = _escape_split(sep, after)
+
+    # finish building the escaped value. we use endlist[0] becaue the first
+    # part of the string sent in recursion is the rest of the escaped value.
+    unfinished += sep + endlist[0]
+
+    return startlist + [unfinished] + endlist[1:] # put together all the parts
+
+
 def parse_arguments(arguments):
     """
     Parse string list into list of tuples: command, args, kwargs, hosts, roles.
@@ -258,9 +315,9 @@ def parse_arguments(arguments):
         exclude_hosts = []
         if ':' in cmd:
             cmd, argstr = cmd.split(':', 1)
-            for pair in argstr.split(','):
+            for pair in _escape_split(',', argstr):
                 k, _, v = pair.partition('=')
-                if v:
+                if _:
                     # Catch, interpret host/hosts/role/roles/exclude_hosts kwargs
                     if k in ['host', 'hosts', 'role', 'roles','exclude_hosts']:
                         if k == 'host':
@@ -309,13 +366,20 @@ def _merge(hosts, roles, exclude=[]):
             value = value()
         role_hosts += value
 
-    merged_list = list(set(hosts + role_hosts))
+    # deduped combo of hosts and role_hosts
+    merged_list = list(set(_clean_hosts(hosts + role_hosts)))
     for exclude_host in exclude:
         if exclude_host in merged_list:
             merged_list.remove(exclude_host)
 
-    # Return deduped combo of hosts and role_hosts
     return merged_list
+
+
+def _clean_hosts(host_list):
+    """
+    Clean host strings to ensure no trailing whitespace, etc.
+    """
+    return [host.strip() for host in host_list]
 
 
 def get_hosts(command, cli_hosts, cli_roles, cli_exclude_hosts):
@@ -389,12 +453,20 @@ def main():
             print("Fabric %s" % state.env.version)
             sys.exit(0)
 
+        # Handle case where we were called bare, i.e. just "fab", and print
+        # a help message.
+        actions = (options.list_commands, options.shortlist, options.display,
+            arguments, remainder_arguments)
+        if not any(actions):
+            parser.print_help()
+            sys.exit(1)
+
         # Load settings from user settings file, into shared env dict.
         state.env.update(load_settings(state.env.rcfile))
 
         # Find local fabfile path or abort
         fabfile = find_fabfile()
-        if not fabfile:
+        if not fabfile and not remainder_arguments:
             abort("Couldn't find any fabfiles!")
 
         # Store absolute path to fabfile in case anyone needs it
@@ -403,7 +475,9 @@ def main():
         # Load fabfile (which calls its module-level code, including
         # tweaks to env values) and put its commands in the shared commands
         # dict
-        commands.update(load_fabfile(fabfile))
+        if fabfile:
+            docstring, callables = load_fabfile(fabfile)
+            commands.update(callables)
 
         # Abort if no commands found
         if not commands and not remainder_arguments:
@@ -411,11 +485,18 @@ def main():
 
         # Now that we're settled on a fabfile, inform user.
         if state.output.debug:
-            print("Using fabfile '%s'" % fabfile)
+            if fabfile:
+                print("Using fabfile '%s'" % fabfile)
+            else:
+                print("No fabfile loaded -- remainder command only")
+
+        # Non-verbose command list
+        if options.shortlist:
+            shortlist()
 
         # Handle list-commands option (now that commands are loaded)
         if options.list_commands:
-            list_commands()
+            list_commands(docstring)
 
         # Handle show (command-specific help) option
         if options.display:
@@ -448,6 +529,10 @@ def main():
             r = '<remainder>'
             commands[r] = lambda: api.run(remainder_command)
             commands_to_run.append((r, [], {}, [], []))
+
+        if state.output.debug:
+            names = ", ".join(x[0] for x in commands_to_run)
+            print("Commands to run: %s" % names)
 
         # At this point all commands must exist, so execute them in order.
         for name, args, kwargs, cli_hosts, cli_roles, cli_exclude_hosts in commands_to_run:

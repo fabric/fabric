@@ -1,8 +1,13 @@
+import sys
+import copy
+
 from fudge.patcher import with_patched_object
+from fudge import Fake
 from nose.tools import eq_, raises
 
 from fabric.decorators import hosts, roles
-from fabric.main import get_hosts, parse_arguments, _merge
+from fabric.main import (get_hosts, parse_arguments, _merge, _escape_split,
+        load_fabfile)
 import fabric.state
 from fabric.state import _AttributeDict
 
@@ -33,6 +38,9 @@ def test_argument_parsing():
         # Exclude hosts
         ('abc:hosts=foo;bar,exclude_hosts=foo', ('abc', [], {}, ['foo', 'bar'], [], ['foo'])),
         ('abc:hosts=foo;bar,exclude_hosts=foo;bar', ('abc', [], {}, ['foo', 'bar'], [], ['foo','bar'])),
+       # Empty string args
+        ("task:x=y,z=", ('task', [], {'x': 'y', 'z': ''}, [], [], [])),
+        ("task:foo,,x=y", ('task', ['foo', ''], {'x': 'y'}, [], [], [])),
     ]:
         yield eq_, parse_arguments([args]), [output]
 
@@ -97,6 +105,61 @@ def test_hosts_decorator_overrides_env_hosts():
 
 
 @with_patched_object(
+    'fabric.state', 'env', {'hosts': [' foo ', 'bar '], 'roles': [],
+        'exclude_hosts':[],
+        
+        }
+)
+def test_hosts_stripped_env_hosts():
+    """
+    Make sure hosts defined in env.hosts are cleaned of extra spaces
+    """
+    def command():
+        pass
+    eq_hosts(command, ['foo', 'bar'])
+
+
+spaced_roles = {
+    'r1': [' a ', ' b '],
+    'r2': ['b', 'c'],
+}
+
+@with_patched_object(
+    'fabric.state', 'env', _AttributeDict({'roledefs': spaced_roles})
+)
+def test_roles_stripped_env_hosts():
+    """
+    Make sure hosts defined in env.roles are cleaned of extra spaces
+    """
+    @roles('r1')
+    def command():
+        pass
+    eq_hosts(command, ['a', 'b'])
+
+
+def test_hosts_decorator_expands_single_iterable():
+    """
+    @hosts(iterable) should behave like @hosts(*iterable)
+    """
+    host_list = ['foo', 'bar']
+    @hosts(host_list)
+    def command():
+        pass
+    eq_(command.hosts, host_list)
+
+
+def test_roles_decorator_expands_single_iterable():
+    """
+    @roles(iterable) should behave like @roles(*iterable)
+    """
+    role_list = ['foo', 'bar']
+    @roles(role_list)
+    def command():
+        pass
+    eq_(command.roles, role_list)
+
+
+@with_patched_object(
     'fabric.state', 'env', _AttributeDict({'roledefs': fake_roles})
 )
 @raises(SystemExit)
@@ -121,3 +184,47 @@ def test_lazy_roles():
     def command():
         pass
     eq_hosts(command, ['a', 'b'])
+
+
+def test_escaped_task_arg_split():
+    """
+    Allow backslashes to escape the task argument separator character
+    """
+    argstr = r"foo,bar\,biz\,baz,what comes after baz?"
+    eq_(
+        _escape_split(',', argstr),
+        ['foo', 'bar,biz,baz', 'what comes after baz?']
+    )
+
+
+def run_load_fabfile(path, sys_path):
+    # Module-esque object
+    fake_module = Fake().has_attr(__dict__={})
+    # Fake __import__
+    importer = Fake(callable=True).returns(fake_module)
+    # Snapshot sys.path for restore
+    orig_path = copy.copy(sys.path)
+    # Update with fake path
+    sys.path = sys_path
+    # Test for side effects
+    load_fabfile(path, importer=importer)
+    eq_(sys.path, sys_path)
+    # Restore
+    sys.path = orig_path
+
+
+def test_load_fabfile_should_not_remove_real_path_elements():
+    for fabfile_path, sys_dot_path in (
+        # Directory not in path
+        ('subdir/fabfile.py', ['not_subdir']),
+        ('fabfile.py', ['nope']),
+        # Directory in path, but not at front
+        ('subdir/fabfile.py', ['not_subdir', 'subdir']),
+        ('fabfile.py', ['not_subdir', '']),
+        ('fabfile.py', ['not_subdir', '', 'also_not_subdir']),
+        # Directory in path, and at front already
+        ('subdir/fabfile.py', ['subdir']),
+        ('subdir/fabfile.py', ['subdir', 'not_subdir']),
+        ('fabfile.py', ['', 'some_dir', 'some_other_dir']),
+    ):
+            yield run_load_fabfile, fabfile_path, sys_dot_path

@@ -1,0 +1,57 @@
+========================
+Changes in version 0.9.1
+========================
+
+The following changes were implemented in Fabric 0.9.1:
+
+Feature additions
+=================
+
+* :issue:`82`: `~fabric.contrib.files.append` now offers a ``partial`` kwarg
+  allowing control over whether the "don't append if given text already exists"
+  test looks for exact matches or not. Thanks to Jonas Nockert for the catch
+  and discussion.
+* :issue:`112`: ``fab --list`` now prints out the fabfile's module-level
+  docstring as a header, if there is one.
+* :issue:`141`: Added some more CLI args/env vars to allow user configuration
+  of the Paramiko ``connect`` call -- specifically :ref:`no_agent` and
+  :ref:`no_keys`.
+
+
+Bugfixes
+========
+
+* :issue:`75`: ``fab``, when called with no arguments or (useful) options, now
+  prints help, even when no fabfile can be found. Previously, calling ``fab``
+  in a location with no fabfile would complain about the lack of fabfile
+  instead of displaying help.
+* :issue:`130`: Context managers now correctly clean up ``env`` if they
+  encounter an exception. Thanks to Carl Meyer for catch + patch.
+* :issue:`132`: `~fabric.operations.local` now calls ``strip`` on its stdout,
+  matching the behavior of `~fabric.operations.run`/`~fabric.operations.sudo`.
+  Thanks to Carl Meyer again on this one.
+* :issue:`166`: `~fabric.context_managers.cd` now correctly overwrites
+  ``env.cwd`` when given an absolute path, instead of naively appending its
+  argument to ``env.cwd``'s previous value.
+
+
+Documentation updates
+=====================
+
+* A number of small to medium documentation tweaks were made which had no
+  specific Redmine ticket. The largest of these is the addition of :doc:`the
+  FAQ <../faq>` to the Sphinx documentation instead of storing it as a
+  source-only text file. (Said FAQ was also slightly expanded with new FAQs.)
+* :issue:`17`: Added :ref:`note to FAQ <faq-daemonize>` re: use of ``dtach`` as
+  alternative to ``screen``. Thanks to Erich Heine for the tip.
+* :issue:`64`: Updated :ref:`installation docs <downloads>` to clarify where
+  package maintainers should be downloading tarballs from. Thanks to James
+  Pearson for providing the necessary perspective.
+* :issue:`95`: Added a link to a given version's changelog on the PyPI page
+  (technically, to the ``setup.py`` ``long_description`` field).
+* :issue:`110`: Alphabetized :ref:`the CLI argument command reference
+  <command-line-options>`. Thanks to Erich Heine.
+* :issue:`120`: Tweaked documentation, help strings to make it more obvious
+  that fabfiles are simply Python modules.
+* :issue:`127`: Added :ref:`note to install docs <pypm>` re: ActiveState's
+  PyPM. Thanks to Sridhar Ratnakumar for the tip. 

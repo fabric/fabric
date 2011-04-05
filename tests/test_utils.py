@@ -2,12 +2,14 @@ from __future__ import with_statement
 
 import sys
 
+from fudge import Fake, patched_context, verify, clear_expectations
 from fudge.patcher import with_patched_object
 from nose.tools import eq_
 from nose.tools import raises
 
 from fabric.state import output, env
-from fabric.utils import warn, indent, abort, puts
+from fabric.utils import warn, indent, abort, puts, fastprint
+from fabric import utils # For patching
 from fabric.context_managers import settings
 from utils import mock_streams
 
@@ -79,7 +81,7 @@ def test_puts_with_user_output_on():
     """
     s = "string!"
     output.user = True
-    puts(s)
+    puts(s, show_prefix=False)
     eq_(sys.stdout.getvalue(), s + "\n")
 
 
@@ -114,3 +116,19 @@ def test_puts_without_prefix():
     h = "localhost"
     puts(s, show_prefix=False)
     eq_(sys.stdout.getvalue(), "%s" % (s + "\n"))
+
+
+def test_fastprint_calls_puts():
+    """
+    fastprint() is just an alias to puts()
+    """
+    text = "Some output"
+    fake_puts = Fake('puts', expect_call=True).with_args(
+        text=text, show_prefix=False, end="", flush=True
+    )
+    with patched_context(utils, 'puts', fake_puts):
+        try:
+            fastprint(text)
+            verify()
+        finally:
+            clear_expectations()

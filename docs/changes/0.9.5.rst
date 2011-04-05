@@ -1,0 +1,47 @@
+========================
+Changes in version 0.9.5
+========================
+
+The following changes were implemented in Fabric 0.9.5:
+
+Feature additions
+=================
+
+* N/A
+
+Bugfixes
+========
+
+* :issue:`37`: Internal refactoring of a Paramiko call from ``_transport`` to
+  ``get_transport()``.
+* :issue:`258`: Modify subprocess call on Windows platforms to avoid
+  space/quote problems in `~fabric.operations.local`. Thanks to Henrik
+  Heimbuerger and Raymond Cote for catch + suggested fixes.
+* :issue:`261`: Fix bug in `~fabric.contrib.files.comment` which truncated
+  regexen ending with ``$``. Thanks to Antti Kaihola for the catch.
+* :issue:`264`: Fix edge case in `~fabric.operations.reboot` by gracefully
+  clearing connection cache. Thanks to Jason Gerry for the report &
+  troubleshooting.
+* :issue:`268`: Allow for ``@`` symbols in usernames, which is valid on some
+  systems. Fabric's host-string parser now splits username and hostname at the
+  last ``@`` found instead of the first. Thanks to Thadeus Burgess for the
+  report.
+* :issue:`287`: Fix bug in password prompt causing occasional tracebacks.
+  Thanks to Antti Kaihola for the catch and Rick Harding for testing the
+  proposed solution.
+* :issue:`288`: Use temporary files to work around the lack of a ``-i`` flag in
+  OpenBSD and NetBSD `~fabric.contrib.files.sed`. Thanks to Morgan Lefieux for
+  catch + patches.
+* :issue:`305`: Strip whitespace from hostnames to help prevent user error.
+  Thanks to Michael Bravo for the report and Rick Harding for the patch.
+* :issue:`316`: Use of `~fabric.context_managers.settings` with key names not
+  previously set in ``env`` no longer raises KeyErrors. Whoops. Thanks to Adam
+  Ernst for the catch.
+
+Documentation updates
+=====================
+
+* :issue:`228`: Added description of the PyCrypto + pip + Python 2.5 problem to
+  the documentation and removed the Python 2.5 check from ``setup.py``.
+* :issue:`291`: Updated the PyPM-related install docs re: recent changes in
+  PyPM and its download URLs. Thanks to Sridhar Ratnakumar for the patch.
