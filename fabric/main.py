@@ -366,6 +366,10 @@ def _merge(hosts, roles):
             value = value()
         role_hosts += value
 
+    # make sure hosts is converted to a list to be able to append to the
+    # role_hosts list
+    hosts = list(hosts)
+
     # Return deduped combo of hosts and role_hosts
     if hasattr(state.env, '_ensure_order') and state.env._ensure_order:
         result_hosts = []

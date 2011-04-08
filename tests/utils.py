@@ -2,6 +2,7 @@ from __future__ import with_statement
 
 from StringIO import StringIO  # No need for cStringIO at this time
 from contextlib import contextmanager
+from fudge.patcher import with_patched_object
 from functools import wraps, partial
 from types import StringTypes
 import copy
@@ -209,3 +210,44 @@ Got:
 def eq_contents(path, text):
     with open(path) as fd:
         eq_(text, fd.read())
+
+
+class with_patched_state_env(object):
+    """Decorate a unit test to provide a default state.env
+
+    Grabs the fabric.state.env attribute dictionary.
+
+    e.g.
+    @with_patched_state_env({'hosts': ('foo', 'bar')})
+    def test_something_with_hosts():
+
+    """
+    def __init__(self, dict_overrides):
+        """ Pass in a dict of keys to override the default env with
+
+        :param dict_overrides: Dictionary of keys to override in default_env
+
+        """
+        from fabric.state import env as default_env
+        self.env = self._merge_env(default_env.copy(), dict_overrides)
+
+    def _merge_env(self, default, overrides):
+        """for item in the overrides, set them over the default"""
+        for key, val in overrides.iteritems():
+            default[key] = val
+
+        return default
+
+    def __call__(self, f):
+        """This wraps a function with a fudge mock that implements the default
+        state.env
+        """
+        env = self.env
+
+        def wrapped_f(env=env, *args):
+            f(*args)
+
+        # now add the fudge decorator here
+        patcher = with_patched_object('fabric.state', 'env', env)
+        wrapped_f = patcher(wrapped_f)
+        return wrapped_f

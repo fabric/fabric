@@ -1,7 +1,6 @@
 import sys
 import copy
 
-from fudge.patcher import with_patched_object
 from fudge import Fake
 from nose.tools import eq_, raises
 
@@ -12,6 +11,7 @@ import fabric.state
 from fabric.state import _AttributeDict
 
 from utils import mock_streams
+from utils import with_patched_state_env
 
 
 def test_argument_parsing():
@@ -43,7 +43,6 @@ def test_argument_parsing():
 
 def eq_hosts(command, host_list):
     eq_(set(get_hosts(command, [], [])), set(host_list))
-
 
 def test_order_ensured():
     """
@@ -77,7 +76,6 @@ def test_order_ensured_sorted():
     eq_(command._sorted, True)
     eq_hosts(command, sorted)
 
-
 def test_hosts_decorator_by_itself():
     """
     Use of @hosts only
@@ -107,10 +105,7 @@ fake_roles = {
     'r2': ['b', 'c']
 }
 
-
-@with_patched_object(
-    'fabric.state', 'env', _AttributeDict({'roledefs': fake_roles})
-)
+@with_patched_state_env({'roledefs': fake_roles})
 def test_roles_decorator_by_itself():
     """
     Use of @roles only
@@ -120,9 +115,7 @@ def test_roles_decorator_by_itself():
         pass
     eq_hosts(command, ['a', 'b'])
 
-@with_patched_object(
-    'fabric.state', 'env', _AttributeDict({'roledefs': fake_roles})
-)
+@with_patched_state_env({'roledefs': fake_roles})
 def test_roles_decorator_by_itself_order_ensured():
     """
     Use of @roles only order ensured
@@ -134,9 +127,7 @@ def test_roles_decorator_by_itself_order_ensured():
     eq_hosts(command, ['a', 'b'])
 
 
-@with_patched_object(
-    'fabric.state', 'env', _AttributeDict({'roledefs': fake_roles})
-)
+@with_patched_state_env({'roledefs': fake_roles})
 def test_hosts_and_roles_together():
     """
     Use of @roles and @hosts together results in union of both
@@ -147,9 +138,7 @@ def test_hosts_and_roles_together():
         pass
     eq_hosts(command, ['a', 'b', 'c'])
 
-@with_patched_object(
-    'fabric.state', 'env', _AttributeDict({'roledefs': fake_roles})
-)
+@with_patched_state_env({'roledefs': fake_roles})
 def test_hosts_and_roles_together_order_ensured():
     """
     Use of @roles and @hosts together results in union of both order ensured
@@ -161,10 +150,34 @@ def test_hosts_and_roles_together_order_ensured():
         pass
     eq_hosts(command, ['a', 'b', 'c'])
 
+tuple_roles = {
+    'r1': ('a', 'b'),
+    'r2': ('b', 'c'),
+}
 
-@with_patched_object(
-    'fabric.state', 'env', _AttributeDict({'hosts': ['foo']})
-)
+
+@with_patched_state_env({'roledefs': tuple_roles})
+def test_roles_as_tuples():
+    """
+    Test that a list of roles as a tuple succeeds
+    """
+    @roles('r1')
+    def command():
+        pass
+    eq_hosts(command, ['a', 'b'])
+
+
+@with_patched_state_env({'hosts': ('foo', 'bar')})
+def test_hosts_as_tuples():
+    """
+    Test that a list of hosts as a tuple succeeds
+    """
+    def command():
+        pass
+    eq_hosts(command, ['foo', 'bar'])
+
+
+@with_patched_state_env({'hosts': ['foo']})
 def test_hosts_decorator_overrides_env_hosts():
     """
     If @hosts is used it replaces any env.hosts value
@@ -175,9 +188,7 @@ def test_hosts_decorator_overrides_env_hosts():
     eq_hosts(command, ['bar'])
     assert 'foo' not in get_hosts(command, [], [])
 
-@with_patched_object(
-    'fabric.state', 'env', _AttributeDict({'hosts': ['foo']})
-)
+@with_patched_state_env({'hosts': ['foo']})
 def test_hosts_decorator_overrides_env_hosts_order_ensured():
     """
     If @hosts is used it replaces any env.hosts value order ensured
@@ -190,9 +201,7 @@ def test_hosts_decorator_overrides_env_hosts_order_ensured():
     assert 'foo' not in get_hosts(command, [], [])
 
 
-@with_patched_object(
-    'fabric.state', 'env', {'hosts': [' foo ', 'bar '], 'roles': []}
-)
+@with_patched_state_env({'hosts': [' foo ', 'bar '], 'roles': []})
 def test_hosts_stripped_env_hosts():
     """
     Make sure hosts defined in env.hosts are cleaned of extra spaces
@@ -207,9 +216,7 @@ spaced_roles = {
     'r2': ['b', 'c'],
 }
 
-@with_patched_object(
-    'fabric.state', 'env', _AttributeDict({'roledefs': spaced_roles})
-)
+@with_patched_state_env({'roledefs': spaced_roles})
 def test_roles_stripped_env_hosts():
     """
     Make sure hosts defined in env.roles are cleaned of extra spaces
@@ -268,9 +275,7 @@ def test_roles_decorator_expands_single_iterable_order_ensured():
     eq_(command.roles, role_list)
 
 
-@with_patched_object(
-    'fabric.state', 'env', _AttributeDict({'roledefs': fake_roles})
-)
+@with_patched_state_env({'roledefs': fake_roles})
 @raises(SystemExit)
 @mock_streams('stderr')
 def test_aborts_on_nonexistent_roles():
@@ -282,10 +287,7 @@ def test_aborts_on_nonexistent_roles():
 
 lazy_role = {'r1': lambda: ['a', 'b']}
 
-
-@with_patched_object(
-    'fabric.state', 'env', _AttributeDict({'roledefs': lazy_role})
-)
+@with_patched_state_env({'roledefs': lazy_role})
 def test_lazy_roles():
     """
     Roles may be callables returning lists, as well as regular lists
