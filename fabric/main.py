@@ -29,6 +29,7 @@ _internals = reduce(lambda x, y: x + filter(callable, vars(y).values()),
     _modules,
     []
 )
+state.env.ensure_order = False
 
 def load_settings(path):
     """
@@ -362,8 +363,22 @@ def _merge(hosts, roles):
         if callable(value):
             value = value()
         role_hosts += value
+
     # Return deduped combo of hosts and role_hosts
-    return list(set(_clean_hosts(hosts + role_hosts)))
+    if hasattr(state.env, '_ensure_order') and state.env._ensure_order:
+        result_hosts = []
+        for host in hosts + role_hosts:
+            if host not in result_hosts:
+                result_hosts.append(host)
+
+        if hasattr(state.env, '_sorted') and state.env._sorted:
+            result_hosts.sort()
+        
+    else:
+        result_hosts = list(set(hosts + role_hosts))
+
+
+    return _clean_hosts(result_hosts)
 
 
 def _clean_hosts(host_list):
@@ -372,7 +387,6 @@ def _clean_hosts(host_list):
     """
     return [host.strip() for host in host_list]
 
-
 def get_hosts(command, cli_hosts, cli_roles):
     """
     Return the host list the given command should be using.
@@ -380,6 +394,11 @@ def get_hosts(command, cli_hosts, cli_roles):
     See :ref:`execution-model` for detailed documentation on how host lists are
     set.
     """
+    if hasattr(command, '_ensure_order') and command._ensure_order:
+        if hasattr(command, '_sorted') and command._sorted == True:
+            state.env._sorted = command._sorted
+        state.env._ensure_order = command._ensure_order
+
     # Command line per-command takes precedence over anything else.
     if cli_hosts or cli_roles:
         return _merge(cli_hosts, cli_roles)
@@ -392,6 +411,7 @@ def get_hosts(command, cli_hosts, cli_roles):
     # the CLI or from module-level code). This will be the empty list if these
     # have not been set -- which is fine, this method should return an empty
     # list if no hosts have been set anywhere.
+
     return _merge(state.env['hosts'], state.env['roles'])
 
 
@@ -523,6 +543,7 @@ def main():
         if state.output.debug:
             names = ", ".join(x[0] for x in commands_to_run)
             print("Commands to run: %s" % names)
+
 
         # At this point all commands must exist, so execute them in order.
         for name, args, kwargs, cli_hosts, cli_roles in commands_to_run:
