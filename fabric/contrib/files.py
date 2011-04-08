@@ -304,7 +304,27 @@ def append(filename, text, use_sudo=False, partial=False, escape=True):
     .. versionchanged:: 1.0
         Changed default value of ``partial`` kwarg to be ``False``.
     """
+    _write_to_file(filename, text, use_sudo=use_sudo)
+
+def write(filename, text, use_sudo=False):
+    """
+    Write string (or list of strings) ``text`` to ``filename``.
+
+    This is identical to ``append()``, except that it overwrites any existing
+    file, instead of appending to it.
+    """
+    _write_to_file(filename, text, use_sudo=use_sudo, overwrite=True)
+
+def _write_to_file(filename, text, use_sudo=False, overwrite=False):
+    """
+    Append or overwrite a the string (or list of strings) ``text`` to
+    ``filename``.
+
+    This is the implementation for both ``write`` and ``append``.  Both call
+    this with the proper value for ``overwrite``.
+    """
     func = use_sudo and sudo or run
+    operator = overwrite and '>' or '>>'
     # Normalize non-list input to be a list
     if isinstance(text, str):
         text = [text]
@@ -314,4 +334,4 @@ def append(filename, text, use_sudo=False, partial=False, escape=True):
             and contains(filename, regex, use_sudo=use_sudo)):
             continue
         line = line.replace("'", r'\'') if escape else line
-        func("echo '%s' >> %s" % (line, filename))
+        func("echo '%s' %s %s" % (line.replace("'", r'\''), operator, filename))
