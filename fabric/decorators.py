@@ -5,6 +5,8 @@ Convenience decorators for use in fabfiles.
 from functools import wraps
 from types import StringTypes
 
+from .context_managers import settings
+
 
 def hosts(*host_list):
     """
@@ -134,3 +136,31 @@ def ensure_order(sorted=False):
 
     real_decorator._ensure_order = True
     return real_decorator
+
+
+def with_settings(**kw_settings):
+    """
+    Decorator equivalent of ``fabric.context_managers.settings``.
+
+    Allows you to wrap an entire function as if it was called inside a block
+    with the ``settings`` context manager.  Useful for retrofitting old code so
+    you don't have to change the indention to gain the behavior.
+
+    An example use being to set all fabric api functions in a task to not error
+    out on unexpected return codes::
+
+        @with_settings(warn_only=True)
+        @hosts('user1@host1', 'host2', 'user2@host3')
+        def foo():
+            pass
+
+    See ``fabric.context_managers.settings`` for more information about what
+    you can do with this.
+    """
+    def outer(func):
+        def inner(*args, **kwargs):
+            with settings(**kw_settings):
+                return func(*args, **kwargs)
+        return inner
+    return outer
+
