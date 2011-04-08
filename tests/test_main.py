@@ -16,33 +16,37 @@ from utils import with_patched_state_env
 
 def test_argument_parsing():
     for args, output in [
-        # Basic
-        ('abc', ('abc', [], {}, [], [])),
+        # Basic 
+        ('abc', ('abc', [], {}, [], [], [])),
         # Arg
-        ('ab:c', ('ab', ['c'], {}, [], [])),
+        ('ab:c', ('ab', ['c'], {}, [], [], [])),
         # Kwarg
-        ('a:b=c', ('a', [], {'b':'c'}, [], [])),
+        ('a:b=c', ('a', [], {'b':'c'}, [], [], [])),
         # Arg and kwarg
-        ('a:b=c,d', ('a', ['d'], {'b':'c'}, [], [])),
+        ('a:b=c,d', ('a', ['d'], {'b':'c'}, [], [], [])),
         # Multiple kwargs
-        ('a:b=c,d=e', ('a', [], {'b':'c', 'd':'e'}, [], [])),
+        ('a:b=c,d=e', ('a', [], {'b':'c','d':'e'}, [], [], [])),
         # Host
-        ('abc:host=foo', ('abc', [], {}, ['foo'], [])),
+        ('abc:host=foo', ('abc', [], {}, ['foo'], [], [])),
         # Hosts with single host
-        ('abc:hosts=foo', ('abc', [], {}, ['foo'], [])),
+        ('abc:hosts=foo', ('abc', [], {}, ['foo'], [], [])),
         # Hosts with multiple hosts
         # Note: in a real shell, one would need to quote or escape "foo;bar".
         # But in pure-Python that would get interpreted literally, so we don't.
-        ('abc:hosts=foo;bar', ('abc', [], {}, ['foo', 'bar'], [])),
-        # Empty string args
-        ("task:x=y,z=", ('task', [], {'x': 'y', 'z': ''}, [], [])),
-        ("task:foo,,x=y", ('task', ['foo', ''], {'x': 'y'}, [], [])),
+        ('abc:hosts=foo;bar', ('abc', [], {}, ['foo', 'bar'], [], [])),
+
+        # Exclude hosts
+        ('abc:hosts=foo;bar,exclude_hosts=foo', ('abc', [], {}, ['foo', 'bar'], [], ['foo'])),
+        ('abc:hosts=foo;bar,exclude_hosts=foo;bar', ('abc', [], {}, ['foo', 'bar'], [], ['foo','bar'])),
+       # Empty string args
+        ("task:x=y,z=", ('task', [], {'x': 'y', 'z': ''}, [], [], [])),
+        ("task:foo,,x=y", ('task', ['foo', ''], {'x': 'y'}, [], [], [])),
     ]:
         yield eq_, parse_arguments([args]), [output]
 
 
 def eq_hosts(command, host_list):
-    eq_(set(get_hosts(command, [], [])), set(host_list))
+    eq_(set(get_hosts(command, [], [], [])), set(host_list))
 
 def test_order_ensured():
     """
@@ -56,8 +60,7 @@ def test_order_ensured():
 
     eq_(command._ensure_order, True)
     eq_hosts(command, host_list)
-    print get_hosts(command, [], [])
-    for i,h in enumerate(get_hosts(command, [], [])):
+    for i,h in enumerate(get_hosts(command, [], [], [])):
         eq_(host_list[i], h)
 
 def test_order_ensured_sorted():
@@ -186,7 +189,7 @@ def test_hosts_decorator_overrides_env_hosts():
     def command():
         pass
     eq_hosts(command, ['bar'])
-    assert 'foo' not in get_hosts(command, [], [])
+    assert 'foo' not in get_hosts(command, [], [], [])
 
 @with_patched_state_env({'hosts': ['foo']})
 def test_hosts_decorator_overrides_env_hosts_order_ensured():
@@ -198,10 +201,11 @@ def test_hosts_decorator_overrides_env_hosts_order_ensured():
     def command():
         pass
     eq_hosts(command, ['bar'])
-    assert 'foo' not in get_hosts(command, [], [])
+    assert 'foo' not in get_hosts(command, [], [], [])
 
 
-@with_patched_state_env({'hosts': [' foo ', 'bar '], 'roles': []})
+@with_patched_state_env({'hosts': [' foo ', 'bar '], 'roles': [],
+        'exclude_hosts':[]})
 def test_hosts_stripped_env_hosts():
     """
     Make sure hosts defined in env.hosts are cleaned of extra spaces

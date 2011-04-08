@@ -49,7 +49,7 @@ def first(*args, **kwargs):
 
 
 def upload_template(filename, destination, context=None, use_jinja=False,
-    template_dir=None, use_sudo=False, backup_file=True):
+    template_dir=None, use_sudo=False, backup_file=True,
     mirror_local_mode=False, mode=None):
     """
     Render and upload a template text file to a remote host.

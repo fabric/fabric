@@ -144,7 +144,12 @@ env_options = [
         help="comma-separated list of roles to operate on"
     ),
 
-    make_option('-i',
+    make_option('-x', '--exclude-hosts',
+        default=[],
+        help="comma-separated list of hosts to exclude"
+    ),
+
+    make_option('-i', 
         action='append',
         dest='key_filename',
         default=None,
@@ -250,7 +255,6 @@ env = _AttributeDict({
 # Add in option defaults
 for option in env_options:
     env[option.dest] = option.default
-
 
 #
 # Command dictionary
