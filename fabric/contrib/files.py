@@ -50,6 +50,7 @@ def first(*args, **kwargs):
 
 def upload_template(filename, destination, context=None, use_jinja=False,
     template_dir=None, use_sudo=False, backup_file=True):
+    mirror_local_mode=False, mode=None):
     """
     Render and upload a template text file to a remote host.
 
@@ -70,9 +71,15 @@ def upload_template(filename, destination, context=None, use_jinja=False,
 
     By default, the file will be copied to ``destination`` as the logged-in
     user; specify ``use_sudo=True`` to use `sudo` instead.
+
+    In some use cases, it is desirable to force a newly uploaded file to match
+    the mode of its local counterpart (such as when uploading executable
+    scripts). To do this, specify ``mirror_local_mode=True``.
+
+    Alternately, you may use the ``mode`` kwarg to specify an exact mode, in
+    the same vein as ``os.chmod`` or the Unix ``chmod`` command.
     """
     basename = os.path.basename(filename)
-    temp_destination = '/tmp/' + basename
 
     # This temporary file should not be automatically deleted on close, as we
     # need it there to upload it (Windows locks the file for reading while
@@ -96,11 +103,7 @@ def upload_template(filename, destination, context=None, use_jinja=False,
     output.write(text)
     output.close()
 
-    # Upload the file.
-    put(tempfile_name, temp_destination)
-    os.close(tempfile_fd)
-    os.remove(tempfile_name)
-
+    # Back up any original file 
     func = use_sudo and sudo or run
     # Back up any original file (need to do figure out ultimate destination)
     if backup_file:
@@ -112,8 +115,11 @@ def upload_template(filename, destination, context=None, use_jinja=False,
                 to_backup = destination + '/' + basename
         if exists(to_backup):
             func("cp %s %s.bak" % (to_backup, to_backup))
-    # Actually move uploaded template to destination
-    func("mv %s %s" % (temp_destination, destination))
+
+        # Upload the file.
+        put(tempfile_name, destination, use_sudo, mirror_local_mode, mode)
+        os.close(tempfile_fd)
+        os.remove(tempfile_name)
 
 
 def sed(filename, before, after, limit='', use_sudo=False, backup='.bak'):
