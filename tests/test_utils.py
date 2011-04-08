@@ -9,7 +9,7 @@ from nose.tools import raises
 
 from fabric.state import output, env
 from fabric.utils import warn, indent, abort, puts, fastprint
-from fabric import utils # For patching
+from fabric import utils  # For patching
 from fabric.context_managers import settings
 from utils import mock_streams
 
@@ -72,7 +72,7 @@ def test_abort_message():
         pass
     result = sys.stderr.getvalue()
     eq_("\nFatal error: Test\n\nAborting.\n", result)
-   
+
 
 @mock_streams('stdout')
 def test_puts_with_user_output_on():

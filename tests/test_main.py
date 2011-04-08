@@ -16,7 +16,7 @@ from utils import mock_streams
 
 def test_argument_parsing():
     for args, output in [
-        # Basic 
+        # Basic
         ('abc', ('abc', [], {}, [], [])),
         # Arg
         ('ab:c', ('ab', ['c'], {}, [], [])),
@@ -25,7 +25,7 @@ def test_argument_parsing():
         # Arg and kwarg
         ('a:b=c,d', ('a', ['d'], {'b':'c'}, [], [])),
         # Multiple kwargs
-        ('a:b=c,d=e', ('a', [], {'b':'c','d':'e'}, [], [])),
+        ('a:b=c,d=e', ('a', [], {'b':'c', 'd':'e'}, [], [])),
         # Host
         ('abc:host=foo', ('abc', [], {}, ['foo'], [])),
         # Hosts with single host
@@ -43,7 +43,7 @@ def test_argument_parsing():
 
 def eq_hosts(command, host_list):
     eq_(set(get_hosts(command, [], [])), set(host_list))
-    
+
 
 def test_order_ensured():
     """
@@ -83,9 +83,11 @@ def test_hosts_decorator_by_itself():
     Use of @hosts only
     """
     host_list = ['a', 'b']
+
     @hosts(*host_list)
     def command():
         pass
+
     eq_hosts(command, host_list)
 
 def test_hosts_decorator_by_itself_order_ensured():
@@ -104,6 +106,7 @@ fake_roles = {
     'r1': ['a', 'b'],
     'r2': ['b', 'c']
 }
+
 
 @with_patched_object(
     'fabric.state', 'env', _AttributeDict({'roledefs': fake_roles})
@@ -222,9 +225,11 @@ def test_hosts_decorator_expands_single_iterable():
     @hosts(iterable) should behave like @hosts(*iterable)
     """
     host_list = ['foo', 'bar']
+
     @hosts(host_list)
     def command():
         pass
+
     eq_(command.hosts, host_list)
 
 def test_hosts_decorator_expands_single_iterable_order_ensured():
@@ -244,9 +249,11 @@ def test_roles_decorator_expands_single_iterable():
     @roles(iterable) should behave like @roles(*iterable)
     """
     role_list = ['foo', 'bar']
+
     @roles(role_list)
     def command():
         pass
+
     eq_(command.roles, role_list)
 
 def test_roles_decorator_expands_single_iterable_order_ensured():
@@ -274,6 +281,7 @@ def test_aborts_on_nonexistent_roles():
 
 
 lazy_role = {'r1': lambda: ['a', 'b']}
+
 
 @with_patched_object(
     'fabric.state', 'env', _AttributeDict({'roledefs': lazy_role})

@@ -23,7 +23,7 @@ win32 = (sys.platform == 'win32')
 
 #
 # Environment dictionary - support structures
-# 
+#
 
 class _AttributeDict(dict):
     """
@@ -91,7 +91,7 @@ def _rc_path():
         from win32com.shell.shell import SHGetSpecialFolderPath
         from win32com.shell.shellcon import CSIDL_PROFILE
         return "%s/%s" % (
-            SHGetSpecialFolderPath(0,CSIDL_PROFILE),
+            SHGetSpecialFolderPath(0, CSIDL_PROFILE),
             rc_file
         )
 
@@ -144,7 +144,7 @@ env_options = [
         help="comma-separated list of roles to operate on"
     ),
 
-    make_option('-i', 
+    make_option('-i',
         action='append',
         dest='key_filename',
         default=None,
@@ -204,7 +204,7 @@ env_options = [
         default=True,
         help="do not use pseudo-terminal in run/sudo"
     )
-    
+
 ]
 
 
@@ -224,11 +224,11 @@ env = _AttributeDict({
     'combine_stderr': True,
     'command': None,
     'command_prefixes': [],
-    'cwd': '', # Must be empty string, not None, for concatenation purposes
+    'cwd': '',  # Must be empty string, not None, for concatenation purposes
     'echo_stdin': True,
     'host': None,
     'host_string': None,
-    'lcwd': '', # Must be empty string, not None, for concatenation purposes
+    'lcwd': '',  # Must be empty string, not None, for concatenation purposes
     'local_user': _get_system_username(),
     'output_prefix': True,
     'passwords': {},
@@ -267,6 +267,7 @@ commands = {}
 
 connections = HostConnectionCache()
 
+
 def default_channel():
     """
     Return a channel object based on ``env.host_string``.
@@ -298,7 +299,7 @@ class _AliasDict(_AttributeDict):
     This also means they will not show up in e.g. ``dict.keys()``.
 
     ..note::
-        
+
         Aliases are recursive, so you may refer to an alias within the key list
         of another alias. Naturally, this means that you can end up with
         infinite loops if you're not careful.

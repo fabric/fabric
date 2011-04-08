@@ -29,6 +29,7 @@ def hosts(*host_list):
         Allow a single, iterable argument (``@hosts(iterable)``) to be used
         instead of requiring ``@hosts(*iterable)``.
     """
+
     def attach_hosts(func):
         @wraps(func)
         def inner_decorator(*args, **kwargs):

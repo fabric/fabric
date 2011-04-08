@@ -67,7 +67,7 @@ FILES = FakeFilesystem({
     '/tree/file2.txt': 'y',
     '/tree/subfolder/file3.txt': 'z',
     '/etc/apache2/apache2.conf': 'Include other.conf',
-    HOME: None # So $HOME is a directory
+    HOME: None  # So $HOME is a directory
 })
 PASSWORDS = {
     'root': 'root',
@@ -139,7 +139,7 @@ class ParamikoServer(ssh.ServerInterface):
 
     def check_auth_publickey(self, username, key):
         self.username = username
-        return ssh.AUTH_SUCCESSFUL if self.pubkeys else ssh.AUTH_FAILED 
+        return ssh.AUTH_SUCCESSFUL if self.pubkeys else ssh.AUTH_FAILED
 
     def get_allowed_auths(self, username):
         return 'password,publickey'
@@ -202,6 +202,7 @@ class PrependList(list):
     def prepend(self, val):
         self.insert(0, val)
 
+
 def expand(path):
     """
     '/foo/bar/biz' => ('/', 'foo', 'bar', 'biz')
@@ -220,12 +221,14 @@ def expand(path):
     ret.prepend(directory if directory == os.path.sep else '')
     return ret
 
+
 def contains(folder, path):
     """
     contains(('a', 'b', 'c'), ('a', 'b')) => True
     contains('a', 'b', 'c'), ('f',)) => False
     """
     return False if len(path) >= len(folder) else folder[:len(path)] == path
+
 
 def missing_folders(paths):
     """
@@ -236,7 +239,7 @@ def missing_folders(paths):
     for path in paths:
         expanded = expand(path)
         for i in range(len(expanded)):
-            folder = os.path.join(*expanded[:len(expanded)-i])
+            folder = os.path.join(*expanded[:len(expanded) - i])
             if folder and folder not in pool:
                 pool.add(folder)
                 ret.append(folder)
@@ -272,7 +275,7 @@ class FakeSFTPServer(ssh.SFTPServerInterface):
         candidates = [x for x in expanded_files if contains(x, expanded_path)]
         children = []
         for candidate in candidates:
-            cut = candidate[:len(expanded_path)+1]
+            cut = candidate[:len(expanded_path) + 1]
             if cut not in children:
                 children.append(cut)
         results = [self.stat(os.path.join(*x)) for x in children]
@@ -325,6 +328,7 @@ class FakeSFTPServer(ssh.SFTPServerInterface):
     def mkdir(self, path, attr):
         self.files[path] = None
         return ssh.SFTP_OK
+
 
 def serve_responses(responses, files, passwords, home, pubkeys, port):
     """
