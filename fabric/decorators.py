@@ -1,6 +1,7 @@
 """
 Convenience decorators for use in fabfiles.
 """
+from __future__ import with_statement
 
 from functools import wraps
 from types import StringTypes
