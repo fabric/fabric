@@ -9,9 +9,10 @@ from fabric.version import get_version
 
 readme = open('README').read()
 
+v = get_version('short')
 long_description = """
 To find out what's new in this version of Fabric, please see `the changelog
-<http://docs.fabfile.org/changes/%s.html>`_.
+<http://docs.fabfile.org/en/%s/changes/%s.html>`_.
 
 ----
 
@@ -20,7 +21,7 @@ To find out what's new in this version of Fabric, please see `the changelog
 ----
 
 For more information, please see the Fabric website or execute ``fab --help``.
-""" % (get_version('short'), readme)
+""" % (v, v, readme)
 
 setup(
     name='Fabric',
