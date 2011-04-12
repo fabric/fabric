@@ -34,13 +34,18 @@ def load_settings(path):
     """
     Take given file path and return dictionary of any key=value pairs found.
 
+    Additionally, convert values for which we expect lists into lists.
+
     Usage docs are in docs/usage/fab.rst, in "Settings files."
     """
     if os.path.exists(path):
         comments = lambda s: s and not s.startswith("#")
         settings = filter(comments, open(path, 'r'))
-        return dict((k.strip(), v.strip()) for k, _, v in
+        _env = dict((k.strip(), v.strip()) for k, _, v in
             [s.partition('=') for s in settings])
+        if 'hosts' in _env:
+            _env['hosts'] = [h.strip() for h in _env['hosts'].split(',')]
+        return _env
     # Handle nonexistent or empty settings file
     return {}
 
