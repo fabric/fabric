@@ -12,13 +12,21 @@ Bugfixes
 * :issue:`301`: Fixed a bug in `~fabric.operations.local`'s behavior when
   ``capture=False`` and ``output.stdout`` (or ``.stderr``) was also ``False``.
   Thanks to Chris Rose for the catch.
+* :issue:`310`: Update edge case in `~fabric.operations.put` where using the
+  ``mode`` kwarg alongside ``use_sudo=True`` runs a hidden
+  `~fabric.operations.sudo` command. The ``mode`` kwarg needs to be octal but
+  was being interpolated in the ``sudo`` call as a string/integer. Thanks to
+  Adam Ernst for the catch and suggested fix.
 * :issue:`311`: `~fabric.contrib.files.append` was supposed to have its
   ``partial`` kwarg's default flipped from ``True`` to ``False``. However, only
   the documentation was altered. This has been fixed. Thanks to Adam Ernst for
   bringing it to our attention.
 * :issue:`312`: Tweak internal I/O related loops to prevent high CPU usage and
-  poor screen-printing behavior on some systems. Thanks to Redmine user ``cbr
-  grind`` for the initial patch.
+  poor screen-printing behavior on some systems. Thanks to Kirill Pinchuk for
+  the initial patch.
+* :issue:`320`: Some users reported problems with dropped input, particularly
+  while entering `~fabric.operations.sudo` passwords. This was fixed via the
+  same change as for :issue:`312`.
 
 Documentation
 =============

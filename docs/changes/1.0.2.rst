@@ -1,0 +1,9 @@
+========================
+Changes in version 1.0.2
+========================
+
+Documentation
+=============
+
+* Updated the API documentation for `~fabric.context_managers.cd` to explicitly
+  point users to `~fabric.context_managers.lcd` for modifying local paths.
