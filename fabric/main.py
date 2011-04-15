@@ -544,8 +544,9 @@ def main():
                     print("[%s] Executing task '%s'" % (host, name))
                 # Actually run command
                 commands[name](*args, **kwargs)
-                # Put old user back
-                state.env.user = prev_user
+                # If interpret_host_string modified the user, restore it
+                if state.env.user == username:
+                    state.env.user = prev_user
             # If no hosts found, assume local-only and run once
             if not hosts:
                 commands[name](*args, **kwargs)
