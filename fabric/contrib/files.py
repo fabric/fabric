@@ -49,8 +49,8 @@ def first(*args, **kwargs):
 
 
 def upload_template(filename, destination, context=None, use_jinja=False,
-    template_dir=None, use_sudo=False, backup_file=True,
-    mirror_local_mode=False, mode=None):
+    template_dir=None, use_sudo=False, backup=True, mirror_local_mode=False,
+    mode=None):
     """
     Render and upload a template text file to a remote host.
 
@@ -67,7 +67,7 @@ def upload_template(filename, destination, context=None, use_jinja=False,
     The resulting rendered file will be uploaded to the remote file path
     ``destination`` (which should include the desired remote filename.) If the
     destination file already exists, it will be renamed with a ``.bak``
-    extension. You can turn this off by ``backup_file=False``.
+    extension unless ``backup=False`` is specified.
 
     By default, the file will be copied to ``destination`` as the logged-in
     user; specify ``use_sudo=True`` to use `sudo` instead.
@@ -84,7 +84,8 @@ def upload_template(filename, destination, context=None, use_jinja=False,
     # This temporary file should not be automatically deleted on close, as we
     # need it there to upload it (Windows locks the file for reading while
     # open).
-    tempfile_fd, tempfile_name = tempfile.mkstemp()
+    tempdir = tempfile.mkdtemp()
+    tempfile_name = os.path.join(tempdir, basename)
     output = open(tempfile_name, "w+b")
     # Init
     text = None
@@ -106,7 +107,7 @@ def upload_template(filename, destination, context=None, use_jinja=False,
     # Back up any original file 
     func = use_sudo and sudo or run
     # Back up any original file (need to do figure out ultimate destination)
-    if backup_file:
+    if backup:
         to_backup = destination
         with settings(hide('everything'), warn_only=True):
             # Is destination a directory?
@@ -116,10 +117,16 @@ def upload_template(filename, destination, context=None, use_jinja=False,
         if exists(to_backup):
             func("cp %s %s.bak" % (to_backup, to_backup))
 
-        # Upload the file.
-        put(tempfile_name, destination, use_sudo, mirror_local_mode, mode)
-        os.close(tempfile_fd)
-        os.remove(tempfile_name)
+    # Upload the file.
+    put(
+        local_path=tempfile_name,
+        remote_path=destination,
+        use_sudo=use_sudo,
+        mirror_local_mode=mirror_local_mode,
+        mode=mode
+    )
+    output.close()
+    os.remove(tempfile_name)
 
 
 def sed(filename, before, after, limit='', use_sudo=False, backup='.bak',
