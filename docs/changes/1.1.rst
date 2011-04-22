@@ -23,7 +23,10 @@ Bugfixes
 Documentation updates
 =====================
 
-* N/A
+* :issue:`184`: Make the usage of `~fabric.contrib.project.rsync_project`'s
+  ``local_dir`` argument more obvious, regarding its use in the ``rsync`` call.
+  (Specifically, so users know they can pass in multiple, space-joined
+  directory names instead of just one single directory.)
 
 Internals
 =========
