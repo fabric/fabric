@@ -55,6 +55,12 @@ class FabricTest(object):
     def path(self, *path_parts):
         return os.path.join(self.tmpdir, *path_parts)
 
+    def mkfile(self, path, contents):
+        dest = self.path(path)
+        with open(dest, 'w') as fd:
+            fd.write(contents)
+        return dest
+
     def exists_remotely(self, path):
         return SFTP(env.host_string).exists(path)
 

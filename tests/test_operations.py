@@ -530,10 +530,8 @@ class TestFileTransfers(FabricTest):
         put() a single file into an existing remote directory
         """
         text = "foo!"
-        local = self.path('foo.txt')
+        local = self.mkfile('foo.txt', text)
         local2 = self.path('foo2.txt')
-        with open(local, 'w') as fd:
-            fd.write(text)
         with hide('everything'):
             put(local, '/')
             get('/foo.txt', local2)
