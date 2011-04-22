@@ -27,3 +27,5 @@ Internals
 
 * :issue:`314`: Test utility decorator improvements. Thanks to Rick Harding for
   initial catch & patch.
+* :issue:`307`: A whole pile of minor PEP8 tweaks. Thanks to Markus Gattol for
+  highlighting the ``pep8`` tool and to Rick Harding for the patch.
