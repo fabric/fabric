@@ -14,6 +14,8 @@ Feature additions
 * :issue:`273`: `~fabric.contrib.files.upload_template` now offers control over
   whether it attempts to create backups of pre-existing destination files.
   Thanks to Ales Zoulek for the suggestion and initial patch.
+* :issue:`170`: Allow :ref:`exclusion <excluding-hosts>` of specific hosts from
+  the final run list. Thanks to Casey Banner for the suggestion and patch.
 
 Bugfixes
 ========
