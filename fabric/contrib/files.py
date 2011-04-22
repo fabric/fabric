@@ -8,6 +8,7 @@ import hashlib
 import tempfile
 import re
 import os
+from StringIO import StringIO
 
 from fabric.api import *
 
@@ -65,9 +66,8 @@ def upload_template(filename, destination, context=None, use_jinja=False,
     directory by default, or from ``template_dir`` if given.
 
     The resulting rendered file will be uploaded to the remote file path
-    ``destination`` (which should include the desired remote filename.) If the
-    destination file already exists, it will be renamed with a ``.bak``
-    extension unless ``backup=False`` is specified.
+    ``destination``.  If the destination file already exists, it will be
+    renamed with a ``.bak`` extension unless ``backup=False`` is specified.
 
     By default, the file will be copied to ``destination`` as the logged-in
     user; specify ``use_sudo=True`` to use `sudo` instead.
@@ -79,15 +79,14 @@ def upload_template(filename, destination, context=None, use_jinja=False,
     Alternately, you may use the ``mode`` kwarg to specify an exact mode, in
     the same vein as ``os.chmod`` or the Unix ``chmod`` command.
     """
-    basename = os.path.basename(filename)
+    func = use_sudo and sudo or run
+    # Normalize destination to be an actual filename, due to using StringIO
+    with settings(hide('everything'), warn_only=True):
+        if func('test -d %s' % destination).succeeded:
+            sep = "" if destination.endswith('/') else "/"
+            destination += sep + os.path.basename(filename)
 
-    # This temporary file should not be automatically deleted on close, as we
-    # need it there to upload it (Windows locks the file for reading while
-    # open).
-    tempdir = tempfile.mkdtemp()
-    tempfile_name = os.path.join(tempdir, basename)
-    output = open(tempfile_name, "w+b")
-    # Init
+    # Process template
     text = None
     if use_jinja:
         try:
@@ -101,32 +100,19 @@ def upload_template(filename, destination, context=None, use_jinja=False,
             text = inputfile.read()
         if context:
             text = text % context
-    output.write(text)
-    output.close()
 
-    # Back up any original file 
-    func = use_sudo and sudo or run
-    # Back up any original file (need to do figure out ultimate destination)
-    if backup:
-        to_backup = destination
-        with settings(hide('everything'), warn_only=True):
-            # Is destination a directory?
-            if func('test -f %s' % to_backup).failed:
-                # If so, tack on the filename to get "real" destination
-                to_backup = destination + '/' + basename
-        if exists(to_backup):
-            func("cp %s %s.bak" % (to_backup, to_backup))
+    # Back up original file
+    if backup and exists(destination):
+        func("cp %s{,.bak}" % destination)
 
     # Upload the file.
     put(
-        local_path=tempfile_name,
+        local_path=StringIO(text),
         remote_path=destination,
         use_sudo=use_sudo,
         mirror_local_mode=mirror_local_mode,
         mode=mode
     )
-    output.close()
-    os.remove(tempfile_name)
 
 
 def sed(filename, before, after, limit='', use_sudo=False, backup='.bak',
