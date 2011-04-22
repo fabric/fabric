@@ -21,3 +21,9 @@ Documentation updates
 =====================
 
 * N/A
+
+Internals
+=========
+
+* :issue:`314`: Test utility decorator improvements. Thanks to Rick Harding for
+  initial catch & patch.

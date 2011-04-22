@@ -2,6 +2,7 @@ from __future__ import with_statement
 
 from StringIO import StringIO  # No need for cStringIO at this time
 from contextlib import contextmanager
+from copy import deepcopy
 from fudge.patcher import with_patched_object
 from functools import wraps, partial
 from types import StringTypes
@@ -212,42 +213,19 @@ def eq_contents(path, text):
         eq_(text, fd.read())
 
 
-class with_patched_state_env(object):
-    """Decorate a unit test to provide a default state.env
-
-    Grabs the fabric.state.env attribute dictionary.
-
-    e.g.
-    @with_patched_state_env({'hosts': ('foo', 'bar')})
-    def test_something_with_hosts():
-
+def patched_env(updates):
     """
-    def __init__(self, dict_overrides):
-        """ Pass in a dict of keys to override the default env with
+    Execute a function with a patched copy of ``fabric.state.env``.
 
-        :param dict_overrides: Dictionary of keys to override in default_env
+    ``fabric.state.env`` is patched during the wrapped functions' run, with an
+    equivalent copy that has been ``update``d with the given ``updates``.
 
-        """
-        from fabric.state import env as default_env
-        self.env = self._merge_env(default_env.copy(), dict_overrides)
-
-    def _merge_env(self, default, overrides):
-        """for item in the overrides, set them over the default"""
-        for key, val in overrides.iteritems():
-            default[key] = val
-
-        return default
-
-    def __call__(self, f):
-        """This wraps a function with a fudge mock that implements the default
-        state.env
-        """
-        env = self.env
-
-        def wrapped_f(env=env, *args):
-            f(*args)
-
-        # now add the fudge decorator here
-        patcher = with_patched_object('fabric.state', 'env', env)
-        wrapped_f = patcher(wrapped_f)
-        return wrapped_f
+    E.g. with ``fabric.state.env = {'foo': 'bar', 'biz': 'baz'}``, a function
+    decorated with ``@patched_env({'foo': 'notbar'})`` would see
+    ``fabric.state.env`` as equal to ``{'biz': 'baz', 'foo': 'notbar'}``.
+    """
+    from fabric.state import env
+    def wrapper(func):
+        new_env = deepcopy(env).update(updates)
+        return with_patched_object('fabric.state', 'env', new_env)
+    return wrapper
