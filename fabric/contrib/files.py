@@ -78,6 +78,9 @@ def upload_template(filename, destination, context=None, use_jinja=False,
 
     Alternately, you may use the ``mode`` kwarg to specify an exact mode, in
     the same vein as ``os.chmod`` or the Unix ``chmod`` command.
+
+    .. versionchanged:: 1.1
+        Added the ``backup`` kwarg.
     """
     func = use_sudo and sudo or run
     # Normalize destination to be an actual filename, due to using StringIO

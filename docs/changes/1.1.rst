@@ -11,6 +11,9 @@ Feature additions
 * :issue:`107`: `~fabric.operations.require`'s ``provided_by`` kwarg now
   accepts iterables in addition to single values. Thanks to Thomas Ballinger
   for the patch.
+* :issue:`273`: `~fabric.contrib.files.upload_template` now offers control over
+  whether it attempts to create backups of pre-existing destination files.
+  Thanks to Ales Zoulek for the suggestion and initial patch.
 
 Bugfixes
 ========
