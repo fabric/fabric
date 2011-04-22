@@ -3,7 +3,6 @@ from __future__ import with_statement
 import os
 import shutil
 import sys
-import tempfile
 import types
 from contextlib import nested
 from StringIO import StringIO
@@ -226,23 +225,6 @@ def test_shell_escape_escapes_backticks():
 #
 
 class TestFileTransfers(FabricTest):
-    def setup(self):
-        super(TestFileTransfers, self).setup()
-        self.tmpdir = tempfile.mkdtemp()
-
-    def teardown(self):
-        super(TestFileTransfers, self).teardown()
-        shutil.rmtree(self.tmpdir)
-
-    def path(self, *path_parts):
-        return os.path.join(self.tmpdir, *path_parts)
-
-    def exists_remotely(self, path):
-        return SFTP(env.host_string).exists(path)
-
-    def exists_locally(self, path):
-        return os.path.exists(path)
-
     #
     # get()
     #

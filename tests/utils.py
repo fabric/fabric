@@ -8,14 +8,18 @@ from functools import wraps, partial
 from types import StringTypes
 import copy
 import getpass
+import os
 import re
+import shutil
 import sys
+import tempfile
 
 from fudge import Fake, patched_context, clear_expectations
 
 from fabric.context_managers import settings
 from fabric.network import interpret_host_string
 from fabric.state import env, output
+from fabric.sftp import SFTP
 import fabric.network
 
 from server import PORT, PASSWORDS, USER, HOST
@@ -23,7 +27,7 @@ from server import PORT, PASSWORDS, USER, HOST
 
 class FabricTest(object):
     """
-    Nose-oriented test runner class that wipes env after every test.
+    Nose-oriented test runner which wipes state.env and provides file helpers.
     """
     def setup(self):
         # Clear Fudge mock expectations
@@ -40,10 +44,22 @@ class FabricTest(object):
         # Command response mocking is easier without having to account for
         # shell wrapping everywhere.
         env.use_shell = False
+        # Temporary local file dir
+        self.tmpdir = tempfile.mkdtemp()
 
     def teardown(self):
         env.update(self.previous_env)
         output.update(self.previous_output)
+        shutil.rmtree(self.tmpdir)
+
+    def path(self, *path_parts):
+        return os.path.join(self.tmpdir, *path_parts)
+
+    def exists_remotely(self, path):
+        return SFTP(env.host_string).exists(path)
+
+    def exists_locally(self, path):
+        return os.path.exists(path)
 
 
 class CarbonCopy(StringIO):
