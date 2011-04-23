@@ -119,11 +119,11 @@ def upload_template(filename, destination, context=None, use_jinja=False,
 
 
 def sed(filename, before, after, limit='', use_sudo=False, backup='.bak',
-        case_insensitive=False):
+    flags=''):
     """
     Run a search-and-replace on ``filename`` with given regex patterns.
 
-    Equivalent to ``sed -i<backup> -r -e "/<limit>/ s/<before>/<after>/g
+    Equivalent to ``sed -i<backup> -r -e "/<limit>/ s/<before>/<after>/<flags>g
     <filename>"``.
 
     For convenience, ``before`` and ``after`` will automatically escape forward
@@ -136,10 +136,13 @@ def sed(filename, before, after, limit='', use_sudo=False, backup='.bak',
     `sed` will pass ``shell=False`` to `run`/`sudo`, in order to avoid problems
     with many nested levels of quotes and backslashes.
 
-    If you would like the matches to be case insensitive, you'd only need to
-    pass the ``case_insensitive=True`` to have it tack on an 'i' to the sed
-    command. Effectively making it execute``sed -i<backup> -r -e "/<limit>/
-    s/<before>/<after>/ig <filename>"``.
+    Other options may be specified with sed-compatible regex flags -- for
+    example, to make the search and replace case insensitive, specify
+    ``flags="i"``. The ``g`` flag is always specified regardless, so you do not
+    need to remember to include it when overriding this parameter.
+
+    .. versionadded:: 1.1
+        The ``flags`` parameter.
     """
     func = use_sudo and sudo or run
     # Characters to be escaped in both
@@ -154,10 +157,6 @@ def sed(filename, before, after, limit='', use_sudo=False, backup='.bak',
         limit = r'/%s/ ' % limit
     # Test the OS because of differences between sed versions
 
-    case_bit = ''
-    if case_insensitive:
-        case_bit = 'i'
-
     with hide('running', 'stdout'):
         platform = run("uname")
     if platform in ('NetBSD', 'OpenBSD'):
@@ -168,13 +167,13 @@ def sed(filename, before, after, limit='', use_sudo=False, backup='.bak',
         tmp = "/tmp/%s" % hasher.hexdigest()
         # Use temp file to work around lack of -i
         expr = r"""cp -p %(filename)s %(tmp)s \
-&& sed -r -e '%(limit)ss/%(before)s/%(after)s/%(case_bit)sg' %(filename)s > %(tmp)s \
+&& sed -r -e '%(limit)ss/%(before)s/%(after)s/%(flags)sg' %(filename)s > %(tmp)s \
 && cp -p %(filename)s %(filename)s%(backup)s \
 && mv %(tmp)s %(filename)s"""
         command = expr % locals()
     else:
         expr = r"sed -i%s -r -e '%ss/%s/%s/%sg' %s"
-        command = expr % (backup, limit, before, after, case_bit, filename)
+        command = expr % (backup, limit, before, after, flags, filename)
     return func(command, shell=False)
 
 
