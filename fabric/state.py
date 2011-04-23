@@ -231,6 +231,7 @@ env = _AttributeDict({
     'command_prefixes': [],
     'cwd': '',  # Must be empty string, not None, for concatenation purposes
     'echo_stdin': True,
+    'exclude_hosts': [],
     'host': None,
     'host_string': None,
     'lcwd': '',  # Must be empty string, not None, for concatenation purposes

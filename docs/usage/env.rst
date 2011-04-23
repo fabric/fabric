@@ -185,6 +185,19 @@ host key is actually valid (e.g. cloud servers such as EC2.)
 
 .. seealso:: :doc:`ssh`
 
+.. _exclude-hosts:
+
+``exclude_hosts``
+-----------------
+
+**Default:** ``[]``
+
+Specifies a list of host strings to be :ref:`skipped over <exclude-hosts>`
+during ``fab`` execution. Typically set via :option:`--exclude-hosts/-x <-x>`.
+
+.. versionadded:: 1.1
+
+
 ``fabfile``
 -----------
 

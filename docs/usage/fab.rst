@@ -133,8 +133,8 @@ below.
 
 .. cmdoption:: -x HOSTS, --exclude-hosts=HOSTS
 
-    Sets :ref:`env.exclude_hosts` to the given comma-delimited list of host
-    strings to then keep out of the final host list.
+    Sets :ref:`env.exclude_hosts <exclude-hosts>` to the given comma-delimited
+    list of host strings to then keep out of the final host list.
 
     .. versionadded:: 1.1
 

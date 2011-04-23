@@ -425,7 +425,6 @@ Assuming no command-line hosts or roles are given when ``mytask`` is executed,
 this fabfile will call ``mytask`` on a host list of ``['a', 'b', 'c']`` -- the
 union of ``role1`` and the contents of the `~fabric.decorators.hosts` call.
 
-
 .. _excluding-hosts:
 
 Excluding specific hosts
@@ -442,14 +441,14 @@ If ``myrole`` was defined as ``['host1', 'host2', ..., 'host15']``, the above
 invocation would run with an effective host list of ``['host1', 'host3',
 'host4', 'host6', ..., 'host15']``.
 
-    .. note:: Using this option does not modify ``env.hosts`` -- it only
-    causes the main execution loop to skip the requested hosts.
+    .. note::
+        Using this option does not modify ``env.hosts`` -- it only causes the
+        main execution loop to skip the requested hosts.
 
-Exclusions may be specified per-task basis by using an extra ``exclude_hosts``
-kwarg (this is implemented similarly to the abovementioned ``hosts`` and
-``roles`` per-task kwargs, in that it is stripped from the actual task
-invocation). This example would have the same result as the global exclude
-above::
+Exclusions may be specified per-task by using an extra ``exclude_hosts`` kwarg,
+which is implemented similarly to the abovementioned ``hosts`` and ``roles``
+per-task kwargs, in that it is stripped from the actual task invocation. This
+example would have the same result as the global exclude above::
 
     $ fab -R myrole mytask:exclude_hosts="host2;host5"
 
