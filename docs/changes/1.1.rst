@@ -12,7 +12,8 @@ Feature additions
   accepts iterables in addition to single values. Thanks to Thomas Ballinger
   for the patch.
 * :issue:`154`: `~fabric.contrib.files.sed` now allows customized regex flags
-  to be specified via a new ``flags`` parameter.
+  to be specified via a new ``flags`` parameter. Thanks to Nick Trew for the
+  suggestion and Morgan Goose for initial implementation.
 * :issue:`170`: Allow :ref:`exclusion <excluding-hosts>` of specific hosts from
   the final run list. Thanks to Casey Banner for the suggestion and patch.
 * :issue:`273`: `~fabric.contrib.files.upload_template` now offers control over
