@@ -409,22 +409,6 @@ takes a command string as its value.
 
 .. seealso:: :doc:`execution`
 
-.. _ensure_order:
-
-``ensure_order``
-----------------
-
-**Default:** ``False``
-
-Switch to globally state if hosts lists should be deduped in place leaving
-order intact from right to left of the combination of `~fabric.state.env.hosts`
-and `~fabric.state.env.roles`
-
-.. note::
-    
-    With this option you can also pre-sort host lists when decorating to use a
-    special sort if desired.
-
 ``sudo_prompt``
 ---------------
 

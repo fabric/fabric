@@ -29,7 +29,6 @@ _internals = reduce(lambda x, y: x + filter(callable, vars(y).values()),
     _modules,
     []
 )
-state.env.ensure_order = False
 
 
 def load_settings(path):
@@ -374,24 +373,7 @@ def _merge(hosts, roles, exclude=[]):
     hosts = list(hosts)
 
     # Return deduped combo of hosts and role_hosts
-    if hasattr(state.env, 'ensure_order') and state.env.ensure_order:
-        result_hosts = []
-        for host in hosts + role_hosts:
-            if host not in result_hosts:
-                result_hosts.append(host)
-
-        if hasattr(state.env, '_sorted') and state.env._sorted:
-            result_hosts.sort()
-        
-    else:
-        result_hosts = list(set(hosts + role_hosts))
-
-    # Remove excluded hosts from results as needed
-    for exclude_host in exclude:
-        if exclude_host in result_hosts:
-            result_hosts.remove(exclude_host)
-
-    return _clean_hosts(result_hosts)
+    return list(set(_clean_hosts(hosts + role_hosts)))
 
 def _clean_hosts(host_list):
     """
@@ -406,11 +388,6 @@ def get_hosts(command, cli_hosts, cli_roles, cli_exclude_hosts):
     See :ref:`execution-model` for detailed documentation on how host lists are
     set.
     """
-    if hasattr(command, '_ensure_order') and command._ensure_order:
-        if hasattr(command, '_sorted') and command._sorted == True:
-            state.env._sorted = command._sorted
-        state.env.ensure_order = command._ensure_order
-
     # Command line per-command takes precedence over anything else.
     if cli_hosts or cli_roles:
         return _merge(cli_hosts, cli_roles, cli_exclude_hosts)
