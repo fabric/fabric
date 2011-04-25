@@ -107,42 +107,37 @@ def rsync_project(remote_dir, local_dir=None, exclude=(), delete=False,
 
 def upload_project(local_dir=None, remote_dir=""):
     """
-    Upload the current project to a remote system, tar/gzipping during the move.
+    Upload the current project to a remote system via ``tar``/``gzip``.
 
-    This function makes use of the ``tar`` and ``gzip`` programs/libraries, thus
-    it will not work too well on Win32 systems unless one is using Cygwin or
-    something similar.
+    ``local_dir`` specifies the local project directory to upload, and defaults
+    to the current working directory.
+    
+    ``remote_dir`` specifies the target directory to upload into (meaning that
+    a copy of ``local_dir`` will appear as a subdirectory of ``remote_dir``)
+    and defaults to the remote user's home directory.
 
-    ``upload_project`` will attempt to clean up the local and remote tarfiles
-    when it finishes executing, even in the event of a failure.
-
-    :param local_dir: default current working directory, the project folder to
-        upload
-
+    This function makes use of the ``tar`` and ``gzip`` programs/libraries,
+    thus it will not work too well on Win32 systems unless one is using Cygwin
+    or something similar. It will attempt to clean up the local and remote
+    tarfiles when it finishes executing, even in the event of a failure.
     """
-    if not local_dir:
-        local_dir = os.getcwd()
+    local_dir = local_dir or os.getcwd()
 
     # Remove final '/' in local_dir so that basename() works
     local_dir = local_dir.rstrip(os.sep)
 
     local_path, local_name = os.path.split(local_dir)
-
     tar_file = "%s.tar.gz" % local_name
     target_tar = os.path.join(remote_dir, tar_file)
-
     tmp_folder = mkdtemp()
+
     try:
         tar_path = os.path.join(tmp_folder, tar_file)
         local("tar -czf %s -C %s %s" % (tar_path, local_path, local_name))
         put(tar_path, target_tar)
-        
         try:
             run("tar -xzf %s" % tar_file)
-
         finally:
             run("rm -f %s" % tar_file)
-
     finally:
         local("rm -rf %s" % tmp_folder)
-
