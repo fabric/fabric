@@ -72,15 +72,12 @@ def upload_template(filename, destination, context=None, use_jinja=False,
     By default, the file will be copied to ``destination`` as the logged-in
     user; specify ``use_sudo=True`` to use `sudo` instead.
 
-    In some use cases, it is desirable to force a newly uploaded file to match
-    the mode of its local counterpart (such as when uploading executable
-    scripts). To do this, specify ``mirror_local_mode=True``.
-
-    Alternately, you may use the ``mode`` kwarg to specify an exact mode, in
-    the same vein as ``os.chmod`` or the Unix ``chmod`` command.
+    The ``mirror_local_mode`` and ``mode`` kwargs are passed directly to an
+    internal `~fabric.operations.put` call; please see its documentation for
+    details on these two options.
 
     .. versionchanged:: 1.1
-        Added the ``backup`` kwarg.
+        Added the ``backup``, ``mirror_local_mode`` and ``mode`` kwargs.
     """
     func = use_sudo and sudo or run
     # Normalize destination to be an actual filename, due to using StringIO
@@ -88,6 +85,14 @@ def upload_template(filename, destination, context=None, use_jinja=False,
         if func('test -d %s' % destination).succeeded:
             sep = "" if destination.endswith('/') else "/"
             destination += sep + os.path.basename(filename)
+
+    # Use mode kwarg to implement mirror_local_mode, again due to using
+    # StringIO
+    if mirror_local_mode and mode is None:
+        mode = os.stat(filename).st_mode
+        # To prevent put() from trying to do this
+        # logic itself
+        mirror_local_mode = False
 
     # Process template
     text = None
