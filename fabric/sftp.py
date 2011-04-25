@@ -236,7 +236,7 @@ class SFTP(object):
         if not local_is_path:
             os.remove(real_local_path)
         # Handle modes if necessary
-        if local_is_path and (mirror_local_mode or mode is not None):
+        if (local_is_path and mirror_local_mode) or (mode is not None):
             lmode = os.stat(local_path).st_mode if mirror_local_mode else mode
             lmode = lmode & 07777
             rmode = rattrs.st_mode & 07777
