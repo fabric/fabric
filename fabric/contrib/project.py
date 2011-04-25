@@ -120,6 +120,9 @@ def upload_project(local_dir=None, remote_dir=""):
     thus it will not work too well on Win32 systems unless one is using Cygwin
     or something similar. It will attempt to clean up the local and remote
     tarfiles when it finishes executing, even in the event of a failure.
+
+    .. versionchanged:: 1.1
+        Added the ``local_dir`` and ``remote_dir`` kwargs.
     """
     local_dir = local_dir or os.getcwd()
 

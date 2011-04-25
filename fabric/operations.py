@@ -143,6 +143,9 @@ def require(*keys, **kwargs):
     Note: it is assumed that the keyword arguments apply to all given keys as a
     group. If you feel the need to specify more than one ``used_for``, for
     example, you should break your logic into multiple calls to ``require()``.
+
+    .. versionchanged:: 1.1
+        Allow iterable ``provided_by`` values instead of just single values.
     """
     # If all keys exist, we're good, so keep going.
     missing_keys = filter(lambda x: x not in env, keys)
