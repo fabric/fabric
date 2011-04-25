@@ -16,11 +16,10 @@ from traceback import format_exc
 
 from contextlib import closing
 
-from fabric import state
 from fabric.context_managers import settings, char_buffered
 from fabric.io import output_loop, input_loop
 from fabric.network import needs_host
-from fabric.state import (env, output, win32, default_channel,
+from fabric.state import (env, connections, output, win32, default_channel,
     io_sleep)
 from fabric.utils import abort, indent, warn, puts
 from fabric.thread_handling import ThreadHandler
@@ -1039,10 +1038,10 @@ def reboot(wait):
     .. versionadded:: 0.9.2
     """
     sudo('reboot')
-    client = state.connections[env.host_string]
+    client = connections[env.host_string]
     client.close()
-    if env.host_string in state.connections:
-        del state.connections[env.host_string]
+    if env.host_string in connections:
+        del connections[env.host_string]
     if output.running:
         puts("Waiting for reboot: ", flush=True, end='')
         per_tick = 5
