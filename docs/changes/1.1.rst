@@ -25,6 +25,10 @@ Feature additions
 * :issue:`273`: `~fabric.contrib.files.upload_template` now offers control over
   whether it attempts to create backups of pre-existing destination files.
   Thanks to Ales Zoulek for the suggestion and initial patch.
+* :issue:`283`: Added the `~fabric.decorators.with_settings` decorator to allow
+  application of env var settings to an entire function, as an alternative to
+  using the `~fabric.context_managers.settings` context manager. Thanks to
+  Travis Swicegood for the patch.
 
 Bugfixes
 ========

@@ -111,19 +111,18 @@ def with_settings(**kw_settings):
     Decorator equivalent of ``fabric.context_managers.settings``.
 
     Allows you to wrap an entire function as if it was called inside a block
-    with the ``settings`` context manager.  Useful for retrofitting old code so
-    you don't have to change the indention to gain the behavior.
+    with the ``settings`` context manager. This may be useful if you know you
+    want a given setting applied to an entire function body, or wish to
+    retrofit old code without indenting everything.
 
-    An example use being to set all fabric api functions in a task to not error
-    out on unexpected return codes::
+    For example, to turn aborts into warnings for an entire task function::
 
         @with_settings(warn_only=True)
-        @hosts('user1@host1', 'host2', 'user2@host3')
         def foo():
-            pass
+            ...
 
-    See ``fabric.context_managers.settings`` for more information about what
-    you can do with this.
+    .. seealso:: `~fabric.context_managers.settings`
+    .. versionadded:: 1.1
     """
     def outer(func):
         def inner(*args, **kwargs):
@@ -131,4 +130,3 @@ def with_settings(**kw_settings):
                 return func(*args, **kwargs)
         return inner
     return outer
-
