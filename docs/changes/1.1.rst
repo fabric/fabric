@@ -29,7 +29,12 @@ Feature additions
 Bugfixes
 ========
 
-* N/A
+* :issue:`115`: An implementation detail causing host lists to lose order
+  when deduped by the ``fab`` execution loop, has been patched to preserve
+  order instead. So e.g. ``fab -H a,b,c`` (or setting ``env.hosts = ['a', 'b',
+  'c']``) will now always run on ``a``, then ``b``, then ``c``. Previously,
+  there was a chance the order could get mixed up during deduplication. Thanks
+  to Rohit Aggarwal for the report.
 
 Documentation updates
 =====================
