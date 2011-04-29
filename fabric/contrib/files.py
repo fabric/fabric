@@ -6,6 +6,7 @@ from __future__ import with_statement
 
 import hashlib
 import tempfile
+import types
 import re
 import os
 
@@ -299,7 +300,7 @@ def append(filename, text, use_sudo=False, partial=False, escape=True):
     """
     func = use_sudo and sudo or run
     # Normalize non-list input to be a list
-    if isinstance(text, str):
+    if isinstance(text, types.StringTypes):
         text = [text]
     for line in text:
         regex = '^' + re.escape(line) + ('' if partial else '$')
