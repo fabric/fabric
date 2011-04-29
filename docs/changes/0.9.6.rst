@@ -1,0 +1,12 @@
+========================
+Changes in version 0.9.6
+========================
+
+The following changes were implemented in Fabric 0.9.6:
+
+Bugfixes
+========
+
+* :issue:`347`: `~fabric.contrib.files.append` incorrectly tested for ``str``
+  instead of ``types.StringTypes``, causing it to split up Unicode strings as
+  if they were one character per line. This has been fixed.

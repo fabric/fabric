@@ -5,6 +5,8 @@ Changes in version 1.0.2
 Bugfixes
 ========
 
+* :issue:`258`: Bugfix to a previous, incorrectly applied fix regarding
+  `~fabric.operations.local` on Windows platforms.
 * :issue:`337`: Fix logic bug in `~fabric.operations.put` preventing use of
   ``mirror_local_mode``. Thanks to Roman Imankulov for catch & patch.
 
