@@ -36,10 +36,21 @@ def rsync_project(remote_dir, local_dir=None, exclude=(), delete=False,
     ``rsync_project()`` takes the following parameters:
 
     * ``remote_dir``: the only required parameter, this is the path to the
-      **parent** directory on the remote server; the project directory will be
-      created inside this directory. For example, if one's project directory is
-      named ``myproject`` and one invokes ``rsync_project('/home/username/')``,
-      the resulting project directory will be ``/home/username/myproject/``.
+      directory on the remote server. Due to how ``rsync`` is implemented, the
+      exact behavior depends on the value of ``local_dir``:
+
+        * If ``local_dir`` ends with a trailing slash, the files will be
+          dropped inside of ``remote_dir``. E.g.
+          ``rsync_project("/home/username/project", "foldername/")`` will drop
+          the contents of ``foldername`` inside of ``/home/username/project``.
+        * If ``local_dir`` does **not** end with a trailing slash (and this
+          includes the default scenario, when ``local_dir`` is not specified),
+          ``remote_dir`` is effectively the "parent" directory, and a new
+          directory named after ``local_dir`` will be created inside of it. So
+          ``rsync_project("/home/username", "foldername")`` would create a new
+          directory ``/home/username/foldername`` (if needed) and place the
+          files there.
+
     * ``local_dir``: by default, ``rsync_project`` uses your current working
       directory as the source directory. This may be overridden by specifying
       ``local_dir``, which is a string passed verbatim to ``rsync``, and thus
