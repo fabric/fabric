@@ -128,7 +128,7 @@ def test_hosts_decorator_overrides_env_hosts():
     eq_hosts(command, ['bar'])
     assert 'foo' not in get_hosts(command, [], [], [])
 
-@with_patched_object('fabric.state', 'env', {'hosts': ['foo']})
+@patched_env({'hosts': ['foo']})
 def test_hosts_decorator_overrides_env_hosts_with_task_decorator_first():
     """
     If @hosts is used it replaces any env.hosts value even with @task
@@ -140,7 +140,7 @@ def test_hosts_decorator_overrides_env_hosts_with_task_decorator_first():
     eq_hosts(command, ['bar'])
     assert 'foo' not in get_hosts(command, [], [])
 
-@with_patched_object('fabric.state', 'env', {'hosts': ['foo']})
+@patched_env({'hosts': ['foo']})
 def test_hosts_decorator_overrides_env_hosts_with_task_decorator_last():
     @hosts('bar')
     @task
