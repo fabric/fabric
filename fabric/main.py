@@ -187,14 +187,14 @@ def extract_tasks(imported_vars):
     tasks = {}
     using_task_objects = False
     for tup in imported_vars:
-        name, callable = tup
-        if is_task_object(callable):
+        name, obj = tup
+        if is_task_object(obj):
             using_task_objects = True
-            tasks[callable.name] = callable
+            tasks[obj.name] = obj
         elif is_task(tup):
-            tasks[name] = callable
-        elif is_task_module(callable):
-            module_docs, module_tasks = load_tasks_from_module(callable)
+            tasks[name] = obj
+        elif is_task_module(obj):
+            module_docs, module_tasks = load_tasks_from_module(obj)
             for task_name, task in module_tasks.items():
                 tasks["%s.%s" % (name, task_name)] = task
 
