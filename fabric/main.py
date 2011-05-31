@@ -13,6 +13,7 @@ from operator import add
 from optparse import OptionParser
 import os
 import sys
+import types
 
 from fabric import api  # For checking callables against the API
 from fabric.contrib import console, files, project  # Ditto
@@ -20,6 +21,8 @@ from fabric.network import denormalize, interpret_host_string, disconnect_all
 from fabric import state  # For easily-mockable access to roles, env and etc
 from fabric.state import commands, connections, env_options
 from fabric.utils import abort, indent
+from fabric import decorators
+from fabric.tasks import Task
 
 
 # One-time calculation of "all internal callables" to avoid doing this on every
@@ -140,9 +143,69 @@ def load_fabfile(path, importer=None):
     if index is not None:
         sys.path.insert(index + 1, directory)
         del sys.path[0]
-    # Return our two-tuple
-    tasks = dict(filter(is_task, vars(imported).items()))
-    return imported.__doc__, tasks
+
+    return load_fab_tasks_from_module(imported)
+
+
+def load_fab_tasks_from_module(imported):
+    """
+    Handles loading all of the fab_tasks for a given `imported` module
+    """
+    # Obey the use of <module>.__all__ if it is present
+    imported_vars = vars(imported)
+    if "__all__" in imported_vars:
+        imported_vars = [(name, imported_vars[name]) for name in \
+                         imported_vars if name in imported_vars["__all__"]]
+    else:
+        imported_vars = imported_vars.items()
+    # Return a two-tuple value.  First is the documentation, second is a
+    # dictionary of callables only (and don't include Fab operations or
+    # underscored callables)
+    return imported.__doc__, extract_tasks(imported_vars)
+
+
+def is_task_module(a):
+    """
+    Determine if the provided value is a task module
+    """
+    return (type(a) is types.ModuleType and
+            getattr(a, "FABRIC_TASK_MODULE", False) is True)
+
+
+def is_task_object(a):
+    """
+    Determine if the provided value is a ``Task`` object.
+
+    This returning True signals that all tasks within the fabfile
+    module must be Task objects.
+    """
+    return isinstance(a, Task) and a.use_task_objects
+
+
+def extract_tasks(imported_vars):
+    """
+    Handle extracting tasks from a given list of variables
+    """
+    tasks = {}
+    using_task_objects = False
+    for tup in imported_vars:
+        name, callable = tup
+        if is_task_object(callable):
+            using_task_objects = True
+            tasks[callable.name] = callable
+        elif is_task(tup):
+            tasks[name] = callable
+        elif is_task_module(callable):
+            module_docs, module_tasks = load_fab_tasks_from_module(callable)
+            for task_name, task in module_tasks.items():
+                tasks["%s.%s" % (name, task_name)] = task
+
+    if using_task_objects:
+        def is_usable_task(tup):
+            name, task = tup
+            return name.find('.') != -1 or isinstance(task, Task)
+        tasks = dict(filter(is_usable_task, tasks.items()))
+    return tasks
 
 
 def parse_options():

@@ -3,11 +3,19 @@ Convenience decorators for use in fabfiles.
 """
 from __future__ import with_statement
 
+from fabric import tasks
 from functools import wraps
 from types import StringTypes
 
 from .context_managers import settings
 
+def task(func):
+    """
+    Decorator defining a function as a task.
+
+    This is a convenience wrapper around `tasks.WrappedCallableTask`.
+    """
+    return tasks.WrappedCallableTask(func)
 
 def hosts(*host_list):
     """

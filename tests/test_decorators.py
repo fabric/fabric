@@ -2,9 +2,14 @@ from nose.tools import eq_, ok_
 from fudge import Fake, with_fakes
 import random
 
-from fabric import decorators
+from fabric import decorators, tasks
 from fabric.state import env
 
+def test_task_returns_an_instance_of_wrappedfunctask_object():
+    def foo():
+        pass
+    task = decorators.task(foo)
+    ok_(isinstance(task, tasks.WrappedCallableTask))
 
 def fake_function(*args, **kwargs):
     """

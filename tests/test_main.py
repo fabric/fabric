@@ -2,15 +2,18 @@ import sys
 import copy
 
 from fudge import Fake
-from nose.tools import eq_, raises
+from nose.tools import ok_, eq_, raises
 
-from fabric.decorators import hosts, roles
+from fabric.decorators import hosts, roles, task
 from fabric.main import (get_hosts, parse_arguments, _merge, _escape_split,
         load_fabfile)
+
 import fabric.state
 from fabric.state import _AttributeDict
 
 from utils import mock_streams, patched_env
+import os
+import sys
 
 
 def test_argument_parsing():
@@ -125,6 +128,27 @@ def test_hosts_decorator_overrides_env_hosts():
     eq_hosts(command, ['bar'])
     assert 'foo' not in get_hosts(command, [], [], [])
 
+@with_patched_object('fabric.state', 'env', {'hosts': ['foo']})
+def test_hosts_decorator_overrides_env_hosts_with_task_decorator_first():
+    """
+    If @hosts is used it replaces any env.hosts value even with @task
+    """
+    @task
+    @hosts('bar')
+    def command():
+        pass
+    eq_hosts(command, ['bar'])
+    assert 'foo' not in get_hosts(command, [], [])
+
+@with_patched_object('fabric.state', 'env', {'hosts': ['foo']})
+def test_hosts_decorator_overrides_env_hosts_with_task_decorator_last():
+    @hosts('bar')
+    @task
+    def command():
+        pass
+    eq_hosts(command, ['bar'])
+    assert 'foo' not in get_hosts(command, [], [])
+
 
 @patched_env({'hosts': [' foo ', 'bar '], 'roles': [],
         'exclude_hosts':[]})
@@ -200,7 +224,6 @@ def test_lazy_roles():
         pass
     eq_hosts(command, ['a', 'b'])
 
-
 def test_escaped_task_arg_split():
     """
     Allow backslashes to escape the task argument separator character
@@ -210,7 +233,6 @@ def test_escaped_task_arg_split():
         _escape_split(',', argstr),
         ['foo', 'bar,biz,baz', 'what comes after baz?']
     )
-
 
 def run_load_fabfile(path, sys_path):
     # Module-esque object
@@ -227,7 +249,6 @@ def run_load_fabfile(path, sys_path):
     # Restore
     sys.path = orig_path
 
-
 def test_load_fabfile_should_not_remove_real_path_elements():
     for fabfile_path, sys_dot_path in (
         # Directory not in path
@@ -243,3 +264,82 @@ def test_load_fabfile_should_not_remove_real_path_elements():
         ('fabfile.py', ['', 'some_dir', 'some_other_dir']),
     ):
             yield run_load_fabfile, fabfile_path, sys_dot_path
+
+def support_fabfile(name):
+    return os.path.join(os.path.dirname(__file__), 'support', name)
+
+def test_implicit_discover():
+    """
+    Automatically includes all functions in a fabfile
+    """
+    implicit = support_fabfile("implicit_fabfile.py")
+    sys.path[0:0] = [os.path.dirname(implicit),]
+
+    docs, funcs = load_fabfile(implicit)
+    ok_(len(funcs) == 2)
+    ok_("foo" in funcs)
+    ok_("bar" in funcs)
+
+    sys.path = sys.path[1:]
+
+def test_explicit_discover():
+    """
+    Only use those methods listed in __all__
+    """
+
+    explicit = support_fabfile("explicit_fabfile.py")
+    sys.path[0:0] = [os.path.dirname(explicit),]
+
+    docs, funcs = load_fabfile(explicit)
+    ok_(len(funcs) == 1)
+    ok_("foo" in funcs)
+    ok_("bar" not in funcs)
+
+def test_allow_registering_modules():
+    module = support_fabfile('module_fabfile.py')
+    sys.path[0:0] = [os.path.dirname(module),]
+
+    docs, funcs = load_fabfile(module)
+    ok_(len(funcs) == 2)
+    ok_('tasks.hello' in funcs)
+    ok_('tasks.world' in funcs)
+
+def test_modules_should_pay_attention_to_all_and_explicit_discovery():
+    module = support_fabfile('module_explicit.py')
+    sys.path[0:0] = [os.path.dirname(module),]
+
+    docs, funcs = load_fabfile(module)
+    ok_(len(funcs) == 1)
+    ok_('tasks.hello' in funcs)
+    ok_('tasks.world' not in funcs)
+
+def test_should_load_decorated_tasks_only_if_one_is_found():
+    module = support_fabfile('decorated_fabfile.py')
+    sys.path[0:0] = [os.path.dirname(module),]
+
+    docs, funcs = load_fabfile(module)
+    eq_(1, len(funcs))
+    ok_('foo' in funcs)
+
+def test_modules_are_still_loaded_if_fabfile_contains_decorated_task():
+    module = support_fabfile('decorated_fabfile_with_modules.py')
+    sys.path[0:0] = [os.path.dirname(module),]
+
+    docs, funcs = load_fabfile(module)
+    eq_(3, len(funcs))
+
+def test_modules_pay_attention_to_task_decorator():
+    module = support_fabfile('decorated_fabfile_with_decorated_module.py')
+    sys.path[0:0] = [os.path.dirname(module),]
+
+    docs, funcs = load_fabfile(module)
+    eq_(2, len(funcs))
+
+def test_class_based_tasks_are_found_with_proper_name():
+    module = support_fabfile('decorated_fabfile_with_classbased_task.py')
+    sys.path[0:0] = [os.path.dirname(module),]
+
+    docs, funcs = load_fabfile(module)
+    print funcs
+    eq_(1, len(funcs))
+    ok_('foo' in funcs)

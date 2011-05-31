@@ -7,6 +7,10 @@ import types
 from contextlib import nested
 from StringIO import StringIO
 
+import unittest
+import random
+import types
+
 from nose.tools import raises, eq_
 from fudge import with_patched_object
 
