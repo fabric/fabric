@@ -15,14 +15,12 @@ import os
 import sys
 import types
 
-from fabric import api  # For checking callables against the API
+from fabric import api, state  # For checking callables against the API, & easy mocking
 from fabric.contrib import console, files, project  # Ditto
 from fabric.network import denormalize, interpret_host_string, disconnect_all
-from fabric import state  # For easily-mockable access to roles, env and etc
 from fabric.state import commands, connections, env_options
-from fabric.utils import abort, indent
-from fabric import decorators
 from fabric.tasks import Task
+from fabric.utils import abort, indent
 
 
 # One-time calculation of "all internal callables" to avoid doing this on every
@@ -144,12 +142,12 @@ def load_fabfile(path, importer=None):
         sys.path.insert(index + 1, directory)
         del sys.path[0]
 
-    return load_fab_tasks_from_module(imported)
+    return load_tasks_from_module(imported)
 
 
-def load_fab_tasks_from_module(imported):
+def load_tasks_from_module(imported):
     """
-    Handles loading all of the fab_tasks for a given `imported` module
+    Handles loading all of the tasks for a given `imported` module
     """
     # Obey the use of <module>.__all__ if it is present
     imported_vars = vars(imported)
@@ -169,7 +167,7 @@ def is_task_module(a):
     Determine if the provided value is a task module
     """
     return (type(a) is types.ModuleType and
-            getattr(a, "FABRIC_TASK_MODULE", False) is True)
+            getattr(a, "FABRIC_TASK_MODULE", False))
 
 
 def is_task_object(a):
@@ -196,7 +194,7 @@ def extract_tasks(imported_vars):
         elif is_task(tup):
             tasks[name] = callable
         elif is_task_module(callable):
-            module_docs, module_tasks = load_fab_tasks_from_module(callable)
+            module_docs, module_tasks = load_tasks_from_module(callable)
             for task_name, task in module_tasks.items():
                 tasks["%s.%s" % (name, task_name)] = task
 

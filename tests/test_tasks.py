@@ -13,7 +13,7 @@ def test_base_task_raises_exception_on_call_to_run():
     task = tasks.Task()
     task.run()
 
-class TestOfWrappedCallableTask(unittest.TestCase):
+class TestWrappedCallableTask(unittest.TestCase):
     def test_run_is_wrapped_callable(self):
         def foo(): pass
 

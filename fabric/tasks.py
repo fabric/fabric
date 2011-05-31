@@ -2,11 +2,10 @@ from functools import wraps
 
 class Task(object):
     """
-    Base Task class, from which all class-based Tasks should extend.
+    Abstract base class for objects wishing to be picked up as Fabric tasks.
 
-    This class is used to provide a way to test whether a task is really
-    a task or not.  It provides no functionality and should not used
-    directly.
+    Instances of subclasses will be treated as valid tasks when present in
+    fabfiles loaded by the "fab" tool.
     """
     name = 'undefined'
     use_task_objects = True
@@ -19,9 +18,9 @@ class Task(object):
 
 class WrappedCallableTask(Task):
     """
-    Task for wrapping some sort of callable in a Task object.
+    Wraps a given callable transparently, while marking it as a valid Task.
 
-    Generally used via the ``@task`` decorator.
+    Generally used via the ``@task`` decorator and not directly.
     """
     def __init__(self, callable):
         super(WrappedCallableTask, self).__init__()
