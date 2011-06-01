@@ -56,7 +56,11 @@ fabfile.pyc
 fabric
 requirements.txt
 setup.py
-tests"""
+tests""",
+    "both_streams": [
+        "stdout",
+        "stderr"
+    ]
 }
 FILES = FakeFilesystem({
     '/file.txt': 'contents',

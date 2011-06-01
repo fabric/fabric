@@ -7,6 +7,11 @@ Bugfixes
 
 * :issue:`258`: Bugfix to a previous, incorrectly applied fix regarding
   `~fabric.operations.local` on Windows platforms.
+* :issue:`324`: Update `~fabric.operations.run`/`~fabric.operations.sudo`'s
+  ``combine_stderr`` kwarg so that it correctly overrides the global setting in
+  all cases. This required changing its default value to ``None``, but the
+  default behavior (behaving as if the setting were ``True``) has not changed.
+  Thanks to Matthew Woodcraft and Connor Smith for the catch.
 * :issue:`337`: Fix logic bug in `~fabric.operations.put` preventing use of
   ``mirror_local_mode``. Thanks to Roman Imankulov for catch & patch.
 
