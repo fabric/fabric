@@ -870,7 +870,7 @@ def _run_command(command, shell=True, pty=True, combine_stderr=True,
 
 
 @needs_host
-def run(command, shell=True, pty=True, combine_stderr=True):
+def run(command, shell=True, pty=True, combine_stderr=None):
     """
     Run a shell command on a remote host.
 
@@ -928,7 +928,7 @@ def run(command, shell=True, pty=True, combine_stderr=True):
 
 
 @needs_host
-def sudo(command, shell=True, pty=True, combine_stderr=True, user=None):
+def sudo(command, shell=True, pty=True, combine_stderr=None, user=None):
     """
     Run a shell command on a remote host, with superuser privileges.
 
