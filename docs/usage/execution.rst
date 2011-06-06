@@ -72,8 +72,102 @@ to do next.
 Defining tasks
 ==============
 
-When looking for tasks to execute, Fabric imports your fabfile and will
-consider any callable object, **except** for the following:
+As of Fabric 1.1, there are two distinct methods you may use in order to define
+which objects in your fabfile show up as tasks:
+
+* The "new" method starting in 1.1 considers instances of `~fabric.tasks.Task`
+  or its subclasses, and also descends into imported modules to allow building
+  nested namespaces.
+* The "classic" method from 1.0 and earlier considers all public callable
+  objects (functions, classes etc) and only considers the objects in the
+  fabfile itself with no recursing into imported module.
+
+.. note::
+    These two methods are **mutually exclusive**: if Fabric finds *any*
+    new-style task objects in your fabfile or in modules it imports, it will
+    assume you've committed to this method of task declaration and won't
+    consider any non-`~fabric.tasks.Task` callables. If *no* new-style tasks
+    are found, it reverts to the classic behavior.
+
+See the following subsections for details on these two methods of setting up
+tasks.
+
+New-style tasks
+---------------
+
+Fabric 1.1 introduced the `~fabric.tasks.Task` class to facilitate new features
+and enable some programming best practices, specifically:
+
+* **Object-oriented tasks**. Inheritance and all that comes with it can make
+  for much more sensible code reuse than passing around simple function
+  objects.  The classic style of task declaration didn't entirely rule this
+  out, but it also didn't make it terribly easy.
+* **Namespaces**. Without an easy way to tell tasks apart from other non-task
+  callables, recursive namespace creation would be difficult if not impossible
+  (imagine having your "task list" cluttered up with the contents of ``os.sys``
+  for example.)
+
+With the introduction of `~fabric.tasks.Task`, there are two ways to set up new tasks:
+
+* Decorate a regular module level function with `@task
+  <~fabric.decorators.task>`, which transparently wraps the function in a
+  `~fabric.tasks.Task` subclass. The function name will be used as the task
+  name when invoking.
+* Subclass `~fabric.tasks.Task` (`~fabric.tasks.Task` itself is intended to be
+  abstract), define a ``run`` method, and instantiate your subclass at module
+  level. Instances' ``name`` attributes are used as the task name; if omitted
+  the instance's variable name will be used instead.
+
+Use of new-style tasks also allows you to set up task namespaces -- see below.
+
+Namespaces
+~~~~~~~~~~
+
+With classic tasks, only module level callables are considered, forcing you to set up a single flat "namespace" of tasks in your fabfile. While Fabric 0.9.2 introduced package support, you still had to import individual task functions into your ``__init__.py`` and had no ability to organize them.
+
+In Fabric 1.1 and newer, if you declare tasks the new way (via `~fabric.decorators.task` or your own `~fabric.tasks.Task` subclass instances) you may take advantage of automatic **namespacing**:
+
+* Any module objects imported into your fabfile will be recursed into looking for additional task objects.
+* These sub-module tasks will be given new dotted-notation names based on the modules they came from, similar to Python's own import syntax.
+
+As an example, consider this fabfile package::
+
+    .
+    ├── __init__.py
+    ├── db
+    │   ├── __init__.py
+    │   ├── fixtures.py
+    │   └── migrate.py
+    ├── lb.py
+
+Given the following task declarations:
+
+* ``__init__.py`` declares a new-style task named ``deploy`` and the line ``import db, lb``
+* ``db/__init__.py`` is empty (just serving as the Python package signifier)
+* ``db/fixtures.py`` declares ``load`` and ``dump``.
+* ``db/migrate.py`` declares ``up`` and ``down``.
+* ``lb.py`` contains ``add_backend``.
+
+you'd end up with the following list of tasks from ``fab --list``::
+
+    deploy
+    db.fixtures.load
+    db.fixtures.dump
+    db.migrate.up
+    db.migrate.down
+    lb.add_backend
+
+Note that the base ``__init__.py`` had to explicitly import the other modules.
+This represents a small amount of boilerplate on your part, but also allows
+explicit control, e.g. if you were to import third party fabfiles not residing
+in your own package, or wanted some submodules to remain partly private (e.g.
+for use with ``fab -f`` only.)
+
+Classic tasks
+-------------
+
+When no new-style `~fabric.tasks.Task`-based tasks are found, Fabric will
+consider any callable object found in your fabfile, **except** the following:
 
 * Callables whose name starts with an underscore (``_``). In other words,
   Python's usual "private" convention holds true here.
@@ -87,12 +181,12 @@ consider any callable object, **except** for the following:
     use :option:`fab --list <-l>`.
 
 Imports
--------
+~~~~~~~
 
 Python's ``import`` statement effectively includes the imported objects in your
 module's namespace. Since Fabric's fabfiles are just Python modules, this means
-that imports are also considered as possible tasks, alongside anything defined
-in the fabfile itself.
+that imports are also considered as possible classic-style tasks, alongside
+anything defined in the fabfile itself.
 
 Because of this, we strongly recommend that you use the ``import module`` form
 of importing, followed by ``module.callable()``, which will result in a cleaner

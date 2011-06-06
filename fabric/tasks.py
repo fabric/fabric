@@ -6,6 +6,8 @@ class Task(object):
 
     Instances of subclasses will be treated as valid tasks when present in
     fabfiles loaded by the "fab" tool.
+
+    .. versionadded:: 1.1
     """
     name = 'undefined'
     use_task_objects = True
@@ -21,6 +23,8 @@ class WrappedCallableTask(Task):
     Wraps a given callable transparently, while marking it as a valid Task.
 
     Generally used via the ``@task`` decorator and not directly.
+
+    .. versionadded:: 1.1
     """
     def __init__(self, callable):
         super(WrappedCallableTask, self).__init__()
