@@ -12,11 +12,10 @@ from .context_managers import settings
 
 def task(func):
     """
-    Decorator defining a function as a task.
-
-    This is a convenience wrapper around `tasks.WrappedCallableTask`.
+    Decorator declaring the wrapped function as a :ref:`new-style task <new-style-tasks>`.
     """
     return tasks.WrappedCallableTask(func)
+
 
 def hosts(*host_list):
     """

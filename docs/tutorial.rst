@@ -55,7 +55,7 @@ That's all there is to it. This functionality allows Fabric to be used as a
     functions you instruct it to. There's nothing magic about it -- anything
     you can do in a normal Python script can be done in a fabfile!
 
-.. seealso:: :ref:`execution-strategy`, :ref:`tasks-and-imports`, :doc:`usage/fab`
+.. seealso:: :ref:`execution-strategy`, :doc:`/usage/tasks`, :doc:`/usage/fab`
 
 
 Task arguments

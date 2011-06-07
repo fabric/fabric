@@ -5,7 +5,7 @@ class Task(object):
     Abstract base class for objects wishing to be picked up as Fabric tasks.
 
     Instances of subclasses will be treated as valid tasks when present in
-    fabfiles loaded by the "fab" tool.
+    fabfiles loaded by the :doc:`fab </usage/fab>` tool.
 
     .. versionadded:: 1.1
     """
@@ -22,7 +22,8 @@ class WrappedCallableTask(Task):
     """
     Wraps a given callable transparently, while marking it as a valid Task.
 
-    Generally used via the ``@task`` decorator and not directly.
+    Generally used via the `~fabric.decorators.task` decorator and not
+    directly.
 
     .. versionadded:: 1.1
     """

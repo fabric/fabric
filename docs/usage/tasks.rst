@@ -21,6 +21,8 @@ which objects in your fabfile show up as tasks:
 
 The rest of this document explores these two methods in detail.
 
+.. _new-style-tasks:
+
 New-style tasks
 ===============
 
@@ -39,10 +41,9 @@ and enable some programming best practices, specifically:
 With the introduction of `~fabric.tasks.Task`, there are two ways to set up new
 tasks:
 
-* Decorate a regular module level function with `@task
-  <~fabric.decorators.task>`, which transparently wraps the function in a
-  `~fabric.tasks.Task` subclass. The function name will be used as the task
-  name when invoking.
+* Decorate a regular module level function with `~fabric.decorators.task`,
+  which transparently wraps the function in a `~fabric.tasks.Task` subclass.
+  The function name will be used as the task name when invoking.
 * Subclass `~fabric.tasks.Task` (`~fabric.tasks.Task` itself is intended to be
   abstract), define a ``run`` method, and instantiate your subclass at module
   level. Instances' ``name`` attributes are used as the task name; if omitted
@@ -204,6 +205,8 @@ This applies to any other import -- you could import third party modules into
 your own task hierarchy, or grab a deeply nested module and make it appear near
 the top level.
 
+
+.. _classic-tasks:
 
 Classic tasks
 =============

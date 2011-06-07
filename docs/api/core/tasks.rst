@@ -3,4 +3,4 @@ Tasks
 =====
 
 .. automodule:: fabric.tasks
-    :members:
+    :members: Task

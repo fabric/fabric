@@ -88,4 +88,4 @@ Defining tasks and importing callables
 
 For important information on what exactly Fabric will consider as a task when
 it loads your fabfile, as well as notes on how best to import other code,
-please see :ref:`tasks-and-imports` in the :doc:`execution` documentation.
+please see :doc:`/usage/tasks` in the :doc:`execution` documentation.
