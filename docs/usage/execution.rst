@@ -102,10 +102,10 @@ and enable some programming best practices, specifically:
   for much more sensible code reuse than passing around simple function
   objects.  The classic style of task declaration didn't entirely rule this
   out, but it also didn't make it terribly easy.
-* **Namespaces**. Without an easy way to tell tasks apart from other non-task
-  callables, recursive namespace creation would be difficult if not impossible
-  (imagine having your "task list" cluttered up with the contents of ``os.sys``
-  for example.)
+* **Namespaces**. Having an explicit method of declaring tasks makes it easier
+  to set up recursive namespaces without e.g. polluting your task list with the
+  contents of Python's ``os`` module (which would show up as valid "tasks"
+  under the classic methodology.)
 
 With the introduction of `~fabric.tasks.Task`, there are two ways to set up new tasks:
 
