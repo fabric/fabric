@@ -167,7 +167,7 @@ def is_task_module(a):
     Determine if the provided value is a task module
     """
     return (type(a) is types.ModuleType and
-            getattr(a, "FABRIC_TASK_MODULE", False))
+            any(map(is_task_object, vars(a).values())))
 
 
 def is_task_object(a):
