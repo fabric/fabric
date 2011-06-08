@@ -5,6 +5,23 @@ Changes in version 1.1
 This page lists all changes made to Fabric in its 1.1.0 release.
 
 
+Highlights
+==========
+
+* :issue:`76`: :ref:`New-style tasks <new-style-tasks>` have been added. With
+  the addition of the `~fabric.decorators.task` decorator and the
+  `~fabric.tasks.Task` class, you can now "opt-in" and explicitly mark task
+  functions as tasks, and Fabric will ignore the rest. The original behavior
+  (now referred to as :ref:`"classic" tasks <classic-tasks>`) will still take
+  effect if no new-style tasks are found. Major thanks to Travis Swicegood for
+  the original implementation.
+* :issue:`56`: Namespacing is now possible: Fabric will crawl imported module
+  objects looking for new-style task objects and build a dotted hierarchy
+  (tasks named e.g. ``web.deploy`` or ``db.migrations.run``), allowing for
+  greater organization. See :ref:`namespaces` for details. Thanks again to
+  Travis Swicegood.
+
+
 Feature additions
 =================
 
@@ -43,6 +60,9 @@ Bugfixes
 Documentation updates
 =====================
 
+* Documentation for task declaration has been moved from
+  :doc:`/usage/execution` into its own docs page, :doc:`/usage/tasks`, as a
+  result of the changes added in :issue:`76` and :issue:`56`.
 * :issue:`184`: Make the usage of `~fabric.contrib.project.rsync_project`'s
   ``local_dir`` argument more obvious, regarding its use in the ``rsync`` call.
   (Specifically, so users know they can pass in multiple, space-joined

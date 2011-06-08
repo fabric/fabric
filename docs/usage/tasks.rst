@@ -51,6 +51,9 @@ tasks:
 
 Use of new-style tasks also allows you to set up task namespaces -- see below.
 
+
+.. _namespaces:
+
 Namespaces
 ----------
 
