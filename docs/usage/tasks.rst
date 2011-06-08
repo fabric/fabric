@@ -65,9 +65,9 @@ own `~fabric.tasks.Task` subclass instances) you may take advantage of
 
 * Any module objects imported into your fabfile will be recursed into, looking
   for additional task objects.
-* You may further control which objects are "exported" by using the standard
-  Python ``__all__`` module-level variable name (thought they should still be
-  valid new-style task objects.)
+* Within submodules, you may control which objects are "exported" by using the
+  standard Python ``__all__`` module-level variable name (thought they should
+  still be valid new-style task objects.)
 * These tasks will be given new dotted-notation names based on the modules they
   came from, similar to Python's own import syntax.
 
@@ -99,9 +99,10 @@ manage.
 Importing a submodule
 ~~~~~~~~~~~~~~~~~~~~~
 
-As mentioned above, Fabric will examine any imported module objects for tasks.
-For now we just want to include our own, "nearby" tasks, so we'll make a new
-submodule in our package for dealing with, say, load balancers -- ``lb.py``::
+As mentioned above, Fabric will examine any imported module objects for tasks,
+regardless of where that module exists on your Python import path.  For now we
+just want to include our own, "nearby" tasks, so we'll make a new submodule in
+our package for dealing with, say, load balancers -- ``lb.py``::
 
     @task
     def add_backend():
@@ -117,8 +118,8 @@ Now ``fab --list`` shows us::
     compress
     lb.add_backend
 
-Again, with one task, it looks kind of silly, but the benefits should be pretty
-obvious.
+Again, with only one task in its own submodule, it looks kind of silly, but the
+benefits should be pretty obvious.
 
 Going deeper
 ~~~~~~~~~~~~
@@ -171,11 +172,10 @@ expect.
 Limiting with ``__all__``
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-It's also possible to limit what Fabric "sees" when it examines imported
-modules, by using the Python convention of a module level ``__all__`` variable
-(a list of variable names.) If we didn't want the ``db.migrations.run`` task to
-show up by default for some reason, we could add this to the top of
-``db/migrations.py``::
+You may limit what Fabric "sees" when it examines imported modules, by using
+the Python convention of a module level ``__all__`` variable (a list of
+variable names.) If we didn't want the ``db.migrations.run`` task to show up by
+default for some reason, we could add this to the top of ``db/migrations.py``::
 
     __all__ = ['list']
 
