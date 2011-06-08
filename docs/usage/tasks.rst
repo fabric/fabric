@@ -180,8 +180,7 @@ default for some reason, we could add this to the top of ``db/migrations.py``::
     __all__ = ['list']
 
 Note the lack of ``'run'`` there. You could, if needed, import ``run`` directly
-into some other part of the hierarchy, or specify ``db/migrations.py`` as the
-root fabfile with ``fab -f`` (which does not consider ``__all__``.)
+into some other part of the hierarchy, but otherwise it'll remain hidden.
 
 Switching it up
 ~~~~~~~~~~~~~~~
