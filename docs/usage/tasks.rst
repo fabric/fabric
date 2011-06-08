@@ -21,6 +21,11 @@ which objects in your fabfile show up as tasks:
 
 The rest of this document explores these two methods in detail.
 
+.. note::
+
+    To see exactly what tasks in your fabfile may be executed via ``fab``, use
+    :option:`fab --list <-l>`.
+
 .. _new-style-tasks:
 
 New-style tasks
@@ -222,10 +227,6 @@ consider any callable object found in your fabfile, **except** the following:
   `~fabric.operations.run` and `~fabric.operations.sudo`  will not show up in
   your task list.
 
-.. note::
-
-    To see exactly which callables in your fabfile may be executed via ``fab``,
-    use :option:`fab --list <-l>`.
 
 Imports
 -------
@@ -234,6 +235,12 @@ Python's ``import`` statement effectively includes the imported objects in your
 module's namespace. Since Fabric's fabfiles are just Python modules, this means
 that imports are also considered as possible classic-style tasks, alongside
 anything defined in the fabfile itself.
+
+    .. note::
+        This only applies to imported *callable objects* -- not modules.
+        Imported modules only come into play if they contain :ref:`new-style
+        tasks <new-style-tasks>`, at which point this section no longer
+        applies.
 
 Because of this, we strongly recommend that you use the ``import module`` form
 of importing, followed by ``module.callable()``, which will result in a cleaner
