@@ -346,3 +346,25 @@ def test_class_based_tasks_are_found_with_proper_name():
         docs, funcs = load_fabfile(module)
         eq_(1, len(funcs))
         ok_('foo' in funcs)
+
+
+def test_recursion_steps_into_nontask_modules():
+    """
+    Recursive loading will continue through modules with no tasks
+    """
+    module = fabfile('deep')
+    with path_prefix(module):
+        docs, funcs = load_fabfile(module)
+        eq_(len(funcs), 1)
+        ok_('submodule.subsubmodule.deeptask' in funcs)
+
+
+def test_newstyle_task_presence_skips_classic_task_modules():
+    """
+    Classic-task-only modules shouldn't add tasks if any new-style tasks exist
+    """
+    module = fabfile('deep')
+    with path_prefix(module):
+        docs, funcs = load_fabfile(module)
+        eq_(len(funcs), 1)
+        ok_('submodule.classic_task' not in funcs)
