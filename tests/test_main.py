@@ -295,9 +295,9 @@ def fabfile(name):
     return os.path.join(os.path.dirname(__file__), 'support', name)
 
 @contextmanager
-def path_prefix(path):
+def path_prefix(module):
     i = 0
-    sys.path.insert(i, path)
+    sys.path.insert(i, os.path.dirname(module))
     yield
     sys.path.pop(i)
 
@@ -307,7 +307,7 @@ def test_implicit_discovery():
     Default to automatically collecting all tasks in a fabfile module
     """
     implicit = fabfile("implicit_fabfile.py")
-    with path_prefix(os.path.dirname(implicit)):
+    with path_prefix(implicit):
         docs, funcs = load_fabfile(implicit)
         ok_(len(funcs) == 2)
         ok_("foo" in funcs)
@@ -319,7 +319,7 @@ def test_explicit_discovery():
     If __all__ is present, only collect the tasks it specifies
     """
     explicit = fabfile("explicit_fabfile.py")
-    with path_prefix(os.path.dirname(explicit)):
+    with path_prefix(explicit):
         docs, funcs = load_fabfile(explicit)
         ok_(len(funcs) == 1)
         ok_("foo" in funcs)
@@ -331,7 +331,7 @@ def test_should_load_decorated_tasks_only_if_one_is_found():
     If any new-style tasks are found, *only* new-style tasks should load
     """
     module = fabfile('decorated_fabfile.py')
-    with path_prefix(os.path.dirname(module)):
+    with path_prefix(module):
         docs, funcs = load_fabfile(module)
         eq_(1, len(funcs))
         ok_('foo' in funcs)
@@ -342,7 +342,7 @@ def test_class_based_tasks_are_found_with_proper_name():
     Wrapped new-style tasks should preserve their function names
     """
     module = fabfile('decorated_fabfile_with_classbased_task.py')
-    with path_prefix(os.path.dirname(module)):
+    with path_prefix(module):
         docs, funcs = load_fabfile(module)
         eq_(1, len(funcs))
         ok_('foo' in funcs)
