@@ -293,7 +293,8 @@ def list_commands(docstring):
         output = None
         # Print first line of docstring
         func = commands[name]
-        if func.__doc__:
+        docstring = func.__doc__
+        if docstring and type(docstring) in types.StringTypes:
             lines = filter(None, func.__doc__.splitlines())
             first_line = lines[0].strip()
             # Truncate it if it's longer than N chars
