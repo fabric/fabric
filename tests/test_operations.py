@@ -14,10 +14,10 @@ import types
 from nose.tools import raises, eq_
 from fudge import with_patched_object
 
-from fabric.state import env
+from fabric.state import env, output
 from fabric.operations import require, prompt, _sudo_prefix, _shell_wrap, \
     _shell_escape
-from fabric.api import get, put, hide, show, cd, lcd, local
+from fabric.api import get, put, hide, show, cd, lcd, local, run, sudo
 from fabric.sftp import SFTP
 
 from fabric.decorators import with_settings
@@ -223,6 +223,52 @@ def test_shell_escape_escapes_backticks():
     cmd = "touch test.pid && kill `cat test.pid`"
     eq_(_shell_escape(cmd), "touch test.pid && kill \`cat test.pid\`")
 
+
+class TestCombineStderr(FabricTest):
+    @server()
+    def test_local_none_global_true(self):
+        """
+        combine_stderr: no kwarg => uses global value (True)
+        """
+        output.everything = False
+        r = run("both_streams")
+        # Note: the exact way the streams are jumbled here is an implementation
+        # detail of our fake SSH server and may change in the future.
+        eq_("ssttddoeurtr", r.stdout)
+        eq_(r.stderr, "")
+
+    @server()
+    def test_local_none_global_false(self):
+        """
+        combine_stderr: no kwarg => uses global value (False)
+        """
+        output.everything = False
+        env.combine_stderr = False
+        r = run("both_streams")
+        eq_("stdout", r.stdout)
+        eq_("stderr", r.stderr)
+
+    @server()
+    def test_local_true_global_false(self):
+        """
+        combine_stderr: True kwarg => overrides global False value
+        """
+        output.everything = False
+        env.combine_stderr = False
+        r = run("both_streams", combine_stderr=True)
+        eq_("ssttddoeurtr", r.stdout)
+        eq_(r.stderr, "")
+
+    @server()
+    def test_local_false_global_true(self):
+        """
+        combine_stderr: False kwarg => overrides global True value
+        """
+        output.everything = False
+        env.combine_stderr = True
+        r = run("both_streams", combine_stderr=False)
+        eq_("stdout", r.stdout)
+        eq_("stderr", r.stderr)
 
 #
 # get() and put()

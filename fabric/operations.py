@@ -699,7 +699,7 @@ def _prefix_env_vars(command):
     return path + command
 
 
-def _execute(channel, command, pty=True, combine_stderr=True,
+def _execute(channel, command, pty=True, combine_stderr=None,
     invoke_shell=False):
     """
     Execute ``command`` over ``channel``.
@@ -707,6 +707,9 @@ def _execute(channel, command, pty=True, combine_stderr=True,
     ``pty`` controls whether a pseudo-terminal is created.
 
     ``combine_stderr`` controls whether we call ``channel.set_combine_stderr``.
+    By default, the global setting for this behavior (:ref:`env.combine_stderr
+    <combine-stderr>`) is consulted, but you may specify ``True`` or ``False``
+    here to override it.
 
     ``invoke_shell`` controls whether we use ``exec_command`` or
     ``invoke_shell`` (plus a handful of other things, such as always forcing a
@@ -718,8 +721,9 @@ def _execute(channel, command, pty=True, combine_stderr=True,
     """
     with char_buffered(sys.stdin):
         # Combine stdout and stderr to get around oddball mixing issues
-        if combine_stderr or env.combine_stderr:
-            channel.set_combine_stderr(True)
+        if combine_stderr is None:
+            combine_stderr = env.combine_stderr
+        channel.set_combine_stderr(combine_stderr)
 
         # Assume pty use, and allow overriding of this either via kwarg or env
         # var.  (invoke_shell always wants a pty no matter what.)
@@ -871,7 +875,7 @@ def _run_command(command, shell=True, pty=True, combine_stderr=True,
 
 
 @needs_host
-def run(command, shell=True, pty=True, combine_stderr=True):
+def run(command, shell=True, pty=True, combine_stderr=None):
     """
     Run a shell command on a remote host.
 
@@ -919,12 +923,17 @@ def run(command, shell=True, pty=True, combine_stderr=True):
 
     .. versionchanged:: 1.0
         The default value of ``pty`` is now ``True``.
+
+    .. versionchanged:: 1.0.2
+        The default value of ``combine_stderr`` is now ``None`` instead of
+        ``True``. However, the default *behavior* is unchanged, as the global
+        setting is still ``True``.
     """
     return _run_command(command, shell, pty, combine_stderr)
 
 
 @needs_host
-def sudo(command, shell=True, pty=True, combine_stderr=True, user=None):
+def sudo(command, shell=True, pty=True, combine_stderr=None, user=None):
     """
     Run a shell command on a remote host, with superuser privileges.
 
