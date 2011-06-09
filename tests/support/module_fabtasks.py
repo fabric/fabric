@@ -1,6 +1,3 @@
-
-FABRIC_TASK_MODULE = True
-
 def hello():
     print "hello"
 
