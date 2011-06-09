@@ -31,6 +31,25 @@ _internals = reduce(lambda x, y: x + filter(callable, vars(y).values()),
     []
 )
 
+# Module recursion cache
+class _ModuleCache(object):
+    """
+    Set-like object operating on modules and storing __name__s internally.
+    """
+    def __init__(self):
+        self.cache = set()
+
+    def __contains__(self, value):
+        return value.__name__ in self.cache
+
+    def add(self, value):
+        return self.cache.add(value.__name__)
+
+    def clear(self):
+        return self.cache.clear()
+
+_seen = _ModuleCache()
+
 
 def load_settings(path):
     """
@@ -142,7 +161,11 @@ def load_fabfile(path, importer=None):
         sys.path.insert(index + 1, directory)
         del sys.path[0]
 
-    return load_tasks_from_module(imported)
+    # Actually load tasks
+    ret = load_tasks_from_module(imported)
+    # Clean up after ourselves
+    _seen.clear()
+    return ret
 
 
 def load_tasks_from_module(imported):
@@ -170,10 +193,9 @@ def is_task_module(a):
     """
     #return (type(a) is types.ModuleType and
     #        any(map(is_task_object, vars(a).values())))
-    seen = '__seen_by_fab'
-    if type(a) is types.ModuleType and not getattr(a, seen, False):
+    if type(a) is types.ModuleType and a not in _seen:
         # Flag module as seen
-        setattr(a, seen, True)
+        _seen.add(a)
         # Signal that we need to check it out
         return True
 
