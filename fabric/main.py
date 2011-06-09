@@ -159,15 +159,23 @@ def load_tasks_from_module(imported):
     # Return a two-tuple value.  First is the documentation, second is a
     # dictionary of callables only (and don't include Fab operations or
     # underscored callables)
-    return imported.__doc__, extract_tasks(imported_vars)
+    new_style, classic = extract_tasks(imported_vars)
+    tasks = new_style if state.env.new_style_tasks else classic
+    return imported.__doc__, tasks
 
 
 def is_task_module(a):
     """
     Determine if the provided value is a task module
     """
-    return (type(a) is types.ModuleType and
-            any(map(is_task_object, vars(a).values())))
+    #return (type(a) is types.ModuleType and
+    #        any(map(is_task_object, vars(a).values())))
+    seen = '__seen_by_fab'
+    if type(a) is types.ModuleType and not getattr(a, seen, False):
+        # Flag module as seen
+        setattr(a, seen, True)
+        # Signal that we need to check it out
+        return True
 
 
 def is_task_object(a):
@@ -184,26 +192,23 @@ def extract_tasks(imported_vars):
     """
     Handle extracting tasks from a given list of variables
     """
-    tasks = {}
-    using_task_objects = False
+    new_style_tasks = {}
+    classic_tasks = {}
+    if 'new_style_tasks' not in state.env:
+        state.env.new_style_tasks = False
     for tup in imported_vars:
         name, obj = tup
         if is_task_object(obj):
-            using_task_objects = True
-            tasks[obj.name] = obj
+            state.env.new_style_tasks = True
+            new_style_tasks[obj.name] = obj
         elif is_task(tup):
-            tasks[name] = obj
+            classic_tasks[name] = obj
         elif is_task_module(obj):
             module_docs, module_tasks = load_tasks_from_module(obj)
             for task_name, task in module_tasks.items():
-                tasks["%s.%s" % (name, task_name)] = task
+                new_style_tasks["%s.%s" % (name, task_name)] = task
+    return (new_style_tasks, classic_tasks)
 
-    if using_task_objects:
-        def is_usable_task(tup):
-            name, task = tup
-            return name.find('.') != -1 or isinstance(task, Task)
-        tasks = dict(filter(is_usable_task, tasks.items()))
-    return tasks
 
 
 def parse_options():
