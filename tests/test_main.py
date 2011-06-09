@@ -16,6 +16,10 @@ import os
 import sys
 
 
+#
+# Basic CLI stuff
+#
+
 def test_argument_parsing():
     for args, output in [
         # Basic 
@@ -46,6 +50,21 @@ def test_argument_parsing():
     ]:
         yield eq_, parse_arguments([args]), [output]
 
+
+def test_escaped_task_arg_split():
+    """
+    Allow backslashes to escape the task argument separator character
+    """
+    argstr = r"foo,bar\,biz\,baz,what comes after baz?"
+    eq_(
+        _escape_split(',', argstr),
+        ['foo', 'bar,biz,baz', 'what comes after baz?']
+    )
+
+
+#
+# Host/role decorators
+#
 
 def eq_hosts(command, host_list):
     eq_(set(get_hosts(command, [], [], [])), set(host_list))
@@ -202,6 +221,10 @@ def test_roles_decorator_expands_single_iterable():
     eq_(command.roles, role_list)
 
 
+#
+# Basic role behavior
+#
+
 @patched_env({'roledefs': fake_roles})
 @raises(SystemExit)
 @mock_streams('stderr')
@@ -225,16 +248,9 @@ def test_lazy_roles():
     eq_hosts(command, ['a', 'b'])
 
 
-def test_escaped_task_arg_split():
-    """
-    Allow backslashes to escape the task argument separator character
-    """
-    argstr = r"foo,bar\,biz\,baz,what comes after baz?"
-    eq_(
-        _escape_split(',', argstr),
-        ['foo', 'bar,biz,baz', 'what comes after baz?']
-    )
-
+#
+# Fabfile loading
+#
 
 def run_load_fabfile(path, sys_path):
     # Module-esque object
@@ -267,6 +283,10 @@ def test_load_fabfile_should_not_remove_real_path_elements():
     ):
             yield run_load_fabfile, fabfile_path, sys_dot_path
 
+
+#
+# Namespacing and new-style tasks
+#
 
 def support_fabfile(name):
     return os.path.join(os.path.dirname(__file__), 'support', name)
