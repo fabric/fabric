@@ -1,5 +1,8 @@
+from __future__ import with_statement
+
 import sys
 import copy
+from contextlib import contextmanager
 
 from fudge import Fake
 from nose.tools import ok_, eq_, raises
@@ -288,89 +291,58 @@ def test_load_fabfile_should_not_remove_real_path_elements():
 # Namespacing and new-style tasks
 #
 
-def support_fabfile(name):
+def fabfile(name):
     return os.path.join(os.path.dirname(__file__), 'support', name)
 
+@contextmanager
+def path_prefix(path):
+    i = 0
+    sys.path.insert(i, path)
+    yield
+    sys.path.pop(i)
 
-def test_implicit_discover():
+
+def test_implicit_discovery():
     """
-    Automatically includes all functions in a fabfile
+    Default to automatically collecting all tasks in a fabfile module
     """
-    implicit = support_fabfile("implicit_fabfile.py")
-    sys.path[0:0] = [os.path.dirname(implicit),]
-
-    docs, funcs = load_fabfile(implicit)
-    ok_(len(funcs) == 2)
-    ok_("foo" in funcs)
-    ok_("bar" in funcs)
-
-    sys.path = sys.path[1:]
+    implicit = fabfile("implicit_fabfile.py")
+    with path_prefix(os.path.dirname(implicit)):
+        docs, funcs = load_fabfile(implicit)
+        ok_(len(funcs) == 2)
+        ok_("foo" in funcs)
+        ok_("bar" in funcs)
 
 
-def test_explicit_discover():
+def test_explicit_discovery():
     """
-    Only use those methods listed in __all__
+    If __all__ is present, only collect the tasks it specifies
     """
-
-    explicit = support_fabfile("explicit_fabfile.py")
-    sys.path[0:0] = [os.path.dirname(explicit),]
-
-    docs, funcs = load_fabfile(explicit)
-    ok_(len(funcs) == 1)
-    ok_("foo" in funcs)
-    ok_("bar" not in funcs)
-
-
-def test_allow_registering_modules():
-    module = support_fabfile('module_fabfile.py')
-    sys.path[0:0] = [os.path.dirname(module),]
-
-    docs, funcs = load_fabfile(module)
-    ok_(len(funcs) == 2)
-    ok_('tasks.hello' in funcs)
-    ok_('tasks.world' in funcs)
-
-
-def test_modules_should_pay_attention_to_all_and_explicit_discovery():
-    module = support_fabfile('module_explicit.py')
-    sys.path[0:0] = [os.path.dirname(module),]
-
-    docs, funcs = load_fabfile(module)
-    ok_(len(funcs) == 1)
-    ok_('tasks.hello' in funcs)
-    ok_('tasks.world' not in funcs)
+    explicit = fabfile("explicit_fabfile.py")
+    with path_prefix(os.path.dirname(explicit)):
+        docs, funcs = load_fabfile(explicit)
+        ok_(len(funcs) == 1)
+        ok_("foo" in funcs)
+        ok_("bar" not in funcs)
 
 
 def test_should_load_decorated_tasks_only_if_one_is_found():
-    module = support_fabfile('decorated_fabfile.py')
-    sys.path[0:0] = [os.path.dirname(module),]
-
-    docs, funcs = load_fabfile(module)
-    eq_(1, len(funcs))
-    ok_('foo' in funcs)
-
-
-def test_modules_are_still_loaded_if_fabfile_contains_decorated_task():
-    module = support_fabfile('decorated_fabfile_with_modules.py')
-    sys.path[0:0] = [os.path.dirname(module),]
-
-    docs, funcs = load_fabfile(module)
-    eq_(3, len(funcs))
-
-
-def test_modules_pay_attention_to_task_decorator():
-    module = support_fabfile('decorated_fabfile_with_decorated_module.py')
-    sys.path[0:0] = [os.path.dirname(module),]
-
-    docs, funcs = load_fabfile(module)
-    eq_(2, len(funcs))
+    """
+    If any new-style tasks are found, *only* new-style tasks should load
+    """
+    module = fabfile('decorated_fabfile.py')
+    with path_prefix(os.path.dirname(module)):
+        docs, funcs = load_fabfile(module)
+        eq_(1, len(funcs))
+        ok_('foo' in funcs)
 
 
 def test_class_based_tasks_are_found_with_proper_name():
-    module = support_fabfile('decorated_fabfile_with_classbased_task.py')
-    sys.path[0:0] = [os.path.dirname(module),]
-
-    docs, funcs = load_fabfile(module)
-    print funcs
-    eq_(1, len(funcs))
-    ok_('foo' in funcs)
+    """
+    Wrapped new-style tasks should preserve their function names
+    """
+    module = fabfile('decorated_fabfile_with_classbased_task.py')
+    with path_prefix(os.path.dirname(module)):
+        docs, funcs = load_fabfile(module)
+        eq_(1, len(funcs))
+        ok_('foo' in funcs)

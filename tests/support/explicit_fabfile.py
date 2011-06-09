@@ -1,4 +1,4 @@
-__all__ = ['foo',]
+__all__ = ['foo']
 
 def foo():
     pass
