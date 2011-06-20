@@ -212,12 +212,8 @@ def eq_(result, expected, msg=None):
     """
     Shadow of the Nose builtin which presents easier to read multiline output.
     """
-    default_msg = """
-Expected:
-%(expected)s
-
-Got:
-%(result)s
+    params = {'expected': expected, 'result': result}
+    aka = """
 
 --------------------------------- aka -----------------------------------------
 
@@ -226,7 +222,16 @@ Expected:
 
 Got:
 %(result)r
-""" % {'expected': expected, 'result': result}
+""" % params
+    default_msg = """
+Expected:
+%(expected)s
+
+Got:
+%(result)s
+""" % params
+    if (repr(result) != str(result)) or (repr(expected) != str(expected)):
+        default_msg += aka
     assert result == expected, msg or default_msg
 
 
