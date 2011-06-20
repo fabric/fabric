@@ -273,7 +273,15 @@ def parse_options():
         action='store_true',
         dest='shortlist',
         default=False,
-        help="print non-verbose list of possible commands and exit"
+        help="alias for -F short --list"
+    )
+
+    # Control behavior of --list
+    LIST_FORMAT_OPTIONS = ('short', 'normal', 'nested')
+    parser.add_option('-F', '--list-format',
+        choices=LIST_FORMAT_OPTIONS,
+        default='normal',
+        help="formats --list, choices: %s" % ", ".join(LIST_FORMAT_OPTIONS)
     )
 
     # Display info about a specific command
@@ -302,16 +310,21 @@ def _command_names():
     return sorted(commands.keys())
 
 
-def list_commands(docstring):
+def list_commands(docstring, format_):
     """
     Print all found commands/tasks, then exit. Invoked with ``-l/--list.``
 
     If ``docstring`` is non-empty, it will be printed before the task list.
+
+    ``format_`` should conform to the options specified in
+    ``LIST_FORMAT_OPTIONS``, e.g. ``"short"``, ``"normal"``.
     """
+    result = []
+    # Docstring at top, if applicable
     if docstring:
         trailer = "\n" if not docstring.endswith("\n") else ""
-        print(docstring + trailer)
-    print("Available commands:\n")
+        result.append(docstring + trailer)
+    result.append("Available commands:\n")
     # Want separator between name, description to be straight col
     max_len = reduce(lambda a, b: max(a, len(b)), commands.keys(), 0)
     sep = '  '
@@ -332,16 +345,8 @@ def list_commands(docstring):
         # Or nothing (so just the name)
         else:
             output = name
-        print(indent(output))
-    sys.exit(0)
-
-
-def shortlist():
-    """
-    Print all task names separated by newlines with no embellishment.
-    """
-    print("\n".join(_command_names()))
-    sys.exit(0)
+        result.append(indent(output))
+    return result
 
 
 def display_command(command):
@@ -579,13 +584,19 @@ def main():
             else:
                 print("No fabfile loaded -- remainder command only")
 
-        # Non-verbose command list
+        # Shortlist is now just an alias for the "short" list format;
+        # it overrides use of --list-format if somebody were to specify both
         if options.shortlist:
-            shortlist()
+            options.list_format = 'short'
 
-        # Handle list-commands option (now that commands are loaded)
+        # List available commands
         if options.list_commands:
-            list_commands(docstring)
+            if options.list_format == "short":
+                result = _command_names()
+            else:
+                result = list_commands(docstring, options.list_format)
+            print("\n".join(result))
+            sys.exit(0)
 
         # Handle show (command-specific help) option
         if options.display:
