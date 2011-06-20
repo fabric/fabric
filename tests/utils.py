@@ -208,26 +208,26 @@ def line_prefix(prefix, string):
     return "\n".join(prefix + x for x in string.splitlines())
 
 
-def eq_(a, b, msg=None):
+def eq_(result, expected, msg=None):
     """
     Shadow of the Nose builtin which presents easier to read multiline output.
     """
     default_msg = """
 Expected:
-%s
+%(expected)s
 
 Got:
-%s
+%(result)s
 
 --------------------------------- aka -----------------------------------------
 
 Expected:
-%r
+%(expected)r
 
 Got:
-%r
-""" % (a, b, a, b)
-    assert a == b, msg or default_msg
+%(result)r
+""" % {'expected': expected, 'result': result}
+    assert result == expected, msg or default_msg
 
 
 def eq_contents(path, text):
