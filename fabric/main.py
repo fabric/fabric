@@ -307,7 +307,7 @@ def parse_options():
 
 
 def _command_names():
-    return sorted(commands.keys())
+    return sorted(state.commands.keys())
 
 
 def list_commands(docstring, format_):
@@ -319,6 +319,10 @@ def list_commands(docstring, format_):
     ``format_`` should conform to the options specified in
     ``LIST_FORMAT_OPTIONS``, e.g. ``"short"``, ``"normal"``.
     """
+    # Short-circuit with simple short output
+    if format_ == "short":
+        return _command_names()
+    # Otherwise, handle more verbose modes
     result = []
     # Docstring at top, if applicable
     if docstring:
@@ -326,13 +330,13 @@ def list_commands(docstring, format_):
         result.append(docstring + trailer)
     result.append("Available commands:\n")
     # Want separator between name, description to be straight col
-    max_len = reduce(lambda a, b: max(a, len(b)), commands.keys(), 0)
+    max_len = reduce(lambda a, b: max(a, len(b)), state.commands.keys(), 0)
     sep = '  '
     trail = '...'
     for name in _command_names():
         output = None
         # Print first line of docstring
-        func = commands[name]
+        func = state.commands[name]
         docstring = func.__doc__
         if docstring and type(docstring) in types.StringTypes:
             lines = filter(None, func.__doc__.splitlines())
@@ -354,9 +358,9 @@ def display_command(command):
     Print command function's docstring, then exit. Invoked with -d/--display.
     """
     # Sanity check
-    if command not in commands:
+    if command not in state.commands:
         abort("Command '%s' not found, exiting." % command)
-    cmd = commands[command]
+    cmd = state.commands[command]
     # Print out nicely presented docstring if found
     if cmd.__doc__:
         print("Displaying detailed information for command '%s':" % command)
@@ -571,10 +575,10 @@ def main():
         # dict
         if fabfile:
             docstring, callables = load_fabfile(fabfile)
-            commands.update(callables)
+            state.commands.update(callables)
 
         # Abort if no commands found
-        if not commands and not remainder_arguments:
+        if not state.commands and not remainder_arguments:
             abort("Fabfile didn't contain any commands!")
 
         # Now that we're settled on a fabfile, inform user.
@@ -591,11 +595,7 @@ def main():
 
         # List available commands
         if options.list_commands:
-            if options.list_format == "short":
-                result = _command_names()
-            else:
-                result = list_commands(docstring, options.list_format)
-            print("\n".join(result))
+            print("\n".join(list_commands(docstring, options.list_format)))
             sys.exit(0)
 
         # Handle show (command-specific help) option
@@ -616,7 +616,7 @@ def main():
         # Figure out if any specified task names are invalid
         unknown_commands = []
         for tup in commands_to_run:
-            if tup[0] not in commands:
+            if tup[0] not in state.commands:
                 unknown_commands.append(tup[0])
 
         # Abort if any unknown commands were specified
@@ -627,7 +627,7 @@ def main():
         # Generate remainder command and insert into commands, commands_to_run
         if remainder_command:
             r = '<remainder>'
-            commands[r] = lambda: api.run(remainder_command)
+            state.commands[r] = lambda: api.run(remainder_command)
             commands_to_run.append((r, [], {}, [], []))
 
         if state.output.debug:
@@ -638,7 +638,7 @@ def main():
         # At this point all commands must exist, so execute them in order.
         for name, args, kwargs, cli_hosts, cli_roles, cli_exclude_hosts in commands_to_run:
             # Get callable by itself
-            command = commands[name]
+            command = state.commands[name]
             # Set current command name (used for some error messages)
             state.env.command = name
             # Set host list (also copy to env)
@@ -654,12 +654,12 @@ def main():
                 if state.output.running:
                     print("[%s] Executing task '%s'" % (host, name))
                 # Actually run command
-                commands[name](*args, **kwargs)
+                state.commands[name](*args, **kwargs)
                 # Put old user back
                 state.env.user = prev_user
             # If no hosts found, assume local-only and run once
             if not hosts:
-                commands[name](*args, **kwargs)
+                state.commands[name](*args, **kwargs)
         # If we got here, no errors occurred, so print a final note.
         if state.output.status:
             print("\nDone.")

@@ -4,17 +4,17 @@ import sys
 import copy
 from contextlib import contextmanager
 
-from fudge import Fake
+from fudge import Fake, patched_context
 from nose.tools import ok_, eq_, raises
 
 from fabric.decorators import hosts, roles, task
 from fabric.main import (get_hosts, parse_arguments, _merge, _escape_split,
-        load_fabfile)
+        load_fabfile, list_commands)
 
 import fabric.state
 from fabric.state import _AttributeDict
 
-from utils import mock_streams, patched_env
+from utils import mock_streams, patched_env, eq_
 import os
 import sys
 
@@ -368,3 +368,29 @@ def test_newstyle_task_presence_skips_classic_task_modules():
         docs, funcs = load_fabfile(module)
         eq_(len(funcs), 1)
         ok_('submodule.classic_task' not in funcs)
+
+
+#
+# --list output
+#
+
+def eq_output(docstring, format_, expected):
+    return eq_(
+        "\n".join(list_commands(docstring, format_)),
+        expected
+    )
+
+def list_output(module, format_, expected):
+    module = fabfile(module)
+    with path_prefix(module):
+        docstring, tasks = load_fabfile(module)
+        with patched_context(fabric.state, 'commands', tasks):
+            eq_output(docstring, format_, expected)
+
+def test_list_output():
+    for desc, module, format_, expected in (
+        ("shorthand (& with namespacing)", 'deep', 'short', "submodule.subsubmodule.deeptask"),
+    ):
+        list_output.description = "--list output: %s" % desc
+        yield list_output, module, format_, expected
+        del list_output.description
