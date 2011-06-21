@@ -335,11 +335,10 @@ def list_commands(docstring, format_):
     trail = '...'
     for name in _command_names():
         output = None
-        # Print first line of docstring
-        func = state.commands[name]
-        docstring = func.__doc__
+        task = state.commands[name]
+        docstring = task.__doc__
         if docstring and type(docstring) in types.StringTypes:
-            lines = filter(None, func.__doc__.splitlines())
+            lines = filter(None, docstring.splitlines())
             first_line = lines[0].strip()
             # Truncate it if it's longer than N chars
             size = 75 - (max_len + len(sep) + len(trail))
