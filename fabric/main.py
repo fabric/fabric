@@ -347,7 +347,8 @@ def _print_docstring(docstrings, name):
     if not docstrings:
         return False
     docstring = crawl(name, state.commands).__doc__
-    return docstring and type(docstring) in types.StringTypes
+    if type(docstring) in types.StringTypes:
+        return docstring
 
 
 def _normal_list(docstrings=True):
@@ -359,7 +360,8 @@ def _normal_list(docstrings=True):
     trail = '...'
     for name in task_names:
         output = None
-        if _print_docstring(docstrings, name):
+        docstring = _print_docstring(docstrings, name)
+        if docstring:
             lines = filter(None, docstring.splitlines())
             first_line = lines[0].strip()
             # Truncate it if it's longer than N chars

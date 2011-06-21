@@ -394,6 +394,9 @@ def test_list_output():
         ("normal (& with namespacing)", 'deep', 'normal', """Available commands:
 
     submodule.subsubmodule.deeptask"""),
+        ("normal (with docstring)", 'docstring', 'normal', """Available commands:
+
+    foo  Foos!"""),
         ("nested (leaf only)", 'deep', 'nested', """Available commands:
 
     submodule:
