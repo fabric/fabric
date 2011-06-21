@@ -9,7 +9,8 @@ The other callables defined in this module are internal only. Anything useful
 to individuals leveraging Fabric as a library, should be kept elsewhere.
 """
 
-from operator import add
+from collections import defaultdict
+from operator import add, isMappingType
 from optparse import OptionParser
 import os
 import sys
@@ -187,6 +188,28 @@ def load_tasks_from_module(imported):
     return imported.__doc__, tasks
 
 
+def extract_tasks(imported_vars):
+    """
+    Handle extracting tasks from a given list of variables
+    """
+    new_style_tasks = defaultdict(dict)
+    classic_tasks = {}
+    if 'new_style_tasks' not in state.env:
+        state.env.new_style_tasks = False
+    for tup in imported_vars:
+        name, obj = tup
+        if is_task_object(obj):
+            state.env.new_style_tasks = True
+            new_style_tasks[obj.name] = obj
+        elif is_task(tup):
+            classic_tasks[name] = obj
+        elif is_task_module(obj):
+            module_docs, module_tasks = load_tasks_from_module(obj)
+            for task_name, task in module_tasks.items():
+                new_style_tasks[name][task_name] = task
+    return (new_style_tasks, classic_tasks)
+
+
 def is_task_module(a):
     """
     Determine if the provided value is a task module
@@ -208,29 +231,6 @@ def is_task_object(a):
     module must be Task objects.
     """
     return isinstance(a, Task) and a.use_task_objects
-
-
-def extract_tasks(imported_vars):
-    """
-    Handle extracting tasks from a given list of variables
-    """
-    new_style_tasks = {}
-    classic_tasks = {}
-    if 'new_style_tasks' not in state.env:
-        state.env.new_style_tasks = False
-    for tup in imported_vars:
-        name, obj = tup
-        if is_task_object(obj):
-            state.env.new_style_tasks = True
-            new_style_tasks[obj.name] = obj
-        elif is_task(tup):
-            classic_tasks[name] = obj
-        elif is_task_module(obj):
-            module_docs, module_tasks = load_tasks_from_module(obj)
-            for task_name, task in module_tasks.items():
-                new_style_tasks["%s.%s" % (name, task_name)] = task
-    return (new_style_tasks, classic_tasks)
-
 
 
 def parse_options():
@@ -305,39 +305,61 @@ def parse_options():
     opts, args = parser.parse_args()
     return parser, opts, args
 
+def _sift_tasks(mapping):
+    tasks, collections = [], []
+    for name, value in mapping.iteritems():
+        (collections if isMappingType(value) else tasks).append(name)
+    tasks = sorted(tasks)
+    collections = sorted(collections)
+    return tasks, collections
 
-def _command_names():
-    return sorted(state.commands.keys())
-
-
-def list_commands(docstring, format_):
+def _task_names(mapping):
     """
-    Print all found commands/tasks, then exit. Invoked with ``-l/--list.``
+    Flatten & sort task names in a breadth-first fashion.
 
-    If ``docstring`` is non-empty, it will be printed before the task list.
-
-    ``format_`` should conform to the options specified in
-    ``LIST_FORMAT_OPTIONS``, e.g. ``"short"``, ``"normal"``.
+    Tasks are always listed before submodules at the same level, but within
+    those two groups, sorting is alphabetical.
     """
-    # Short-circuit with simple short output
-    if format_ == "short":
-        return _command_names()
-    # Otherwise, handle more verbose modes
+    tasks, collections = _sift_tasks(mapping)
+    for collection in collections:
+        module = mapping[collection]
+        join = lambda x: ".".join((collection, x))
+        tasks.extend(map(join, _task_names(module)))
+    return tasks
+
+def _crawl(name, mapping):
+    """
+    ``name`` of ``'a.b.c'`` => ``mapping['a']['b']['c']``
+    """
+    key, _, rest = name.partition('.')
+    value = mapping[key]
+    if not rest:
+        return value
+    return _crawl(rest, value)
+
+def crawl(name, mapping):
+    try:
+        return _crawl(name, mapping)
+    except (KeyError, TypeError):
+        return None
+
+def _print_docstring(docstrings, name):
+    if not docstrings:
+        return False
+    docstring = crawl(name, state.commands).__doc__
+    return docstring and type(docstring) in types.StringTypes
+
+
+def _normal_list(docstrings=True):
     result = []
-    # Docstring at top, if applicable
-    if docstring:
-        trailer = "\n" if not docstring.endswith("\n") else ""
-        result.append(docstring + trailer)
-    result.append("Available commands:\n")
+    task_names = _task_names(state.commands)
     # Want separator between name, description to be straight col
-    max_len = reduce(lambda a, b: max(a, len(b)), state.commands.keys(), 0)
+    max_len = reduce(lambda a, b: max(a, len(b)), task_names, 0)
     sep = '  '
     trail = '...'
-    for name in _command_names():
+    for name in task_names:
         output = None
-        task = state.commands[name]
-        docstring = task.__doc__
-        if docstring and type(docstring) in types.StringTypes:
+        if _print_docstring(docstrings, name):
             lines = filter(None, docstring.splitlines())
             first_line = lines[0].strip()
             # Truncate it if it's longer than N chars
@@ -352,23 +374,62 @@ def list_commands(docstring, format_):
     return result
 
 
-def display_command(command):
+def _nested_list(mapping, level=1):
+    result = []
+    tasks, collections = _sift_tasks(mapping)
+    # Tasks come first
+    result.extend(map(lambda x: indent(x, spaces=level * 4), tasks))
+    for collection in collections:
+        module = mapping[collection]
+        # Section/module "header"
+        result.append(indent(collection + ":", spaces=level * 4))
+        # Recurse
+        result.extend(_nested_list(module, level + 1))
+    return result
+
+
+def list_commands(docstring, format_):
+    """
+    Print all found commands/tasks, then exit. Invoked with ``-l/--list.``
+
+    If ``docstring`` is non-empty, it will be printed before the task list.
+
+    ``format_`` should conform to the options specified in
+    ``LIST_FORMAT_OPTIONS``, e.g. ``"short"``, ``"normal"``.
+    """
+    # Short-circuit with simple short output
+    if format_ == "short":
+        return _task_names(state.commands)
+    # Otherwise, handle more verbose modes
+    result = []
+    # Docstring at top, if applicable
+    if docstring:
+        trailer = "\n" if not docstring.endswith("\n") else ""
+        result.append(docstring + trailer)
+    result.append("Available commands:\n")
+    c = _normal_list() if format_ == "normal" else _nested_list(state.commands)
+    result.extend(c)
+    return result
+
+
+def display_command(name):
     """
     Print command function's docstring, then exit. Invoked with -d/--display.
     """
     # Sanity check
-    if command not in state.commands:
-        abort("Command '%s' not found, exiting." % command)
-    cmd = state.commands[command]
+    command = crawl(name, state.commands)
+    if command is None:
+        msg = "Task '%s' does not appear to exist. Valid task names:\n%s"
+        abort(msg % (name, "\n".join(_normal_list(False))))
     # Print out nicely presented docstring if found
-    if cmd.__doc__:
-        print("Displaying detailed information for command '%s':" % command)
+    if command.__doc__:
+        print("Displaying detailed information for task '%s':" % name)
         print('')
-        print(indent(cmd.__doc__, strip=True))
+        print(indent(command.__doc__, strip=True))
         print('')
     # Or print notice if not
     else:
-        print("No detailed information available for command '%s':" % command)
+        print("No detailed information available for task '%s':" % name)
     sys.exit(0)
 
 
@@ -615,7 +676,7 @@ def main():
         # Figure out if any specified task names are invalid
         unknown_commands = []
         for tup in commands_to_run:
-            if tup[0] not in state.commands:
+            if crawl(tup[0], state.commands) is None:
                 unknown_commands.append(tup[0])
 
         # Abort if any unknown commands were specified
@@ -633,16 +694,15 @@ def main():
             names = ", ".join(x[0] for x in commands_to_run)
             print("Commands to run: %s" % names)
 
-
         # At this point all commands must exist, so execute them in order.
         for name, args, kwargs, cli_hosts, cli_roles, cli_exclude_hosts in commands_to_run:
             # Get callable by itself
-            command = state.commands[name]
-            # Set current command name (used for some error messages)
+            task = crawl(name, state.commands)
+            # Set current task name (used for some error messages)
             state.env.command = name
             # Set host list (also copy to env)
             state.env.all_hosts = hosts = get_hosts(
-                command, cli_hosts, cli_roles, cli_exclude_hosts)
+                task, cli_hosts, cli_roles, cli_exclude_hosts)
             # If hosts found, execute the function on each host in turn
             for host in hosts:
                 # Preserve user
@@ -653,12 +713,12 @@ def main():
                 if state.output.running:
                     print("[%s] Executing task '%s'" % (host, name))
                 # Actually run command
-                state.commands[name](*args, **kwargs)
+                task(*args, **kwargs)
                 # Put old user back
                 state.env.user = prev_user
             # If no hosts found, assume local-only and run once
             if not hosts:
-                state.commands[name](*args, **kwargs)
+                task(*args, **kwargs)
         # If we got here, no errors occurred, so print a final note.
         if state.output.status:
             print("\nDone.")

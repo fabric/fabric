@@ -9,7 +9,7 @@ from nose.tools import ok_, eq_, raises
 
 from fabric.decorators import hosts, roles, task
 from fabric.main import (get_hosts, parse_arguments, _merge, _escape_split,
-        load_fabfile, list_commands)
+        load_fabfile, list_commands, _task_names, _crawl, crawl)
 
 import fabric.state
 from fabric.state import _AttributeDict
@@ -355,8 +355,9 @@ def test_recursion_steps_into_nontask_modules():
     module = fabfile('deep')
     with path_prefix(module):
         docs, funcs = load_fabfile(module)
+        print funcs
         eq_(len(funcs), 1)
-        ok_('submodule.subsubmodule.deeptask' in funcs)
+        ok_('submodule.subsubmodule.deeptask' in _task_names(funcs))
 
 
 def test_newstyle_task_presence_skips_classic_task_modules():
@@ -367,7 +368,7 @@ def test_newstyle_task_presence_skips_classic_task_modules():
     with path_prefix(module):
         docs, funcs = load_fabfile(module)
         eq_(len(funcs), 1)
-        ok_('submodule.classic_task' not in funcs)
+        ok_('submodule.classic_task' not in _task_names(funcs))
 
 
 #
@@ -390,7 +391,71 @@ def list_output(module, format_, expected):
 def test_list_output():
     for desc, module, format_, expected in (
         ("shorthand (& with namespacing)", 'deep', 'short', "submodule.subsubmodule.deeptask"),
+        ("normal (& with namespacing)", 'deep', 'normal', """Available commands:
+
+    submodule.subsubmodule.deeptask"""),
+        ("nested (leaf only)", 'deep', 'nested', """Available commands:
+
+    submodule:
+        subsubmodule:
+            deeptask"""),
+        ("nested (full)", 'tree', 'nested', """Available commands:
+
+    build_docs
+    deploy
+    db:
+        migrate
+    system:
+        install_package
+        debian:
+            update_apt"""),
     ):
         list_output.description = "--list output: %s" % desc
         yield list_output, module, format_, expected
         del list_output.description
+
+
+def test_task_names():
+    for desc, input_, output in (
+        ('top level (single)', {'a': 5}, ['a']),
+        ('top level (multiple, sorting)', {'a': 5, 'b': 6}, ['a', 'b']),
+        ('just nested', {'a': {'b': 5}}, ['a.b']),
+        ('mixed', {'a': 5, 'b': {'c': 6}}, ['a', 'b.c']),
+        ('top level comes before nested', {'z': 5, 'b': {'c': 6}}, ['z', 'b.c']),
+        ('peers sorted equally', {'z': 5, 'b': {'c': 6}, 'd': {'e': 7}}, ['z', 'b.c', 'd.e']),
+        (
+            'complex tree',
+            {
+                'z': 5,
+                'b': {
+                    'c': 6,
+                    'd': {
+                        'e': {
+                            'f': '7'
+                        }
+                    },
+                    'g': 8
+                },
+                'h': 9,
+                'w': {
+                    'y': 10
+                }
+            },
+            ['h', 'z', 'b.c', 'b.g', 'b.d.e.f', 'w.y']
+        ),
+    ):
+        eq_.description = "task name flattening: %s" % desc
+        yield eq_, _task_names(input_), output
+        del eq_.description
+
+
+def test_crawl():
+    for desc, name, mapping, output in (
+        ("base case", 'a', {'a': 5}, 5),
+        ("one level", 'a.b', {'a': {'b': 5}}, 5),
+        ("deep", 'a.b.c.d.e', {'a': {'b': {'c': {'d': {'e': 5}}}}}, 5),
+        ("full tree", 'a.b.c', {'a': {'b': {'c': 5}, 'd': 6}, 'z': 7}, 5)
+    ):
+        eq_.description = "crawling dotted names: %s" % desc
+        yield eq_, _crawl(name, mapping), output
+        del eq_.description
