@@ -6,7 +6,7 @@ import getpass
 import sys
 
 import paramiko
-from nose.tools import with_setup
+from nose.tools import with_setup, raises
 from fudge import (Fake, clear_calls, clear_expectations, patch_object, verify,
     with_patched_object, patched_context, with_fakes)
 
@@ -16,7 +16,7 @@ from fabric.network import (HostConnectionCache, join_host_strings, normalize,
 from fabric.io import output_loop
 import fabric.network  # So I can call patch_object correctly. Sigh.
 from fabric.state import env, output, _get_system_username
-from fabric.operations import run, sudo
+from fabric.operations import run, sudo, prompt
 
 from utils import *
 from server import (server, PORT, RESPONSES, PASSWORDS, CLIENT_PRIVKEY, USER,
@@ -149,6 +149,25 @@ class TestNetwork(FabricTest):
         with password_response(PASSWORDS[env.user], times_called=1):
             cache = HostConnectionCache()
             cache[env.host_string]
+
+
+    @raises(SystemExit)
+    @with_patched_object(output, 'aborts', False)
+    def test_aborts_on_prompt_with_abort_on_prompt(self):
+        env.abort_on_prompts = True
+        prompt("This will abort")
+
+
+    @server()
+    @raises(SystemExit)
+    @with_patched_object(output, 'aborts', False)
+    def test_aborts_on_password_prompt_with_abort_on_prompt(self):
+        env.password = None
+        env.abort_on_prompts = True
+        with password_response(PASSWORDS[env.user], times_called=1):
+            cache = HostConnectionCache()
+            cache[env.host_string]
+
 
     @mock_streams('stdout')
     @server()

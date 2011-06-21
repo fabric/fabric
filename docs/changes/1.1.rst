@@ -42,6 +42,10 @@ Feature additions
   suggestion and Morgan Goose for initial implementation.
 * :issue:`170`: Allow :ref:`exclusion <excluding-hosts>` of specific hosts from
   the final run list. Thanks to Casey Banner for the suggestion and patch.
+* :issue:`189`: Added :option:`--abort-on-prompts`/:ref:`env.abort_on_prompts
+  <abort-on-prompts>` to allow a more non-interactive behavior,
+  aborting/exiting instead of trying to prompt the running user. Thanks to
+  Jeremy Avnet and Matt Chisholm for the initial patch.
 * :issue:`273`: `~fabric.contrib.files.upload_template` now offers control over
   whether it attempts to create backups of pre-existing destination files.
   Thanks to Ales Zoulek for the suggestion and initial patch.

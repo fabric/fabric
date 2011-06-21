@@ -104,6 +104,23 @@ as `~fabric.context_managers.cd`.
 Note that many of these may be set via ``fab``'s command-line switches -- see
 :doc:`fab` for details. Cross-links will be provided where appropriate.
 
+.. _abort-on-prompts:
+
+``abort_on_prompts``
+--------------------
+
+**Default:** ``False``
+
+When ``True``, Fabric will run in a non-interactive mode, calling
+`~fabric.utils.abort` anytime it would normally prompt the user for input (such
+as password prompts, "What host to connect to?" prompts, fabfile invocation of
+`~fabric.operations.prompt`, and so forth.) This allows users to ensure a Fabric
+session will always terminate cleanly instead of blocking on user input forever
+when unforeseen circumstances arise.
+
+.. versionadded:: 1.1
+.. seealso:: :option:`--abort-on-prompts`
+
 ``all_hosts``
 -------------
 

@@ -19,11 +19,11 @@ from contextlib import closing
 from fabric.context_managers import settings, char_buffered
 from fabric.io import output_loop, input_loop
 from fabric.network import needs_host
+from fabric.sftp import SFTP
 from fabric.state import (env, connections, output, win32, default_channel,
     io_sleep)
-from fabric.utils import abort, indent, warn, puts
 from fabric.thread_handling import ThreadHandler
-from fabric.sftp import SFTP
+from fabric.utils import abort, indent, warn, puts, handle_prompt_abort
 
 # For terminal size logic below
 if not win32:
@@ -220,6 +220,13 @@ def prompt(text, key=None, default='', validate=None):
     Either way, `prompt` will re-prompt until validation passes (or the user
     hits ``Ctrl-C``).
 
+    .. note::
+        `~fabric.operations.prompt` honors :ref:`env.abort_on_prompts
+        <abort-on-prompts>` and will call `~fabric.utils.abort` instead of
+        prompting if that flag is set to ``True``. If you want to block on user
+        input regardless, try wrapping with
+        `~fabric.context_managers.settings`.
+
     Examples::
 
         # Simplest form:
@@ -235,7 +242,12 @@ def prompt(text, key=None, default='', validate=None):
         release = prompt('Please supply a release name',
                 validate=r'^\w+-\d+(\.\d+)?$')
 
+        # Prompt regardless of the global abort-on-prompts setting:
+        with settings(abort_on_prompts=False):
+            prompt('I seriously need an answer on this! ')
+
     """
+    handle_prompt_abort()
     # Store previous env value for later display, if necessary
     if key:
         previous_value = env.get(key)

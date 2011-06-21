@@ -121,3 +121,9 @@ def fastprint(text, show_prefix=False, end="", flush=True):
     .. seealso:: `~fabric.utils.puts`
     """
     return puts(text=text, show_prefix=show_prefix, end=end, flush=flush)
+
+
+def handle_prompt_abort():
+    import fabric.state
+    if fabric.state.env.abort_on_prompts:
+        abort("Needed to prompt, but abort-on-prompts was set to True!")

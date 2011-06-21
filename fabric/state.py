@@ -208,7 +208,15 @@ env_options = [
         action='store_false',
         default=True,
         help="do not use pseudo-terminal in run/sudo"
-    )
+    ),
+
+    # Abort on prompting flag
+    make_option('--abort-on-prompts',
+        action='store_true',
+        default=False,
+        help="Abort instead of prompting (for password, host, etc)"
+    ),
+
 
 ]
 

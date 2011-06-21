@@ -90,6 +90,13 @@ below.
 
     .. versionadded:: 0.9.1
 
+.. cmdoption:: --abort-on-prompts
+
+    Sets :ref:`env.abort_on_prompts <abort-on-prompts>` to ``True``, forcing
+    Fabric to abort whenever it would prompt for input.
+
+    .. versionadded:: 1.1
+
 .. cmdoption:: -c RCFILE, --config=RCFILE
 
     Sets :ref:`env.rcfile <rcfile>` to the given file path, which Fabric will

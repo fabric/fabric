@@ -10,8 +10,8 @@ import select
 import socket
 import sys
 
-from fabric.utils import abort
 from fabric.auth import get_password, set_password
+from fabric.utils import abort, handle_prompt_abort
 
 try:
     import warnings
@@ -263,6 +263,7 @@ def prompt_for_password(prompt=None, no_colon=False, stream=None):
     defaults to ``sys.stderr``.
     """
     from fabric.state import env
+    handle_prompt_abort()
     stream = stream or sys.stderr
     # Construct prompt
     default = "[%s] Login password" % env.host_string
@@ -301,6 +302,7 @@ def needs_host(func):
 
     @wraps(func)
     def host_prompting_wrapper(*args, **kwargs):
+        handle_prompt_abort()
         while not env.get('host_string', False):
             host_string = raw_input("No hosts found. Please specify (single)"
                                     " host string for connection: ")
