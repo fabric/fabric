@@ -113,7 +113,17 @@ below.
     alternately an explicit file path to load as the fabfile (e.g.
     ``/path/to/my/fabfile.py``.)
 
-.. seealso:: :doc:`fabfiles`
+    .. seealso:: :doc:`fabfiles`
+
+.. cmdoption:: -F LIST_FORMAT, --list-format=LIST_FORMAT
+
+    Allows control over the output format of :option:`--list <-l>`. ``short`` is
+    equivalent to :option:`--shortlist`, ``normal`` is the same as simply
+    omitting this option entirely (i.e. the default), and ``nested`` prints out
+    a nested namespace tree.
+
+    .. versionadded:: 1.1
+    .. seealso:: :option:`--shortlist`, :option:`--list <-l>`
 
 .. cmdoption:: -h, --help
 
@@ -159,7 +169,7 @@ below.
 
     .. versionchanged:: 0.9.1
         Added docstring to output.
-    .. seealso:: :option:`--shortlist`
+    .. seealso:: :option:`--shortlist`, :option:`--list-format <-F>`
 
 .. cmdoption:: -p PASSWORD, --password=PASSWORD
 

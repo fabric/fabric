@@ -28,6 +28,9 @@ Feature additions
 * :issue:`10`: `~fabric.contrib.upload_project` now allows control over the
   local and remote directory paths, and has improved error handling. Thanks to
   Rodrigue Alcazar for the patch.
+* As part of :issue:`56` (highlighted above), added :option:`--list-format
+  <-F>` to allow specification of a nested output format from :option:`--list
+  <-l>`.
 * :issue:`107`: `~fabric.operations.require`'s ``provided_by`` kwarg now
   accepts iterables in addition to single values. Thanks to Thomas Ballinger
   for the patch.

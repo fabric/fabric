@@ -190,10 +190,10 @@ into some other part of the hierarchy, but otherwise it'll remain hidden.
 Switching it up
 ~~~~~~~~~~~~~~~
 
-Finally, while we've been keeping our fabfile package neatly organized and
-importing it in a straightforward manner, the filesystem layout doesn't
-actually matter here. All Fabric's loader cares about is the names the modules
-are given when they're imported.
+We've been keeping our fabfile package neatly organized and importing it in a
+straightforward manner, but the filesystem layout doesn't actually matter here.
+All Fabric's loader cares about is the names the modules are given when they're
+imported.
 
 For example, if we changed the top of our root ``__init__.py`` to look like
 this::
@@ -211,6 +211,29 @@ Our task list would change thusly::
 This applies to any other import -- you could import third party modules into
 your own task hierarchy, or grab a deeply nested module and make it appear near
 the top level.
+
+Nested list output
+~~~~~~~~~~~~~~~~~~
+
+As a final note, we've been using the default Fabric :option:`--list <-l>`
+output during this section -- it makes it more obvious what the actual task
+names are. However, you can get a more nested or tree-like view by passing
+``nested`` to the :option:`--list-format <-F>` option::
+
+    $ fab --list-format=nested --list
+    Available commands (remember to call as module.[...].task):
+
+        deploy
+        compress
+        lb:
+            add_backend
+        database:
+            migrations:
+                list
+                run
+
+While it slightly obfuscates the "real" task names, this view provides a handy
+way of noting the organization of tasks in large namespaces.
 
 
 .. _classic-tasks:
