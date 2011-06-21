@@ -39,9 +39,18 @@ def build_docs(clean='no', browse='no'):
     if clean.lower() in ['yes', 'y']:
         c = "clean "
     b = ""
+    with lcd('docs'):
+        local('make %shtml%s' % (c, b))
     if browse.lower() in ['yes', 'y']:
-        b = " && open _build/html/index.html"
-    local('cd docs; make %shtml%s' % (c, b))
+        browse_docs()
+
+
+def browse_docs():
+    """
+    Open the current dev docs in a browser tab.
+    """
+    local("open docs/_build/html/index.html")
+
 
 
 @hosts(docs_host)
