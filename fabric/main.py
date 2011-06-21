@@ -389,6 +389,8 @@ def _nested_list(mapping, level=1):
         result.extend(_nested_list(module, level + 1))
     return result
 
+COMMANDS_HEADER = "Available commands"
+NESTED_REMINDER = " (remember to call as module.[...].task)"
 
 def list_commands(docstring, format_):
     """
@@ -408,7 +410,10 @@ def list_commands(docstring, format_):
     if docstring:
         trailer = "\n" if not docstring.endswith("\n") else ""
         result.append(docstring + trailer)
-    result.append("Available commands:\n")
+    header = COMMANDS_HEADER
+    if format_ == "nested":
+        header += NESTED_REMINDER
+    result.append(header + ":\n")
     c = _normal_list() if format_ == "normal" else _nested_list(state.commands)
     result.extend(c)
     return result

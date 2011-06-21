@@ -9,7 +9,8 @@ from nose.tools import ok_, eq_, raises
 
 from fabric.decorators import hosts, roles, task
 from fabric.main import (get_hosts, parse_arguments, _merge, _escape_split,
-        load_fabfile, list_commands, _task_names, _crawl, crawl)
+        load_fabfile, list_commands, _task_names, _crawl, crawl,
+        COMMANDS_HEADER, NESTED_REMINDER)
 
 import fabric.state
 from fabric.state import _AttributeDict
@@ -389,22 +390,17 @@ def list_output(module, format_, expected):
             eq_output(docstring, format_, expected)
 
 def test_list_output():
+    lead = ":\n\n    "
+    normal_head = COMMANDS_HEADER + lead
+    nested_head = COMMANDS_HEADER + NESTED_REMINDER + lead
     for desc, module, format_, expected in (
         ("shorthand (& with namespacing)", 'deep', 'short', "submodule.subsubmodule.deeptask"),
-        ("normal (& with namespacing)", 'deep', 'normal', """Available commands:
-
-    submodule.subsubmodule.deeptask"""),
-        ("normal (with docstring)", 'docstring', 'normal', """Available commands:
-
-    foo  Foos!"""),
-        ("nested (leaf only)", 'deep', 'nested', """Available commands:
-
-    submodule:
+        ("normal (& with namespacing)", 'deep', 'normal', normal_head + "submodule.subsubmodule.deeptask"),
+        ("normal (with docstring)", 'docstring', 'normal', normal_head + "foo  Foos!"),
+        ("nested (leaf only)", 'deep', 'nested', nested_head + """submodule:
         subsubmodule:
             deeptask"""),
-        ("nested (full)", 'tree', 'nested', """Available commands:
-
-    build_docs
+        ("nested (full)", 'tree', 'nested', nested_head + """build_docs
     deploy
     db:
         migrate
