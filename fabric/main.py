@@ -163,10 +163,11 @@ def load_fabfile(path, importer=None):
         del sys.path[0]
 
     # Actually load tasks
-    ret = load_tasks_from_module(imported)
+    docstring, new_style, classic = load_tasks_from_module(imported)
+    tasks = new_style if state.env.new_style_tasks else classic
     # Clean up after ourselves
     _seen.clear()
-    return ret
+    return docstring, tasks
 
 
 def load_tasks_from_module(imported):
@@ -184,8 +185,7 @@ def load_tasks_from_module(imported):
     # dictionary of callables only (and don't include Fab operations or
     # underscored callables)
     new_style, classic = extract_tasks(imported_vars)
-    tasks = new_style if state.env.new_style_tasks else classic
-    return imported.__doc__, tasks
+    return imported.__doc__, new_style, classic
 
 
 def extract_tasks(imported_vars):
@@ -204,8 +204,8 @@ def extract_tasks(imported_vars):
         elif is_task(tup):
             classic_tasks[name] = obj
         elif is_task_module(obj):
-            module_docs, module_tasks = load_tasks_from_module(obj)
-            for task_name, task in module_tasks.items():
+            docs, newstyle, classic = load_tasks_from_module(obj)
+            for task_name, task in newstyle.items():
                 new_style_tasks[name][task_name] = task
     return (new_style_tasks, classic_tasks)
 
