@@ -217,7 +217,13 @@ env_options = [
         help="Abort instead of prompting (for password, host, etc)"
     ),
 
-
+    # Keepalive
+    make_option('--keepalive',
+        dest='keepalive',
+        type=int,
+        default=0,
+        help="enables a keepalive every n seconds"
+    ),
 ]
 
 

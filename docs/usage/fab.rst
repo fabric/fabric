@@ -168,6 +168,12 @@ below.
 
     .. versionadded:: 0.9.1
 
+.. cmdoption:: --keepalive=KEEPALIVE
+
+    Sets :ref:`env.keepalive <keepalive>` to the given (integer) value, specifying an SSH keepalive interval.
+
+    .. versionadded:: 1.1
+
 .. cmdoption:: -l, --list
 
     Imports a fabfile as normal, but then prints a list of all discovered tasks

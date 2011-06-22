@@ -170,6 +170,11 @@ def connect(user, host, port):
                 look_for_keys=not env.no_keys
             )
             connected = True
+
+            # set a keepalive if desired
+            if env.keepalive:
+                client.get_transport().set_keepalive(env.keepalive)
+
             return client
         # BadHostKeyException corresponds to key mismatch, i.e. what on the
         # command line results in the big banner error about man-in-the-middle

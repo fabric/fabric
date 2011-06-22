@@ -53,6 +53,9 @@ Feature additions
   application of env var settings to an entire function, as an alternative to
   using the `~fabric.context_managers.settings` context manager. Thanks to
   Travis Swicegood for the patch.
+* :issue:`353`: Added :option:`--keepalive`/:ref:`env.keepalive <keepalive>` to
+  allow specification of an SSH keepalive parameter for troublesome network
+  connections. Thanks to Mark Merritt for catch & patch.
 
 Bugfixes
 ========

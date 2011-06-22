@@ -259,6 +259,20 @@ The global host list used when composing per-task host lists.
 
 .. seealso:: :doc:`execution`
 
+.. _keepalive:
+
+``keepalive``
+-------------
+
+**Default:** ``0`` (i.e. no keepalive)
+
+An integer specifying an SSH keepalive interval to use; basically maps to the
+SSH config option ``ClientAliveInterval``. Useful if you find connections are
+timing out due to meddlesome network hardware or what have you.
+
+.. seealso:: :option:`--keepalive`
+.. versionadded:: 1.1
+
 .. _key-filename:
 
 ``key_filename``
