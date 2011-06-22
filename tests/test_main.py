@@ -15,7 +15,7 @@ from fabric.main import (get_hosts, parse_arguments, _merge, _escape_split,
 import fabric.state
 from fabric.state import _AttributeDict
 
-from utils import mock_streams, patched_env, eq_
+from utils import mock_streams, patched_env, eq_, FabricTest
 import os
 import sys
 
@@ -302,74 +302,78 @@ def path_prefix(module):
     yield
     sys.path.pop(i)
 
+class TestNamespaces(FabricTest):
+    def setup(self):
+        # Parent class preserves current env
+        super(TestNamespaces, self).setup()
+        # Reset new-style-tests flag so running tests via Fab itself doesn't
+        # muck with it.
+        import fabric.state
+        if 'new_style_tasks' in fabric.state.env:
+            del fabric.state.env['new_style_tasks']
 
-def test_implicit_discovery():
-    """
-    Default to automatically collecting all tasks in a fabfile module
-    """
-    implicit = fabfile("implicit_fabfile.py")
-    with path_prefix(implicit):
-        docs, funcs = load_fabfile(implicit)
-        eq_(len(funcs), 2)
-        ok_("foo" in funcs)
-        ok_("bar" in funcs)
+    def test_implicit_discovery(self):
+        """
+        Default to automatically collecting all tasks in a fabfile module
+        """
+        implicit = fabfile("implicit_fabfile.py")
+        with path_prefix(implicit):
+            docs, funcs = load_fabfile(implicit)
+            eq_(len(funcs), 2)
+            ok_("foo" in funcs)
+            ok_("bar" in funcs)
 
+    def test_explicit_discovery(self):
+        """
+        If __all__ is present, only collect the tasks it specifies
+        """
+        explicit = fabfile("explicit_fabfile.py")
+        with path_prefix(explicit):
+            docs, funcs = load_fabfile(explicit)
+            eq_(len(funcs), 1)
+            ok_("foo" in funcs)
+            ok_("bar" not in funcs)
 
-def test_explicit_discovery():
-    """
-    If __all__ is present, only collect the tasks it specifies
-    """
-    explicit = fabfile("explicit_fabfile.py")
-    with path_prefix(explicit):
-        docs, funcs = load_fabfile(explicit)
-        eq_(len(funcs), 1)
-        ok_("foo" in funcs)
-        ok_("bar" not in funcs)
+    def test_should_load_decorated_tasks_only_if_one_is_found(self):
+        """
+        If any new-style tasks are found, *only* new-style tasks should load
+        """
+        module = fabfile('decorated_fabfile.py')
+        with path_prefix(module):
+            docs, funcs = load_fabfile(module)
+            eq_(len(funcs), 1)
+            ok_('foo' in funcs)
 
+    def test_class_based_tasks_are_found_with_proper_name(self):
+        """
+        Wrapped new-style tasks should preserve their function names
+        """
+        module = fabfile('decorated_fabfile_with_classbased_task.py')
+        from fabric.state import env
+        with path_prefix(module):
+            docs, funcs = load_fabfile(module)
+            eq_(len(funcs), 1)
+            ok_('foo' in funcs)
 
-def test_should_load_decorated_tasks_only_if_one_is_found():
-    """
-    If any new-style tasks are found, *only* new-style tasks should load
-    """
-    module = fabfile('decorated_fabfile.py')
-    with path_prefix(module):
-        docs, funcs = load_fabfile(module)
-        eq_(len(funcs), 1)
-        ok_('foo' in funcs)
+    def test_recursion_steps_into_nontask_modules(self):
+        """
+        Recursive loading will continue through modules with no tasks
+        """
+        module = fabfile('deep')
+        with path_prefix(module):
+            docs, funcs = load_fabfile(module)
+            eq_(len(funcs), 1)
+            ok_('submodule.subsubmodule.deeptask' in _task_names(funcs))
 
-
-def test_class_based_tasks_are_found_with_proper_name():
-    """
-    Wrapped new-style tasks should preserve their function names
-    """
-    module = fabfile('decorated_fabfile_with_classbased_task.py')
-    with path_prefix(module):
-        docs, funcs = load_fabfile(module)
-        eq_(len(funcs), 1)
-        ok_('foo' in funcs)
-
-
-def test_recursion_steps_into_nontask_modules():
-    """
-    Recursive loading will continue through modules with no tasks
-    """
-    module = fabfile('deep')
-    with path_prefix(module):
-        docs, funcs = load_fabfile(module)
-        print funcs
-        eq_(len(funcs), 1)
-        ok_('submodule.subsubmodule.deeptask' in _task_names(funcs))
-
-
-def test_newstyle_task_presence_skips_classic_task_modules():
-    """
-    Classic-task-only modules shouldn't add tasks if any new-style tasks exist
-    """
-    module = fabfile('deep')
-    with path_prefix(module):
-        docs, funcs = load_fabfile(module)
-        eq_(len(funcs), 1)
-        ok_('submodule.classic_task' not in _task_names(funcs))
+    def test_newstyle_task_presence_skips_classic_task_modules(self):
+        """
+        Classic-task-only modules shouldn't add tasks if any new-style tasks exist
+        """
+        module = fabfile('deep')
+        with path_prefix(module):
+            docs, funcs = load_fabfile(module)
+            eq_(len(funcs), 1)
+            ok_('submodule.classic_task' not in _task_names(funcs))
 
 
 #
