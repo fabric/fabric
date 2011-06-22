@@ -695,7 +695,7 @@ def main():
         if remainder_command:
             r = '<remainder>'
             state.commands[r] = lambda: api.run(remainder_command)
-            commands_to_run.append((r, [], {}, [], []))
+            commands_to_run.append((r, [], {}, [], [], []))
 
         if state.output.debug:
             names = ", ".join(x[0] for x in commands_to_run)
