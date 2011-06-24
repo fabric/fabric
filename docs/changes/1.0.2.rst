@@ -18,6 +18,11 @@ Bugfixes
   Thanks to Matthew Woodcraft and Connor Smith for the catch.
 * :issue:`337`: Fix logic bug in `~fabric.operations.put` preventing use of
   ``mirror_local_mode``. Thanks to Roman Imankulov for catch & patch.
+* :issue:`352` (also :issue:`320`): Seemingly random issues with output lockup
+  and input problems (e.g. sudo prompts incorrectly rejecting passwords) appear
+  to have been caused by an I/O race condition. This has been fixed. Thanks to
+  Max Arnold and Paul Oswald for the detailed reports and to Max for the
+  diagnosis and patch.
 
 
 Documentation
@@ -25,4 +30,6 @@ Documentation
 
 * Updated the API documentation for `~fabric.context_managers.cd` to explicitly
   point users to `~fabric.context_managers.lcd` for modifying local paths.
-* Clarified the behavior of `~fabric.contrib.project.rsync_project` re: how trailing slashes in ``local_dir`` affect ``remote_dir``. Thanks to Mark Merritt for the catch.
+* Clarified the behavior of `~fabric.contrib.project.rsync_project` re: how
+  trailing slashes in ``local_dir`` affect ``remote_dir``. Thanks to Mark
+  Merritt for the catch.
