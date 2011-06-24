@@ -25,4 +25,6 @@ Documentation
 
 * Updated the API documentation for `~fabric.context_managers.cd` to explicitly
   point users to `~fabric.context_managers.lcd` for modifying local paths.
-* Clarified the behavior of `~fabric.contrib.project.rsync_project` re: how trailing slashes in ``local_dir`` affect ``remote_dir``. Thanks to Mark Merritt for the catch.
+* Clarified the behavior of `~fabric.contrib.project.rsync_project` re: how
+  trailing slashes in ``local_dir`` affect ``remote_dir``. Thanks to Mark
+  Merritt for the catch.
