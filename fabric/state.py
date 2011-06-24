@@ -271,7 +271,9 @@ def default_channel():
     """
     Return a channel object based on ``env.host_string``.
     """
-    return connections[env.host_string].get_transport().open_session()
+    chan = connections[env.host_string].get_transport().open_session()
+    chan.input_enabled = True
+    return chan
 
 
 #

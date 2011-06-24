@@ -18,6 +18,11 @@ Bugfixes
   Thanks to Matthew Woodcraft and Connor Smith for the catch.
 * :issue:`337`: Fix logic bug in `~fabric.operations.put` preventing use of
   ``mirror_local_mode``. Thanks to Roman Imankulov for catch & patch.
+* :issue:`352` (also :issue:`320`): Seemingly random issues with output lockup
+  and input problems (e.g. sudo prompts incorrectly rejecting passwords) appear
+  to have been caused by an I/O race condition. This has been fixed. Thanks to
+  Max Arnold and Paul Oswald for the detailed reports and to Max for the
+  diagnosis and patch.
 
 
 Documentation
