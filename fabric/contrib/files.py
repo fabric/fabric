@@ -283,7 +283,7 @@ def contains(filename, text, exact=False, use_sudo=False):
         return func('egrep "%s" "%s"' % (
             text.replace('"', r'\"'),
             filename.replace('"', r'\"')
-        ))
+        )).succeeded
 
 
 def append(filename, text, use_sudo=False, partial=False, escape=True):

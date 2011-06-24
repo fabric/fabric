@@ -69,6 +69,10 @@ Bugfixes
   'c']``) will now always run on ``a``, then ``b``, then ``c``. Previously,
   there was a chance the order could get mixed up during deduplication. Thanks
   to Rohit Aggarwal for the report.
+* :issue:`345`: `~fabric.contrib.files.contains` returned the stdout of its
+  internal ``grep`` command instead of success/failure, causing incorrect
+  behavior when stderr exists and is combined with stdout. This has been
+  corrected. Thanks to Szymon Reichmann for catch and patch.
 
 Documentation updates
 =====================

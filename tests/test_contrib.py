@@ -1,7 +1,7 @@
 from __future__ import with_statement
 
 from fabric.api import hide, get, show
-from fabric.contrib.files import upload_template
+from fabric.contrib.files import upload_template, contains
 
 from utils import FabricTest, eq_contents
 from server import server
@@ -34,3 +34,18 @@ class TestContrib(FabricTest):
             upload_template(template, remote, {'varname': var})
             get(remote, local)
         eq_contents(local, var)
+
+    @server(responses={
+        'egrep "text" "/file.txt"': (
+            "sudo: unable to resolve host fabric",
+            "",
+            1
+        )}
+    )
+    def test_contains_checks_only_succeeded_flag(self):
+        """
+        contains() should return False on bad grep even if stdout isn't empty
+        """
+        with hide('everything'):
+            result = contains('/file.txt', 'text', use_sudo=True)
+            assert result == False
