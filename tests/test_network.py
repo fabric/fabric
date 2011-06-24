@@ -6,7 +6,7 @@ import getpass
 import sys
 
 import paramiko
-from nose.tools import with_setup
+from nose.tools import with_setup, ok_
 from fudge import (Fake, clear_calls, clear_expectations, patch_object, verify,
     with_patched_object, patched_context, with_fakes)
 
@@ -135,6 +135,25 @@ class TestNetwork(FabricTest):
         ):
             TestNetwork.check_connection_calls.description = description
             yield TestNetwork.check_connection_calls, host_strings, num_calls
+
+
+    def test_connection_cache_deletion(self):
+        """
+        HostConnectionCache should delete correctly w/ non-full keys
+        """
+        hcc = HostConnectionCache()
+        fake = Fake('connect', callable=True)
+        with patched_context('fabric.network', 'connect', fake):
+            for host_string in ('hostname', 'user@hostname',
+                'user@hostname:222'):
+                # Prime
+                hcc[host_string]
+                # Test
+                ok_(host_string in hcc)
+                # Delete
+                del hcc[host_string]
+                # Test
+                ok_(host_string not in hcc)
 
 
     #
