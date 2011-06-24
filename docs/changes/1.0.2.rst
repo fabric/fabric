@@ -2,6 +2,10 @@
 Changes in version 1.0.2
 ========================
 
+.. note::
+    This release also includes all applicable changes from the :doc:`0.9.7
+    release </changes/0.9.7>`.
+
 Bugfixes
 ========
 

@@ -1,0 +1,10 @@
+========================
+Changes in version 0.9.7
+========================
+
+The following changes were implemented in Fabric 0.9.7:
+
+Bugfixes
+========
+
+* :issue:`329`: `~fabric.operations.reboot` would have problems reconnecting post-reboot (resulting in a traceback) if ``env.host_string`` was not fully-formed (did not contain user and port specifiers.) This has been fixed.

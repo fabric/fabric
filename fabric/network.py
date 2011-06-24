@@ -68,9 +68,14 @@ class HostConnectionCache(dict):
         # Return the value either way
         return dict.__getitem__(self, real_key)
 
-    def __delitem__(self, key):
-        return dict.__delitem__(self, join_host_strings(*normalize(key)))
+    def __setitem__(self, key, value):
+        return dict.__setitem__(self, normalize_to_string(key), value)
 
+    def __delitem__(self, key):
+        return dict.__delitem__(self, normalize_to_string(key))
+
+    def __contains__(self, key):
+        return dict.__contains__(self, normalize_to_string(key))
 
 def normalize(host_string, omit_port=False):
     """
@@ -125,6 +130,13 @@ def join_host_strings(user, host, port=None):
     if port:
         port_string = ":%s" % port
     return "%s@%s%s" % (user, host, port_string)
+
+
+def normalize_to_string(host_string):
+    """
+    normalize() returns a tuple; this returns another valid host string.
+    """
+    return join_host_strings(*normalize(host_string))
 
 
 def connect(user, host, port):
