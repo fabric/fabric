@@ -7,6 +7,7 @@ from functools import wraps
 from types import StringTypes
 
 from fabric import tasks
+from fabric.state import env
 from .context_managers import settings
 
 
@@ -92,6 +93,57 @@ def roles(*role_list):
         inner_decorator.roles = list(_roles)
         return inner_decorator
     return attach_roles
+
+
+def only_roles(*role_list):
+    """
+    Decorator restricting the hosts that will run the task based on roles.
+
+    A list of roles can be specified as either an argument list or a single,
+    iterable argument. Once the task is invoked, the current host_string
+    is checked against all the valid roles, and the task is only invoked if
+    one of the role definitions contains the host.
+
+    If the host is unable to run the command, the decorator will return None.
+    Otherwise, the return value of the task is unmodified.
+
+    As an example, tasks might restrict restart behavior:
+
+          env.roledefs.update({
+              'webserver': ['www1', 'www2'],
+              'dbserver': ['db1']
+          })
+
+          @only_roles('webserver')
+          def restart_apache():
+              pass
+
+          @only_roles('db')
+          def restart_mysql():
+            pass
+    """
+    # Allow for single iterable argument as well as *args
+    _roles = role_list
+    if len(_roles) == 1 and not isinstance(_roles[0], StringTypes):
+        _roles = list(_roles[0])
+
+    def filter_on_role(func):
+        @wraps(func)
+        def inner_decorator(*args, **kwargs):
+            current_host = env.host_string
+
+            # Check all the permitted roles for this host
+            allowed = False
+            for role in _roles:
+                if role in env.roledefs and current_host in env.roledefs[role]:
+                    allowed = True
+                    break
+           
+            # Invoke the function if allowed, otherwise return None
+            return func(*args, **kwargs) if allowed else None
+
+        return inner_decorator
+    return filter_on_role
 
 
 def runs_once(func):

@@ -4,6 +4,7 @@ import random
 
 from fabric import decorators, tasks
 from fabric.state import env
+from fabric.context_managers import settings
 
 def test_task_returns_an_instance_of_wrappedfunctask_object():
     def foo():
@@ -35,6 +36,29 @@ def test_runs_once_runs_only_once():
     task = decorators.runs_once(func)
     for i in range(2):
         task()
+
+
+def test_only_roles():
+    """
+    @only_roles prevents decorated func from running
+    """
+    def some_task():
+        return env.host_string
+    task = decorators.only_roles('a')(some_task)
+
+    with settings(roledefs={'a':['host1'],'b':['host2']}):
+        # Host1 should invoke the task
+        with settings(host_string='host1'):
+            eq_('host1', task())
+
+        # Host2 should not invoke the task
+        with settings(host_string='host2'):
+            eq_(None, task())
+
+        # Host3 should not invoke the task
+        with settings(host_string='host3'):
+            eq_(None, task())
+
 
 
 def test_runs_once_returns_same_value_each_run():
