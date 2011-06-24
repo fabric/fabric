@@ -6,7 +6,7 @@ problems with ``__init__.py`` (which is loaded by setup.py during installation,
 which in turn needs access to this version information.)
 """
 
-VERSION = (0, 9, 6, "final", 0)
+VERSION = (0, 9, 7, "final", 0)
 
 def get_version(form='short'):
     """
