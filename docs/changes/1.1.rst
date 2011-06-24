@@ -4,6 +4,9 @@ Changes in version 1.1
 
 This page lists all changes made to Fabric in its 1.1.0 release.
 
+.. note::
+    This release also includes all applicable changes from the :doc:`1.0.2
+    release </changes/1.0.2>`.
 
 Highlights
 ==========
