@@ -88,7 +88,7 @@ def puts(text, show_prefix=True, end="\n", flush=False):
     """
     # TODO: mark as deprecated and tell people to use fabric.logger.log.info()
     # TODO: mark using `show_prefix` as deprecated and switch that out to the logger
-    extra = {"host": env.host_string}
+    extra = {"show_prefix": show_prefix}
     log.info(str(text), extra=extra)
 
 
