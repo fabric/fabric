@@ -19,6 +19,7 @@ import types
 from fabric import api, state  # For checking callables against the API, & easy mocking
 from fabric.contrib import console, files, project  # Ditto
 from fabric.network import denormalize, interpret_host_string, disconnect_all
+from fabric.logger import configure_logging, system_log
 from fabric.state import commands, connections, env_options
 from fabric.tasks import Task
 from fabric.utils import abort, indent
@@ -591,6 +592,7 @@ def main():
     """
     Main command-line execution loop.
     """
+    configure_logging()
     try:
         # Parse command line options
         parser, options, arguments = parse_options()
@@ -615,7 +617,7 @@ def main():
 
         # Handle version number option
         if options.show_version:
-            print("Fabric %s" % state.env.version)
+            system_log.info("Fabric %s" % state.env.version)
             sys.exit(0)
 
         # Handle case where we were called bare, i.e. just "fab", and print
@@ -651,9 +653,9 @@ def main():
         # Now that we're settled on a fabfile, inform user.
         if state.output.debug:
             if fabfile:
-                print("Using fabfile '%s'" % fabfile)
+                system_log.info("Using fabfile '%s'" % fabfile)
             else:
-                print("No fabfile loaded -- remainder command only")
+                system_log.info("No fabfile loaded -- remainder command only")
 
         # Shortlist is now just an alias for the "short" list format;
         # it overrides use of --list-format if somebody were to specify both
@@ -662,7 +664,7 @@ def main():
 
         # List available commands
         if options.list_commands:
-            print("\n".join(list_commands(docstring, options.list_format)))
+            system_log.info("\n".join(list_commands(docstring, options.list_format)))
             sys.exit(0)
 
         # Handle show (command-specific help) option
@@ -699,7 +701,7 @@ def main():
 
         if state.output.debug:
             names = ", ".join(x[0] for x in commands_to_run)
-            print("Commands to run: %s" % names)
+            system_log.info("Commands to run: %s" % names)
 
         # At this point all commands must exist, so execute them in order.
         for name, args, kwargs, cli_hosts, cli_roles, cli_exclude_hosts in commands_to_run:
@@ -718,7 +720,8 @@ def main():
                 username, hostname, port = interpret_host_string(host)
                 # Log to stdout
                 if state.output.running:
-                    print("[%s] Executing task '%s'" % (host, name))
+                    extra = {"host": host, }
+                    system_log.info("Executing task '%s'" % name, extra=extra)
                 # Actually run command
                 task(*args, **kwargs)
                 # Put old user back
@@ -728,13 +731,13 @@ def main():
                 task(*args, **kwargs)
         # If we got here, no errors occurred, so print a final note.
         if state.output.status:
-            print("\nDone.")
+            system_log.info("\nDone.")
     except SystemExit:
         # a number of internal functions might raise this one.
         raise
     except KeyboardInterrupt:
         if state.output.status:
-            print >> sys.stderr, "\nStopped."
+            system_log.error("\nStopped.")
         sys.exit(1)
     except:
         sys.excepthook(*sys.exc_info())
