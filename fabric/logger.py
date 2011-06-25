@@ -7,9 +7,6 @@ class FabricLogRecord(logging.LogRecord):
         if extras and "show_prefix" in extras:
             self.show_prefix = extras["show_prefix"]
             del extras["show_prefix"]
-        else:
-            from fabric.state import env
-            self.show_prefix = env.output_prefix
 
         super(FabricLogRecord, self).__init__(name, level, pathname,
                 lineno, msg, args, exc_info, func=func)
@@ -37,7 +34,8 @@ class FabricFormatter(logging.Formatter):
 
     def format(self, record):
         orig_format = False
-        if self.prefix and getattr(record, "show_prefix", False):
+        from fabric.state import env
+        if self.prefix and getattr(record, "show_prefix", env.output_prefix):
             format = "%s %s" % (self.prefix, self._fmt)
             orig_format = self._fmt
             self._fmt = format
