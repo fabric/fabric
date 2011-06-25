@@ -18,7 +18,7 @@ from contextlib import closing
 
 from fabric.context_managers import settings, char_buffered
 from fabric.io import output_loop, input_loop
-from fabric.logger import log
+from fabric.logger import log, system_log
 from fabric.network import needs_host
 from fabric.sftp import SFTP
 from fabric.state import (env, connections, output, win32, default_channel,
@@ -276,8 +276,8 @@ def prompt(text, key=None, default='', validate=None):
                 except Exception, e:
                     # Reset value so we stay in the loop
                     value = None
-                    print("Validation failed for the following reason:")
-                    print(indent(e.message) + "\n")
+                    log.warn("Validation failed for the following reason:")
+                    log.warn(indent(e.message) + "\n")
             # String / regex must match and will be empty if validation fails.
             else:
                 # Need to transform regex into full-matching one if it's not.
@@ -287,7 +287,7 @@ def prompt(text, key=None, default='', validate=None):
                     validate += r'$'
                 result = re.findall(validate, value)
                 if not result:
-                    print("Regular expression validation failed: '%s' does not match '%s'\n" % (value, validate))
+                    log.warn("Regular expression validation failed: '%s' does not match '%s'\n" % (value, validate))
                     # Reset value so we stay in the loop
                     value = None
     # At this point, value must be valid, so update env if necessary
@@ -801,7 +801,7 @@ def _execute(channel, command, pty=True, combine_stderr=None,
         if output.running \
             and (output.stdout and stdout and not stdout.endswith("\n")) \
             or (output.stderr and stderr and not stderr.endswith("\n")):
-            print("")
+            system_log.info("")
 
         return stdout, stderr, status
 
@@ -854,10 +854,10 @@ def _run_command(command, shell=True, pty=True, combine_stderr=True,
     )
     # Execute info line
     which = 'sudo' if sudo else 'run'
-    if output.debug:
-        print("[%s] %s: %s" % (env.host_string, which, wrapped_command))
-    elif output.running:
-        print("[%s] %s: %s" % (env.host_string, which, given_command))
+    # TODO: put this in env
+    extra = {"host": env.host_string}
+    log.debug("%s: %s" % (which, wrapped_command), extra=extra)
+    log.info("%s: %s" % (which, given_command), extra=extra)
 
     # Actual execution, stdin/stdout/stderr handling, and termination
     stdout, stderr, status = _execute(default_channel(), wrapped_command, pty,
@@ -1014,8 +1014,9 @@ def local(command, capture=False):
     # Apply cd(), path() etc
     wrapped_command = _prefix_commands(_prefix_env_vars(command), 'local')
 
-    log.debug("local: %s" % wrapped_command, host="localhost")
-    log.info("local: %s" % given_command, host="localhost")
+    extra = {"host": "localhost"}
+    log.debug("local: %s" % wrapped_command, extra=extra)
+    log.info("local: %s" % given_command, extra=extra)
 
     # Tie in to global output controls as best we can; our capture argument
     # takes precedence over the output settings.
