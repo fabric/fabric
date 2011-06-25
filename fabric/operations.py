@@ -18,6 +18,7 @@ from contextlib import closing
 
 from fabric.context_managers import settings, char_buffered
 from fabric.io import output_loop, input_loop
+from fabric.logger import log
 from fabric.network import needs_host
 from fabric.sftp import SFTP
 from fabric.state import (env, connections, output, win32, default_channel,
@@ -1012,10 +1013,10 @@ def local(command, capture=False):
     given_command = command
     # Apply cd(), path() etc
     wrapped_command = _prefix_commands(_prefix_env_vars(command), 'local')
-    if output.debug:
-        print("[localhost] local: %s" % (wrapped_command))
-    elif output.running:
-        print("[localhost] local: " + given_command)
+
+    log.debug("local: %s" % wrapped_command, host="localhost")
+    log.info("local: %s" % given_command, host="localhost")
+
     # Tie in to global output controls as best we can; our capture argument
     # takes precedence over the output settings.
     dev_null = None
