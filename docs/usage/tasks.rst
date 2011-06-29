@@ -84,10 +84,6 @@ is exactly equivalent to this function-based task (which, if you dropped the
         run("git clone foo")
         sudo("service apache2 restart")
 
-Except, of course, that the class-based version can be subclassed, make use of
-internal state, etc; and as a new-style class it allows use of :ref:`namespaces
-<namespaces>`.
-
 Note how we had to instantiate an instance of our class; that's simply normal
 Python object-oriented programming at work. While it's a small bit of
 boilerplate right now -- for example, Fabric doesn't care about the name you

@@ -1,0 +1,19 @@
+========================
+Changes in version 1.1.1
+========================
+
+Bugfixes
+========
+
+* The public API for `~fabric.tasks.Task` mentioned use of the ``run()``
+  method, but Fabric's main execution loop had not been updated to look for and
+  call it, forcing users who subclassed `~fabric.tasks.Task` to define
+  ``__call__()`` instead. This was an oversight and has been corrected.
+
+
+Documentation
+=============
+
+* The documentation for use of `~fabric.tasks.Task` subclasses (contained under
+  :ref:`new-style-tasks`) has been slightly fleshed out and has also grown an
+  example snippet or two.
