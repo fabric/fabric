@@ -7,6 +7,10 @@ class Task(object):
     Instances of subclasses will be treated as valid tasks when present in
     fabfiles loaded by the :doc:`fab </usage/fab>` tool.
 
+    For details on how to implement and use `~fabric.tasks.Task` subclasses,
+    please see the usage documentation on :ref:`new-style tasks
+    <new-style-tasks>`.
+
     .. versionadded:: 1.1
     """
     name = 'undefined'

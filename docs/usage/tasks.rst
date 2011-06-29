@@ -54,7 +54,48 @@ tasks:
   level. Instances' ``name`` attributes are used as the task name; if omitted
   the instance's variable name will be used instead.
 
-Use of new-style tasks also allows you to set up task namespaces -- see below.
+Use of new-style tasks also allows you to set up task namespaces (see below.)
+
+The `~fabric.decorators.task` decorator is pretty straightforward, but using `~fabric.tasks.Task` is less obvious, so we'll cover it in detail here.
+
+
+``Task`` subclasses
+-------------------
+
+If you're used to :ref:`classic-style tasks <classic-tasks>`, an easy way to
+think about `~fabric.tasks.Task` subclasses is that their ``run`` method is
+directly equivalent to a classic task; its arguments are the task arguments
+(other than ``self``) and its body is what gets executed. For example, this
+new-style task::
+
+    class MyTask(Task):
+        name = "deploy"
+        def run(self, environment, domain="whatever.com"):
+            run("git clone foo")
+            sudo("service apache2 restart")
+
+    instance = MyTask()
+
+is exactly equivalent to this function-based task (which, if you dropped the
+``@task``, would also be a normal classic-style task)::
+
+    @task
+    def deploy(environment, domain="whatever.com"):
+        run("git clone foo")
+        sudo("service apache2 restart")
+
+Except, of course, that the class-based version can be subclassed, make use of
+internal state, etc; and as a new-style class it allows use of :ref:`namespaces
+<namespaces>`.
+
+Note how we had to instantiate an instance of our class; that's simply normal
+Python object-oriented programming at work. While it's a small bit of
+boilerplate right now -- for example, Fabric doesn't care about the name you
+give the instantiation, only the instance's ``name`` attribute -- it's well
+worth the benefit of having the power of classes available.
+
+We may also extend the API in the future to make this experience a bit
+smoother.
 
 
 .. _namespaces:
