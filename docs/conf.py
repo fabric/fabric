@@ -120,7 +120,8 @@ html_style = 'rtd.css'
 
 from fabric.api import local, hide
 with hide('everything'):
-    fabric_tags = local('git tag | sort -r | egrep "(0\.9|1\.0)\.."', True).split()
+    get_tags = 'git tag | sort -r | egrep "(0\.9|1\.[[:digit:]]+)\.."'
+    fabric_tags = local(get_tags, True).split()
 html_context = {'fabric_tags': fabric_tags}
 
 
