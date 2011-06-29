@@ -2,6 +2,7 @@ from __future__ import with_statement
 
 from fabric.api import *
 from fabric.contrib.project import rsync_project
+from fabric.version import get_version
 
 
 docs_host = 'jforcier@fabfile.org'
@@ -36,6 +37,6 @@ def push():
     """
     Build docs and zip for upload to RTD
     """
-    build_docs(clean='yes')
-    v = _version('short')
+    build(clean='yes')
+    v = get_version('short')
     local("cd docs/_build/html && zip -r ../%s.zip ." % v)
