@@ -30,8 +30,8 @@ def browse():
     local("open docs/_build/html/index.html")
 
 
-@hosts(docs_host)
 @task
+@hosts(docs_host)
 def push():
     """
     Build docs and zip for upload to RTD
