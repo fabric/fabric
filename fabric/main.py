@@ -587,6 +587,14 @@ def update_output_levels(show, hide):
             state.output[key] = False
 
 
+def _run_task(task, args, kwargs):
+    # First, try class-based tasks
+    if hasattr(task, 'run') and callable(task.run):
+        return task.run(*args, **kwargs)
+    # Fallback to callable behavior
+    return task(*args, **kwargs)
+
+
 def main():
     """
     Main command-line execution loop.
@@ -720,12 +728,12 @@ def main():
                 if state.output.running:
                     print("[%s] Executing task '%s'" % (host, name))
                 # Actually run command
-                task(*args, **kwargs)
+                _run_task(task, args, kwargs)
                 # Put old user back
                 state.env.user = prev_user
             # If no hosts found, assume local-only and run once
             if not hosts:
-                task(*args, **kwargs)
+                _run_task(task, args, kwargs)
         # If we got here, no errors occurred, so print a final note.
         if state.output.status:
             print("\nDone.")
