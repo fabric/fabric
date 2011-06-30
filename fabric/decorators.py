@@ -10,7 +10,7 @@ from fabric import tasks
 from .context_managers import settings
 
 
-def task(func, task_class=None, args=None):
+def task(func, task_class=None, args=None, kwargs=None):
     """
     Decorator declaring the wrapped function as a :ref:`new-style task <new-style-tasks>`.
 
@@ -23,7 +23,9 @@ def task(func, task_class=None, args=None):
         task_class = tasks.WrappedCallableTask
     if args is None:
         args = ()
-    return task_class(func, *args)
+    if kwargs is None:
+        kwargs = {}
+    return task_class(func, *args, **kwargs)
 
 
 def hosts(*host_list):

@@ -80,3 +80,19 @@ def test_passes_args_to_the_task_class():
 
     foo = decorators.task(foo, task_class=fake, args=random_vars)
     fudge.verify()
+
+
+def test_passes_kwargs_to_the_task_class():
+    random_vars = {
+        "msg": "some text",
+        "number": random.randint(100, 200),
+    }
+    def foo(): pass
+
+    fake = Fake()
+    fake.expects("__init__").with_args(foo, **random_vars)
+    fudge.clear_calls()
+    fudge.clear_expectations()
+
+    foo = decorators.task(foo, task_class=fake, kwargs=random_vars)
+    fudge.verify()
