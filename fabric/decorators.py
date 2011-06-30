@@ -10,11 +10,18 @@ from fabric import tasks
 from .context_managers import settings
 
 
-def task(func):
+def task(func, task_class=None):
     """
     Decorator declaring the wrapped function as a :ref:`new-style task <new-style-tasks>`.
+
+    You can provide a ``task_class`` to change what class you want to use for
+    your base class.  It defaults to ``tasks.WrappedCallableTask``.
+
+    .. versionchanged:: 1.2.0.dev
     """
-    return tasks.WrappedCallableTask(func)
+    if task_class is None:
+        task_class = tasks.WrappedCallableTask
+    return task_class(func)
 
 
 def hosts(*host_list):

@@ -1,4 +1,5 @@
 from nose.tools import eq_, ok_
+import fudge
 from fudge import Fake, with_fakes
 import random
 
@@ -55,3 +56,14 @@ def test_with_settings_passes_env_vars_into_decorated_function():
     ok_(some_task(), msg="sanity check")
     eq_(random_return, decorated_task())
 
+
+def test_will_invoked_whatever_class_you_provide():
+    def foo(): pass
+    fake = Fake()
+    fake.expects("__init__").with_args(foo)
+    fudge.clear_calls()
+    fudge.clear_expectations()
+
+    foo = decorators.task(foo, task_class=fake)
+
+    fudge.verify()
