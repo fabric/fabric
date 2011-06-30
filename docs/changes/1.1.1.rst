@@ -9,3 +9,5 @@ Bugfixes
   method, but Fabric's main execution loop had not been updated to look for and
   call it, forcing users who subclassed `~fabric.tasks.Task` to define
   ``__call__()`` instead. This was an oversight and has been corrected.
+
+  .. seealso:: :ref:`task-subclasses`

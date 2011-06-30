@@ -58,6 +58,7 @@ Use of new-style tasks also allows you to set up task namespaces (see below.)
 
 The `~fabric.decorators.task` decorator is pretty straightforward, but using `~fabric.tasks.Task` is less obvious, so we'll cover it in detail here.
 
+.. _task-subclasses:
 
 ``Task`` subclasses
 -------------------
