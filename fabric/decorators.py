@@ -17,6 +17,9 @@ def task(func, task_class=None, args=None, kwargs=None):
     You can provide a ``task_class`` to change what class you want to use for
     your base class.  It defaults to ``tasks.WrappedCallableTask``.
 
+    Any values you provide to the ``args`` and ``kwargs`` keyword arguments are
+    provide to the ``task_class`` as parameters for its ``__init__`` method.
+
     .. versionchanged:: 1.2.0.dev
     """
     if task_class is None:
