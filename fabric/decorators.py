@@ -22,17 +22,15 @@ def task(*args, **kwargs):
 
     .. versionchanged:: 1.2.0.dev
     """
-    invoked = bool(len(args) > 1 or kwargs)
+    invoked = bool(len(args) > 1 or kwargs or not args)
     task_class = kwargs.pop("task_class", tasks.WrappedCallableTask)
-    if invoked or not args:
-        # we were invoked
-        def wrapper(func):
-            return task_class(func, *args, **kwargs)
-        return wrapper
-    else:
-        func = args[0]
-        args = ()
-    return task_class(func, *args, **kwargs)
+    if not invoked:
+        func, args = args[0], ()
+
+    def wrapper(func):
+        return task_class(func, *args, **kwargs)
+
+    return wrapper if invoked else wrapper(func)
 
 
 def hosts(*host_list):
