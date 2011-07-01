@@ -22,7 +22,7 @@ def task(*args, **kwargs):
 
     .. versionchanged:: 1.2.0.dev
     """
-    invoked = bool(not args or kwargs or len(args) > 1)
+    invoked = bool(not args or kwargs or len(args) > 1 or not callable(args[0]))
     task_class = kwargs.pop("task_class", tasks.WrappedCallableTask)
     if not invoked:
         func, args = args[0], ()
