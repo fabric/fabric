@@ -27,7 +27,7 @@ class WrappedCallableTask(Task):
 
     .. versionadded:: 1.1
     """
-    def __init__(self, callable):
+    def __init__(self, callable, *args, **kwargs):
         super(WrappedCallableTask, self).__init__()
         self.wrapped = callable
         self.__name__ = self.name = callable.__name__

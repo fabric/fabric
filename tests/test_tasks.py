@@ -14,6 +14,16 @@ def test_base_task_raises_exception_on_call_to_run():
     task.run()
 
 class TestWrappedCallableTask(unittest.TestCase):
+    def test_allows_any_number_of_args(self):
+        args = [i for i in range(random.randint(0, 10))]
+        def foo(): pass
+        task = tasks.WrappedCallableTask(foo, *args)
+
+    def test_allows_any_number_of_kwargs(self):
+        kwargs = dict([("key%d" % i, i) for i in range(random.randint(0, 10))])
+        def foo(): pass
+        task = tasks.WrappedCallableTask(foo, **kwargs)
+
     def test_run_is_wrapped_callable(self):
         def foo(): pass
 
