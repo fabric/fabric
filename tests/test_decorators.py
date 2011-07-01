@@ -96,3 +96,30 @@ def test_passes_kwargs_to_the_task_class():
 
     foo = decorators.task(foo, task_class=fake, **random_vars)
     fudge.verify()
+
+
+def test_integration_tests_for_invoked_decorator_with_no_args():
+    r = random.randint(100, 200)
+    @decorators.task()
+    def foo():
+        return r
+
+    eq_(r, foo())
+
+
+def test_integration_tests_for_decorator():
+    r = random.randint(100, 200)
+    @decorators.task(task_class=tasks.WrappedCallableTask)
+    def foo():
+        return r
+
+    eq_(r, foo())
+
+
+def test_original_non_invoked_style_task():
+    r = random.randint(100, 200)
+    @decorators.task
+    def foo():
+        return r
+
+    eq_(r, foo())
