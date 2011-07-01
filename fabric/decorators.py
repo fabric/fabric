@@ -22,11 +22,8 @@ def task(func, *args, **kwargs):
 
     .. versionchanged:: 1.2.0.dev
     """
-    if "task_class" in kwargs:
-        task_class = kwargs["task_class"]
-        del kwargs["task_class"]
-    else:
-        task_class = tasks.WrappedCallableTask
+    task_class = kwargs.pop("task_class") if "task_class" in kwargs else \
+            tasks.WrappedCallableTask
     return task_class(func, *args, **kwargs)
 
 
