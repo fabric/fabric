@@ -23,8 +23,7 @@ def task(*args, **kwargs):
     .. versionchanged:: 1.2.0.dev
     """
     invoked = bool(len(args) > 1 or kwargs)
-    task_class = kwargs.pop("task_class") if "task_class" in kwargs else \
-            tasks.WrappedCallableTask
+    task_class = kwargs.pop("task_class", tasks.WrappedCallableTask)
     if invoked or not args:
         # we were invoked
         def wrapper(func):
