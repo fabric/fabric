@@ -123,12 +123,3 @@ def test_original_non_invoked_style_task():
         return r
 
     eq_(r, foo())
-
-
-def _test_single_regular_arg():
-    r = random.randint(100, 200)
-    @decorators.task(r)
-    def foo():
-        return r
-
-    eq_(r, foo())
