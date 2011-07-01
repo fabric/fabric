@@ -78,7 +78,7 @@ def test_passes_args_to_the_task_class():
     fudge.clear_calls()
     fudge.clear_expectations()
 
-    foo = decorators.task(foo, task_class=fake, args=random_vars)
+    foo = decorators.task(foo, task_class=fake, *random_vars)
     fudge.verify()
 
 
@@ -94,5 +94,5 @@ def test_passes_kwargs_to_the_task_class():
     fudge.clear_calls()
     fudge.clear_expectations()
 
-    foo = decorators.task(foo, task_class=fake, kwargs=random_vars)
+    foo = decorators.task(foo, task_class=fake, **random_vars)
     fudge.verify()
