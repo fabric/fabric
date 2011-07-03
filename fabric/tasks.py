@@ -11,10 +11,14 @@ class Task(object):
     """
     name = 'undefined'
     use_task_objects = True
+    aliases = None
 
     # TODO: make it so that this wraps other decorators as expected
-    def __init__(self, *args, **kwargs):
-        pass
+    def __init__(self, alias=None, aliases=None, *args, **kwargs):
+        if alias is not None:
+            self.aliases = [alias, ]
+        if aliases is not None:
+            self.aliases = aliases
 
     def run(self):
         raise NotImplementedError

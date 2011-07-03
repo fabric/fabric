@@ -103,6 +103,21 @@ class TestWrappedCallableTask(unittest.TestCase):
         self.assertEqual(task(), task.run())
 
 
+class TestTask(unittest.TestCase):
+    def test_takes_an_alias_kwarg_and_wraps_it_in_aliases_list(self):
+        random_alias = "alias_%d" % random.randint(100, 200)
+        task = tasks.Task(alias=random_alias)
+        self.assertTrue(random_alias in task.aliases)
+
+    def test_aliases_are_set_based_on_provided_aliases(self):
+        aliases = ["a_%d" % i for i in range(random.randint(1, 10))]
+        task = tasks.Task(aliases=aliases)
+        self.assertTrue(all([a in task.aliases for a in aliases]))
+
+    def test_aliases_are_None_by_default(self):
+        task = tasks.Task()
+        self.assertTrue(task.aliases is None)
+
 # Reminder: decorator syntax, e.g.:
 #     @foo
 #     def bar():...
