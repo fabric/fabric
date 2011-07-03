@@ -302,6 +302,45 @@ def path_prefix(module):
     yield
     sys.path.pop(i)
 
+
+class TestTaskAliases(FabricTest):
+    def test_flat_alias(self):
+        f = fabfile("flat_alias.py")
+        with path_prefix(f):
+            docs, funcs = load_fabfile(f)
+            eq_(len(funcs), 2)
+            ok_("foo" in funcs)
+            ok_("foo_aliased" in funcs)
+
+    def test_nested_alias(self):
+        f = fabfile("nested_alias.py")
+        with path_prefix(f):
+            docs, funcs = load_fabfile(f)
+            ok_("nested" in funcs)
+            eq_(len(funcs["nested"]), 2)
+            ok_("foo" in funcs["nested"])
+            ok_("foo_aliased" in funcs["nested"])
+
+    def test_flat_aliases(self):
+        f = fabfile("flat_aliases.py")
+        with path_prefix(f):
+            docs, funcs = load_fabfile(f)
+            eq_(len(funcs), 3)
+            ok_("foo" in funcs)
+            ok_("foo_aliased" in funcs)
+            ok_("foo_aliased_two" in funcs)
+
+    def test_nested_alias(self):
+        f = fabfile("nested_aliases.py")
+        with path_prefix(f):
+            docs, funcs = load_fabfile(f)
+            ok_("nested" in funcs)
+            eq_(len(funcs["nested"]), 3)
+            ok_("foo" in funcs["nested"])
+            ok_("foo_aliased" in funcs["nested"])
+            ok_("foo_aliased_two" in funcs["nested"])
+
+
 class TestNamespaces(FabricTest):
     def setup(self):
         # Parent class preserves current env
