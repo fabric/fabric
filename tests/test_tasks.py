@@ -1,8 +1,11 @@
+from contextlib import contextmanager
+import fudge
 import unittest
 from nose.tools import eq_, raises
 import random
 
 from fabric import tasks
+from fabric.tasks import WrappedCallableTask
 
 def test_base_task_provides_undefined_name():
     task = tasks.Task()
@@ -14,6 +17,17 @@ def test_base_task_raises_exception_on_call_to_run():
     task.run()
 
 class TestWrappedCallableTask(unittest.TestCase):
+    def test_passes_unused_args_to_parent(self):
+        args = [i for i in range(random.randint(1, 10))]
+
+        def foo(): pass
+        try:
+            task = WrappedCallableTask(foo, *args)
+        except TypeError:
+            msg = "__init__ raised a TypeError, meaning args weren't handled"
+            self.fail(msg)
+
+
     def test_allows_any_number_of_args(self):
         args = [i for i in range(random.randint(0, 10))]
         def foo(): pass

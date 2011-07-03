@@ -13,6 +13,8 @@ class Task(object):
     use_task_objects = True
 
     # TODO: make it so that this wraps other decorators as expected
+    def __init__(self, *args):
+        pass
 
     def run(self):
         raise NotImplementedError
@@ -28,7 +30,7 @@ class WrappedCallableTask(Task):
     .. versionadded:: 1.1
     """
     def __init__(self, callable, *args, **kwargs):
-        super(WrappedCallableTask, self).__init__()
+        super(WrappedCallableTask, self).__init__(*args)
         self.wrapped = callable
         self.__name__ = self.name = callable.__name__
         self.__doc__ = callable.__doc__
