@@ -27,6 +27,18 @@ class TestWrappedCallableTask(unittest.TestCase):
             msg = "__init__ raised a TypeError, meaning args weren't handled"
             self.fail(msg)
 
+    def test_passes_unused_kwargs_to_parent(self):
+        random_range = range(random.randint(1, 10))
+        kwargs = dict([("key_%s" % i, i) for i in random_range])
+
+        def foo(): pass
+        try:
+            task = WrappedCallableTask(foo, **kwargs)
+        except TypeError:
+            self.fail(
+                "__init__ raised a TypeError, meaning kwargs weren't handled")
+
+
 
     def test_allows_any_number_of_args(self):
         args = [i for i in range(random.randint(0, 10))]
