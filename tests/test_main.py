@@ -1,7 +1,9 @@
 from __future__ import with_statement
 
-import sys
 import copy
+from operator import isMappingType
+import os
+import sys
 from contextlib import contextmanager
 
 from fudge import Fake, patched_context
@@ -11,13 +13,11 @@ from fabric.decorators import hosts, roles, task
 from fabric.main import (get_hosts, parse_arguments, _merge, _escape_split,
         load_fabfile, list_commands, _task_names, _crawl, crawl,
         COMMANDS_HEADER, NESTED_REMINDER)
-
 import fabric.state
 from fabric.state import _AttributeDict
+from fabric.tasks import Task
 
 from utils import mock_streams, patched_env, eq_, FabricTest
-import os
-import sys
 
 
 #
@@ -418,6 +418,21 @@ def test_list_output():
         del list_output.description
 
 
+def name_to_task(name):
+    t = Task()
+    t.name = name
+    return t
+
+def strings_to_tasks(d):
+    ret = {}
+    for key, value in d.iteritems():
+        if isMappingType(value):
+            val = strings_to_tasks(value)
+        else:
+            val = name_to_task(value)
+        ret[key] = val
+    return ret
+
 def test_task_names():
     for desc, input_, output in (
         ('top level (single)', {'a': 5}, ['a']),
@@ -448,7 +463,7 @@ def test_task_names():
         ),
     ):
         eq_.description = "task name flattening: %s" % desc
-        yield eq_, _task_names(input_), output
+        yield eq_, _task_names(strings_to_tasks(input_)), output
         del eq_.description
 
 
@@ -462,3 +477,12 @@ def test_crawl():
         eq_.description = "crawling dotted names: %s" % desc
         yield eq_, _crawl(name, mapping), output
         del eq_.description
+
+
+def test_mapping_task_classes():
+    """
+    Task classes implementing the mapping interface shouldn't break --list
+    """
+    docstring, tasks = load_fabfile(fabfile('mapping'))
+    list_output('mapping', 'normal', COMMANDS_HEADER + """:\n
+    mapping_task""")
