@@ -25,7 +25,7 @@ from fabric.utils import abort, indent
 
 
 # One-time calculation of "all internal callables" to avoid doing this on every
-# check of a given fabfile callable (in is_task()).
+# check of a given fabfile callable (in is_classic_task()).
 _modules = [api, project, files, console]
 _internals = reduce(lambda x, y: x + filter(callable, vars(y).values()),
     _modules,
@@ -111,7 +111,7 @@ def find_fabfile():
     # Implicit 'return None' if nothing was found
 
 
-def is_task(tup):
+def is_classic_task(tup):
     """
     Takes (name, object) tuple, returns True if it's a non-Fab public callable.
     """
@@ -201,7 +201,7 @@ def extract_tasks(imported_vars):
         if is_task_object(obj):
             state.env.new_style_tasks = True
             new_style_tasks[obj.name] = obj
-        elif is_task(tup):
+        elif is_classic_task(tup):
             classic_tasks[name] = obj
         elif is_task_module(obj):
             docs, newstyle, classic = load_tasks_from_module(obj)
@@ -305,10 +305,19 @@ def parse_options():
     opts, args = parser.parse_args()
     return parser, opts, args
 
+def _is_task(name, value):
+    """
+    Is the object a task as opposed to e.g. a dict or int?
+    """
+    return is_classic_task((name, value)) or is_task_object(value)
+
 def _sift_tasks(mapping):
     tasks, collections = [], []
     for name, value in mapping.iteritems():
-        (collections if isMappingType(value) else tasks).append(name)
+        if _is_task(name, value):
+            tasks.append(name)
+        elif isMappingType(value):
+            collections.append(name)
     tasks = sorted(tasks)
     collections = sorted(collections)
     return tasks, collections
