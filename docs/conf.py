@@ -45,6 +45,16 @@ for x in issue_types + ('issue',):
     roles.register_local_role(x, issues_role)
 
 
+def release_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
+    today = datetime.now().strftime("%Y-%m-%d")
+    return [
+        nodes.strong(text=today),
+        nodes.inline(text=": released "),
+        nodes.strong(text="Fabric %s" % text)
+    ], []
+roles.register_local_role('release', release_role)
+
+
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
