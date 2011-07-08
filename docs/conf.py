@@ -23,10 +23,12 @@ from docutils import nodes, utils
 issue_types = ('bug', 'feature', 'support')
 
 def issues_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
+    # Old-style 'just the issue link' behavior
     issue_no = utils.unescape(text)
     ref = "http://code.fabfile.org/issues/show/" + issue_no
     link = nodes.reference(rawtext, '#' + issue_no, refuri=ref, **options)
     ret = [link]
+    # Additional 'new-style changelog' stuff
     if name in issue_types:
         which = '[<span class="changelog-%s">%s</span>]' % (
             name, name.capitalize()
@@ -34,7 +36,8 @@ def issues_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
         ret = [
             nodes.raw(text=which, format='html'),
             nodes.inline(text=" "),
-            link
+            link,
+            nodes.inline(text=":")
         ]
     return ret, []
 
