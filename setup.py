@@ -12,7 +12,7 @@ readme = open('README').read()
 v = get_version('short')
 long_description = """
 To find out what's new in this version of Fabric, please see `the changelog
-<http://docs.fabfile.org/en/%s/changes/%s.html>`_.
+<http://docs.fabfile.org/en/%s/changelog.html>`_.
 
 You can also install the `in-development version
 <https://github.com/bitprophet/fabric/tarball/master#egg=fabric-dev>`_ using
@@ -25,7 +25,7 @@ pip, with `pip install fabric==dev`.
 ----
 
 For more information, please see the Fabric website or execute ``fab --help``.
-""" % (v, v, readme)
+""" % (v, readme)
 
 setup(
     name='Fabric',
