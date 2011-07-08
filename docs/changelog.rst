@@ -25,37 +25,7 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
-* :bug`55`: another bugfix alter on
-* :support:`8` whee
-* :support:`7` whee
-* :support:`6` whee
-* :support:`5` whee
-* :support:`4` whee
-* :support:`3` whee
-* :support:`2` whee
-* :support:`1` whee
-* :bug:`54`: hrm
-* :bug:`456`: Blah blah blah whee foobar
-* :support:`66666` Support 2
-* :support:`3` Support 1
-* :support:`2`: Nulla non nulla sed metus malesuada facilisis.
-* **2011-07-14**: released **Fabric 1.2.1**
-* :bug:`78`: Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-  Nullam laoreet quam vitae nulla feugiat dignissim. Pellentesque habitant
-  morbi tristique senectus et netus et malesuada fames ac turpis egestas. Donec
-  quis enim ante, a lobortis arcu.
-* :feature:`1333`: Cras mattis nibh quis est auctor posuere. Sed
-  imperdiet varius lorem, sit amet egestas tortor dictum eget. Pellentesque
-  sodales quam id erat tincidunt et laoreet ante interdum.
-* **2011-07-07**: released **Fabric 1.2.0**
-* **2011-07-07**: released **Fabric 1.1.3**
-* :feature:`27` Mauris varius orci sed nulla fringilla adipiscing posuere leo
-  tincidunt. 
-* :bug:`22`: Vestibulum posuere posuere est, eu adipiscing enim
-  tincidunt a. Mauris nibh neque, aliquet sed volutpat a, dictum ut sem. 
-* :support:`29`: Something fixed
-* :bug:`25` Major experimental overhaul of changelogs into single,
-  chronological file format.
+* :support:`382` Experimental overhaul of changelog formatting & process to make supporting multiple lines of development less of a hassle.
 
 
 Prehistory
