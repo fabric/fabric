@@ -7,7 +7,7 @@ The Fabric development team is headed by `Jeff Forcier
 developers pitch in by submitting patches and ideas, via individual emails,
 `Redmine <http://code.fabfile.org>`_, the `mailing list
 <http://lists.nongnu.org/mailman/listinfo/fab-user>`_ and `GitHub
-<http://github.com/bitprophet/fabric>`_.
+<http://github.com/fabric/fabric>`_.
 
 Get the code
 ============
