@@ -624,7 +624,7 @@ def main():
 
         # Handle --hosts, --roles, --exclude-hosts (comma separated string => list)
         for key in ['hosts', 'roles', 'exclude_hosts']:
-            if key in state.env and isinstance(state.env[key], str):
+            if key in state.env and isinstance(state.env[key], basestring):
                 state.env[key] = state.env[key].split(',')
 
         # Handle output control level show/hide

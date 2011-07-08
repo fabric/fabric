@@ -4,7 +4,6 @@ Convenience decorators for use in fabfiles.
 from __future__ import with_statement
 
 from functools import wraps
-from types import StringTypes
 
 from fabric import tasks
 from .context_managers import settings
@@ -47,7 +46,7 @@ def hosts(*host_list):
             return func(*args, **kwargs)
         _hosts = host_list
         # Allow for single iterable argument as well as *args
-        if len(_hosts) == 1 and not isinstance(_hosts[0], StringTypes):
+        if len(_hosts) == 1 and not isinstance(_hosts[0], basestring):
             _hosts = _hosts[0]
         inner_decorator.hosts = list(_hosts)
         return inner_decorator
@@ -87,7 +86,7 @@ def roles(*role_list):
             return func(*args, **kwargs)
         _roles = role_list
         # Allow for single iterable argument as well as *args
-        if len(_roles) == 1 and not isinstance(_roles[0], StringTypes):
+        if len(_roles) == 1 and not isinstance(_roles[0], basestring):
             _roles = _roles[0]
         inner_decorator.roles = list(_roles)
         return inner_decorator
