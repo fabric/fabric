@@ -110,18 +110,19 @@ disassociated from the calling shell, which may be done in a number of ways:
   running shell; these tools have the benefit of allowing you to reattach to
   the process later on if needed (among many other such benefits).
 
+.. _faq-bash:
 
 My remote system doesn't have ``bash`` installed by default, do I need to install ``bash``?
 ===========================================================================================
 
 While Fabric is written with ``bash`` in mind, it's not an absolute
-requirement.  Simply change ``env.shell`` to call your desired shell, and
+requirement.  Simply change :ref:`env.shell <shell>` to call your desired shell, and
 include an argument similar to ``bash``'s ``-c`` argument, which allows us to
 build shell commands of the form::
 
     /bin/bash -l -c "<command string here>"
 
-where ``/bin/bash -l -c`` is the default value of ``env.shell``.
+where ``/bin/bash -l -c`` is the default value of :ref:`env.shell <shell>`.
 
 .. note::
 

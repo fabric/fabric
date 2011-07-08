@@ -23,7 +23,6 @@ def git_sha():
 
 VERSION = (1, 2, 0, 'alpha', 0)
 
-
 def get_version(form='short'):
     """
     Return a version string for this package, based on `VERSION`.
