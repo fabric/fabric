@@ -27,7 +27,7 @@ Changelog
 
 * :support:`382` Experimental overhaul of changelog formatting & process to make supporting multiple lines of development less of a hassle.
 * :release:`1.1.2 <2011-07-07>` (see below for details)
-* :release:`1.0.2 <2011-06-24>`
+* :release:`1.0.2 <2011-06-24>` (see below for details)
 
 
 Prehistory
