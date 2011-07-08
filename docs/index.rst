@@ -134,14 +134,11 @@ backwards-compatible) as more use-cases are solved and added.
 
     api/contrib/*
 
-Changes from previous versions
-------------------------------
+Changelog
+---------
 
-.. toctree::
-    :maxdepth: 1
-    :glob:
+Please see :doc:`the changelog </changelog>`.
 
-    changes/*
 
 Getting help
 ============

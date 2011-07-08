@@ -438,7 +438,7 @@ Value used as shell wrapper when executing commands with e.g.
 "<command goes here>"`` -- e.g. the default uses Bash's ``-c`` option which
 takes a command string as its value.
 
-.. seealso:: :doc:`execution`
+.. seealso:: :ref:`FAQ on bash as default shell <faq-bash>`, :doc:`execution`
 
 ``sudo_prompt``
 ---------------
