@@ -13,6 +13,7 @@
 
 from __future__ import with_statement
 import os
+import re
 import sys
 from datetime import datetime
 
@@ -23,6 +24,13 @@ from docutils import nodes, utils
 issue_types = ('bug', 'feature', 'support')
 
 def issues_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
+    """
+    Use: :issue|bug|feature|support:`ticket number`
+
+    When invoked as :issue:, turns into just a "#NN" hyperlink to Redmine.
+
+    When invoked otherwise, turns into "[Type] <#NN hyperlink>: ".
+    """
     # Old-style 'just the issue link' behavior
     issue_no = utils.unescape(text)
     ref = "http://code.fabfile.org/issues/show/" + issue_no
@@ -45,12 +53,24 @@ for x in issue_types + ('issue',):
     roles.register_local_role(x, issues_role)
 
 
+year_arg_re = re.compile(r'^(.+?)\s*(?<!\x00)<(.*?)>$', re.DOTALL)
+
 def release_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
-    today = datetime.now().strftime("%Y-%m-%d")
+    """
+    Invoked as :release:`N.N.N <YYYY-MM-DD>`.
+
+    Turns into: <b>YYYY-MM-DD</b>: released <b>Fabric N.N.N</b>
+    """
+    # Make sure year has been specified
+    match = year_arg_re.match(text)
+    if not match:
+        msg = inliner.reporter.error("Must specify release date!")
+        return [inliner.problematic(rawtext, rawtext, msg)], [msg]
+    number, date = match.group(1), match.group(2)
     return [
-        nodes.strong(text=today),
+        nodes.strong(text=date),
         nodes.inline(text=": released "),
-        nodes.strong(text="Fabric %s" % text)
+        nodes.strong(text="Fabric %s" % number)
     ], []
 roles.register_local_role('release', release_role)
 
