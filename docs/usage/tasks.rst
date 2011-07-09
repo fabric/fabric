@@ -56,7 +56,66 @@ tasks:
 
 Use of new-style tasks also allows you to set up task namespaces (see below.)
 
-The `~fabric.decorators.task` decorator is pretty straightforward, but using `~fabric.tasks.Task` is less obvious, so we'll cover it in detail here.
+
+.. _task-decorator:
+
+The ``@task`` decorator
+-----------------------
+
+The quickest way to make use of new-style task features is to wrap basic task functions with the `~fabric.decorators.task` decorator::
+
+    from fabric.api import tasks, run
+
+    @task
+    def mytask():
+        run("a command")
+
+
+When this decorator is used, it signals to Fabric that *only* functions wrapped in the decorator are to be loaded up as valid tasks. (When not present, :ref:`classic-tasks` behavior kicks in.)
+
+Arguments
+~~~~~~~~~
+
+`~fabric.decorators.task` may also be called with arguments to customize its behavior. Any arguments not documented below are passed into the constructor of the ``task_class`` being used, with the function itself as the first argument.
+
+* ``task_class``: The `~fabric.tasks.Task` subclass used to wrap the decorated
+  function. Defaults to `~fabric.tasks.WrappedCallableTask`.
+* ``aliases``: An iterable of string names which will be used as aliases for
+  the wrapped function. They will show up in :option:`--list <-l>` and may be
+  specified in place of this task's "real" name, just like aliases in operating
+  system shells.
+* ``alias``: Like ``aliases`` but taking a single string argument instead of an
+  iterable. If both ``alias`` and ``aliases`` are specified, ``aliases`` will
+  take precedence.
+
+Below is an example combining ``task_class``, ``alias`` and a (contrived)
+custom task class plus constructor arguments::
+
+    from fabric.api import task
+    from fabric.tasks import Task
+
+    class CustomWrapper(Task):
+        def __init__(self, func, mystate):
+            self.wrapped = func
+            self.state = mystate
+
+        def run(self, *args, **kwargs):
+            return self.wrapped(*args, **kwargs)
+
+    @task(alias='mt', task_class=CustomWrapper, mystate='data')
+    def my_task():
+        pass
+
+Calling :option:`--list <-l>` on this fabfile would show both the original ``my_task`` and an alias for it, ``mt``::
+
+    $ fab --list
+    Available commands:
+
+        mt
+        my_task
+
+And while the example itself is contrived, the use of `~fabric.decorators.task` here also passed a custom ``mystate`` parameter to the ``CustomWrapper`` class when it was instantiated.
+
 
 .. _task-subclasses:
 
