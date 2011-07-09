@@ -1,8 +1,11 @@
+from contextlib import contextmanager
+import fudge
 import unittest
 from nose.tools import eq_, raises
 import random
 
 from fabric import tasks
+from fabric.tasks import WrappedCallableTask
 
 def test_base_task_provides_undefined_name():
     task = tasks.Task()
@@ -14,6 +17,39 @@ def test_base_task_raises_exception_on_call_to_run():
     task.run()
 
 class TestWrappedCallableTask(unittest.TestCase):
+    def test_passes_unused_args_to_parent(self):
+        args = [i for i in range(random.randint(1, 10))]
+
+        def foo(): pass
+        try:
+            task = WrappedCallableTask(foo, *args)
+        except TypeError:
+            msg = "__init__ raised a TypeError, meaning args weren't handled"
+            self.fail(msg)
+
+    def test_passes_unused_kwargs_to_parent(self):
+        random_range = range(random.randint(1, 10))
+        kwargs = dict([("key_%s" % i, i) for i in random_range])
+
+        def foo(): pass
+        try:
+            task = WrappedCallableTask(foo, **kwargs)
+        except TypeError:
+            self.fail(
+                "__init__ raised a TypeError, meaning kwargs weren't handled")
+
+
+
+    def test_allows_any_number_of_args(self):
+        args = [i for i in range(random.randint(0, 10))]
+        def foo(): pass
+        task = tasks.WrappedCallableTask(foo, *args)
+
+    def test_allows_any_number_of_kwargs(self):
+        kwargs = dict([("key%d" % i, i) for i in range(random.randint(0, 10))])
+        def foo(): pass
+        task = tasks.WrappedCallableTask(foo, **kwargs)
+
     def test_run_is_wrapped_callable(self):
         def foo(): pass
 
@@ -66,6 +102,21 @@ class TestWrappedCallableTask(unittest.TestCase):
         task = tasks.WrappedCallableTask(foo)
         self.assertEqual(task(), task.run())
 
+
+class TestTask(unittest.TestCase):
+    def test_takes_an_alias_kwarg_and_wraps_it_in_aliases_list(self):
+        random_alias = "alias_%d" % random.randint(100, 200)
+        task = tasks.Task(alias=random_alias)
+        self.assertTrue(random_alias in task.aliases)
+
+    def test_aliases_are_set_based_on_provided_aliases(self):
+        aliases = ["a_%d" % i for i in range(random.randint(1, 10))]
+        task = tasks.Task(aliases=aliases)
+        self.assertTrue(all([a in task.aliases for a in aliases]))
+
+    def test_aliases_are_None_by_default(self):
+        task = tasks.Task()
+        self.assertTrue(task.aliases is None)
 
 # Reminder: decorator syntax, e.g.:
 #     @foo

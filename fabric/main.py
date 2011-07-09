@@ -201,6 +201,9 @@ def extract_tasks(imported_vars):
         if is_task_object(obj):
             state.env.new_style_tasks = True
             new_style_tasks[obj.name] = obj
+            if obj.aliases is not None:
+                for alias in obj.aliases:
+                    new_style_tasks[alias] = obj
         elif is_classic_task(tup):
             classic_tasks[name] = obj
         elif is_task_module(obj):

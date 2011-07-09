@@ -15,8 +15,14 @@ class Task(object):
     """
     name = 'undefined'
     use_task_objects = True
+    aliases = None
 
     # TODO: make it so that this wraps other decorators as expected
+    def __init__(self, alias=None, aliases=None, *args, **kwargs):
+        if alias is not None:
+            self.aliases = [alias, ]
+        if aliases is not None:
+            self.aliases = aliases
 
     def run(self):
         raise NotImplementedError
@@ -31,8 +37,8 @@ class WrappedCallableTask(Task):
 
     .. versionadded:: 1.1
     """
-    def __init__(self, callable):
-        super(WrappedCallableTask, self).__init__()
+    def __init__(self, callable, *args, **kwargs):
+        super(WrappedCallableTask, self).__init__(*args, **kwargs)
         self.wrapped = callable
         self.__name__ = self.name = callable.__name__
         self.__doc__ = callable.__doc__
