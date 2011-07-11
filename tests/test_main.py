@@ -17,7 +17,7 @@ import fabric.state
 from fabric.state import _AttributeDict
 from fabric.tasks import Task
 
-from utils import mock_streams, patched_env, eq_, FabricTest
+from utils import mock_streams, patched_env, eq_, FabricTest, fabfile
 
 
 #
@@ -291,9 +291,6 @@ def test_load_fabfile_should_not_remove_real_path_elements():
 #
 # Namespacing and new-style tasks
 #
-
-def fabfile(name):
-    return os.path.join(os.path.dirname(__file__), 'support', name)
 
 @contextmanager
 def path_prefix(module):

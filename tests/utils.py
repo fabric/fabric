@@ -256,3 +256,7 @@ def patched_env(updates):
         new_env = deepcopy(env).update(updates)
         return with_patched_object('fabric.state', 'env', new_env)
     return wrapper
+
+
+def fabfile(name):
+    return os.path.join(os.path.dirname(__file__), 'support', name)
