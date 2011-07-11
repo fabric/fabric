@@ -8,7 +8,7 @@ from fabric.version import get_version
 docs_host = 'jforcier@fabfile.org'
 
 
-@task
+@task(default=True)
 def build(clean='no', browse_='no'):
     """
     Generate the Sphinx documentation.

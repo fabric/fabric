@@ -368,7 +368,11 @@ def _crawl(name, mapping):
 
 def crawl(name, mapping):
     try:
-        return _crawl(name, mapping)
+        result = _crawl(name, mapping)
+        # Handle default tasks
+        if isinstance(result, _Dict) and getattr(result, 'default', False):
+            result = result.default
+        return result
     except (KeyError, TypeError):
         return None
 

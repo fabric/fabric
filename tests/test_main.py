@@ -523,7 +523,7 @@ def test_mapping_task_classes():
     mapping_task""")
 
 
-def test_default_tasks():
+def test_default_task_listings():
     """
     @task(default=True) should cause task to also load under module's name
     """
@@ -540,3 +540,11 @@ mymodule.long_task_name"""),
         list_output.description = "Default task --list output: %s" % format_
         yield list_output, 'default_tasks', format_, expected
         del list_output.description
+
+
+def test_default_task_loading():
+    """
+    crawl() should return default tasks where found, instead of module objs
+    """
+    docs, tasks = load_fabfile(fabfile('default_tasks'))
+    ok_(isinstance(crawl('mymodule', tasks), Task))
