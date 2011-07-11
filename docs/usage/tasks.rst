@@ -185,9 +185,11 @@ Doing so updates the task list like so::
         deploy.provision
         deploy.push
 
-Note that ``full_deploy`` still exists as its own explicit task -- but now ``deploy`` shows up as a sort of top level alias for ``full_deploy``.
+Note that ``full_deploy`` still exists as its own explicit task -- but now
+``deploy`` shows up as a sort of top level alias for ``full_deploy``.
 
-If multiple tasks within a module have ``default=True`` set, the last one to be loaded (typically the one lowest down in the file) will take precedence.
+If multiple tasks within a module have ``default=True`` set, the last one to
+be loaded (typically the one lowest down in the file) will take precedence.
 
 .. _task-subclasses:
 
