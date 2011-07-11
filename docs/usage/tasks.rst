@@ -79,7 +79,7 @@ When this decorator is used, it signals to Fabric that *only* functions wrapped 
 Arguments
 ~~~~~~~~~
 
-`~fabric.decorators.task` may also be called with arguments to customize its behavior. Any arguments not documented below are passed into the constructor of the ``task_class`` being used, with the function itself as the first argument.
+`~fabric.decorators.task` may also be called with arguments to customize its behavior. Any arguments not documented below are passed into the constructor of the ``task_class`` being used, with the function itself as the first argument (see :ref:`task-decorator-and-classes` for details.)
 
 * ``task_class``: The `~fabric.tasks.Task` subclass used to wrap the decorated
   function. Defaults to `~fabric.tasks.WrappedCallableTask`.
@@ -91,34 +91,33 @@ Arguments
   iterable. If both ``alias`` and ``aliases`` are specified, ``aliases`` will
   take precedence.
 
-Below is an example combining ``task_class``, ``alias`` and a (contrived)
-custom task class plus constructor arguments::
+.. _task-aliases:
+
+Aliases
+~~~~~~~
+
+Here's a quick example of using the ``alias`` keyword argument to facilitate
+use of both a longer human-readable task name, and a shorter name which is
+quicker to type::
 
     from fabric.api import task
-    from fabric.tasks import Task
 
-    class CustomWrapper(Task):
-        def __init__(self, func, mystate):
-            self.wrapped = func
-            self.state = mystate
-
-        def run(self, *args, **kwargs):
-            return self.wrapped(*args, **kwargs)
-
-    @task(alias='mt', task_class=CustomWrapper, mystate='data')
-    def my_task():
+    @task(alias='dwm')
+    def deploy_with_migrations():
         pass
 
-Calling :option:`--list <-l>` on this fabfile would show both the original ``my_task`` and an alias for it, ``mt``::
+Calling :option:`--list <-l>` on this fabfile would show both the original
+``deploy_with_migrations`` and its alias ``dwm``::
 
     $ fab --list
     Available commands:
 
-        mt
-        my_task
+        deploy_with_migrations
+        dwm
 
-And while the example itself is contrived, the use of `~fabric.decorators.task` here also passed a custom ``mystate`` parameter to the ``CustomWrapper`` class when it was instantiated.
-
+When more than one alias for the same function is needed, simply swap in the
+``aliases`` kwarg, which takes an iterable of strings instead of a single
+string.
 
 .. _task-subclasses:
 
@@ -128,8 +127,9 @@ And while the example itself is contrived, the use of `~fabric.decorators.task` 
 If you're used to :ref:`classic-style tasks <classic-tasks>`, an easy way to
 think about `~fabric.tasks.Task` subclasses is that their ``run`` method is
 directly equivalent to a classic task; its arguments are the task arguments
-(other than ``self``) and its body is what gets executed. For example, this
-new-style task::
+(other than ``self``) and its body is what gets executed.
+
+For example, this new-style task::
 
     class MyTask(Task):
         name = "deploy"
@@ -139,8 +139,7 @@ new-style task::
 
     instance = MyTask()
 
-is exactly equivalent to this function-based task (which, if you dropped the
-``@task``, would also be a normal classic-style task)::
+is exactly equivalent to this function-based task::
 
     @task
     def deploy(environment, domain="whatever.com"):
@@ -153,9 +152,52 @@ boilerplate right now -- for example, Fabric doesn't care about the name you
 give the instantiation, only the instance's ``name`` attribute -- it's well
 worth the benefit of having the power of classes available.
 
-We may also extend the API in the future to make this experience a bit
-smoother.
+We plan to extend the API in the future to make this experience a bit smoother.
 
+.. _task-decorator-and-classes:
+
+Using custom subclasses with ``@task``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+It's possible to marry custom `~fabric.tasks.Task` subclasses with the
+`~fabric.decorators.task` decorator. This may be useful in cases where your
+core execution logic doesn't do anything class/object-specific, but you want
+to take advantage of class metaprogramming or similar techniques.
+
+Specifically, any `~fabric.tasks.Task` subclass which is designed to take in a
+callable as its first constructor argument (as the built-in
+`~fabric.tasks.WrappedCallableTask` does) may be specified as the
+``task_class`` argument to the `~fabric.decorators.task` decorator.
+
+Fabric will automatically instantiate a copy of the given class, passing in
+the wrapped function as the first argument. All other args/kwargs given to the
+decorator (besides the "special" arguments documented in
+:ref:`task-decorator-arguments`) are added afterwards.
+
+Here's a brief and somewhat contrived example to make this obvious::
+
+    from fabric.api import task
+    from fabric.tasks import Task
+
+    class CustomTask(Task):
+        def __init__(self, func, myarg):
+            self.func = func
+            self.myarg = myarg
+
+        def run(self, *args, **kwargs):
+            return self.func(*args, **kwargs)
+
+    @task(task_class=CustomTask, myarg='value', alias='at')
+    def actual_task():
+        pass
+
+When this fabfile is loaded, a copy of ``CustomTask`` is instantiated, effectively calling::
+
+    task_obj = CustomTask(actual_task, myarg='value')
+
+Note how the ``alias`` kwarg is stripped out by the decorator itself and never
+reaches the class instantiation; this is identical in function to how
+:ref:`command-line task arguments <task-arguments>` work.
 
 .. _namespaces:
 
