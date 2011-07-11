@@ -548,3 +548,11 @@ def test_default_task_loading():
     """
     docs, tasks = load_fabfile(fabfile('default_tasks'))
     ok_(isinstance(crawl('mymodule', tasks), Task))
+
+
+def test_aliases_appear_in_fab_list():
+    """
+    --list should include aliases
+    """
+    list_output('nested_alias', 'short', """nested.foo
+nested.foo_aliased""")
