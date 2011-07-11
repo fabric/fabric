@@ -72,7 +72,7 @@ The quickest way to make use of new-style task features is to wrap basic task fu
         run("a command")
 
 
-When this decorator is used, it signals to Fabric that *only* functions wrapped in the decorator are to be loaded up as valid tasks. (When not present, :ref:`classic-tasks` behavior kicks in.)
+When this decorator is used, it signals to Fabric that *only* functions wrapped in the decorator are to be loaded up as valid tasks. (When not present, :ref:`classic-style task <classic-tasks>` behavior kicks in.)
 
 Arguments
 ~~~~~~~~~
