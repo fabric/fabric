@@ -84,12 +84,12 @@ Arguments
 * ``task_class``: The `~fabric.tasks.Task` subclass used to wrap the decorated
   function. Defaults to `~fabric.tasks.WrappedCallableTask`.
 * ``aliases``: An iterable of string names which will be used as aliases for
-  the wrapped function. They will show up in :option:`--list <-l>` and may be
-  specified in place of this task's "real" name, just like aliases in operating
-  system shells.
+  the wrapped function. See :ref:`task-aliases` for details.
 * ``alias``: Like ``aliases`` but taking a single string argument instead of an
   iterable. If both ``alias`` and ``aliases`` are specified, ``aliases`` will
   take precedence.
+* ``default``: A boolean value determining whether the decorated task also
+  stands in for its containing module as a task name. See :ref:`default-tasks`.
 
 .. _task-aliases:
 
@@ -118,6 +118,76 @@ Calling :option:`--list <-l>` on this fabfile would show both the original
 When more than one alias for the same function is needed, simply swap in the
 ``aliases`` kwarg, which takes an iterable of strings instead of a single
 string.
+
+.. _default-tasks:
+
+Default tasks
+~~~~~~~~~~~~~
+
+In a similar manner to :ref:`aliases <task-aliases>`, it's sometimes useful to
+designate a given task within a submodule as the "default" task, which may be
+called by referencing *just* the module name. This can save typing and/or
+allow for neater organization when there's a single "main" task and a number
+of related tasks or subroutines.
+
+For example, a ``deploy`` submodule might contain tasks for provisioning new
+servers, pushing code, migrating databases, and so forth -- but it'd be very
+convenient to highlight a task as the default "just deploy" action. Such a
+``deploy.py`` module might look like this::
+
+    from fabric.api import task
+
+    @task
+    def migrate():
+        pass
+
+    @task
+    def push():
+        pass
+
+    @task
+    def provision():
+        pass
+
+    @task
+    def full_deploy():
+        if not provisioned:
+            provision()
+        push()
+        migrate()
+
+With the following task list (assuming a simple top level ``fabfile.py`` that just imports ``deploy``)::
+
+    $ fab --list
+    Available commands:
+
+        deploy.full_deploy
+        deploy.migrate
+        deploy.provision
+        deploy.push
+
+Calling ``deploy.full_deploy`` on every deploy could get kind of old, or somebody new to the team might not be sure if that's really the right task to run.
+
+Using the ``default`` kwarg to `~fabric.decorators.task`, we can tag e.g. ``full_deploy`` as the default task::
+
+    @task(default=True)
+    def full_deploy():
+        pass
+
+Doing so updates the task list like so::
+
+    $ fab --list
+    Available commands:
+
+        deploy
+        deploy.full_deploy
+        deploy.migrate
+        deploy.provision
+        deploy.push
+
+Note that ``full_deploy`` still exists as its own explicit task -- but now ``deploy`` shows up as a sort of top level alias for ``full_deploy``.
+
+If multiple tasks within a module have ``default=True`` set, the last one to be loaded (typically the one lowest down in the file) will take precedence.
 
 .. _task-subclasses:
 
