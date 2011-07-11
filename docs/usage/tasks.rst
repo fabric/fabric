@@ -54,7 +54,8 @@ tasks:
   level. Instances' ``name`` attributes are used as the task name; if omitted
   the instance's variable name will be used instead.
 
-Use of new-style tasks also allows you to set up task namespaces (see below.)
+Use of new-style tasks also allows you to set up :ref:`namespaces
+<namespaces>`.
 
 
 .. _task-decorator:
