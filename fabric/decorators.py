@@ -11,13 +11,13 @@ from .context_managers import settings
 
 def task(*args, **kwargs):
     """
-    Decorator declaring the wrapped function as a :ref:`new-style task <new-style-tasks>`.
+    Decorator declaring the wrapped function to be a new-style task.
 
-    You can provide a ``task_class`` to change what class you want to use for
-    your base class.  It defaults to ``tasks.WrappedCallableTask``.
+    May be invoked as a simple, argument-less decorator (i.e. ``@task``) or
+    with arguments customizing its behavior (e.g. ``@task(alias='myalias')``).
 
-    Any values you provide to the ``args`` and ``kwargs`` keyword arguments are
-    provide to the ``task_class`` as parameters for its ``__init__`` method.
+    Please see the :ref:`new-style task <task-decorator>` documentation for
+    details on how to use this decorator.
 
     .. versionchanged:: 1.2.0.dev
     """
