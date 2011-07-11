@@ -191,6 +191,11 @@ Note that ``full_deploy`` still exists as its own explicit task -- but now
 If multiple tasks within a module have ``default=True`` set, the last one to
 be loaded (typically the one lowest down in the file) will take precedence.
 
+Using ``@task(default=True)`` in the top level fabfile is ignored for the time
+being -- the task will only appear as itself and won't be executable via e.g.
+``fab`` called with no task names. This is a conscious break from
+``make``-style tools.
+
 .. _task-subclasses:
 
 ``Task`` subclasses
