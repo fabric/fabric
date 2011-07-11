@@ -522,6 +522,5 @@ def test_mapping_task_classes():
     """
     Task classes implementing the mapping interface shouldn't break --list
     """
-    docstring, tasks = load_fabfile(fabfile('mapping'))
     list_output('mapping', 'normal', COMMANDS_HEADER + """:\n
     mapping_task""")
