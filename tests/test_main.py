@@ -521,3 +521,22 @@ def test_mapping_task_classes():
     """
     list_output('mapping', 'normal', COMMANDS_HEADER + """:\n
     mapping_task""")
+
+
+def test_default_tasks():
+    """
+    @task(default=True) should cause task to also load under module's name
+    """
+    for format_, expected in (
+        ('short', """mymodule
+mymodule.long_task_name"""),
+        ('normal', COMMANDS_HEADER + """:\n
+    mymodule
+    mymodule.long_task_name"""),
+        ('nested', COMMANDS_HEADER + NESTED_REMINDER + """:\n
+    mymodule:
+        long_task_name""")
+    ):
+        list_output.description = "Default task --list output: %s" % format_
+        yield list_output, 'default_tasks', format_, expected
+        del list_output.description

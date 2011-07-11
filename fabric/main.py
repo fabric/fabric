@@ -163,7 +163,7 @@ def load_fabfile(path, importer=None):
         del sys.path[0]
 
     # Actually load tasks
-    docstring, new_style, classic = load_tasks_from_module(imported)
+    docstring, new_style, classic, default = load_tasks_from_module(imported)
     tasks = new_style if state.env.new_style_tasks else classic
     # Clean up after ourselves
     _seen.clear()
@@ -184,33 +184,48 @@ def load_tasks_from_module(imported):
     # Return a two-tuple value.  First is the documentation, second is a
     # dictionary of callables only (and don't include Fab operations or
     # underscored callables)
-    new_style, classic = extract_tasks(imported_vars)
-    return imported.__doc__, new_style, classic
+    new_style, classic, default = extract_tasks(imported_vars)
+    return imported.__doc__, new_style, classic, default
+
+
+# For attribute tomfoolery
+class _Dict(dict):
+    pass
 
 
 def extract_tasks(imported_vars):
     """
     Handle extracting tasks from a given list of variables
     """
-    new_style_tasks = defaultdict(dict)
+    new_style_tasks = _Dict()
     classic_tasks = {}
+    default_task = None
     if 'new_style_tasks' not in state.env:
         state.env.new_style_tasks = False
     for tup in imported_vars:
         name, obj = tup
         if is_task_object(obj):
             state.env.new_style_tasks = True
+            # Honor instance.name
             new_style_tasks[obj.name] = obj
+            # Handle aliasing
             if obj.aliases is not None:
                 for alias in obj.aliases:
                     new_style_tasks[alias] = obj
+            # Handle defaults
+            if obj.is_default:
+                default_task = obj
         elif is_classic_task(tup):
             classic_tasks[name] = obj
         elif is_task_module(obj):
-            docs, newstyle, classic = load_tasks_from_module(obj)
+            docs, newstyle, classic, default = load_tasks_from_module(obj)
             for task_name, task in newstyle.items():
+                if name not in new_style_tasks:
+                    new_style_tasks[name] = _Dict()
                 new_style_tasks[name][task_name] = task
-    return (new_style_tasks, classic_tasks)
+            if default is not None:
+                new_style_tasks[name].default = default
+    return new_style_tasks, classic_tasks, default_task
 
 
 def is_task_module(a):
@@ -335,6 +350,8 @@ def _task_names(mapping):
     tasks, collections = _sift_tasks(mapping)
     for collection in collections:
         module = mapping[collection]
+        if hasattr(module, 'default'):
+            tasks.append(collection)
         join = lambda x: ".".join((collection, x))
         tasks.extend(map(join, _task_names(module)))
     return tasks
