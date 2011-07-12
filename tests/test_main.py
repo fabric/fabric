@@ -556,3 +556,13 @@ def test_aliases_appear_in_fab_list():
     """
     list_output('nested_alias', 'short', """nested.foo
 nested.foo_aliased""")
+
+
+def test_aliases_noted_in_normal_fab_list():
+    """
+    --list (normal) should note what tasks aliases point to
+    """
+    list_output('nested_alias', 'normal', COMMANDS_HEADER + """:\n
+    nested.foo
+    nested.foo_aliased  (alias of 'nested.foo')
+""")
