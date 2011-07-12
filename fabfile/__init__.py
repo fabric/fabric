@@ -16,7 +16,7 @@ _version = fabric.version.get_version
 import docs
 
 
-@task
+@task(default=True)
 def test(args=None):
     """
     Run all unit tests and doctests.
