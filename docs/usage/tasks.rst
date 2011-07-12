@@ -125,7 +125,7 @@ Default tasks
 ~~~~~~~~~~~~~
 
 In a similar manner to :ref:`aliases <task-aliases>`, it's sometimes useful to
-designate a given task within a submodule as the "default" task, which may be
+designate a given task within a module as the "default" task, which may be
 called by referencing *just* the module name. This can save typing and/or
 allow for neater organization when there's a single "main" task and a number
 of related tasks or subroutines.
@@ -191,10 +191,14 @@ Note that ``full_deploy`` still exists as its own explicit task -- but now
 If multiple tasks within a module have ``default=True`` set, the last one to
 be loaded (typically the one lowest down in the file) will take precedence.
 
-Using ``@task(default=True)`` in the top level fabfile is ignored for the time
-being -- the task will only appear as itself and won't be executable via e.g.
-``fab`` called with no task names. This is a conscious break from
-``make``-style tools.
+Top-level default tasks
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Using ``@task(default=True)`` in the top level fabfile will cause the denoted
+task to execute when a user invokes ``fab`` without any task names (similar to
+e.g. ``make``.) When using this shortcut, it is not possible to specify
+arguments to the task itself -- use a regular invocation of the task if this
+is necessary.
 
 .. _task-subclasses:
 

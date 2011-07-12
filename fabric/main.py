@@ -167,7 +167,7 @@ def load_fabfile(path, importer=None):
     tasks = new_style if state.env.new_style_tasks else classic
     # Clean up after ourselves
     _seen.clear()
-    return docstring, tasks
+    return docstring, tasks, default
 
 
 def load_tasks_from_module(imported):
@@ -659,21 +659,15 @@ def main():
             print("Fabric %s" % state.env.version)
             sys.exit(0)
 
-        # Handle case where we were called bare, i.e. just "fab", and print
-        # a help message.
-        actions = (options.list_commands, options.shortlist, options.display,
-            arguments, remainder_arguments)
-        if not any(actions):
-            parser.print_help()
-            sys.exit(1)
-
         # Load settings from user settings file, into shared env dict.
         state.env.update(load_settings(state.env.rcfile))
 
         # Find local fabfile path or abort
         fabfile = find_fabfile()
         if not fabfile and not remainder_arguments:
-            abort("Couldn't find any fabfiles!")
+            abort("""Couldn't find any fabfiles!
+
+Remember that -f can be used to specify fabfile path, and use -h for help.""")
 
         # Store absolute path to fabfile in case anyone needs it
         state.env.real_fabfile = fabfile
@@ -682,8 +676,16 @@ def main():
         # tweaks to env values) and put its commands in the shared commands
         # dict
         if fabfile:
-            docstring, callables = load_fabfile(fabfile)
+            docstring, callables, default = load_fabfile(fabfile)
             state.commands.update(callables)
+
+        # Handle case where we were called bare, i.e. just "fab", and print
+        # a help message.
+        actions = (options.list_commands, options.shortlist, options.display,
+            arguments, remainder_arguments, default)
+        if not any(actions):
+            parser.print_help()
+            sys.exit(1)
 
         # Abort if no commands found
         if not state.commands and not remainder_arguments:
@@ -711,7 +713,7 @@ def main():
             display_command(options.display)
 
         # If user didn't specify any commands to run, show help
-        if not (arguments or remainder_arguments):
+        if not (arguments or remainder_arguments or default):
             parser.print_help()
             sys.exit(0)  # Or should it exit with error (1)?
 
@@ -737,6 +739,10 @@ def main():
             r = '<remainder>'
             state.commands[r] = lambda: api.run(remainder_command)
             commands_to_run.append((r, [], {}, [], [], []))
+
+        # Ditto for a default, if found
+        if not commands_to_run and default:
+            commands_to_run.append((default.name, [], {}, [], [], []))
 
         if state.output.debug:
             names = ", ".join(x[0] for x in commands_to_run)
