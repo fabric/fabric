@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :feature:`22` Enhanced `@task <fabric.decorators.task>` to allow control
+  over the wrapping `~fabric.tasks.Task` subclass; per-module default tasks;
+  and task aliasing.
 * :bug:`380` Improved unicode support when testing objects for being
   string-like. Thanks to Jiri Barton for catch & patch.
 * :support:`382` Experimental overhaul of changelog formatting & process to

@@ -11,13 +11,19 @@ from nose.tools import ok_, eq_, raises
 
 from fabric.decorators import hosts, roles, task
 from fabric.main import (get_hosts, parse_arguments, _merge, _escape_split,
-        load_fabfile, list_commands, _task_names, _crawl, crawl,
-        COMMANDS_HEADER, NESTED_REMINDER)
+        load_fabfile as _load_fabfile, list_commands, _task_names, _crawl,
+        crawl, COMMANDS_HEADER, NESTED_REMINDER)
 import fabric.state
 from fabric.state import _AttributeDict
 from fabric.tasks import Task
 
-from utils import mock_streams, patched_env, eq_, FabricTest
+from utils import mock_streams, patched_env, eq_, FabricTest, fabfile
+
+
+# Stupid load_fabfile wrapper to hide newly added return value.
+# WTB more free time to rewrite all this with objects :)
+def load_fabfile(*args, **kwargs):
+    return _load_fabfile(*args, **kwargs)[:2]
 
 
 #
@@ -292,15 +298,51 @@ def test_load_fabfile_should_not_remove_real_path_elements():
 # Namespacing and new-style tasks
 #
 
-def fabfile(name):
-    return os.path.join(os.path.dirname(__file__), 'support', name)
-
 @contextmanager
 def path_prefix(module):
     i = 0
     sys.path.insert(i, os.path.dirname(module))
     yield
     sys.path.pop(i)
+
+
+class TestTaskAliases(FabricTest):
+    def test_flat_alias(self):
+        f = fabfile("flat_alias.py")
+        with path_prefix(f):
+            docs, funcs = load_fabfile(f)
+            eq_(len(funcs), 2)
+            ok_("foo" in funcs)
+            ok_("foo_aliased" in funcs)
+
+    def test_nested_alias(self):
+        f = fabfile("nested_alias.py")
+        with path_prefix(f):
+            docs, funcs = load_fabfile(f)
+            ok_("nested" in funcs)
+            eq_(len(funcs["nested"]), 2)
+            ok_("foo" in funcs["nested"])
+            ok_("foo_aliased" in funcs["nested"])
+
+    def test_flat_aliases(self):
+        f = fabfile("flat_aliases.py")
+        with path_prefix(f):
+            docs, funcs = load_fabfile(f)
+            eq_(len(funcs), 3)
+            ok_("foo" in funcs)
+            ok_("foo_aliased" in funcs)
+            ok_("foo_aliased_two" in funcs)
+
+    def test_nested_alias(self):
+        f = fabfile("nested_aliases.py")
+        with path_prefix(f):
+            docs, funcs = load_fabfile(f)
+            ok_("nested" in funcs)
+            eq_(len(funcs["nested"]), 3)
+            ok_("foo" in funcs["nested"])
+            ok_("foo_aliased" in funcs["nested"])
+            ok_("foo_aliased_two" in funcs["nested"])
+
 
 class TestNamespaces(FabricTest):
     def setup(self):
@@ -483,6 +525,40 @@ def test_mapping_task_classes():
     """
     Task classes implementing the mapping interface shouldn't break --list
     """
-    docstring, tasks = load_fabfile(fabfile('mapping'))
     list_output('mapping', 'normal', COMMANDS_HEADER + """:\n
     mapping_task""")
+
+
+def test_default_task_listings():
+    """
+    @task(default=True) should cause task to also load under module's name
+    """
+    for format_, expected in (
+        ('short', """mymodule
+mymodule.long_task_name"""),
+        ('normal', COMMANDS_HEADER + """:\n
+    mymodule
+    mymodule.long_task_name"""),
+        ('nested', COMMANDS_HEADER + NESTED_REMINDER + """:\n
+    mymodule:
+        long_task_name""")
+    ):
+        list_output.description = "Default task --list output: %s" % format_
+        yield list_output, 'default_tasks', format_, expected
+        del list_output.description
+
+
+def test_default_task_loading():
+    """
+    crawl() should return default tasks where found, instead of module objs
+    """
+    docs, tasks = load_fabfile(fabfile('default_tasks'))
+    ok_(isinstance(crawl('mymodule', tasks), Task))
+
+
+def test_aliases_appear_in_fab_list():
+    """
+    --list should include aliases
+    """
+    list_output('nested_alias', 'short', """nested.foo
+nested.foo_aliased""")
