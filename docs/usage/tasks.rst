@@ -46,9 +46,10 @@ and enable some programming best practices, specifically:
 With the introduction of `~fabric.tasks.Task`, there are two ways to set up new
 tasks:
 
-* Decorate a regular module level function with `~fabric.decorators.task`,
-  which transparently wraps the function in a `~fabric.tasks.Task` subclass.
-  The function name will be used as the task name when invoking.
+* Decorate a regular module level function with `@task
+  <fabric.decorators.task>`, which transparently wraps the function in a
+  `~fabric.tasks.Task` subclass.  The function name will be used as the task
+  name when invoking.
 * Subclass `~fabric.tasks.Task` (`~fabric.tasks.Task` itself is intended to be
   abstract), define a ``run`` method, and instantiate your subclass at module
   level. Instances' ``name`` attributes are used as the task name; if omitted
@@ -63,7 +64,7 @@ Use of new-style tasks also allows you to set up :ref:`namespaces
 The ``@task`` decorator
 -----------------------
 
-The quickest way to make use of new-style task features is to wrap basic task functions with the `~fabric.decorators.task` decorator::
+The quickest way to make use of new-style task features is to wrap basic task functions with `@task <fabric.decorators.task>`::
 
     from fabric.api import tasks, run
 
@@ -79,7 +80,10 @@ When this decorator is used, it signals to Fabric that *only* functions wrapped 
 Arguments
 ~~~~~~~~~
 
-`~fabric.decorators.task` may also be called with arguments to customize its behavior. Any arguments not documented below are passed into the constructor of the ``task_class`` being used, with the function itself as the first argument (see :ref:`task-decorator-and-classes` for details.)
+`@task <fabric.decorators.task>` may also be called with arguments to
+customize its behavior. Any arguments not documented below are passed into the
+constructor of the ``task_class`` being used, with the function itself as the
+first argument (see :ref:`task-decorator-and-classes` for details.)
 
 * ``task_class``: The `~fabric.tasks.Task` subclass used to wrap the decorated
   function. Defaults to `~fabric.tasks.WrappedCallableTask`.
@@ -168,7 +172,8 @@ With the following task list (assuming a simple top level ``fabfile.py`` that ju
 
 Calling ``deploy.full_deploy`` on every deploy could get kind of old, or somebody new to the team might not be sure if that's really the right task to run.
 
-Using the ``default`` kwarg to `~fabric.decorators.task`, we can tag e.g. ``full_deploy`` as the default task::
+Using the ``default`` kwarg to `@task <fabric.decorators.task>`, we can tag
+e.g. ``full_deploy`` as the default task::
 
     @task(default=True)
     def full_deploy():
@@ -240,15 +245,15 @@ We plan to extend the API in the future to make this experience a bit smoother.
 Using custom subclasses with ``@task``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-It's possible to marry custom `~fabric.tasks.Task` subclasses with the
-`~fabric.decorators.task` decorator. This may be useful in cases where your
-core execution logic doesn't do anything class/object-specific, but you want
-to take advantage of class metaprogramming or similar techniques.
+It's possible to marry custom `~fabric.tasks.Task` subclasses with `@task
+<fabric.decorators.task>`. This may be useful in cases where your core
+execution logic doesn't do anything class/object-specific, but you want to
+take advantage of class metaprogramming or similar techniques.
 
 Specifically, any `~fabric.tasks.Task` subclass which is designed to take in a
 callable as its first constructor argument (as the built-in
 `~fabric.tasks.WrappedCallableTask` does) may be specified as the
-``task_class`` argument to the `~fabric.decorators.task` decorator.
+``task_class`` argument to `@task <fabric.decorators.task>`.
 
 Fabric will automatically instantiate a copy of the given class, passing in
 the wrapped function as the first argument. All other args/kwargs given to the
@@ -287,9 +292,9 @@ Namespaces
 
 With :ref:`classic tasks <classic-tasks>`, fabfiles were limited to a single,
 flat set of task names with no real way to organize them.  In Fabric 1.1 and
-newer, if you declare tasks the new way (via `~fabric.decorators.task` or your
-own `~fabric.tasks.Task` subclass instances) you may take advantage of
-**namespacing**:
+newer, if you declare tasks the new way (via `@task <fabric.decorators.task>`
+or your own `~fabric.tasks.Task` subclass instances) you may take advantage
+of **namespacing**:
 
 * Any module objects imported into your fabfile will be recursed into, looking
   for additional task objects.

@@ -35,8 +35,7 @@ class WrappedCallableTask(Task):
     """
     Wraps a given callable transparently, while marking it as a valid Task.
 
-    Generally used via the `~fabric.decorators.task` decorator and not
-    directly.
+    Generally used via `@task <~fabric.decorators.task>` and not directly.
 
     .. versionadded:: 1.1
     """
