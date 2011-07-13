@@ -25,6 +25,7 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :release:`1.2.0 <2011-07-12>`
 * :feature:`22` Enhanced `@task <fabric.decorators.task>` to add :ref:`aliasing
   <task-aliases>`, :ref:`per-module default tasks <default-tasks>`, and
   :ref:`control over the wrapping task class <task-decorator-and-classes>`.
