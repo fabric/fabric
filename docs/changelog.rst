@@ -25,6 +25,8 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`389` Fixed/improved error handling when Paramiko import fails. Thanks
+  to Brian Luft for the catch.
 * :bug:`380` Improved unicode support when testing objects for being
   string-like. Thanks to Jiri Barton for catch & patch.
 * :support:`382` Experimental overhaul of changelog formatting & process to

@@ -17,8 +17,13 @@ try:
     import warnings
     warnings.simplefilter('ignore', DeprecationWarning)
     import paramiko as ssh
-except ImportError:
-    abort("paramiko is a required module. Please install it:\n\t$ sudo easy_install paramiko")
+except ImportError, e:
+    print >> sys.stderr, """There was a problem importing our SSH library. Specifically:
+
+    %s
+
+Please make sure all dependencies are installed and importable.""" % e
+    sys.exit(1)
 
 
 
