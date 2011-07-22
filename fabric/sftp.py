@@ -222,7 +222,10 @@ class SFTP(object):
             file_obj.write(local_path.read())
             file_obj.close()
             local_path.seek(old_pointer)
-        real_callback = partial(callback, real_local_path)
+        if callback is not None:
+            real_callback = partial(callback, real_local_path)
+        else:
+            real_callback = None
         rattrs = self.ftp.put(real_local_path, remote_path, callback=real_callback)
         # Clean up
         if not local_is_path:
