@@ -303,7 +303,7 @@ def prompt(text, key=None, default='', validate=None):
 
 @needs_host
 def put(local_path=None, remote_path=None, use_sudo=False,
-    mirror_local_mode=False, mode=None):
+    mirror_local_mode=False, mode=None, callback=None):
     """
     Upload one or more files to a remote host.
 
@@ -432,11 +432,11 @@ def put(local_path=None, remote_path=None, use_sudo=False,
             try:
                 if local_is_path and os.path.isdir(lpath):
                     p = ftp.put_dir(lpath, remote_path, use_sudo,
-                        mirror_local_mode, mode)
+                        mirror_local_mode, mode, callback=callback)
                     remote_paths.extend(p)
                 else:
                     p = ftp.put(lpath, remote_path, use_sudo, mirror_local_mode,
-                        mode, local_is_path)
+                        mode, local_is_path, callback=callback)
                     remote_paths.append(p)
             except Exception, e:
                 msg = "put() encountered an exception while uploading '%s'"
