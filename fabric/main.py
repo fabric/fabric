@@ -701,6 +701,7 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
         # Shortlist is now just an alias for the "short" list format;
         # it overrides use of --list-format if somebody were to specify both
         if options.shortlist:
+            options.list_commands = True
             options.list_format = 'short'
 
         # List available commands
