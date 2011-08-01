@@ -1,10 +1,9 @@
 from __future__ import with_statement
 
-from nose.tools import eq_
+from nose.tools import eq_, ok_
 
 from fabric.state import env
 from fabric.context_managers import cd, settings
-
 
 #
 # cd()
@@ -65,7 +64,7 @@ def test_settings():
 
 def test_settings_with_multiple_kwargs():
     """
-    settings() should temporarily override env dict with given key/value pairS
+    settings() should temporarily override env dict with given key/value pair
     """
     env.testval1 = "outer 1"
     env.testval2 = "outer 2"
@@ -74,3 +73,12 @@ def test_settings_with_multiple_kwargs():
         eq_(env.testval2, "inner 2")
     eq_(env.testval1, "outer 1")
     eq_(env.testval2, "outer 2")
+
+def test_settings_extras():
+    """
+    settings() should be able to add a new key to the dictionary
+    """
+    ok_("newkey" not in env)
+    with settings(newkey="foo"):
+        eq_(env.newkey,"foo")
+    ok_("newkey" not in env)
