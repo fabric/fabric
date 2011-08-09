@@ -224,6 +224,14 @@ env_options = [
         default=0,
         help="enables a keepalive every n seconds"
     ),
+	
+    # Disable Input
+    make_option('--disable-input',
+        dest='input_enabled',
+		action='store_false',	
+        default=True,
+        help="Disable input for the localhost"
+    ),
 ]
 
 
@@ -248,6 +256,7 @@ env = _AttributeDict({
     'exclude_hosts': [],
     'host': None,
     'host_string': None,
+    'input_enabled' : True,
     'lcwd': '',  # Must be empty string, not None, for concatenation purposes
     'local_user': _get_system_username(),
     'output_prefix': True,
@@ -292,7 +301,7 @@ def default_channel():
     Return a channel object based on ``env.host_string``.
     """
     chan = connections[env.host_string].get_transport().open_session()
-    chan.input_enabled = True
+    chan.input_enabled = env.input_enabled
     return chan
 
 
