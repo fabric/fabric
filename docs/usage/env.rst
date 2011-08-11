@@ -259,6 +259,14 @@ The global host list used when composing per-task host lists.
 
 .. seealso:: :doc:`execution`
 
+``input_enabled``
+-----------------
+
+**Default:** ``True``
+
+Controls whether local input is enabled.  This is useful for calling a fabric- 
+based script from another script, such as a job dispatcher.
+
 .. _keepalive:
 
 ``keepalive``
