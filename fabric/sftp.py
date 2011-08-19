@@ -202,7 +202,7 @@ class SFTP(object):
         if output.running:
             local = local_path if local_is_path else '<file obj>'
             remote = os.path.join(pre, remote_path)
-            print("[%s] put: %s -> %s" % (env.host_string, local, remote))
+            print("[%s] upload: %s -> %s" % (env.host_string, local, remote))
         # When using sudo, "bounce" the file through a guaranteed-unique file
         # path in the default remote CWD (which, typically, the login user will
         # have write permissions on) in order to sudo(mv) it later.
