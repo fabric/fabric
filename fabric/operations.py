@@ -23,7 +23,8 @@ from fabric.sftp import SFTP
 from fabric.state import (env, connections, output, win32, default_channel,
     io_sleep)
 from fabric.thread_handling import ThreadHandler
-from fabric.utils import abort, indent, warn, puts, handle_prompt_abort, human_readable_size
+from fabric.utils import abort, indent, warn, puts, handle_prompt_abort, \
+                         human_readable_size, human_readable_seconds
 
 # For terminal size logic below
 if not win32:
@@ -310,24 +311,32 @@ def _print_up_or_download_info(down_or_up, size, total_size):
     if time.time() - env_data['time'] < 0.5 and size != total_size:
         return #Update only 2x/second or in the end of transmission
     
+    #calculate 'actual throughput' (since last shown status message)
     delta_time = time.time() - env_data['time']
     delta_bytes = size - env_data['size']
     throughput = delta_bytes / delta_time
+    percentual = '%.2f' % (100 * float(size) / total_size)
 
     #store useful data for the next call by Paramiko
     env_data['size'] = size
     env_data['time'] = time.time()
 
-    percentual = '%.2f' % (100 * float(size) / total_size)
-    new_status = "\r %11s / %s (%6s%%) @ %11s/s" % \
-                 (human_readable_size(size),
-                  human_readable_size(total_size), percentual,
-                  human_readable_size(throughput))
+    new_status = "\r %10s / %s (%6s%%)" % (human_readable_size(size),
+                  human_readable_size(total_size), percentual)
+    if size != total_size:
+        #calculate estimated time of arrival based on average throughput
+        avg_throughput = size / (time.time() - env_data['start_time'])
+        eta = (total_size - size) / avg_throughput
+        new_status += ' @ %10s/s, ETA: %11s' % \
+                      (human_readable_size(throughput),
+                       human_readable_seconds(eta))
+    else: #reach 100%
+        duration = time.time() - env_data['start_time']
+        avg_throughput = total_size / duration
+        new_status += ', duration: %11s, avg: %10s/s\n' % \
+                      (human_readable_seconds(duration),
+                       human_readable_size(avg_throughput))
 
-    if size == total_size: #reach 100%!
-        delta_time = time.time() - env_data['start_time']
-        avg_throughput = total_size / delta_time
-        new_status += ', average %s/s\n' % human_readable_size(avg_throughput)
     sys.stdout.write(new_status)
     sys.stdout.flush()
 

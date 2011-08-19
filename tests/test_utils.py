@@ -145,3 +145,13 @@ def test_human_readable_size():
     assert human_readable_size(42.31 * 1024 ** 4) == '42.31 TiB'
     assert human_readable_size(3.1415192 * 1024 ** 5) == '3.14 PiB'
     assert human_readable_size(2.5 * 1024 ** 6) == '2.50 EiB'
+
+
+def test_human_readable_seconds():
+    """ Testing return of human_readable_seconds """
+    assert human_readable_seconds(1) == '01s'
+    assert human_readable_seconds(10) == '10s'
+    assert human_readable_seconds(60) == '01min00s'
+    assert human_readable_seconds(3600) == '01h00min00s'
+    assert human_readable_seconds(3663.2) == '01h01min03s'
+    assert human_readable_seconds(2 * 3600 + 3 * 60 + 15) == '02h03min15s'

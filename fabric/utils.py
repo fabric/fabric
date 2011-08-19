@@ -131,7 +131,7 @@ def handle_prompt_abort():
 
 def human_readable_size(size):
     """
-    Print ``size`` in a human-readable way. Uses 1024 as the division factor.
+    Returns ``size`` in a human-readable way. Uses 1024 as the division factor.
     Handle file sizes from Bytes to ExaBytes.
     Examples:
     ``human_readable_size(10)`` return ``10 B``
@@ -142,7 +142,7 @@ def human_readable_size(size):
     ``human_readable_size(1024 ** 5)`` return ``1 PiB``
     ``human_readable_size(1024 ** 6)`` return ``1 EiB`` (= 2**60 B)
     """
-
+    
     units = ['', 'K', 'M', 'G', 'T', 'P', 'E']
     size = float(size)
     unit = 0
@@ -152,3 +152,27 @@ def human_readable_size(size):
     if unit == 0:
         return '%d B' % size
     return '%.2f %siB' % (size, units[unit])
+
+
+def human_readable_seconds(secs):
+    """
+    Returns ``secs`` in a human-readable way (??h??min??s).
+    Examples:
+    ``human_readable_seconds(10)`` returns ``10s``
+    ``human_readable_seconds(60)`` returns ``01min00s``
+    ``human_readable_seconds(3600)`` returns ``01h00min00s``
+    """
+    
+    total_secs = int(secs)
+    hours = total_secs / 3600 #integer division
+    total_secs -= hours * 3600
+    minutes = total_secs / 60 #integer division
+    total_secs -= minutes * 60
+    seconds = total_secs
+    
+    if hours > 0:
+        return '%02dh%02dmin%02ds' % (hours, minutes, seconds)
+    elif minutes > 0:
+        return '%02dmin%02ds' % (minutes, seconds)
+    else:
+        return '%02ds' % seconds
