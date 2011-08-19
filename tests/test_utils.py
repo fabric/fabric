@@ -138,10 +138,10 @@ def test_human_readable_size():
     """ Testing return of human_readable_size """
 
     assert human_readable_size(10) == '10 B'
-    assert human_readable_size(1024) == '1.00 kiB'
-    assert human_readable_size(1024 + 512) == '1.50 kiB'
-    assert human_readable_size(1024 ** 2) == '1.00 MiB'
-    assert human_readable_size(1024 ** 3) == '1.00 GiB'
-    assert human_readable_size(1024 ** 4) == '1.00 TiB'
-    assert human_readable_size(1024 ** 5) == '1.00 PiB'
-
+    assert human_readable_size(1024) == '1.00 KiB'
+    assert human_readable_size(1.5 * 1024) == '1.50 KiB'
+    assert human_readable_size(1.2 * 1024 ** 2) == '1.20 MiB'
+    assert human_readable_size(5.03 * 1024 ** 3) == '5.03 GiB'
+    assert human_readable_size(42.31 * 1024 ** 4) == '42.31 TiB'
+    assert human_readable_size(3.1415192 * 1024 ** 5) == '3.14 PiB'
+    assert human_readable_size(2.5 * 1024 ** 6) == '2.50 EiB'

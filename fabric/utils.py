@@ -132,14 +132,18 @@ def handle_prompt_abort():
 def human_readable_size(size):
     """
     Print ``size`` in a human-readable way. Uses 1024 as the division factor.
-    Handle file sizes from Bytes to PetaBytes.
+    Handle file sizes from Bytes to ExaBytes.
     Examples:
     ``human_readable_size(10)`` return ``10 B``
-    ``human_readable_size(1024)`` return ``1 kiB``
+    ``human_readable_size(1024)`` return ``1 KiB`` (= 2**10 B)
     ``human_readable_size(1024 * 1024)`` return ``1 MiB``
+    ``human_readable_size(1024 ** 3)`` return ``1 GiB``
+    ``human_readable_size(1024 ** 4)`` return ``1 TiB``
+    ``human_readable_size(1024 ** 5)`` return ``1 PiB``
+    ``human_readable_size(1024 ** 6)`` return ``1 EiB`` (= 2**60 B)
     """
 
-    units = ['', 'k', 'M', 'G', 'T', 'P']
+    units = ['', 'K', 'M', 'G', 'T', 'P', 'E']
     size = float(size)
     unit = 0
     while size >= 1024 and unit < len(units):
