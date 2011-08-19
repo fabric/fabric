@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :support:`416` Updated documentation to reflect move from Redmine to Github.
+* :bug:`389` Fixed/improved error handling when Paramiko import fails. Thanks
+  to Brian Luft for the catch.
 * :release:`1.2.0 <2011-07-12>`
 * :feature:`22` Enhanced `@task <fabric.decorators.task>` to add :ref:`aliasing
   <task-aliases>`, :ref:`per-module default tasks <default-tasks>`, and
