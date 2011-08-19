@@ -27,13 +27,13 @@ def issues_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
     """
     Use: :issue|bug|feature|support:`ticket number`
 
-    When invoked as :issue:, turns into just a "#NN" hyperlink to Redmine.
+    When invoked as :issue:, turns into just a "#NN" hyperlink to Github.
 
     When invoked otherwise, turns into "[Type] <#NN hyperlink>: ".
     """
     # Old-style 'just the issue link' behavior
     issue_no = utils.unescape(text)
-    ref = "http://code.fabfile.org/issues/show/" + issue_no
+    ref = "https://github.com/fabric/fabric/issues/" + issue_no
     link = nodes.reference(rawtext, '#' + issue_no, refuri=ref, **options)
     ret = [link]
     # Additional 'new-style changelog' stuff
