@@ -23,7 +23,7 @@ from fabric.sftp import SFTP
 from fabric.state import (env, connections, output, win32, default_channel,
     io_sleep)
 from fabric.thread_handling import ThreadHandler
-from fabric.utils import abort, indent, warn, puts, handle_prompt_abort
+from fabric.utils import abort, indent, warn, puts, handle_prompt_abort, human_readable_size
 
 # For terminal size logic below
 if not win32:
@@ -301,6 +301,49 @@ def prompt(text, key=None, default='', validate=None):
     return value
 
 
+def _print_up_or_download_info(down_or_up, size, total_size):
+    """ Prints information about the upload or download.
+    This function is passed as callback to Paramiko and update the information
+    on console about a get or put operation at 2x/second. """
+    
+    env_data = env[down_or_up + 'load_info']
+    if time.time() - env_data['time'] < 0.5 and size != total_size:
+        return #Update only 2x/second or in the end of transmission
+    
+    delta_time = time.time() - env_data['time']
+    delta_bytes = size - env_data['size']
+    throughput = delta_bytes / delta_time
+
+    #store useful data for the next call by Paramiko
+    env_data['size'] = size
+    env_data['time'] = time.time()
+
+    percentual = '%.2f' % (100 * float(size) / total_size)
+    new_status = "\r %11s / %s (%6s%%) @ %11s/s" % \
+                 (human_readable_size(size),
+                  human_readable_size(total_size), percentual,
+                  human_readable_size(throughput))
+
+    if size == total_size: #reach 100%!
+        delta_time = time.time() - env_data['start_time']
+        avg_throughput = total_size / delta_time
+        new_status += ', average %s/s\n' % human_readable_size(avg_throughput)
+    sys.stdout.write(new_status)
+    sys.stdout.flush()
+
+
+def _print_upload_info(size, total_size):
+    """ Just calls ``_print_up_or_download_info`` in 'upload mode'"""
+
+    _print_up_or_download_info('up', size, total_size)
+
+
+def _print_download_info(size, total_size):
+    """ Just calls ``_print_up_or_download_info`` in 'download mode'"""
+
+    _print_up_or_download_info('down', size, total_size)
+
+
 @needs_host
 def put(local_path=None, remote_path=None, use_sudo=False,
     mirror_local_mode=False, mode=None):
@@ -432,12 +475,19 @@ def put(local_path=None, remote_path=None, use_sudo=False,
             try:
                 if local_is_path and os.path.isdir(lpath):
                     p = ftp.put_dir(lpath, remote_path, use_sudo,
-                        mirror_local_mode, mode)
-                    remote_paths.extend(p)
+                                    mirror_local_mode, mode)
                 else:
-                    p = ftp.put(lpath, remote_path, use_sudo, mirror_local_mode,
-                        mode, local_is_path)
-                    remote_paths.append(p)
+                    if output.running:
+                        env['upload_info'] = {'size': 0, 'time': time.time(),
+                                              'start_time': time.time()}
+                        callback_function = _print_upload_info
+                    else:
+                        callback_function = None
+
+                    p = ftp.put(lpath, remote_path, use_sudo,
+                                mirror_local_mode, mode, local_is_path,
+                                callback_function)
+                remote_paths.append(p)
             except Exception, e:
                 msg = "put() encountered an exception while uploading '%s'"
                 failure = lpath if local_is_path else "<StringIO>"
@@ -606,8 +656,18 @@ def get(remote_path, local_path=None):
                 else:
                     # Result here can be file contents (if not local_is_path)
                     # or final resultant file path (if local_is_path)
+
+                    if output.running:
+                        env['download_info'] = {'size': 0, 'time': time.time(),
+                                                'start_time': time.time()}
+                        callback_function = _print_download_info
+                    else:
+                        callback_function = None
+
                     result = ftp.get(remote_path, local_path, local_is_path,
-                        os.path.basename(remote_path))
+                                     os.path.basename(remote_path),
+                                     callback_function)
+
                     if not local_is_path:
                         # Overwrite entire contents of local_path
                         local_path.seek(0)

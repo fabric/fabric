@@ -8,7 +8,7 @@ from nose.tools import eq_
 from nose.tools import raises
 
 from fabric.state import output, env
-from fabric.utils import warn, indent, abort, puts, fastprint
+from fabric.utils import warn, indent, abort, puts, fastprint, human_readable_size
 from fabric import utils  # For patching
 from fabric.context_managers import settings
 from utils import mock_streams
@@ -132,3 +132,16 @@ def test_fastprint_calls_puts():
             verify()
         finally:
             clear_expectations()
+
+
+def test_human_readable_size():
+    """ Testing return of human_readable_size """
+
+    assert human_readable_size(10) == '10 B'
+    assert human_readable_size(1024) == '1.00 kiB'
+    assert human_readable_size(1024 + 512) == '1.50 kiB'
+    assert human_readable_size(1024 ** 2) == '1.00 MiB'
+    assert human_readable_size(1024 ** 3) == '1.00 GiB'
+    assert human_readable_size(1024 ** 4) == '1.00 TiB'
+    assert human_readable_size(1024 ** 5) == '1.00 PiB'
+

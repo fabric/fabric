@@ -98,7 +98,8 @@ class SFTP(object):
         else:
             self.ftp.mkdir(path)
 
-    def get(self, remote_path, local_path, local_is_path, rremote=None):
+    def get(self, remote_path, local_path, local_is_path, rremote=None,
+            callback_function=None):
         # rremote => relative remote path, so get(/var/log) would result in
         # this function being called with
         # remote_path=/var/log/apache2/access.log and
@@ -122,11 +123,10 @@ class SFTP(object):
             if os.path.isdir(local_path):
                 local_path = os.path.join(local_path, path_vars['basename'])
         if output.running:
-            print("[%s] download: %s <- %s" % (
-                env.host_string,
-                local_path if local_is_path else "<file obj>",
-                remote_path
-            ))
+            local = local_path if local_is_path else "<file obj>"
+            print("[%s] download: %s <- %s" % (env.host_string, local,
+                                               remote_path))
+
         # Warn about overwrites, but keep going
         if local_is_path and os.path.exists(local_path):
             msg = "Local file %s already exists and is being overwritten."
@@ -135,7 +135,10 @@ class SFTP(object):
         fd, real_local_path = None, local_path
         if not local_is_path:
             fd, real_local_path = tempfile.mkstemp()
-        self.ftp.get(remote_path, real_local_path)
+        if callback_function:
+            self.ftp.get(remote_path, real_local_path, callback_function)
+        else:
+            self.ftp.get(remote_path, real_local_path)
         # Return file contents (if it needs stuffing into a file-like obj)
         # or the final local file path (otherwise)
         result = None
@@ -189,7 +192,7 @@ class SFTP(object):
         return result
 
     def put(self, local_path, remote_path, use_sudo, mirror_local_mode, mode,
-        local_is_path):
+            local_is_path, callback_function=None):
         from fabric.api import sudo, hide
         pre = self.ftp.getcwd()
         pre = pre if pre else ''
@@ -197,11 +200,9 @@ class SFTP(object):
             basename = os.path.basename(local_path)
             remote_path = os.path.join(remote_path, basename)
         if output.running:
-            print("[%s] put: %s -> %s" % (
-                env.host_string,
-                local_path if local_is_path else '<file obj>',
-                os.path.join(pre, remote_path)
-            ))
+            local = local_path if local_is_path else '<file obj>'
+            remote = os.path.join(pre, remote_path)
+            print("[%s] put: %s -> %s" % (env.host_string, local, remote))
         # When using sudo, "bounce" the file through a guaranteed-unique file
         # path in the default remote CWD (which, typically, the login user will
         # have write permissions on) in order to sudo(mv) it later.
@@ -221,7 +222,11 @@ class SFTP(object):
             file_obj.write(local_path.read())
             file_obj.close()
             local_path.seek(old_pointer)
-        rattrs = self.ftp.put(real_local_path, remote_path)
+        if callback_function:
+            rattrs = self.ftp.put(real_local_path, remote_path,
+                                  callback_function)
+        else:
+            rattrs = self.ftp.put(real_local_path, remote_path)
         # Clean up
         if not local_is_path:
             os.remove(real_local_path)

@@ -127,3 +127,24 @@ def handle_prompt_abort():
     import fabric.state
     if fabric.state.env.abort_on_prompts:
         abort("Needed to prompt, but abort-on-prompts was set to True!")
+
+
+def human_readable_size(size):
+    """
+    Print ``size`` in a human-readable way. Uses 1024 as the division factor.
+    Handle file sizes from Bytes to PetaBytes.
+    Examples:
+    ``human_readable_size(10)`` return ``10 B``
+    ``human_readable_size(1024)`` return ``1 kiB``
+    ``human_readable_size(1024 * 1024)`` return ``1 MiB``
+    """
+
+    units = ['', 'k', 'M', 'G', 'T', 'P']
+    size = float(size)
+    unit = 0
+    while size >= 1024 and unit < len(units):
+        size /= 1024
+        unit += 1
+    if unit == 0:
+        return '%d B' % size
+    return '%.2f %siB' % (size, units[unit])
