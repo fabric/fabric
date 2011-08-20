@@ -196,6 +196,18 @@ class TestNetwork(FabricTest):
 
     @mock_streams('stdout')
     @server()
+    def test_does_not_abort_with_password_and_host_with_abort_on_prompt(self):
+        """
+        abort_on_prompt=True should not abort if no prompts are needed
+        """
+        env.abort_on_prompts = True
+        env.password = PASSWORDS[env.user]
+        # env.host_string is automatically filled in when using server()
+        run("ls /simple")
+
+
+    @mock_streams('stdout')
+    @server()
     def test_trailing_newline_line_drop(self):
         """
         Trailing newlines shouldn't cause last line to be dropped.
