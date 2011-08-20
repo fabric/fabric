@@ -173,6 +173,9 @@ class TestNetwork(FabricTest):
     @raises(SystemExit)
     @with_patched_object(output, 'aborts', False)
     def test_aborts_on_prompt_with_abort_on_prompt(self):
+        """
+        abort_on_prompt=True should abort when prompt() is used
+        """
         env.abort_on_prompts = True
         prompt("This will abort")
 
@@ -181,6 +184,9 @@ class TestNetwork(FabricTest):
     @raises(SystemExit)
     @with_patched_object(output, 'aborts', False)
     def test_aborts_on_password_prompt_with_abort_on_prompt(self):
+        """
+        abort_on_prompt=True should abort when password prompts occur
+        """
         env.password = None
         env.abort_on_prompts = True
         with password_response(PASSWORDS[env.user], times_called=1):
