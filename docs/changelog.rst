@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`417` :ref:`abort-on-prompts` would incorrectly abort when set to True,
+  even if both password and host were defined. This has been fixed. Thanks to
+  Valerie Ishida for the report.
 * :support:`416` Updated documentation to reflect move from Redmine to Github.
 * :bug:`389` Fixed/improved error handling when Paramiko import fails. Thanks
   to Brian Luft for the catch.

@@ -323,8 +323,8 @@ def needs_host(func):
 
     @wraps(func)
     def host_prompting_wrapper(*args, **kwargs):
-        handle_prompt_abort()
         while not env.get('host_string', False):
+            handle_prompt_abort()
             host_string = raw_input("No hosts found. Please specify (single)"
                                     " host string for connection: ")
             interpret_host_string(host_string)
