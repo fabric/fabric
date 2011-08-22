@@ -59,7 +59,8 @@ def release_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
     """
     Invoked as :release:`N.N.N <YYYY-MM-DD>`.
 
-    Turns into: <b>YYYY-MM-DD</b>: released <b>Fabric N.N.N</b>
+    Turns into: <b>YYYY-MM-DD</b>: released <b><a>Fabric N.N.N</a></b>, with
+    the link going to the Github source page for the tag.
     """
     # Make sure year has been specified
     match = year_arg_re.match(text)
@@ -70,7 +71,11 @@ def release_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
     return [
         nodes.strong(text=date),
         nodes.inline(text=": released "),
-        nodes.strong(text="Fabric %s" % number)
+        nodes.reference(
+            text="Fabric %s" % number,
+            refuri="https://github.com/fabric/fabric/tree/%s" % number,
+            classes=['changelog-release']
+        )
     ], []
 roles.register_local_role('release', release_role)
 
