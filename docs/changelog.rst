@@ -25,6 +25,7 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :release:`1.2.1 <2011-08-21>`
 * :release:`1.1.3 <2011-08-21>`
 * :release:`1.0.3 <2011-08-21>`
 * :bug:`417` :ref:`abort-on-prompts` would incorrectly abort when set to True,
