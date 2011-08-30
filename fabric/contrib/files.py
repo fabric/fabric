@@ -41,8 +41,8 @@ def first(*args, **kwargs):
     exist. May specify ``use_sudo`` which is passed to `exists`.
     """
     for directory in args:
-        if not kwargs.get('use_sudo'):
-            if exists(directory, sudo=False):
+        if 'use_sudo' not in kwargs:
+            if exists(directory, use_sudo=False):
                 return directory
         else:
             if exists(directory):
