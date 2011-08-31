@@ -544,11 +544,12 @@ def _merge(hosts, roles, exclude=[]):
         role_hosts += value
 
     # Return deduped combo of hosts and role_hosts, preserving order within
-    # them (vs using set(), which may lose ordering).
+    # them (vs using set(), which may lose ordering) and skipping hosts to be
+    # excluded.
     cleaned_hosts = _clean_hosts(list(hosts) + list(role_hosts))
     all_hosts = []
     for host in cleaned_hosts:
-        if host not in all_hosts:
+        if host not in all_hosts and host not in exclude:
             all_hosts.append(host)
     return all_hosts
 
