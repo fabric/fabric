@@ -518,8 +518,9 @@ def parse_arguments(arguments):
             for pair in _escape_split(',', argstr):
                 k, _, v = pair.partition('=')
                 if _:
-                    # Catch, interpret host/hosts/role/roles/exclude_hosts kwargs
-                    if k in ['host', 'hosts', 'role', 'roles','exclude_hosts']:
+                    # Catch, interpret host/hosts/role/roles/exclude_hosts
+                    # kwargs
+                    if k in ['host', 'hosts', 'role', 'roles', 'exclude_hosts']:
                         if k == 'host':
                             hosts = [v.strip()]
                         elif k == 'hosts':
@@ -567,11 +568,12 @@ def _merge(hosts, roles, exclude=[]):
         role_hosts += value
 
     # Return deduped combo of hosts and role_hosts, preserving order within
-    # them (vs using set(), which may lose ordering).
+    # them (vs using set(), which may lose ordering) and skipping hosts to be
+    # excluded.
     cleaned_hosts = _clean_hosts(list(hosts) + list(role_hosts))
     all_hosts = []
     for host in cleaned_hosts:
-        if host not in all_hosts:
+        if host not in all_hosts and host not in exclude:
             all_hosts.append(host)
     return all_hosts
 
@@ -594,9 +596,8 @@ def get_hosts(command, cli_hosts, cli_roles, cli_exclude_hosts):
     # Decorator-specific hosts/roles go next
     func_hosts = getattr(command, 'hosts', [])
     func_roles = getattr(command, 'roles', [])
-    func_exclude_hosts = getattr(command, 'exclude_hosts', [])
     if func_hosts or func_roles:
-        return _merge(func_hosts, func_roles, func_exclude_hosts)
+        return _merge(func_hosts, func_roles, cli_exclude_hosts)
     # Finally, the env is checked (which might contain globally set lists from
     # the CLI or from module-level code). This will be the empty list if these
     # have not been set -- which is fine, this method should return an empty
@@ -646,7 +647,8 @@ def main():
         for option in env_options:
             state.env[option.dest] = getattr(options, option.dest)
 
-        # Handle --hosts, --roles, --exclude-hosts (comma separated string => list)
+        # Handle --hosts, --roles, --exclude-hosts (comma separated string =>
+        # list)
         for key in ['hosts', 'roles', 'exclude_hosts']:
             if key in state.env and isinstance(state.env[key], basestring):
                 state.env[key] = state.env[key].split(',')
