@@ -179,8 +179,7 @@ def test_hosts_decorator_overrides_env_hosts_with_task_decorator_last():
     assert 'foo' not in get_hosts(command, [], [])
 
 
-@patched_env({'hosts': [' foo ', 'bar '], 'roles': [],
-        'exclude_hosts':[]})
+@patched_env({'hosts': [' foo ', 'bar '], 'roles': [], 'exclude_hosts': []})
 def test_hosts_stripped_env_hosts():
     """
     Make sure hosts defined in env.hosts are cleaned of extra spaces
@@ -229,6 +228,24 @@ def test_roles_decorator_expands_single_iterable():
         pass
 
     eq_(command.roles, role_list)
+
+
+#
+# Host exclusion
+#
+
+def dummy(): pass
+
+def test_get_hosts_excludes_cli_exclude_hosts_from_cli_hosts():
+    assert 'foo' not in get_hosts(dummy, ['foo', 'bar'], [], ['foo'])
+
+def test_get_hosts_excludes_cli_exclude_hosts_from_decorator_hosts():
+    assert 'foo' not in get_hosts(hosts('foo', 'bar')(dummy), [], [], ['foo'])
+
+@patched_env({'hosts': ['foo', 'bar'], 'exclude_hosts': ['foo']})
+def test_get_hosts_excludes_global_exclude_hosts_from_global_hosts():
+    assert 'foo' not in get_hosts(dummy, [], [], [])
+
 
 
 #
