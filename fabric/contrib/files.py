@@ -322,3 +322,16 @@ def append(filename, text, use_sudo=False, partial=False, escape=True):
             continue
         line = line.replace("'", r'\'') if escape else line
         func("echo '%s' >> %s" % (line, filename))
+
+def stat(filename, use_sudo=False):
+    """
+    Return the stats for a file/directory
+
+    Return format will be similar to os.stat
+    """
+
+    func = use_sudo and sudo or run
+    if exists(filename):
+        with settings(hide('everything'), warn_only=True):
+            output = func("stat '%s'" % filename)
+    return output
