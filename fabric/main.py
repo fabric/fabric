@@ -573,7 +573,7 @@ def get_hosts(command, cli_hosts, cli_roles, cli_exclude_hosts):
     func_hosts = getattr(command, 'hosts', [])
     func_roles = getattr(command, 'roles', [])
     if func_hosts or func_roles:
-        return _merge(func_hosts, func_roles)
+        return _merge(func_hosts, func_roles, cli_exclude_hosts)
     # Finally, the env is checked (which might contain globally set lists from
     # the CLI or from module-level code). This will be the empty list if these
     # have not been set -- which is fine, this method should return an empty
