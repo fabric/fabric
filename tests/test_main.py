@@ -225,6 +225,15 @@ def test_roles_decorator_expands_single_iterable():
 
 
 #
+# Host exclusion
+#
+
+def test_get_hosts_excludes_cli_exclude_hosts():
+    def dummy(): pass
+    assert 'foo' not in get_hosts(dummy, ['foo', 'bar'], [], ['foo'])
+
+
+#
 # Basic role behavior
 #
 
