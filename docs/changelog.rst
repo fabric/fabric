@@ -25,6 +25,8 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`303` Updated terminal size detection to correctly skip over non-tty
+  stdout, such as when running ``fab taskname | other_command``.
 * :release:`1.0.3 <2011-08-21>`
 * :support:`416` Updated documentation to reflect move from Redmine to Github.
 * :bug:`389` Fixed/improved error handling when Paramiko import fails. Thanks
