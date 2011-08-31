@@ -567,7 +567,7 @@ def get_hosts(command, cli_hosts, cli_roles, cli_exclude_hosts):
     set.
     """
     # Command line per-command takes precedence over anything else.
-    if cli_hosts or cli_roles or cli_exclude_hosts:
+    if cli_hosts or cli_roles:
         return _merge(cli_hosts, cli_roles, cli_exclude_hosts)
     # Decorator-specific hosts/roles go next
     func_hosts = getattr(command, 'hosts', [])
