@@ -45,7 +45,8 @@ def _pty_size():
         fmt = 'HH'
         # Create an empty (zeroed) buffer for ioctl to map onto. Yay for C!
         buffer = struct.pack(fmt, 0, 0)
-        # Call TIOCGWINSZ to get window size of stdout, returns our filled buffer
+        # Call TIOCGWINSZ to get window size of stdout, returns our filled
+        # buffer
         try:
             result = fcntl.ioctl(sys.stdout.fileno(), termios.TIOCGWINSZ,
                 buffer)
