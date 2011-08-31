@@ -228,9 +228,18 @@ def test_roles_decorator_expands_single_iterable():
 # Host exclusion
 #
 
-def test_get_hosts_excludes_cli_exclude_hosts():
-    def dummy(): pass
+def dummy(): pass
+
+def test_get_hosts_excludes_cli_exclude_hosts_from_cli_hosts():
     assert 'foo' not in get_hosts(dummy, ['foo', 'bar'], [], ['foo'])
+
+def test_get_hosts_excludes_cli_exclude_hosts_from_decorator_hosts():
+    assert 'foo' not in get_hosts(hosts('foo', 'bar')(dummy), [], [], ['foo'])
+
+@patched_env({'hosts': ['foo', 'bar'], 'exclude_hosts': ['foo']})
+def test_get_hosts_excludes_global_exclude_hosts_from_global_hosts():
+    assert 'foo' not in get_hosts(dummy, [], [], [])
+
 
 
 #
