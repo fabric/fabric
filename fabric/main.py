@@ -494,8 +494,9 @@ def parse_arguments(arguments):
             for pair in _escape_split(',', argstr):
                 k, _, v = pair.partition('=')
                 if _:
-                    # Catch, interpret host/hosts/role/roles/exclude_hosts kwargs
-                    if k in ['host', 'hosts', 'role', 'roles','exclude_hosts']:
+                    # Catch, interpret host/hosts/role/roles/exclude_hosts
+                    # kwargs
+                    if k in ['host', 'hosts', 'role', 'roles', 'exclude_hosts']:
                         if k == 'host':
                             hosts = [v.strip()]
                         elif k == 'hosts':
@@ -622,7 +623,8 @@ def main():
         for option in env_options:
             state.env[option.dest] = getattr(options, option.dest)
 
-        # Handle --hosts, --roles, --exclude-hosts (comma separated string => list)
+        # Handle --hosts, --roles, --exclude-hosts (comma separated string =>
+        # list)
         for key in ['hosts', 'roles', 'exclude_hosts']:
             if key in state.env and isinstance(state.env[key], basestring):
                 state.env[key] = state.env[key].split(',')

@@ -173,8 +173,7 @@ def test_hosts_decorator_overrides_env_hosts_with_task_decorator_last():
     assert 'foo' not in get_hosts(command, [], [])
 
 
-@patched_env({'hosts': [' foo ', 'bar '], 'roles': [],
-        'exclude_hosts':[]})
+@patched_env({'hosts': [' foo ', 'bar '], 'roles': [], 'exclude_hosts': []})
 def test_hosts_stripped_env_hosts():
     """
     Make sure hosts defined in env.hosts are cleaned of extra spaces
