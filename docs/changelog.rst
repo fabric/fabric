@@ -25,6 +25,7 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :release:`1.2.2 <2011-09-01>`
 * :release:`1.1.4 <2011-09-01>`
 * :release:`1.0.4 <2011-09-01>`
 * :bug:`252` `~fabric.context_managers.settings` would silently fail to set
