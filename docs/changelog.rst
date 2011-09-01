@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`396` :option:`--shortlist` broke after the addition of
+  :option:`--list-format <-F>` and no longer displayed the short list format
+  correctly. This has been fixed.
 * :bug:`373` Re-added missing functionality preventing :ref:`host exclusion
   <excluding-hosts>` from working correctly.
 * :bug:`303` Updated terminal size detection to correctly skip over non-tty
