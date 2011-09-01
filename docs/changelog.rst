@@ -25,6 +25,10 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`252` `~fabric.context_managers.settings` would silently fail to set
+  ``env`` values for keys which did not exist outside the context manager
+  block.  It now works as expected. Thanks to Will Maier for the catch and
+  suggested solution.
 * :support:`393` Fixed a typo in an example code snippet in the task docs.
   Thanks to Hugo Garza for the catch.
 * :bug:`396` :option:`--shortlist` broke after the addition of
