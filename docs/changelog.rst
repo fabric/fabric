@@ -25,6 +25,7 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :release:`1.0.4 <2011-09-01>`
 * :bug:`252` `~fabric.context_managers.settings` would silently fail to set
   ``env`` values for keys which did not exist outside the context manager
   block.  It now works as expected. Thanks to Will Maier for the catch and
