@@ -678,6 +678,7 @@ def main():
         # it overrides use of --list-format if somebody were to specify both
         if options.shortlist:
             options.list_format = 'short'
+            options.list_commands = True
 
         # List available commands
         if options.list_commands:
