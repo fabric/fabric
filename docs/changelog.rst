@@ -25,6 +25,8 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :support:`393` Fixed a typo in an example code snippet in the task docs.
+  Thanks to Hugo Garza for the catch.
 * :bug:`396` :option:`--shortlist` broke after the addition of
   :option:`--list-format <-F>` and no longer displayed the short list format
   correctly. This has been fixed.

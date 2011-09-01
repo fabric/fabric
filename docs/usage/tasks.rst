@@ -66,7 +66,7 @@ The ``@task`` decorator
 
 The quickest way to make use of new-style task features is to wrap basic task functions with `@task <fabric.decorators.task>`::
 
-    from fabric.api import tasks, run
+    from fabric.api import task, run
 
     @task
     def mytask():
