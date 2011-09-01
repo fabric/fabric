@@ -25,6 +25,10 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`252` `~fabric.context_managers.settings` would silently fail to set
+  ``env`` values for keys which did not exist outside the context manager
+  block.  It now works as expected. Thanks to Will Maier for the catch and
+  suggested solution.
 * :bug:`303` Updated terminal size detection to correctly skip over non-tty
   stdout, such as when running ``fab taskname | other_command``.
 * :release:`1.0.3 <2011-08-21>`
