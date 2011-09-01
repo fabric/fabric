@@ -25,6 +25,10 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`252` `~fabric.context_managers.settings` would silently fail to set
+  ``env`` values for keys which did not exist outside the context manager
+  block.  It now works as expected. Thanks to Will Maier for the catch and
+  suggested solution.
 * :bug:`396` :option:`--shortlist` broke after the addition of
   :option:`--list-format <-F>` and no longer displayed the short list format
   correctly. This has been fixed.
