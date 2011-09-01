@@ -25,6 +25,8 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`373` Re-added missing functionality preventing :ref:`host exclusion
+  <excluding-hosts>` from working correctly.
 * :bug:`303` Updated terminal size detection to correctly skip over non-tty
   stdout, such as when running ``fab taskname | other_command``.
 * :release:`1.2.1 <2011-08-21>`
