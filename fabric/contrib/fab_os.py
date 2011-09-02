@@ -10,12 +10,13 @@ import time
 from fabric.api import *
 from fabric.contrib.files import exists 
 
-class CannotStat(Exception):
-    def __init__(self,to_stat):
-        self.to_stat = to_stat
+class Cannot(Exception):
+    def __init__(self,change,to_change):
+        self.change = change
+        self.to_change = to_change
 
     def __str__(self):
-        return 'Cannot Stat `%s`: No such file or directory' % self.to_stat
+        return 'Cannot %s `%s`: No such file or directory' % (self.change,self.to_change)
 
 def stat(filename, use_sudo=False):
     """
@@ -26,12 +27,12 @@ def stat(filename, use_sudo=False):
     """
     import posix
 
-    func = use_sudo and sudo or run
+    func = sudo if use_sudo else run
     if exists(filename):
         with settings(hide('everything'), warn_only=True):
             output = func("stat -c '%%a %%i %%d %%h %%u %%g %%o %%X %%Y  %%Z' '%s'" % filename)
             return posix.stat_result(tuple(output.split()))
-    raise CannotStat(filename)
+    raise Cannot('stat',filename)
 
 def listdir(path='', use_sudo=False):
     """
@@ -41,7 +42,7 @@ def listdir(path='', use_sudo=False):
 
     items_at_path = []
 
-    func = use_sudo and sudo or run
+    func = sudo if use_sudo else run
     output = func("ls %s" % path)
     items_at_path = output.split()
     
@@ -54,4 +55,4 @@ def remove(path, use_sudo=False):
     on Unix, the directory entry is removed but the storage allocated to the file is not made available until the original file is no longer in use.
     """
 
-    func = use_sudo and sudo or run
+    func = sudo if use_sudo else run
