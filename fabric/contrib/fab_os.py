@@ -85,6 +85,29 @@ def stat(filename, use_sudo=False):
         change = re.search('Change:.+',output).group(0)[7:].strip()
         ctime = convert_to_epoch(change)
 
-        print output
+        #print output
         return posix.stat_result((mode, inode, device, nlink, uid, gid, block, atime, mtime, ctime))
     return None
+
+def listdir(path='', use_sudo=False):
+    """
+    Return a list containing the names of the entries in the directory given by path. 
+    The list is in arbitrary order. It does not include the special entries '.' and '..' even if they are present in the directory.
+    """
+
+    items_at_path = []
+
+    func = use_sudo and sudo or run
+    output = func("ls %s" % path)
+    items_at_path = output.split()
+    
+    return items_at_path
+
+def remove(path, use_sudo=False):
+    """
+    Remove (delete) the file path. If path is a directory, OSError is raised; see rmdir() below to remove a directory. 
+    This is identical to the unlink() function documented below. On Windows, attempting to remove a file that is in use causes an exception to be raised; 
+    on Unix, the directory entry is removed but the storage allocated to the file is not made available until the original file is no longer in use.
+    """
+
+    func = use_sudo and sudo or run
