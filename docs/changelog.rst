@@ -25,6 +25,10 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`430` Tasks decorated with `~fabric.decorators.runs_once` printed
+  extraneous 'Executing...' status lines on subsequent invocations. This is
+  noisy at best and misleading at worst, and has been corrected. Thanks to
+  Jacob Kaplan-Moss for the report.
 * :release:`1.2.2 <2011-09-01>`
 * :release:`1.1.4 <2011-09-01>`
 * :release:`1.0.4 <2011-09-01>`

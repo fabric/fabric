@@ -767,7 +767,7 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
                 # Split host string and apply to env dict
                 username, hostname, port = interpret_host_string(host)
                 # Log to stdout
-                if state.output.running:
+                if state.output.running and not hasattr(task, 'return_value'):
                     print("[%s] Executing task '%s'" % (host, name))
                 # Actually run command
                 _run_task(task, args, kwargs)
