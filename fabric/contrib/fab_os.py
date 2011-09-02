@@ -6,41 +6,16 @@ inspired by ali-akber saifee module rfsutil (https://github.com/alisaifee/fabric
 """
 import datetime
 import time
-import mx.DateTime as mx
 
 from fabric.api import *
 from fabric.contrib.files import exists 
 
-def is_datetime(value):
-    return isinstance(value, (datetime.date, datetime.datetime, datetime.time))
+class CannotStat(Exception):
+    def __init__(self,to_stat):
+        self.to_stat = to_stat
 
-def is_string(value):
-    return isinstance(value, basestring)
-
-def _convert_to_epoch(dt):
-    """
-    Convert python datetime to epoch
-    """
-    #http://www.testingreflections.com/node/view/5218
-    #http://bugs.python.org/issue2736
-    return time.mktime(dt.timetuple()) + (dt.microsecond / 1000000.0)
-
-def convert_to_epoch(time_val):
-    """
-    Figure out what we are passed convert and
-    then convert it to python datetime. Using 
-    python datetime we can easily convert to 
-    epoch.
-    """
-    if is_datetime(time_val):
-        return _convert_to_epoch(time_val)
-
-    if is_string(time_val):
-        parser = mx.DateTimeFrom
-        if '-' not in time_val:
-            parser = mx.Parser.TimeFromString
-        dt = parser(time_val, formats=['iso']).pydatetime()
-        return _convert_to_epoch(dt)
+    def __str__(self):
+        return 'Cannot Stat `%s`: No such file or directory' % self.to_stat
 
 def stat(filename, use_sudo=False):
     """
@@ -49,45 +24,14 @@ def stat(filename, use_sudo=False):
     Return format will be posix.stat_result 
     like the os.stat module
     """
-    import re
     import posix
 
     func = use_sudo and sudo or run
     if exists(filename):
         with settings(hide('everything'), warn_only=True):
-            output = func("stat '%s'" % filename)
-
-        size = re.search('Size:[ 0-9]+',output).group(0).split(':')[1].strip()
-        blocks = re.search('Blocks:[ 0-9]+',output).group(0).split(':')[1].strip()
-        block = re.search('IO Block:[ 0-9]+',output).group(0).split(':')[1].strip()
-        inode = re.search('Inode:[ 0-9]+',output).group(0).split(':')[1].strip()
-        nlink = re.search('Links:[ 0-9]+',output).group(0).split(':')[1].strip()
-
-        device_part = re.search('Device:[ /0-9a-zA-Z]+',output).group(0).split(':')[1].strip()
-        device =  re.search('[0-9]+',device_part.split('/')[1].strip()).group(0)
-
-        uid_part = re.search('Uid:[ \(\)\\0-9a-zA-Z]+',output).group(0).split(':')[1].strip()
-        uid = re.search('[0-9]+',uid_part).group(0).strip()
-
-        gid_part = re.search('Gid:[ \(\)\\0-9a-zA-Z]+',output).group(0).split(':')[1].strip()
-        gid = re.search('[0-9]+',gid_part).group(0).strip()
-
-        access_rows = re.findall('Access:.+\r\n',output)
-        mode_part = re.search('Access:[ \(\)/\-rwx0-9]+',access_rows[0])
-        mode = re.search('[0-9]+',mode_part.group(0)).group(0).strip()
-
-        access = re.search('Access:.+\r\n',access_rows[1]).group(0)[7:].strip()
-        atime = convert_to_epoch(access)
-
-        modify = re.search('Modify:.+\r\n',output).group(0)[7:].strip()
-        mtime = convert_to_epoch(modify)
-
-        change = re.search('Change:.+',output).group(0)[7:].strip()
-        ctime = convert_to_epoch(change)
-
-        #print output
-        return posix.stat_result((mode, inode, device, nlink, uid, gid, block, atime, mtime, ctime))
-    return None
+            output = func("stat -c '%%a %%i %%d %%h %%u %%g %%o %%X %%Y  %%Z' '%s'" % filename)
+            return posix.stat_result(tuple(output.split()))
+    raise CannotStat(filename)
 
 def listdir(path='', use_sudo=False):
     """
