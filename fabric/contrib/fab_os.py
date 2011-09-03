@@ -99,6 +99,24 @@ def remove(path, use_sudo=False):
     else:
         raise Cannot('remove',path)
 
+def rmdir(path, use_sudo=False):
+    """
+    Remove (delete) the directory path. Only works when the directory is empty, 
+    otherwise, OSError is raised. In order to remove whole directory trees, removedirs() can be used.
+    """
+    func = sudo if use_sudo else run
+    if exists(path):
+        with settings(hide('everything'), warn_only=True):
+            if isdir(path):
+                output = func('rmdir %s' % path) 
+                if 'failed' in output:
+                    raise OSError("[Errno 39] Directory not empty: '%s'" % path)
+                
+            else:
+                raise OSError("[Errno 20] Not a directory: '%s'" % path)
+    else:
+        raise Cannot('remove',path)
+
 def removedirs(path, use_sudo=False):
     """
     Remove directories recursively. Works like rmdir() except that, 
@@ -114,7 +132,9 @@ def removedirs(path, use_sudo=False):
         with settings(hide('everything'), warn_only=True):
             if isdir(path):
                 output = func('rmdir %s' % path) 
-                print output
+                if 'failed' in output:
+                    raise OSError("[Errno 39] Directory not empty: '%s'" % path)
+                
             else:
                 raise OSError("[Errno 20] Not a directory: '%s'" % path)
     else:
