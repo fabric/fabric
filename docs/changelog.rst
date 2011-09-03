@@ -25,6 +25,26 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`430` Tasks decorated with `~fabric.decorators.runs_once` printed
+  extraneous 'Executing...' status lines on subsequent invocations. This is
+  noisy at best and misleading at worst, and has been corrected. Thanks to
+  Jacob Kaplan-Moss for the report.
+* :release:`1.2.2 <2011-09-01>`
+* :release:`1.1.4 <2011-09-01>`
+* :release:`1.0.4 <2011-09-01>`
+* :bug:`252` `~fabric.context_managers.settings` would silently fail to set
+  ``env`` values for keys which did not exist outside the context manager
+  block.  It now works as expected. Thanks to Will Maier for the catch and
+  suggested solution.
+* :support:`393` Fixed a typo in an example code snippet in the task docs.
+  Thanks to Hugo Garza for the catch.
+* :bug:`396` :option:`--shortlist` broke after the addition of
+  :option:`--list-format <-F>` and no longer displayed the short list format
+  correctly. This has been fixed.
+* :bug:`373` Re-added missing functionality preventing :ref:`host exclusion
+  <excluding-hosts>` from working correctly.
+* :bug:`303` Updated terminal size detection to correctly skip over non-tty
+  stdout, such as when running ``fab taskname | other_command``.
 * :release:`1.2.1 <2011-08-21>`
 * :release:`1.1.3 <2011-08-21>`
 * :release:`1.0.3 <2011-08-21>`

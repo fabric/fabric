@@ -384,10 +384,28 @@ which is implemented similarly to the abovementioned ``hosts`` and ``roles``
 per-task kwargs, in that it is stripped from the actual task invocation. This
 example would have the same result as the global exclude above::
 
-    $ fab -R myrole mytask:exclude_hosts="host2;host5"
+    $ fab mytask:roles=myrole,exclude_hosts="host2;host5"
 
 Note that the host list is semicolon-separated, just as with the ``hosts``
 per-task argument.
+
+Combining exclusions
+~~~~~~~~~~~~~~~~~~~~
+
+Host exclusion lists, like host lists themselves, are not merged together
+across the different "levels" they can be declared in. For example, a global
+``-x`` option will not affect a per-task host list set with a decorator or
+keyword argument, nor will per-task ``exclude_hosts`` keyword arguments affect
+a global ``-H`` list.
+
+There is one minor exception to this rule, namely that CLI-level keyword
+arguments (``mytask:exclude_hosts=x,y``) **will** be taken into account when
+examining host lists set via ``@hosts`` or ``@roles``. Thus a task function
+decorated with ``@hosts('host1', 'host2')`` executed as ``fab
+taskname:exclude_hosts=host2`` will only run on ``host1``.
+
+As with the host list merging, this functionality is currently limited (partly
+to keep the implementation simple) and may be expanded in future releases.
 
 
 .. _failures:

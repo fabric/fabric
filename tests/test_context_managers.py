@@ -1,6 +1,6 @@
 from __future__ import with_statement
 
-from nose.tools import eq_
+from nose.tools import eq_, ok_
 
 from fabric.state import env
 from fabric.context_managers import cd, settings
@@ -44,14 +44,15 @@ def test_cwd_with_absolute_paths():
 # settings()
 #
 
-def test_setting_new_env_dict_key_should_not_raise_keyerror():
+def test_setting_new_env_dict_key_should_work():
     """
-    Using settings() with a previously nonexistent key should not error
+    Using settings() with a previously nonexistent key should work correctly
     """
-    # Nose has no obvious way to assert a NON-RAISED exception :( so ye olde
-    # "if it runs it passes" will have to do.
-    with settings(thiskeyreallyshouldnotexist='value'):
-        pass
+    key = 'thisshouldnevereverexistseriouslynow'
+    value = 'a winner is you'
+    with settings(**{key: value}):
+        ok_(key in env)
+    ok_(key not in env)
 
 
 def test_settings():
