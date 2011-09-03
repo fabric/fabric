@@ -91,13 +91,10 @@ def remove(path, use_sudo=False):
 
     func = sudo if use_sudo else run
     if exists(path):
-        #with settings(hide('everything'), warn_only=True):
-        with settings(warn_only=True):
+        with settings(hide('everything'), warn_only=True):
             if isfile(path):
-                print 'is file'
                 func('rm %s' % path) 
             else:
-                print 'is dir'
                 raise OSError("[Errno 21] Is a directory: '%s'" % path)
     else:
         raise Cannot('remove',path)
@@ -112,4 +109,13 @@ def removedirs(path, use_sudo=False):
     and then remove 'foo/bar' and 'foo' if they are empty. 
     Raises OSError if the leaf directory could not be successfully removed.
     """
-    pass
+    func = sudo if use_sudo else run
+    if exists(path):
+        with settings(hide('everything'), warn_only=True):
+            if isdir(path):
+                output = func('rmdir %s' % path) 
+                print output
+            else:
+                raise OSError("[Errno 20] Not a directory: '%s'" % path)
+    else:
+        raise Cannot('remove',path)
