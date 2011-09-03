@@ -3,7 +3,8 @@ module mimicking python os module. as pythonistas we should be comfortable
 interacting with the underlaying operating system using the os module.
 
 inspired by ali-akber saifee module rfsutil (https://github.com/alisaifee/fabric/blob/master/fabric/contrib/rfsutil.py). 
-difference is this module doesn't open another channel to perform the os interactions. the underlying fabric channels are used 
+difference is this module doesn't open another channel to perform 
+the os interactions. the underlying fabric channels are used.
 """
 import datetime
 import time
@@ -66,7 +67,8 @@ def stat(filename, use_sudo=False):
 def listdir(path='', use_sudo=False):
     """
     Return a list containing the names of the entries in the directory given by path. 
-    The list is in arbitrary order. It does not include the special entries '.' and '..' even if they are present in the directory.
+    The list is in arbitrary order. It does not include the special entries '.' 
+    and '..' even if they are present in the directory.
     """
 
     items_at_path = []
@@ -79,9 +81,12 @@ def listdir(path='', use_sudo=False):
 
 def remove(path, use_sudo=False):
     """
-    Remove (delete) the file path. If path is a directory, OSError is raised; see rmdir() below to remove a directory. 
-    This is identical to the unlink() function documented below. On Windows, attempting to remove a file that is in use causes an exception to be raised; 
-    on Unix, the directory entry is removed but the storage allocated to the file is not made available until the original file is no longer in use.
+    Remove (delete) the file path. If path is a directory, OSError is raised; 
+    see rmdir() below to remove a directory. This is identical to the unlink() 
+    function documented below. On Windows, attempting to remove a file 
+    that is in use causes an exception to be raised; on Unix, the directory 
+    entry is removed but the storage allocated to the file is not made 
+    available until the original file is no longer in use.
     """
 
     func = sudo if use_sudo else run
@@ -99,10 +104,12 @@ def remove(path, use_sudo=False):
 
 def removedirs(path, use_sudo=False):
     """
-    Remove directories recursively. Works like rmdir() except that, if the leaf directory is successfully removed, 
-    removedirs() tries to successively remove every parent directory mentioned in path until an error is raised 
+    Remove directories recursively. Works like rmdir() except that, 
+    if the leaf directory is successfully removed, removedirs() tries to successively 
+    remove every parent directory mentioned in path until an error is raised 
     (which is ignored, because it generally means that a parent directory is not empty). 
-    For example, os.removedirs('foo/bar/baz') will first remove the directory 'foo/bar/baz', and then remove 'foo/bar' 
-    and 'foo' if they are empty. Raises OSError if the leaf directory could not be successfully removed.
+    For example, os.removedirs('foo/bar/baz') will first remove the directory 'foo/bar/baz', 
+    and then remove 'foo/bar' and 'foo' if they are empty. 
+    Raises OSError if the leaf directory could not be successfully removed.
     """
     pass
