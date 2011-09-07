@@ -16,7 +16,7 @@ from fabric.network import (HostConnectionCache, join_host_strings, normalize,
 from fabric.io import output_loop
 import fabric.network  # So I can call patch_object correctly. Sigh.
 from fabric.state import env, output, _get_system_username
-from fabric.operations import run, sudo, prompt
+from fabric.operations import run, sudo, prompt, open_shell
 
 from utils import *
 from server import (server, PORT, RESPONSES, PASSWORDS, CLIENT_PRIVKEY, USER,
@@ -205,6 +205,16 @@ class TestNetwork(FabricTest):
         # env.host_string is automatically filled in when using server()
         run("ls /simple")
 
+
+    @server()
+    @raises(SystemExit)
+    @with_patched_object(output, 'aborts', False)
+    def test_aborts_on_openshell_with_abort_on_prompt(self):
+        """
+        abort_on_prompts = True should abort when open_shell is called
+        """
+        env.abort_on_prompts = True
+        open_shell(command="ls /simple")
 
     @mock_streams('stdout')
     @server()
