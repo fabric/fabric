@@ -751,6 +751,7 @@ def _execute(channel, command, pty=True, combine_stderr=None,
 
         # Kick off remote command
         if invoke_shell:
+            handle_prompt_abort()
             channel.invoke_shell()
             if command:
                 channel.sendall(command + "\n")

@@ -33,6 +33,7 @@ def output_loop(chan, which, capture):
     else:
         prefix = "err"
         pipe = sys.stderr
+    # Set printing to the value of state.env.output.{stdout,stderr}
     printing = getattr(output, 'stdout' if (which == 'recv') else 'stderr')
     # Initialize loop variables
     reprompt = False
