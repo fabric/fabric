@@ -20,9 +20,9 @@ class Cannot(Exception):
     def __str__(self):
         return 'Cannot %s `%s`: No such file or directory' % (self.change,self.to_change)
 
-def getFileType(path, use_sudo=False):
+def getFileType(path, use_sudo=False,verbose=False):
     func = sudo if use_sudo else run
-    if exists(path):
+    if exists(path,use_sudo=use_sudo,verbose=verbose):
         with settings(hide('everything'), warn_only=True):
             output = func("stat -Lc '%%F' '%s'" % path)
             return output
