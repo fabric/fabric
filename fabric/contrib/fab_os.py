@@ -28,13 +28,13 @@ def getFileType(path, use_sudo=False,verbose=False):
             return output
     raise Exception
 
-def isfile(path, use_sudo=False):
+def isfile(path, use_sudo=False,verbose=False):
     """
     Return True if path is an existing regular file. This follows symbolic links, 
     so both islink() and isfile() can be true for the same path.
     """
     try:
-        return 'file' in getFileType(path, use_sudo) 
+        return 'file' in getFileType(path, use_sudo=use_sudo, verbose=verbose) 
     except:
         raise Cannot('isfile',path)
 
