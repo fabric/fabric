@@ -26,7 +26,8 @@ def getFileType(path, use_sudo=False,verbose=False):
         with settings(hide('everything'), warn_only=True):
             output = func("stat -Lc '%%F' '%s'" % path)
             return output
-    raise Exception
+    return "stat: cannot stat `%s'"
+    
 
 def isfile(path, use_sudo=False,verbose=False):
     """
