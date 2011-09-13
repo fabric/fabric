@@ -70,21 +70,16 @@ def stat(filename, use_sudo=False, verbose=False):
             return posix.stat_result(tuple([int(item) for item in output.split()]))
     raise OSError(2,"No such file or directory", filename)
 
-def listdir(path='', use_sudo=False):
+def listdir(path='', use_sudo=False, verbose=False):
     """
     Return a list containing the names of the entries in the directory given by path. 
     The list is in arbitrary order. It does not include the special entries '.' 
     and '..' even if they are present in the directory.
     """
 
-    items_at_path = []
-
     func = sudo if use_sudo else run
-    output = func("ls %s" % path)
-    items_at_path = output.split()
+    return func("ls -A %s" % path).split()
     
-    return items_at_path
-
 def remove(path, use_sudo=False):
     """
     Remove (delete) the file path. If path is a directory, OSError is raised; 
