@@ -1,3 +1,5 @@
+#test_fabos.py
+
 from __future__ import with_statement
 
 from fabric.api import hide, get, show, run
@@ -8,6 +10,31 @@ from fabric.state import env, output
 from server import server
 
 class TestFabOs(FabricTest):
+
+    def test_os(self):
+        """
+        Verify output of standard os library
+
+        If any of these asserts FAIL then the assumptions
+        taken when creating fabos are wrong/need updating
+        """
+    
+        # Create file for tests
+        from tempfile import TemporaryFile, mkdtemp
+        import os
+        
+        f = TemporaryFile()
+        assert os.path.isfile(f.name) == True
+        assert os.path.isfile('/thisshouldneverexists') == False
+
+        assert os.path.isdir(f.name) == False
+        assert os.path.isdir('/thisshouldneverexists') == False
+
+        d = mkdtemp()
+        assert os.path.isfile(d) == False
+        assert os.path.isdir(d) == True
+        assert os.rmdir(d) == None
+        assert os.path.isdir(d) == False
 
     @server(responses={"stat -Lc '%F' '/file.txt'":'regular file',
             'test -e "/file.txt"':"",
