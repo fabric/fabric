@@ -46,14 +46,36 @@ class TestFabOs(FabricTest):
         assert isdir('junk') == False
 
 
-    @server(responses={"stat -Lc '%F' '/file.txt'":'regular file',
+    @server(responses={
+            "stat -Lc '%F' '/file.txt'":'regular file',
             'test -e "/file.txt"':"",
-            "stat -c '%a %i %d %h %u %g %o %X %Y %Z' '/file.txt'":"775 156169 51713 2 502 503 4096 1315014048 1315017193 1315017193"
+            "stat -c '%a %i %d %h %u %g %o %X %Y %Z' '/file.txt'":"775 156169 51713 2 502 503 4096 1315014048 1315017190 1315017193",
+            "stat -Lc '%F' 'junk'":"stat: cannot stat `junk'",
+            'test -e "junk"':["","",-1]
     })
     def test_stat(self):
         """
         stat()
         """
         file_obj = stat('/file.txt')
+        assert file_obj.st_ino == 156169
+        assert file_obj.st_dev == 51713
+        assert file_obj.st_nlink == 2
+
         assert file_obj.st_uid != '502'
         assert file_obj.st_uid == 502
+
+        assert file_obj.st_gid != '503'
+        assert file_obj.st_gid == 503
+
+        assert file_obj.st_size == 4096
+        assert file_obj.st_atime == 1315014048
+        assert file_obj.st_mtime == 1315017190
+        assert file_obj.st_ctime == 1315017193
+
+        try:
+            nonexistent = stat('junk')
+        except OSError, ex:
+            assert ex.strerror == "No such file or directory"
+            assert ex.errno == 2
+            assert ex.filename == 'junk' 

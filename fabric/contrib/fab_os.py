@@ -68,7 +68,7 @@ def stat(filename, use_sudo=False, verbose=False):
         with settings(hide('everything'), warn_only=True):
             output = func("stat -c '%%a %%i %%d %%h %%u %%g %%o %%X %%Y %%Z' '%s'" % filename)
             return posix.stat_result(tuple([int(item) for item in output.split()]))
-    raise OSError("[Errno 2] No such file or directory: '%s'" % filename)
+    raise OSError(2,"No such file or directory", filename)
 
 def listdir(path='', use_sudo=False):
     """
@@ -101,7 +101,7 @@ def remove(path, use_sudo=False):
             if isfile(path):
                 func('rm %s' % path) 
             else:
-                raise OSError("[Errno 21] Is a directory: '%s'" % path)
+                raise OSError(21,"Is a directory", path)
     else:
         raise Cannot('remove',path)
 
@@ -116,10 +116,10 @@ def rmdir(path, use_sudo=False):
             if isdir(path):
                 output = func('rmdir %s' % path) 
                 if 'failed' in output:
-                    raise OSError("[Errno 39] Directory not empty: '%s'" % path)
+                    raise OSError(39,"Directory not empty", path)
                 
             else:
-                raise OSError("[Errno 20] Not a directory: '%s'" % path)
+                raise OSError(20,"Not a directory", path)
     else:
         raise Cannot('remove',path)
 
@@ -139,9 +139,8 @@ def removedirs(path, use_sudo=False):
             if isdir(path):
                 output = func('rmdir %s' % path) 
                 if 'failed' in output:
-                    raise OSError("[Errno 39] Directory not empty: '%s'" % path)
-                
+                    raise OSError(39,"Directory not empty", path)
             else:
-                raise OSError("[Errno 20] Not a directory: '%s'" % path)
+                raise OSError(20,"Not a directory", path)
     else:
         raise Cannot('remove',path)
