@@ -68,7 +68,7 @@ def stat(filename, use_sudo=False, verbose=False):
         with settings(hide('everything'), warn_only=True):
             output = func("stat -c '%%a %%i %%d %%h %%u %%g %%o %%X %%Y %%Z' '%s'" % filename)
             return posix.stat_result(tuple([int(item) for item in output.split()]))
-    raise Cannot('stat',filename)
+    raise OSError("[Errno 2] No such file or directory: '%s'" % filename)
 
 def listdir(path='', use_sudo=False):
     """
