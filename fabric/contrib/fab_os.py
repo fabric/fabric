@@ -24,45 +24,50 @@ def getFileType(path, use_sudo=False,verbose=False):
     func = sudo if use_sudo else run
     if exists(path,use_sudo=use_sudo,verbose=verbose):
         with settings(hide('everything'), warn_only=True):
-            output = func("stat -Lc '%%F' '%s'" % path)
-            return output
+            return func("stat -Lc '%%F' '%s'" % path)
     return "stat: cannot stat `%s'"
-    
 
 def isfile(path, use_sudo=False,verbose=False):
     """
     Return True if path is an existing regular file. This follows symbolic links, 
     so both islink() and isfile() can be true for the same path.
     """
-    try:
-        return 'file' in getFileType(path, use_sudo=use_sudo, verbose=verbose) 
-    except:
-        raise Cannot('isfile',path)
+    return 'file' in getFileType(path, use_sudo=use_sudo, verbose=verbose) 
 
-def isdir(path, use_sudo=False):
+def isdir(path, use_sudo=False, verbose=False):
     """
     Return True if path is an existing directory. This follows symbolic links, 
     so both islink() and isdir() can be true for the same path.
     """
-    try:
-        return 'directory' in getFileType(path, use_sudo) 
-    except:
-        raise Cannot('isdir',path)
+    return 'directory' in getFileType(path, use_sudo=use_sudo, verbose=verbose) 
 
-def stat(filename, use_sudo=False):
+def stat(filename, use_sudo=False, verbose=False):
     """
-    Return the stats for a file/directory
+    Perform the equivalent of a stat() system call on the given path. 
+    (This function follows symlinks; to stat a symlink use lstat().)
 
-    Return format will be posix.stat_result 
-    like the os.stat module
+    The return value is an object whose attributes 
+    correspond to the members of the stat structure, namely:
+
+    st_mode - protection bits,
+    st_ino - inode number,
+    st_dev - device,
+    st_nlink - number of hard links,
+    st_uid - user id of owner,
+    st_gid - group id of owner,
+    st_size - size of file, in bytes,
+    st_atime - time of most recent access,
+    st_mtime - time of most recent content modification,
+    st_ctime - platform dependent; time of most recent metadata 
+        change on Unix, or the time of creation on Windows)
     """
     import posix
 
     func = sudo if use_sudo else run
-    if exists(filename):
+    if exists(filename,use_sudo=use_sudo, verbose=verbose):
         with settings(hide('everything'), warn_only=True):
-            output = func("stat -c '%%a %%i %%d %%h %%u %%g %%o %%X %%Y  %%Z' '%s'" % filename)
-            return posix.stat_result(tuple(output.split()))
+            output = func("stat -c '%%a %%i %%d %%h %%u %%g %%o %%X %%Y %%Z' '%s'" % filename)
+            return posix.stat_result(tuple([int(item) for item in output.split()]))
     raise Cannot('stat',filename)
 
 def listdir(path='', use_sudo=False):

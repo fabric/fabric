@@ -1,11 +1,11 @@
 from __future__ import with_statement
 
 from fabric.api import hide, get, show, run
-from fabric.contrib.fab_os import isfile, isdir
+from fabric.contrib.fab_os import * 
 
 from utils import FabricTest, eq_contents
 from fabric.state import env, output
-from server import server, FILES
+from server import server
 
 class TestFabOs(FabricTest):
 
@@ -44,3 +44,16 @@ class TestFabOs(FabricTest):
         assert isdir('/') == True
         # Object doesn't exist 
         assert isdir('junk') == False
+
+
+    @server(responses={"stat -Lc '%F' '/file.txt'":'regular file',
+            'test -e "/file.txt"':"",
+            "stat -c '%a %i %d %h %u %g %o %X %Y %Z' '/file.txt'":"775 156169 51713 2 502 503 4096 1315014048 1315017193 1315017193"
+    })
+    def test_stat(self):
+        """
+        stat()
+        """
+        file_obj = stat('/file.txt')
+        assert file_obj.st_uid != '502'
+        assert file_obj.st_uid == 502
