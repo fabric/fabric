@@ -20,7 +20,7 @@ class TestFabOs(FabricTest):
         """
     
         # Create file for tests
-        from tempfile import TemporaryFile, mkdtemp
+        from tempfile import TemporaryFile, mkdtemp 
         import os
         
         f = TemporaryFile()
@@ -30,9 +30,34 @@ class TestFabOs(FabricTest):
         assert os.path.isdir(f.name) == False
         assert os.path.isdir('/thisshouldneverexists') == False
 
+        # Run remove dir against a file
+        try:
+            os.rmdir(f.name)
+        except OSError, oe:
+            assert oe.errno == 20
+            assert oe.strerror == 'Not a directory'
+            assert oe.filename == f.name 
+
         d = mkdtemp()
         assert os.path.isfile(d) == False
         assert os.path.isdir(d) == True
+
+        # Run the remove file function on directory
+        try:
+            os.remove(d)
+        except OSError, oe:
+            # Some systems return Errno 1
+            if oe.errno == 1:
+                assert oe.strerror == "Operation not permitted"
+            elif oe.errno == 21:
+                # Preferred 
+                assert oe.strerror == "Is a directory"
+            else:
+                # If not one of the known exepect errors 
+                # force test to fail for investigation
+                assert True == False
+
+        # Correctly remove the directory
         assert os.rmdir(d) == None
         assert os.path.isdir(d) == False
 
@@ -102,7 +127,36 @@ class TestFabOs(FabricTest):
 
         try:
             nonexistent = stat('junk')
-        except OSError, ex:
-            assert ex.strerror == "No such file or directory"
-            assert ex.errno == 2
-            assert ex.filename == 'junk' 
+        except OSError, oe:
+            assert oe.strerror == "No such file or directory"
+            assert oe.errno == 2
+            assert oe.filename == 'junk' 
+
+
+    @server(responses={
+            "stat -Lc '%F' '/file.txt'":'regular file',
+            'test -e "/file.txt"':"",
+            'rm /file.txt':"",
+            'test -e "junk"':["","",-1],
+            "stat -Lc '%F' '/mydir'":'directory',
+            'test -e "/mydir"':""
+    })
+    def test_remove(self):
+        """
+        remove()
+        """
+
+        assert remove('/file.txt') == True
+        try:
+            remove('junk')
+        except OSError, oe:
+            assert oe.strerror == "No such file or directory"
+            assert oe.errno == 2
+            assert oe.filename == 'junk' 
+
+        try:
+            remove('/mydir')
+        except OSError, oe:
+            assert oe.strerror == "Is a directory"
+            assert oe.errno == 21 
+            assert oe.filename == '/mydir' 
