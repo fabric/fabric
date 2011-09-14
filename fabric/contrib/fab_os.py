@@ -80,7 +80,7 @@ def listdir(path='', use_sudo=False, verbose=False):
     func = sudo if use_sudo else run
     return func("ls -A %s" % path).split()
     
-def remove(path, use_sudo=False):
+def remove(path, use_sudo=False, verbose=False):
     """
     Remove (delete) the file path. If path is a directory, OSError is raised; 
     see rmdir() below to remove a directory. This is identical to the unlink() 
@@ -91,14 +91,14 @@ def remove(path, use_sudo=False):
     """
 
     func = sudo if use_sudo else run
-    if exists(path):
+    if exists(path,use_sudo=use_sudo, verbose=verbose):
         with settings(hide('everything'), warn_only=True):
             if isfile(path):
-                func('rm %s' % path) 
+                return func('rm %s' % path).succeeded 
             else:
                 raise OSError(21,"Is a directory", path)
     else:
-        raise Cannot('remove',path)
+        raise OSError(2,"No such file or directory", path)
 
 def rmdir(path, use_sudo=False):
     """
