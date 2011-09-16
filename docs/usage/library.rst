@@ -2,37 +2,37 @@
 Library Use
 ===========
 
-Fabric's primary use case is via fabfiles and the :doc:`fab </usage/fab>` tool,
-and this is reflected in much of the documentation. However, Fabric's internals
-are written in such a manner as to be easily used without ``fab`` or fabfiles
+Fapric's primary use case is via fapfiles and the :doc:`fap </usage/fap>` tool,
+and this is reflected in much of the documentation. However, Fapric's internals
+are written in such a manner as to be easily used without ``fap`` or fapfiles
 at all -- this document will show you how.
 
 There's really only a couple of considerations one must keep in mind, when
-compared to writing a fabfile and using ``fab`` to run it: how connections are
+compared to writing a fapfile and using ``fap`` to run it: how connections are
 really made, and how disconnections occur.
 
 Connections
 ===========
 
-We've documented how Fabric really connects to its hosts before, but it's
+We've documented how Fapric really connects to its hosts before, but it's
 currently somewhat buried in the middle of the overall :doc:`execution docs
 </usage/execution>`. Specifically, you'll want to skip over to the 
 :ref:`connections` section and read it real quick. (You should really give that
 entire document a once-over, but it's not absolutely required.)
 
-As that section mentions, the key is simply that `~fabric.operations.run`,
-`~fabric.operations.sudo` and the other operations only look in one place when
+As that section mentions, the key is simply that `~fapric.operations.run`,
+`~fapric.operations.sudo` and the other operations only look in one place when
 connecting: :ref:`env.host_string <host_string>`. All of the other mechanisms
-for setting hosts are interpreted by the ``fab`` tool when it runs, and don't
+for setting hosts are interpreted by the ``fap`` tool when it runs, and don't
 matter when running as a library.
 
 This is a good thing, insofar as it gives library users very granular control
 over which commands are run on which hosts. However, at present, it also means
-you may need to do a bit more heavy lifting compared to a regular fabfile: you
+you may need to do a bit more heavy lifting compared to a regular fapfile: you
 can't rely on :ref:`env.hosts <hosts>` or the host/role decorators, and instead
 need to write your own ``for`` loops.
 
-For example, this is how a fabfile could force a given subroutine (task) to run
+For example, this is how a fapfile could force a given subroutine (task) to run
 on two hosts in a row::
 
     @hosts('a', 'b')
@@ -56,20 +56,20 @@ to you.
 Disconnecting
 =============
 
-The other main thing that ``fab`` does for you is to disconnect from all hosts
+The other main thing that ``fap`` does for you is to disconnect from all hosts
 at the end of a session; otherwise, Python will sit around forever waiting for
 those network resources to be released.
 
-Fabric 0.9.4 and newer have a function you can use to do this easily:
-`~fabric.network.disconnect_all`. Simply make sure your code calls this when it
+Fapric 0.9.4 and newer have a function you can use to do this easily:
+`~fapric.network.disconnect_all`. Simply make sure your code calls this when it
 terminates (typically in the ``finally`` clause of an outer ``try: finally``
 statement -- lest errors in your code prevent disconnections from happening!)
 and things ought to work pretty well.
 
-If you're on Fabric 0.9.3 or older, you can simply do this (``disconnect_all``
+If you're on Fapric 0.9.3 or older, you can simply do this (``disconnect_all``
 just adds a bit of nice output to this logic)::
 
-    from fabric.state import connections
+    from fapric.state import connections
 
     for key in connections.keys():
         connections[key].close()
@@ -80,7 +80,7 @@ Final note
 ==========
 
 This document is a first draft, and may not cover absolutely every difference
-between ``fab`` use and library use. However, the above should highlight the
-largest stumbling blocks. When in doubt, note that in the Fabric source code,
-``fabric/main.py`` contains the bulk of the extra work done by ``fab``, and may
+between ``fap`` use and library use. However, the above should highlight the
+largest stumbling blocks. When in doubt, note that in the Fapric source code,
+``fapric/main.py`` contains the bulk of the extra work done by ``fap``, and may
 serve as a useful reference.

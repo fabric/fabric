@@ -1,5 +1,5 @@
-from fabric import tasks
-from fabric.decorators import task
+from fapric import tasks
+from fapric.decorators import task
 
 class ClassBasedTask(tasks.Task):
     def __init__(self):

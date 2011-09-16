@@ -16,10 +16,10 @@ from Python26SocketServer import BaseRequestHandler, ThreadingMixIn, TCPServer
 
 import paramiko as ssh
 
-from fabric.operations import _sudo_prefix
-from fabric.api import env, hide
-from fabric.thread_handling import ThreadHandler
-from fabric.network import disconnect_all
+from fapric.operations import _sudo_prefix
+from fapric.api import env, hide
+from fapric.thread_handling import ThreadHandler
+from fapric.network import disconnect_all
 
 from fake_filesystem import FakeFilesystem, FakeFile
 
@@ -28,7 +28,7 @@ from fake_filesystem import FakeFilesystem, FakeFile
 #
 
 import logging
-logging.basicConfig(filename='/tmp/fab.log', level=logging.DEBUG)
+logging.basicConfig(filename='/tmp/fap.log', level=logging.DEBUG)
 logger = logging.getLogger('server.py')
 
 
@@ -44,16 +44,16 @@ RESPONSES = {
     "ls /simple": "some output",
     "ls /": """AUTHORS
 FAQ
-Fabric.egg-info
+Fapric.egg-info
 INSTALL
 LICENSE
 MANIFEST
 README
 build
 docs
-fabfile.py
-fabfile.pyc
-fabric
+fapfile.py
+fapfile.pyc
+fapric
 requirements.txt
 setup.py
 tests""",

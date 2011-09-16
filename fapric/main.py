@@ -1,12 +1,12 @@
 """
-This module contains Fab's `main` method plus related subroutines.
+This module contains Fap's `main` method plus related subroutines.
 
-`main` is executed as the command line ``fab`` program and takes care of
+`main` is executed as the command line ``fap`` program and takes care of
 parsing options and commands, loading the user settings file, loading a
-fabfile, and executing the commands given.
+fapfile, and executing the commands given.
 
 The other callables defined in this module are internal only. Anything useful
-to individuals leveraging Fabric as a library, should be kept elsewhere.
+to individuals leveraging Fapric as a library, should be kept elsewhere.
 """
 
 from collections import defaultdict
@@ -16,16 +16,16 @@ import os
 import sys
 import types
 
-from fabric import api, state  # For checking callables against the API, & easy mocking
-from fabric.contrib import console, files, project  # Ditto
-from fabric.network import denormalize, interpret_host_string, disconnect_all
-from fabric.state import commands, connections, env_options
-from fabric.tasks import Task
-from fabric.utils import abort, indent
+from fapric import api, state  # For checking callables against the API, & easy mocking
+from fapric.contrib import console, files, project  # Ditto
+from fapric.network import denormalize, interpret_host_string, disconnect_all
+from fapric.state import commands, connections, env_options
+from fapric.tasks import Task
+from fapric.utils import abort, indent
 
 
 # One-time calculation of "all internal callables" to avoid doing this on every
-# check of a given fabfile callable (in is_classic_task()).
+# check of a given fapfile callable (in is_classic_task()).
 _modules = [api, project, files, console]
 _internals = reduce(lambda x, y: x + filter(callable, vars(y).values()),
     _modules,
@@ -56,7 +56,7 @@ def load_settings(path):
     """
     Take given file path and return dictionary of any key=value pairs found.
 
-    Usage docs are in docs/usage/fab.rst, in "Settings files."
+    Usage docs are in docs/usage/fap.rst, in "Settings files."
     """
     if os.path.exists(path):
         comments = lambda s: s and not s.startswith("#")
@@ -77,14 +77,14 @@ def _is_package(path):
     )
 
 
-def find_fabfile():
+def find_fapfile():
     """
-    Attempt to locate a fabfile, either explicitly or by searching parent dirs.
+    Attempt to locate a fapfile, either explicitly or by searching parent dirs.
 
-    Usage docs are in docs/usage/fabfiles.rst, in "Fabfile discovery."
+    Usage docs are in docs/usage/fapfiles.rst, in "Fapfile discovery."
     """
     # Obtain env value
-    names = [state.env.fabfile]
+    names = [state.env.fapfile]
     # Create .py version if necessary
     if not names[0].endswith('.py'):
         names += [names[0] + '.py']
@@ -113,7 +113,7 @@ def find_fabfile():
 
 def is_classic_task(tup):
     """
-    Takes (name, object) tuple, returns True if it's a non-Fab public callable.
+    Takes (name, object) tuple, returns True if it's a non-Fap public callable.
     """
     name, func = tup
     return (
@@ -123,18 +123,18 @@ def is_classic_task(tup):
     )
 
 
-def load_fabfile(path, importer=None):
+def load_fapfile(path, importer=None):
     """
-    Import given fabfile path and return (docstring, callables).
+    Import given fapfile path and return (docstring, callables).
 
-    Specifically, the fabfile's ``__doc__`` attribute (a string) and a
+    Specifically, the fapfile's ``__doc__`` attribute (a string) and a
     dictionary of ``{'name': callable}`` containing all callables which pass
-    the "is a Fabric task" test.
+    the "is a Fapric task" test.
     """
     if importer is None:
         importer = __import__
-    # Get directory and fabfile name
-    directory, fabfile = os.path.split(path)
+    # Get directory and fapfile name
+    directory, fapfile = os.path.split(path)
     # If the directory isn't in the PYTHONPATH, add it so our import will work
     added_to_path = False
     index = None
@@ -142,7 +142,7 @@ def load_fabfile(path, importer=None):
         sys.path.insert(0, directory)
         added_to_path = True
     # If the directory IS in the PYTHONPATH, move it to the front temporarily,
-    # otherwise other fabfiles -- like Fabric's own -- may scoop the intended
+    # otherwise other fapfiles -- like Fapric's own -- may scoop the intended
     # one.
     else:
         i = sys.path.index(directory)
@@ -153,7 +153,7 @@ def load_fabfile(path, importer=None):
             sys.path.insert(0, directory)
             del sys.path[i + 1]
     # Perform the import (trimming off the .py)
-    imported = importer(os.path.splitext(fabfile)[0])
+    imported = importer(os.path.splitext(fapfile)[0])
     # Remove directory from path if we added it ourselves (just to be neat)
     if added_to_path:
         del sys.path[0]
@@ -182,7 +182,7 @@ def load_tasks_from_module(imported):
     else:
         imported_vars = imported_vars.items()
     # Return a two-tuple value.  First is the documentation, second is a
-    # dictionary of callables only (and don't include Fab operations or
+    # dictionary of callables only (and don't include Fap operations or
     # underscored callables)
     new_style, classic, default = extract_tasks(imported_vars)
     return imported.__doc__, new_style, classic, default
@@ -245,7 +245,7 @@ def is_task_object(a):
     """
     Determine if the provided value is a ``Task`` object.
 
-    This returning True signals that all tasks within the fabfile
+    This returning True signals that all tasks within the fapfile
     module must be Task objects.
     """
     return isinstance(a, Task) and a.use_task_objects
@@ -261,11 +261,11 @@ def parse_options():
     # Initialize
     #
 
-    parser = OptionParser(usage="fab [options] <command>[:arg1,arg2=val2,host=foo,hosts='h1;h2',...] ...")
+    parser = OptionParser(usage="fap [options] <command>[:arg1,arg2=val2,host=foo,hosts='h1;h2',...] ...")
 
     #
     # Define options that don't become `env` vars (typically ones which cause
-    # Fabric to do something other than its normal execution, such as
+    # Fapric to do something other than its normal execution, such as
     # --version)
     #
 
@@ -278,7 +278,7 @@ def parse_options():
         help="show program's version number and exit"
     )
 
-    # List Fab commands found in loaded fabfiles/source files
+    # List Fap commands found in loaded fapfiles/source files
     parser.add_option('-l', '--list',
         action='store_true',
         dest='list_commands',
@@ -504,7 +504,7 @@ def parse_arguments(arguments):
     """
     Parse string list into list of tuples: command, args, kwargs, hosts, roles.
 
-    See docs/usage/fab.rst, section on "per-task arguments" for details.
+    See docs/usage/fap.rst, section on "per-task arguments" for details.
     """
     cmds = []
     for cmd in arguments:
@@ -658,30 +658,30 @@ def main():
 
         # Handle version number option
         if options.show_version:
-            print("Fabric %s" % state.env.version)
+            print("Fapric %s" % state.env.version)
             sys.exit(0)
 
         # Load settings from user settings file, into shared env dict.
         state.env.update(load_settings(state.env.rcfile))
 
-        # Find local fabfile path or abort
-        fabfile = find_fabfile()
-        if not fabfile and not remainder_arguments:
-            abort("""Couldn't find any fabfiles!
+        # Find local fapfile path or abort
+        fapfile = find_fapfile()
+        if not fapfile and not remainder_arguments:
+            abort("""Couldn't find any fapfiles!
 
-Remember that -f can be used to specify fabfile path, and use -h for help.""")
+Remember that -f can be used to specify fapfile path, and use -h for help.""")
 
-        # Store absolute path to fabfile in case anyone needs it
-        state.env.real_fabfile = fabfile
+        # Store absolute path to fapfile in case anyone needs it
+        state.env.real_fapfile = fapfile
 
-        # Load fabfile (which calls its module-level code, including
+        # Load fapfile (which calls its module-level code, including
         # tweaks to env values) and put its commands in the shared commands
         # dict
-        if fabfile:
-            docstring, callables, default = load_fabfile(fabfile)
+        if fapfile:
+            docstring, callables, default = load_fapfile(fapfile)
             state.commands.update(callables)
 
-        # Handle case where we were called bare, i.e. just "fab", and print
+        # Handle case where we were called bare, i.e. just "fap", and print
         # a help message.
         actions = (options.list_commands, options.shortlist, options.display,
             arguments, remainder_arguments, default)
@@ -691,14 +691,14 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
 
         # Abort if no commands found
         if not state.commands and not remainder_arguments:
-            abort("Fabfile didn't contain any commands!")
+            abort("Fapfile didn't contain any commands!")
 
-        # Now that we're settled on a fabfile, inform user.
+        # Now that we're settled on a fapfile, inform user.
         if state.output.debug:
-            if fabfile:
-                print("Using fabfile '%s'" % fabfile)
+            if fapfile:
+                print("Using fapfile '%s'" % fapfile)
             else:
-                print("No fabfile loaded -- remainder command only")
+                print("No fapfile loaded -- remainder command only")
 
         # Shortlist is now just an alias for the "short" list format;
         # it overrides use of --list-format if somebody were to specify both

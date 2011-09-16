@@ -1,16 +1,16 @@
 """
-Fabric's own fabfile.
+Fapric's own fapfile.
 """
 
 from __future__ import with_statement
 
 import nose
 
-from fabric.api import *
-# Need to import this as fabric.version for reload() purposes
-import fabric.version
+from fapric.api import *
+# Need to import this as fapric.version for reload() purposes
+import fapric.version
 # But nothing is stopping us from making a convenient binding!
-_version = fabric.version.get_version
+_version = fapric.version.get_version
 
 
 import docs
@@ -41,14 +41,14 @@ def update_code_version(force):
     Normally, if the version file has not been modified, we abort assuming the
     user quit without saving. Specify ``force=yes`` to override this.
     """
-    version_file = "fabric/version.py"
+    version_file = "fapric/version.py"
     raw_input("Work has been done since last tag, version update is needed. Hit Enter to load version info in your editor: ")
     local("$EDITOR %s" % version_file)
     # Try to detect whether user bailed out of the edit
     if not local("git diff -- %s" % version_file) and not force:
         abort("You seem to have aborted the file edit, so I'm aborting too.")
     # Reload version module to get new version
-    reload(fabric.version)
+    reload(fapric.version)
     # Commit the version update
     local("git add %s" % version_file)
     local("git commit -m \"Cut %s\"" % _version('verbose'))
@@ -93,7 +93,7 @@ def tag(force='no', push='no'):
         # At this point, we've incremented the in-code version and just need to
         # tag it in Git.
         f = 'f' if force else ''
-        local("git tag -%sam \"Fabric %s\" %s" % (
+        local("git tag -%sam \"Fapric %s\" %s" % (
             f,
             _version('verbose'),
             _version('short')

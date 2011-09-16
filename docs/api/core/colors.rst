@@ -2,6 +2,6 @@
 Color output functions
 ======================
 
-.. automodule:: fabric.colors
+.. automodule:: fapric.colors
     :members:
     :undoc-members:

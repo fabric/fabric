@@ -2,5 +2,5 @@
 Tasks
 =====
 
-.. automodule:: fabric.tasks
+.. automodule:: fapric.tasks
     :members: Task

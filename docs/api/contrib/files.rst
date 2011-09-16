@@ -2,5 +2,5 @@
 File and Directory Management
 =============================
 
-.. automodule:: fabric.contrib.files
+.. automodule:: fapric.contrib.files
     :members:

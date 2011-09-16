@@ -1,4 +1,4 @@
-from fabric.tasks import Task
+from fapric.tasks import Task
 
 class MappingTask(dict, Task):
     def run(self):

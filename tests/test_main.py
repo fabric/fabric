@@ -9,21 +9,21 @@ from contextlib import contextmanager
 from fudge import Fake, patched_context
 from nose.tools import ok_, eq_, raises
 
-from fabric.decorators import hosts, roles, task
-from fabric.main import (get_hosts, parse_arguments, _merge, _escape_split,
-        load_fabfile as _load_fabfile, list_commands, _task_names, _crawl,
+from fapric.decorators import hosts, roles, task
+from fapric.main import (get_hosts, parse_arguments, _merge, _escape_split,
+        load_fapfile as _load_fapfile, list_commands, _task_names, _crawl,
         crawl, COMMANDS_HEADER, NESTED_REMINDER)
-import fabric.state
-from fabric.state import _AttributeDict
-from fabric.tasks import Task
+import fapric.state
+from fapric.state import _AttributeDict
+from fapric.tasks import Task
 
-from utils import mock_streams, patched_env, eq_, FabricTest, fabfile
+from utils import mock_streams, patched_env, eq_, FapricTest, fapfile
 
 
-# Stupid load_fabfile wrapper to hide newly added return value.
+# Stupid load_fapfile wrapper to hide newly added return value.
 # WTB more free time to rewrite all this with objects :)
-def load_fabfile(*args, **kwargs):
-    return _load_fabfile(*args, **kwargs)[:2]
+def load_fapfile(*args, **kwargs):
+    return _load_fapfile(*args, **kwargs)[:2]
 
 
 #
@@ -276,10 +276,10 @@ def test_lazy_roles():
 
 
 #
-# Fabfile loading
+# Fapfile loading
 #
 
-def run_load_fabfile(path, sys_path):
+def run_load_fapfile(path, sys_path):
     # Module-esque object
     fake_module = Fake().has_attr(__dict__={})
     # Fake __import__
@@ -289,26 +289,26 @@ def run_load_fabfile(path, sys_path):
     # Update with fake path
     sys.path = sys_path
     # Test for side effects
-    load_fabfile(path, importer=importer)
+    load_fapfile(path, importer=importer)
     eq_(sys.path, sys_path)
     # Restore
     sys.path = orig_path
 
-def test_load_fabfile_should_not_remove_real_path_elements():
-    for fabfile_path, sys_dot_path in (
+def test_load_fapfile_should_not_remove_real_path_elements():
+    for fapfile_path, sys_dot_path in (
         # Directory not in path
-        ('subdir/fabfile.py', ['not_subdir']),
-        ('fabfile.py', ['nope']),
+        ('subdir/fapfile.py', ['not_subdir']),
+        ('fapfile.py', ['nope']),
         # Directory in path, but not at front
-        ('subdir/fabfile.py', ['not_subdir', 'subdir']),
-        ('fabfile.py', ['not_subdir', '']),
-        ('fabfile.py', ['not_subdir', '', 'also_not_subdir']),
+        ('subdir/fapfile.py', ['not_subdir', 'subdir']),
+        ('fapfile.py', ['not_subdir', '']),
+        ('fapfile.py', ['not_subdir', '', 'also_not_subdir']),
         # Directory in path, and at front already
-        ('subdir/fabfile.py', ['subdir']),
-        ('subdir/fabfile.py', ['subdir', 'not_subdir']),
-        ('fabfile.py', ['', 'some_dir', 'some_other_dir']),
+        ('subdir/fapfile.py', ['subdir']),
+        ('subdir/fapfile.py', ['subdir', 'not_subdir']),
+        ('fapfile.py', ['', 'some_dir', 'some_other_dir']),
     ):
-            yield run_load_fabfile, fabfile_path, sys_dot_path
+            yield run_load_fapfile, fapfile_path, sys_dot_path
 
 
 #
@@ -323,37 +323,37 @@ def path_prefix(module):
     sys.path.pop(i)
 
 
-class TestTaskAliases(FabricTest):
+class TestTaskAliases(FapricTest):
     def test_flat_alias(self):
-        f = fabfile("flat_alias.py")
+        f = fapfile("flat_alias.py")
         with path_prefix(f):
-            docs, funcs = load_fabfile(f)
+            docs, funcs = load_fapfile(f)
             eq_(len(funcs), 2)
             ok_("foo" in funcs)
             ok_("foo_aliased" in funcs)
 
     def test_nested_alias(self):
-        f = fabfile("nested_alias.py")
+        f = fapfile("nested_alias.py")
         with path_prefix(f):
-            docs, funcs = load_fabfile(f)
+            docs, funcs = load_fapfile(f)
             ok_("nested" in funcs)
             eq_(len(funcs["nested"]), 2)
             ok_("foo" in funcs["nested"])
             ok_("foo_aliased" in funcs["nested"])
 
     def test_flat_aliases(self):
-        f = fabfile("flat_aliases.py")
+        f = fapfile("flat_aliases.py")
         with path_prefix(f):
-            docs, funcs = load_fabfile(f)
+            docs, funcs = load_fapfile(f)
             eq_(len(funcs), 3)
             ok_("foo" in funcs)
             ok_("foo_aliased" in funcs)
             ok_("foo_aliased_two" in funcs)
 
     def test_nested_alias(self):
-        f = fabfile("nested_aliases.py")
+        f = fapfile("nested_aliases.py")
         with path_prefix(f):
-            docs, funcs = load_fabfile(f)
+            docs, funcs = load_fapfile(f)
             ok_("nested" in funcs)
             eq_(len(funcs["nested"]), 3)
             ok_("foo" in funcs["nested"])
@@ -361,23 +361,23 @@ class TestTaskAliases(FabricTest):
             ok_("foo_aliased_two" in funcs["nested"])
 
 
-class TestNamespaces(FabricTest):
+class TestNamespaces(FapricTest):
     def setup(self):
         # Parent class preserves current env
         super(TestNamespaces, self).setup()
-        # Reset new-style-tests flag so running tests via Fab itself doesn't
+        # Reset new-style-tests flag so running tests via Fap itself doesn't
         # muck with it.
-        import fabric.state
-        if 'new_style_tasks' in fabric.state.env:
-            del fabric.state.env['new_style_tasks']
+        import fapric.state
+        if 'new_style_tasks' in fapric.state.env:
+            del fapric.state.env['new_style_tasks']
 
     def test_implicit_discovery(self):
         """
-        Default to automatically collecting all tasks in a fabfile module
+        Default to automatically collecting all tasks in a fapfile module
         """
-        implicit = fabfile("implicit_fabfile.py")
+        implicit = fapfile("implicit_fapfile.py")
         with path_prefix(implicit):
-            docs, funcs = load_fabfile(implicit)
+            docs, funcs = load_fapfile(implicit)
             eq_(len(funcs), 2)
             ok_("foo" in funcs)
             ok_("bar" in funcs)
@@ -386,9 +386,9 @@ class TestNamespaces(FabricTest):
         """
         If __all__ is present, only collect the tasks it specifies
         """
-        explicit = fabfile("explicit_fabfile.py")
+        explicit = fapfile("explicit_fapfile.py")
         with path_prefix(explicit):
-            docs, funcs = load_fabfile(explicit)
+            docs, funcs = load_fapfile(explicit)
             eq_(len(funcs), 1)
             ok_("foo" in funcs)
             ok_("bar" not in funcs)
@@ -397,9 +397,9 @@ class TestNamespaces(FabricTest):
         """
         If any new-style tasks are found, *only* new-style tasks should load
         """
-        module = fabfile('decorated_fabfile.py')
+        module = fapfile('decorated_fapfile.py')
         with path_prefix(module):
-            docs, funcs = load_fabfile(module)
+            docs, funcs = load_fapfile(module)
             eq_(len(funcs), 1)
             ok_('foo' in funcs)
 
@@ -407,10 +407,10 @@ class TestNamespaces(FabricTest):
         """
         Wrapped new-style tasks should preserve their function names
         """
-        module = fabfile('decorated_fabfile_with_classbased_task.py')
-        from fabric.state import env
+        module = fapfile('decorated_fapfile_with_classbased_task.py')
+        from fapric.state import env
         with path_prefix(module):
-            docs, funcs = load_fabfile(module)
+            docs, funcs = load_fapfile(module)
             eq_(len(funcs), 1)
             ok_('foo' in funcs)
 
@@ -418,9 +418,9 @@ class TestNamespaces(FabricTest):
         """
         Recursive loading will continue through modules with no tasks
         """
-        module = fabfile('deep')
+        module = fapfile('deep')
         with path_prefix(module):
-            docs, funcs = load_fabfile(module)
+            docs, funcs = load_fapfile(module)
             eq_(len(funcs), 1)
             ok_('submodule.subsubmodule.deeptask' in _task_names(funcs))
 
@@ -428,9 +428,9 @@ class TestNamespaces(FabricTest):
         """
         Classic-task-only modules shouldn't add tasks if any new-style tasks exist
         """
-        module = fabfile('deep')
+        module = fapfile('deep')
         with path_prefix(module):
-            docs, funcs = load_fabfile(module)
+            docs, funcs = load_fapfile(module)
             eq_(len(funcs), 1)
             ok_('submodule.classic_task' not in _task_names(funcs))
 
@@ -446,10 +446,10 @@ def eq_output(docstring, format_, expected):
     )
 
 def list_output(module, format_, expected):
-    module = fabfile(module)
+    module = fapfile(module)
     with path_prefix(module):
-        docstring, tasks = load_fabfile(module)
-        with patched_context(fabric.state, 'commands', tasks):
+        docstring, tasks = load_fapfile(module)
+        with patched_context(fapric.state, 'commands', tasks):
             eq_output(docstring, format_, expected)
 
 def test_list_output():
@@ -569,11 +569,11 @@ def test_default_task_loading():
     """
     crawl() should return default tasks where found, instead of module objs
     """
-    docs, tasks = load_fabfile(fabfile('default_tasks'))
+    docs, tasks = load_fapfile(fapfile('default_tasks'))
     ok_(isinstance(crawl('mymodule', tasks), Task))
 
 
-def test_aliases_appear_in_fab_list():
+def test_aliases_appear_in_fap_list():
     """
     --list should include aliases
     """

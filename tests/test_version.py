@@ -1,15 +1,15 @@
 """
-Tests covering Fabric's version number pretty-print functionality.
+Tests covering Fapric's version number pretty-print functionality.
 """
 
 from nose.tools import eq_
 
-import fabric.version
+import fapric.version
 
 
 def test_get_version():
-    get_version = fabric.version.get_version
-    sha = fabric.version.git_sha()
+    get_version = fapric.version.get_version
+    sha = fapric.version.git_sha()
     sha1 = (" (%s)" % sha) if sha else ""
     for tup, short, normal, verbose in [
         ((0, 9, 0, 'final', 0), '0.9.0', '0.9', '0.9 final'),
@@ -21,7 +21,7 @@ def test_get_version():
         ((1, 0, 0, 'alpha', 0), '1.0a%s' % sha1, '1.0 pre-alpha%s' % sha1,
             '1.0 pre-alpha%s' % sha1),
     ]:
-        fabric.version.VERSION = tup
+        fapric.version.VERSION = tup
         yield eq_, get_version('short'), short
         yield eq_, get_version('normal'), normal
         yield eq_, get_version('verbose'), verbose

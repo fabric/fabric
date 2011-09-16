@@ -2,9 +2,9 @@
 Tests for the test server itself.
 
 Not intended to be run by the greater test suite, only by specifically
-targeting it on the command-line. Rationale: not really testing Fabric itself,
-no need to pollute Fab's own test suite. (Yes, if these tests fail, it's likely
-that the Fabric tests using the test server may also have issues, but still.)
+targeting it on the command-line. Rationale: not really testing Fapric itself,
+no need to pollute Fap's own test suite. (Yes, if these tests fail, it's likely
+that the Fapric tests using the test server may also have issues, but still.)
 """
 __test__ = False
 

@@ -1,13 +1,13 @@
 from __future__ import with_statement
 
-from fabric.api import hide, get, show
-from fabric.contrib.files import upload_template, contains
+from fapric.api import hide, get, show
+from fapric.contrib.files import upload_template, contains
 
-from utils import FabricTest, eq_contents
+from utils import FapricTest, eq_contents
 from server import server
 
 
-class TestContrib(FabricTest):
+class TestContrib(FapricTest):
     # Make sure it knows / is a directory.
     # This is in lieu of starting down the "actual honest to god fake operating
     # system" road...:(
@@ -37,7 +37,7 @@ class TestContrib(FabricTest):
 
     @server(responses={
         'egrep "text" "/file.txt"': (
-            "sudo: unable to resolve host fabric",
+            "sudo: unable to resolve host fapric",
             "",
             1
         )}

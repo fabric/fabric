@@ -1,8 +1,9 @@
 from fapric.decorators import task
+import module_faptasks as tasks
 
 @task
 def foo():
-    """
-    Foos!
-    """
+    pass
+
+def bar():
     pass

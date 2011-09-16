@@ -2,38 +2,38 @@
 Development
 ===========
 
-The Fabric development team is headed by `Jeff Forcier
+The Fapric development team is headed by `Jeff Forcier
 <http://bitprophet.org>`_, aka ``bitprophet``.  However, dozens of other
 developers pitch in by submitting patches and ideas via `GitHub
-<https://github.com/fabric/fabric>`_, :ref:`IRC <irc>` or the `mailing list
-<http://lists.nongnu.org/mailman/listinfo/fab-user>`_.
+<https://github.com/fapric/fapric>`_, :ref:`IRC <irc>` or the `mailing list
+<http://lists.nongnu.org/mailman/listinfo/fap-user>`_.
 
 Get the code
 ============
 
 Please see the :ref:`source-code-checkouts` section of the :doc:`installation`
-page for details on how to obtain Fabric's source code.
+page for details on how to obtain Fapric's source code.
 
 Contributing
 ============
 
-There are a number of ways to get involved with Fabric:
+There are a number of ways to get involved with Fapric:
 
-* **Use Fabric and send us feedback!** This is both the easiest and arguably
+* **Use Fapric and send us feedback!** This is both the easiest and arguably
   the most important way to improve the project -- let us know how you
-  currently use Fabric and how you want to use it. (Please do try to search the
-  `ticket tracker <https://github.com/fabric/fabric/issues>`_ first, though,
+  currently use Fapric and how you want to use it. (Please do try to search the
+  `ticket tracker <https://github.com/fapric/fapric/issues>`_ first, though,
   when submitting feature ideas.)
 * **Report bugs.** Pretty much a special case of the previous item: if you
-  think you've found a bug in Fabric, check on the `ticket tracker
-  <https://github.com/fabric/fabric/issues>`_ to see if anyone's reported it
+  think you've found a bug in Fapric, check on the `ticket tracker
+  <https://github.com/fapric/fapric/issues>`_ to see if anyone's reported it
   yet, and if not -- file a bug! If possible, try to make sure you can
   replicate it repeatedly, and let us know the circumstances (what version of
-  Fabric you're using, what platform you're on, and what exactly you were doing
+  Fapric you're using, what platform you're on, and what exactly you were doing
   when the bug cropped up.)
 * **Submit patches or new features.** Make a `Github <https://github.com>`_
   account, `create a fork <http://help.github.com/fork-a-repo/>`_ of `the main
-  Fabric repository <https://github.com/fabric/fabric>`_, and `submit a pull
+  Fapric repository <https://github.com/fapric/fapric>`_, and `submit a pull
   request <http://help.github.com/send-pull-requests/>`_.
 
 While we may not always reply promptly, we do try to make time eventually to inspect all contributions and either incorporate them or explain why we don't feel the change is a good fit.
@@ -52,7 +52,7 @@ additional notices via Github or other means only serve to slow things down.
 Style
 -----
 
-Fabric tries hard to honor `PEP-8`_, especially (but not limited to!) the
+Fapric tries hard to honor `PEP-8`_, especially (but not limited to!) the
 following:
 
 * Keep all lines under 80 characters. This goes for the ReST documentation as
@@ -72,7 +72,7 @@ following:
 Branching/Repository Layout
 ===========================
 
-While Fabric's development methodology isn't set in stone yet, the following
+While Fapric's development methodology isn't set in stone yet, the following
 items detail how we currently organize the Git repository and expect to perform
 merges and so forth. This will be chiefly of interest to those who wish to
 follow a specific Git branch instead of released versions, or to any
@@ -104,7 +104,7 @@ contributors.
   of stability in the release branches. Only follow ``master`` (or, even worse,
   feature branches!) if you're willing to deal with a little pain.
 * Conversely, because we try to keep release branches relatively stable, you
-  may find it easier to use Fabric from a source checkout of a release branch
+  may find it easier to use Fapric from a source checkout of a release branch
   instead of manually upgrading to new released versions. This can provide a
   decent middle ground between stability and the ability to get bugfixes or
   backported features easily.
@@ -124,7 +124,7 @@ contributors.
 Releases
 ========
 
-Fabric tries to follow open-source standards and conventions in its release
+Fapric tries to follow open-source standards and conventions in its release
 tagging, including typical version numbers such as 2.0, 1.2.5, or
 1.2b1. Each release will be marked as a tag in the Git repositories, and
 are broken down as follows:
@@ -142,7 +142,7 @@ technology or an overhaul to be more object-oriented.
 
 Major releases will often be backwards-incompatible with the previous line of
 development, though this is not a requirement, just a usual happenstance.
-Users should expect to have to make at least some changes to their fabfiles
+Users should expect to have to make at least some changes to their fapfiles
 when switching between major versions.
 
 Minor
@@ -155,7 +155,7 @@ since the previous minor release. (And, naturally, some of them will involve
 both at the same time.)
 
 These releases are guaranteed to be backwards-compatible with all other
-releases containing the same major version number, so a fabfile that works
+releases containing the same major version number, so a fapfile that works
 with 1.0 should also work fine with 1.1 or even 1.9.
 
 Bugfix/tertiary

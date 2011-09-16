@@ -3,20 +3,20 @@ Execution model
 ===============
 
 If you've read the :doc:`../tutorial`, you should already be familiar with how
-Fabric operates in the base case (a single task on a single host.) However, in
+Fapric operates in the base case (a single task on a single host.) However, in
 many situations you'll find yourself wanting to execute multiple tasks and/or
 on multiple hosts. Perhaps you want to split a big task into smaller reusable
 parts, or crawl a collection of servers looking for an old user to remove. Such
 a scenario requires specific rules for when and how tasks are executed.
 
-This document explores Fabric's execution model, including the main execution
+This document explores Fapric's execution model, including the main execution
 loop, how to define host lists, how connections are made, and so forth.
 
 .. note::
 
-    Most of this material applies to the :doc:`fab <fab>` tool only, as this
-    mode of use has historically been the main focus of Fabric's development.
-    When writing version 0.9 we straightened out Fabric's internals to make it
+    Most of this material applies to the :doc:`fap <fap>` tool only, as this
+    mode of use has historically been the main focus of Fapric's development.
+    When writing version 0.9 we straightened out Fapric's internals to make it
     easier to use as a library, but there's still work to be done before this
     is as flexible and easy as we'd like it to be.
 
@@ -25,11 +25,11 @@ loop, how to define host lists, how connections are made, and so forth.
 Execution strategy
 ==================
 
-Fabric currently provides a single, serial execution method, though more
+Fapric currently provides a single, serial execution method, though more
 options are planned for the future:
 
 * A list of tasks is created. Currently this list is simply the arguments given
-  to :doc:`fab <fab>`, preserving the order given.
+  to :doc:`fap <fap>`, preserving the order given.
 * For each task, a task-specific host list is generated from various
   sources (see :ref:`host-lists` below for details.)
 * The task list is walked through in order, and each task is run once per host
@@ -37,9 +37,9 @@ options are planned for the future:
 * Tasks with no hosts in their host list are considered local-only, and will
   always run once and only once.
 
-Thus, given the following fabfile::
+Thus, given the following fapfile::
 
-    from fabric.api import run, env
+    from fapric.api import run, env
 
     env.hosts = ['host1', 'host2']
 
@@ -51,9 +51,9 @@ Thus, given the following fabfile::
 
 and the following invocation::
 
-    $ fab taskA taskB
+    $ fap taskA taskB
 
-you will see that Fabric performs the following:
+you will see that Fapric performs the following:
 
 * ``taskA`` executed on ``host1``
 * ``taskA`` executed on ``host2``
@@ -69,12 +69,12 @@ to do next.
 Defining tasks
 ==============
 
-For details on what constitutes a Fabric task and how to organize them, please see :doc:`/usage/tasks`.
+For details on what constitutes a Fapric task and how to organize them, please see :doc:`/usage/tasks`.
 
 Defining host lists
 ===================
 
-Unless you're using Fabric as a simple build system (which is possible, but not
+Unless you're using Fapric as a simple build system (which is possible, but not
 the primary use-case) having tasks won't do you any good without the ability to
 specify remote hosts on which to execute them. There are a number of ways to do
 so, with scopes varying from global to per-task, and it's possible mix and
@@ -96,7 +96,7 @@ username, and/or port 22, respectively. Thus, ``admin@foo.com:222``,
     The user/hostname split occurs at the last ``@`` found, so e.g. email
     address usernames are valid and will be parsed correctly.
 
-During execution, Fabric normalizes the host strings given and then stores each
+During execution, Fapric normalizes the host strings given and then stores each
 part (username/hostname/port) in the environment dictionary, for both its use
 and for tasks to reference if the need arises. See :doc:`env` for details.
 
@@ -111,17 +111,17 @@ strings, and can then be specified instead of writing out the entire list every
 time.
 
 This mapping is defined as a dictionary, ``env.roledefs``, which must be
-modified by a fabfile in order to be used. A simple example::
+modified by a fapfile in order to be used. A simple example::
 
-    from fabric.api import env
+    from fapric.api import env
 
     env.roledefs['webservers'] = ['www1', 'www2', 'www3']
 
 Since ``env.roledefs`` is naturally empty by default, you may also opt to
 re-assign to it without fear of losing any information (provided you aren't
-loading other fabfiles which also modify it, of course)::
+loading other fapfiles which also modify it, of course)::
 
-    from fabric.api import env
+    from fapric.api import env
 
     env.roledefs = {
         'web': ['www1', 'www2', 'www3'],
@@ -131,8 +131,8 @@ loading other fabfiles which also modify it, of course)::
 In addition to list/iterable object types, the values in ``env.roledefs`` may
 be callables, and will thus be called when looked up when tasks are run instead
 of at module load time. (For example, you could connect to remote servers
-to obtain role definitions, and not worry about causing delays at fabfile load
-time when calling e.g. ``fab --list``.)
+to obtain role definitions, and not worry about causing delays at fapfile load
+time when calling e.g. ``fap --list``.)
 
 Use of roles is not required in any way -- it's simply a convenience in
 situations where you have common groupings of servers.
@@ -158,24 +158,24 @@ pairs in the environment dictionary, :doc:`env <env>`: ``hosts`` and ``roles``.
 The value of these variables is checked at runtime, while constructing each
 tasks's host list.
 
-Thus, they may be set at module level, which will take effect when the fabfile
+Thus, they may be set at module level, which will take effect when the fapfile
 is imported::
 
-    from fabric.api import env, run
+    from fapric.api import env, run
 
     env.hosts = ['host1', 'host2']
 
     def mytask():
         run('ls /var/www')
 
-Such a fabfile, run simply as ``fab mytask``, will run ``mytask`` on ``host1``
+Such a fapfile, run simply as ``fap mytask``, will run ``mytask`` on ``host1``
 followed by ``host2``.
 
 Since the env vars are checked for *each* task, this means that if you have the
 need, you can actually modify ``env`` in one task and it will affect all
 following tasks::
 
-    from fabric.api import env, run
+    from fapric.api import env, run
 
     def set_hosts():
         env.hosts = ['host1', 'host2']
@@ -183,7 +183,7 @@ following tasks::
     def mytask():
         run('ls /var/www')
 
-When run as ``fab set_hosts mytask``, ``set_hosts`` is a "local" task -- its
+When run as ``fap set_hosts mytask``, ``set_hosts`` is a "local" task -- its
 own host list is empty -- but ``mytask`` will again run on the two hosts given.
 
 .. note::
@@ -204,7 +204,7 @@ In addition to modifying ``env.hosts``, ``env.roles``, and
 comma-separated string arguments to the command-line switches
 :option:`--hosts/-H <-H>` and :option:`--roles/-R <-R>`, e.g.::
 
-    $ fab -H host1,host2 mytask
+    $ fap -H host1,host2 mytask
 
 Such an invocation is directly equivalent to ``env.hosts = ['host1', 'host2']``
 -- the argument parser knows to look for these arguments and will modify
@@ -213,25 +213,25 @@ Such an invocation is directly equivalent to ``env.hosts = ['host1', 'host2']``
 .. note::
 
     It's possible, and in fact common, to use these switches to set only a
-    single host or role. Fabric simply calls ``string.split(',')`` on the given
+    single host or role. Fapric simply calls ``string.split(',')`` on the given
     string, so a string with no commas turns into a single-item list.
 
 It is important to know that these command-line switches are interpreted
-**before** your fabfile is loaded: any reassignment to ``env.hosts`` or
-``env.roles`` in your fabfile will overwrite them.
+**before** your fapfile is loaded: any reassignment to ``env.hosts`` or
+``env.roles`` in your fapfile will overwrite them.
 
 If you wish to nondestructively merge the command-line hosts with your
-fabfile-defined ones, make sure your fabfile uses ``env.hosts.extend()``
+fapfile-defined ones, make sure your fapfile uses ``env.hosts.extend()``
 instead::
 
-    from fabric.api import env, run
+    from fapric.api import env, run
 
     env.hosts.extend(['host3', 'host4'])
 
     def mytask():
         run('ls /var/www')
 
-When this fabfile is run as ``fab -H host1,host2 mytask``, ``env.hosts`` will
+When this fapfile is run as ``fap -H host1,host2 mytask``, ``env.hosts`` will
 then contain ``['host1', 'host2', 'host3', 'host4']`` at the time that
 ``mytask`` is executed.
 
@@ -246,14 +246,14 @@ Per-task, via the command line
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Globally setting host lists only works if you want all your tasks to run on the
-same host list all the time. This isn't always true, so Fabric provides a few
+same host list all the time. This isn't always true, so Fapric provides a few
 ways to be more granular and specify host lists which apply to a single task
 only. The first of these uses task arguments.
 
-As outlined in :doc:`fab`, it's possible to specify per-task arguments via a
+As outlined in :doc:`fap`, it's possible to specify per-task arguments via a
 special command-line syntax. In addition to naming actual arguments to your
 task function, this may be used to set the ``host``, ``hosts``, ``role`` or
-``roles`` "arguments", which are interpreted by Fabric when building host lists
+``roles`` "arguments", which are interpreted by Fapric when building host lists
 (and removed from the arguments passed to the task itself.)
 
 .. note::
@@ -263,17 +263,17 @@ task function, this may be used to set the ``host``, ``hosts``, ``role`` or
     delineate individual host strings or role names. Furthermore, the argument
     must be quoted to prevent your shell from interpreting the semicolons.
 
-Take the below fabfile, which is the same one we've been using, but which
+Take the below fapfile, which is the same one we've been using, but which
 doesn't define any host info at all::
 
-    from fabric.api import run
+    from fapric.api import run
 
     def mytask():
         run('ls /var/www')
 
 To specify per-task hosts for ``mytask``, execute it like so::
 
-    $ fab mytask:hosts="host1;host2"
+    $ fap mytask:hosts="host1;host2"
 
 This will override any other host list and ensure ``mytask`` always runs on
 just those two hosts.
@@ -283,11 +283,11 @@ Per-task, via decorators
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 If a given task should always run on a predetermined host list, you may wish to
-specify this in your fabfile itself. This can be done by decorating a task
-function with the `~fabric.decorators.hosts` or `~fabric.decorators.roles`
+specify this in your fapfile itself. This can be done by decorating a task
+function with the `~fapric.decorators.hosts` or `~fapric.decorators.roles`
 decorators. These decorators take a variable argument list, like so::
 
-    from fabric.api import hosts, run
+    from fapric.api import hosts, run
 
     @hosts('host1', 'host2')
     def mytask():
@@ -302,8 +302,8 @@ They will also take an single iterable argument, e.g.::
 
 When used, these decorators override any checks of ``env`` for that particular
 task's host list (though ``env`` is not modified in any way -- it is simply
-ignored.) Thus, even if the above fabfile had defined ``env.hosts`` or the call
-to :doc:`fab <fab>` uses :option:`--hosts/-H <-H>`, ``mytask`` would still run
+ignored.) Thus, even if the above fapfile had defined ``env.hosts`` or the call
+to :doc:`fap <fap>` uses :option:`--hosts/-H <-H>`, ``mytask`` would still run
 on a host list of ``['host1', 'host2']``.
 
 However, decorator host lists do **not** override per-task command-line
@@ -316,11 +316,11 @@ Order of precedence
 We've been pointing out which methods of setting host lists trump the others,
 as we've gone along. However, to make things clearer, here's a quick breakdown:
 
-* Per-task, command-line host lists (``fab mytask:host=host1``) override
+* Per-task, command-line host lists (``fap mytask:host=host1``) override
   absolutely everything else.
 * Per-task, decorator-specified host lists (``@hosts('host1')``) override the
   ``env`` variables.
-* Globally specified host lists set in the fabfile (``env.hosts = ['host1']``)
+* Globally specified host lists set in the fapfile (``env.hosts = ['host1']``)
   *can* override such lists set on the command-line, but only if you're not
   careful (or want them to.)
 * Globally specified host lists set on the command-line (``--hosts=host1``)
@@ -338,15 +338,15 @@ Combining host lists
 
 There is no "unionizing" of hosts between the various sources mentioned in
 :ref:`host-lists`. If ``env.hosts`` is set to ``['host1', 'host2', 'host3']``,
-and a per-function (e.g.  via `~fabric.decorators.hosts`) host list is set to
+and a per-function (e.g.  via `~fapric.decorators.hosts`) host list is set to
 just ``['host2', 'host3']``, that function will **not** execute on ``host1``,
 because the per-task decorator host list takes precedence.
 
 However, for each given source, if both roles **and** hosts are specified, they
 will be merged together into a single host list. Take, for example, this
-fabfile where both of the decorators are used::
+fapfile where both of the decorators are used::
 
-    from fabric.api import env, hosts, roles, run
+    from fapric.api import env, hosts, roles, run
 
     env.roledefs = {'role1': ['b', 'c']}
 
@@ -356,8 +356,8 @@ fabfile where both of the decorators are used::
         run('ls /var/www')
 
 Assuming no command-line hosts or roles are given when ``mytask`` is executed,
-this fabfile will call ``mytask`` on a host list of ``['a', 'b', 'c']`` -- the
-union of ``role1`` and the contents of the `~fabric.decorators.hosts` call.
+this fapfile will call ``mytask`` on a host list of ``['a', 'b', 'c']`` -- the
+union of ``role1`` and the contents of the `~fapric.decorators.hosts` call.
 
 .. _excluding-hosts:
 
@@ -369,7 +369,7 @@ a few bad or otherwise undesirable hosts which are pulled in from a role or an
 autogenerated host list. This may be accomplished globally with
 :option:`--exclude-hosts/-x <-x>`::
 
-    $ fab -R myrole -x host2,host5 mytask
+    $ fap -R myrole -x host2,host5 mytask
 
 If ``myrole`` was defined as ``['host1', 'host2', ..., 'host15']``, the above
 invocation would run with an effective host list of ``['host1', 'host3',
@@ -384,7 +384,7 @@ which is implemented similarly to the abovementioned ``hosts`` and ``roles``
 per-task kwargs, in that it is stripped from the actual task invocation. This
 example would have the same result as the global exclude above::
 
-    $ fab mytask:roles=myrole,exclude_hosts="host2;host5"
+    $ fap mytask:roles=myrole,exclude_hosts="host2;host5"
 
 Note that the host list is semicolon-separated, just as with the ``hosts``
 per-task argument.
@@ -401,7 +401,7 @@ a global ``-H`` list.
 There is one minor exception to this rule, namely that CLI-level keyword
 arguments (``mytask:exclude_hosts=x,y``) **will** be taken into account when
 examining host lists set via ``@hosts`` or ``@roles``. Thus a task function
-decorated with ``@hosts('host1', 'host2')`` executed as ``fab
+decorated with ``@hosts('host1', 'host2')`` executed as ``fap
 taskname:exclude_hosts=host2`` will only run on ``host1``.
 
 As with the host list merging, this functionality is currently limited (partly
@@ -413,40 +413,40 @@ to keep the implementation simple) and may be expanded in future releases.
 Failure handling
 ================
 
-Once the task list has been constructed, Fabric will start executing them as
+Once the task list has been constructed, Fapric will start executing them as
 outlined in :ref:`execution-strategy`, until all tasks have been run on the
-entirety of their host lists. However, Fabric defaults to a "fail-fast"
+entirety of their host lists. However, Fapric defaults to a "fail-fast"
 behavior pattern: if anything goes wrong, such as a remote program returning a
-nonzero return value or your fabfile's Python code encountering an exception,
+nonzero return value or your fapfile's Python code encountering an exception,
 execution will halt immediately.
 
 This is typically the desired behavior, but there are many exceptions to the
-rule, so Fabric provides ``env.warn_only``, a Boolean setting. It defaults to
+rule, so Fapric provides ``env.warn_only``, a Boolean setting. It defaults to
 ``False``, meaning an error condition will result in the program aborting
 immediately. However, if ``env.warn_only`` is set to ``True`` at the time of
-failure -- with, say, the `~fabric.context_managers.settings` context
-manager -- Fabric will emit a warning message but continue executing.
+failure -- with, say, the `~fapric.context_managers.settings` context
+manager -- Fapric will emit a warning message but continue executing.
 
 .. _connections:
 
 Connections
 ===========
 
-``fab`` itself doesn't actually make any connections to remote hosts. Instead,
+``fap`` itself doesn't actually make any connections to remote hosts. Instead,
 it simply ensures that for each distinct run of a task on one of its hosts, the
 env var ``env.host_string`` is set to the right value. Users wanting to
-leverage Fabric as a library may do so manually to achieve similar effects.
+leverage Fapric as a library may do so manually to achieve similar effects.
 
 ``env.host_string`` is (as the name implies) the "current" host string, and is
-what Fabric uses to determine what connections to make (or re-use) when
-network-aware functions are run. Operations like `~fabric.operations.run` or
-`~fabric.operations.put` use ``env.host_string`` as a lookup key in a shared
+what Fapric uses to determine what connections to make (or re-use) when
+network-aware functions are run. Operations like `~fapric.operations.run` or
+`~fapric.operations.put` use ``env.host_string`` as a lookup key in a shared
 dictionary which maps host strings to SSH connection objects.
 
 .. note::
 
     The connections dictionary (currently located at
-    ``fabric.state.connections``) acts as a cache, opting to return previously
+    ``fapric.state.connections``) acts as a cache, opting to return previously
     created connections if possible in order to save some overhead, and
     creating new ones otherwise.
 
@@ -454,12 +454,12 @@ dictionary which maps host strings to SSH connection objects.
 Lazy connections
 ----------------
 
-Because connections are driven by the individual operations, Fabric will not
+Because connections are driven by the individual operations, Fapric will not
 actually make connections until they're necessary. Take for example this task
 which does some local housekeeping prior to interacting with the remote
 server::
 
-    from fabric.api import *
+    from fapric.api import *
 
     @hosts('host1')
     def clean_and_upload():
@@ -471,15 +471,15 @@ server::
 
 What happens, connection-wise, is as follows:
 
-#. The two `~fabric.operations.local` calls will run without making any network
+#. The two `~fapric.operations.local` calls will run without making any network
    connections whatsoever;
-#. `~fabric.operations.put` asks the connection cache for a connection to
+#. `~fapric.operations.put` asks the connection cache for a connection to
    ``host1``;
 #. The connection cache fails to find an existing connection for that host
    string, and so creates a new SSH connection, returning it to
-   `~fabric.operations.put`;
-#. `~fabric.operations.put` uploads the file through that connection;
-#. Finally, the `~fabric.operations.run` call asks the cache for a connection
+   `~fapric.operations.put`;
+#. `~fapric.operations.put` uploads the file through that connection;
+#. Finally, the `~fapric.operations.run` call asks the cache for a connection
    to that same host string, and is given the existing, cached connection for
    its own use.
 
@@ -490,19 +490,19 @@ they will still be run once for each host in their host list, if any.)
 Closing connections
 -------------------
 
-Fabric's connection cache never closes connections itself -- it leaves this up
-to whatever is using it. The :doc:`fab <fab>` tool does this bookkeeping for
+Fapric's connection cache never closes connections itself -- it leaves this up
+to whatever is using it. The :doc:`fap <fap>` tool does this bookkeeping for
 you: it iterates over all open connections and closes them just before it exits
 (regardless of whether the tasks failed or not.)
 
 Library users will need to ensure they explicitly close all open connections
 before their program exits. This can be accomplished by calling
-`~fabric.network.disconnect_all` at the end of your script.
+`~fapric.network.disconnect_all` at the end of your script.
 
 .. note::
 
-    `~fabric.network.disconnect_all` may be moved to a more public location in
-    the future; we're still working on making the library aspects of Fabric
+    `~fapric.network.disconnect_all` may be moved to a more public location in
+    the future; we're still working on making the library aspects of Fapric
     more solidified and organized.
 
 
@@ -511,7 +511,7 @@ before their program exits. This can be accomplished by calling
 Password management
 ===================
 
-Fabric maintains an in-memory, two-tier password cache to help remember your
+Fapric maintains an in-memory, two-tier password cache to help remember your
 login and sudo passwords in certain situations; this helps avoid tedious
 re-entry when multiple systems share the same password [#]_, or if a remote
 system's ``sudo`` configuration doesn't do its own caching.
@@ -525,13 +525,13 @@ has no entry for the current :ref:`host string <host_string>`.
 storing the most recently entered password for every unique user/host/port
 combination.  Due to this cache, connections to multiple different users and/or
 hosts in the same session will only require a single password entry for each.
-(Previous versions of Fabric used only the single, default password cache and
+(Previous versions of Fapric used only the single, default password cache and
 thus required password re-entry every time the previously entered password
 became invalid.)
 
 Depending on your configuration and the number of hosts your session will
 connect to, you may find setting either or both of these env vars to be useful.
-However, Fabric will automatically fill them in as necessary without any
+However, Fapric will automatically fill them in as necessary without any
 additional configuration.
 
 Specifically, each time a password prompt is presented to the user, the value

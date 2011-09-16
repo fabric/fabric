@@ -2,10 +2,10 @@
 SSH behavior
 ============
 
-Fabric currently makes use of the `Paramiko
+Fapric currently makes use of the `Paramiko
 <http://www.lag.net/paramiko/docs/>`_ SSH library for managing all connections,
 meaning that there are occasionally spots where it is limited by Paramiko's
-capabilities. Below are areas of note where Fabric will exhibit behavior that
+capabilities. Below are areas of note where Fapric will exhibit behavior that
 isn't consistent with, or as flexible as, the behavior of the ``ssh``
 command-line program.
 
@@ -25,20 +25,20 @@ determine what happens when an unknown host (a host whose username or IP is not
 found in ``known_hosts``) is seen:
 
 * **Reject**: the host key is rejected and the connection is not made. This
-  results in a Python exception, which will terminate your Fabric session with a
+  results in a Python exception, which will terminate your Fapric session with a
   message that the host is unknown.
 * **Add**: the new host key is added to the in-memory list of known hosts, the
   connection is made, and things continue normally. Note that this does **not**
   modify your on-disk ``known_hosts`` file!
-* **Ask**: not yet implemented at the Fabric level, this is a Paramiko option
+* **Ask**: not yet implemented at the Fapric level, this is a Paramiko option
   which would result in the user being prompted about the unknown key and
   whether to accept it.
 
-Whether to reject or add hosts, as above, is controlled in Fabric via the
+Whether to reject or add hosts, as above, is controlled in Fapric via the
 :ref:`env.reject_unknown_hosts <reject-unknown-hosts>` option, which is False
 by default for convenience's sake. We feel this is a valid tradeoff between
 convenience and security; anyone who feels otherwise can easily modify their
-fabfiles at module level to set ``env.reject_unknown_hosts = True``.
+fapfiles at module level to set ``env.reject_unknown_hosts = True``.
 
 
 Known hosts with changed keys

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Fabric documentation build configuration file, created by
+# Fapric documentation build configuration file, created by
 # sphinx-quickstart on Sat Apr 25 14:53:36 2009.
 #
 # This file is execfile()d with the current directory set to its containing dir.
@@ -33,7 +33,7 @@ def issues_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
     """
     # Old-style 'just the issue link' behavior
     issue_no = utils.unescape(text)
-    ref = "https://github.com/fabric/fabric/issues/" + issue_no
+    ref = "https://github.com/fapric/fapric/issues/" + issue_no
     link = nodes.reference(rawtext, '#' + issue_no, refuri=ref, **options)
     ret = [link]
     # Additional 'new-style changelog' stuff
@@ -59,7 +59,7 @@ def release_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
     """
     Invoked as :release:`N.N.N <YYYY-MM-DD>`.
 
-    Turns into: <b>YYYY-MM-DD</b>: released <b><a>Fabric N.N.N</a></b>, with
+    Turns into: <b>YYYY-MM-DD</b>: released <b><a>Fapric N.N.N</a></b>, with
     the link going to the Github source page for the tag.
     """
     # Make sure year has been specified
@@ -72,8 +72,8 @@ def release_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
         nodes.strong(text=date),
         nodes.inline(text=": released "),
         nodes.reference(
-            text="Fabric %s" % number,
-            refuri="https://github.com/fabric/fabric/tree/%s" % number,
+            text="Fapric %s" % number,
+            refuri="https://github.com/fapric/fapric/tree/%s" % number,
             classes=['changelog-release']
         )
     ], []
@@ -104,7 +104,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Fabric'
+project = u'Fapric'
 year = datetime.now().year
 copyright = u'%d, Christian Vest Hansen and Jeffrey E. Forcier' % year
 
@@ -112,10 +112,10 @@ copyright = u'%d, Christian Vest Hansen and Jeffrey E. Forcier' % year
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 
-# Add this checkout's local Fabric module to sys.path. Allows use of
-# fabric.version in here, and ensures that the autodoc stuff also works.
+# Add this checkout's local Fapric module to sys.path. Allows use of
+# fapric.version in here, and ensures that the autodoc stuff also works.
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), '..')))
-from fabric.version import get_version
+from fapric.version import get_version
 
 # Get version info
 #
@@ -170,11 +170,11 @@ pygments_style = 'sphinx'
 html_theme = 'default'
 html_style = 'rtd.css'
 
-from fabric.api import local, hide
+from fapric.api import local, hide
 with hide('everything'):
     get_tags = 'git tag | sort -r | egrep "(0\.9|1\.[[:digit:]]+)\.."'
-    fabric_tags = local(get_tags, True).split()
-html_context = {'fabric_tags': fabric_tags}
+    fapric_tags = local(get_tags, True).split()
+html_context = {'fapric_tags': fapric_tags}
 
 
 # Theme options are theme-specific and customize the look and feel of a theme
@@ -242,7 +242,7 @@ html_static_path = ['_static']
 #html_file_suffix = ''
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'Fabricdoc'
+htmlhelp_basename = 'Fapricdoc'
 
 
 # -- Options for LaTeX output --------------------------------------------------
@@ -256,7 +256,7 @@ htmlhelp_basename = 'Fabricdoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'Fabric.tex', u'Fabric Documentation',
+  ('index', 'Fapric.tex', u'Fapric Documentation',
    u'Jeff Forcier', 'manual'),
 ]
 

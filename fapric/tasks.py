@@ -2,12 +2,12 @@ from functools import wraps
 
 class Task(object):
     """
-    Abstract base class for objects wishing to be picked up as Fabric tasks.
+    Abstract base class for objects wishing to be picked up as Fapric tasks.
 
     Instances of subclasses will be treated as valid tasks when present in
-    fabfiles loaded by the :doc:`fab </usage/fab>` tool.
+    fapfiles loaded by the :doc:`fap </usage/fap>` tool.
 
-    For details on how to implement and use `~fabric.tasks.Task` subclasses,
+    For details on how to implement and use `~fapric.tasks.Task` subclasses,
     please see the usage documentation on :ref:`new-style tasks
     <new-style-tasks>`.
 
@@ -35,7 +35,7 @@ class WrappedCallableTask(Task):
     """
     Wraps a given callable transparently, while marking it as a valid Task.
 
-    Generally used via `@task <~fabric.decorators.task>` and not directly.
+    Generally used via `@task <~fapric.decorators.task>` and not directly.
 
     .. versionadded:: 1.1
     """

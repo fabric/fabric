@@ -8,13 +8,13 @@ with ANSI color codes for the appropriate color.
 
 For example, to print some text as green on supporting terminals::
 
-    from fabric.colors import green
+    from fapric.colors import green
 
     print(green("This text is green!"))
 
 Because these functions simply return modified strings, you can nest them::
 
-    from fabric.colors import red, green
+    from fapric.colors import red, green
 
     print(red("This sentence is red, except for " + \
           green("these words, which are green") + "."))

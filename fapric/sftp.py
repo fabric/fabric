@@ -6,8 +6,8 @@ import stat
 import tempfile
 from fnmatch import filter as fnfilter
 
-from fabric.state import output, connections, env
-from fabric.utils import warn
+from fapric.state import output, connections, env
+from fapric.utils import warn
 
 
 class SFTP(object):
@@ -42,7 +42,7 @@ class SFTP(object):
         return True
 
     def glob(self, path):
-        from fabric.state import win32
+        from fapric.state import win32
         dirpart, pattern = os.path.split(path)
         rlist = self.ftp.listdir(dirpart)
 
@@ -91,7 +91,7 @@ class SFTP(object):
             yield top, dirs, nondirs
 
     def mkdir(self, path, use_sudo):
-        from fabric.api import sudo, hide
+        from fapric.api import sudo, hide
         if use_sudo:
             with hide('everything'):
                 sudo('mkdir %s' % path)
@@ -190,7 +190,7 @@ class SFTP(object):
 
     def put(self, local_path, remote_path, use_sudo, mirror_local_mode, mode,
         local_is_path):
-        from fabric.api import sudo, hide
+        from fapric.api import sudo, hide
         pre = self.ftp.getcwd()
         pre = pre if pre else ''
         if local_is_path and self.isdir(remote_path):

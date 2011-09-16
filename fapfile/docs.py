@@ -1,11 +1,11 @@
 from __future__ import with_statement
 
-from fabric.api import *
-from fabric.contrib.project import rsync_project
-from fabric.version import get_version
+from fapric.api import *
+from fapric.contrib.project import rsync_project
+from fapric.version import get_version
 
 
-docs_host = 'jforcier@fabfile.org'
+docs_host = 'jforcier@fapfile.org'
 
 
 @task(default=True)

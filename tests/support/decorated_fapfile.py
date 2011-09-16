@@ -1,4 +1,4 @@
-from fabric.decorators import task
+from fapric.decorators import task
 
 @task
 def foo():

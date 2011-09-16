@@ -1,5 +1,5 @@
 # These requirements are for DEVELOPMENT ONLY!
-# You do not need e.g. Sphinx or Fudge just to run the 'fab' tool.
+# You do not need e.g. Sphinx or Fudge just to run the 'fap' tool.
 # Instead, these are necessary for executing the test suite.
 #
 # PLEASE NOTE: due to how Pip currently works, you will need to manually

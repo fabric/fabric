@@ -4,10 +4,10 @@ import sys
 import time
 from select import select
 
-from fabric.context_managers import settings, char_buffered
-from fabric.state import env, output, win32, io_sleep
-from fabric.auth import get_password, set_password
-import fabric.network
+from fapric.context_managers import settings, char_buffered
+from fapric.state import env, output, win32, io_sleep
+from fapric.auth import get_password, set_password
+import fapric.network
 
 if win32:
     import msvcrt
@@ -76,7 +76,7 @@ def output_loop(chan, which, capture):
                 # Obtain cached password, if any
                 password = get_password()
                 # Remove the prompt itself from the capture buffer. This is
-                # backwards compatible with Fabric 0.9.x behavior; the user
+                # backwards compatible with Fapric 0.9.x behavior; the user
                 # will still see the prompt on their screen (no way to avoid
                 # this) but at least it won't clutter up the captured text.
                 del capture[-1 * len(env.sudo_prompt):]
@@ -95,7 +95,7 @@ def output_loop(chan, which, capture):
                     # initial display "hides" just after the actually-displayed
                     # prompt from the remote end.
                     chan.input_enabled = False
-                    password = fabric.network.prompt_for_password(
+                    password = fapric.network.prompt_for_password(
                         prompt=" ", no_colon=True, stream=pipe
                     )
                     chan.input_enabled = True

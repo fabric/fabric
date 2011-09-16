@@ -16,16 +16,16 @@ import tempfile
 
 from fudge import Fake, patched_context, clear_expectations
 
-from fabric.context_managers import settings
-from fabric.network import interpret_host_string
-from fabric.state import env, output
-from fabric.sftp import SFTP
-import fabric.network
+from fapric.context_managers import settings
+from fapric.network import interpret_host_string
+from fapric.state import env, output
+from fapric.sftp import SFTP
+import fapric.network
 
 from server import PORT, PASSWORDS, USER, HOST
 
 
-class FabricTest(object):
+class FapricTest(object):
     """
     Nose-oriented test runner which wipes state.env and provides file helpers.
     """
@@ -242,21 +242,21 @@ def eq_contents(path, text):
 
 def patched_env(updates):
     """
-    Execute a function with a patched copy of ``fabric.state.env``.
+    Execute a function with a patched copy of ``fapric.state.env``.
 
-    ``fabric.state.env`` is patched during the wrapped functions' run, with an
+    ``fapric.state.env`` is patched during the wrapped functions' run, with an
     equivalent copy that has been ``update``d with the given ``updates``.
 
-    E.g. with ``fabric.state.env = {'foo': 'bar', 'biz': 'baz'}``, a function
+    E.g. with ``fapric.state.env = {'foo': 'bar', 'biz': 'baz'}``, a function
     decorated with ``@patched_env({'foo': 'notbar'})`` would see
-    ``fabric.state.env`` as equal to ``{'biz': 'baz', 'foo': 'notbar'}``.
+    ``fapric.state.env`` as equal to ``{'biz': 'baz', 'foo': 'notbar'}``.
     """
-    from fabric.state import env
+    from fapric.state import env
     def wrapper(func):
         new_env = deepcopy(env).update(updates)
-        return with_patched_object('fabric.state', 'env', new_env)
+        return with_patched_object('fapric.state', 'env', new_env)
     return wrapper
 
 
-def fabfile(name):
+def fapfile(name):
     return os.path.join(os.path.dirname(__file__), 'support', name)

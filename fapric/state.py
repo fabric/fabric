@@ -6,8 +6,8 @@ import os
 import sys
 from optparse import make_option
 
-from fabric.network import HostConnectionCache
-from fabric.version import get_version
+from fapric.network import HostConnectionCache
+from fapric.version import get_version
 
 
 #
@@ -64,7 +64,7 @@ class _AttributeDict(dict):
                 return value
 
 
-# By default, if the user (including code using Fabric as a library) doesn't
+# By default, if the user (including code using Fapric as a library) doesn't
 # set the username, we obtain the currently running username and use that.
 def _get_system_username():
     """
@@ -82,9 +82,9 @@ def _get_system_username():
 
 def _rc_path():
     """
-    Return platform-specific default file path for $HOME/.fabricrc.
+    Return platform-specific default file path for $HOME/.fapricrc.
     """
-    rc_file = '.fabricrc'
+    rc_file = '.fapricrc'
     if not win32:
         return os.path.expanduser("~/" + rc_file)
     else:
@@ -97,7 +97,7 @@ def _rc_path():
 
 
 # Options/settings which exist both as environment keys and which can be set on
-# the command line, are defined here. When used via `fab` they will be added to
+# the command line, are defined here. When used via `fap` they will be added to
 # the optparse parser, and either way they are added to `env` below (i.e.  the
 # 'dest' value becomes the environment key and the value, the env value).
 #
@@ -170,8 +170,8 @@ env_options = [
         help="don't load private key files from ~/.ssh/"
     ),
 
-    make_option('-f', '--fabfile',
-        default='fabfile',
+    make_option('-f', '--fapfile',
+        default='fapfile',
         help="Python module file to import, e.g. '../other.py'"
     ),
 
@@ -255,7 +255,7 @@ env = _AttributeDict({
     'path': '',
     'path_behavior': 'append',
     'port': None,
-    'real_fabfile': None,
+    'real_fapfile': None,
     'roles': [],
     'roledefs': {},
     # -S so sudo accepts passwd via stdin, -p with our known-value prompt for

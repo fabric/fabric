@@ -1,5 +1,5 @@
 Console Output Utilities
 ========================
 
-.. automodule:: fabric.contrib.console
+.. automodule:: fapric.contrib.console
     :members:
