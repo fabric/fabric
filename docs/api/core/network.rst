@@ -2,6 +2,6 @@
 Network
 =======
 
-.. automodule:: fabric.network
+.. automodule:: fapric.network
 
     .. autofunction:: disconnect_all

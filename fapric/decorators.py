@@ -1,11 +1,11 @@
 """
-Convenience decorators for use in fabfiles.
+Convenience decorators for use in fapfiles.
 """
 from __future__ import with_statement
 
 from functools import wraps
 
-from fabric import tasks
+from fapric import tasks
 from .context_managers import settings
 
 
@@ -46,7 +46,7 @@ def hosts(*host_list):
         def my_func():
             pass
 
-    `~fabric.decorators.hosts` may be invoked with either an argument list
+    `~fapric.decorators.hosts` may be invoked with either an argument list
     (``@hosts('host1')``, ``@hosts('host1', 'host2')``) or a single, iterable
     argument (``@hosts(['host1', 'host2'])``).
 
@@ -89,14 +89,14 @@ def roles(*role_list):
         def my_func():
             pass
 
-    As with `~fabric.decorators.hosts`, `~fabric.decorators.roles` may be
+    As with `~fapric.decorators.hosts`, `~fapric.decorators.roles` may be
     invoked with either an argument list or a single, iterable argument.
     Similarly, this decorator uses the same mechanism as
-    `~fabric.decorators.hosts` and simply sets ``<function>.roles``.
+    `~fapric.decorators.hosts` and simply sets ``<function>.roles``.
 
     .. versionchanged:: 0.9.2
         Allow a single, iterable argument to be used (same as
-        `~fabric.decorators.hosts`).
+        `~fapric.decorators.hosts`).
     """
     def attach_roles(func):
         @wraps(func)
@@ -117,7 +117,7 @@ def runs_once(func):
 
     By keeping internal state, this decorator allows you to mark a function
     such that it will only run once per Python interpreter session, which in
-    typical use means "once per invocation of the ``fab`` program".
+    typical use means "once per invocation of the ``fap`` program".
 
     Any function wrapped with this decorator will silently fail to execute the
     2nd, 3rd, ..., Nth time it is called, and will return the value of the
@@ -133,7 +133,7 @@ def runs_once(func):
 
 def with_settings(**kw_settings):
     """
-    Decorator equivalent of ``fabric.context_managers.settings``.
+    Decorator equivalent of ``fapric.context_managers.settings``.
 
     Allows you to wrap an entire function as if it was called inside a block
     with the ``settings`` context manager. This may be useful if you know you
@@ -146,7 +146,7 @@ def with_settings(**kw_settings):
         def foo():
             ...
 
-    .. seealso:: `~fabric.context_managers.settings`
+    .. seealso:: `~fapric.context_managers.settings`
     .. versionadded:: 1.1
     """
     def outer(func):

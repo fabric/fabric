@@ -14,13 +14,13 @@ import types
 from nose.tools import raises, eq_
 from fudge import with_patched_object
 
-from fabric.state import env, output
-from fabric.operations import require, prompt, _sudo_prefix, _shell_wrap, \
+from fapric.state import env, output
+from fapric.operations import require, prompt, _sudo_prefix, _shell_wrap, \
     _shell_escape
-from fabric.api import get, put, hide, show, cd, lcd, local, run, sudo
-from fabric.sftp import SFTP
+from fapric.api import get, put, hide, show, cd, lcd, local, run, sudo
+from fapric.sftp import SFTP
 
-from fabric.decorators import with_settings
+from fapric.decorators import with_settings
 from utils import *
 from server import (server, PORT, RESPONSES, FILES, PASSWORDS, CLIENT_PRIVKEY,
     USER, CLIENT_PRIVKEY_PASSPHRASE)
@@ -224,7 +224,7 @@ def test_shell_escape_escapes_backticks():
     eq_(_shell_escape(cmd), "touch test.pid && kill \`cat test.pid\`")
 
 
-class TestCombineStderr(FabricTest):
+class TestCombineStderr(FapricTest):
     @server()
     def test_local_none_global_true(self):
         """
@@ -274,7 +274,7 @@ class TestCombineStderr(FabricTest):
 # get() and put()
 #
 
-class TestFileTransfers(FabricTest):
+class TestFileTransfers(FapricTest):
     #
     # get()
     #

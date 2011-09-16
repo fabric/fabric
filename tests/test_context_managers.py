@@ -2,8 +2,8 @@ from __future__ import with_statement
 
 from nose.tools import eq_, ok_
 
-from fabric.state import env
-from fabric.context_managers import cd, settings
+from fapric.state import env
+from fapric.context_managers import cd, settings
 
 
 #

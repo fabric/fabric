@@ -1,5 +1,5 @@
 """
-Current Fabric version constant plus version pretty-print method.
+Current Fapric version constant plus version pretty-print method.
 
 This functionality is contained in its own module to prevent circular import
 problems with ``__init__.py`` (which is loaded by setup.py during installation,

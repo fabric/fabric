@@ -10,13 +10,13 @@ from nose.tools import with_setup, raises, ok_
 from fudge import (Fake, clear_calls, clear_expectations, patch_object, verify,
     with_patched_object, patched_context, with_fakes)
 
-from fabric.context_managers import settings, hide, show
-from fabric.network import (HostConnectionCache, join_host_strings, normalize,
+from fapric.context_managers import settings, hide, show
+from fapric.network import (HostConnectionCache, join_host_strings, normalize,
     denormalize)
-from fabric.io import output_loop
-import fabric.network  # So I can call patch_object correctly. Sigh.
-from fabric.state import env, output, _get_system_username
-from fabric.operations import run, sudo, prompt
+from fapric.io import output_loop
+import fapric.network  # So I can call patch_object correctly. Sigh.
+from fapric.state import env, output, _get_system_username
+from fapric.operations import run, sudo, prompt
 
 from utils import *
 from server import (server, PORT, RESPONSES, PASSWORDS, CLIENT_PRIVKEY, USER,
@@ -28,7 +28,7 @@ from server import (server, PORT, RESPONSES, PASSWORDS, CLIENT_PRIVKEY, USER,
 #
 
 
-class TestNetwork(FabricTest):
+class TestNetwork(FapricTest):
     def test_host_string_normalization(self):
         username = _get_system_username()
         for description, input, output_ in (
@@ -106,7 +106,7 @@ class TestNetwork(FabricTest):
     def check_connection_calls(host_strings, num_calls):
         # Clear Fudge call stack
         # Patch connect() with Fake obj set to expect num_calls calls
-        patched_connect = patch_object('fabric.network', 'connect',
+        patched_connect = patch_object('fapric.network', 'connect',
             Fake('connect', expect_call=True).times_called(num_calls)
         )
         try:
@@ -140,7 +140,7 @@ class TestNetwork(FabricTest):
         """
         hcc = HostConnectionCache()
         fake = Fake('connect', callable=True)
-        with patched_context('fabric.network', 'connect', fake):
+        with patched_context('fapric.network', 'connect', fake):
             for host_string in ('hostname', 'user@hostname',
                 'user@hostname:222'):
                 # Prime

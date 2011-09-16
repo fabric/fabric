@@ -1,9 +1,9 @@
-# "Integration test" for Fabric to be run occasionally / before releasing.
+# "Integration test" for Fapric to be run occasionally / before releasing.
 # Executes idempotent/nonthreatening commands against localhost by default.
 
 from __future__ import with_statement
 
-from fabric.api import *
+from fapric.api import *
 
 
 @hosts('localhost')

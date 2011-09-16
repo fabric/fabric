@@ -3,8 +3,8 @@ import fudge
 from fudge import Fake, with_fakes
 import random
 
-from fabric import decorators, tasks
-from fabric.state import env
+from fapric import decorators, tasks
+from fapric.state import env
 
 def test_task_returns_an_instance_of_wrappedfunctask_object():
     def foo():

@@ -4,8 +4,8 @@ import unittest
 from nose.tools import eq_, raises
 import random
 
-from fabric import tasks
-from fabric.tasks import WrappedCallableTask
+from fapric import tasks
+from fapric.tasks import WrappedCallableTask
 
 def test_base_task_provides_undefined_name():
     task = tasks.Task()
@@ -129,7 +129,7 @@ class TestTask(unittest.TestCase):
 # this simplifies testing :)
 
 def test_decorator_incompatibility_on_task():
-    from fabric.decorators import task, hosts, runs_once, roles
+    from fapric.decorators import task, hosts, runs_once, roles
     def foo(): return "foo"
     foo = task(foo)
 
@@ -139,7 +139,7 @@ def test_decorator_incompatibility_on_task():
     roles('www')(foo)
 
 def test_decorator_closure_hiding():
-    from fabric.decorators import task, hosts
+    from fapric.decorators import task, hosts
     def foo(): print env.host_string
     foo = hosts("me@localhost")(foo)
     foo = task(foo)

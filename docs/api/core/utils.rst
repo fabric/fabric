@@ -2,5 +2,5 @@
 Utils
 =====
 
-.. automodule:: fabric.utils
+.. automodule:: fapric.utils
     :members:

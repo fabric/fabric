@@ -2,5 +2,5 @@
 Project Tools
 =============
 
-.. automodule:: fabric.contrib.project
+.. automodule:: fapric.contrib.project
     :members:

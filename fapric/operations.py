@@ -1,5 +1,5 @@
 """
-Functions to be used in fabfiles and other non-core code, such as run()/sudo().
+Functions to be used in fapfiles and other non-core code, such as run()/sudo().
 """
 
 from __future__ import with_statement
@@ -16,14 +16,14 @@ from traceback import format_exc
 
 from contextlib import closing
 
-from fabric.context_managers import settings, char_buffered
-from fabric.io import output_loop, input_loop
-from fabric.network import needs_host
-from fabric.sftp import SFTP
-from fabric.state import (env, connections, output, win32, default_channel,
+from fapric.context_managers import settings, char_buffered
+from fapric.io import output_loop, input_loop
+from fapric.network import needs_host
+from fapric.sftp import SFTP
+from fapric.state import (env, connections, output, win32, default_channel,
     io_sleep)
-from fabric.thread_handling import ThreadHandler
-from fabric.utils import abort, indent, warn, puts, handle_prompt_abort
+from fapric.thread_handling import ThreadHandler
+from fapric.utils import abort, indent, warn, puts, handle_prompt_abort
 
 # For terminal size logic below
 if not win32:
@@ -125,7 +125,7 @@ def require(*keys, **kwargs):
     Check for given keys in the shared environment dict and abort if not found.
 
     Positional arguments should be strings signifying what env vars should be
-    checked for. If any of the given arguments do not exist, Fabric will abort
+    checked for. If any of the given arguments do not exist, Fapric will abort
     execution and print the names of the missing keys.
 
     The optional keyword argument ``used_for`` may be a string, which will be
@@ -222,11 +222,11 @@ def prompt(text, key=None, default='', validate=None):
     hits ``Ctrl-C``).
 
     .. note::
-        `~fabric.operations.prompt` honors :ref:`env.abort_on_prompts
-        <abort-on-prompts>` and will call `~fabric.utils.abort` instead of
+        `~fapric.operations.prompt` honors :ref:`env.abort_on_prompts
+        <abort-on-prompts>` and will call `~fapric.utils.abort` instead of
         prompting if that flag is set to ``True``. If you want to block on user
         input regardless, try wrapping with
-        `~fabric.context_managers.settings`.
+        `~fapric.context_managers.settings`.
 
     Examples::
 
@@ -308,7 +308,7 @@ def put(local_path=None, remote_path=None, use_sudo=False,
     """
     Upload one or more files to a remote host.
 
-    `~fabric.operations.put` returns an iterable containing the absolute file
+    `~fapric.operations.put` returns an iterable containing the absolute file
     paths of all remote files uploaded. This iterable also exhibits a
     ``.failed`` attribute containing any local file paths which failed to
     upload (and may thus be used as a boolean test.) You may also check
@@ -323,12 +323,12 @@ def put(local_path=None, remote_path=None, use_sudo=False,
     ``open('path')`` or a ``StringIO`` instance.
 
     .. note::
-        In this case, `~fabric.operations.put` will attempt to read the entire
+        In this case, `~fapric.operations.put` will attempt to read the entire
         contents of the file-like object by rewinding it using ``seek`` (and
         will use ``tell`` afterwards to preserve the previous file position).
 
     .. note::
-        Use of a file-like object in `~fabric.operations.put`'s ``local_path``
+        Use of a file-like object in `~fapric.operations.put`'s ``local_path``
         argument will cause a temporary file to be utilized due to limitations
         in our SSH layer's API.
 
@@ -353,7 +353,7 @@ def put(local_path=None, remote_path=None, use_sudo=False,
     Alternately, you may use the ``mode`` kwarg to specify an exact mode, in
     the same vein as ``os.chmod`` or the Unix ``chmod`` command.
 
-    `~fabric.operations.put` will honor `~fabric.context_managers.cd`, so
+    `~fapric.operations.put` will honor `~fapric.context_managers.cd`, so
     relative values in ``remote_path`` will be prepended by the current remote
     working directory, if applicable. Thus, for example, the below snippet
     would attempt to upload to ``/tmp/files/test.txt`` instead of
@@ -362,7 +362,7 @@ def put(local_path=None, remote_path=None, use_sudo=False,
         with cd('/tmp'):
             put('/path/to/local/test.txt', 'files')
 
-    Use of `~fabric.context_managers.lcd` will affect ``local_path`` in the
+    Use of `~fapric.context_managers.lcd` will affect ``local_path`` in the
     same manner.
 
     Examples::
@@ -373,8 +373,8 @@ def put(local_path=None, remote_path=None, use_sudo=False,
 
     .. versionchanged:: 1.0
         Now honors the remote working directory as manipulated by
-        `~fabric.context_managers.cd`, and the local working directory as
-        manipulated by `~fabric.context_managers.lcd`.
+        `~fapric.context_managers.cd`, and the local working directory as
+        manipulated by `~fapric.context_managers.lcd`.
     .. versionchanged:: 1.0
         Now allows file-like objects in the ``local_path`` argument.
     .. versionchanged:: 1.0
@@ -456,7 +456,7 @@ def get(remote_path, local_path=None):
     """
     Download one or more files from a remote host.
 
-    `~fabric.operations.get` returns an iterable containing the absolute paths
+    `~fapric.operations.get` returns an iterable containing the absolute paths
     to all local files downloaded, which will be empty if ``local_path`` was a
     StringIO object (see below for more on using StringIO). This object will
     also exhibit a ``.failed`` attribute containing any remote file paths which
@@ -467,13 +467,13 @@ def get(remote_path, local_path=None):
     contain shell glob syntax, e.g. ``"/var/log/apache2/*.log"``, and will have
     tildes replaced by the remote home directory. Relative paths will be
     considered relative to the remote user's home directory, or the current
-    remote working directory as manipulated by `~fabric.context_managers.cd`.
+    remote working directory as manipulated by `~fapric.context_managers.cd`.
     If the remote path points to a directory, that directory will be downloaded
     recursively.
 
     ``local_path`` is the local file path where the downloaded file or files
     will be stored. If relative, it will honor the local current working
-    directory as manipulated by `~fabric.context_managers.lcd`. It may be
+    directory as manipulated by `~fapric.context_managers.lcd`. It may be
     interpolated, using standard Python dict-based interpolation, with the
     following variables:
 
@@ -508,7 +508,7 @@ def get(remote_path, local_path=None):
 
     .. warning::
         If your ``local_path`` argument does not contain ``%(host)s`` and your
-        `~fabric.operations.get` call runs against multiple hosts, your local
+        `~fapric.operations.get` call runs against multiple hosts, your local
         files will be overwritten on each successive run!
 
     If ``local_path`` does not make use of the above variables (i.e. if it is a
@@ -527,8 +527,8 @@ def get(remote_path, local_path=None):
     .. note::
         This function will use ``seek`` and ``tell`` to overwrite the entire
         contents of the file-like object, in order to be consistent with the
-        behavior of `~fabric.operations.put` (which also considers the entire
-        file). However, unlike `~fabric.operations.put`, the file pointer will
+        behavior of `~fapric.operations.put` (which also considers the entire
+        file). However, unlike `~fapric.operations.put`, the file pointer will
         not be restored to its previous location, as that doesn't make as much
         sense here and/or may not even be possible.
 
@@ -542,8 +542,8 @@ def get(remote_path, local_path=None):
 
     .. versionchanged:: 1.0
         Now honors the remote working directory as manipulated by
-        `~fabric.context_managers.cd`, and the local working directory as
-        manipulated by `~fabric.context_managers.lcd`.
+        `~fapric.context_managers.cd`, and the local working directory as
+        manipulated by `~fapric.context_managers.lcd`.
     .. versionchanged:: 1.0
         Now allows file-like objects in the ``local_path`` argument.
     .. versionchanged:: 1.0
@@ -669,10 +669,10 @@ def _prefix_commands(command, which):
     Prefixes ``command`` with all prefixes found in ``env.command_prefixes``.
 
     ``env.command_prefixes`` is a list of strings which is modified by the
-    `~fabric.context_managers.prefix` context manager.
+    `~fapric.context_managers.prefix` context manager.
 
     This function also handles a special-case prefix, ``cwd``, used by
-    `~fabric.context_managers.cd`. The ``which`` kwarg should be a string,
+    `~fapric.context_managers.cd`. The ``which`` kwarg should be a string,
     ``"local"`` or ``"remote"``, which will determine whether ``cwd`` or
     ``lcwd`` is used.
     """
@@ -696,7 +696,7 @@ def _prefix_env_vars(command):
     Prefixes ``command`` with any shell environment vars, e.g. ``PATH=foo ``.
 
     Currently, this only applies the PATH updating implemented in
-    `~fabric.context_managers.path`.
+    `~fapric.context_managers.path`.
     """
     # path(): local shell env var update, appending/prepending/replacing $PATH
     path = env.path
@@ -819,20 +819,20 @@ def open_shell(command=None):
     fully interactive recovery is required upon remote program failure.
 
     It should be considered an easy way to work an interactive shell session
-    into the middle of a Fabric script and is *not* a drop-in replacement for
-    `~fabric.operations.run`, which is also capable of interacting with the
+    into the middle of a Fapric script and is *not* a drop-in replacement for
+    `~fapric.operations.run`, which is also capable of interacting with the
     remote end (albeit only while its given command is executing) and has much
     stronger programmatic abilities such as error handling and stdout/stderr
     capture.
 
-    Specifically, `~fabric.operations.open_shell` provides a better interactive
-    experience than `~fabric.operations.run`, but use of a full remote shell
-    prevents Fabric from determining whether programs run within the shell have
+    Specifically, `~fapric.operations.open_shell` provides a better interactive
+    experience than `~fapric.operations.run`, but use of a full remote shell
+    prevents Fapric from determining whether programs run within the shell have
     failed, and pollutes the stdout/stderr stream with shell output such as
     login banners, prompts and echoed stdin.
 
     Thus, this function does not have a return value and will not trigger
-    Fabric's failure handling if any remote programs result in errors.
+    Fapric's failure handling if any remote programs result in errors.
 
     .. versionadded:: 1.0
     """
@@ -911,7 +911,7 @@ def run(command, shell=True, pty=True, combine_stderr=None):
 
     You may pass ``pty=False`` to forego creation of a pseudo-terminal on the
     remote end in case the presence of one causes problems for the command in
-    question. However, this will force Fabric itself to echo any  and all input
+    question. However, this will force Fapric itself to echo any  and all input
     you type while the command is running, including sensitive passwords. (With
     ``pty=True``, the remote pseudo-terminal will echo for you, and will
     intelligently handle password-style prompts.) See :ref:`pseudottys` for
@@ -921,7 +921,7 @@ def run(command, shell=True, pty=True, combine_stderr=None):
     remote program (exhibited as the ``stderr`` attribute on this function's
     return value), you may set ``combine_stderr=False``. Doing so has a high
     chance of causing garbled output to appear on your terminal (though the
-    resulting strings returned by `~fabric.operations.run` will be properly
+    resulting strings returned by `~fapric.operations.run` will be properly
     separated). For more info, please read :ref:`combine_streams`.
 
     Examples::
@@ -967,7 +967,7 @@ def sudo(command, shell=True, pty=True, combine_stderr=None, user=None):
         result = sudo("ls /tmp/")
 
     .. versionchanged:: 1.0
-        See the changed and added notes for `~fabric.operations.run`.
+        See the changed and added notes for `~fapric.operations.run`.
     """
     return _run_command(command, shell, pty, combine_stderr, sudo=True,
         user=user)
@@ -982,7 +982,7 @@ def local(command, capture=False):
     do anything special, consider using the ``subprocess`` module directly.
 
     `local` is not currently capable of simultaneously printing and
-    capturing output, as `~fabric.operations.run`/`~fabric.operations.sudo`
+    capturing output, as `~fapric.operations.run`/`~fapric.operations.sudo`
     do. The ``capture`` kwarg allows you to switch between printing and
     capturing as necessary, and defaults to ``False``.
 
@@ -990,23 +990,23 @@ def local(command, capture=False):
     hooked up directly to your terminal, though you may use the global
     :doc:`output controls </usage/output_controls>` ``output.stdout`` and
     ``output.stderr`` to hide one or both if desired. In this mode,
-    `~fabric.operations.local` returns None.
+    `~fapric.operations.local` returns None.
 
     When ``capture=True``, this function will return the contents of the
-    command's stdout as a string-like object; as with `~fabric.operations.run`
-    and `~fabric.operations.sudo`, this return value exhibits the
+    command's stdout as a string-like object; as with `~fapric.operations.run`
+    and `~fapric.operations.sudo`, this return value exhibits the
     ``return_code``, ``stderr``, ``failed`` and ``succeeded`` attributes. See
     `run` for details.
 
-    `~fabric.operations.local` will honor the `~fabric.context_managers.lcd`
+    `~fapric.operations.local` will honor the `~fapric.context_managers.lcd`
     context manager, allowing you to control its current working directory
     independently of the remote end (which honors
-    `~fabric.context_managers.cd`).
+    `~fapric.context_managers.cd`).
 
     .. versionchanged:: 1.0
         Added the ``succeeded`` and ``stderr`` attributes.
     .. versionchanged:: 1.0
-        Now honors the `~fabric.context_managers.lcd` context manager.
+        Now honors the `~fapric.context_managers.lcd` context manager.
     .. versionchanged:: 1.0
         Changed the default value of ``capture`` from ``True`` to ``False``.
     """

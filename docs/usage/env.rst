@@ -2,77 +2,77 @@
 The environment dictionary, ``env``
 ===================================
 
-A simple but integral aspect of Fabric is what is known as the "environment": a
+A simple but integral aspect of Fapric is what is known as the "environment": a
 Python dictionary subclass which is used as a combination settings registry and
 shared inter-task data namespace.
 
 The environment dict is currently implemented as a global singleton,
-``fabric.state.env``, and is included in ``fabric.api`` for convenience. Keys
+``fapric.state.env``, and is included in ``fapric.api`` for convenience. Keys
 in ``env`` are sometimes referred to as "env variables".
 
 Environment as configuration
 ============================
 
-Most of Fabric's behavior is controllable by modifying env variables, such as
+Most of Fapric's behavior is controllable by modifying env variables, such as
 ``env.hosts`` (as seen in :ref:`the tutorial <defining-connections>`). Other
 commonly-modified env vars include:
 
-* ``user``: Fabric defaults to your local username when making SSH connections,
+* ``user``: Fapric defaults to your local username when making SSH connections,
   but you can use ``env.user`` to override this if necessary. The :doc:`execution`
   documentation also has info on how to specify usernames on a per-host basis.
 * ``password``: Used to explicitly set your default connection or sudo password
-  if desired. Fabric will prompt you when necessary if this isn't set or
+  if desired. Fapric will prompt you when necessary if this isn't set or
   doesn't appear to be valid.
-* ``warn_only``: a Boolean setting determining whether Fabric exits when
+* ``warn_only``: a Boolean setting determining whether Fapric exits when
   detecting errors on the remote end. See :doc:`execution` for more on this
   behavior.
 
 There are a number of other env variables; for the full list, see
 :ref:`env-vars` at the bottom of this document.
 
-The `~fabric.context_managers.settings` context manager
+The `~fapric.context_managers.settings` context manager
 -------------------------------------------------------
 
 In many situations, it's useful to only temporarily modify ``env`` vars so that
-a given settings change only applies to a block of code. Fabric provides a
-`~fabric.context_managers.settings` context manager, which takes any numbr of
+a given settings change only applies to a block of code. Fapric provides a
+`~fapric.context_managers.settings` context manager, which takes any numbr of
 key/value pairs and will use them to modify ``env`` within its wrapped block.
 
 For example, there are many situations where setting ``warn_only`` (see below)
 is useful. To apply it to a few lines of code, use
 ``settings(warn_only=True)``, as seen in this simplified version of the
-``contrib`` `~fabric.contrib.files.exists` function::
+``contrib`` `~fapric.contrib.files.exists` function::
 
-    from fabric.api import settings, run
+    from fapric.api import settings, run
 
     def exists(path):
         with settings(warn_only=True):
             return run('test -e %s' % path)
 
 See the :doc:`../api/core/context_managers` API documentation for details on
-`~fabric.context_managers.settings` and other, similar tools.
+`~fapric.context_managers.settings` and other, similar tools.
 
 Environment as shared state
 ===========================
 
 As mentioned, the ``env`` object is simply a dictionary subclass, so your own
-fabfile code may store information in it as well. This is sometimes useful for
+fapfile code may store information in it as well. This is sometimes useful for
 keeping state between multiple tasks within a single execution run.
 
 .. note::
 
-    This aspect of ``env`` is largely historical: in the past, fabfiles were
+    This aspect of ``env`` is largely historical: in the past, fapfiles were
     not pure Python and thus the environment was the only way to communicate
     between tasks. Nowadays, you may call other tasks or subroutines directly,
     and even keep module-level shared state if you wish.
 
-    In future versions, Fabric will become threadsafe, at which point ``env``
+    In future versions, Fapric will become threadsafe, at which point ``env``
     may be the only easy/safe way to keep global state.
 
 Other considerations
 ====================
 
-While it subclasses ``dict``, Fabric's ``env`` has been modified so that its
+While it subclasses ``dict``, Fapric's ``env`` has been modified so that its
 values may be read/written by way of attribute access, as seen in some of the
 above material. In other words, ``env.host_string`` and ``env['host_string']``
 are functionally identical. We feel that attribute access can often save a bit
@@ -95,14 +95,14 @@ Using dict-style interpolation is more readable and slightly shorter::
 Full list of env vars
 =====================
 
-Below is a list of all predefined (or defined by Fabric itself during
+Below is a list of all predefined (or defined by Fapric itself during
 execution) environment variables. While any of them may be manipulated
-directly, it's often best to use `~fabric.context_managers`, either generally
-via `~fabric.context_managers.settings` or via specific context managers such
-as `~fabric.context_managers.cd`.
+directly, it's often best to use `~fapric.context_managers`, either generally
+via `~fapric.context_managers.settings` or via specific context managers such
+as `~fapric.context_managers.cd`.
 
-Note that many of these may be set via ``fab``'s command-line switches -- see
-:doc:`fab` for details. Cross-links will be provided where appropriate.
+Note that many of these may be set via ``fap``'s command-line switches -- see
+:doc:`fap` for details. Cross-links will be provided where appropriate.
 
 .. _abort-on-prompts:
 
@@ -111,10 +111,10 @@ Note that many of these may be set via ``fab``'s command-line switches -- see
 
 **Default:** ``False``
 
-When ``True``, Fabric will run in a non-interactive mode, calling
-`~fabric.utils.abort` anytime it would normally prompt the user for input (such
-as password prompts, "What host to connect to?" prompts, fabfile invocation of
-`~fabric.operations.prompt`, and so forth.) This allows users to ensure a Fabric
+When ``True``, Fapric will run in a non-interactive mode, calling
+`~fapric.utils.abort` anytime it would normally prompt the user for input (such
+as password prompts, "What host to connect to?" prompts, fapfile invocation of
+`~fapric.operations.prompt`, and so forth.) This allows users to ensure a Fapric
 session will always terminate cleanly instead of blocking on user input forever
 when unforeseen circumstances arise.
 
@@ -126,7 +126,7 @@ when unforeseen circumstances arise.
 
 **Default:** ``None``
 
-Set by ``fab`` to the full host list for the currently executing command. For
+Set by ``fap`` to the full host list for the currently executing command. For
 informational purposes only.
 
 .. seealso:: :doc:`execution`
@@ -138,7 +138,7 @@ informational purposes only.
 
 **Default:** ``True``
 
-When set to ``False``, causes `~fabric.operations.run`/`~fabric.operations.sudo`
+When set to ``False``, causes `~fapric.operations.run`/`~fapric.operations.sudo`
 to act as if they have been called with ``pty=False``.
 
 The command-line flag :option:`--no-pty`, if given, will set this env var to
@@ -164,8 +164,8 @@ details on why this is needed and what its effects are.
 
 **Default:** ``None``
 
-Set by ``fab`` to the currently executing command name (e.g. when executed as
-``$ fab task1 task2``, ``env.command`` will be set to ``"task1"`` while
+Set by ``fap`` to the currently executing command name (e.g. when executed as
+``$ fap task1 task2``, ``env.command`` will be set to ``"task1"`` while
 ``task1`` is executing, and then to ``"task2"``.) For informational purposes
 only.
 
@@ -176,8 +176,8 @@ only.
 
 **Default:** ``[]``
 
-Modified by `~fabric.context_managers.prefix`, and prepended to commands
-executed by `~fabric.operations.run`/`~fabric.operations.sudo`.
+Modified by `~fapric.context_managers.prefix`, and prepended to commands
+executed by `~fapric.operations.run`/`~fapric.operations.sudo`.
 
 .. versionadded:: 1.0
 
@@ -187,7 +187,7 @@ executed by `~fabric.operations.run`/`~fabric.operations.sudo`.
 **Default:** ``''``
 
 Current working directory. Used to keep state for the
-`~fabric.context_managers.cd` context manager.
+`~fapric.context_managers.cd` context manager.
 
 .. _disable-known-hosts:
 
@@ -210,21 +210,21 @@ host key is actually valid (e.g. cloud servers such as EC2.)
 **Default:** ``[]``
 
 Specifies a list of host strings to be :ref:`skipped over <exclude-hosts>`
-during ``fab`` execution. Typically set via :option:`--exclude-hosts/-x <-x>`.
+during ``fap`` execution. Typically set via :option:`--exclude-hosts/-x <-x>`.
 
 .. versionadded:: 1.1
 
 
-``fabfile``
+``fapfile``
 -----------
 
-**Default:** ``fabfile.py``
+**Default:** ``fapfile.py``
 
-Filename which ``fab`` searches for when loading fabfiles. Obviously, it
-doesn't make sense to set this in a fabfile, but it may be specified in a
-``.fabricrc`` file or on the command line.
+Filename which ``fap`` searches for when loading fapfiles. Obviously, it
+doesn't make sense to set this in a fapfile, but it may be specified in a
+``.fapricrc`` file or on the command line.
 
-.. seealso:: :doc:`fab`
+.. seealso:: :doc:`fap`
 
 .. _host_string:
 
@@ -233,10 +233,10 @@ doesn't make sense to set this in a fabfile, but it may be specified in a
 
 **Default:** ``None``
 
-Defines the current user/host/port which Fabric will connect to when executing
-`~fabric.operations.run`, `~fabric.operations.put` and so forth. This is set by
-``fab`` when iterating over a previously set host list, and may also be
-manually set when using Fabric as a library.
+Defines the current user/host/port which Fapric will connect to when executing
+`~fapric.operations.run`, `~fapric.operations.put` and so forth. This is set by
+``fap`` when iterating over a previously set host list, and may also be
+manually set when using Fapric as a library.
 
 .. seealso:: :doc:`execution`
 
@@ -245,7 +245,7 @@ manually set when using Fabric as a library.
 
 **Default:** ``None``
 
-Set to the hostname part of ``env.host_string`` by ``fab``. For informational
+Set to the hostname part of ``env.host_string`` by ``fap``. For informational
 purposes only.
 
 .. _hosts:
@@ -316,7 +316,7 @@ key-based authentication.
 **Default:** ``False``
 
 If ``True``, will tell Paramiko not to load any private key files from one's
-``$HOME/.ssh/`` folder. (Key files explicitly loaded via ``fab -i`` will still
+``$HOME/.ssh/`` folder. (Key files explicitly loaded via ``fap -i`` will still
 be used, of course.)
 
 .. versionadded:: 0.9.1
@@ -329,7 +329,7 @@ be used, of course.)
 **Default:** ``None``
 
 The default password used by the SSH layer when connecting to remote hosts,
-**and/or** when answering `~fabric.operations.sudo` prompts.
+**and/or** when answering `~fapric.operations.sudo` prompts.
 
 .. seealso:: :ref:`passwords`
 .. seealso:: :ref:`password-management`
@@ -358,8 +358,8 @@ per-host-string password cache. Keys are full :ref:`host strings
 **Default:** ``''``
 
 Used to set the remote ``$PATH`` when executing commands in
-`~fabric.operations.run`/`~fabric.operations.sudo`. It is recommended to use
-the `~fabric.context_managers.path` context manager for managing this value
+`~fapric.operations.run`/`~fapric.operations.sudo`. It is recommended to use
+the `~fapric.context_managers.path` context manager for managing this value
 instead of setting it directly.
 
 .. versionadded:: 1.0
@@ -370,29 +370,29 @@ instead of setting it directly.
 
 **Default:** ``None``
 
-Set to the port part of ``env.host_string`` by ``fab`` when iterating over a
+Set to the port part of ``env.host_string`` by ``fap`` when iterating over a
 host list. For informational purposes only.
 
-``real_fabfile``
+``real_fapfile``
 ----------------
 
 **Default:** ``None``
 
-Set by ``fab`` with the path to the fabfile it has loaded up, if it got that
+Set by ``fap`` with the path to the fapfile it has loaded up, if it got that
 far. For informational purposes only.
 
-.. seealso:: :doc:`fab`
+.. seealso:: :doc:`fap`
 
 .. _rcfile:
 
 ``rcfile``
 ----------
 
-**Default:** ``$HOME/.fabricrc``
+**Default:** ``$HOME/.fapricrc``
 
-Path used when loading Fabric's local settings file.
+Path used when loading Fapric's local settings file.
 
-.. seealso:: :doc:`fab`
+.. seealso:: :doc:`fap`
 
 .. _reject-unknown-hosts:
 
@@ -434,7 +434,7 @@ The global role list used when composing per-task host lists.
 **Default:** ``/bin/bash -l -c``
 
 Value used as shell wrapper when executing commands with e.g.
-`~fabric.operations.run`. Must be able to exist in the form ``<env.shell>
+`~fapric.operations.run`. Must be able to exist in the form ``<env.shell>
 "<command goes here>"`` -- e.g. the default uses Bash's ``-c`` option which
 takes a command string as its value.
 
@@ -445,11 +445,11 @@ takes a command string as its value.
 
 **Default:** ``sudo password:``
 
-Passed to the ``sudo`` program on remote systems so that Fabric may correctly
-identify its password prompt. This may be modified by fabfiles but there's no
+Passed to the ``sudo`` program on remote systems so that Fapric may correctly
+identify its password prompt. This may be modified by fapfiles but there's no
 real reason to.
 
-.. seealso:: The `~fabric.operations.sudo` operation
+.. seealso:: The `~fapric.operations.sudo` operation
 
 ``use_shell``
 -------------
@@ -457,7 +457,7 @@ real reason to.
 **Default:** ``True``
 
 Global setting which acts like the ``use_shell`` argument to
-`~fabric.operations.run`/`~fabric.operations.sudo`: if it is set to ``False``,
+`~fapric.operations.run`/`~fapric.operations.sudo`: if it is set to ``False``,
 operations will not wrap executed commands in ``env.shell``.
 
 .. _user:
@@ -473,9 +473,9 @@ However, when explicitly given in such a manner, this variable will be
 temporarily overwritten with the current value -- i.e. it will always display
 the user currently being connected as.
 
-To illustrate this, a fabfile::
+To illustrate this, a fapfile::
 
-    from fabric.api import env, run
+    from fapric.api import env, run
 
     env.user = 'implicit_user'
     env.hosts = ['host1', 'explicit_user@host2', 'host3']
@@ -486,7 +486,7 @@ To illustrate this, a fabfile::
 
 and its use::
 
-    $ fab print_user
+    $ fap print_user
 
     [host1] out: implicit_user
     [explicit_user@host2] out: explicit_user
@@ -513,7 +513,7 @@ As you can see, during execution on ``host2``, ``env.user`` was set to
 ``version``
 -----------
 
-**Default:** current Fabric version string
+**Default:** current Fapric version string
 
 Mostly for informational purposes. Modification is not recommended, but
 probably won't break anything either.
@@ -526,7 +526,7 @@ probably won't break anything either.
 **Default:** ``False``
 
 Specifies whether or not to warn, instead of abort, when
-`~fabric.operations.run`/`~fabric.operations.sudo`/`~fabric.operations.local`
+`~fapric.operations.run`/`~fapric.operations.sudo`/`~fapric.operations.local`
 encounter error conditions.
 
 .. seealso:: :doc:`execution`

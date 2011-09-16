@@ -10,7 +10,7 @@ import re
 import os
 from StringIO import StringIO
 
-from fabric.api import *
+from fapric.api import *
 
 
 def exists(path, use_sudo=False, verbose=False):
@@ -73,7 +73,7 @@ def upload_template(filename, destination, context=None, use_jinja=False,
     user; specify ``use_sudo=True`` to use `sudo` instead.
 
     The ``mirror_local_mode`` and ``mode`` kwargs are passed directly to an
-    internal `~fabric.operations.put` call; please see its documentation for
+    internal `~fapric.operations.put` call; please see its documentation for
     details on these two options.
 
     .. versionchanged:: 1.1

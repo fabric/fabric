@@ -4,19 +4,19 @@ import sys
 
 from setuptools import setup, find_packages
 
-from fabric.version import get_version
+from fapric.version import get_version
 
 
 readme = open('README').read()
 
 v = get_version('short')
 long_description = """
-To find out what's new in this version of Fabric, please see `the changelog
-<http://docs.fabfile.org/en/%s/changelog.html>`_.
+To find out what's new in this version of Fapric, please see `the changelog
+<http://docs.fapfile.org/en/%s/changelog.html>`_.
 
 You can also install the `in-development version
-<https://github.com/fabric/fabric/tarball/master#egg=fabric-dev>`_ using
-pip, with `pip install fabric==dev`.
+<https://github.com/fapric/fapric/tarball/master#egg=fapric-dev>`_ using
+pip, with `pip install fapric==dev`.
 
 ----
 
@@ -24,24 +24,24 @@ pip, with `pip install fabric==dev`.
 
 ----
 
-For more information, please see the Fabric website or execute ``fab --help``.
+For more information, please see the Fapric website or execute ``fap --help``.
 """ % (v, readme)
 
 setup(
-    name='Fabric',
+    name='Fapric',
     version=get_version('short'),
-    description='Fabric is a simple, Pythonic tool for remote execution and deployment.',
+    description='Fapric is a simple, Pythonic tool for remote execution and deployment.',
     long_description=long_description,
     author='Jeff Forcier',
     author_email='jeff@bitprophet.org',
-    url='http://fabfile.org',
+    url='http://fapfile.org',
     packages=find_packages(),
     test_suite='nose.collector',
     tests_require=['nose', 'fudge'],
     install_requires=['pycrypto >= 1.9', 'paramiko >=1.7.6'],
     entry_points={
         'console_scripts': [
-            'fab = fabric.main:main',
+            'fap = fapric.main:main',
         ]
     },
     classifiers=[

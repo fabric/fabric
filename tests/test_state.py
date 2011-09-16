@@ -1,6 +1,6 @@
 from nose.tools import eq_
 
-from fabric.state import _AliasDict
+from fapric.state import _AliasDict
 
 
 def test_dict_aliasing():

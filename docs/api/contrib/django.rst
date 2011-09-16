@@ -2,5 +2,5 @@
 Django Integration
 ==================
 
-.. automodule:: fabric.contrib.django
+.. automodule:: fapric.contrib.django
     :members:

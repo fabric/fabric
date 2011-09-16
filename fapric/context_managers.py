@@ -1,7 +1,7 @@
 """
 Context managers for use with the ``with`` statement.
 
-.. note:: When using Python 2.5, you will need to start your fabfile
+.. note:: When using Python 2.5, you will need to start your fapfile
     with ``from __future__ import with_statement`` in order to make use of
     the ``with`` statement (which is a regular, non ``__future__`` feature of
     Python 2.6+.)
@@ -10,7 +10,7 @@ Context managers for use with the ``with`` statement.
 from contextlib import contextmanager, nested
 import sys
 
-from fabric.state import env, output, win32
+from fapric.state import env, output, win32
 
 if not win32:
     import termios
@@ -38,7 +38,7 @@ def show(*groups):
     Context manager for setting the given output ``groups`` to True.
 
     ``groups`` must be one or more strings naming the output groups defined in
-    `~fabric.state.output`. The given groups will be set to True for the
+    `~fapric.state.output`. The given groups will be set to True for the
     duration of the enclosed block, and restored to their previous value
     afterwards.
 
@@ -62,7 +62,7 @@ def hide(*groups):
     Context manager for setting the given output ``groups`` to False.
 
     ``groups`` must be one or more strings naming the output groups defined in
-    `~fabric.state.output`. The given groups will be set to False for the
+    `~fapric.state.output`. The given groups will be set to False for the
     duration of the enclosed block, and restored to their previous value
     afterwards.
 
@@ -137,7 +137,7 @@ def settings(*args, **kwargs):
 
     Thus, `settings` may be used to set any combination of environment
     variables in tandem with hiding (or showing) specific levels of output, or
-    in tandem with any other piece of Fabric functionality implemented as a
+    in tandem with any other piece of Fapric functionality implemented as a
     context manager.
     """
     managers = list(args)
@@ -156,7 +156,7 @@ def cd(path):
 
     .. note::
         `cd` only affects *remote* paths -- to modify *local* paths, use
-        `~fabric.context_managers.lcd`.
+        `~fapric.context_managers.lcd`.
 
     Because use of `cd` affects all such invocations, any code making use of
     those operations, such as much of the ``contrib`` section, will also be
@@ -204,7 +204,7 @@ def cd(path):
         Applies to `get` and `put` in addition to the command-running
         operations.
 
-    .. seealso:: `~fabric.context_managers.lcd`
+    .. seealso:: `~fapric.context_managers.lcd`
     """
     return _change_cwd('cwd', path)
 
@@ -213,10 +213,10 @@ def lcd(path):
     """
     Context manager for updating local current working directory.
 
-    This context manager is identical to `~fabric.context_managers.cd`, except
+    This context manager is identical to `~fapric.context_managers.cd`, except
     that it changes a different env var (`lcwd`, instead of `cwd`) and thus
-    only affects the invocation of `~fabric.operations.local` and the local
-    arguments to `~fabric.operations.get`/`~fabric.operations.put`.
+    only affects the invocation of `~fapric.operations.local` and the local
+    arguments to `~fapric.operations.get`/`~fapric.operations.put`.
 
     .. versionadded:: 1.0
     """
@@ -267,7 +267,7 @@ def prefix(command):
     """
     Prefix all wrapped `run`/`sudo` commands with given command plus ``&&``.
 
-    This is nearly identical to `~fabric.operations.cd`, except that nested
+    This is nearly identical to `~fapric.operations.cd`, except that nested
     invocations append to a list of command strings instead of modifying a
     single string.
 
@@ -286,7 +286,7 @@ def prefix(command):
 
         $ workon myvenv && ./manage.py syncdb
 
-    This context manager is compatible with `~fabric.context_managers.cd`, so
+    This context manager is compatible with `~fapric.context_managers.cd`, so
     if your virtualenv doesn't ``cd`` in its ``postactivate`` script, you could
     do the following::
 
@@ -301,7 +301,7 @@ def prefix(command):
         $ cd /path/to/app && workon myvenv && ./manage.py loaddata myfixture
 
     Finally, as alluded to near the beginning,
-    `~fabric.context_managers.prefix` may be nested if desired, e.g.::
+    `~fapric.context_managers.prefix` may be nested if desired, e.g.::
 
         with prefix('workon myenv'):
             run('ls')

@@ -2,7 +2,7 @@
 Context Managers
 ================
 
-.. automodule:: fabric.context_managers
+.. automodule:: fapric.context_managers
 
     .. autofunction:: cd(path)
     .. autofunction:: hide(*groups)

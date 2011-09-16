@@ -7,9 +7,9 @@ import os.path
 from datetime import datetime
 from tempfile import mkdtemp
 
-from fabric.network import needs_host
-from fabric.operations import local, run, put
-from fabric.state import env, output
+from fapric.network import needs_host
+from fapric.operations import local, run, put
+from fapric.state import env, output
 
 __all__ = ['rsync_project', 'upload_project']
 
@@ -29,7 +29,7 @@ def rsync_project(remote_dir, local_dir=None, exclude=(), delete=False,
     installed on both your local and remote systems in order for this operation
     to work correctly.
 
-    This function makes use of Fabric's ``local()`` operation, and returns the
+    This function makes use of Fapric's ``local()`` operation, and returns the
     output of that function call; thus it will return the stdout, if any, of
     the resultant ``rsync`` call.
 
@@ -64,7 +64,7 @@ def rsync_project(remote_dir, local_dir=None, exclude=(), delete=False,
     * ``extra_opts``: an optional, arbitrary string which you may use to pass
       custom arguments or options to ``rsync``.
 
-    Furthermore, this function transparently honors Fabric's port and SSH key
+    Furthermore, this function transparently honors Fapric's port and SSH key
     settings. Calling this function when the current host string contains a
     nonstandard port, or when ``env.key_filename`` is non-empty, will use the
     specified port and/or SSH key filename(s).

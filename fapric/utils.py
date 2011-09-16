@@ -17,7 +17,7 @@ def abort(msg):
     .. _sys.exit: http://docs.python.org/library/sys.html#sys.exit
     .. _SystemExit: http://docs.python.org/library/exceptions.html#exceptions.SystemExit
     """
-    from fabric.state import output
+    from fapric.state import output
     if output.aborts:
         print >> sys.stderr, "\nFatal error: " + str(msg)
         print >> sys.stderr, "\nAborting."
@@ -28,12 +28,12 @@ def warn(msg):
     """
     Print warning message, but do not abort execution.
 
-    This function honors Fabric's :doc:`output controls
+    This function honors Fapric's :doc:`output controls
     <../../usage/output_controls>` and will print the given ``msg`` to stderr,
     provided that the ``warnings`` output level (which is active by default) is
     turned on.
     """
-    from fabric.state import output
+    from fapric.state import output
     if output.warnings:
         print >> sys.stderr, "\nWarning: %s\n" % msg
 
@@ -68,7 +68,7 @@ def indent(text, spaces=4, strip=False):
 
 def puts(text, show_prefix=True, end="\n", flush=False):
     """
-    An alias for ``print`` whose output is managed by Fabric's output controls.
+    An alias for ``print`` whose output is managed by Fapric's output controls.
 
     In other words, this function simply prints to ``sys.stdout``, but will
     hide its output if the ``user`` :doc:`output level
@@ -85,9 +85,9 @@ def puts(text, show_prefix=True, end="\n", flush=False):
     ``flush=True``.
 
     .. versionadded:: 0.9.2
-    .. seealso:: `~fabric.utils.fastprint`
+    .. seealso:: `~fapric.utils.fastprint`
     """
-    from fabric.state import output, env
+    from fapric.state import output, env
     if output.user:
         prefix = ""
         if env.host_string and show_prefix:
@@ -101,7 +101,7 @@ def fastprint(text, show_prefix=False, end="", flush=True):
     """
     Print ``text`` immediately, without any prefix or line ending.
 
-    This function is simply an alias of `~fabric.utils.puts` with different
+    This function is simply an alias of `~fapric.utils.puts` with different
     default argument values, such that the ``text`` is printed without any
     embellishment and immediately flushed.
 
@@ -113,17 +113,17 @@ def fastprint(text, show_prefix=False, end="", flush=True):
 
     .. note::
 
-        Since `~fabric.utils.fastprint` calls `~fabric.utils.puts`, it is
+        Since `~fapric.utils.fastprint` calls `~fapric.utils.puts`, it is
         likewise subject to the ``user`` :doc:`output level
         </usage/output_controls>`.
 
     .. versionadded:: 0.9.2
-    .. seealso:: `~fabric.utils.puts`
+    .. seealso:: `~fapric.utils.puts`
     """
     return puts(text=text, show_prefix=show_prefix, end=end, flush=flush)
 
 
 def handle_prompt_abort():
-    import fabric.state
-    if fabric.state.env.abort_on_prompts:
+    import fapric.state
+    if fapric.state.env.abort_on_prompts:
         abort("Needed to prompt, but abort-on-prompts was set to True!")

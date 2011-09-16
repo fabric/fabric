@@ -1,4 +1,4 @@
-from fabric.api import task
+from fapric.api import task
 
 import system, db
 

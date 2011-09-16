@@ -10,8 +10,8 @@ import select
 import socket
 import sys
 
-from fabric.auth import get_password, set_password
-from fabric.utils import abort, handle_prompt_abort
+from fapric.auth import get_password, set_password
+from fapric.utils import abort, handle_prompt_abort
 
 try:
     import warnings
@@ -38,7 +38,7 @@ class HostConnectionCache(dict):
     create new client connections when keys are requested, or return previously
     created connections instead.
 
-    Key values are the same as host specifiers throughout Fabric: optional
+    Key values are the same as host specifiers throughout Fapric: optional
     username + ``@``, mandatory hostname, optional ``:`` + port number.
     Examples:
 
@@ -87,7 +87,7 @@ def normalize(host_string, omit_port=False):
 
     If ``omit_port`` is given and is True, only the host and user are returned.
     """
-    from fabric.state import env
+    from fapric.state import env
     # Gracefully handle "empty" input by returning empty output
     if not host_string:
         return ('', '') if omit_port else ('', '', '')
@@ -283,7 +283,7 @@ def prompt_for_password(prompt=None, no_colon=False, stream=None):
     ``stream`` is the stream the prompt will be printed to; if not given,
     defaults to ``sys.stderr``.
     """
-    from fabric.state import env
+    from fapric.state import env
     handle_prompt_abort()
     stream = stream or sys.stderr
     # Construct prompt
@@ -319,7 +319,7 @@ def needs_host(func):
     commands, this decorator will also end up prompting the user once per
     command (in the case where multiple commands have no hosts set, of course.)
     """
-    from fabric.state import env
+    from fapric.state import env
 
     @wraps(func)
     def host_prompting_wrapper(*args, **kwargs):
@@ -337,12 +337,12 @@ def interpret_host_string(host_string):
     Apply given host string to the env dict.
 
     Split it into hostname, username and port (using
-    `~fabric.network.normalize`) and store the full host string plus its
+    `~fapric.network.normalize`) and store the full host string plus its
     constituent parts into the appropriate env vars.
 
     Returns the parts as split out by ``normalize`` for convenience.
     """
-    from fabric.state import env
+    from fapric.state import env
     username, hostname, port = normalize(host_string)
     env.host_string = host_string
     env.host = hostname
@@ -355,10 +355,10 @@ def disconnect_all():
     """
     Disconnect from all currently connected servers.
 
-    Used at the end of ``fab``'s main loop, and also intended for use by
+    Used at the end of ``fap``'s main loop, and also intended for use by
     library users.
     """
-    from fabric.state import connections, output
+    from fapric.state import connections, output
     # Explicitly disconnect from all servers
     for key in connections.keys():
         if output.status:

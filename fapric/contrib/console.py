@@ -2,7 +2,7 @@
 Console/terminal user interface functionality.
 """
 
-from fabric.api import prompt
+from fapric.api import prompt
 
 
 def confirm(question, default=True):

@@ -2,17 +2,17 @@
 Managing output
 ===============
 
-The ``fab`` tool is very verbose by default and prints out almost everything it
+The ``fap`` tool is very verbose by default and prints out almost everything it
 can, including the remote end's stderr and stdout streams, the command strings
 being executed, and so forth. While this is necessary in many cases in order to
-know just what's going on, any nontrivial Fabric task will quickly become
+know just what's going on, any nontrivial Fapric task will quickly become
 difficult to follow as it runs.
 
 
 Output levels
 =============
 
-To aid in organizing task output, Fabric output is grouped into a number of
+To aid in organizing task output, Fapric output is grouped into a number of
 non-overlapping levels or groups, each of which may be turned on or off
 independently. This provides flexible control over what is displayed to the
 user.
@@ -26,14 +26,14 @@ Standard output levels
 
 The standard, atomic output levels/groups are as follows:
 
-* **status**: Status messages, i.e. noting when Fabric is done running, if
+* **status**: Status messages, i.e. noting when Fapric is done running, if
   the user used a keyboard interrupt, or when servers are disconnected from.
   These messages are almost always relevant and rarely verbose.
 
 * **aborts**: Abort messages. Like status messages, these should really only be
-  turned off when using Fabric as a library, and possibly not even then. Note
+  turned off when using Fapric as a library, and possibly not even then. Note
   that even if this output group is turned off, aborts will still occur --
-  there just won't be any output about why Fabric aborted!
+  there just won't be any output about why Fapric aborted!
 
 * **warnings**: Warning messages. These are often turned off when one expects a
   given operation to fail, such as when using ``grep`` to test existence of
@@ -50,8 +50,8 @@ The standard, atomic output levels/groups are as follows:
 
 * **stderr**: Local, or remote, stderr, i.e. error-related output from commands.
 
-* **user**: User-generated output, i.e. local output printed by fabfile code
-  via use of the `~fabric.utils.fastprint` or `~fabric.utils.puts` functions.
+* **user**: User-generated output, i.e. local output printed by fapfile code
+  via use of the `~fapric.utils.fastprint` or `~fapric.utils.puts` functions.
 
 .. versionchanged:: 0.9.2
     Added "Executing task" lines to the ``running`` output level.
@@ -67,12 +67,12 @@ differently from the rest:
 
 * **debug**: Turn on debugging (which is off by default.) Currently, this is
   largely used to view the "full" commands being run; take for example this
-  `~fabric.operations.run` call::
+  `~fapric.operations.run` call::
 
       run('ls "/home/username/Folder Name With Spaces/"')
 
   Normally, the ``running`` line will show exactly what is passed into
-  `~fabric.operations.run`, like so::
+  `~fapric.operations.run`, like so::
 
       [hostname] run: ls "/home/username/Folder Name With Spaces/"
 
@@ -98,7 +98,7 @@ differently from the rest:
 Output level aliases
 --------------------
 
-In addition to the atomic/standalone levels above, Fabric also provides a
+In addition to the atomic/standalone levels above, Fapric also provides a
 couple of convenience aliases which map to multiple other levels. These may be
 referenced anywhere the other levels are referenced, and will effectively
 toggle all of the levels they are mapped to.
@@ -115,31 +115,31 @@ toggle all of the levels they are mapped to.
 Hiding and/or showing output levels
 ===================================
 
-You may toggle any of Fabric's output levels in a number of ways; for examples,
+You may toggle any of Fapric's output levels in a number of ways; for examples,
 please see the API docs linked in each bullet point:
 
-* **Direct modification of fabric.state.output**: `fabric.state.output` is a
+* **Direct modification of fapric.state.output**: `fapric.state.output` is a
   dictionary subclass (similar to :doc:`env <env>`) whose keys are the output
   level names, and whose values are either True (show that particular type of
   output) or False (hide it.)
   
-  `fabric.state.output` is the lowest-level implementation of output levels and
-  is what Fabric's internals reference when deciding whether or not to print
+  `fapric.state.output` is the lowest-level implementation of output levels and
+  is what Fapric's internals reference when deciding whether or not to print
   their output.
 
-* **Context managers**: `~fabric.context_managers.hide` and
-  `~fabric.context_managers.show` are twin context managers that take one or
+* **Context managers**: `~fapric.context_managers.hide` and
+  `~fapric.context_managers.show` are twin context managers that take one or
   more output level names as strings, and either hide or show them within the
-  wrapped block. As with Fabric's other context managers, the prior values are
+  wrapped block. As with Fapric's other context managers, the prior values are
   restored when the block exits.
 
   .. seealso::
 
-      `~fabric.context_managers.settings`, which can nest calls to
-      `~fabric.context_managers.hide` and/or `~fabric.context_managers.show`
+      `~fapric.context_managers.settings`, which can nest calls to
+      `~fapric.context_managers.hide` and/or `~fapric.context_managers.show`
       inside itself.
 
 * **Command-line arguments**: You may use the :option:`--hide` and/or
-  :option:`--show` arguments to :doc:`fab`, which behave exactly like the
+  :option:`--show` arguments to :doc:`fap`, which behave exactly like the
   context managers of the same names (but are, naturally, globally applied) and
   take comma-separated strings as input.

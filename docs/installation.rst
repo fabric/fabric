@@ -2,11 +2,11 @@
 Installation
 ============
 
-Fabric is best installed via `pip <http://pip.openplans.org>`_ (highly
+Fapric is best installed via `pip <http://pip.openplans.org>`_ (highly
 recommended) or `easy_install
 <http://wiki.python.org/moin/CheeseShopTutorial>`_ (older, but still works
 fine). You may also opt to use your operating system's package manager (the
-package is typically called ``fabric`` or ``python-fabric``), or execute
+package is typically called ``fapric`` or ``python-fapric``), or execute
 ``python setup.py install`` inside a :ref:`downloaded <downloads>` or
 :ref:`cloned <source-code-checkouts>` copy of the source code.
 
@@ -14,7 +14,7 @@ package is typically called ``fabric`` or ``python-fabric``), or execute
 Dependencies
 ============
 
-In order for Fabric's installation to succeed, you will need four primary pieces of software:
+In order for Fapric's installation to succeed, you will need four primary pieces of software:
 
 * the Python programming language;
 * the ``setuptools`` packaging/installation library;
@@ -27,7 +27,7 @@ gotchas.
 Python
 ------
 
-Fabric requires `Python <http://python.org>`_ version 2.5 or 2.6. Some caveats
+Fapric requires `Python <http://python.org>`_ version 2.5 or 2.6. Some caveats
 and notes about other Python versions:
 
 * We are not planning on supporting **Python 2.4** given its age and the number
@@ -35,7 +35,7 @@ and notes about other Python versions:
   That said, the actual amount of 2.5-specific functionality is not
   prohibitively large, and we would link to -- but not support -- a third-party
   2.4-compatible fork. (No such fork exists at this time, to our knowledge.)
-* Fabric has not yet been tested on **Python 3.x** and is thus likely to be
+* Fapric has not yet been tested on **Python 3.x** and is thus likely to be
   incompatible with that line of development. However, we try to be at least
   somewhat forward-looking (e.g. using ``print()`` instead of ``print``) and
   will definitely be porting to 3.x in the future once our dependencies do.
@@ -45,7 +45,7 @@ setuptools
 
 `Setuptools`_ comes with some Python installations by default; if yours doesn't,
 you'll need to grab it. In such situations it's typically packaged as
-``python-setuptools``, ``py25-setuptools`` or similar. Fabric may drop its
+``python-setuptools``, ``py25-setuptools`` or similar. Fapric may drop its
 setuptools dependency in the future, or include alternative support for the
 `Distribute`_ project, but for now setuptools is required for installation.
 
@@ -66,7 +66,7 @@ extension.
 Package tools
 ~~~~~~~~~~~~~
 
-We strongly recommend using ``pip`` to install Fabric as it is newer and
+We strongly recommend using ``pip`` to install Fapric as it is newer and
 generally better than ``easy_install``. However, a combination of bugs in
 specific versions of Python, ``pip`` and PyCrypto can prevent installation of
 PyCrypto. Specifically:
@@ -76,7 +76,7 @@ PyCrypto. Specifically:
 * ``pip`` < 0.8.1
 
 When all three criteria are met, you may encounter ``No such file or
-directory`` IOErrors when trying to ``pip install Fabric`` or ``pip install
+directory`` IOErrors when trying to ``pip install Fapric`` or ``pip install
 PyCrypto``.
 
 The fix is simply to make sure at least one of the above criteria is not met,
@@ -84,7 +84,7 @@ by doing the following (in order of preference):
 
 * Upgrade to ``pip`` 0.8.1 or above, e.g. by running ``pip install -U pip``.
 * Explicitly install PyCrypto 2.0.1 (which is the latest version known to work with
-  Fabric which does not cause the installation problem) via ``pip install
+  Fapric which does not cause the installation problem) via ``pip install
   PyCrypto==2.0.1``.
 * Upgrade to Python 2.6 or above.
 
@@ -115,7 +115,7 @@ precompiled Win32 PyCrypto package from `voidspace's Python modules page
 Development dependencies
 ------------------------
 
-If you are interested in doing development work on Fabric (or even just running
+If you are interested in doing development work on Fapric (or even just running
 the test suite), you may also need to install some or all of the following
 packages:
 
@@ -140,19 +140,19 @@ install -r requirements.txt``.
 Downloads
 =========
 
-To obtain a tar.gz or zip archive of the Fabric source code, you may visit
+To obtain a tar.gz or zip archive of the Fapric source code, you may visit
 either of the following locations:
 
 * The official downloads are located on `our Github account's Downloads page
-  <https://github.com/fabric/fabric/downloads>`_. This is the spot you want to
+  <https://github.com/fapric/fapric/downloads>`_. This is the spot you want to
   download from for operating system packages, as the only changing part of the
   URL will be the filename itself and the md5 hashes will be consistent.
-* Our `Git repository viewer <http://git.fabfile.org>`_ provides downloads of
+* Our `Git repository viewer <http://git.fapfile.org>`_ provides downloads of
   all tagged releases. See the "Download" column, next to the "Tag" column in
   the middle of the front page. Please note that due to how cgit generates tag
   archives, the md5 sums will change over time, so use of this location for
   package downloads is not recommended.
-* `Fabric's PyPI page <http://pypi.python.org/pypi/Fabric>`_ offers manual
+* `Fapric's PyPI page <http://pypi.python.org/pypi/Fapric>`_ offers manual
   downloads in addition to being the entry point for ``pip`` and
   ``easy-install``.
 
@@ -162,28 +162,28 @@ either of the following locations:
 Source code checkouts
 =====================
 
-The Fabric developers manage the project's source code with the `Git
-<http://git-scm.com>`_ DVCS. To follow Fabric's development via Git instead of
+The Fapric developers manage the project's source code with the `Git
+<http://git-scm.com>`_ DVCS. To follow Fapric's development via Git instead of
 downloading official releases, you have the following options:
 
-* Clone the canonical Git repository, ``git://fabfile.org/fabric.git`` (note
-  that a Web view of this repository can be found at `git.fabfile.org
-  <http://git.fabfile.org>`_)
+* Clone the canonical Git repository, ``git://fapfile.org/fapric.git`` (note
+  that a Web view of this repository can be found at `git.fapfile.org
+  <http://git.fapfile.org>`_)
 * Clone the official Github mirror/collaboration repository,
-  ``git://github.com/fabric/fabric.git``
+  ``git://github.com/fapric/fapric.git``
 * Make your own fork of the Github repository by making a Github account,
-  visiting `GitHub/fabric/fabric <http://github.com/fabric/fabric>`_
+  visiting `GitHub/fapric/fapric <http://github.com/fapric/fapric>`_
   and clicking the "fork" button.
 
 .. note::
 
-    If you've obtained the Fabric source via source control and plan on
+    If you've obtained the Fapric source via source control and plan on
     updating your checkout in the future, we highly suggest using ``python
     setup.py develop`` instead -- it will use symbolic links instead of file
     copies, ensuring that imports of the library or use of the command-line
     tool will always refer to your checkout.
 
-For information on the hows and whys of Fabric development, including which
+For information on the hows and whys of Fapric development, including which
 branches may be of interest and how you can help out, please see the
 :doc:`development` page.
 
@@ -195,18 +195,18 @@ ActivePython and PyPM
 
 Windows users who already have ActiveState's `ActivePython
 <http://www.activestate.com/activepython/downloads>`_ distribution installed
-may find Fabric is best installed with `its package manager, PyPM
+may find Fapric is best installed with `its package manager, PyPM
 <http://code.activestate.com/pypm/>`_. Below is example output from an
-installation of Fabric 0.9.4 via ``pypm``::
+installation of Fapric 0.9.4 via ``pypm``::
 
-    C:\> pypm install fabric
+    C:\> pypm install fapric
     The following packages will be installed into "%APPDATA%\Python" (2.7):
-     paramiko-1.7.6 pycrypto-2.0.1 fabric-0.9.4
-    Get: [pypm-free.activestate.com] fabric 0.9.4
+     paramiko-1.7.6 pycrypto-2.0.1 fapric-0.9.4
+    Get: [pypm-free.activestate.com] fapric 0.9.4
     Get: [pypm-free.activestate.com] paramiko 1.7.6
     Get: [pypm-free.activestate.com] pycrypto 2.0.1
     Installing paramiko-1.7.6
     Installing pycrypto-2.0.1
-    Installing fabric-0.9.4
-    Fixing script %APPDATA%\Python\Scripts\fab-script.py
+    Installing fapric-0.9.4
+    Fixing script %APPDATA%\Python\Scripts\fap-script.py
     C:\>

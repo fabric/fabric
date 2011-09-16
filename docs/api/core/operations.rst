@@ -2,7 +2,7 @@
 Operations
 ==========
 
-.. automodule:: fabric.operations
+.. automodule:: fapric.operations
     :members:
     :exclude-members: sudo, put, run, get, reboot, open_shell
 
