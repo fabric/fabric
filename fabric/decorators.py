@@ -4,6 +4,8 @@ Convenience decorators for use in fabfiles.
 from __future__ import with_statement
 
 from functools import wraps
+from types import StringTypes
+from Crypto import Random
 
 from fabric import tasks
 from .context_managers import settings
@@ -128,7 +130,64 @@ def runs_once(func):
         if not hasattr(decorated, 'return_value'):
             decorated.return_value = func(*args, **kwargs)
         return decorated.return_value
+
+    runs_sequential(decorated)
+
     return decorated
+
+
+_sequential = set()
+def runs_sequential(func):
+    """
+    Decorator preventing the parallel option from running this function
+    non-sequentally.
+
+    """
+    _sequential.add(func.func_name)
+
+    if is_parallel(func):
+        _parallel.remove(func.func_name)
+
+    return func
+
+def is_sequential(func):
+    return func.func_name in _sequential
+
+
+_parallel = set()
+def runs_parallel(with_bubble_of=None):
+    """
+    Decorator explicitly specifying that a function be run in parallel,
+    since the default mode of operation is to be sequential.
+    """
+    def real_decorator(func):
+
+        @wraps(func)
+        def inner(*args, **kwargs):
+            Random.atfork()
+            return func(*args, **kwargs)
+
+        _parallel.add(func.func_name)
+
+        if is_sequential(func):
+            _sequential.remove(func.func_name)
+
+        inner._pool_size = with_bubble_of
+
+        return inner
+
+    # Trick to allow for both a dec w/ the optional setting without have to
+    # force it to use ()
+    if type(with_bubble_of) == type(real_decorator):
+        return real_decorator(with_bubble_of)
+
+    return real_decorator
+
+def is_parallel(func):
+    return func.func_name in _parallel
+
+def needs_multiprocessing():
+    return _parallel != set()
 
 
 def with_settings(**kw_settings):

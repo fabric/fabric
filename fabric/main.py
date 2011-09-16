@@ -22,7 +22,8 @@ from fabric.network import denormalize, interpret_host_string, disconnect_all
 from fabric.state import commands, connections, env_options
 from fabric.tasks import Task
 from fabric.utils import abort, indent
-
+from fabric.decorators import is_parallel, is_sequential, needs_multiprocessing
+from job_queue import Job_Queue
 
 # One-time calculation of "all internal callables" to avoid doing this on every
 # check of a given fabfile callable (in is_classic_task()).
@@ -621,6 +622,21 @@ def update_output_levels(show, hide):
             state.output[key] = False
 
 
+def running_parallel(task):
+    """
+    Returns if the command currently asking to be run is needing to be run in
+    parallel or not.
+
+    After making sure a multiprocessing module has been loaded. The two cases 
+    for a command to run parallel are:
+        if it's not explicitly sequential and whole program is set for parallel
+        if it is explicitly parallel
+    """
+    return (('multiprocessing' in sys.modules) and 
+            ((state.env.run_in_parallel and not is_sequential(task)) or
+                (is_parallel(task))))
+
+
 def _run_task(task, args, kwargs):
     # First, try class-based tasks
     if hasattr(task, 'run') and callable(task.run):
@@ -751,16 +767,52 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
             names = ", ".join(x[0] for x in commands_to_run)
             print("Commands to run: %s" % names)
 
+        if state.env.run_in_parallel or needs_multiprocessing():
+            #We want to try to import the multiprocessing module by default.
+            #The state is checked to see if it was specifically requested, and
+            #in that case an error is reported.
+            try:
+                import multiprocessing
+                
+            except ImportError:
+                state.env.run_in_parallel = False
+                print("Unable to run in parallel as requested.\n" +
+                        "You need the multiprocessing module.\n" +
+                        "Continuing.")
+
         # At this point all commands must exist, so execute them in order.
         for name, args, kwargs, cli_hosts, cli_roles, cli_exclude_hosts in commands_to_run:
-            # Get callable by itself
+            # Get callable by itself:
             task = crawl(name, state.commands)
-            # Set current task name (used for some error messages)
+            # Set current command name (used for some error messages)
             state.env.command = name
             # Set host list (also copy to env)
             state.env.all_hosts = hosts = get_hosts(
                 task, cli_hosts, cli_roles, cli_exclude_hosts)
-            # If hosts found, execute the function on each host in turn
+
+            if state.output.debug:
+                print "Number for pool: %d" % state.env.pool_size
+
+            if hasattr(task, '_pool_size') and task._pool_size:
+                pool_size = task._pool_size
+
+            elif not state.env.pool_size:
+                if state.output.debug:
+                    print "Since zero make number of hosts: %d" % len(hosts)
+                pool_size = len(hosts)
+
+            else:
+                pool_size = state.env.pool_size
+
+            if len(hosts) < pool_size:
+                pool_size = int(len(hosts)/2) + 1
+
+
+            jobs = Job_Queue(pool_size)
+            if state.output.debug:
+                jobs._debug = True
+
+           # If hosts found, execute the function on each host in turn
             for host in hosts:
                 # Preserve user
                 prev_user = state.env.user
@@ -769,13 +821,45 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
                 # Log to stdout
                 if state.output.running and not hasattr(task, 'return_value'):
                     print("[%s] Executing task '%s'" % (host, name))
-                # Actually run command
-                _run_task(task, args, kwargs)
+
+                if running_parallel(task):
+                    #parallel
+
+                    # Actually run command
+                    # run in parallel when set globally or on function with decorator
+                    if hasattr(task, 'run') and callable(task.run):
+                        p = multiprocessing.Process(
+                                target = task.run,
+                                args = args,
+                                kwargs = kwargs,
+                                )
+                    else: 
+                        p = multiprocessing.Process(
+                                target = task,
+                                args = args,
+                                kwargs = kwargs,
+                                )
+                    # Cast to a str since Unicode strings will fail multiprocessing's isinstance check (https://github.com/goosemo/fabric/issues/11)
+                    p.name = str(state.env.host_string)
+                    jobs.append(p)
+
+                else:
+                    #sequential
+                    _run_task(task, args, kwargs)
+
                 # Put old user back
                 state.env.user = prev_user
+
+            #only runs if was set to run in parallel, and causes fabric to 
+            #wait to end program until all Processes have returned.
+            if jobs:
+                jobs.close()
+                jobs.start()
+
             # If no hosts found, assume local-only and run once
             if not hosts:
                 _run_task(task, args, kwargs)
+
         # If we got here, no errors occurred, so print a final note.
         if state.output.status:
             print("\nDone.")
