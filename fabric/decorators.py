@@ -124,6 +124,9 @@ def runs_once(func):
     Any function wrapped with this decorator will silently fail to execute the
     2nd, 3rd, ..., Nth time it is called, and will return the value of the
     original run.
+
+    This includes parallel execution; even in a parallel run, tasks decorated
+    by ``@runs_once`` will execute only once.
     """
     @wraps(func)
     def decorated(*args, **kwargs):
@@ -139,9 +142,12 @@ def runs_once(func):
 _sequential = set()
 def runs_sequential(func):
     """
-    Decorator preventing the parallel option from running this function
-    non-sequentally.
+    Forces the wrapped function to always run sequentially, never in parallel.
 
+    This decorator takes precedence over the global value of
+    :ref:`env.run_in_parallel <run_in_parallel>`.
+
+    .. versionadded:: 1.3
     """
     _sequential.add(func.func_name)
 
@@ -157,8 +163,12 @@ def is_sequential(func):
 _parallel = set()
 def runs_parallel(with_bubble_of=None):
     """
-    Decorator explicitly specifying that a function be run in parallel,
-    since the default mode of operation is to be sequential.
+    Forces the wrapped function to run in parallel, instead of sequentially.
+
+    This decorator takes precedence over the global value of
+    :ref:`env.run_in_parallel <run_in_parallel>`.
+
+    .. versionadded:: 1.3
     """
     def real_decorator(func):
 

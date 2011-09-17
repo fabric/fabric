@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :feature:`19` Tasks may now be executed in parallel via the
+  ``multiprocessing`` module. Please see the :doc:`parallel execution docs
+  </usage/parallel>` for details.
 * :bug:`430` Tasks decorated with `~fabric.decorators.runs_once` printed
   extraneous 'Executing...' status lines on subsequent invocations. This is
   noisy at best and misleading at worst, and has been corrected. Thanks to
