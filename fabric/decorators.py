@@ -134,18 +134,18 @@ def runs_once(func):
             decorated.return_value = func(*args, **kwargs)
         return decorated.return_value
 
-    runs_sequential(decorated)
+    serial(decorated)
 
     return decorated
 
 
 _sequential = set()
-def runs_sequential(func):
+def serial(func):
     """
     Forces the wrapped function to always run sequentially, never in parallel.
 
     This decorator takes precedence over the global value of
-    :ref:`env.run_in_parallel <run-in-parallel>`.
+    :ref:`env.parallel <env-parallel>`.
 
     .. versionadded:: 1.3
     """
@@ -161,12 +161,12 @@ def is_sequential(func):
 
 
 _parallel = set()
-def runs_parallel(with_bubble_of=None):
+def parallel(pool_size=None):
     """
     Forces the wrapped function to run in parallel, instead of sequentially.
 
     This decorator takes precedence over the global value of
-    :ref:`env.run_in_parallel <run-in-parallel>`.
+    :ref:`env.parallel <env-parallel>`.
 
     .. versionadded:: 1.3
     """
@@ -182,14 +182,14 @@ def runs_parallel(with_bubble_of=None):
         if is_sequential(func):
             _sequential.remove(func.func_name)
 
-        inner._pool_size = with_bubble_of
+        inner._pool_size = pool_size
 
         return inner
 
     # Trick to allow for both a dec w/ the optional setting without have to
     # force it to use ()
-    if type(with_bubble_of) == type(real_decorator):
-        return real_decorator(with_bubble_of)
+    if type(pool_size) == type(real_decorator):
+        return real_decorator(pool_size)
 
     return real_decorator
 

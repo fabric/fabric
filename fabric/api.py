@@ -8,7 +8,7 @@ well when you're using setup.py to install e.g. paramiko!
 """
 from fabric.context_managers import cd, hide, settings, show, path, prefix, lcd
 from fabric.decorators import (hosts, roles, runs_once, with_settings, task, 
-        runs_sequential, runs_parallel)
+        serial, parallel)
 from fabric.operations import (require, prompt, put, get, run, sudo, local,
     reboot, open_shell)
 from fabric.state import env, output

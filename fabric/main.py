@@ -633,7 +633,7 @@ def running_parallel(task):
         if it is explicitly parallel
     """
     return (('multiprocessing' in sys.modules) and 
-            ((state.env.run_in_parallel and not is_sequential(task)) or
+            ((state.env.parallel and not is_sequential(task)) or
                 (is_parallel(task))))
 
 
@@ -767,7 +767,7 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
             names = ", ".join(x[0] for x in commands_to_run)
             print("Commands to run: %s" % names)
 
-        if state.env.run_in_parallel or needs_multiprocessing():
+        if state.env.parallel or needs_multiprocessing():
             #We want to try to import the multiprocessing module by default.
             #The state is checked to see if it was specifically requested, and
             #in that case an error is reported.
@@ -775,7 +775,7 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
                 import multiprocessing
                 
             except ImportError:
-                state.env.run_in_parallel = False
+                state.env.parallel = False
                 print("Unable to run in parallel as requested.\n" +
                         "You need the multiprocessing module.\n" +
                         "Continuing.")

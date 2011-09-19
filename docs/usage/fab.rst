@@ -192,7 +192,7 @@ below.
 
 .. cmdoption:: -P, --parallel
 
-    Sets :ref:`env.run_in_parallel <run-in-parallel>` to ``True``, causing
+    Sets :ref:`env.parallel <env-parallel>` to ``True``, causing
     tasks to run in parallel.
 
     .. versionadded:: 1.3

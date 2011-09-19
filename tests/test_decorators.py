@@ -60,12 +60,12 @@ def test_runs_once():
     assert_equal(None, single_run())
 
 
-@decorators.runs_sequential
+@decorators.serial
 def sequential():
     pass
 
-@decorators.runs_sequential
-@decorators.runs_parallel
+@decorators.serial
+@decorators.parallel
 def sequential2():
     pass
 
@@ -79,16 +79,16 @@ def test_sequential():
     sequential2()
 
 
-@decorators.runs_parallel
+@decorators.parallel
 def parallel():
     pass
 
-@decorators.runs_parallel
-@decorators.runs_sequential
+@decorators.parallel
+@decorators.serial
 def parallel2():
     pass
 
-@decorators.runs_parallel(with_bubble_of=20)
+@decorators.parallel(pool_size=20)
 def parallel3():
     pass
 

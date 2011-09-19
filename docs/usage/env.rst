@@ -439,9 +439,9 @@ The global role list used when composing per-task host lists.
 
 .. seealso:: :doc:`execution`
 
-.. _run-in-parallel:
+.. _env-parallel:
 
-``run_in_parallel``
+``parallel``
 -------------------
 
 **Default:** ``False``

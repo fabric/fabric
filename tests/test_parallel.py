@@ -17,7 +17,7 @@ from fabric.io import output_loop
 import fabric.network # So I can call patch_object correctly. Sigh.
 from fabric.state import env, output, _get_system_username
 from fabric.operations import run, sudo
-from fabric.decorators import runs_parallel
+from fabric.decorators import parallel
 
 from utils import *
 from server import (server, PORT, RESPONSES, PASSWORDS, CLIENT_PRIVKEY, USER,
@@ -26,8 +26,8 @@ from server import (server, PORT, RESPONSES, PASSWORDS, CLIENT_PRIVKEY, USER,
 class TestParallel(FabricTest):
 
     @server()
-    @runs_parallel
-    def test_runs_parallel(self):
+    @parallel
+    def test_parallel(self):
         """
         Want to do a simple call and respond
         """

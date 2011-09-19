@@ -69,55 +69,55 @@ Decorators
 
 Since the minimum "unit" that parallel execution affects is a task, the
 functionality may be enabled or disabled on a task-by-task basis using the
-`~fabric.decorators.runs_parallel` and `~fabric.decorators.runs_sequential`
-decorators. For example, this fabfile::
+`~fabric.decorators.parallel` and `~fabric.decorators.serial` decorators. For
+example, this fabfile::
 
     from fabric.api import *
 
-    @runs_parallel
-    def parallel():
+    @parallel
+    def runs_in_parallel():
         pass
 
-    def serial():
+    def runs_serially():
         pass
 
 when run in this manner::
 
-    $ fab -H host1,host2,host3 parallel serial
+    $ fab -H host1,host2,host3 runs_in_parallel runs_serially
 
 will result in the following execution sequence:
 
-#. ``parallel`` on ``host1``, ``host2``, and ``host3``
-#. ``serial`` on ``host1``
-#. ``serial`` on ``host2``
-#. ``serial`` on ``host3``
+#. ``runs_in_parallel`` on ``host1``, ``host2``, and ``host3``
+#. ``runs_serially`` on ``host1``
+#. ``runs_serially`` on ``host2``
+#. ``runs_serially`` on ``host3``
 
 Command-line flags
 ------------------
 
 One may also force all tasks to run in parallel by using the command-line flag
-:option:`-P` or the env variable :ref:`env.run_in_parallel <run-in-parallel>`.
-However, any task specifically wrapped with
-`~fabric.decorators.runs_sequential` will ignore this setting and continue to
-run serially.
+:option:`-P` or the env variable :ref:`env.parallel <env-parallel>`.  However,
+any task specifically wrapped with `~fabric.decorators.serial` will ignore this
+setting and continue to run serially.
 
 For example, the following fabfile will result in the same execution sequence
 as the one above::
 
     from fabric.api import *
 
-    def parallel():
+    def runs_in_parallel():
         pass
 
-    @runs_sequential
-    def serial():
+    @serial
+    def runs_serially():
         pass
 
 when invoked like so::
 
-    $ fab -H host1,host2,host3 -P parallel serial
+    $ fab -H host1,host2,host3 -P runs_in_parallel runs_serially
 
-As before, ``parallel`` will run in parallel, and ``serial`` in sequence.
+As before, ``runs_in_parallel`` will run in parallel, and ``runs_serially`` in
+sequence.
 
 
 Bubble size
@@ -129,18 +129,17 @@ moving bubble approach that limits Fabric to a specific number of concurrently
 active processes.
 
 By default, no bubble is used and all hosts are run in one concurrent pool. You
-can override this on a per-task level by specifying the ``with_bubble_of``
-keyword argument to `~fabric.decorators.runs_parallel`, or globally via
-:option:`-z`.
+can override this on a per-task level by specifying the ``pool_size`` keyword
+argument to `~fabric.decorators.parallel`, or globally via :option:`-z`.
 
 For example, to run on 5 hosts at a time::
 
     from fabric.api import *
 
-    @runs_parallel(with_bubble_of=5)
+    @parallel(pool_size=5)
     def heavy_task():
         # lots of heavy local lifting or lots of IO here
 
-Or skip the ``with_bubble_of`` kwarg and instead::
+Or skip the ``pool_size`` kwarg and instead::
 
     $ fab -P -z 5 heavy_task
