@@ -132,10 +132,8 @@ def runs_once(func):
         if not hasattr(decorated, 'return_value'):
             decorated.return_value = func(*args, **kwargs)
         return decorated.return_value
-
-    serial(decorated)
-
-    return decorated
+    # Mark as serial (disables parallelism) and return
+    return serial(decorated)
 
 
 _serial = set()
