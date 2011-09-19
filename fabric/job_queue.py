@@ -1,8 +1,8 @@
 """
-This module provides a Job_queue class, and an example of use. One may drop in
-either multiprocessing Prcoesses or threading Threads, as I have show in the
-test suite.
+Sliding-window-based job/task queue class (& example of use.)
 
+May use ``multiprocessing.Process`` or ``threading.Thread`` objects as queue
+items, though within Fabric itself only ``Process`` objects are used/supported.
 """
 
 from fabric.state import env
