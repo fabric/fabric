@@ -147,10 +147,8 @@ def serial(func):
     .. versionadded:: 1.3
     """
     _serial.add(func.func_name)
-
     if is_parallel(func):
         _parallel.remove(func.func_name)
-
     return func
 
 def is_serial(func):
