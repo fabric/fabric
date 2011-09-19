@@ -192,7 +192,7 @@ below.
 
 .. cmdoption:: -P, --parallel
 
-    Sets :ref:`env.run_in_parallel <run_in_parallel>` to ``True``, causing
+    Sets :ref:`env.run_in_parallel <run-in-parallel>` to ``True``, causing
     tasks to run in parallel.
 
     .. versionadded:: 1.3
@@ -253,7 +253,7 @@ below.
 
 .. cmdoption:: -z, --pool-size
 
-    Sets :ref:`env.pool_size <pool_size>`, which specifies how many processes
+    Sets :ref:`env.pool_size <pool-size>`, which specifies how many processes
     to run concurrently during parallel execution.
 
     .. versionadded:: 1.3

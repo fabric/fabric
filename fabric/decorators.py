@@ -145,7 +145,7 @@ def runs_sequential(func):
     Forces the wrapped function to always run sequentially, never in parallel.
 
     This decorator takes precedence over the global value of
-    :ref:`env.run_in_parallel <run_in_parallel>`.
+    :ref:`env.run_in_parallel <run-in-parallel>`.
 
     .. versionadded:: 1.3
     """
@@ -166,7 +166,7 @@ def runs_parallel(with_bubble_of=None):
     Forces the wrapped function to run in parallel, instead of sequentially.
 
     This decorator takes precedence over the global value of
-    :ref:`env.run_in_parallel <run_in_parallel>`.
+    :ref:`env.run_in_parallel <run-in-parallel>`.
 
     .. versionadded:: 1.3
     """

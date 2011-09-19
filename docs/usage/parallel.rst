@@ -64,6 +64,9 @@ seconds on average.
 How to use it
 =============
 
+Decorators
+----------
+
 Since the minimum "unit" that parallel execution affects is a task, the
 functionality may be enabled or disabled on a task-by-task basis using the
 `~fabric.decorators.runs_parallel` and `~fabric.decorators.runs_sequential`
@@ -88,6 +91,9 @@ will result in the following execution sequence:
 #. ``serial`` on ``host1``
 #. ``serial`` on ``host2``
 #. ``serial`` on ``host3``
+
+Command-line flags
+------------------
 
 One may also force all tasks to run in parallel by using the command-line flag
 :option:`-P` or the env variable :ref:`env.run_in_parallel <run-in-parallel>`.
