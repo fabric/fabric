@@ -29,9 +29,7 @@ class JobQueue(object):
         ____________________[~~~~~]
         ___________________________
                                 End 
-
     """
-
     def __init__(self, max_running):
         """
         Setup the class to resonable defaults.
@@ -52,7 +50,6 @@ class JobQueue(object):
         """
         if self._running:
             return all([x.is_alive() for x in self._running])
-
         else:
             return False
 
@@ -158,6 +155,7 @@ class JobQueue(object):
                 self._finished = True
 
         disconnect_all()
+
 
 #### Sample 
 
