@@ -12,7 +12,7 @@ from fabric.state import env
 from fabric.network import disconnect_all
 
 
-class Job_Queue(object):
+class JobQueue(object):
     """
     The goal of this class is to make a queue of processes to run, and go
     through them running X number at any given time. 
@@ -58,7 +58,7 @@ class Job_Queue(object):
 
     def __len__(self):
         """
-        Just going to use number of jobs as the Job_Queue length.
+        Just going to use number of jobs as the JobQueue length.
         """
         return self._num_of_jobs
     
@@ -75,7 +75,7 @@ class Job_Queue(object):
     def append(self, process):
         """
         Add the Process() to the queue, so that later it can be checked up on.
-        That is if the Job_Queue is still open.
+        That is if the JobQueue is still open.
 
         If the queue is closed, this will just silently do nothing.
         """
@@ -181,7 +181,7 @@ def try_using(parallel_type):
 
 
     # Make a job_queue with a bubble of len 5, and have it print verbosely
-    jobs = Job_Queue(5)
+    jobs = JobQueue(5)
     jobs._debug = True
 
     # Add 20 procs onto the stack

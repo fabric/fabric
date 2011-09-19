@@ -23,7 +23,7 @@ from fabric.state import commands, connections, env_options
 from fabric.tasks import Task
 from fabric.utils import abort, indent
 from fabric.decorators import is_parallel, is_serial, needs_multiprocessing
-from job_queue import Job_Queue
+from job_queue import JobQueue
 
 # One-time calculation of "all internal callables" to avoid doing this on every
 # check of a given fabfile callable (in is_classic_task()).
@@ -808,7 +808,7 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
                 pool_size = int(len(hosts)/2) + 1
 
 
-            jobs = Job_Queue(pool_size)
+            jobs = JobQueue(pool_size)
             if state.output.debug:
                 jobs._debug = True
 
