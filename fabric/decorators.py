@@ -146,9 +146,9 @@ def serial(func):
 
     .. versionadded:: 1.3
     """
+    # Register
     _serial.add(func.func_name)
-    if is_parallel(func):
-        _parallel.remove(func.func_name)
+    _parallel.discard(func.func_name)
     return func
 
 def is_serial(func):
@@ -166,23 +166,19 @@ def parallel(pool_size=None):
     .. versionadded:: 1.3
     """
     def real_decorator(func):
-
         @wraps(func)
         def inner(*args, **kwargs):
+            # Required for Paramiko/PyCrypto to be happy in multiprocessing
             Random.atfork()
             return func(*args, **kwargs)
-
+        # Register
         _parallel.add(func.func_name)
-
-        if is_serial(func):
-            _serial.remove(func.func_name)
-
+        _serial.discard(func.func_name)
+        # Tell function what its pool size is
         inner._pool_size = pool_size
-
         return inner
 
-    # Trick to allow for both a dec w/ the optional setting without have to
-    # force it to use ()
+    # Allow non-factory-style decorator use (@decorator vs @decorator())
     if type(pool_size) == type(real_decorator):
         return real_decorator(pool_size)
 
