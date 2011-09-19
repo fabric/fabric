@@ -22,7 +22,7 @@ from fabric.network import denormalize, interpret_host_string, disconnect_all
 from fabric.state import commands, connections, env_options
 from fabric.tasks import Task
 from fabric.utils import abort, indent
-from fabric.decorators import is_parallel, is_sequential, needs_multiprocessing
+from fabric.decorators import is_parallel, is_serial, needs_multiprocessing
 from job_queue import Job_Queue
 
 # One-time calculation of "all internal callables" to avoid doing this on every
@@ -633,7 +633,7 @@ def running_parallel(task):
         if it is explicitly parallel
     """
     return (('multiprocessing' in sys.modules) and 
-            ((state.env.parallel and not is_sequential(task)) or
+            ((state.env.parallel and not is_serial(task)) or
                 (is_parallel(task))))
 
 
@@ -844,7 +844,7 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
                     jobs.append(p)
 
                 else:
-                    #sequential
+                    #serial
                     _run_task(task, args, kwargs)
 
                 # Put old user back

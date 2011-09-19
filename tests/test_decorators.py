@@ -53,7 +53,7 @@ def single_run():
     pass
 
 def test_runs_once():
-    assert_true(decorators.is_sequential(single_run))
+    assert_true(decorators.is_serial(single_run))
     assert_false(hasattr(single_run, 'return_value'))
     single_run()
     assert_true(hasattr(single_run, 'return_value'))
@@ -61,22 +61,22 @@ def test_runs_once():
 
 
 @decorators.serial
-def sequential():
+def serial():
     pass
 
 @decorators.serial
 @decorators.parallel
-def sequential2():
+def serial2():
     pass
 
-def test_sequential():
-    assert_true(decorators.is_sequential(sequential))
-    assert_false(decorators.is_parallel(sequential))
-    sequential()
+def test_serial():
+    assert_true(decorators.is_serial(serial))
+    assert_false(decorators.is_parallel(serial))
+    serial()
 
-    assert_true(decorators.is_sequential(sequential2))
-    assert_false(decorators.is_parallel(sequential2))
-    sequential2()
+    assert_true(decorators.is_serial(serial2))
+    assert_false(decorators.is_parallel(serial2))
+    serial2()
 
 
 @decorators.parallel
@@ -94,15 +94,15 @@ def parallel3():
 
 def test_parallel():
     assert_true(decorators.is_parallel(parallel))
-    assert_false(decorators.is_sequential(parallel))
+    assert_false(decorators.is_serial(parallel))
     parallel()
 
     assert_true(decorators.is_parallel(parallel2))
-    assert_false(decorators.is_sequential(parallel2))
+    assert_false(decorators.is_serial(parallel2))
     parallel2()
 
     assert_true(decorators.is_parallel(parallel))
-    assert_false(decorators.is_sequential(parallel))
+    assert_false(decorators.is_serial(parallel))
     assert_equal(parallel3._pool_size, 20)
     assert_equal(getattr(parallel3, '_pool_size'), 20)
 

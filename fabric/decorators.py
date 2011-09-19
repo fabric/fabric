@@ -138,7 +138,7 @@ def runs_once(func):
     return decorated
 
 
-_sequential = set()
+_serial = set()
 def serial(func):
     """
     Forces the wrapped function to always run sequentially, never in parallel.
@@ -148,15 +148,15 @@ def serial(func):
 
     .. versionadded:: 1.3
     """
-    _sequential.add(func.func_name)
+    _serial.add(func.func_name)
 
     if is_parallel(func):
         _parallel.remove(func.func_name)
 
     return func
 
-def is_sequential(func):
-    return func.func_name in _sequential
+def is_serial(func):
+    return func.func_name in _serial
 
 
 _parallel = set()
@@ -178,8 +178,8 @@ def parallel(pool_size=None):
 
         _parallel.add(func.func_name)
 
-        if is_sequential(func):
-            _sequential.remove(func.func_name)
+        if is_serial(func):
+            _serial.remove(func.func_name)
 
         inner._pool_size = pool_size
 
