@@ -605,6 +605,7 @@ def get_hosts(command, cli_hosts, cli_roles, cli_exclude_hosts):
     # list if no hosts have been set anywhere.
     return _merge(state.env['hosts'], state.env['roles'], state.env['exclude_hosts'])
 
+
 def update_output_levels(show, hide):
     """
     Update state.output values as per given comma-separated list of key names.
@@ -622,19 +623,24 @@ def update_output_levels(show, hide):
             state.output[key] = False
 
 
-def running_parallel(task):
+def requires_parallel(task):
     """
-    Returns if the command currently asking to be run is needing to be run in
-    parallel or not.
+    Returns True if given ``task`` can and should be run in parallel mode.
 
-    After making sure a multiprocessing module has been loaded. The two cases 
-    for a command to run parallel are:
-        if it's not explicitly sequential and whole program is set for parallel
-        if it is explicitly parallel
+    Specifically:
+
+    * The ``multiprocessing`` module is loaded, and:
+    * It's been explicitly marked with ``@parallel``, or:
+    * It's *not* been explicitly marked with ``@serial`` *and* the global
+      parallel option (``env.parallel``) is set to ``True``.
     """
-    return (('multiprocessing' in sys.modules) and 
-            ((state.env.parallel and not is_serial(task)) or
-                (is_parallel(task))))
+    return (
+        ('multiprocessing' in sys.modules)
+        and (
+            (state.env.parallel and not is_serial(task))
+            or is_parallel(task)
+        )
+    )
 
 
 def _run_task(task, args, kwargs):
@@ -822,7 +828,7 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
                 if state.output.running and not hasattr(task, 'return_value'):
                     print("[%s] Executing task '%s'" % (host, name))
 
-                if running_parallel(task):
+                if requires_parallel(task):
                     #parallel
 
                     # Actually run command
