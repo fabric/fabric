@@ -651,6 +651,21 @@ def _run_task(task, args, kwargs):
     return task(*args, **kwargs)
 
 
+def _get_pool_size(task, hosts):
+    # Default parallel pool size (calculate per-task in case variables
+    # change)
+    default_pool_size = state.env.pool_size or len(hosts)
+    # Allow per-task override
+    pool_size = getattr(task, '_pool_size', default_pool_size)
+    # But ensure it's never larger than the number of hosts
+    pool_size = min((pool_size, len(hosts)))
+    # Inform user of final pool size for this task
+    if state.output.debug:
+        msg = "Parallel tasks now using pool size of %d"
+        print msg % state.env.pool_size
+    return pool_size
+
+
 def main():
     """
     Main command-line execution loop.
@@ -793,24 +808,8 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
             state.env.all_hosts = hosts = get_hosts(
                 task, cli_hosts, cli_roles, cli_exclude_hosts)
 
-            if state.output.debug:
-                print "Number for pool: %d" % state.env.pool_size
-
-            if hasattr(task, '_pool_size') and task._pool_size:
-                pool_size = task._pool_size
-
-            elif not state.env.pool_size:
-                if state.output.debug:
-                    print "Since zero make number of hosts: %d" % len(hosts)
-                pool_size = len(hosts)
-
-            else:
-                pool_size = state.env.pool_size
-
-            if len(hosts) < pool_size:
-                pool_size = int(len(hosts)/2) + 1
-
-
+            # Get pool size for this task
+            pool_size = _get_pool_size(task, hosts)
             jobs = JobQueue(pool_size)
             if state.output.debug:
                 jobs._debug = True
