@@ -773,18 +773,15 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
             names = ", ".join(x[0] for x in commands_to_run)
             print("Commands to run: %s" % names)
 
+        # Import multiprocessing if needed, erroring out usefully if it can't.
         if state.env.parallel or needs_multiprocessing():
-            #We want to try to import the multiprocessing module by default.
-            #The state is checked to see if it was specifically requested, and
-            #in that case an error is reported.
             try:
                 import multiprocessing
-                
-            except ImportError:
-                state.env.parallel = False
-                print("Unable to run in parallel as requested.\n" +
-                        "You need the multiprocessing module.\n" +
-                        "Continuing.")
+            except ImportError, e:
+                msg = "You have requested that some tasks run in parallel, but the\nmultiprocessing module cannot be imported:"
+                msg += "\n\n\t%s\n\n" % e
+                msg += "Please make sure the module is installed or that the above ImportError is\nfixed, or run your tasks serially."
+                abort(msg)
 
         # At this point all commands must exist, so execute them in order.
         for name, args, kwargs, cli_hosts, cli_roles, cli_exclude_hosts in commands_to_run:
