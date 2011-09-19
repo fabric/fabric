@@ -800,9 +800,9 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
 
         # At this point all commands must exist, so execute them in order.
         for name, args, kwargs, cli_hosts, cli_roles, cli_exclude_hosts in commands_to_run:
-            # Get callable by itself:
+            # Get callable by itself
             task = crawl(name, state.commands)
-            # Set current command name (used for some error messages)
+            # Set current task name (used for some error messages)
             state.env.command = name
             # Set host list (also copy to env)
             state.env.all_hosts = hosts = get_hosts(
@@ -810,11 +810,12 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
 
             # Get pool size for this task
             pool_size = _get_pool_size(task, hosts)
+            # Set up job queue in case parallel is needed
             jobs = JobQueue(pool_size)
             if state.output.debug:
                 jobs._debug = True
 
-           # If hosts found, execute the function on each host in turn
+            # If hosts found, execute the function on each host in turn
             for host in hosts:
                 # Preserve user
                 prev_user = state.env.user
@@ -824,6 +825,7 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
                 if state.output.running and not hasattr(task, 'return_value'):
                     print("[%s] Executing task '%s'" % (host, name))
 
+                # Handle parallel execution
                 if requires_parallel(task):
                     #parallel
 
@@ -844,16 +846,14 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
                     # Cast to a str since Unicode strings will fail multiprocessing's isinstance check (https://github.com/goosemo/fabric/issues/11)
                     p.name = str(state.env.host_string)
                     jobs.append(p)
-
+                # Handle serial execution
                 else:
-                    #serial
                     _run_task(task, args, kwargs)
 
                 # Put old user back
                 state.env.user = prev_user
 
-            #only runs if was set to run in parallel, and causes fabric to 
-            #wait to end program until all Processes have returned.
+            # If running in parallel, block until job queue is emptied
             if jobs:
                 jobs.close()
                 jobs.start()
