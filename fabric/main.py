@@ -827,24 +827,16 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
 
                 # Handle parallel execution
                 if requires_parallel(task):
-                    #parallel
-
-                    # Actually run command
-                    # run in parallel when set globally or on function with decorator
+                    # Grab appropriate callable (func or instance method)
+                    to_call = task
                     if hasattr(task, 'run') and callable(task.run):
-                        p = multiprocessing.Process(
-                                target = task.run,
-                                args = args,
-                                kwargs = kwargs,
-                                )
-                    else: 
-                        p = multiprocessing.Process(
-                                target = task,
-                                args = args,
-                                kwargs = kwargs,
-                                )
-                    # Cast to a str since Unicode strings will fail multiprocessing's isinstance check (https://github.com/goosemo/fabric/issues/11)
-                    p.name = str(state.env.host_string)
+                        to_call = task.run
+                    # Stuff into Process wrapper
+                    p = multiprocessing.Process(target=to_call, args=args,
+                        kwargs=kwargs)
+                    # Name/id is host string
+                    p.name = state.env.host_string
+                    # Add to queue
                     jobs.append(p)
                 # Handle serial execution
                 else:
