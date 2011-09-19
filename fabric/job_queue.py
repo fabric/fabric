@@ -5,10 +5,12 @@ May use ``multiprocessing.Process`` or ``threading.Thread`` objects as queue
 items, though within Fabric itself only ``Process`` objects are used/supported.
 """
 
-from fabric.state import env
-from fabric.network import disconnect_all
 from pprint import pprint
 from Crypto import Random 
+
+from fabric.state import env
+from fabric.network import disconnect_all
+
 
 class Job_Queue(object):
     """
