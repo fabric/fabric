@@ -136,32 +136,29 @@ def runs_once(func):
     return serial(decorated)
 
 
-_serial = set()
 def serial(func):
     """
     Forces the wrapped function to always run sequentially, never in parallel.
 
-    This decorator takes precedence over the global value of
-    :ref:`env.parallel <env-parallel>`.
+    This decorator takes precedence over the global value of :ref:`env.parallel
+    <env-parallel>`. However, if a task is decorated with both
+    `~fabric.decorators.serial` *and* `~fabric.decorators.parallel`,
+    `~fabric.decorators.parallel` wins.
 
     .. versionadded:: 1.3
     """
-    # Register
-    _serial.add(func.func_name)
-    _parallel.discard(func.func_name)
+    if not getattr(func, 'parallel', False):
+        func.serial = True
     return func
 
-def is_serial(func):
-    return func.func_name in _serial
 
-
-_parallel = set()
 def parallel(pool_size=None):
     """
     Forces the wrapped function to run in parallel, instead of sequentially.
 
-    This decorator takes precedence over the global value of
-    :ref:`env.parallel <env-parallel>`.
+    This decorator takes precedence over the global value of :ref:`env.parallel
+    <env-parallel>`. It also takes precedence over `~fabric.decorators.serial`
+    if a task is decorated with both.
 
     .. versionadded:: 1.3
     """
@@ -171,11 +168,9 @@ def parallel(pool_size=None):
             # Required for Paramiko/PyCrypto to be happy in multiprocessing
             Random.atfork()
             return func(*args, **kwargs)
-        # Register
-        _parallel.add(func.func_name)
-        _serial.discard(func.func_name)
-        # Tell function what its pool size is
-        inner._pool_size = pool_size
+        inner.parallel = True
+        inner.serial = False
+        inner.pool_size = pool_size
         return inner
 
     # Allow non-factory-style decorator use (@decorator vs @decorator())
@@ -183,12 +178,6 @@ def parallel(pool_size=None):
         return real_decorator(pool_size)
 
     return real_decorator
-
-def is_parallel(func):
-    return func.func_name in _parallel
-
-def needs_multiprocessing():
-    return _parallel != set()
 
 
 def with_settings(**kw_settings):

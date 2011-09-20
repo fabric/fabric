@@ -1,11 +1,15 @@
+from __future__ import with_statement
+
 import random
 
 from nose.tools import eq_, ok_, assert_true, assert_false, assert_equal
 import fudge
-from fudge import Fake, with_fakes
+from fudge import Fake, with_fakes, patched_context
 
 from fabric import decorators, tasks
 from fabric.state import env
+import fabric # for patching fabric.state.xxx
+from fabric.main import _parallel_tasks, requires_parallel
 
 
 #
@@ -138,7 +142,6 @@ def single_run():
     pass
 
 def test_runs_once():
-    assert_true(decorators.is_serial(single_run))
     assert_false(hasattr(single_run, 'return_value'))
     single_run()
     assert_true(hasattr(single_run, 'return_value'))
@@ -150,6 +153,7 @@ def test_runs_once():
 # @serial / @parallel
 #
 
+
 @decorators.serial
 def serial():
     pass
@@ -159,43 +163,53 @@ def serial():
 def serial2():
     pass
 
-def test_serial():
-    assert_true(decorators.is_serial(serial))
-    assert_false(decorators.is_parallel(serial))
-    serial()
-
-    assert_true(decorators.is_serial(serial2))
-    assert_false(decorators.is_parallel(serial2))
-    serial2()
-
+@decorators.parallel
+@decorators.serial
+def serial3():
+    pass
 
 @decorators.parallel
 def parallel():
     pass
 
-@decorators.parallel
-@decorators.serial
+@decorators.parallel(pool_size=20)
 def parallel2():
     pass
 
-@decorators.parallel(pool_size=20)
-def parallel3():
-    pass
+fake_tasks = {
+    'serial': serial,
+    'serial2': serial2,
+    'serial3': serial3,
+    'parallel': parallel,
+    'parallel2': parallel2,
+}
 
-def test_parallel():
-    assert_true(decorators.is_parallel(parallel))
-    assert_false(decorators.is_serial(parallel))
-    parallel()
+def parallel_task_helper(actual_tasks, expected):
+    commands_to_run = map(lambda x: [x], actual_tasks)
+    with patched_context(fabric.state, 'commands', fake_tasks):
+        eq_(_parallel_tasks(commands_to_run), expected)
 
-    assert_true(decorators.is_parallel(parallel2))
-    assert_false(decorators.is_serial(parallel2))
-    parallel2()
+def test_parallel_tasks():
+    for desc, task_names, expected in (
+        ("One @serial-decorated task == no parallelism",
+            ['serial'], False),
+        ("One @parallel-decorated task == parallelism",
+            ['parallel'], True),
+        ("One @parallel-decorated and one @serial-decorated task == paralellism",
+            ['parallel', 'serial'], True),
+        ("Tasks decorated with both @serial and @parallel count as @parallel",
+            ['serial2', 'serial3'], True)
+    ):
+        parallel_task_helper.description = desc
+        yield parallel_task_helper, task_names, expected
+        del parallel_task_helper.description
 
-    assert_true(decorators.is_parallel(parallel))
-    assert_false(decorators.is_serial(parallel))
-    assert_equal(parallel3._pool_size, 20)
-    assert_equal(getattr(parallel3, '_pool_size'), 20)
-
+def test_parallel_wins_vs_serial():
+    """
+    @parallel takes precedence over @serial when both are used on one task
+    """
+    ok_(requires_parallel(serial2))
+    ok_(requires_parallel(serial3))
 
 
 #

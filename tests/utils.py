@@ -260,3 +260,11 @@ def patched_env(updates):
 
 def fabfile(name):
     return os.path.join(os.path.dirname(__file__), 'support', name)
+
+
+@contextmanager
+def path_prefix(module):
+    i = 0
+    sys.path.insert(i, os.path.dirname(module))
+    yield
+    sys.path.pop(i)

@@ -22,7 +22,6 @@ from fabric.network import denormalize, interpret_host_string, disconnect_all
 from fabric.state import commands, connections, env_options
 from fabric.tasks import Task
 from fabric.utils import abort, indent
-from fabric.decorators import is_parallel, is_serial, needs_multiprocessing
 from job_queue import JobQueue
 
 # One-time calculation of "all internal callables" to avoid doing this on every
@@ -625,21 +624,17 @@ def update_output_levels(show, hide):
 
 def requires_parallel(task):
     """
-    Returns True if given ``task`` can and should be run in parallel mode.
+    Returns True if given ``task`` should be run in parallel mode.
 
     Specifically:
 
-    * The ``multiprocessing`` module is loaded, and:
     * It's been explicitly marked with ``@parallel``, or:
     * It's *not* been explicitly marked with ``@serial`` *and* the global
       parallel option (``env.parallel``) is set to ``True``.
     """
     return (
-        ('multiprocessing' in sys.modules)
-        and (
-            (state.env.parallel and not is_serial(task))
-            or is_parallel(task)
-        )
+        (state.env.parallel and not getattr(task, 'serial', False))
+        or getattr(task, 'parallel', False)
     )
 
 
@@ -656,7 +651,7 @@ def _get_pool_size(task, hosts):
     # change)
     default_pool_size = state.env.pool_size or len(hosts)
     # Allow per-task override
-    pool_size = getattr(task, '_pool_size', default_pool_size)
+    pool_size = getattr(task, 'pool_size', default_pool_size)
     # But ensure it's never larger than the number of hosts
     pool_size = min((pool_size, len(hosts)))
     # Inform user of final pool size for this task
@@ -664,6 +659,13 @@ def _get_pool_size(task, hosts):
         msg = "Parallel tasks now using pool size of %d"
         print msg % state.env.pool_size
     return pool_size
+
+
+def _parallel_tasks(commands_to_run):
+    return any(map(
+        lambda x: requires_parallel(crawl(x[0], state.commands)),
+        commands_to_run
+    ))
 
 
 def main():
@@ -789,7 +791,7 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
             print("Commands to run: %s" % names)
 
         # Import multiprocessing if needed, erroring out usefully if it can't.
-        if state.env.parallel or needs_multiprocessing():
+        if state.env.parallel or _parallel_tasks(commands_to_run):
             try:
                 import multiprocessing
             except ImportError, e:
@@ -826,7 +828,8 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
                     print("[%s] Executing task '%s'" % (host, name))
 
                 # Handle parallel execution
-                if requires_parallel(task):
+                have_multiprocessing = 'multiprocessing' in sys.modules
+                if requires_parallel(task) and have_multiprocessing:
                     # Grab appropriate callable (func or instance method)
                     to_call = task
                     if hasattr(task, 'run') and callable(task.run):
