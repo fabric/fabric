@@ -212,19 +212,19 @@ env_options = [
 
     # Parallel execution model flag
     make_option('-P', '--parallel',
-            dest = 'parallel',
-            action = 'store_true',
-            default = False,
-            help = ("Default to parallel execution method")
+            dest='parallel',
+            action='store_true',
+            default=False,
+            help="Default to parallel execution method"
     ),
 
     # Limits the number of forks the parallel option uses
     make_option('-z', '--pool-size',
-            dest = 'pool_size',
-            type = 'int',
-            metavar = 'NUM_FORKS',
-            default = 0,
-            help = "Number of concurrent processes to use when running in parallel",
+            dest='pool_size',
+            type='int',
+            metavar='NUM_FORKS',
+            default=0,
+            help="Number of concurrent processes to use when running in parallel",
     ),
 
     # Abort on prompting flag
