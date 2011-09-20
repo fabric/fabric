@@ -109,6 +109,8 @@ class JobQueue(object):
             knows that this is the host to be making connections on.
             """
             job = self._queued.pop()
+            if self._debug:
+                print("Popping '%s' off the queue and starting it" % job.name)
             env.host_string = env.host = job.name
             job.start()
             Random.atfork()
@@ -119,7 +121,6 @@ class JobQueue(object):
 
         if self._debug:
             print("Job queue starting.")
-            print("Job queue intial running queue fill.")
 
         while len(self._running) < self._max:
             _advance_the_queue()
@@ -127,9 +128,6 @@ class JobQueue(object):
         while not self._finished:
 
             while len(self._running) < self._max and self._queued:
-                if self._debug:
-                    print("Job queue running queue filling.")
-              
                 _advance_the_queue()
 
             if not self._all_alive():
