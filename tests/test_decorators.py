@@ -1,16 +1,16 @@
+import random
+
 from nose.tools import eq_, ok_, assert_true, assert_false, assert_equal
 import fudge
 from fudge import Fake, with_fakes
-import random
 
 from fabric import decorators, tasks
 from fabric.state import env
 
-def test_task_returns_an_instance_of_wrappedfunctask_object():
-    def foo():
-        pass
-    task = decorators.task(foo)
-    ok_(isinstance(task, tasks.WrappedCallableTask))
+
+#
+# Support
+#
 
 def fake_function(*args, **kwargs):
     """
@@ -27,118 +27,19 @@ def fake_function(*args, **kwargs):
     return Fake(*args, **kwargs).has_attr(__name__='fake')
 
 
-@with_fakes
-def test_runs_once_runs_only_once():
-    """
-    @runs_once prevents decorated func from running >1 time
-    """
-    func = fake_function(expect_call=True).times_called(1)
-    task = decorators.runs_once(func)
-    for i in range(2):
-        task()
+
+#
+# @task
+#
+
+def test_task_returns_an_instance_of_wrappedfunctask_object():
+    def foo():
+        pass
+    task = decorators.task(foo)
+    ok_(isinstance(task, tasks.WrappedCallableTask))
 
 
-def test_runs_once_returns_same_value_each_run():
-    """
-    @runs_once memoizes return value of decorated func
-    """
-    return_value = "foo"
-    task = decorators.runs_once(fake_function().returns(return_value))
-    for i in range(2):
-        eq_(task(), return_value)
-
-
-@decorators.runs_once
-def single_run():
-    pass
-
-def test_runs_once():
-    assert_true(decorators.is_serial(single_run))
-    assert_false(hasattr(single_run, 'return_value'))
-    single_run()
-    assert_true(hasattr(single_run, 'return_value'))
-    assert_equal(None, single_run())
-
-
-@decorators.serial
-def serial():
-    pass
-
-@decorators.serial
-@decorators.parallel
-def serial2():
-    pass
-
-def test_serial():
-    assert_true(decorators.is_serial(serial))
-    assert_false(decorators.is_parallel(serial))
-    serial()
-
-    assert_true(decorators.is_serial(serial2))
-    assert_false(decorators.is_parallel(serial2))
-    serial2()
-
-
-@decorators.parallel
-def parallel():
-    pass
-
-@decorators.parallel
-@decorators.serial
-def parallel2():
-    pass
-
-@decorators.parallel(pool_size=20)
-def parallel3():
-    pass
-
-def test_parallel():
-    assert_true(decorators.is_parallel(parallel))
-    assert_false(decorators.is_serial(parallel))
-    parallel()
-
-    assert_true(decorators.is_parallel(parallel2))
-    assert_false(decorators.is_serial(parallel2))
-    parallel2()
-
-    assert_true(decorators.is_parallel(parallel))
-    assert_false(decorators.is_serial(parallel))
-    assert_equal(parallel3._pool_size, 20)
-    assert_equal(getattr(parallel3, '_pool_size'), 20)
-
-
-@decorators.roles('test')
-def use_roles():
-    pass
-
-def test_roles():
-    assert_true(hasattr(use_roles, 'roles'))
-    assert_equal(use_roles.roles, ['test'])
-
-
-@decorators.hosts('test')
-def use_hosts():
-    pass
-
-def test_hosts():
-    assert_true(hasattr(use_hosts, 'hosts'))
-    assert_equal(use_hosts.hosts, ['test'])
-
-
-def test_needs_multiprocessing():
-    assert_true(decorators.needs_multiprocessing())
-
-def test_with_settings_passes_env_vars_into_decorated_function():
-    env.value = True
-    random_return = random.randint(1000, 2000)
-    def some_task():
-        return env.value
-    decorated_task = decorators.with_settings(value=random_return)(some_task)
-    ok_(some_task(), msg="sanity check")
-    eq_(random_return, decorated_task())
-
-
-def test_will_invoked_whatever_class_you_provide():
+def test_task_will_invoke_provided_class():
     def foo(): pass
     fake = Fake()
     fake.expects("__init__").with_args(foo)
@@ -150,7 +51,7 @@ def test_will_invoked_whatever_class_you_provide():
     fudge.verify()
 
 
-def test_passes_args_to_the_task_class():
+def test_task_passes_args_to_the_task_class():
     random_vars = ("some text", random.randint(100, 200))
     def foo(): pass
 
@@ -204,3 +105,136 @@ def test_original_non_invoked_style_task():
         return r
 
     eq_(r, foo())
+
+
+
+#
+# @runs_once
+#
+
+@with_fakes
+def test_runs_once_runs_only_once():
+    """
+    @runs_once prevents decorated func from running >1 time
+    """
+    func = fake_function(expect_call=True).times_called(1)
+    task = decorators.runs_once(func)
+    for i in range(2):
+        task()
+
+
+def test_runs_once_returns_same_value_each_run():
+    """
+    @runs_once memoizes return value of decorated func
+    """
+    return_value = "foo"
+    task = decorators.runs_once(fake_function().returns(return_value))
+    for i in range(2):
+        eq_(task(), return_value)
+
+
+@decorators.runs_once
+def single_run():
+    pass
+
+def test_runs_once():
+    assert_true(decorators.is_serial(single_run))
+    assert_false(hasattr(single_run, 'return_value'))
+    single_run()
+    assert_true(hasattr(single_run, 'return_value'))
+    assert_equal(None, single_run())
+
+
+
+#
+# @serial / @parallel
+#
+
+@decorators.serial
+def serial():
+    pass
+
+@decorators.serial
+@decorators.parallel
+def serial2():
+    pass
+
+def test_serial():
+    assert_true(decorators.is_serial(serial))
+    assert_false(decorators.is_parallel(serial))
+    serial()
+
+    assert_true(decorators.is_serial(serial2))
+    assert_false(decorators.is_parallel(serial2))
+    serial2()
+
+
+@decorators.parallel
+def parallel():
+    pass
+
+@decorators.parallel
+@decorators.serial
+def parallel2():
+    pass
+
+@decorators.parallel(pool_size=20)
+def parallel3():
+    pass
+
+def test_parallel():
+    assert_true(decorators.is_parallel(parallel))
+    assert_false(decorators.is_serial(parallel))
+    parallel()
+
+    assert_true(decorators.is_parallel(parallel2))
+    assert_false(decorators.is_serial(parallel2))
+    parallel2()
+
+    assert_true(decorators.is_parallel(parallel))
+    assert_false(decorators.is_serial(parallel))
+    assert_equal(parallel3._pool_size, 20)
+    assert_equal(getattr(parallel3, '_pool_size'), 20)
+
+
+
+#
+# @roles
+#
+
+@decorators.roles('test')
+def use_roles():
+    pass
+
+def test_roles():
+    assert_true(hasattr(use_roles, 'roles'))
+    assert_equal(use_roles.roles, ['test'])
+
+
+
+#
+# @hosts
+#
+
+@decorators.hosts('test')
+def use_hosts():
+    pass
+
+def test_hosts():
+    assert_true(hasattr(use_hosts, 'hosts'))
+    assert_equal(use_hosts.hosts, ['test'])
+
+
+
+#
+# @with_settings
+#
+
+def test_with_settings_passes_env_vars_into_decorated_function():
+    env.value = True
+    random_return = random.randint(1000, 2000)
+    def some_task():
+        return env.value
+    decorated_task = decorators.with_settings(value=random_return)(some_task)
+    ok_(some_task(), msg="sanity check")
+    eq_(random_return, decorated_task())
