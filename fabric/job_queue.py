@@ -154,8 +154,6 @@ class JobQueue(object):
 
                 self._finished = True
 
-        disconnect_all()
-
 
 #### Sample 
 
