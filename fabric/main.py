@@ -828,8 +828,7 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
                     print("[%s] Executing task '%s'" % (host, name))
 
                 # Handle parallel execution
-                have_multiprocessing = 'multiprocessing' in sys.modules
-                if requires_parallel(task) and have_multiprocessing:
+                if requires_parallel(task):
                     # Grab appropriate callable (func or instance method)
                     to_call = task
                     if hasattr(task, 'run') and callable(task.run):
