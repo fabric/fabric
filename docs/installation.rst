@@ -21,6 +21,10 @@ In order for Fabric's installation to succeed, you will need four primary pieces
 * the PyCrypto cryptography library;
 * and the Paramiko SSH2 library.
 
+and, if using the :doc:`parallel execution mode </usage/parallel>`:
+
+* the `multiprocessing`_ library.
+
 Please read on for important details on each dependency -- there are a few
 gotchas.
 
@@ -111,6 +115,18 @@ precompiled Win32 PyCrypto package from `voidspace's Python modules page
     dependency ``winrandom`` may not install properly, leading to ImportErrors.
     In this scenario, you'll probably need to compile ``winrandom`` yourself
     via e.g. MS Visual Studio.  See :issue:`194` for info.
+
+
+``multiprocessing``
+-------------------
+
+An optional dependency, the ``multiprocessing`` library is included in Python's
+standard library in version 2.6 and higher. If you're using Python 2.5 and want
+to make use of Fabric's :doc:`parallel execution features </usage/parallel>`
+you'll need to install it manually; the recommended route, as usual, is via
+``pip``.  Please see the `multiprocessing PyPI page
+<http://pypi.python.org/pypi/multiprocessing/>`_ for details.
+
 
 Development dependencies
 ------------------------
