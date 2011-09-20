@@ -795,7 +795,7 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
             except ImportError, e:
                 msg = "You have requested that some tasks run in parallel, but the\nmultiprocessing module cannot be imported:"
                 msg += "\n\n\t%s\n\n" % e
-                msg += "Please make sure the module is installed or that the above ImportError is\nfixed, or run your tasks serially."
+                msg += "Please make sure the module is installed or that the above ImportError is\nfixed."
                 abort(msg)
 
         # At this point all commands must exist, so execute them in order.
