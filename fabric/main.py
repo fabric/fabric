@@ -18,8 +18,8 @@ import types
 
 from fabric import api, state  # For checking callables against the API, & easy mocking
 from fabric.contrib import console, files, project  # Ditto
-from fabric.network import denormalize, interpret_host_string, disconnect_all
-from fabric.state import commands, connections, env_options
+from fabric.network import denormalize, interpret_host_string, disconnect_all, normalize_to_string
+from fabric.state import commands, env_options
 from fabric.tasks import Task
 from fabric.utils import abort, indent
 from job_queue import JobQueue
@@ -833,8 +833,15 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
                     to_call = task
                     if hasattr(task, 'run') and callable(task.run):
                         to_call = task.run
+                    # Wrap in another callable that nukes the child's cached
+                    # connection object, if needed, to prevent shared-socket
+                    # problems.
+                    def inner(*args, **kwargs):
+                        key = normalize_to_string(state.env.host_string)
+                        state.connections.pop(key, "")
+                        to_call(*args, **kwargs)
                     # Stuff into Process wrapper
-                    p = multiprocessing.Process(target=to_call, args=args,
+                    p = multiprocessing.Process(target=inner, args=args,
                         kwargs=kwargs)
                     # Name/id is host string
                     p.name = state.env.host_string

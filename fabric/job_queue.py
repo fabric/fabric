@@ -9,7 +9,6 @@ from pprint import pprint
 from Crypto import Random 
 
 from fabric.state import env
-from fabric.network import disconnect_all
 
 
 class JobQueue(object):
@@ -94,10 +93,7 @@ class JobQueue(object):
 
         To end the loop, there have to be no running procs, and no more procs
         to be run in the queue.
-
-        When all if finished, it will exit the loop, and disconnect_all()
         """
-
         def _advance_the_queue():
             """
             Helper function to do the job of poping a new proc off the queue
@@ -113,7 +109,6 @@ class JobQueue(object):
                 print("Popping '%s' off the queue and starting it" % job.name)
             env.host_string = env.host = job.name
             job.start()
-            Random.atfork()
             self._running.append(job)
 
         if not self._closed:
@@ -126,7 +121,6 @@ class JobQueue(object):
             _advance_the_queue()
 
         while not self._finished:
-
             while len(self._running) < self._max and self._queued:
                 _advance_the_queue()
 
