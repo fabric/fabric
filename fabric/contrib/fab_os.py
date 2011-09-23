@@ -78,7 +78,14 @@ def listdir(path='', use_sudo=False, verbose=False):
     """
 
     func = sudo if use_sudo else run
-    return func("ls -A %s" % path).split()
+    if exists(path,use_sudo=use_sudo, verbose=verbose):
+        with settings(hide('everything'), warn_only=True):
+            if isdir(path,use_sudo=use_sudo, verbose=verbose):
+                return func("ls -A %s" % path).split()
+            else:
+                raise OSError(20,"Not a directory", path)
+    else:
+        raise OSError(2,"No such file or directory", path)
     
 def remove(path, use_sudo=False, verbose=False):
     """
@@ -93,7 +100,7 @@ def remove(path, use_sudo=False, verbose=False):
     func = sudo if use_sudo else run
     if exists(path,use_sudo=use_sudo, verbose=verbose):
         with settings(hide('everything'), warn_only=True):
-            if isfile(path):
+            if isfile(path,use_sudo=use_sudo, verbose=verbose):
                 return func('rm %s' % path).succeeded 
             else:
                 raise OSError(21,"Is a directory", path)
