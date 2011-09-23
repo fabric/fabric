@@ -132,9 +132,21 @@ class TestFabOs(FabricTest):
             assert oe.errno == 2
             assert oe.filename == 'junk' 
 
+    @server(responses={
+            'test -e "/"':"",
+            "stat -Lc '%F' '/'":'directory',
+            "ls -A /":'.autorelabel .autofsck bin  boot  dev  etc  home  lib  local  lost+found  media  mnt  opt  proc  root  sbin  selinux  srv  sys  tmp  usr  var',
+            "ls -A /home/apps":'ls: cannot open directory /home/apps: Permission denied'
+    })
     def test_listdir(self): 
-        pass
+        """
+        listdir()
+        """
 
+        assert listdir('/') == [ '.autorelabel', '.autofsck', 'bin', 'boot', 'dev', 'etc',  
+                                 'home', 'lib', 'local', 'lost+found', 'media', 'mnt', 
+                                 'opt', 'proc', 'root', 'sbin', 'selinux', 'srv', 
+                                 'sys', 'tmp', 'usr', 'var']
 
     @server(responses={
             "stat -Lc '%F' '/file.txt'":'regular file',
