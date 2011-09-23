@@ -132,6 +132,9 @@ class TestFabOs(FabricTest):
             assert oe.errno == 2
             assert oe.filename == 'junk' 
 
+    def test_listdir(self): 
+        pass
+
 
     @server(responses={
             "stat -Lc '%F' '/file.txt'":'regular file',
@@ -160,3 +163,9 @@ class TestFabOs(FabricTest):
             assert oe.strerror == "Is a directory"
             assert oe.errno == 21 
             assert oe.filename == '/mydir' 
+
+    def test_rmdir(self):
+        pass
+
+    def test_removedirs(self):
+        pass
