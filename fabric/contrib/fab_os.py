@@ -12,14 +12,6 @@ import time
 from fabric.api import *
 from fabric.contrib.files import exists 
 
-class Cannot(Exception):
-    def __init__(self,change,to_change):
-        self.change = change
-        self.to_change = to_change
-
-    def __str__(self):
-        return 'Cannot %s `%s`: No such file or directory' % (self.change,self.to_change)
-
 def getFileType(path, use_sudo=False,verbose=False):
     func = sudo if use_sudo else run
     if exists(path,use_sudo=use_sudo,verbose=verbose):
@@ -119,11 +111,10 @@ def rmdir(path, use_sudo=False):
                 output = func('rmdir %s' % path) 
                 if 'failed' in output:
                     raise OSError(39,"Directory not empty", path)
-                
             else:
                 raise OSError(20,"Not a directory", path)
     else:
-        raise Cannot('remove',path)
+        raise
 
 def removedirs(path, use_sudo=False):
     """
@@ -145,4 +136,4 @@ def removedirs(path, use_sudo=False):
             else:
                 raise OSError(20,"Not a directory", path)
     else:
-        raise Cannot('remove',path)
+        raise
