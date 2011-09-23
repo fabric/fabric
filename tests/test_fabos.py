@@ -126,7 +126,7 @@ class TestFabOs(FabricTest):
         assert file_obj.st_ctime == 1315017193
 
         try:
-            nonexistent = stat('junk')
+            stat('junk')
         except OSError, oe:
             assert oe.strerror == "No such file or directory"
             assert oe.errno == 2
@@ -136,6 +136,11 @@ class TestFabOs(FabricTest):
             'test -e "/"':"",
             "stat -Lc '%F' '/'":'directory',
             "ls -A /":'.autorelabel .autofsck bin  boot  dev  etc  home  lib  local  lost+found  media  mnt  opt  proc  root  sbin  selinux  srv  sys  tmp  usr  var',
+            'test -e "junk"':["","",-1],
+            'test -e "/home/ec2user/.vimrc"':"",
+            "stat -Lc '%F' '/home/ec2user/.vimrc'":'regular file',
+            'test -e "/home/apps"':"",
+            "stat -Lc '%F' '/home/apps'":'directory',
             "ls -A /home/apps":'ls: cannot open directory /home/apps: Permission denied'
     })
     def test_listdir(self): 
@@ -147,6 +152,20 @@ class TestFabOs(FabricTest):
                                  'home', 'lib', 'local', 'lost+found', 'media', 'mnt', 
                                  'opt', 'proc', 'root', 'sbin', 'selinux', 'srv', 
                                  'sys', 'tmp', 'usr', 'var']
+
+        try:
+            listdir('junk')
+        except OSError, oe:
+            assert oe.strerror == "No such file or directory"
+            assert oe.errno == 2
+            assert oe.filename == 'junk' 
+
+        try:
+            listdir('/home/ec2user/.vimrc')
+        except OSError, oe:
+            assert oe.strerror == "Not a directory"
+            assert oe.errno == 20
+            assert oe.filename == '/home/ec2user/.vimrc' 
 
     @server(responses={
             "stat -Lc '%F' '/file.txt'":'regular file',
