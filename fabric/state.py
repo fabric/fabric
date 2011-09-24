@@ -241,6 +241,13 @@ env_options = [
         default=0,
         help="enables a keepalive every n seconds"
     ),
+
+    # Linewise output
+    make_option('--linewise',
+        action='store_true',
+        default=False,
+        help="Print stdout/stderr line-by-line instead of byte-by-byte"
+    ),
 ]
 
 

@@ -37,7 +37,6 @@ def output_loop(chan, which, capture):
     # Initialize loop variables
     reprompt = False
     initial_prefix_printed = False
-    linewise = True
     line = []
     while True:
         # Handle actual read/write
@@ -61,12 +60,12 @@ def output_loop(chan, which, capture):
             # Print to user
             if printing:
                 # Initial prefix
-                if not linewise and not initial_prefix_printed:
+                if not env.linewise and not initial_prefix_printed:
                     _flush(pipe, _prefix)
                     initial_prefix_printed = True
                 is_newline = byte in ("\n", "\r")
                 # Byte itself
-                if linewise:
+                if env.linewise:
                     line += byte
                     if is_newline:
                         _flush(pipe, _prefix)
