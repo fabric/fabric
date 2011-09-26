@@ -40,6 +40,7 @@ def output_loop(chan, which, capture):
     while True:
         # Handle actual read/write
         byte = func(1)
+        # Empty byte == EOS
         if byte == '':
             break
         # A None capture variable implies that we're in open_shell()
