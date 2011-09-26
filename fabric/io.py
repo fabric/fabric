@@ -23,8 +23,21 @@ def _endswith(char_list, substring):
     substring = list(substring)
     return tail == substring
 
+def _is_newline(byte):
+    return byte in ('\n', '\r')
+
+def _was_newline(capture, byte):
+    """
+    Determine if we are 'past' a newline and need to print the line prefix.
+    """
+    endswith_newline = _endswith(capture, '\n') or _endswith(capture, '\r')
+    return endswith_newline and not _is_newline(byte)
+
 
 def output_loop(chan, which, capture):
+    # Internal capture-buffer-like buffer, used solely for state keeping.
+    # Unlike 'capture', nothing is ever purged from this.
+    _buffer = []
     # Obtain stdout or stderr related values
     func = getattr(chan, which)
     if which == 'recv':
@@ -59,25 +72,28 @@ def output_loop(chan, which, capture):
                 _prefix = ""
             # Print to user
             if printing:
-                # Initial prefix
-                if not env.linewise and not initial_prefix_printed:
-                    _flush(pipe, _prefix)
-                    initial_prefix_printed = True
-                is_newline = byte in ("\n", "\r")
-                # Byte itself
                 if env.linewise:
+                    # Add to line buffer
                     line += byte
-                    if is_newline:
+                    # Print prefix + line after newline is seen
+                    if _was_newline(_buffer, byte):
                         _flush(pipe, _prefix)
                         _flush(pipe, "".join(line))
                         line = []
                 else:
-                    _flush(pipe, byte)
-                    # Trailing prefix to start off next line
-                    if is_newline:
+                    # Prefix, if necessary
+                    if (
+                        not initial_prefix_printed
+                        or _was_newline(_buffer, byte)
+                    ):
                         _flush(pipe, _prefix)
+                        initial_prefix_printed = True
+                    # Byte itself
+                    _flush(pipe, byte)
             # Store in capture buffer
             capture += byte
+            # Store in internal buffer
+            _buffer += byte
             # Handle prompts
             prompt = _endswith(capture, env.sudo_prompt)
             try_again = (_endswith(capture, env.again_prompt + '\n')
