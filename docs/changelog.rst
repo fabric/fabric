@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`182` During display of remote stdout/stderr, Fabric occasionally
+  printed extraneous line prefixes (which in turn sometimes overwrote wrapped
+  text.) This has been fixed.
 * :bug:`430` Tasks decorated with `~fabric.decorators.runs_once` printed
   extraneous 'Executing...' status lines on subsequent invocations. This is
   noisy at best and misleading at worst, and has been corrected. Thanks to
