@@ -23,8 +23,19 @@ def _endswith(char_list, substring):
     substring = list(substring)
     return tail == substring
 
+def _was_newline(capture, byte):
+    """
+    Determine if we are 'past' a newline and need to print the line prefix.
+    """
+    endswith_newline = _endswith(capture, '\n') or _endswith(capture, '\r')
+    currently_newline = byte in ('\n', '\r')
+    return endswith_newline and not currently_newline
+
 
 def output_loop(chan, which, capture):
+    # Internal capture-buffer-like buffer, used solely for state keeping.
+    # Unlike 'capture', nothing is ever purged from this.
+    _buffer = []
     # Obtain stdout or stderr related values
     func = getattr(chan, which)
     if which == 'recv':
@@ -40,6 +51,7 @@ def output_loop(chan, which, capture):
     while True:
         # Handle actual read/write
         byte = func(1)
+        # Empty byte == EOS
         if byte == '':
             break
         # A None capture variable implies that we're in open_shell()
@@ -58,16 +70,15 @@ def output_loop(chan, which, capture):
             # Print to user
             if printing:
                 # Initial prefix
-                if not initial_prefix_printed:
+                if not initial_prefix_printed or _was_newline(_buffer, byte):
                     _flush(pipe, _prefix)
                     initial_prefix_printed = True
                 # Byte itself
                 _flush(pipe, byte)
-                # Trailing prefix to start off next line
-                if byte in ("\n", "\r"):
-                    _flush(pipe, _prefix)
             # Store in capture buffer
             capture += byte
+            # Store in internal buffer
+            _buffer += byte
             # Handle prompts
             prompt = _endswith(capture, env.sudo_prompt)
             try_again = (_endswith(capture, env.again_prompt + '\n')
