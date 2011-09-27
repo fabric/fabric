@@ -134,10 +134,17 @@ backwards-compatible) as more use-cases are solved and added.
 
     api/contrib/*
 
+
 Changelog
 ---------
 
 Please see :doc:`the changelog </changelog>`.
+
+
+Roadmap
+-------
+
+Please see :doc:`the roadmap </roadmap>`.
 
 
 Getting help
