@@ -62,6 +62,7 @@ have already upgraded to Python 2.6/2.7:
     installation
     development
     faq
+    roadmap
 
 Tutorial
 --------
