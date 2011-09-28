@@ -92,7 +92,10 @@ def rsync_project(remote_dir, local_dir=None, exclude=(), delete=False,
             keys = [keys]
         key_string = "-i " + " -i ".join(keys)
     # Honor nonstandard port
-    port_string = ("-p %s" % env.port) if (env.port != '22') else ""
+    if (env.port is not None and env.port != 22):
+        port_string = ("-p %s" % env.port)
+    else:
+        port_string = ""
     # RSH
     rsh_string = ""
     if key_string or port_string:
@@ -110,7 +113,7 @@ def rsync_project(remote_dir, local_dir=None, exclude=(), delete=False,
         local_dir = '../' + getcwd().split(sep)[-1]
     # Create and run final command string
     cmd = "rsync %s %s %s@%s:%s" % (options, local_dir, env.user,
-        env.host, remote_dir)
+        env.host_string, remote_dir)
     if output.running:
         print("[%s] rsync_project: %s" % (env.host_string, cmd))
     return local(cmd)
