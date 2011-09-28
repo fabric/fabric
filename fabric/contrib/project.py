@@ -7,7 +7,7 @@ import os.path
 from datetime import datetime
 from tempfile import mkdtemp
 
-from fabric.network import needs_host
+from fabric.network import needs_host, normalize, interpret_host_string
 from fabric.operations import local, run, put
 from fabric.state import env, output
 
@@ -91,6 +91,9 @@ def rsync_project(remote_dir, local_dir=None, exclude=(), delete=False,
         if not isinstance(env.key_filename, (list, tuple)):
             keys = [keys]
         key_string = "-i " + " -i ".join(keys)
+    # Require env.user, env.host, and env.port to be filled out
+    if (env.host is None and env.host_string is not None):
+        interpret_host_string(env.host_string)
     # Honor nonstandard port
     if (env.port is not None and env.port != 22):
         port_string = ("-p %s" % env.port)
@@ -113,9 +116,9 @@ def rsync_project(remote_dir, local_dir=None, exclude=(), delete=False,
         local_dir = '../' + getcwd().split(sep)[-1]
     # Create and run final command string
     cmd = "rsync %s %s %s@%s:%s" % (options, local_dir, env.user,
-        env.host_string, remote_dir)
+        env.host, remote_dir)
     if output.running:
-        print("[%s] rsync_project: %s" % (env.host_string, cmd))
+        print("[%s] rsync_project: %s" % (env.host, cmd))
     return local(cmd)
 
 
