@@ -7,7 +7,7 @@ import os.path
 from datetime import datetime
 from tempfile import mkdtemp
 
-from fabric.network import needs_host, normalize, interpret_host_string
+from fabric.network import needs_host, interpret_host_string
 from fabric.operations import local, run, put
 from fabric.state import env, output
 
