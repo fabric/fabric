@@ -375,7 +375,7 @@ instead of setting it directly.
 Sets the number of concurrent processes to use when executing tasks in parallel.
 
 .. versionadded:: 1.3
-.. seealso:: :doc:`parallel`
+.. seealso:: :doc:`parallel`, :option:`-z`
 
 
 ``port``
