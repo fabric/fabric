@@ -128,6 +128,14 @@ you'll need to install it manually; the recommended route, as usual, is via
 <http://pypi.python.org/pypi/multiprocessing/>`_ for details.
 
 
+.. warning::
+    Early versions of Python 2.6 (in our testing, 2.6.0 through 2.6.2) ship
+    with a buggy ``multiprocessing`` module that appears to cause Fabric to
+    hang at the end of sessions involving large numbers of concurrent hosts.
+    If you encounter this problem, either use :ref:`env.pool_size / -z
+    <pool-size>` to limit the amount of concurrency, or upgrade to Python
+    >=2.6.3.
+
 Development dependencies
 ------------------------
 
