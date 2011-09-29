@@ -13,3 +13,4 @@ from fabric.operations import (require, prompt, put, get, run, sudo, local,
     reboot, open_shell)
 from fabric.state import env, output
 from fabric.utils import abort, warn, puts, fastprint
+from fabric.tasks import execute
