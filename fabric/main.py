@@ -19,7 +19,7 @@ import types
 from fabric import api, state  # For checking callables against the API, & easy mocking
 from fabric.contrib import console, files, project  # Ditto
 from fabric.network import denormalize, interpret_host_string, disconnect_all, normalize_to_string
-from fabric.state import commands, env_options
+from fabric.state import env_options
 from fabric.tasks import Task
 from fabric.utils import abort, indent
 from job_queue import JobQueue
@@ -666,6 +666,17 @@ def _parallel_tasks(commands_to_run):
         lambda x: requires_parallel(crawl(x[0], state.commands)),
         commands_to_run
     ))
+
+
+def execute(task):
+    if not callable(task):
+        try:
+            task = state.commands[task]
+        except KeyError:
+            abort("Tried to execute(%r) but %r is not a valid task name" % (
+                task, task
+            ))
+    return task()
 
 
 def main():
