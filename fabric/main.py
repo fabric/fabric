@@ -668,7 +668,7 @@ def _parallel_tasks(commands_to_run):
     ))
 
 
-def execute(task):
+def execute(task, *args, **kwargs):
     if not callable(task):
         try:
             task = state.commands[task]
@@ -676,7 +676,8 @@ def execute(task):
             abort("Tried to execute(%r) but %r is not a valid task name" % (
                 task, task
             ))
-    return task()
+    ret = task(*args, **kwargs)
+    return ret
 
 
 def main():

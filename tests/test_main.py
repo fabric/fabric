@@ -578,32 +578,46 @@ nested.foo_aliased""")
 # execute()
 #
 
-@with_fakes
-def test_execute_calls_task_function_objects():
-    """
-    execute() should execute the passed-in function object, returning its value
-    """
-    value = "foo"
-    eq_(execute(Fake('task', callable=True).returns(value)), value)
+
+class TestExecute(FabricTest):
+    @with_fakes
+    def test_execute_calls_task_function_objects(self):
+        """
+        execute() should execute the passed-in function object, returning its value
+        """
+        value = "foo"
+        eq_(execute(Fake('huhhhh', callable=True).returns(value)), value)
 
 
-@with_fakes
-def test_execute_should_look_up_task_name():
-    """
-    execute() should also be able to handle task name strings
-    """
-    name = 'task1'
-    value = "foo"
-    commands = {
-        name: Fake(name, callable=True, expect_call=True).returns(value)
-    }
-    with patched_context(fabric.state, 'commands', commands):
-        eq_(execute(name), value)
+    @with_fakes
+    def test_execute_should_look_up_task_name(self):
+        """
+        execute() should also be able to handle task name strings
+        """
+        name = 'task1'
+        value = "foo"
+        commands = {
+            name: Fake('srsly?', callable=True, expect_call=True).returns(value)
+        }
+        with patched_context(fabric.state, 'commands', commands):
+            eq_(execute(name), value)
 
 
-@aborts
-def test_execute_should_abort_if_task_name_not_found():
-    """
-    execute() should abort if given an invalid task name
-    """
-    execute('thisisnotavalidtaskname')
+    @aborts
+    def test_execute_should_abort_if_task_name_not_found(self):
+        """
+        execute() should abort if given an invalid task name
+        """
+        execute('thisisnotavalidtaskname')
+
+
+    @with_fakes
+    def test_execute_should_pass_through_args_kwargs(self):
+        """
+        execute() should pass in any additional args, kwargs to the given task.
+        """
+        task = (
+            Fake('ok then', callable=True, expect_call=True)
+            .with_args('foo', biz='baz')
+        )
+        execute(task, 'foo', biz='baz')
