@@ -25,8 +25,9 @@ loop, how to define host lists, how connections are made, and so forth.
 Execution strategy
 ==================
 
-Fabric currently provides a single, serial execution method, though more
-options are planned for the future:
+Fabric defaults to a single, serial execution method, though there is an
+alternative parallel mode available as of Fabric 1.3 (see
+:doc:`/usage/parallel`). This default behavior is as follows:
 
 * A list of tasks is created. Currently this list is simply the arguments given
   to :doc:`fab <fab>`, preserving the order given.

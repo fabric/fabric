@@ -210,6 +210,23 @@ env_options = [
         help="do not use pseudo-terminal in run/sudo"
     ),
 
+    # Parallel execution model flag
+    make_option('-P', '--parallel',
+            dest='parallel',
+            action='store_true',
+            default=False,
+            help="Default to parallel execution method"
+    ),
+
+    # Limits the number of forks the parallel option uses
+    make_option('-z', '--pool-size',
+            dest='pool_size',
+            type='int',
+            metavar='NUM_FORKS',
+            default=0,
+            help="Number of concurrent processes to use when running in parallel",
+    ),
+
     # Abort on prompting flag
     make_option('--abort-on-prompts',
         action='store_true',
@@ -223,6 +240,13 @@ env_options = [
         type=int,
         default=0,
         help="enables a keepalive every n seconds"
+    ),
+
+    # Linewise output
+    make_option('--linewise',
+        action='store_true',
+        default=False,
+        help="Print stdout/stderr line-by-line instead of byte-by-byte"
     ),
 ]
 

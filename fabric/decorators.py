@@ -4,6 +4,7 @@ Convenience decorators for use in fabfiles.
 from __future__ import with_statement
 
 from functools import wraps
+from Crypto import Random
 
 from fabric import tasks
 from .context_managers import settings
@@ -122,13 +123,61 @@ def runs_once(func):
     Any function wrapped with this decorator will silently fail to execute the
     2nd, 3rd, ..., Nth time it is called, and will return the value of the
     original run.
+
+    This includes parallel execution; even in a parallel run, tasks decorated
+    by ``@runs_once`` will execute only once.
     """
     @wraps(func)
     def decorated(*args, **kwargs):
         if not hasattr(decorated, 'return_value'):
             decorated.return_value = func(*args, **kwargs)
         return decorated.return_value
-    return decorated
+    # Mark as serial (disables parallelism) and return
+    return serial(decorated)
+
+
+def serial(func):
+    """
+    Forces the wrapped function to always run sequentially, never in parallel.
+
+    This decorator takes precedence over the global value of :ref:`env.parallel
+    <env-parallel>`. However, if a task is decorated with both
+    `~fabric.decorators.serial` *and* `~fabric.decorators.parallel`,
+    `~fabric.decorators.parallel` wins.
+
+    .. versionadded:: 1.3
+    """
+    if not getattr(func, 'parallel', False):
+        func.serial = True
+    return func
+
+
+def parallel(pool_size=None):
+    """
+    Forces the wrapped function to run in parallel, instead of sequentially.
+
+    This decorator takes precedence over the global value of :ref:`env.parallel
+    <env-parallel>`. It also takes precedence over `~fabric.decorators.serial`
+    if a task is decorated with both.
+
+    .. versionadded:: 1.3
+    """
+    def real_decorator(func):
+        @wraps(func)
+        def inner(*args, **kwargs):
+            # Required for Paramiko/PyCrypto to be happy in multiprocessing
+            Random.atfork()
+            return func(*args, **kwargs)
+        inner.parallel = True
+        inner.serial = False
+        inner.pool_size = pool_size
+        return inner
+
+    # Allow non-factory-style decorator use (@decorator vs @decorator())
+    if type(pool_size) == type(real_decorator):
+        return real_decorator(pool_size)
+
+    return real_decorator
 
 
 def with_settings(**kw_settings):

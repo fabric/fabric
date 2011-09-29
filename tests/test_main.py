@@ -17,7 +17,8 @@ import fabric.state
 from fabric.state import _AttributeDict
 from fabric.tasks import Task
 
-from utils import mock_streams, patched_env, eq_, FabricTest, fabfile
+from utils import (mock_streams, patched_env, eq_, FabricTest, fabfile,
+    path_prefix)
 
 
 # Stupid load_fabfile wrapper to hide newly added return value.
@@ -314,14 +315,6 @@ def test_load_fabfile_should_not_remove_real_path_elements():
 #
 # Namespacing and new-style tasks
 #
-
-@contextmanager
-def path_prefix(module):
-    i = 0
-    sys.path.insert(i, os.path.dirname(module))
-    yield
-    sys.path.pop(i)
-
 
 class TestTaskAliases(FabricTest):
     def test_flat_alias(self):

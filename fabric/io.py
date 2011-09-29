@@ -23,13 +23,15 @@ def _endswith(char_list, substring):
     substring = list(substring)
     return tail == substring
 
+def _is_newline(byte):
+    return byte in ('\n', '\r')
+
 def _was_newline(capture, byte):
     """
     Determine if we are 'past' a newline and need to print the line prefix.
     """
     endswith_newline = _endswith(capture, '\n') or _endswith(capture, '\r')
-    currently_newline = byte in ('\n', '\r')
-    return endswith_newline and not currently_newline
+    return endswith_newline and not _is_newline(byte)
 
 
 def output_loop(chan, which, capture):
@@ -44,15 +46,21 @@ def output_loop(chan, which, capture):
     else:
         prefix = "err"
         pipe = sys.stderr
+    _prefix = "[%s] %s: " % (env.host_string, prefix)
     printing = getattr(output, 'stdout' if (which == 'recv') else 'stderr')
     # Initialize loop variables
     reprompt = False
     initial_prefix_printed = False
+    line = []
     while True:
         # Handle actual read/write
         byte = func(1)
         # Empty byte == EOS
         if byte == '':
+            # If linewise, ensure we flush any leftovers in the buffer.
+            if env.linewise and line:
+                _flush(pipe, _prefix)
+                _flush(pipe, "".join(line))
             break
         # A None capture variable implies that we're in open_shell()
         if capture is None:
@@ -63,18 +71,29 @@ def output_loop(chan, which, capture):
         # Otherwise, we're in run/sudo and need to handle capturing and
         # prompts.
         else:
-            _prefix = "[%s] %s: " % (env.host_string, prefix)
             # Allow prefix to be turned off.
             if not env.output_prefix:
                 _prefix = ""
             # Print to user
             if printing:
-                # Initial prefix
-                if not initial_prefix_printed or _was_newline(_buffer, byte):
-                    _flush(pipe, _prefix)
-                    initial_prefix_printed = True
-                # Byte itself
-                _flush(pipe, byte)
+                if env.linewise:
+                    # Print prefix + line after newline is seen
+                    if _was_newline(_buffer, byte):
+                        _flush(pipe, _prefix)
+                        _flush(pipe, "".join(line))
+                        line = []
+                    # Add to line buffer
+                    line += byte
+                else:
+                    # Prefix, if necessary
+                    if (
+                        not initial_prefix_printed
+                        or _was_newline(_buffer, byte)
+                    ):
+                        _flush(pipe, _prefix)
+                        initial_prefix_printed = True
+                    # Byte itself
+                    _flush(pipe, byte)
             # Store in capture buffer
             capture += byte
             # Store in internal buffer

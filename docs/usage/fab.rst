@@ -190,6 +190,14 @@ below.
     used as the default password when making SSH connections or calling the
     ``sudo`` program.
 
+.. cmdoption:: -P, --parallel
+
+    Sets :ref:`env.parallel <env-parallel>` to ``True``, causing
+    tasks to run in parallel.
+
+    .. versionadded:: 1.3
+    .. seealso:: :doc:`/usage/parallel`
+
 .. cmdoption:: --no-pty
 
     Sets :ref:`env.always_use_pty <always-use-pty>` to ``False``, causing all
@@ -242,6 +250,14 @@ below.
 
     Sets :ref:`env.warn_only <warn_only>` to ``True``, causing Fabric to
     continue execution even when commands encounter error conditions.
+
+.. cmdoption:: -z, --pool-size
+
+    Sets :ref:`env.pool_size <pool-size>`, which specifies how many processes
+    to run concurrently during parallel execution.
+
+    .. versionadded:: 1.3
+    .. seealso:: :doc:`/usage/parallel`
 
 
 .. _task-arguments:

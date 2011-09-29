@@ -365,6 +365,19 @@ instead of setting it directly.
 .. versionadded:: 1.0
 
 
+.. _pool-size:
+
+``pool_size``
+-------------
+
+**Default:** ``0``
+
+Sets the number of concurrent processes to use when executing tasks in parallel.
+
+.. versionadded:: 1.3
+.. seealso:: :doc:`parallel`, :option:`-z`
+
+
 ``port``
 --------
 
@@ -425,6 +438,18 @@ Dictionary defining role name to host list mappings.
 The global role list used when composing per-task host lists.
 
 .. seealso:: :doc:`execution`
+
+.. _env-parallel:
+
+``parallel``
+-------------------
+
+**Default:** ``False``
+
+When ``True``, forces all tasks to run in parallel.
+
+.. versionadded:: 1.3
+.. seealso:: :doc:`parallel`
 
 .. _shell:
 
