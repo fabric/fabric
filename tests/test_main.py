@@ -586,7 +586,7 @@ class TestExecute(FabricTest):
         execute() should execute the passed-in function object, returning its value
         """
         value = "foo"
-        eq_(execute(Fake('huhhhh', callable=True).returns(value)), value)
+        eq_(execute(Fake(callable=True).returns(value)), value)
 
 
     @with_fakes
@@ -597,7 +597,7 @@ class TestExecute(FabricTest):
         name = 'task1'
         value = "foo"
         commands = {
-            name: Fake('srsly?', callable=True, expect_call=True).returns(value)
+            name: Fake(callable=True, expect_call=True).returns(value)
         }
         with patched_context(fabric.state, 'commands', commands):
             eq_(execute(name), value)
@@ -617,7 +617,7 @@ class TestExecute(FabricTest):
         execute() should pass in any additional args, kwargs to the given task.
         """
         task = (
-            Fake('ok then', callable=True, expect_call=True)
+            Fake(callable=True, expect_call=True)
             .with_args('foo', biz='baz')
         )
         execute(task, 'foo', biz='baz')
