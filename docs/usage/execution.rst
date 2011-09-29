@@ -67,10 +67,12 @@ down to the individual function calls) enables shell script-like logic where
 you may introspect the output or return code of a given command and decide what
 to do next.
 
+
 Defining tasks
 ==============
 
 For details on what constitutes a Fabric task and how to organize them, please see :doc:`/usage/tasks`.
+
 
 Defining host lists
 ===================
@@ -279,7 +281,6 @@ To specify per-task hosts for ``mytask``, execute it like so::
 This will override any other host list and ensure ``mytask`` always runs on
 just those two hosts.
 
-
 Per-task, via decorators
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -309,7 +310,6 @@ on a host list of ``['host1', 'host2']``.
 
 However, decorator host lists do **not** override per-task command-line
 arguments, as given in the previous section.
-
 
 Order of precedence
 ~~~~~~~~~~~~~~~~~~~
@@ -428,6 +428,7 @@ immediately. However, if ``env.warn_only`` is set to ``True`` at the time of
 failure -- with, say, the `~fabric.context_managers.settings` context
 manager -- Fabric will emit a warning message but continue executing.
 
+
 .. _connections:
 
 Connections
@@ -450,7 +451,6 @@ dictionary which maps host strings to SSH connection objects.
     ``fabric.state.connections``) acts as a cache, opting to return previously
     created connections if possible in order to save some overhead, and
     creating new ones otherwise.
-
 
 Lazy connections
 ----------------
