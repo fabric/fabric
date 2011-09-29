@@ -6,7 +6,7 @@ import getpass
 import sys
 
 import paramiko
-from nose.tools import with_setup, raises, ok_
+from nose.tools import with_setup, ok_
 from fudge import (Fake, clear_calls, clear_expectations, patch_object, verify,
     with_patched_object, patched_context, with_fakes)
 
@@ -170,8 +170,7 @@ class TestNetwork(FabricTest):
             cache[env.host_string]
 
 
-    @raises(SystemExit)
-    @with_patched_object(output, 'aborts', False)
+    @aborts
     def test_aborts_on_prompt_with_abort_on_prompt(self):
         """
         abort_on_prompt=True should abort when prompt() is used
@@ -181,8 +180,7 @@ class TestNetwork(FabricTest):
 
 
     @server()
-    @raises(SystemExit)
-    @with_patched_object(output, 'aborts', False)
+    @aborts
     def test_aborts_on_password_prompt_with_abort_on_prompt(self):
         """
         abort_on_prompt=True should abort when password prompts occur

@@ -7,7 +7,7 @@ import sys
 from contextlib import contextmanager
 
 from fudge import Fake, patched_context, with_fakes
-from nose.tools import ok_, eq_, raises
+from nose.tools import ok_, eq_
 
 from fabric.decorators import hosts, roles, task
 from fabric.main import (get_hosts, parse_arguments, _merge, _escape_split,
@@ -18,7 +18,7 @@ from fabric.state import _AttributeDict
 from fabric.tasks import Task
 
 from utils import (mock_streams, patched_env, eq_, FabricTest, fabfile,
-    path_prefix)
+    path_prefix, aborts)
 
 
 # Stupid load_fabfile wrapper to hide newly added return value.
@@ -254,8 +254,7 @@ def test_get_hosts_excludes_global_exclude_hosts_from_global_hosts():
 #
 
 @patched_env({'roledefs': fake_roles})
-@raises(SystemExit)
-@mock_streams('stderr')
+@aborts
 def test_aborts_on_nonexistent_roles():
     """
     Aborts if any given roles aren't found
@@ -602,8 +601,7 @@ def test_execute_should_look_up_task_name():
         eq_(execute(name), value)
 
 
-@raises(SystemExit)
-@mock_streams('stderr')
+@aborts
 def test_execute_should_abort_if_task_name_not_found():
     """
     execute() should abort if given an invalid task name

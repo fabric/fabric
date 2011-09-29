@@ -5,13 +5,12 @@ import sys
 from fudge import Fake, patched_context, verify, clear_expectations
 from fudge.patcher import with_patched_object
 from nose.tools import eq_
-from nose.tools import raises
 
 from fabric.state import output, env
 from fabric.utils import warn, indent, abort, puts, fastprint
 from fabric import utils  # For patching
 from fabric.context_managers import settings
-from utils import mock_streams
+from utils import mock_streams, aborts
 
 
 @mock_streams('stderr')
@@ -51,8 +50,7 @@ def test_indent_with_strip():
         del eq_.description
 
 
-@mock_streams('stderr')
-@raises(SystemExit)
+@aborts
 def test_abort():
     """
     abort() should raise SystemExit

@@ -45,29 +45,26 @@ def test_require_multiple_existing_keys():
     require('version', 'sudo_prompt')
 
 
-@mock_streams('stderr')
-@raises(SystemExit)
+@aborts
 def test_require_single_missing_key():
     """
-    When given a single non-existent key, require() raises SystemExit
+    When given a single non-existent key, require() aborts
     """
     require('blah')
 
 
-@mock_streams('stderr')
-@raises(SystemExit)
+@aborts
 def test_require_multiple_missing_keys():
     """
-    When given multiple non-existent keys, require() raises SystemExit
+    When given multiple non-existent keys, require() aborts
     """
     require('foo', 'bar')
 
 
-@mock_streams('stderr')
-@raises(SystemExit)
+@aborts
 def test_require_mixed_state_keys():
     """
-    When given mixed-state keys, require() raises SystemExit
+    When given mixed-state keys, require() aborts
     """
     require('foo', 'version')
 
@@ -85,11 +82,10 @@ def test_require_mixed_state_keys_prints_missing_only():
         assert 'foo' in err
 
 
-@mock_streams('stderr')
-@raises(SystemExit)
+@aborts
 def test_require_iterable_provided_by_key():
     """
-    When given a provided_by iterable value, require() raises SystemExit
+    When given a provided_by iterable value, require() aborts
     """
     # 'version' is one of the default values, so we know it'll be there
     def fake_providing_function():
@@ -97,11 +93,10 @@ def test_require_iterable_provided_by_key():
     require('foo', provided_by=[fake_providing_function])
 
 
-@mock_streams('stderr')
-@raises(SystemExit)
+@aborts
 def test_require_noniterable_provided_by_key():
     """
-    When given a provided_by noniterable value, require() raises SystemExit
+    When given a provided_by noniterable value, require() aborts
     """
     # 'version' is one of the default values, so we know it'll be there
     def fake_providing_function():

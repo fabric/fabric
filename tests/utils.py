@@ -15,6 +15,7 @@ import sys
 import tempfile
 
 from fudge import Fake, patched_context, clear_expectations
+from nose.tools import raises
 
 from fabric.context_managers import settings
 from fabric.network import interpret_host_string
@@ -268,3 +269,7 @@ def path_prefix(module):
     sys.path.insert(i, os.path.dirname(module))
     yield
     sys.path.pop(i)
+
+
+def aborts(func):
+    return raises(SystemExit)(mock_streams('stderr')(func))
