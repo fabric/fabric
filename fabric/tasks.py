@@ -1,6 +1,7 @@
 from functools import wraps
 
 from fabric import state
+from fabric.utils import abort
 
 
 class Task(object):

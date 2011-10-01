@@ -2,7 +2,7 @@ from __future__ import with_statement
 
 import sys
 
-from fudge import Fake, patched_context, verify, clear_expectations
+from fudge import Fake, patched_context, with_fakes
 from fudge.patcher import with_patched_object
 from nose.tools import eq_
 
@@ -115,7 +115,7 @@ def test_puts_without_prefix():
     puts(s, show_prefix=False)
     eq_(sys.stdout.getvalue(), "%s" % (s + "\n"))
 
-
+@with_fakes
 def test_fastprint_calls_puts():
     """
     fastprint() is just an alias to puts()
@@ -125,8 +125,4 @@ def test_fastprint_calls_puts():
         text=text, show_prefix=False, end="", flush=True
     )
     with patched_context(utils, 'puts', fake_puts):
-        try:
-            fastprint(text)
-            verify()
-        finally:
-            clear_expectations()
+        fastprint(text)

@@ -1,11 +1,17 @@
+from __future__ import with_statement
+
 from contextlib import contextmanager
-import fudge
+from fudge import Fake, patched_context, with_fakes
 import unittest
 from nose.tools import eq_, raises
 import random
 
+import fabric
 from fabric import tasks
-from fabric.tasks import WrappedCallableTask
+from fabric.tasks import WrappedCallableTask, execute
+
+from utils import eq_, FabricTest, aborts
+
 
 def test_base_task_provides_undefined_name():
     task = tasks.Task()
@@ -147,3 +153,52 @@ def test_decorator_closure_hiding():
     # this broke in the old way, due to closure stuff hiding in the
     # function, but task making an object
     eq_(["me@localhost"], foo.hosts)
+
+
+
+#
+# execute()
+#
+
+class TestExecute(FabricTest):
+    @with_fakes
+    def test_execute_calls_task_function_objects(self):
+        """
+        execute() should execute the passed-in function object, returning its value
+        """
+        value = "foo"
+        eq_(execute(Fake(callable=True).returns(value)), value)
+
+
+    @with_fakes
+    def test_execute_should_look_up_task_name(self):
+        """
+        execute() should also be able to handle task name strings
+        """
+        name = 'task1'
+        value = "foo"
+        commands = {
+            name: Fake(callable=True, expect_call=True).returns(value)
+        }
+        with patched_context(fabric.state, 'commands', commands):
+            eq_(execute(name), value)
+
+
+    @aborts
+    def test_execute_should_abort_if_task_name_not_found(self):
+        """
+        execute() should abort if given an invalid task name
+        """
+        execute('thisisnotavalidtaskname')
+
+
+    @with_fakes
+    def test_execute_should_pass_through_args_kwargs(self):
+        """
+        execute() should pass in any additional args, kwargs to the given task.
+        """
+        task = (
+            Fake(callable=True, expect_call=True)
+            .with_args('foo', biz='baz')
+        )
+        execute(task, 'foo', biz='baz')
