@@ -198,7 +198,7 @@ class TestExecute(FabricTest):
         execute() should pass in any additional args, kwargs to the given task.
         """
         task = (
-            Fake(callable=True, expect_call=True)
+            Fake(callable=True)
             .with_args('foo', biz='baz')
         )
         execute(task, 'foo', biz='baz')
