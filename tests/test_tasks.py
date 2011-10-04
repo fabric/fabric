@@ -165,14 +165,14 @@ class TestExecute(FabricTest):
     @with_fakes
     def test_calls_task_function_objects(self):
         """
-        execute() should execute the passed-in function object
+        should execute the passed-in function object
         """
         execute(Fake(callable=True, expect_call=True))
 
     @with_fakes
     def test_should_look_up_task_name(self):
         """
-        execute() should also be able to handle task name strings
+        should also be able to handle task name strings
         """
         name = 'task1'
         commands = {name: Fake(callable=True, expect_call=True)}
@@ -182,14 +182,14 @@ class TestExecute(FabricTest):
     @aborts
     def test_should_abort_if_task_name_not_found(self):
         """
-        execute() should abort if given an invalid task name
+        should abort if given an invalid task name
         """
         execute('thisisnotavalidtaskname')
 
     @with_fakes
     def test_should_pass_through_args_kwargs(self):
         """
-        execute() should pass in any additional args, kwargs to the given task.
+        should pass in any additional args, kwargs to the given task.
         """
         task = (
             Fake(callable=True)
@@ -200,7 +200,7 @@ class TestExecute(FabricTest):
     @with_fakes
     def test_should_honor_hosts_kwarg(self):
         """
-        execute() should use hosts kwarg to set run list
+        should use hosts kwarg to set run list
         """
         # Make two full copies of a host list
         hostlist = ['a', 'b', 'c']
@@ -213,7 +213,7 @@ class TestExecute(FabricTest):
 
     def test_should_set_env_command_to_string_arg(self):
         """
-        execute() should set env.command to any string arg, if given
+        should set env.command to any string arg, if given
         """
         name = "foo"
         def command():
@@ -224,7 +224,7 @@ class TestExecute(FabricTest):
 
     def test_should_set_env_command_to_name_attr(self):
         """
-        execute() should set env.command to TaskSubclass.name if possible
+        should set env.command to TaskSubclass.name if possible
         """
         name = "foo"
         def command():
@@ -238,20 +238,20 @@ class TestExecute(FabricTest):
 
     def test_should_set_all_hosts(self):
         """
-        execute() should set env.all_hosts to its derived host list
+        should set env.all_hosts to its derived host list
         """
         assert False
 
     def test_should_preserve_previous_user(self):
         """
-        execute() should not overwrite env.user after it finishes
+        should not overwrite env.user after it finishes
         """
         # TODO: fricken use settings() for this
         assert False
 
     def test_should_update_env_user_host_and_port(self):
         """
-        execute() should update env.host, env.user, env.port etc
+        should update env.host, env.user, env.port etc
         """
         # TODO figure out if this makes any sense, it's so broken as-is it may
         # not be worth testing prior to fab 2.0
