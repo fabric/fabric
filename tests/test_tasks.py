@@ -9,6 +9,7 @@ import random
 import fabric
 from fabric import tasks
 from fabric.tasks import WrappedCallableTask, execute
+from fabric.api import run, env
 
 from utils import eq_, FabricTest, aborts
 
@@ -185,7 +186,6 @@ class TestExecute(FabricTest):
         """
         execute('thisisnotavalidtaskname')
 
-
     @with_fakes
     def test_execute_should_pass_through_args_kwargs(self):
         """
@@ -196,3 +196,17 @@ class TestExecute(FabricTest):
             .with_args('foo', biz='baz')
         )
         execute(task, 'foo', biz='baz')
+
+    @with_fakes
+    def test_execute_should_honor_hosts_kwarg(self):
+        """
+        execute() should use hosts kwarg to set run list
+        """
+        # Make two full copies of a host list
+        hostlist = ['a', 'b', 'c']
+        hosts = hostlist[:]
+        # Side-effect which asserts the value of env.host_string when it runs
+        def assert_env_string():
+            eq_(env.host_string, hostlist.pop(0))
+        task = Fake(callable=True, expect_call=True).calls(assert_env_string)
+        execute(task, hosts=hosts)

@@ -1,7 +1,10 @@
+from __future__ import with_statement
+
 from functools import wraps
 
 from fabric import state
 from fabric.utils import abort
+from fabric.context_managers import settings
 
 
 class Task(object):
@@ -87,6 +90,7 @@ def execute(task, *args, **kwargs):
 
     .. versionadded:: 1.3
     """
+    # Obtain task
     if not callable(task):
         try:
             task = state.commands[task]
@@ -94,5 +98,21 @@ def execute(task, *args, **kwargs):
             abort("Tried to execute(%r) but %r is not a valid task name" % (
                 task, task
             ))
-    ret = task(*args, **kwargs)
-    return ret
+    # Filter out hosts/roles kwargs
+    new_kwargs = {}
+    hosts = []
+    roles = []
+    for key, value in kwargs.iteritems():
+        if key == 'hosts':
+            hosts = value
+        elif key == 'roles':
+            roles = value
+        else:
+            new_kwargs[key] = value
+    # Call on local host list
+    if hosts:
+        for host in hosts:
+            with settings(host_string=host):
+                task(*args, **new_kwargs)
+    else:
+        task(*args, **new_kwargs)
