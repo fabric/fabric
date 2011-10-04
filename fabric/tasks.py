@@ -121,9 +121,15 @@ def execute(task, *args, **kwargs):
     """
     # Obtain task
     if not callable(task):
+        # Assume string, set env.command to it
+        state.env.command = task
         task = crawl(task, state.commands)
         if task is None:
             abort("%r is not callable or a valid task name" % (task,))
+    # Set env.command if we were given a real function or callable task obj
+    else:
+        dunder_name = getattr(task, '__name__', None)
+        state.env.command = getattr(task, 'name', dunder_name)
     # Filter out hosts/roles kwargs
     new_kwargs = {}
     hosts = []
@@ -135,10 +141,11 @@ def execute(task, *args, **kwargs):
             roles = value
         else:
             new_kwargs[key] = value
-    # Call on local host list
+    # Call on host list
     if hosts:
         for host in hosts:
             with settings(host_string=host):
                 task(*args, **new_kwargs)
+    # Or just run once for local-only
     else:
         task(*args, **new_kwargs)

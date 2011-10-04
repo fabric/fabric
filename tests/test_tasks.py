@@ -206,22 +206,35 @@ class TestExecute(FabricTest):
         hostlist = ['a', 'b', 'c']
         hosts = hostlist[:]
         # Side-effect which asserts the value of env.host_string when it runs
-        def assert_env_string():
+        def host_string():
             eq_(env.host_string, hostlist.pop(0))
-        task = Fake(callable=True, expect_call=True).calls(assert_env_string)
+        task = Fake(callable=True, expect_call=True).calls(host_string)
         execute(task, hosts=hosts)
 
-    def test_should_set_env_command_string(self):
+    def test_should_set_env_command_to_string_arg(self):
         """
-        execute() should set env.command to string arg if given a string
+        execute() should set env.command to any string arg, if given
         """
-        assert False
+        name = "foo"
+        def command():
+            eq_(env.command, name)
+        task = Fake(callable=True, expect_call=True).calls(command)
+        with patched_context(fabric.state, 'commands', {name: task}):
+            execute(name)
 
-    def test_should_set_env_command_callable(self):
+    def test_should_set_env_command_to_name_attr(self):
         """
-        execute() should set env.command to callable bound name if given callable
+        execute() should set env.command to TaskSubclass.name if possible
         """
-        assert False
+        name = "foo"
+        def command():
+            eq_(env.command, name)
+        task = (
+            Fake(callable=True, expect_call=True)
+            .has_attr(name=name)
+            .calls(command)
+        )
+        execute(task)
 
     def test_should_set_all_hosts(self):
         """
