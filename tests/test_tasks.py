@@ -164,11 +164,9 @@ class TestExecute(FabricTest):
     @with_fakes
     def test_execute_calls_task_function_objects(self):
         """
-        execute() should execute the passed-in function object, returning its value
+        execute() should execute the passed-in function object
         """
-        value = "foo"
-        eq_(execute(Fake(callable=True).returns(value)), value)
-
+        execute(Fake(callable=True, expect_call=True))
 
     @with_fakes
     def test_execute_should_look_up_task_name(self):
@@ -176,13 +174,9 @@ class TestExecute(FabricTest):
         execute() should also be able to handle task name strings
         """
         name = 'task1'
-        value = "foo"
-        commands = {
-            name: Fake(callable=True, expect_call=True).returns(value)
-        }
+        commands = {name: Fake(callable=True, expect_call=True)}
         with patched_context(fabric.state, 'commands', commands):
-            eq_(execute(name), value)
-
+            execute(name)
 
     @aborts
     def test_execute_should_abort_if_task_name_not_found(self):
