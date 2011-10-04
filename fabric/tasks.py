@@ -62,6 +62,35 @@ class WrappedCallableTask(Task):
         return getattr(self.wrapped, k)
 
 
+
+# For attribute tomfoolery
+class _Dict(dict):
+    pass
+
+def _crawl(name, mapping):
+    """
+    ``name`` of ``'a.b.c'`` => ``mapping['a']['b']['c']``
+    """
+    key, _, rest = name.partition('.')
+    value = mapping[key]
+    if not rest:
+        return value
+    return _crawl(rest, value)
+
+def crawl(name, mapping):
+    try:
+        result = _crawl(name, mapping)
+        # Handle default tasks
+        if isinstance(result, _Dict) and getattr(result, 'default', False):
+            result = result.default
+        return result
+    except (KeyError, TypeError):
+        return None
+
+
+
+
+
 def execute(task, *args, **kwargs):
     """
     Execute ``task`` (callable or name), honoring host/role decorators, etc.
@@ -92,12 +121,9 @@ def execute(task, *args, **kwargs):
     """
     # Obtain task
     if not callable(task):
-        try:
-            task = state.commands[task]
-        except KeyError:
-            abort("Tried to execute(%r) but %r is not a valid task name" % (
-                task, task
-            ))
+        task = crawl(task, state.commands)
+        if task is None:
+            abort("%r is not callable or a valid task name" % (task,))
     # Filter out hosts/roles kwargs
     new_kwargs = {}
     hosts = []

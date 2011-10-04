@@ -163,14 +163,14 @@ def test_decorator_closure_hiding():
 
 class TestExecute(FabricTest):
     @with_fakes
-    def test_execute_calls_task_function_objects(self):
+    def test_calls_task_function_objects(self):
         """
         execute() should execute the passed-in function object
         """
         execute(Fake(callable=True, expect_call=True))
 
     @with_fakes
-    def test_execute_should_look_up_task_name(self):
+    def test_should_look_up_task_name(self):
         """
         execute() should also be able to handle task name strings
         """
@@ -180,14 +180,14 @@ class TestExecute(FabricTest):
             execute(name)
 
     @aborts
-    def test_execute_should_abort_if_task_name_not_found(self):
+    def test_should_abort_if_task_name_not_found(self):
         """
         execute() should abort if given an invalid task name
         """
         execute('thisisnotavalidtaskname')
 
     @with_fakes
-    def test_execute_should_pass_through_args_kwargs(self):
+    def test_should_pass_through_args_kwargs(self):
         """
         execute() should pass in any additional args, kwargs to the given task.
         """
@@ -198,7 +198,7 @@ class TestExecute(FabricTest):
         execute(task, 'foo', biz='baz')
 
     @with_fakes
-    def test_execute_should_honor_hosts_kwarg(self):
+    def test_should_honor_hosts_kwarg(self):
         """
         execute() should use hosts kwarg to set run list
         """
@@ -210,3 +210,41 @@ class TestExecute(FabricTest):
             eq_(env.host_string, hostlist.pop(0))
         task = Fake(callable=True, expect_call=True).calls(assert_env_string)
         execute(task, hosts=hosts)
+
+    def test_should_set_env_command_string(self):
+        """
+        execute() should set env.command to string arg if given a string
+        """
+        assert False
+
+    def test_should_set_env_command_callable(self):
+        """
+        execute() should set env.command to callable bound name if given callable
+        """
+        assert False
+
+    def test_should_set_all_hosts(self):
+        """
+        execute() should set env.all_hosts to its derived host list
+        """
+        assert False
+
+    def test_should_preserve_previous_user(self):
+        """
+        execute() should not overwrite env.user after it finishes
+        """
+        # TODO: fricken use settings() for this
+        assert False
+
+    def test_should_update_env_user_host_and_port(self):
+        """
+        execute() should update env.host, env.user, env.port etc
+        """
+        # TODO figure out if this makes any sense, it's so broken as-is it may
+        # not be worth testing prior to fab 2.0
+        assert False
+
+    # TODO: update tests in test_main that use eq_hosts, to use new func/method
+    # in here
+    # TODO: add new tests near those which also factor in "cli" sources (i.e.
+    # execute's host/hosts/role/roles kwargs)

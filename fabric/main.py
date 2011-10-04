@@ -188,10 +188,7 @@ def load_tasks_from_module(imported):
     return imported.__doc__, new_style, classic, default
 
 
-# For attribute tomfoolery
-class _Dict(dict):
-    pass
-
+from fabric.tasks import _Dict
 
 def extract_tasks(imported_vars):
     """
@@ -356,26 +353,6 @@ def _task_names(mapping):
         tasks.extend(map(join, _task_names(module)))
     return tasks
 
-def _crawl(name, mapping):
-    """
-    ``name`` of ``'a.b.c'`` => ``mapping['a']['b']['c']``
-    """
-    key, _, rest = name.partition('.')
-    value = mapping[key]
-    if not rest:
-        return value
-    return _crawl(rest, value)
-
-def crawl(name, mapping):
-    try:
-        result = _crawl(name, mapping)
-        # Handle default tasks
-        if isinstance(result, _Dict) and getattr(result, 'default', False):
-            result = result.default
-        return result
-    except (KeyError, TypeError):
-        return None
-
 def _print_docstring(docstrings, name):
     if not docstrings:
         return False
@@ -383,6 +360,8 @@ def _print_docstring(docstrings, name):
     if type(docstring) in types.StringTypes:
         return docstring
 
+
+from fabric.tasks import crawl
 
 def _normal_list(docstrings=True):
     result = []
@@ -802,66 +781,65 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
 
         # At this point all commands must exist, so execute them in order.
         for name, args, kwargs, cli_hosts, cli_roles, cli_exclude_hosts in commands_to_run:
-            # Get callable by itself
-            task = crawl(name, state.commands)
-            # Set current task name (used for some error messages)
-            state.env.command = name
-            # Set host list (also copy to env)
-            state.env.all_hosts = hosts = get_hosts(
-                task, cli_hosts, cli_roles, cli_exclude_hosts)
+            execute(name)
+            ## Set current task name (used for some error messages)
+            #state.env.command = name
+            ## Set host list (also copy to env)
+            #state.env.all_hosts = hosts = get_hosts(
+            #    task, cli_hosts, cli_roles, cli_exclude_hosts)
 
-            # Get pool size for this task
-            pool_size = _get_pool_size(task, hosts)
-            # Set up job queue in case parallel is needed
-            jobs = JobQueue(pool_size)
-            if state.output.debug:
-                jobs._debug = True
+            ## Get pool size for this task
+            #pool_size = _get_pool_size(task, hosts)
+            ## Set up job queue in case parallel is needed
+            #jobs = JobQueue(pool_size)
+            #if state.output.debug:
+            #    jobs._debug = True
 
-            # If hosts found, execute the function on each host in turn
-            for host in hosts:
-                # Preserve user
-                prev_user = state.env.user
-                # Split host string and apply to env dict
-                username, hostname, port = interpret_host_string(host)
-                # Log to stdout
-                if state.output.running and not hasattr(task, 'return_value'):
-                    print("[%s] Executing task '%s'" % (host, name))
+            ## If hosts found, execute the function on each host in turn
+            #for host in hosts:
+            #    # Preserve user
+            #    prev_user = state.env.user
+            #    # Split host string and apply to env dict
+            #    username, hostname, port = interpret_host_string(host)
+            #    # Log to stdout
+            #    if state.output.running and not hasattr(task, 'return_value'):
+            #        print("[%s] Executing task '%s'" % (host, name))
 
-                # Handle parallel execution
-                if requires_parallel(task):
-                    # Grab appropriate callable (func or instance method)
-                    to_call = task
-                    if hasattr(task, 'run') and callable(task.run):
-                        to_call = task.run
-                    # Wrap in another callable that nukes the child's cached
-                    # connection object, if needed, to prevent shared-socket
-                    # problems.
-                    def inner(*args, **kwargs):
-                        key = normalize_to_string(state.env.host_string)
-                        state.connections.pop(key, "")
-                        to_call(*args, **kwargs)
-                    # Stuff into Process wrapper
-                    p = multiprocessing.Process(target=inner, args=args,
-                        kwargs=kwargs)
-                    # Name/id is host string
-                    p.name = state.env.host_string
-                    # Add to queue
-                    jobs.append(p)
-                # Handle serial execution
-                else:
-                    _run_task(task, args, kwargs)
+            #    # Handle parallel execution
+            #    if requires_parallel(task):
+            #        # Grab appropriate callable (func or instance method)
+            #        to_call = task
+            #        if hasattr(task, 'run') and callable(task.run):
+            #            to_call = task.run
+            #        # Wrap in another callable that nukes the child's cached
+            #        # connection object, if needed, to prevent shared-socket
+            #        # problems.
+            #        def inner(*args, **kwargs):
+            #            key = normalize_to_string(state.env.host_string)
+            #            state.connections.pop(key, "")
+            #            to_call(*args, **kwargs)
+            #        # Stuff into Process wrapper
+            #        p = multiprocessing.Process(target=inner, args=args,
+            #            kwargs=kwargs)
+            #        # Name/id is host string
+            #        p.name = state.env.host_string
+            #        # Add to queue
+            #        jobs.append(p)
+            #    # Handle serial execution
+            #    else:
+            #        _run_task(task, args, kwargs)
 
-                # Put old user back
-                state.env.user = prev_user
+            #    # Put old user back
+            #    state.env.user = prev_user
 
-            # If running in parallel, block until job queue is emptied
-            if jobs:
-                jobs.close()
-                jobs.start()
+            ## If running in parallel, block until job queue is emptied
+            #if jobs:
+            #    jobs.close()
+            #    jobs.start()
 
-            # If no hosts found, assume local-only and run once
-            if not hosts:
-                _run_task(task, args, kwargs)
+            ## If no hosts found, assume local-only and run once
+            #if not hosts:
+            #    _run_task(task, args, kwargs)
 
         # If we got here, no errors occurred, so print a final note.
         if state.output.status:
