@@ -88,6 +88,66 @@ def crawl(name, mapping):
         return None
 
 
+def _clean_hosts(host_list):
+    """
+    Clean host strings to ensure no trailing whitespace, etc.
+    """
+    return [host.strip() for host in host_list]
+
+
+def _merge(hosts, roles, exclude=[]):
+    """
+    Merge given host and role lists into one list of deduped hosts.
+    """
+    # Abort if any roles don't exist
+    bad_roles = [x for x in roles if x not in state.env.roledefs]
+    if bad_roles:
+        abort("The following specified roles do not exist:\n%s" % (
+            indent(bad_roles)
+        ))
+
+    # Look up roles, turn into flat list of hosts
+    role_hosts = []
+    for role in roles:
+        value = state.env.roledefs[role]
+        # Handle "lazy" roles (callables)
+        if callable(value):
+            value = value()
+        role_hosts += value
+
+    # Return deduped combo of hosts and role_hosts, preserving order within
+    # them (vs using set(), which may lose ordering) and skipping hosts to be
+    # excluded.
+    cleaned_hosts = _clean_hosts(list(hosts) + list(role_hosts))
+    all_hosts = []
+    for host in cleaned_hosts:
+        if host not in all_hosts and host not in exclude:
+            all_hosts.append(host)
+    return all_hosts
+
+
+def get_hosts(command, cli_hosts, cli_roles, cli_exclude_hosts):
+    """
+    Return the host list the given command should be using.
+
+    See :ref:`execution-model` for detailed documentation on how host lists are
+    set.
+    """
+    # Command line per-command takes precedence over anything else.
+    if cli_hosts or cli_roles:
+        return _merge(cli_hosts, cli_roles, cli_exclude_hosts)
+    # Decorator-specific hosts/roles go next
+    func_hosts = getattr(command, 'hosts', [])
+    func_roles = getattr(command, 'roles', [])
+    if func_hosts or func_roles:
+        return _merge(func_hosts, func_roles, cli_exclude_hosts)
+    # Finally, the env is checked (which might contain globally set lists from
+    # the CLI or from module-level code). This will be the empty list if these
+    # have not been set -- which is fine, this method should return an empty
+    # list if no hosts have been set anywhere.
+    return _merge(
+        state.env['hosts'], state.env['roles'], state.env['exclude_hosts']
+    )
 
 
 
@@ -105,9 +165,10 @@ def execute(task, *args, **kwargs):
     :option:`-H`, :ref:`env.hosts <hosts>`, the `~fabric.decorators.hosts` or
     `~fabric.decorators.roles` decorators, and so forth.
 
-    ``host``, ``hosts``, ``role`` and ``roles`` kwargs will be stripped out of
-    the final call, and used to set the task's host list, as if they had been
-    specified on the command line like e.g. ``fab taskname:host=hostname``.
+    ``host``, ``hosts``, ``role``, ``roles`` and ``exclude_hosts`` kwargs will
+    be stripped out of the final call, and used to set the task's host list, as
+    if they had been specified on the command line like e.g. ``fab
+    taskname:host=hostname``.
 
     Any other arguments or keyword arguments will be passed verbatim into
     ``task`` when it is called, so ``execute(mytask, 'arg1', kwarg1='value')``
@@ -134,16 +195,21 @@ def execute(task, *args, **kwargs):
     new_kwargs = {}
     hosts = []
     roles = []
+    exclude_hosts = []
     for key, value in kwargs.iteritems():
         if key == 'hosts':
             hosts = value
         elif key == 'roles':
             roles = value
+        elif key == 'exclude_hosts':
+            exclude_hosts = value
         else:
             new_kwargs[key] = value
+    # Set up host list
+    host_list = get_hosts(task, hosts, roles, exclude_hosts)
     # Call on host list
-    if hosts:
-        for host in hosts:
+    if host_list:
+        for host in host_list:
             with settings(host_string=host):
                 task(*args, **new_kwargs)
     # Or just run once for local-only

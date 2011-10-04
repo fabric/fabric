@@ -256,8 +256,3 @@ class TestExecute(FabricTest):
         # TODO figure out if this makes any sense, it's so broken as-is it may
         # not be worth testing prior to fab 2.0
         assert False
-
-    # TODO: update tests in test_main that use eq_hosts, to use new func/method
-    # in here
-    # TODO: add new tests near those which also factor in "cli" sources (i.e.
-    # execute's host/hosts/role/roles kwargs)
