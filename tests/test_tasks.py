@@ -9,7 +9,7 @@ import random
 import fabric
 from fabric import tasks
 from fabric.tasks import WrappedCallableTask, execute
-from fabric.api import run, env
+from fabric.api import run, env, settings
 
 from utils import eq_, FabricTest, aborts
 
@@ -240,7 +240,17 @@ class TestExecute(FabricTest):
         """
         should set env.all_hosts to its derived host list
         """
-        assert False
+        hosts = ['a', 'b']
+        roledefs = {'r1': ['c', 'd']}
+        roles = ['r1']
+        exclude_hosts = ['a']
+        def command():
+            eq_(set(env.all_hosts), set(['b', 'c', 'd']))
+        task = Fake(callable=True, expect_call=True).calls(command)
+        with settings(roledefs=roledefs):
+            execute(
+                task, hosts=hosts, roles=roles, exclude_hosts=exclude_hosts
+            )
 
     def test_should_preserve_previous_user(self):
         """

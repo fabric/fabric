@@ -724,10 +724,6 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
         # At this point all commands must exist, so execute them in order.
         for name, args, kwargs, cli_hosts, cli_roles, cli_exclude_hosts in commands_to_run:
             execute(name)
-            ## Set host list (also copy to env)
-            #state.env.all_hosts = hosts = get_hosts(
-            #    task, cli_hosts, cli_roles, cli_exclude_hosts)
-
             ## Get pool size for this task
             #pool_size = _get_pool_size(task, hosts)
             ## Set up job queue in case parallel is needed

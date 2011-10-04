@@ -206,10 +206,10 @@ def execute(task, *args, **kwargs):
         else:
             new_kwargs[key] = value
     # Set up host list
-    host_list = get_hosts(task, hosts, roles, exclude_hosts)
+    state.env.all_hosts = get_hosts(task, hosts, roles, exclude_hosts)
     # Call on host list
-    if host_list:
-        for host in host_list:
+    if state.env.all_hosts:
+        for host in state.env.all_hosts:
             with settings(host_string=host):
                 task(*args, **new_kwargs)
     # Or just run once for local-only
