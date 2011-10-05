@@ -22,7 +22,6 @@ from fabric.network import denormalize, disconnect_all, normalize_to_string
 from fabric.state import env_options
 from fabric.tasks import Task, execute
 from fabric.utils import abort, indent
-from job_queue import JobQueue
 
 # One-time calculation of "all internal callables" to avoid doing this on every
 # check of a given fabfile callable (in is_classic_task()).
@@ -559,34 +558,13 @@ def requires_parallel(task):
     )
 
 
-def _run_task(task, args, kwargs):
-    # First, try class-based tasks
-    if hasattr(task, 'run') and callable(task.run):
-        return task.run(*args, **kwargs)
-    # Fallback to callable behavior
-    return task(*args, **kwargs)
-
-
-def _get_pool_size(task, hosts):
-    # Default parallel pool size (calculate per-task in case variables
-    # change)
-    default_pool_size = state.env.pool_size or len(hosts)
-    # Allow per-task override
-    pool_size = getattr(task, 'pool_size', default_pool_size)
-    # But ensure it's never larger than the number of hosts
-    pool_size = min((pool_size, len(hosts)))
-    # Inform user of final pool size for this task
-    if state.output.debug:
-        msg = "Parallel tasks now using pool size of %d"
-        print msg % state.env.pool_size
-    return pool_size
-
-
 def _parallel_tasks(commands_to_run):
     return any(map(
         lambda x: requires_parallel(crawl(x[0], state.commands)),
         commands_to_run
     ))
+
+
 
 
 def main():
@@ -724,12 +702,6 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
         # At this point all commands must exist, so execute them in order.
         for name, args, kwargs, cli_hosts, cli_roles, cli_exclude_hosts in commands_to_run:
             execute(name)
-            ## Get pool size for this task
-            #pool_size = _get_pool_size(task, hosts)
-            ## Set up job queue in case parallel is needed
-            #jobs = JobQueue(pool_size)
-            #if state.output.debug:
-            #    jobs._debug = True
 
             ## If hosts found, execute the function on each host in turn
             #for host in hosts:

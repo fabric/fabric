@@ -6,6 +6,7 @@ from fabric import state
 from fabric.utils import abort
 from fabric.network import to_dict
 from fabric.context_managers import settings
+from fabric.job_queue import JobQueue
 
 
 class Task(object):
@@ -151,6 +152,28 @@ def get_hosts(command, cli_hosts, cli_roles, cli_exclude_hosts):
     )
 
 
+def _run_task(task, args, kwargs):
+    # First, try class-based tasks
+    if hasattr(task, 'run') and callable(task.run):
+        return task.run(*args, **kwargs)
+    # Fallback to callable behavior
+    return task(*args, **kwargs)
+
+
+def _get_pool_size(task, hosts):
+    # Default parallel pool size (calculate per-task in case variables
+    # change)
+    default_pool_size = state.env.pool_size or len(hosts)
+    # Allow per-task override
+    pool_size = getattr(task, 'pool_size', default_pool_size)
+    # But ensure it's never larger than the number of hosts
+    pool_size = min((pool_size, len(hosts)))
+    # Inform user of final pool size for this task
+    if state.output.debug:
+        msg = "Parallel tasks now using pool size of %d"
+        print msg % state.env.pool_size
+    return pool_size
+
 
 def execute(task, *args, **kwargs):
     """
@@ -213,6 +236,14 @@ def execute(task, *args, **kwargs):
             new_kwargs[key] = value
     # Set up host list
     my_env['all_hosts'] = get_hosts(task, hosts, roles, exclude_hosts)
+
+    # Get pool size for this task
+    pool_size = _get_pool_size(task, hosts)
+    # Set up job queue in case parallel is needed
+    jobs = JobQueue(pool_size)
+    if state.output.debug:
+        jobs._debug = True
+
     # Call on host list
     if my_env['all_hosts']:
         for host in my_env['all_hosts']:
