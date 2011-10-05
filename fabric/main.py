@@ -18,7 +18,7 @@ import types
 
 from fabric import api, state  # For checking callables against the API, & easy mocking
 from fabric.contrib import console, files, project  # Ditto
-from fabric.network import denormalize, disconnect_all, normalize_to_string
+from fabric.network import denormalize, disconnect_all
 from fabric.state import env_options
 from fabric.tasks import Task, execute
 from fabric.utils import abort, indent
@@ -666,16 +666,6 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
         if state.output.debug:
             names = ", ".join(x[0] for x in commands_to_run)
             print("Commands to run: %s" % names)
-
-        # Import multiprocessing if needed, erroring out usefully if it can't.
-        if state.env.parallel or _parallel_tasks(commands_to_run):
-            try:
-                import multiprocessing
-            except ImportError, e:
-                msg = "At least one task needs to be run in parallel, but the\nmultiprocessing module cannot be imported:"
-                msg += "\n\n\t%s\n\n" % e
-                msg += "Please make sure the module is installed or that the above ImportError is\nfixed."
-                abort(msg)
 
         # At this point all commands must exist, so execute them in order.
         for name, args, kwargs, cli_hosts, cli_roles, cli_exclude_hosts in commands_to_run:

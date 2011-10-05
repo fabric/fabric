@@ -4,7 +4,7 @@ from functools import wraps
 
 from fabric import state
 from fabric.utils import abort
-from fabric.network import to_dict
+from fabric.network import to_dict, normalize_to_string
 from fabric.context_managers import settings
 from fabric.job_queue import JobQueue
 
@@ -171,7 +171,7 @@ def _get_pool_size(task, hosts):
     # Inform user of final pool size for this task
     if state.output.debug:
         msg = "Parallel tasks now using pool size of %d"
-        print msg % state.env.pool_size
+        print msg % pool_size
     return pool_size
 
 
@@ -263,7 +263,7 @@ def execute(task, *args, **kwargs):
     my_env['all_hosts'] = get_hosts(task, hosts, roles, exclude_hosts)
 
     # Get pool size for this task
-    pool_size = _get_pool_size(task, hosts)
+    pool_size = _get_pool_size(task, my_env['all_hosts'])
     # Set up job queue in case parallel is needed
     jobs = JobQueue(pool_size)
     if state.output.debug:
@@ -281,27 +281,38 @@ def execute(task, *args, **kwargs):
             with settings(**local_env):
                 # Handle parallel execution
                 if requires_parallel(task):
+                    # Import multiprocessing if needed, erroring out usefully
+                    # if it can't.
+                    try:
+                        import multiprocessing
+                    except ImportError, e:
+                        msg = "At least one task needs to be run in parallel, but the\nmultiprocessing module cannot be imported:"
+                        msg += "\n\n\t%s\n\n" % e
+                        msg += "Please make sure the module is installed or that the above ImportError is\nfixed."
+                        abort(msg)
+
                     # Wrap in another callable that nukes the child's cached
                     # connection object, if needed, to prevent shared-socket
                     # problems.
                     def inner(*args, **kwargs):
                         key = normalize_to_string(state.env.host_string)
                         state.connections.pop(key, "")
-                        _run_task(task, args, new_kwargs)
+                        _run_task(task, args, kwargs)
                     # Stuff into Process wrapper
                     p = multiprocessing.Process(target=inner, args=args,
-                        kwargs=kwargs)
+                        kwargs=new_kwargs)
                     # Name/id is host string
                     p.name = local_env['host_string']
                     # Add to queue
                     jobs.append(p)
-                    # If running in parallel, block until job queue is emptied
-                    if jobs:
-                        jobs.close()
-                        jobs.start()
                 # Handle serial execution
                 else:
                     _run_task(task, args, new_kwargs)
+
+        # If running in parallel, block until job queue is emptied
+        if jobs:
+            jobs.close()
+            jobs.start()
     # Or just run once for local-only
     else:
         with settings(**my_env):
