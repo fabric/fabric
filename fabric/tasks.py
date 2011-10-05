@@ -219,7 +219,6 @@ def execute(task, *args, **kwargs):
             # Create per-run env with connection settings
             local_env = to_dict(host)
             local_env.update(my_env)
-            print "running with settings %r" % local_env
             with settings(**local_env):
                 task(*args, **new_kwargs)
     # Or just run once for local-only
