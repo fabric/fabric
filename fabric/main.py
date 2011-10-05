@@ -542,29 +542,7 @@ def update_output_levels(show, hide):
             state.output[key] = False
 
 
-def requires_parallel(task):
-    """
-    Returns True if given ``task`` should be run in parallel mode.
-
-    Specifically:
-
-    * It's been explicitly marked with ``@parallel``, or:
-    * It's *not* been explicitly marked with ``@serial`` *and* the global
-      parallel option (``env.parallel``) is set to ``True``.
-    """
-    return (
-        (state.env.parallel and not getattr(task, 'serial', False))
-        or getattr(task, 'parallel', False)
-    )
-
-
-def _parallel_tasks(commands_to_run):
-    return any(map(
-        lambda x: requires_parallel(crawl(x[0], state.commands)),
-        commands_to_run
-    ))
-
-
+from fabric.tasks import _parallel_tasks
 
 
 def main():
@@ -701,43 +679,13 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
 
         # At this point all commands must exist, so execute them in order.
         for name, args, kwargs, cli_hosts, cli_roles, cli_exclude_hosts in commands_to_run:
-            execute(name)
-
-            ## If hosts found, execute the function on each host in turn
-            #for host in hosts:
-            #    # Handle parallel execution
-            #    if requires_parallel(task):
-            #        # Grab appropriate callable (func or instance method)
-            #        to_call = task
-            #        if hasattr(task, 'run') and callable(task.run):
-            #            to_call = task.run
-            #        # Wrap in another callable that nukes the child's cached
-            #        # connection object, if needed, to prevent shared-socket
-            #        # problems.
-            #        def inner(*args, **kwargs):
-            #            key = normalize_to_string(state.env.host_string)
-            #            state.connections.pop(key, "")
-            #            to_call(*args, **kwargs)
-            #        # Stuff into Process wrapper
-            #        p = multiprocessing.Process(target=inner, args=args,
-            #            kwargs=kwargs)
-            #        # Name/id is host string
-            #        p.name = state.env.host_string
-            #        # Add to queue
-            #        jobs.append(p)
-            #    # Handle serial execution
-            #    else:
-            #        _run_task(task, args, kwargs)
-
-            ## If running in parallel, block until job queue is emptied
-            #if jobs:
-            #    jobs.close()
-            #    jobs.start()
-
-            ## If no hosts found, assume local-only and run once
-            #if not hosts:
-            #    _run_task(task, args, kwargs)
-
+            execute(
+                name,
+                hosts=cli_hosts,
+                roles=cli_roles,
+                exclude_hosts=cli_exclude_hosts,
+                *args, **kwargs
+            )
         # If we got here, no errors occurred, so print a final note.
         if state.output.status:
             print("\nDone.")

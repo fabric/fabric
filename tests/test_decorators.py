@@ -9,7 +9,7 @@ from fudge import Fake, with_fakes, patched_context
 from fabric import decorators, tasks
 from fabric.state import env
 import fabric # for patching fabric.state.xxx
-from fabric.main import _parallel_tasks, requires_parallel
+from fabric.tasks import _parallel_tasks, requires_parallel
 
 
 #
