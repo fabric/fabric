@@ -52,6 +52,8 @@ class FabricTest(object):
         env.update(self.previous_env)
         output.update(self.previous_output)
         shutil.rmtree(self.tmpdir)
+        # Clear Fudge mock expectations...again
+        clear_expectations()
 
     def path(self, *path_parts):
         return os.path.join(self.tmpdir, *path_parts)
