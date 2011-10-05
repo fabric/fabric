@@ -175,6 +175,31 @@ def _get_pool_size(task, hosts):
     return pool_size
 
 
+def requires_parallel(task):
+    """
+    Returns True if given ``task`` should be run in parallel mode.
+
+    Specifically:
+
+    * It's been explicitly marked with ``@parallel``, or:
+    * It's *not* been explicitly marked with ``@serial`` *and* the global
+      parallel option (``env.parallel``) is set to ``True``.
+    """
+    return (
+        (state.env.parallel and not getattr(task, 'serial', False))
+        or getattr(task, 'parallel', False)
+    )
+
+
+def _parallel_tasks(commands_to_run):
+    return any(map(
+        lambda x: requires_parallel(crawl(x[0], state.commands)),
+        commands_to_run
+    ))
+
+
+
+
 def execute(task, *args, **kwargs):
     """
     Execute ``task`` (callable or name), honoring host/role decorators, etc.
@@ -254,8 +279,30 @@ def execute(task, *args, **kwargs):
             local_env = to_dict(host)
             local_env.update(my_env)
             with settings(**local_env):
-                task(*args, **new_kwargs)
+                # Handle parallel execution
+                if requires_parallel(task):
+                    # Wrap in another callable that nukes the child's cached
+                    # connection object, if needed, to prevent shared-socket
+                    # problems.
+                    def inner(*args, **kwargs):
+                        key = normalize_to_string(state.env.host_string)
+                        state.connections.pop(key, "")
+                        _run_task(task, args, new_kwargs)
+                    # Stuff into Process wrapper
+                    p = multiprocessing.Process(target=inner, args=args,
+                        kwargs=kwargs)
+                    # Name/id is host string
+                    p.name = local_env['host_string']
+                    # Add to queue
+                    jobs.append(p)
+                    # If running in parallel, block until job queue is emptied
+                    if jobs:
+                        jobs.close()
+                        jobs.start()
+                # Handle serial execution
+                else:
+                    _run_task(task, args, new_kwargs)
     # Or just run once for local-only
     else:
         with settings(**my_env):
-            task(*args, **new_kwargs)
+            _run_task(task, args, new_kwargs)
