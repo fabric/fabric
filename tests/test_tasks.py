@@ -3,13 +3,14 @@ from __future__ import with_statement
 from contextlib import contextmanager
 from fudge import Fake, patched_context, with_fakes
 import unittest
-from nose.tools import eq_, raises
+from nose.tools import eq_, raises, ok_
 import random
 
 import fabric
 from fabric import tasks
 from fabric.tasks import WrappedCallableTask, execute
 from fabric.api import run, env, settings
+from fabric.network import from_dict
 
 from utils import eq_, FabricTest, aborts
 
@@ -161,6 +162,15 @@ def test_decorator_closure_hiding():
 # execute()
 #
 
+def dict_contains(superset, subset):
+    """
+    Assert that all key/val pairs in dict 'subset' also exist in 'superset'
+    """
+    for key, value in subset.iteritems():
+        ok_(key in superset)
+        eq_(superset[key], value)
+
+
 class TestExecute(FabricTest):
     @with_fakes
     def test_calls_task_function_objects(self):
@@ -252,12 +262,19 @@ class TestExecute(FabricTest):
                 task, hosts=hosts, roles=roles, exclude_hosts=exclude_hosts
             )
 
-    def test_should_preserve_previous_user(self):
+    def test_should_preserve_previous_settings(self):
         """
-        should not overwrite env.user after it finishes
+        should not overwrite env.user, etc after it finishes
         """
-        # TODO: fricken use settings() for this
-        assert False
+        outer = dict(user='jeff', host='localhost', port='123')
+        inner = dict(user='frank', host='fabfile.org', port='555')
+        def command():
+            dict_contains(superset=fabric.state.env, subset=inner)
+        with settings(**outer):
+            task = Fake(callable=True, expect_call=True).calls(command)
+            execute(task, host=from_dict(inner))
+            dict_contains(superset=fabric.state.env, subset=outer)
+
 
     def test_should_update_env_user_host_and_port(self):
         """

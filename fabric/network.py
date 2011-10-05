@@ -2,6 +2,8 @@
 Classes and subroutines dealing with network connections and related topics.
 """
 
+from __future__ import with_statement
+
 from functools import wraps
 import getpass
 import re
@@ -100,6 +102,16 @@ def normalize(host_string, omit_port=False):
     if omit_port:
         return user, host
     return user, host, port
+
+
+def to_dict(host_string):
+    user, host, port = normalize(host_string)
+    return {
+        'user': user, 'host': host, 'port': port, 'host_string': host_string
+    }
+
+def from_dict(arg):
+    return join_host_strings(arg['user'], arg['host'], arg['port'])
 
 
 def denormalize(host_string):
@@ -320,35 +332,15 @@ def needs_host(func):
     command (in the case where multiple commands have no hosts set, of course.)
     """
     from fabric.state import env
-
     @wraps(func)
     def host_prompting_wrapper(*args, **kwargs):
         while not env.get('host_string', False):
             handle_prompt_abort()
             host_string = raw_input("No hosts found. Please specify (single)"
                                     " host string for connection: ")
-            interpret_host_string(host_string)
+            env.update(to_dict(host_string))
         return func(*args, **kwargs)
     return host_prompting_wrapper
-
-
-def interpret_host_string(host_string):
-    """
-    Apply given host string to the env dict.
-
-    Split it into hostname, username and port (using
-    `~fabric.network.normalize`) and store the full host string plus its
-    constituent parts into the appropriate env vars.
-
-    Returns the parts as split out by ``normalize`` for convenience.
-    """
-    from fabric.state import env
-    username, hostname, port = normalize(host_string)
-    env.host_string = host_string
-    env.host = hostname
-    env.user = username
-    env.port = port
-    return username, hostname, port
 
 
 def disconnect_all():

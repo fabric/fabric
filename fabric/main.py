@@ -18,7 +18,7 @@ import types
 
 from fabric import api, state  # For checking callables against the API, & easy mocking
 from fabric.contrib import console, files, project  # Ditto
-from fabric.network import denormalize, interpret_host_string, disconnect_all, normalize_to_string
+from fabric.network import denormalize, disconnect_all, normalize_to_string
 from fabric.state import env_options
 from fabric.tasks import Task, execute
 from fabric.utils import abort, indent
@@ -733,10 +733,6 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
 
             ## If hosts found, execute the function on each host in turn
             #for host in hosts:
-            #    # Preserve user
-            #    prev_user = state.env.user
-            #    # Split host string and apply to env dict
-            #    username, hostname, port = interpret_host_string(host)
             #    # Log to stdout
             #    if state.output.running and not hasattr(task, 'return_value'):
             #        print("[%s] Executing task '%s'" % (host, name))
@@ -764,9 +760,6 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
             #    # Handle serial execution
             #    else:
             #        _run_task(task, args, kwargs)
-
-            #    # Put old user back
-            #    state.env.user = prev_user
 
             ## If running in parallel, block until job queue is emptied
             #if jobs:

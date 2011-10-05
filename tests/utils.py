@@ -18,10 +18,10 @@ from fudge import Fake, patched_context, clear_expectations
 from nose.tools import raises
 
 from fabric.context_managers import settings
-from fabric.network import interpret_host_string
 from fabric.state import env, output
 from fabric.sftp import SFTP
 import fabric.network
+from fabric.network import normalize, to_dict
 
 from server import PORT, PASSWORDS, USER, HOST
 
@@ -40,7 +40,7 @@ class FabricTest(object):
         self.previous_output = output.items()
         # Set up default networking for test server
         env.disable_known_hosts = True
-        interpret_host_string('%s@%s:%s' % (USER, HOST, PORT))
+        env.update(to_dict('%s@%s:%s' % (USER, HOST, PORT)))
         env.password = PASSWORDS[USER]
         # Command response mocking is easier without having to account for
         # shell wrapping everywhere.

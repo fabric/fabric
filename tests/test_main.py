@@ -10,12 +10,12 @@ from fudge import Fake, patched_context, with_fakes
 from nose.tools import ok_, eq_
 
 from fabric.decorators import hosts, roles, task
-from fabric.main import (get_hosts, parse_arguments, _merge, _escape_split,
-        load_fabfile as _load_fabfile, list_commands, _task_names, COMMANDS_HEADER,
-        NESTED_REMINDER)
+from fabric.main import (parse_arguments, _escape_split,
+        load_fabfile as _load_fabfile, list_commands, _task_names,
+        COMMANDS_HEADER, NESTED_REMINDER)
 import fabric.state
 from fabric.state import _AttributeDict
-from fabric.tasks import Task, _crawl, crawl
+from fabric.tasks import Task, _crawl, crawl, get_hosts, _merge
 
 from utils import (mock_streams, patched_env, eq_, FabricTest, fabfile,
     path_prefix, aborts)

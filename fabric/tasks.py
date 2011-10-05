@@ -4,6 +4,7 @@ from functools import wraps
 
 from fabric import state
 from fabric.utils import abort
+from fabric.network import to_dict
 from fabric.context_managers import settings
 
 
@@ -180,25 +181,30 @@ def execute(task, *args, **kwargs):
 
     .. versionadded:: 1.3
     """
+    my_env = {}
     # Obtain task
     if not callable(task):
         # Assume string, set env.command to it
-        state.env.command = task
+        my_env['command'] = task
         task = crawl(task, state.commands)
         if task is None:
             abort("%r is not callable or a valid task name" % (task,))
     # Set env.command if we were given a real function or callable task obj
     else:
         dunder_name = getattr(task, '__name__', None)
-        state.env.command = getattr(task, 'name', dunder_name)
+        my_env['command'] = getattr(task, 'name', dunder_name)
     # Filter out hosts/roles kwargs
     new_kwargs = {}
     hosts = []
     roles = []
     exclude_hosts = []
     for key, value in kwargs.iteritems():
-        if key == 'hosts':
+        if key == 'host':
+            hosts = [value]
+        elif key == 'hosts':
             hosts = value
+        elif key == 'role':
+            roles = [value]
         elif key == 'roles':
             roles = value
         elif key == 'exclude_hosts':
@@ -206,12 +212,17 @@ def execute(task, *args, **kwargs):
         else:
             new_kwargs[key] = value
     # Set up host list
-    state.env.all_hosts = get_hosts(task, hosts, roles, exclude_hosts)
+    my_env['all_hosts'] = get_hosts(task, hosts, roles, exclude_hosts)
     # Call on host list
-    if state.env.all_hosts:
-        for host in state.env.all_hosts:
-            with settings(host_string=host):
+    if my_env['all_hosts']:
+        for host in my_env['all_hosts']:
+            # Create per-run env with connection settings
+            local_env = to_dict(host)
+            local_env.update(my_env)
+            print "running with settings %r" % local_env
+            with settings(**local_env):
                 task(*args, **new_kwargs)
     # Or just run once for local-only
     else:
-        task(*args, **new_kwargs)
+        with settings(**my_env):
+            task(*args, **new_kwargs)
