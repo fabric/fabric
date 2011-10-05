@@ -274,12 +274,3 @@ class TestExecute(FabricTest):
             task = Fake(callable=True, expect_call=True).calls(command)
             execute(task, host=from_dict(inner))
             dict_contains(superset=fabric.state.env, subset=outer)
-
-
-    def test_should_update_env_user_host_and_port(self):
-        """
-        should update env.host, env.user, env.port etc
-        """
-        # TODO figure out if this makes any sense, it's so broken as-is it may
-        # not be worth testing prior to fab 2.0
-        assert False
