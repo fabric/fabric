@@ -247,6 +247,9 @@ def execute(task, *args, **kwargs):
     # Call on host list
     if my_env['all_hosts']:
         for host in my_env['all_hosts']:
+            # Log to stdout
+            if state.output.running and not hasattr(task, 'return_value'):
+                print("[%s] Executing task '%s'" % (host, my_env['command']))
             # Create per-run env with connection settings
             local_env = to_dict(host)
             local_env.update(my_env)

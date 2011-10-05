@@ -705,10 +705,6 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
 
             ## If hosts found, execute the function on each host in turn
             #for host in hosts:
-            #    # Log to stdout
-            #    if state.output.running and not hasattr(task, 'return_value'):
-            #        print("[%s] Executing task '%s'" % (host, name))
-
             #    # Handle parallel execution
             #    if requires_parallel(task):
             #        # Grab appropriate callable (func or instance method)

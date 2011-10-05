@@ -5,6 +5,7 @@ from fudge import Fake, patched_context, with_fakes
 import unittest
 from nose.tools import eq_, raises, ok_
 import random
+import sys
 
 import fabric
 from fabric import tasks
@@ -12,7 +13,7 @@ from fabric.tasks import WrappedCallableTask, execute
 from fabric.api import run, env, settings
 from fabric.network import from_dict
 
-from utils import eq_, FabricTest, aborts
+from utils import eq_, FabricTest, aborts, mock_streams
 
 
 def test_base_task_provides_undefined_name():
@@ -278,3 +279,25 @@ class TestExecute(FabricTest):
             task = Fake(callable=True, expect_call=True).calls(command)
             execute(task, host=from_dict(inner))
             dict_contains(superset=fabric.state.env, subset=outer)
+
+    @mock_streams('stdout')
+    def test_should_print_executing_line_per_host(self):
+        """
+        should print "Executing" line once per host
+        """
+        def task():
+            pass
+        execute(task, hosts=['host1', 'host2'])
+        eq_(sys.stdout.getvalue(), """[host1] Executing task 'task'
+[host2] Executing task 'task'
+""")
+
+    @mock_streams('stdout')
+    def test_should_not_print_executing_line_for_singletons(self):
+        """
+        should not print "Executing" line for non-networked tasks
+        """
+        def task():
+            pass
+        execute(task)
+        eq_(sys.stdout.getvalue(), "")
