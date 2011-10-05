@@ -202,7 +202,7 @@ class TestExecute(FabricTest):
         should pass in any additional args, kwargs to the given task.
         """
         task = (
-            Fake(callable=True)
+            Fake(callable=True, expect_call=True)
             .with_args('foo', biz='baz')
         )
         execute(task, 'foo', biz='baz')
@@ -221,6 +221,7 @@ class TestExecute(FabricTest):
         task = Fake(callable=True, expect_call=True).calls(host_string)
         execute(task, hosts=hosts)
 
+    @with_fakes
     def test_should_set_env_command_to_string_arg(self):
         """
         should set env.command to any string arg, if given
@@ -232,6 +233,7 @@ class TestExecute(FabricTest):
         with patched_context(fabric.state, 'commands', {name: task}):
             execute(name)
 
+    @with_fakes
     def test_should_set_env_command_to_name_attr(self):
         """
         should set env.command to TaskSubclass.name if possible
@@ -246,6 +248,7 @@ class TestExecute(FabricTest):
         )
         execute(task)
 
+    @with_fakes
     def test_should_set_all_hosts(self):
         """
         should set env.all_hosts to its derived host list
@@ -262,6 +265,7 @@ class TestExecute(FabricTest):
                 task, hosts=hosts, roles=roles, exclude_hosts=exclude_hosts
             )
 
+    @with_fakes
     def test_should_preserve_previous_settings(self):
         """
         should not overwrite env.user, etc after it finishes
