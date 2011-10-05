@@ -1,4 +1,4 @@
-"""
+﻿"""
 This module contains Fab's `main` method plus related subroutines.
 
 `main` is executed as the command line ``fab`` program and takes care of
@@ -839,8 +839,12 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
                     def inner(*args, **kwargs):
                         key = normalize_to_string(state.env.host_string)
                         state.connections.pop(key, "")
-                        to_call(*args, **kwargs)
-                    # Stuff into Process wrapper
+                        try:
+                            to_call(*args, **kwargs)
+                        except SystemExit, e:
+                            if not state.env.skip_on_failure:
+                                raise
+                    ## Stuff into Process wrapper
                     p = multiprocessing.Process(target=inner, args=args,
                         kwargs=kwargs)
                     # Name/id is host string
@@ -849,7 +853,11 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
                     jobs.append(p)
                 # Handle serial execution
                 else:
-                    _run_task(task, args, kwargs)
+                    try:
+                        _run_task(task, args, kwargs)
+                    except SystemExit, e:
+                        if not state.env.skip_on_failure:
+                            raise
 
                 # Put old user back
                 state.env.user = prev_user
