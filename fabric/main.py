@@ -668,12 +668,12 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
             print("Commands to run: %s" % names)
 
         # At this point all commands must exist, so execute them in order.
-        for name, args, kwargs, cli_hosts, cli_roles, cli_exclude_hosts in commands_to_run:
+        for name, args, kwargs, arg_hosts, arg_roles, arg_exclude_hosts in commands_to_run:
             execute(
                 name,
-                hosts=cli_hosts,
-                roles=cli_roles,
-                exclude_hosts=cli_exclude_hosts,
+                hosts=arg_hosts,
+                roles=arg_roles,
+                exclude_hosts=arg_exclude_hosts,
                 *args, **kwargs
             )
         # If we got here, no errors occurred, so print a final note.
