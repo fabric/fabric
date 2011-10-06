@@ -90,13 +90,6 @@ def crawl(name, mapping):
         return None
 
 
-def _clean_hosts(host_list):
-    """
-    Clean host strings to ensure no trailing whitespace, etc.
-    """
-    return [host.strip() for host in host_list]
-
-
 def _merge(hosts, roles, exclude=[]):
     """
     Merge given host and role lists into one list of deduped hosts.
@@ -120,7 +113,7 @@ def _merge(hosts, roles, exclude=[]):
     # Return deduped combo of hosts and role_hosts, preserving order within
     # them (vs using set(), which may lose ordering) and skipping hosts to be
     # excluded.
-    cleaned_hosts = _clean_hosts(list(hosts) + list(role_hosts))
+    cleaned_hosts = [x.strip() for x in list(hosts) + list(role_hosts)]
     all_hosts = []
     for host in cleaned_hosts:
         if host not in all_hosts and host not in exclude:
