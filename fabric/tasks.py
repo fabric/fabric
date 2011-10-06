@@ -7,7 +7,7 @@ from fabric.utils import abort
 from fabric.network import to_dict, normalize_to_string
 from fabric.context_managers import settings
 from fabric.job_queue import JobQueue
-from fabric.task_utils import merge, crawl, get_hosts, get_pool_size
+from fabric.task_utils import *
 
 
 class Task(object):
@@ -138,23 +138,7 @@ def execute(task, *args, **kwargs):
     if not hasattr(task, 'run'):
         task = WrappedCallableTask(task)
     # Filter out hosts/roles kwargs
-    new_kwargs = {}
-    hosts = []
-    roles = []
-    exclude_hosts = []
-    for key, value in kwargs.iteritems():
-        if key == 'host':
-            hosts = [value]
-        elif key == 'hosts':
-            hosts = value
-        elif key == 'role':
-            roles = [value]
-        elif key == 'roles':
-            roles = value
-        elif key == 'exclude_hosts':
-            exclude_hosts = value
-        else:
-            new_kwargs[key] = value
+    new_kwargs, hosts, roles, exclude_hosts = parse_kwargs(kwargs)
     # Set up host list
     my_env['all_hosts'] = get_hosts(
         task, hosts, roles, exclude_hosts, state.env

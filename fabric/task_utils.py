@@ -96,3 +96,24 @@ def get_pool_size(task, hosts, default):
         msg = "Parallel tasks now using pool size of %d"
         print msg % pool_size
     return pool_size
+
+
+def parse_kwargs(kwargs):
+    new_kwargs = {}
+    hosts = []
+    roles = []
+    exclude_hosts = []
+    for key, value in kwargs.iteritems():
+        if key == 'host':
+            hosts = [value]
+        elif key == 'hosts':
+            hosts = value
+        elif key == 'role':
+            roles = [value]
+        elif key == 'roles':
+            roles = value
+        elif key == 'exclude_hosts':
+            exclude_hosts = value
+        else:
+            new_kwargs[key] = value
+    return new_kwargs, hosts, roles, exclude_hosts
