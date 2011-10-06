@@ -21,6 +21,7 @@ from fabric.contrib import console, files, project  # Ditto
 from fabric.network import denormalize, disconnect_all
 from fabric.state import env_options
 from fabric.tasks import Task, execute
+from fabric.task_utils import _Dict, crawl
 from fabric.utils import abort, indent
 
 # One-time calculation of "all internal callables" to avoid doing this on every
@@ -186,8 +187,6 @@ def load_tasks_from_module(imported):
     new_style, classic, default = extract_tasks(imported_vars)
     return imported.__doc__, new_style, classic, default
 
-
-from fabric.tasks import _Dict
 
 def extract_tasks(imported_vars):
     """
@@ -359,8 +358,6 @@ def _print_docstring(docstrings, name):
     if type(docstring) in types.StringTypes:
         return docstring
 
-
-from fabric.tasks import crawl
 
 def _normal_list(docstrings=True):
     result = []

@@ -15,7 +15,8 @@ from fabric.main import (parse_arguments, _escape_split,
         COMMANDS_HEADER, NESTED_REMINDER)
 import fabric.state
 from fabric.state import _AttributeDict
-from fabric.tasks import Task, _crawl, crawl, get_hosts, _merge
+from fabric.tasks import Task
+from fabric.task_utils import _crawl, crawl, get_hosts, merge
 
 from utils import (mock_streams, patched_env, eq_, FabricTest, fabfile,
     path_prefix, aborts)
@@ -77,8 +78,8 @@ def test_escaped_task_arg_split():
 # Host/role decorators
 #
 
-def eq_hosts(command, host_list):
-    eq_(set(get_hosts(command, [], [], [])), set(host_list))
+def eq_hosts(command, host_list, env=None):
+    eq_(set(get_hosts(command, [], [], [], env)), set(host_list))
 
 def test_hosts_decorator_by_itself():
     """
@@ -147,7 +148,6 @@ def test_hosts_as_tuples():
     eq_hosts(command, ['foo', 'bar'])
 
 
-@patched_env({'hosts': ['foo']})
 def test_hosts_decorator_overrides_env_hosts():
     """
     If @hosts is used it replaces any env.hosts value
@@ -156,9 +156,8 @@ def test_hosts_decorator_overrides_env_hosts():
     def command():
         pass
     eq_hosts(command, ['bar'])
-    assert 'foo' not in get_hosts(command, [], [], [])
+    assert 'foo' not in get_hosts(command, [], [], [], {'hosts': ['foo']})
 
-@patched_env({'hosts': ['foo']})
 def test_hosts_decorator_overrides_env_hosts_with_task_decorator_first():
     """
     If @hosts is used it replaces any env.hosts value even with @task
@@ -168,26 +167,24 @@ def test_hosts_decorator_overrides_env_hosts_with_task_decorator_first():
     def command():
         pass
     eq_hosts(command, ['bar'])
-    assert 'foo' not in get_hosts(command, [], [])
+    assert 'foo' not in get_hosts(command, [], [], {'hosts': ['foo']})
 
-@patched_env({'hosts': ['foo']})
 def test_hosts_decorator_overrides_env_hosts_with_task_decorator_last():
     @hosts('bar')
     @task
     def command():
         pass
     eq_hosts(command, ['bar'])
-    assert 'foo' not in get_hosts(command, [], [])
+    assert 'foo' not in get_hosts(command, [], [], {'hosts': ['foo']})
 
-
-@patched_env({'hosts': [' foo ', 'bar '], 'roles': [], 'exclude_hosts': []})
 def test_hosts_stripped_env_hosts():
     """
     Make sure hosts defined in env.hosts are cleaned of extra spaces
     """
     def command():
         pass
-    eq_hosts(command, ['foo', 'bar'])
+    myenv = {'hosts': [' foo ', 'bar '], 'roles': [], 'exclude_hosts': []}
+    eq_hosts(command, ['foo', 'bar'], myenv)
 
 
 spaced_roles = {
@@ -195,7 +192,6 @@ spaced_roles = {
     'r2': ['b', 'c'],
 }
 
-@patched_env({'roledefs': spaced_roles})
 def test_roles_stripped_env_hosts():
     """
     Make sure hosts defined in env.roles are cleaned of extra spaces
@@ -203,7 +199,7 @@ def test_roles_stripped_env_hosts():
     @roles('r1')
     def command():
         pass
-    eq_hosts(command, ['a', 'b'])
+    eq_hosts(command, ['a', 'b'], {'roledefs': spaced_roles})
 
 
 def test_hosts_decorator_expands_single_iterable():
@@ -253,13 +249,12 @@ def test_get_hosts_excludes_global_exclude_hosts_from_global_hosts():
 # Basic role behavior
 #
 
-@patched_env({'roledefs': fake_roles})
 @aborts
 def test_aborts_on_nonexistent_roles():
     """
     Aborts if any given roles aren't found
     """
-    _merge([], ['badrole'])
+    merge([], ['badrole'], [], {})
 
 
 lazy_role = {'r1': lambda: ['a', 'b']}
