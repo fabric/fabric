@@ -93,7 +93,6 @@ def _parallel_tasks(commands_to_run):
 
 
 
-
 def execute(task, *args, **kwargs):
     """
     Execute ``task`` (callable or name), honoring host/role decorators, etc.
