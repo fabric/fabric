@@ -40,6 +40,45 @@ class Task(object):
     def run(self):
         raise NotImplementedError
 
+    def get_hosts(self, arg_hosts, arg_roles, arg_exclude_hosts, env=None):
+        """
+        Return the host list the given task should be using.
+
+        See :ref:`execution-model` for detailed documentation on how host lists
+        are set.
+        """
+        env = env or {'hosts': [], 'roles': [], 'exclude_hosts': []}
+        roledefs = env.get('roledefs', {})
+        # Command line per-task takes precedence over anything else.
+        if arg_hosts or arg_roles:
+            return merge(arg_hosts, arg_roles, arg_exclude_hosts, roledefs)
+        # Decorator-specific hosts/roles go next
+        func_hosts = getattr(self, 'hosts', [])
+        func_roles = getattr(self, 'roles', [])
+        if func_hosts or func_roles:
+            return merge(func_hosts, func_roles, arg_exclude_hosts, roledefs)
+        # Finally, the env is checked (which might contain globally set lists
+        # from the CLI or from module-level code). This will be the empty list
+        # if these have not been set -- which is fine, this method should
+        # return an empty list if no hosts have been set anywhere.
+        env_vars = map(env.get, "hosts roles exclude_hosts".split())
+        env_vars.append(roledefs)
+        return merge(*env_vars)
+
+    def get_pool_size(self, hosts, default):
+        # Default parallel pool size (calculate per-task in case variables
+        # change)
+        default_pool_size = default or len(hosts)
+        # Allow per-task override
+        pool_size = getattr(self, 'pool_size', default_pool_size)
+        # But ensure it's never larger than the number of hosts
+        pool_size = min((pool_size, len(hosts)))
+        # Inform user of final pool size for this task
+        if state.output.debug:
+            msg = "Parallel tasks now using pool size of %d"
+            print msg % pool_size
+        return pool_size
+
 
 class WrappedCallableTask(Task):
     """
@@ -140,12 +179,10 @@ def execute(task, *args, **kwargs):
     # Filter out hosts/roles kwargs
     new_kwargs, hosts, roles, exclude_hosts = parse_kwargs(kwargs)
     # Set up host list
-    my_env['all_hosts'] = get_hosts(
-        task, hosts, roles, exclude_hosts, state.env
-    )
+    my_env['all_hosts'] = task.get_hosts(hosts, roles, exclude_hosts, state.env)
 
     # Get pool size for this task
-    pool_size = get_pool_size(task, my_env['all_hosts'], state.env.pool_size)
+    pool_size = task.get_pool_size(my_env['all_hosts'], state.env.pool_size)
     # Set up job queue in case parallel is needed
     jobs = JobQueue(pool_size)
     if state.output.debug:

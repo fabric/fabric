@@ -15,8 +15,8 @@ from fabric.main import (parse_arguments, _escape_split,
         COMMANDS_HEADER, NESTED_REMINDER)
 import fabric.state
 from fabric.state import _AttributeDict
-from fabric.tasks import Task
-from fabric.task_utils import _crawl, crawl, get_hosts, merge
+from fabric.tasks import Task, WrappedCallableTask
+from fabric.task_utils import _crawl, crawl, merge
 
 from utils import (mock_streams, patched_env, eq_, FabricTest, fabfile,
     path_prefix, aborts)
@@ -77,6 +77,11 @@ def test_escaped_task_arg_split():
 #
 # Host/role decorators
 #
+
+# Allow calling Task.get_hosts as function instead (meh.)
+def get_hosts(command, *args):
+    print "calling get_hosts with args %r" % (args,)
+    return WrappedCallableTask(command).get_hosts(*args)
 
 def eq_hosts(command, host_list, env=None):
     eq_(set(get_hosts(command, [], [], [], env)), set(host_list))
