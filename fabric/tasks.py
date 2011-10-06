@@ -44,8 +44,8 @@ class Task(object):
         """
         Return the host list the given task should be using.
 
-        See :ref:`execution-model` for detailed documentation on how host lists
-        are set.
+        See :ref:`host-lists` for detailed documentation on how host lists are
+        set.
         """
         env = env or {'hosts': [], 'roles': [], 'exclude_hosts': []}
         roledefs = env.get('roledefs', {})
