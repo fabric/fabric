@@ -10,7 +10,7 @@ import sys
 import fabric
 from fabric import tasks
 from fabric.tasks import WrappedCallableTask, execute
-from fabric.api import run, env, settings
+from fabric.api import run, env, settings, hosts, roles, hide
 from fabric.network import from_dict
 
 from utils import eq_, FabricTest, aborts, mock_streams
@@ -221,6 +221,31 @@ class TestExecute(FabricTest):
             eq_(env.host_string, hostlist.pop(0))
         task = Fake(callable=True, expect_call=True).calls(host_string)
         execute(task, hosts=hosts)
+
+    def test_should_honor_hosts_decorator(self):
+        """
+        should honor @hosts on passed-in task objects
+        """
+        # Make two full copies of a host list
+        hostlist = ['a', 'b', 'c']
+        @hosts(*hostlist[:])
+        def task():
+            eq_(env.host_string, hostlist.pop(0))
+        with hide('running'):
+            execute(task)
+
+    def test_should_honor_roles_decorator(self):
+        """
+        should honor @roles on passed-in task objects
+        """
+        # Make two full copies of a host list
+        roledefs = {'role1': ['a', 'b', 'c']}
+        role_copy = roledefs['role1'][:]
+        @roles('role1')
+        def task():
+            eq_(env.host_string, role_copy.pop(0))
+        with settings(hide('running'), roledefs=roledefs):
+            execute(task)
 
     @with_fakes
     def test_should_set_env_command_to_string_arg(self):
