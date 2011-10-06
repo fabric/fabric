@@ -1,4 +1,6 @@
 from fabric.utils import abort, indent
+from fabric import state
+
 
 # For attribute tomfoolery
 class _Dict(dict):
@@ -79,3 +81,18 @@ def get_hosts(command, arg_hosts, arg_roles, arg_exclude_hosts, env=None):
     # list if no hosts have been set anywhere.
     env_vars = map(env.get, "hosts roles exclude_hosts".split()) + [roledefs]
     return merge(*env_vars)
+
+
+def get_pool_size(task, hosts, default):
+    # Default parallel pool size (calculate per-task in case variables
+    # change)
+    default_pool_size = default or len(hosts)
+    # Allow per-task override
+    pool_size = getattr(task, 'pool_size', default_pool_size)
+    # But ensure it's never larger than the number of hosts
+    pool_size = min((pool_size, len(hosts)))
+    # Inform user of final pool size for this task
+    if state.output.debug:
+        msg = "Parallel tasks now using pool size of %d"
+        print msg % pool_size
+    return pool_size

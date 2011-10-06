@@ -7,7 +7,7 @@ from fabric.utils import abort
 from fabric.network import to_dict, normalize_to_string
 from fabric.context_managers import settings
 from fabric.job_queue import JobQueue
-from fabric.task_utils import merge, crawl, get_hosts
+from fabric.task_utils import merge, crawl, get_hosts, get_pool_size
 
 
 class Task(object):
@@ -67,21 +67,6 @@ class WrappedCallableTask(Task):
 
     def __getattr__(self, k):
         return getattr(self.wrapped, k)
-
-
-def _get_pool_size(task, hosts):
-    # Default parallel pool size (calculate per-task in case variables
-    # change)
-    default_pool_size = state.env.pool_size or len(hosts)
-    # Allow per-task override
-    pool_size = getattr(task, 'pool_size', default_pool_size)
-    # But ensure it's never larger than the number of hosts
-    pool_size = min((pool_size, len(hosts)))
-    # Inform user of final pool size for this task
-    if state.output.debug:
-        msg = "Parallel tasks now using pool size of %d"
-        print msg % pool_size
-    return pool_size
 
 
 def requires_parallel(task):
@@ -177,7 +162,7 @@ def execute(task, *args, **kwargs):
     )
 
     # Get pool size for this task
-    pool_size = _get_pool_size(task, my_env['all_hosts'])
+    pool_size = get_pool_size(task, my_env['all_hosts'], state.env.pool_size)
     # Set up job queue in case parallel is needed
     jobs = JobQueue(pool_size)
     if state.output.debug:
