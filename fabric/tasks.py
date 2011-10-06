@@ -52,8 +52,12 @@ class WrappedCallableTask(Task):
     def __init__(self, callable, *args, **kwargs):
         super(WrappedCallableTask, self).__init__(*args, **kwargs)
         self.wrapped = callable
-        self.__name__ = self.name = callable.__name__
-        self.__doc__ = callable.__doc__
+        # Don't use getattr() here -- we want to avoid touching self.name
+        # entirely so the superclass' value remains default.
+        if hasattr(callable, '__name__'):
+            self.__name__ = self.name = callable.__name__
+        if hasattr(callable, '__doc__'):
+            self.__doc__ = callable.__doc__
 
     def __call__(self, *args, **kwargs):
         return self.run(*args, **kwargs)
