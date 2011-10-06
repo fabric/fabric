@@ -69,14 +69,6 @@ class WrappedCallableTask(Task):
         return getattr(self.wrapped, k)
 
 
-def _run_task(task, args, kwargs):
-    # First, try class-based tasks
-    if hasattr(task, 'run') and callable(task.run):
-        return task.run(*args, **kwargs)
-    # Fallback to callable behavior
-    return task(*args, **kwargs)
-
-
 def _get_pool_size(task, hosts):
     # Default parallel pool size (calculate per-task in case variables
     # change)
@@ -158,6 +150,9 @@ def execute(task, *args, **kwargs):
     else:
         dunder_name = getattr(task, '__name__', None)
         my_env['command'] = getattr(task, 'name', dunder_name)
+    # Normalize to Task instance
+    if not hasattr(task, 'run'):
+        task = WrappedCallableTask(task)
     # Filter out hosts/roles kwargs
     new_kwargs = {}
     hosts = []
@@ -216,7 +211,7 @@ def execute(task, *args, **kwargs):
                     def inner(*args, **kwargs):
                         key = normalize_to_string(state.env.host_string)
                         state.connections.pop(key, "")
-                        _run_task(task, args, kwargs)
+                        task.run(*args, **kwargs)
                     # Stuff into Process wrapper
                     p = multiprocessing.Process(target=inner, args=args,
                         kwargs=new_kwargs)
@@ -226,7 +221,7 @@ def execute(task, *args, **kwargs):
                     jobs.append(p)
                 # Handle serial execution
                 else:
-                    _run_task(task, args, new_kwargs)
+                    task.run(*args, **new_kwargs)
 
         # If running in parallel, block until job queue is emptied
         if jobs:
@@ -235,4 +230,4 @@ def execute(task, *args, **kwargs):
     # Or just run once for local-only
     else:
         with settings(**my_env):
-            _run_task(task, args, new_kwargs)
+            task.run(*args, **new_kwargs)
