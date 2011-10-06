@@ -58,21 +58,21 @@ def merge(hosts, roles, exclude, roledefs):
     return all_hosts
 
 
-def get_hosts(command, arg_hosts, arg_roles, arg_exclude_hosts, env=None):
+def get_hosts(task, arg_hosts, arg_roles, arg_exclude_hosts, env=None):
     """
-    Return the host list the given command should be using.
+    Return the host list the given task should be using.
 
     See :ref:`execution-model` for detailed documentation on how host lists are
     set.
     """
     env = env or {}
     roledefs = env.get('roledefs', {})
-    # Command line per-command takes precedence over anything else.
+    # Command line per-task takes precedence over anything else.
     if arg_hosts or arg_roles:
         return merge(arg_hosts, arg_roles, arg_exclude_hosts, roledefs)
     # Decorator-specific hosts/roles go next
-    func_hosts = getattr(command, 'hosts', [])
-    func_roles = getattr(command, 'roles', [])
+    func_hosts = getattr(task, 'hosts', [])
+    func_roles = getattr(task, 'roles', [])
     if func_hosts or func_roles:
         return merge(func_hosts, func_roles, arg_exclude_hosts, roledefs)
     # Finally, the env is checked (which might contain globally set lists from
