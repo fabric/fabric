@@ -394,11 +394,14 @@ def put(local_path=None, remote_path=None, use_sudo=False,
     ftp = SFTP(env.host_string)
 
     with closing(ftp) as ftp:
-        # Expand tildes (assumption: default remote cwd is user $HOME)
         home = ftp.normalize('.')
 
         # Empty remote path implies cwd
         remote_path = remote_path or home
+
+        # Expand tildes
+        if remote_path.startswith('~'):
+            remote_path = remote_path.replace('~', home, 1)
 
         # Honor cd() (assumes Unix style file paths on remote end)
         if not os.path.isabs(remote_path) and env.get('cwd'):
