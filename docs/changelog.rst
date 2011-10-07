@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`323` `~fabric.operations.put` forgot how to expand leading tildes in
+  the remote file path. This has been corrected. Thanks to Piet Delport for the
+  catch.
 * :bug:`182` During display of remote stdout/stderr, Fabric occasionally
   printed extraneous line prefixes (which in turn sometimes overwrote wrapped
   text.) This has been fixed.
