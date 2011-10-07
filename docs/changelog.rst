@@ -25,6 +25,11 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :feature:`21` It is now possible, using the new `~fabric.tasks.execute` API
+  call, to execute task objects (by reference or by name) from within other
+  tasks or in library mode. `~fabric.tasks.execute` honors the other tasks'
+  `~fabric.decorators.hosts`/`~fabric.decorators.roles` decorators, and also
+  supports passing in explicit host and/or role arguments.
 * :feature:`19` Tasks may now be optionally executed in parallel. Please see
   the :doc:`parallel execution docs </usage/parallel>` for details.
 * :bug:`182` During display of remote stdout/stderr, Fabric occasionally
