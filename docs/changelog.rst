@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`323` `~fabric.operations.put` forgot how to expand leading tildes in
+  the remote file path. This has been corrected. Thanks to Piet Delport for the
+  catch.
 * :feature:`21` It is now possible, using the new `~fabric.tasks.execute` API
   call, to execute task objects (by reference or by name) from within other
   tasks or in library mode. `~fabric.tasks.execute` honors the other tasks'
