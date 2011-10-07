@@ -124,8 +124,12 @@ def runs_once(func):
     2nd, 3rd, ..., Nth time it is called, and will return the value of the
     original run.
 
-    This includes parallel execution; even in a parallel run, tasks decorated
-    by ``@runs_once`` will execute only once.
+    .. warning::
+        This decorator is not compatible with Fabric's :doc:`parallel execution
+        mode </usage/parallel>`; when used alongside
+        `~fabric.decorators.parallel` or :option:`-P`, or when decorating
+        subtasks of parallel tasks, each parallel copy of the decorated task
+        will itself run one time, resulting in multiple runs.
     """
     @wraps(func)
     def decorated(*args, **kwargs):

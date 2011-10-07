@@ -7,8 +7,9 @@ items, though within Fabric itself only ``Process`` objects are used/supported.
 
 from pprint import pprint
 from Crypto import Random 
+import time
 
-from fabric.state import env
+from fabric.state import env, io_sleep
 
 
 class JobQueue(object):
@@ -145,6 +146,7 @@ class JobQueue(object):
                     job.join()
 
                 self._finished = True
+            time.sleep(io_sleep)
 
 
 #### Sample 
