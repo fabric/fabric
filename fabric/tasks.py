@@ -204,11 +204,18 @@ def execute(task, *args, **kwargs):
                     # if it can't.
                     try:
                         import multiprocessing
-                    except ImportError, e:
-                        msg = "At least one task needs to be run in parallel, but the\nmultiprocessing module cannot be imported:"
-                        msg += "\n\n\t%s\n\n" % e
-                        msg += "Please make sure the module is installed or that the above ImportError is\nfixed."
-                        abort(msg)
+                    except ImportError:
+                        import traceback
+                        import textwrap
+                        tb = traceback.format_exc()
+                        abort(tb + textwrap.dedent("""
+                            At least one task needs to be run in parallel, but
+                            the multiprocessing module cannot be imported (see
+                            traceback, above).
+
+                            Please make sure the module is installed or that
+                            the above ImportError is fixed.
+                        """).rstrip())
 
                     # Wrap in another callable that nukes the child's cached
                     # connection object, if needed, to prevent shared-socket

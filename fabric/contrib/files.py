@@ -101,8 +101,10 @@ def upload_template(filename, destination, context=None, use_jinja=False,
             from jinja2 import Environment, FileSystemLoader
             jenv = Environment(loader=FileSystemLoader(template_dir or '.'))
             text = jenv.get_template(filename).render(**context or {})
-        except ImportError, e:
-            abort("tried to use Jinja2 but was unable to import: %s" % e)
+        except ImportError:
+            import traceback
+            tb = traceback.format_exc()
+            abort(tb + "\nCould not import Jinja2 (see traceback above)")
     else:
         with open(filename) as inputfile:
             text = inputfile.read()

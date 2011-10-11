@@ -20,11 +20,13 @@ try:
     warnings.simplefilter('ignore', DeprecationWarning)
     import paramiko as ssh
 except ImportError, e:
-    print >> sys.stderr, """There was a problem importing our SSH library. Specifically:
-
-    %s
-
-Please make sure all dependencies are installed and importable.""" % e
+    import traceback
+    import textwrap
+    traceback.print_exc()
+    print >> sys.stderr, textwrap.dedent("""
+        There was a problem importing our SSH library (see traceback above).
+        Please make sure all dependencies are installed and importable.
+    """).rstrip()
     sys.exit(1)
 
 
