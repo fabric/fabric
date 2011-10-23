@@ -25,6 +25,7 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :release:`1.0.5 <2011-10-23>`
 * :bug:`182` During display of remote stdout/stderr, Fabric occasionally
   printed extraneous line prefixes (which in turn sometimes overwrote wrapped
   text.) This has been fixed.
