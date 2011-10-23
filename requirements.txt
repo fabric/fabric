@@ -6,10 +6,12 @@
 # execute "pip install Mercurial" before using this file. Otherwise it will
 # bail out upon trying to install Fudge from BitBucket.
 
-pycrypto >= 1.9
+# Test runner/testing utils
 nose
+# Rudolf adds color to the output of 'fab test'. This is a custom fork
+# addressing Python 2.7 and Nose's 'skip' plugin compatibility issues.
 -e git+https://github.com/bitprophet/rudolf#egg=rudolf
-coverage
-pylint
+# Mocking library
 Fudge < 1.0
+# Documentation generation
 Sphinx >= 0.6

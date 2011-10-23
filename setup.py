@@ -37,7 +37,7 @@ setup(
     url='http://fabfile.org',
     packages=find_packages(),
     test_suite='nose.collector',
-    tests_require=['nose', 'fudge'],
+    tests_require=['nose', 'fudge<1.0'],
     install_requires=['paramiko>=1.7.7.1'],
     entry_points={
         'console_scripts': [
