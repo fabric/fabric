@@ -32,14 +32,14 @@ Longer-term but probably still 1.x plans
 
 In no particular order, some potential future feature releases:
 
-* Fork Paramiko and fix `a number of outstanding issues/deficiencies
-  <https://github.com/fabric/fabric/issues/275>`_ that cause problems for
-  Fabric itself (authentication failure reasons being unclear, lack of SSH
-  agent forwarding and/or gateway support, etc.)
+* Work on our fork of Paramiko, ``ssh``, to fix `a number of outstanding
+  issues/deficiencies <https://github.com/fabric/fabric/issues/275>`_ that
+  cause problems for Fabric itself (authentication failure reasons being
+  unclear, lack of SSH agent forwarding and/or gateway support, etc.)
 * Re-examine `Tav's fork
   <http://tav.espians.com/fabric-python-with-cleaner-api-and-parallel-deployment-support.html>`_
   and see if anything remains which A) has not already been implemented based
-  on older work, such as ``@task`` and parallel execution, and B) fits well
+  on older work, (meaning not ``@task`` or parallel execution), and B) fits well
   with the current vision for Fabric's feature set and style/behavior.
 * Improve core execution mechanisms, mostly by chopping up ``fab``'s action
   loop and exposing chunks of it via the API.

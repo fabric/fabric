@@ -81,7 +81,7 @@ def test_list_folder():
         ),
     ):
         # Pass in fake server obj. (Can't easily clean up API to be more
-        # testable since it's all implementing Paramiko interface stuff.)
+        # testable since it's all implementing 'ssh' interface stuff.)
         server = AttrHolder()
         server.files = file_map
         interface = FakeSFTPServer(server)

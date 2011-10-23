@@ -36,7 +36,7 @@ def _pty_size():
     """
     Obtain (rows, cols) tuple for sizing a pty on the remote end.
 
-    Defaults to 80x24 (which is also the Paramiko default) but will detect
+    Defaults to 80x24 (which is also the 'ssh' lib's default) but will detect
     local (stdout-based) terminal window size on non-Windows platforms.
     """
     rows, cols = 24, 80

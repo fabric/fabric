@@ -101,9 +101,9 @@ def _equalize(lists, fillval=None):
     return lists
 
 
-class ParamikoServer(ssh.ServerInterface):
+class TestServer(ssh.ServerInterface):
     """
-    Test-ready server implementing Paramiko's server interface parent class.
+    Test server implementing the 'ssh' lib's server interface parent class.
 
     Mostly just handles the bare minimum necessary to handle SSH-level things
     such as honoring authentication types and exec/shell/etc requests.
@@ -155,7 +155,7 @@ class SSHServer(ThreadingMixIn, TCPServer):
     """
     def _socket_info(self, addr_tup):
         """
-        Clone of the very top of Paramiko (1.7.6) SSHClient.connect().
+        Clone of the very top of Paramiko 1.7.6 SSHClient.connect().
 
         We must use this in order to make sure that our address family matches
         up with the client side (which we cannot control, and which varies
@@ -395,7 +395,7 @@ def serve_responses(responses, files, passwords, home, pubkeys, port):
             transport.add_server_key(ssh.RSAKey(filename=SERVER_PRIVKEY))
             transport.set_subsystem_handler('sftp', ssh.SFTPServer,
                 sftp_si=FakeSFTPServer)
-            server = ParamikoServer(passwords, home, pubkeys, files)
+            server = TestServer(passwords, home, pubkeys, files)
             transport.start_server(server=server)
             self.ssh_server = server
             self.transport = transport

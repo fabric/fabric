@@ -229,16 +229,16 @@ def connect(user, host, port):
             # Otherwise, assume an auth exception, and prompt for new/better
             # password.
 
-            # Paramiko doesn't handle prompting for locked private keys (i.e.
-            # keys with a passphrase and not loaded into an agent) so we have
-            # to detect this and tweak our prompt slightly.  (Otherwise,
-            # however, the logic flow is the same, because Paramiko's connect()
-            # method overrides the password argument to be either the login
-            # password OR the private key passphrase. Meh.)
+            # The 'ssh' library doesn't handle prompting for locked private
+            # keys (i.e.  keys with a passphrase and not loaded into an agent)
+            # so we have to detect this and tweak our prompt slightly.
+            # (Otherwise, however, the logic flow is the same, because
+            # ssh's connect() method overrides the password argument to be
+            # either the login password OR the private key passphrase. Meh.)
             #
             # NOTE: This will come up if you normally use a
             # passphrase-protected private key with ssh-agent, and enter an
-            # incorrect remote username, because Paramiko:
+            # incorrect remote username, because ssh.connect:
             # * Tries the agent first, which will fail as you gave the wrong
             # username, so obviously any loaded keys aren't gonna work for a
             # nonexistent remote account;
@@ -247,11 +247,11 @@ def connect(user, host, port):
             # because you didn't enter a password, because you're using
             # ssh-agent;
             # * In this condition (trying a key file, password is None)
-            # Paramiko raises PasswordRequiredException.
+            # ssh raises PasswordRequiredException.
             text = None
             if e.__class__ is ssh.PasswordRequiredException:
                 # NOTE: we can't easily say WHICH key's passphrase is needed,
-                # because Paramiko doesn't provide us with that info, and
+                # because ssh doesn't provide us with that info, and
                 # env.key_filename may be a list of keys, so we can't know
                 # which one raised the exception. Best not to try.
                 prompt = "[%s] Passphrase for private key"

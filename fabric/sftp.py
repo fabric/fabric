@@ -12,7 +12,7 @@ from fabric.utils import warn
 
 class SFTP(object):
     """
-    SFTP helper class, which is also a facade for paramiko.SFTPClient.
+    SFTP helper class, which is also a facade for ssh.SFTPClient.
     """
     def __init__(self, host_string):
         self.ftp = connections[host_string].open_sftp()
@@ -114,8 +114,8 @@ class SFTP(object):
         if local_is_path:
             # Interpolate, then abspath (to make sure any /// are compressed)
             local_path = os.path.abspath(local_path % path_vars)
-            # Ensure we give Paramiko a file by prepending and/or creating
-            # local directories as appropriate.
+            # Ensure we give ssh.SFTPCLient a file by prepending and/or
+            # creating local directories as appropriate.
             dirpath, filepath = os.path.split(local_path)
             if dirpath and not os.path.exists(dirpath):
                 os.makedirs(dirpath)

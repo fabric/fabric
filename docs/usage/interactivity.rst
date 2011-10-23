@@ -55,10 +55,10 @@ time, they can become garbled or meshed together. While this can sometimes be
 mitigated by line-buffering one of the streams and not the other, it's still a
 serious issue.
 
-To solve this problem, Fabric uses a Paramiko setting that merges the two
-streams at a low level and causes output to appear more naturally. This setting
-is represented in Fabric as the :ref:`combine-stderr` env var and keyword
-argument, and is ``True`` by default.
+To solve this problem, Fabric uses a setting in our SSH layer which merges the
+two streams at a low level and causes output to appear more naturally. This
+setting is represented in Fabric as the :ref:`combine-stderr` env var and
+keyword argument, and is ``True`` by default.
 
 Due to this default setting, output will appear correctly, but at the
 cost of an empty ``.stderr`` attribute on the return values of

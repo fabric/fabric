@@ -303,8 +303,8 @@ contain the same value.
 
 **Default:** ``False``
 
-If ``True``, will tell Paramiko not to seek out running SSH agents when using
-key-based authentication.
+If ``True``, will tell the SSH layer not to seek out running SSH agents when
+using key-based authentication.
 
 .. versionadded:: 0.9.1
 
@@ -315,9 +315,9 @@ key-based authentication.
 
 **Default:** ``False``
 
-If ``True``, will tell Paramiko not to load any private key files from one's
-``$HOME/.ssh/`` folder. (Key files explicitly loaded via ``fab -i`` will still
-be used, of course.)
+If ``True``, will tell the SSH layer not to load any private key files from
+one's ``$HOME/.ssh/`` folder. (Key files explicitly loaded via ``fab -i`` will
+still be used, of course.)
 
 .. versionadded:: 0.9.1
 

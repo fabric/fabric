@@ -18,8 +18,8 @@ In order for Fabric's installation to succeed, you will need four primary pieces
 
 * the Python programming language;
 * the ``setuptools`` packaging/installation library;
-* the PyCrypto cryptography library;
-* and the Paramiko SSH2 library.
+* the Python ``ssh`` SSH2 library;
+* and ``ssh``'s dependency, the PyCrypto cryptography library.
 
 and, if using the :doc:`parallel execution mode </usage/parallel>`:
 
@@ -59,11 +59,11 @@ setuptools dependency in the future, or include alternative support for the
 PyCrypto
 --------
 
-`PyCrypto <http://www.amk.ca/python/code/crypto.html>`_ is a dependency of
-Paramiko which provides the low-level (C-based) encryption algorithms used to
-run SSH. There are a couple gotchas associated with installing PyCrypto: its
-compatibility with Python's package tools, and the fact that it is a C-based
-extension.
+`PyCrypto <http://www.amk.ca/python/code/crypto.html>`_  provides the low-level
+(C-based) encryption algorithms used to run SSH, and is thus required by our
+SSH library. There are a couple gotchas associated with installing PyCrypto:
+its compatibility with Python's package tools, and the fact that it is a
+C-based extension.
 
 .. _pycrypto-and-pip:
 
@@ -224,16 +224,16 @@ Windows users who already have ActiveState's `ActivePython
 <http://www.activestate.com/activepython/downloads>`_ distribution installed
 may find Fabric is best installed with `its package manager, PyPM
 <http://code.activestate.com/pypm/>`_. Below is example output from an
-installation of Fabric 0.9.4 via ``pypm``::
+installation of Fabric via ``pypm``::
 
     C:\> pypm install fabric
     The following packages will be installed into "%APPDATA%\Python" (2.7):
-     paramiko-1.7.6 pycrypto-2.0.1 fabric-0.9.4
-    Get: [pypm-free.activestate.com] fabric 0.9.4
-    Get: [pypm-free.activestate.com] paramiko 1.7.6
-    Get: [pypm-free.activestate.com] pycrypto 2.0.1
-    Installing paramiko-1.7.6
-    Installing pycrypto-2.0.1
-    Installing fabric-0.9.4
+     ssh-1.7.8 pycrypto-2.4 fabric-1.3.0
+    Get: [pypm-free.activestate.com] fabric 1.3.0
+    Get: [pypm-free.activestate.com] ssh 1.7.8
+    Get: [pypm-free.activestate.com] pycrypto 2.4
+    Installing ssh-1.7.8
+    Installing pycrypto-2.4
+    Installing fabric-1.3.0
     Fixing script %APPDATA%\Python\Scripts\fab-script.py
     C:\>

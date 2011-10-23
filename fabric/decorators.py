@@ -169,7 +169,9 @@ def parallel(pool_size=None):
     def real_decorator(func):
         @wraps(func)
         def inner(*args, **kwargs):
-            # Required for Paramiko/PyCrypto to be happy in multiprocessing
+            # Required for ssh/PyCrypto to be happy in multiprocessing
+            # (as far as we can tell, this is needed even with the extra such
+            # calls in newer versions of the 'ssh' library.)
             Random.atfork()
             return func(*args, **kwargs)
         inner.parallel = True
