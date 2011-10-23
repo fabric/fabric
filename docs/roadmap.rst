@@ -14,8 +14,6 @@ you're reading `the latest version
 Near-term feature releases and support work
 ===========================================
 
-* Fabric **1.3**: Parallel task execution, using Morgan Goose's
-  `multiprocessing`-based work.
 * Move non-code-related docs to a new static site on ``www.fabfile.org``
   (:issue:`419`).
 * Fabric **1.4**: Logging integration (:issue:`57`) and other UI tweaks,
