@@ -31,9 +31,9 @@ Changelog
 * :support:`275` To support an edge use case of the features released in
   :issue:`19`, and to lay the foundation for :issue:`275`, we have forked
   Paramiko into the `Python 'ssh' library <http://pypi.python.org/pypi/ssh/>`_
-  and changed our dependency to it. This may have implications for the more
-  uncommon install use cases, and package maintainers, but we hope to iron out
-  any issues as they come up.
+  and changed our dependency to it for Fabric 1.3 and higher. This may have
+  implications for the more uncommon install use cases, and package
+  maintainers, but we hope to iron out any issues as they come up.
 * :bug:`323` `~fabric.operations.put` forgot how to expand leading tildes in
   the remote file path. This has been corrected. Thanks to Piet Delport for the
   catch.
