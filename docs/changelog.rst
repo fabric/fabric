@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :release:`1.2.3 <2011-10-23>`
+* :release:`1.1.5 <2011-10-23>`
+* :release:`1.0.5 <2011-10-23>`
 * :support:`275` To support an edge use case of the features released in
   :issue:`19`, and to lay the foundation for :issue:`275`, we have forked
   Paramiko into the `Python 'ssh' library <http://pypi.python.org/pypi/ssh/>`_
