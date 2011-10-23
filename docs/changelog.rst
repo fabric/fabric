@@ -25,6 +25,7 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :release:`1.3.0 <2011-10-23>`
 * :release:`1.2.3 <2011-10-23>`
 * :release:`1.1.5 <2011-10-23>`
 * :release:`1.0.5 <2011-10-23>`
