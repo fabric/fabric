@@ -76,7 +76,7 @@ specific versions of Python, ``pip`` and PyCrypto can prevent installation of
 PyCrypto. Specifically:
 
 * Python = 2.5.x
-* PyCrypto >= 2.1
+* PyCrypto >= 2.1 (which is required to run Fabric >= 1.3)
 * ``pip`` < 0.8.1
 
 When all three criteria are met, you may encounter ``No such file or
@@ -87,10 +87,10 @@ The fix is simply to make sure at least one of the above criteria is not met,
 by doing the following (in order of preference):
 
 * Upgrade to ``pip`` 0.8.1 or above, e.g. by running ``pip install -U pip``.
-* Explicitly install PyCrypto 2.0.1 (which is the latest version known to work with
-  Fabric which does not cause the installation problem) via ``pip install
-  PyCrypto==2.0.1``.
 * Upgrade to Python 2.6 or above.
+* Downgrade to Fabric 1.2.x, which does not require PyCrypto >= 2.1, and
+  install PyCrypto 2.0.1 (the oldest version on PyPI which works with Fabric
+  1.2.)
 
 
 C extension
