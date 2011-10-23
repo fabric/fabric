@@ -5,7 +5,7 @@ import copy
 import getpass
 import sys
 
-import paramiko
+import ssh
 from nose.tools import with_setup, ok_
 from fudge import (Fake, clear_calls, clear_expectations, patch_object, verify,
     with_patched_object, patched_context, with_fakes)
@@ -159,7 +159,7 @@ class TestNetwork(FabricTest):
     @server()
     def test_saved_authentication_returns_client_object(self):
         cache = HostConnectionCache()
-        assert isinstance(cache[env.host_string], paramiko.SSHClient)
+        assert isinstance(cache[env.host_string], ssh.SSHClient)
 
     @server()
     @with_fakes

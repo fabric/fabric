@@ -18,7 +18,7 @@ from fabric.utils import abort, handle_prompt_abort
 try:
     import warnings
     warnings.simplefilter('ignore', DeprecationWarning)
-    import paramiko as ssh
+    import ssh
 except ImportError, e:
     print >> sys.stderr, """There was a problem importing our SSH library. Specifically:
 

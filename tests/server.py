@@ -14,7 +14,7 @@ from StringIO import StringIO
 from functools import wraps
 from Python26SocketServer import BaseRequestHandler, ThreadingMixIn, TCPServer
 
-import paramiko as ssh
+import ssh
 
 from fabric.operations import _sudo_prefix
 from fabric.api import env, hide
