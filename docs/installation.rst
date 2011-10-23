@@ -135,6 +135,9 @@ you'll need to install it manually; the recommended route, as usual, is via
     If you encounter this problem, either use :ref:`env.pool_size / -z
     <pool-size>` to limit the amount of concurrency, or upgrade to Python
     >=2.6.3.
+    
+    Python 2.5 is unaffected, as it requires the PyPI version of
+    ``multiprocessing``, which is newer than that shipped with Python <2.6.3.
 
 Development dependencies
 ------------------------
