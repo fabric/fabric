@@ -39,8 +39,6 @@ In no particular order, some potential future feature releases:
   and see if anything remains which A) has not already been implemented based
   on older work, (meaning not ``@task`` or parallel execution), and B) fits well
   with the current vision for Fabric's feature set and style/behavior.
-* Improve core execution mechanisms, mostly by chopping up ``fab``'s action
-  loop and exposing chunks of it via the API.
 * Improved object-oriented design, both internal refactoring and at the API
   level (for example, ``Host`` objects as an alternative to host strings.)
 
