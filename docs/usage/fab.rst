@@ -174,6 +174,12 @@ below.
 
     .. versionadded:: 1.1
 
+.. cmdoption:: --linewise
+
+    Forces output to be buffered line-by-line instead of byte-by-byte. Often useful or required for :ref:`parallel execution <linewise-output>`.
+
+    .. versionadded:: 1.3
+
 .. cmdoption:: -l, --list
 
     Imports a fabfile as normal, but then prints a list of all discovered tasks
