@@ -82,7 +82,7 @@ class JobQueue(object):
             if self._debug:
                 print("job queue appended %s." % process.name)
 
-    def start(self):
+    def run(self):
         """
         This is the workhorse. It will take the intial jobs from the _queue,
         start them, add them to _running, and then go into the main running
@@ -94,6 +94,8 @@ class JobQueue(object):
 
         To end the loop, there have to be no running procs, and no more procs
         to be run in the queue.
+
+        This function returns an iterable of all its children's exit codes.
         """
         def _advance_the_queue():
             """
@@ -148,6 +150,8 @@ class JobQueue(object):
                 self._finished = True
             time.sleep(io_sleep)
 
+        return [x.exitcode for x in self._completed]
+
 
 #### Sample 
 
@@ -184,7 +188,7 @@ def try_using(parallel_type):
 
     # Close up the queue and then start it's execution
     jobs.close()
-    jobs.start()
+    jobs.run()
 
 
 if __name__ == '__main__':
