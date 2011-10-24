@@ -286,6 +286,21 @@ set/appended to with :option:`-i`.
 
 .. seealso:: `Paramiko's documentation for SSHClient.connect() <http://www.lag.net/paramiko/docs/paramiko.SSHClient-class.html#connect>`_
 
+.. _env-linewise:
+
+``linewise``
+------------
+
+**Default:** ``False``
+
+Forces buffering by line instead of by character/byte, typically when running
+in parallel mode. May be activated via :option:`--linewise`.
+
+.. seealso:: :ref:`linewise-output`
+
+.. versionadded:: 1.3
+
+
 .. _local-user:
 
 ``local_user``

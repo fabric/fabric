@@ -143,3 +143,27 @@ For example, to run on 5 hosts at a time::
 Or skip the ``pool_size`` kwarg and instead::
 
     $ fab -P -z 5 heavy_task
+
+.. _linewise-output:
+
+Linewise vs bytewise output
+===========================
+
+Fabric's default mode of printing to the terminal is byte-by-byte, in order to
+support :doc:`/usage/interactivity`. This often gives poor results when running
+in parallel mode, as the multiple processes may write to your terminal's
+standard out stream simultaneously.
+
+To help offset this problem, you may set :ref:`env.linewise <env-linewise>` to
+``True`` or specify :option:`--linewise`. This will cause you to lose most of
+the benefits outlined in the above link Fabric's remote interactivity features,
+but as those do not map well to parallel invocations, it's typically a fair
+trade.
+
+There's no way to avoid the multiple processes mixing up on a line-by-line
+basis, but you will at least be able to tell them apart by the host-string line
+prefix.
+
+.. note::
+    Future versions will add improved logging support to make troubleshooting
+    parallel runs easier.
