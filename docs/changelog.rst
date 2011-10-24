@@ -25,6 +25,7 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :release:`1.3.1 <2011-10-24>`
 * :bug:`457` Ensured that Fabric fast-fails parallel tasks if any child
   processes encountered errors. Previously, multi-task invocations would
   continue to the 2nd, etc task when failures occurred, which does not fit with
