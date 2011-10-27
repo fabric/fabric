@@ -55,6 +55,11 @@ class Task(object):
         # Decorator-specific hosts/roles go next
         func_hosts = getattr(self, 'hosts', [])
         func_roles = getattr(self, 'roles', [])
+        # Allow decorator hosts/roles to be callables
+        if callable(func_hosts):
+            func_hosts = func_hosts()
+        if callable(func_roles):
+            func_roles = func_roles()
         if func_hosts or func_roles:
             return merge(func_hosts, func_roles, arg_exclude_hosts, roledefs)
         # Finally, the env is checked (which might contain globally set lists

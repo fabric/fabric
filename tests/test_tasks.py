@@ -234,6 +234,19 @@ class TestExecute(FabricTest):
         with hide('running'):
             execute(task)
 
+    def test_should_honor_hosts_decorator_with_callable(self):
+        """
+        should honor @hosts with callable argument on passed-in task objects
+        """
+        hostlist = ['a', 'b', 'c']
+        def gen():
+            return hostlist[:]
+        @hosts(gen)
+        def task():
+            eq_(env.host_string, hostlist.pop(0))
+        with hide('running'):
+            execute(task)
+
     def test_should_honor_roles_decorator(self):
         """
         should honor @roles on passed-in task objects
@@ -247,6 +260,19 @@ class TestExecute(FabricTest):
         with settings(hide('running'), roledefs=roledefs):
             execute(task)
 
+    def test_should_honor_roles_decorator_with_callable(self):
+        """
+        should honor @roles with callable argument on passed-in task objects
+        """
+        roledefs = {'role1': ['a', 'b', 'c']}
+        role_copy = roledefs['role1'][:]
+        def gen():
+            return ['role1']
+        @roles(gen)
+        def task():
+            eq_(env.host_string, role_copy.pop(0))
+        with settings(hide('running'), roledefs=roledefs):
+            execute(task)
     @with_fakes
     def test_should_set_env_command_to_string_arg(self):
         """

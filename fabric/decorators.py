@@ -48,8 +48,9 @@ def hosts(*host_list):
             pass
 
     `~fabric.decorators.hosts` may be invoked with either an argument list
-    (``@hosts('host1')``, ``@hosts('host1', 'host2')``) or a single, iterable
-    argument (``@hosts(['host1', 'host2'])``).
+    (``@hosts('host1')``, ``@hosts('host1', 'host2')``), a single, iterable
+    argument (``@hosts(['host1', 'host2'])``), or a callable that returns
+    a list of hosts (``@hosts(some_func)``).
 
     Note that this decorator actually just sets the function's ``.hosts``
     attribute, which is then read prior to executing the function.
@@ -67,7 +68,7 @@ def hosts(*host_list):
         # Allow for single iterable argument as well as *args
         if len(_hosts) == 1 and not isinstance(_hosts[0], basestring):
             _hosts = _hosts[0]
-        inner_decorator.hosts = list(_hosts)
+        inner_decorator.hosts = _hosts if callable(_hosts) else list(_hosts)
         return inner_decorator
     return attach_hosts
 
@@ -91,9 +92,10 @@ def roles(*role_list):
             pass
 
     As with `~fabric.decorators.hosts`, `~fabric.decorators.roles` may be
-    invoked with either an argument list or a single, iterable argument.
-    Similarly, this decorator uses the same mechanism as
-    `~fabric.decorators.hosts` and simply sets ``<function>.roles``.
+    invoked with either an argument list, a single, iterable argument, or
+    a callable that returns a list of roles.  Similarly, this decorator
+    uses the same mechanism as `~fabric.decorators.hosts` and simply sets
+    ``<function>.roles``.
 
     .. versionchanged:: 0.9.2
         Allow a single, iterable argument to be used (same as
@@ -107,7 +109,7 @@ def roles(*role_list):
         # Allow for single iterable argument as well as *args
         if len(_roles) == 1 and not isinstance(_roles[0], basestring):
             _roles = _roles[0]
-        inner_decorator.roles = list(_roles)
+        inner_decorator.roles = _roles if callable(_roles) else list(_roles)
         return inner_decorator
     return attach_roles
 
