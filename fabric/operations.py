@@ -877,6 +877,10 @@ def _run_command(command, shell=True, pty=True, combine_stderr=True,
         msg = "%s() encountered an error (return code %s) while executing '%s'" % (which, status, command)
         _handle_failure(message=msg)
 
+    # Attach command and full command for logging/debugging purposes
+    out.command = given_command
+    out.full_command = wrapped_command
+
     # Attach return code to output string so users who have set things to
     # warn only, can inspect the error code.
     out.return_code = status
@@ -1039,6 +1043,7 @@ def local(command, capture=False):
     finally:
         if dev_null is not None:
             dev_null.close()
+
     # Handle error condition (deal with stdout being None, too)
     out = _AttributeString(stdout.strip() if stdout else "")
     err = _AttributeString(stderr.strip() if stderr else "")
@@ -1049,7 +1054,13 @@ def local(command, capture=False):
         out.failed = True
         msg = "local() encountered an error (return code %s) while executing '%s'" % (p.returncode, command)
         _handle_failure(message=msg)
+
+    # Attach command and full command for logging/debugging purposes
+    out.command = given_command
+    out.full_command = wrapped_command
+
     out.succeeded = not out.failed
+
     # If we were capturing, this will be a string; otherwise it will be None.
     return out
 
