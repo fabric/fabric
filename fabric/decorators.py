@@ -35,7 +35,7 @@ def task(*args, **kwargs):
     return wrapper if invoked else wrapper(func)
 
 
-def hosts(*host_list):
+def hosts(*host_list, **kwargs):
     """
     Decorator defining which host or hosts to execute the wrapped function on.
 
@@ -65,15 +65,22 @@ def hosts(*host_list):
         def inner_decorator(*args, **kwargs):
             return func(*args, **kwargs)
         _hosts = host_list
+        
+        if len(_hosts) > 0 and callable(_hosts[0]):
+            def get_hosts():
+                return _hosts[0](*_hosts[1:], **kwargs)
+            inner_decorator.hosts = get_hosts
+            return inner_decorator
+        
         # Allow for single iterable argument as well as *args
-        if len(_hosts) == 1 and not isinstance(_hosts[0], basestring):
+        elif len(_hosts) == 1 and not isinstance(_hosts[0], basestring):
             _hosts = _hosts[0]
-        inner_decorator.hosts = _hosts if callable(_hosts) else list(_hosts)
+        inner_decorator.hosts = list(_hosts)
         return inner_decorator
     return attach_hosts
 
 
-def roles(*role_list):
+def roles(*role_list, **kwargs):
     """
     Decorator defining a list of role names, used to look up host lists.
 
@@ -106,10 +113,17 @@ def roles(*role_list):
         def inner_decorator(*args, **kwargs):
             return func(*args, **kwargs)
         _roles = role_list
+        
+        if len(_roles) > 0 and callable(_roles[0]):
+            def get_roles():
+                return _roles[0](*_roles[1:], **kwargs)
+            inner_decorator.roles = get_roles
+            return inner_decorator
+        
         # Allow for single iterable argument as well as *args
         if len(_roles) == 1 and not isinstance(_roles[0], basestring):
             _roles = _roles[0]
-        inner_decorator.roles = _roles if callable(_roles) else list(_roles)
+        inner_decorator.roles = list(_roles)
         return inner_decorator
     return attach_roles
 

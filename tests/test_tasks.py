@@ -239,9 +239,12 @@ class TestExecute(FabricTest):
         should honor @hosts with callable argument on passed-in task objects
         """
         hostlist = ['a', 'b', 'c']
-        def gen():
-            return hostlist[:]
-        @hosts(gen)
+        def gen(*append, **kwargs):
+            return hostlist[:] + list(append)
+        
+        hostlist.append('d')
+        hostlist.append('e')
+        @hosts(gen, 'd', 'e')
         def task():
             eq_(env.host_string, hostlist.pop(0))
         with hide('running'):
@@ -264,13 +267,16 @@ class TestExecute(FabricTest):
         """
         should honor @roles with callable argument on passed-in task objects
         """
-        roledefs = {'role1': ['a', 'b', 'c']}
-        role_copy = roledefs['role1'][:]
-        def gen():
-            return ['role1']
-        @roles(gen)
+        roledefs = {
+            'role1': ['a', 'b', 'c'],
+            'role2': ['d', 'e']
+        }
+        roles_expected = ['a', 'b', 'c', 'd', 'e']
+        def gen(*args):
+            return list(args)
+        @roles(gen, 'role1', 'role2')
         def task():
-            eq_(env.host_string, role_copy.pop(0))
+            eq_(env.host_string, roles_expected.pop(0))
         with settings(hide('running'), roledefs=roledefs):
             execute(task)
     @with_fakes
