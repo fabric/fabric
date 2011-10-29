@@ -26,32 +26,7 @@ connecting: :ref:`env.host_string <host_string>`. All of the other mechanisms
 for setting hosts are interpreted by the ``fab`` tool when it runs, and don't
 matter when running as a library.
 
-This is a good thing, insofar as it gives library users very granular control
-over which commands are run on which hosts. However, at present, it also means
-you may need to do a bit more heavy lifting compared to a regular fabfile: you
-can't rely on :ref:`env.hosts <hosts>` or the host/role decorators, and instead
-need to write your own ``for`` loops.
-
-For example, this is how a fabfile could force a given subroutine (task) to run
-on two hosts in a row::
-
-    @hosts('a', 'b')
-    def mytask():
-        run('ls')
-
-To get the same behavior in library usage, you'd need to do this::
-
-    def mytask():
-        run('ls')
-
-    for host in ['a', 'b']:
-        with settings(host_string=host):
-            mytask()
-
-In future revisions we'll be adding more tools to make this a bit easier,
-perhaps something like ``execute(task_object, host_list)``, but for now it's up
-to you.
-
+That said, most use cases where you want to marry a given task ``X`` and a given list of hosts ``Y`` can, as of Fabric 1.3, be handled with the `~fabric.tasks.execute` function via ``execute(X, hosts=Y)``. Please see `~fabric.tasks.execute`'s documentation for details -- manual host string manipulation should be rarely necessary.
 
 Disconnecting
 =============
@@ -79,7 +54,7 @@ just adds a bit of nice output to this logic)::
 Final note
 ==========
 
-This document is a first draft, and may not cover absolutely every difference
+This document is an early draft, and may not cover absolutely every difference
 between ``fab`` use and library use. However, the above should highlight the
 largest stumbling blocks. When in doubt, note that in the Fabric source code,
 ``fabric/main.py`` contains the bulk of the extra work done by ``fab``, and may
