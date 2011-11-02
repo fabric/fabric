@@ -238,7 +238,8 @@ below.
 
 .. cmdoption:: --show=LEVELS
 
-    A comma-separated list of :doc:`output levels <output_controls>` to show by
+    A comma-separated list of :doc:`output levels <output_controls>` to
+    be added to those that are shown by
     default.
 
 .. seealso:: `~fabric.operations.run`, `~fabric.operations.sudo`
