@@ -55,7 +55,7 @@ setuptools dependency in the future, or include alternative support for the
 PyCrypto
 --------
 
-`PyCrypto <http://www.amk.ca/python/code/crypto.html>`_ is a dependency of
+`PyCrypto <https://www.dlitz.net/software/pycrypto/>`_ is a dependency of
 Paramiko which provides the low-level (C-based) encryption algorithms used to
 run SSH. There are a couple gotchas associated with installing PyCrypto: its
 compatibility with Python's package tools, and the fact that it is a C-based
