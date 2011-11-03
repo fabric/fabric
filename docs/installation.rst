@@ -59,7 +59,7 @@ setuptools dependency in the future, or include alternative support for the
 PyCrypto
 --------
 
-`PyCrypto <http://www.amk.ca/python/code/crypto.html>`_  provides the low-level
+`PyCrypto <https://www.dlitz.net/software/pycrypto/>`_  provides the low-level
 (C-based) encryption algorithms used to run SSH, and is thus required by our
 SSH library. There are a couple gotchas associated with installing PyCrypto:
 its compatibility with Python's package tools, and the fact that it is a
