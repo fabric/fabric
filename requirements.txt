@@ -8,7 +8,7 @@
 
 pycrypto >= 1.9
 nose
-rudolf
+-e git+https://github.com/bitprophet/rudolf#egg=rudolf
 coverage
 pylint
 Fudge < 1.0
