@@ -93,7 +93,7 @@ def puts(text, show_prefix=True, end="\n", flush=False):
         if env.host_string and show_prefix:
             prefix = "[%s] " % env.host_string
         sys.stdout.write(prefix + str(text) + end)
-        if flush:
+        if flush or env.flush:
             sys.stdout.flush()
 
 

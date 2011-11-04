@@ -175,6 +175,12 @@ env_options = [
         help="Python module file to import, e.g. '../other.py'"
     ),
 
+    make_option('--flush',
+        action='store_true',
+        default=False,
+        help="Flush on all puts() calls"
+    ),
+
     make_option('-w', '--warn-only',
         action='store_true',
         default=False,
@@ -270,6 +276,7 @@ env = _AttributeDict({
     'cwd': '',  # Must be empty string, not None, for concatenation purposes
     'echo_stdin': True,
     'exclude_hosts': [],
+    'flush': False,
     'host': None,
     'host_string': None,
     'lcwd': '',  # Must be empty string, not None, for concatenation purposes
