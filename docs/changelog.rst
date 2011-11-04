@@ -25,6 +25,8 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :support:`467` (also :issue:`468`, :issue:`469`) Handful of documentation
+  clarification tweaks. Thanks to Paul Hoffman for the patches.
 * :release:`1.1.5 <2011-10-23>`
 * :release:`1.0.5 <2011-10-23>`
 * :bug:`323` `~fabric.operations.put` forgot how to expand leading tildes in
