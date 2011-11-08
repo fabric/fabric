@@ -25,6 +25,8 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :release:`1.2.4 <2011-11-07>`
+* :release:`1.1.6 <2011-11-07>`
 * :support:`459` Update our `setup.py` files to note that PyCrypto released
   2.4.1, which fixes the setuptools problems.
 * :support:`467` (also :issue:`468`, :issue:`469`) Handful of documentation
