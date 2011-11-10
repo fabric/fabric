@@ -252,7 +252,7 @@ def comment(filename, regex, use_sudo=False, char='#', backup='.bak'):
     )
 
 
-def contains(filename, text, exact=False, use_sudo=False, shell=False):
+def contains(filename, text, exact=False, use_sudo=False, shell=True):
     """
     Return True if ``filename`` contains ``text``.
 
