@@ -25,6 +25,8 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`230` Fix regression re: combo of no fabfile & arbitrary command use.
+  Thanks to Ali Saifee for the catch.
 * :release:`1.2.4 <2011-11-07>`
 * :release:`1.1.6 <2011-11-07>`
 * :support:`459` Update our `setup.py` files to note that PyCrypto released
