@@ -590,6 +590,7 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
         # Load fabfile (which calls its module-level code, including
         # tweaks to env values) and put its commands in the shared commands
         # dict
+        default = None
         if fabfile:
             docstring, callables, default = load_fabfile(fabfile)
             state.commands.update(callables)
