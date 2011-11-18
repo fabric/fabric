@@ -34,15 +34,6 @@ In no particular order, some potential future feature releases:
   issues/deficiencies <https://github.com/fabric/fabric/issues/275>`_ that
   cause problems for Fabric itself (authentication failure reasons being
   unclear, lack of SSH agent forwarding and/or gateway support, etc.)
-* Re-examine `Tav's fork
-  <http://tav.espians.com/fabric-python-with-cleaner-api-and-parallel-deployment-support.html>`_
-  and see if anything remains which A) has not already been implemented based
-  on older work, (meaning not ``@task`` or parallel execution), and B) fits well
-  with the current vision for Fabric's feature set and style/behavior. Caveats:
-    * His code is based on a 1.0 alpha, so changes may not apply cleanly or at
-      all;
-    * It's kept in a mega-repo, so diffing between it and the Fabric repo may
-      be difficult (at least re: reading history.)
 * Improved object-oriented design, both internal refactoring and at the API
   level (for example, ``Host`` objects as an alternative to host strings.)
 
