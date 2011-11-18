@@ -13,8 +13,9 @@ import sys
 import time
 from glob import glob
 from traceback import format_exc
-
 from contextlib import closing
+
+from ssh.agent import AgentClientProxy
 
 from fabric.context_managers import settings, char_buffered
 from fabric.io import output_loop, input_loop
@@ -752,9 +753,9 @@ def _execute(channel, command, pty=True, combine_stderr=None,
             rows, cols = _pty_size()
             channel.get_pty(width=cols, height=rows)
 
-        # request agent
-        from ssh.agent import AgentClientProxy
-        forward = AgentClientProxy(channel)
+        # Use SSH agent forwarding from 'ssh', unless user has turned it off.
+        if not env.no_agent_forward:
+            forward = AgentClientProxy(channel)
 
         # Kick off remote command
         if invoke_shell:

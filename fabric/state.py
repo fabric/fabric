@@ -157,10 +157,19 @@ env_options = [
     ),
 
     # Use -a here to mirror ssh(1) options.
+    # Note, much later on: well, no. ssh -a concerns agent *forwarding*. Sigh.
     make_option('-a', '--no_agent',
         action='store_true',
         default=False,
         help="don't use the running SSH agent"
+    ),
+
+    # Another minor departure from SSH, due to above mixup: use -A to allow
+    # disabling of agent forwarding (which is on by default.)
+    make_option('-A', '--no-agent-forward',
+        action='store_true',
+        default=False,
+        help="don't forward local agent to remote end"
     ),
 
     # No matching option for ssh(1) so just picked something appropriate.

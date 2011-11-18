@@ -324,6 +324,20 @@ using key-based authentication.
 
 .. versionadded:: 0.9.1
 
+.. _no_agent_forward:
+
+``no_agent_forward``
+--------------------
+
+**Default:** ``False``
+
+If ``True``, disables the on-by-default forwarding of your local SSH agent to
+the remote end.
+
+.. versionadded:: 1.4.0
+
+.. seealso:: :option:`-A`
+
 .. _no_keys:
 
 ``no_keys``

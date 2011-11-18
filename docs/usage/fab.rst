@@ -83,12 +83,19 @@ below.
 
 .. _optparse: http://docs.python.org/library/optparse.html
 
-.. cmdoption:: -a
+.. cmdoption:: -a, --no_agent
 
     Sets :ref:`env.no_agent <no_agent>` to ``True``, forcing our SSH layer not
     to talk to the SSH agent when trying to unlock private key files.
 
     .. versionadded:: 0.9.1
+
+.. cmdoption:: -A, --no-agent-forward
+
+    Sets :ref:`env.no_agent_forward <no_agent_forward>` to ``True``, disabling
+    agent forwarding.
+
+    .. versionadded:: 1.4.0
 
 .. cmdoption:: --abort-on-prompts
 

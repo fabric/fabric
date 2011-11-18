@@ -25,6 +25,10 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :feature:`72` SSH agent forwarding support has made it into Fabric's ssh
+  library, and hooks for using it have been added (enabled by default; use
+  :option:`-A` to disable.) Thanks to Ben Davis for porting an existing
+  Paramiko patch to `ssh` and providing the necessary tweak to Fabric.
 * :bug:`230` Fix regression re: combo of no fabfile & arbitrary command use.
   Thanks to Ali Saifee for the catch.
 * :release:`1.3.2 <2011-11-07>`
