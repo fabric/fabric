@@ -16,6 +16,8 @@ import os
 import sys
 import types
 
+import ssh
+
 from fabric import api, state  # For checking callables against the API, & easy mocking
 from fabric.contrib import console, files, project  # Ditto
 from fabric.network import denormalize, disconnect_all
@@ -572,6 +574,7 @@ def main():
         # Handle version number option
         if options.show_version:
             print("Fabric %s" % state.env.version)
+            print("ssh (library) %s" % ssh.__version__)
             sys.exit(0)
 
         # Load settings from user settings file, into shared env dict.
