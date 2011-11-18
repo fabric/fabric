@@ -13,7 +13,7 @@ from StringIO import StringIO
 from fabric.api import *
 
 
-def exists(path, use_sudo=False, verbose=False):
+def exists(path, use_sudo=False, verbose=False, shell=True):
     """
     Return True if given path exists on the current remote host.
 
@@ -29,10 +29,10 @@ def exists(path, use_sudo=False, verbose=False):
     # If verbose, run normally
     if verbose:
         with settings(warn_only=True):
-            return not func(cmd).failed
+            return not func(cmd, shell=shell).failed
     # Otherwise, be quiet
     with settings(hide('everything'), warn_only=True):
-        return not func(cmd).failed
+        return not func(cmd, shell=shell).failed
 
 
 def first(*args, **kwargs):
@@ -41,17 +41,13 @@ def first(*args, **kwargs):
     exist. May specify ``use_sudo`` which is passed to `exists`.
     """
     for directory in args:
-        if not kwargs.get('use_sudo'):
-            if exists(directory, sudo=False):
-                return directory
-        else:
-            if exists(directory):
-                return directory
+        if exists(directory, **kwargs):
+            return directory
 
 
 def upload_template(filename, destination, context=None, use_jinja=False,
     template_dir=None, use_sudo=False, backup=True, mirror_local_mode=False,
-    mode=None):
+    mode=None, shell=True):
     """
     Render and upload a template text file to a remote host.
 
@@ -82,7 +78,7 @@ def upload_template(filename, destination, context=None, use_jinja=False,
     func = use_sudo and sudo or run
     # Normalize destination to be an actual filename, due to using StringIO
     with settings(hide('everything'), warn_only=True):
-        if func('test -d %s' % destination).succeeded:
+        if func('test -d %s' % destination, shell=shell).succeeded:
             sep = "" if destination.endswith('/') else "/"
             destination += sep + os.path.basename(filename)
 
@@ -110,8 +106,8 @@ def upload_template(filename, destination, context=None, use_jinja=False,
             text = text % context
 
     # Back up original file
-    if backup and exists(destination):
-        func("cp %s{,.bak}" % destination)
+    if backup and exists(destination, shell=shell):
+        func("cp %s{,.bak}" % destination, shell=shell)
 
     # Upload the file.
     put(
@@ -256,7 +252,7 @@ def comment(filename, regex, use_sudo=False, char='#', backup='.bak'):
     )
 
 
-def contains(filename, text, exact=False, use_sudo=False):
+def contains(filename, text, exact=False, use_sudo=False, shell=True):
     """
     Return True if ``filename`` contains ``text``.
 
@@ -282,10 +278,11 @@ def contains(filename, text, exact=False, use_sudo=False):
         return func('egrep "%s" "%s"' % (
             text.replace('"', r'\"'),
             filename.replace('"', r'\"')
-        )).succeeded
+        ), shell=shell).succeeded
 
 
-def append(filename, text, use_sudo=False, partial=False, escape=True):
+def append(filename, text, use_sudo=False, partial=False, escape=True,
+           shell=True):
     """
     Append string (or list of strings) ``text`` to ``filename``.
 
@@ -301,7 +298,7 @@ def append(filename, text, use_sudo=False, partial=False, escape=True):
     "append lines to a file" use case. You may override this and force partial
     searching (e.g. ``^<text>``) by specifying ``partial=True``.
 
-    Because ``text`` is single-quoted, single quotes will be transparently 
+    Because ``text`` is single-quoted, single quotes will be transparently
     backslash-escaped. This can be disabled with ``escape=False``.
 
     If ``use_sudo`` is True, will use `sudo` instead of `run`.
@@ -321,8 +318,8 @@ def append(filename, text, use_sudo=False, partial=False, escape=True):
         text = [text]
     for line in text:
         regex = '^' + re.escape(line) + ('' if partial else '$')
-        if (exists(filename) and line
-            and contains(filename, regex, use_sudo=use_sudo)):
+        if (exists(filename, shell=shell) and line
+            and contains(filename, regex, use_sudo=use_sudo, shell=shell)):
             continue
         line = line.replace("'", r'\'') if escape else line
-        func("echo '%s' >> %s" % (line, filename))
+        func("echo '%s' >> %s" % (line, filename), shell=shell)
