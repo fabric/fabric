@@ -225,6 +225,11 @@ class SFTP(object):
         # Clean up
         if not local_is_path:
             os.remove(real_local_path)
+        if use_sudo:
+            with hide('everything'):
+                sudo("mv \"%s\" \"%s\"" % (remote_path, target_path))
+            # Revert to original remote_path for return value's sake
+            remote_path = target_path
         # Handle modes if necessary
         if (local_is_path and mirror_local_mode) or (mode is not None):
             lmode = os.stat(local_path).st_mode if mirror_local_mode else mode
@@ -236,11 +241,6 @@ class SFTP(object):
                         sudo('chmod %o \"%s\"' % (lmode, remote_path))
                 else:
                     self.ftp.chmod(remote_path, lmode)
-        if use_sudo:
-            with hide('everything'):
-                sudo("mv \"%s\" \"%s\"" % (remote_path, target_path))
-            # Revert to original remote_path for return value's sake
-            remote_path = target_path
         return remote_path
 
     def put_dir(self, local_path, remote_path, use_sudo, mirror_local_mode,
