@@ -25,6 +25,7 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :release:`1.1.7 <2011-11-23>`
 * :bug:`441` Specifying a task module as a task on the command line no longer
   blows up but presents the usual "no task by that name" error message instead.
   Thanks to Mitchell Hashimoto for the catch.
