@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`397` Some poorly behaved objects in third party modules triggered
+  exceptions during Fabric's "classic or new-style task?" test. A fix has been
+  added which tries to work around these.
 * :bug:`341` `~fabric.contrib.files.append` incorrectly failed to detect that
   the line(s) given already existed in files hidden to the remote user, and
   continued appending every time it ran. This has been fixed. Thanks to
