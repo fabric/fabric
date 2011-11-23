@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`400` Handle corner case of systems where ``pwd.getpwuid`` raises
+  ``KeyError`` for the user's UID instead of returning a valid string. Thanks
+  to Dougal Matthews for the catch.
 * :bug:`397` Some poorly behaved objects in third party modules triggered
   exceptions during Fabric's "classic or new-style task?" test. A fix has been
   added which tries to work around these.
