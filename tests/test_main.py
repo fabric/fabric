@@ -80,7 +80,6 @@ def test_escaped_task_arg_split():
 
 # Allow calling Task.get_hosts as function instead (meh.)
 def get_hosts(command, *args):
-    print "calling get_hosts with args %r" % (args,)
     return WrappedCallableTask(command).get_hosts(*args)
 
 def eq_hosts(command, host_list, env=None):
