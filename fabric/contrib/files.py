@@ -25,7 +25,7 @@ def exists(path, use_sudo=False, verbose=False):
     behavior.
     """
     func = use_sudo and sudo or run
-    cmd = 'test -e "%s"' % path
+    cmd = 'test -e "$(echo %s)"' % path
     # If verbose, run normally
     if verbose:
         with settings(warn_only=True):
@@ -101,8 +101,10 @@ def upload_template(filename, destination, context=None, use_jinja=False,
             from jinja2 import Environment, FileSystemLoader
             jenv = Environment(loader=FileSystemLoader(template_dir or '.'))
             text = jenv.get_template(filename).render(**context or {})
-        except ImportError, e:
-            abort("tried to use Jinja2 but was unable to import: %s" % e)
+        except ImportError:
+            import traceback
+            tb = traceback.format_exc()
+            abort(tb + "\nUnable to import Jinja2 -- see above.")
     else:
         with open(filename) as inputfile:
             text = inputfile.read()
@@ -164,7 +166,7 @@ def sed(filename, before, after, limit='', use_sudo=False, backup='.bak',
 
     with hide('running', 'stdout'):
         platform = run("uname")
-    if platform in ('NetBSD', 'OpenBSD'):
+    if platform in ('NetBSD', 'OpenBSD', 'QNX'):
         # Attempt to protect against failures/collisions
         hasher = hashlib.sha1()
         hasher.update(env.host_string)
