@@ -118,11 +118,16 @@ def is_classic_task(tup):
     Takes (name, object) tuple, returns True if it's a non-Fab public callable.
     """
     name, func = tup
-    return (
-        callable(func)
-        and (func not in _internals)
-        and not name.startswith('_')
-    )
+    try:
+        is_classic = (
+            callable(func)
+            and (func not in _internals)
+            and not name.startswith('_')
+        )
+    # Handle poorly behaved __eq__ implementations
+    except (ValueError, TypeError):
+        is_classic = False
+    return is_classic
 
 
 def load_fabfile(path, importer=None):

@@ -295,7 +295,9 @@ set/appended to with :option:`-i`.
 **Default:** ``False``
 
 Forces buffering by line instead of by character/byte, typically when running
-in parallel mode. May be activated via :option:`--linewise`.
+in parallel mode. May be activated via :option:`--linewise`. This option is
+implied by :ref:`env.parallel <env-parallel>` -- even if ``linewise`` is False,
+if ``parallel`` is True then linewise behavior will occur.
 
 .. seealso:: :ref:`linewise-output`
 
@@ -476,7 +478,8 @@ The global role list used when composing per-task host lists.
 
 **Default:** ``False``
 
-When ``True``, forces all tasks to run in parallel.
+When ``True``, forces all tasks to run in parallel. Implies :ref:`env.linewise
+<env-linewise>`.
 
 .. versionadded:: 1.3
 .. seealso:: :doc:`parallel`

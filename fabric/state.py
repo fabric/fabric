@@ -72,7 +72,15 @@ def _get_system_username():
     """
     if not win32:
         import pwd
-        return pwd.getpwuid(os.getuid())[0]
+        try:
+            username = pwd.getpwuid(os.getuid())[0]
+        # getpwuid raises KeyError if it cannot find a username for the given
+        # UID, e.g. on ep.io and similar "non VPS" style services. Rather than
+        # error out, just set the 'default' username to None. Can check for
+        # this value later if required.
+        except KeyError:
+            username = None
+        return username
     else:
         import win32api
         import win32security

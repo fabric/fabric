@@ -310,5 +310,6 @@ class TestExecute(FabricTest):
         """
         def task():
             pass
-        execute(task)
+        with settings(hosts=[]): # protect against really odd test bleed :(
+            execute(task)
         eq_(sys.stdout.getvalue(), "")
