@@ -8,6 +8,7 @@ from fnmatch import filter as fnfilter
 
 from fabric.state import output, connections, env
 from fabric.utils import warn
+from fabric.context_managers import settings
 
 
 class SFTP(object):
@@ -237,7 +238,9 @@ class SFTP(object):
                 else:
                     self.ftp.chmod(remote_path, lmode)
         if use_sudo:
-            with hide('everything'):
+            # Temporarily nuke 'cwd' so sudo() doesn't "cd" its mv command.
+            # (The target path has already been cwd-ified elsewhere.)
+            with settings(hide('everything'), cwd=""):
                 sudo("mv \"%s\" \"%s\"" % (remote_path, target_path))
             # Revert to original remote_path for return value's sake
             remote_path = target_path

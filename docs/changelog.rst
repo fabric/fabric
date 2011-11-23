@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`342` Combining `~fabric.context_managers.cd` with
+  `~fabric.operations.put` and its ``use_sudo`` keyword caused an unrecoverable
+  error. This has been fixed. Thanks to Egor M for the report.
 * :bug:`482` Parallel mode should imply linewise output; omission of this
   behavior was an oversight.
 * :bug:`230` Fix regression re: combo of no fabfile & arbitrary command use.
