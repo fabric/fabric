@@ -29,6 +29,15 @@ Changelog
   library, and hooks for using it have been added (enabled by default; use
   :option:`-A` to disable.) Thanks to Ben Davis for porting an existing
   Paramiko patch to `ssh` and providing the necessary tweak to Fabric.
+* :bug:`450` Improve traceback display when handling ``ImportError``s for
+  dependencies. Thanks to David Wolever for the patches.
+* :bug:`446` Add QNX to list of secondary-case `~fabric.contrib.files.sed`
+  targets. Thanks to Rodrigo Madruga for the tip.
+* :bug:`443` `~fabric.contrib.files.exists` didn't expand tildes; now it does.
+  Thanks to Riccardo Magliocchetti for the patch.
+* :bug:`437` `~fabric.decorators.with_settings` now correctly preserves the
+  wrapped function's docstring and other attributes. Thanks to Eric Buckley for
+  the catch and Luke Plant for the patch.
 * :bug:`400` Handle corner case of systems where ``pwd.getpwuid`` raises
   ``KeyError`` for the user's UID instead of returning a valid string. Thanks
   to Dougal Matthews for the catch.

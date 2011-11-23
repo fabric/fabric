@@ -205,6 +205,7 @@ def with_settings(**kw_settings):
     .. versionadded:: 1.1
     """
     def outer(func):
+        @wraps(func)
         def inner(*args, **kwargs):
             with settings(**kw_settings):
                 return func(*args, **kwargs)
