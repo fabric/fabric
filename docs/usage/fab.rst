@@ -284,7 +284,7 @@ special syntax you can tack onto the end of any task name:
 * Use commas (``,``) to separate arguments from one another (may be escaped
   by using a backslash, i.e. ``\,``);
 * Use equals signs (``=``) for keyword arguments, or omit them for positional
-  arguments;
+  arguments. May also be escaped with backslashes.
 
 Additionally, since this process involves string parsing, all values will end
 up as Python strings, so plan accordingly. (We hope to improve upon this in
