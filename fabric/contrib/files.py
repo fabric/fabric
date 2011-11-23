@@ -321,7 +321,7 @@ def append(filename, text, use_sudo=False, partial=False, escape=True):
         text = [text]
     for line in text:
         regex = '^' + re.escape(line) + ('' if partial else '$')
-        if (exists(filename) and line
+        if (exists(filename, use_sudo=use_sudo) and line
             and contains(filename, regex, use_sudo=use_sudo)):
             continue
         line = line.replace("'", r'\'') if escape else line
