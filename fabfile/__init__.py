@@ -9,6 +9,7 @@ import nose
 from fabric.api import *
 
 import docs, tag
+from utils import msg
 
 
 @task(default=True)
