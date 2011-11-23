@@ -25,6 +25,8 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`450` Improve traceback display when handling ``ImportError``s for
+  dependencies. Thanks to David Wolever for the patches.
 * :bug:`446` Add QNX to list of secondary-case `~fabric.contrib.files.sed`
   targets. Thanks to Rodrigo Madruga for the tip.
 * :bug:`443` `~fabric.contrib.files.exists` didn't expand tildes; now it does.
