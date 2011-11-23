@@ -25,6 +25,8 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`482` Parallel mode should imply linewise output; omission of this
+  behavior was an oversight.
 * :bug:`230` Fix regression re: combo of no fabfile & arbitrary command use.
   Thanks to Ali Saifee for the catch.
 * :release:`1.3.2 <2011-11-07>`

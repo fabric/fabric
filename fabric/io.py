@@ -52,13 +52,14 @@ def output_loop(chan, which, capture):
     reprompt = False
     initial_prefix_printed = False
     line = []
+    linewise = (env.linewise or env.parallel)
     while True:
         # Handle actual read/write
         byte = func(1)
         # Empty byte == EOS
         if byte == '':
             # If linewise, ensure we flush any leftovers in the buffer.
-            if env.linewise and line:
+            if linewise and line:
                 _flush(pipe, _prefix)
                 _flush(pipe, "".join(line))
             break
@@ -76,7 +77,7 @@ def output_loop(chan, which, capture):
                 _prefix = ""
             # Print to user
             if printing:
-                if env.linewise:
+                if linewise:
                     # Print prefix + line after newline is seen
                     if _was_newline(_buffer, byte):
                         _flush(pipe, _prefix)
