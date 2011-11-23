@@ -111,4 +111,4 @@ def tag(force='no', push='no'):
         # And push to the central server, if we were told to
         if push.lower() in ['y', 'yes']:
             with msg("Pushing"):
-                local("git push origin %s" % _version('short'))
+                local("git push origin %s" % _version('short'), capture=True)
