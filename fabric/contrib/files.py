@@ -164,7 +164,7 @@ def sed(filename, before, after, limit='', use_sudo=False, backup='.bak',
 
     with hide('running', 'stdout'):
         platform = run("uname")
-    if platform in ('NetBSD', 'OpenBSD'):
+    if platform in ('NetBSD', 'OpenBSD', 'QNX'):
         # Attempt to protect against failures/collisions
         hasher = hashlib.sha1()
         hasher.update(env.host_string)

@@ -25,6 +25,8 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`446` Add QNX to list of secondary-case `~fabric.contrib.files.sed`
+  targets. Thanks to Rodrigo Madruga for the tip.
 * :bug:`443` `~fabric.contrib.files.exists` didn't expand tildes; now it does.
   Thanks to Riccardo Magliocchetti for the patch.
 * :bug:`437` `~fabric.decorators.with_settings` now correctly preserves the
