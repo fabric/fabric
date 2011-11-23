@@ -12,33 +12,39 @@ _version = fabric.version.get_version
 from utils import msg
 
 
-def is_tagged():
-    with nested(hide('running'), msg("Searching for existing tag")):
-        cmd = 'git tag | egrep "^%s$"' % _version('short')
+def _seek_version(cmd, txt):
+    with nested(hide('running'), msg(txt)):
+        cmd = cmd % _version('short')
         return local(cmd, capture=True)
 
-def update_version(force):
+def current_version_is_tagged():
+    return _seek_version(
+        'git tag | egrep "^%s$"',
+        "Searching for existing tag"
+    )
+
+def current_version_is_changelogged(filename):
+    return _seek_version(
+        'egrep "^\* :release:`%s " filename',
+        "Looking for changelog entry"
+    )
+
+def update_code(filename, force):
     """
     Update version data structure in-code and commit that change to git.
 
     Normally, if the version file has not been modified, we abort assuming the
     user quit without saving. Specify ``force=yes`` to override this.
     """
-    version_file = "fabric/version.py"
-    raw_input("Version update required! Press Enter to load $EDITOR.")
+    raw_input("Version update in %r required! Press Enter to load $EDITOR." % filename)
     with hide('running'):
-        local("$EDITOR %s" % version_file)
+        local("$EDITOR %s" % filename)
     # Try to detect whether user bailed out of the edit
     with hide('running'):
-        has_diff = local("git diff -- %s" % version_file, capture=True)
+        has_diff = local("git diff -- %s" % filename, capture=True)
     if not has_diff and not force:
         abort("You seem to have aborted the file edit, so I'm aborting too.")
-    # Reload version module to get new version
-    reload(fabric.version)
-    # Commit the version update
-    with msg("Committing updated version file to git"):
-        local("git add %s" % version_file)
-        local("git commit -m \"Cut %s\"" % _version('verbose'))
+    return filename
 
 def commits_since_last_tag():
     """
@@ -65,19 +71,34 @@ def tag(force='no', push='no'):
     """
     force = force.lower() in ['y', 'yes']
     with settings(warn_only=True):
+        changed = []
         # Does the current in-code version exist as a Git tag already?
         # If so, this means we haven't updated the in-code version specifier
         # yet, and need to do so.
-        if is_tagged():
+        if current_version_is_tagged():
             # That is, if any work has been done since. Sanity check!
             if not commits_since_last_tag() and not force:
                 abort("No work done since last tag!")
-            # Open editor, update version, commit that change to Git.
-            update_version(force)
+            # Open editor, update version
+            version_file = "fabric/version.py"
+            changed.append(update_code(version_file, force))
         # If the tag doesn't exist, the user has already updated version info
         # and we can just move on.
         else:
             print("Version has already been updated, no need to edit...")
+        # Similar process but for the changelog.
+        changelog = "docs/changelog.rst"
+        if not current_version_is_changelogged(changelog):
+           changed.append(update_code(changelog, force))
+        else:
+           print("Changelog already updated, no need to edit...")
+        # Commit any changes
+        if changed:
+            with msg("Committing updated version and/or changelog"):
+                reload(fabric.version)
+                local("git add %s" % " ".join(changed))
+                local("git commit -m \"Cut %s\"" % _version('verbose'))
+
         # At this point, we've incremented the in-code version and just need to
         # tag it in Git.
         f = 'f' if force else ''
