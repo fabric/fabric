@@ -12,12 +12,12 @@ _version = fabric.version.get_version
 from utils import msg
 
 
-def code_version_is_tagged():
+def is_tagged():
     with nested(hide('running'), msg("Searching for existing tag")):
         cmd = 'git tag | egrep "^%s$"' % _version('short')
         return local(cmd, capture=True)
 
-def update_code_version(force):
+def update_version(force):
     """
     Update version data structure in-code and commit that change to git.
 
@@ -40,7 +40,7 @@ def update_code_version(force):
         local("git add %s" % version_file)
         local("git commit -m \"Cut %s\"" % _version('verbose'))
 
-def commits_since_tag():
+def commits_since_last_tag():
     """
     Has any work been done since the last tag?
     """
@@ -68,12 +68,12 @@ def tag(force='no', push='no'):
         # Does the current in-code version exist as a Git tag already?
         # If so, this means we haven't updated the in-code version specifier
         # yet, and need to do so.
-        if code_version_is_tagged():
+        if is_tagged():
             # That is, if any work has been done since. Sanity check!
-            if not commits_since_tag() and not force:
+            if not commits_since_last_tag() and not force:
                 abort("No work done since last tag!")
             # Open editor, update version, commit that change to Git.
-            update_code_version(force)
+            update_version(force)
         # If the tag doesn't exist, the user has already updated version info
         # and we can just move on.
         else:
