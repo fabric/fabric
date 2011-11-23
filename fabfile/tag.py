@@ -54,7 +54,7 @@ def commits_since_last_tag():
         return local("git log %s.." % _version('short'), capture=True)
 
 
-@task
+@task(default=True)
 def tag(force='no', push='no'):
     """
     Tag a new release.
