@@ -25,6 +25,10 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`341` `~fabric.contrib.files.append` incorrectly failed to detect that
+  the line(s) given already existed in files hidden to the remote user, and
+  continued appending every time it ran. This has been fixed. Thanks to
+  Dominique Peretti for the catch and Martin Vilcans for the patch.
 * :bug:`342` Combining `~fabric.context_managers.cd` with
   `~fabric.operations.put` and its ``use_sudo`` keyword caused an unrecoverable
   error. This has been fixed. Thanks to Egor M for the report.
