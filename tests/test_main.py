@@ -66,6 +66,20 @@ def test_escaped_task_arg_split():
     )
 
 
+def test_escaped_task_kwarg_split():
+    """
+    Allow backslashes to escape the = in x=y task kwargs
+    """
+    argstr = r"cmd:arg,escaped\,arg,nota\=kwarg,regular=kwarg,escaped=regular\=kwarg"
+    args = ['arg', 'escaped,arg', 'nota=kwarg']
+    kwargs = {'regular': 'kwarg', 'escaped': 'regular=kwarg'}
+    eq_(
+        parse_arguments([argstr])[0],
+        ('cmd', args, kwargs, [], [], []),
+    )
+
+
+
 #
 # Host/role decorators
 #

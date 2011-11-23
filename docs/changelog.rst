@@ -25,6 +25,7 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`475` Allow escaping of equals signs in per-task args/kwargs.
 * :bug:`450` Improve traceback display when handling ``ImportError``s for
   dependencies. Thanks to David Wolever for the patches.
 * :bug:`446` Add QNX to list of secondary-case `~fabric.contrib.files.sed`
