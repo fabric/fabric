@@ -25,7 +25,7 @@ def exists(path, use_sudo=False, verbose=False):
     behavior.
     """
     func = use_sudo and sudo or run
-    cmd = 'test -e "%s"' % path
+    cmd = 'test -e "$(echo %s)"' % path
     # If verbose, run normally
     if verbose:
         with settings(warn_only=True):

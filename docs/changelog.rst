@@ -25,6 +25,8 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`443` `~fabric.contrib.files.exists` didn't expand tildes; now it does.
+  Thanks to Riccardo Magliocchetti for the patch.
 * :bug:`437` `~fabric.decorators.with_settings` now correctly preserves the
   wrapped function's docstring and other attributes. Thanks to Eric Buckley for
   the catch and Luke Plant for the patch.
