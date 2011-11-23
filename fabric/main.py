@@ -375,8 +375,12 @@ def crawl(name, mapping):
     try:
         result = _crawl(name, mapping)
         # Handle default tasks
-        if isinstance(result, _Dict) and getattr(result, 'default', False):
-            result = result.default
+        if isinstance(result, _Dict):
+            if getattr(result, 'default', False):
+                result = result.default
+            # Ensure task modules w/ no default are treated as bad targets
+            else:
+                result = None
         return result
     except (KeyError, TypeError):
         return None
