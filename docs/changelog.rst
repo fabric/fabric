@@ -29,6 +29,10 @@ Changelog
   library, and hooks for using it have been added (enabled by default; use
   :option:`-A` to disable.) Thanks to Ben Davis for porting an existing
   Paramiko patch to `ssh` and providing the necessary tweak to Fabric.
+* :bug:`441` Specifying a task module as a task on the command line no longer
+  blows up but presents the usual "no task by that name" error message instead.
+  Thanks to Mitchell Hashimoto for the catch.
+* :bug:`475` Allow escaping of equals signs in per-task args/kwargs.
 * :bug:`450` Improve traceback display when handling ``ImportError``s for
   dependencies. Thanks to David Wolever for the patches.
 * :bug:`446` Add QNX to list of secondary-case `~fabric.contrib.files.sed`

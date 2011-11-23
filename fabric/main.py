@@ -358,6 +358,7 @@ def _task_names(mapping):
         tasks.extend(map(join, _task_names(module)))
     return tasks
 
+
 def _print_docstring(docstrings, name):
     if not docstrings:
         return False
@@ -498,8 +499,9 @@ def parse_arguments(arguments):
         if ':' in cmd:
             cmd, argstr = cmd.split(':', 1)
             for pair in _escape_split(',', argstr):
-                k, _, v = pair.partition('=')
-                if _:
+                result = _escape_split('=', pair)
+                if len(result) > 1:
+                    k, v = result
                     # Catch, interpret host/hosts/role/roles/exclude_hosts
                     # kwargs
                     if k in ['host', 'hosts', 'role', 'roles', 'exclude_hosts']:
@@ -517,7 +519,7 @@ def parse_arguments(arguments):
                     else:
                         kwargs[k] = v
                 else:
-                    args.append(k)
+                    args.append(result[0])
         cmds.append((cmd, args, kwargs, hosts, roles, exclude_hosts))
     return cmds
 
