@@ -353,7 +353,10 @@ def _crawl(name, mapping):
 
 def crawl(name, mapping):
     try:
-        return _crawl(name, mapping)
+        result = _crawl(name, mapping)
+        # Handle module-not-task (i.e. "fab foo" where "foo" is a task module,
+        # not a task.)
+        return result if callable(result) else None
     except (KeyError, TypeError):
         return None
 
