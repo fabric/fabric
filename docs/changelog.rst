@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`342` Combining `~fabric.context_managers.cd` with
+  `~fabric.operations.put` and its ``use_sudo`` keyword caused an unrecoverable
+  error. This has been fixed. Thanks to Egor M for the report.
 * :release:`1.1.6 <2011-11-07>`
 * :support:`459` Update our `setup.py` files to note that PyCrypto released
   2.4.1, which fixes the setuptools problems.
