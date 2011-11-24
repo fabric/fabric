@@ -326,5 +326,5 @@ def append(filename, text, use_sudo=False, partial=False, escape=True):
         if (exists(filename, use_sudo=use_sudo) and line
             and contains(filename, regex, use_sudo=use_sudo)):
             continue
-        line = line.replace("'", r'\'') if escape else line
+        line = line.replace("'", r"'\\''") if escape else line
         func("echo '%s' >> %s" % (line, filename))
