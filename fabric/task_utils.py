@@ -10,6 +10,9 @@ def _crawl(name, mapping):
     """
     ``name`` of ``'a.b.c'`` => ``mapping['a']['b']['c']``
     """
+    if name in mapping:
+        return mapping[name]
+        
     key, _, rest = name.partition('.')
     value = mapping[key]
     if not rest:
