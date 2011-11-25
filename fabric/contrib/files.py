@@ -281,10 +281,11 @@ def contains(filename, text, exact=False, use_sudo=False):
     if exact:
         text = "^%s$" % text
     with settings(hide('everything'), warn_only=True):
-        return func('egrep "%s" "%s"' % (
+        egrep_cmd = 'egrep "%s" "%s"' % (
             text.replace('"', r'\"'),
             filename.replace('"', r'\"')
-        )).succeeded
+        )
+        return func(egrep_cmd, shell=False).succeeded
 
 
 def append(filename, text, use_sudo=False, partial=False, escape=True):
@@ -323,6 +324,11 @@ def append(filename, text, use_sudo=False, partial=False, escape=True):
         text = [text]
     for line in text:
         regex = '^' + re.escape(line) + ('' if partial else '$')
+        # Tripple-escaping seems to be required for $ signs
+        regex = regex.replace(r'\$', r'\\\$')
+        # Whereas single quotes should not be escaped
+        regex = regex.replace(r"\'", "'")
+
         if (exists(filename, use_sudo=use_sudo) and line
             and contains(filename, regex, use_sudo=use_sudo)):
             continue
