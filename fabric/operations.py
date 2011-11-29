@@ -102,7 +102,7 @@ def _shell_escape(string):
     # Otherwise, we'd escape the backslashes that were introduced by the other
     # escapes.
     for char in ('\\', '"', '$', '`'):
-        string = string.replace(char, '\%s' % char)
+        string = string.replace(char, '\\%s' % char)
     return string
 
 
