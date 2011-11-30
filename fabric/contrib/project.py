@@ -108,8 +108,10 @@ def rsync_project(remote_dir, local_dir=None, exclude=(), delete=False,
     # Get local directory
     if local_dir is None:
         local_dir = '../' + getcwd().split(sep)[-1]
-    # Create and run final command string
+    # Square brackets are mandatory for IPv6 rsync address,
+    # even if port number is not specified
     host = "[%s]" % env.host if env.host.count(':') > 1 else env.host
+    # Create and run final command string
     cmd = "rsync %s %s %s@%s:%s" % (options, local_dir, env.user,
                                     host, remote_dir)
     if output.running:

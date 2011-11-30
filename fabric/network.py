@@ -85,14 +85,18 @@ def normalize(host_string, omit_port=False):
     """
     from fabric.state import env
 
+    # Gracefully handle "empty" input by returning empty output
     if not host_string:
         return ('', '') if omit_port else ('', '', '')
 
+    # Split host_string to user (optional) and host/port
     user_hostport = host_string.rsplit('@', 1)
     hostport = user_hostport.pop()
     user = user_hostport[0] if user_hostport and user_hostport[0] \
         else env.get('user')
 
+    # Split host/port string host and optional port
+    # For IPv6 addresses square brackets are mandatory for host/port separation
     if hostport.count(':') > 1:
         # Looks like IPv6 address
         r = ipv6_regex.match(hostport).groupdict()
@@ -136,6 +140,7 @@ def join_host_strings(user, host, port=None):
     ``user@host``.
     """
     if port:
+        # Square brackets are necessary for IPv6 host/port separation
         template = "%s@[%s]:%s" if host.count(':') > 1 else "%s@%s:%s"
         return template % (user, host, port)
     else:
