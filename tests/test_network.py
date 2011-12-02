@@ -45,6 +45,29 @@ class TestNetwork(FabricTest):
             yield eq_, normalize(input), normalize(output_)
             del eq_.description
 
+    def test_normalization_for_ipv6(self):
+        """
+        normalize() will accept IPv6 notation and can separate host and port
+        """
+        username = _get_system_username()
+        for description, input, output_ in (
+            ("Full IPv6 address",
+                '2001:DB8:0:0:0:0:0:1', (username, '2001:DB8:0:0:0:0:0:1', '22')),
+            ("IPv6 address in short form",
+                '2001:DB8::1', (username, '2001:DB8::1', '22')),
+            ("IPv6 localhost",
+                '::1', (username, '::1', '22')),
+            ("Square brackets are required to separate non-standard port from IPv6 address",
+                '[2001:DB8::1]:1222', (username, '2001:DB8::1', '1222')),
+            ("Username and IPv6 address",
+                'user@2001:DB8::1', ('user', '2001:DB8::1', '22')),
+            ("Username and IPv6 address with non-standard port",
+                'user@[2001:DB8::1]:1222', ('user', '2001:DB8::1', '1222')),
+        ):
+            eq_.description = "Host-string IPv6 normalization: %s" % description
+            yield eq_, normalize(input), output_
+            del eq_.description
+
     def test_normalization_without_port(self):
         """
         normalize() and join_host_strings() omit port if omit_port given
@@ -52,6 +75,23 @@ class TestNetwork(FabricTest):
         eq_(
             join_host_strings(*normalize('user@localhost', omit_port=True)),
             'user@localhost'
+        )
+
+    def test_ipv6_host_strings_join(self):
+        """
+        join_host_strings() should use square brackets only for IPv6 and if port is given
+        """
+        eq_(
+            join_host_strings('user', '2001:DB8::1'),
+            'user@2001:DB8::1'
+        )
+        eq_(
+            join_host_strings('user', '2001:DB8::1', '1222'),
+            'user@[2001:DB8::1]:1222'
+        )
+        eq_(
+            join_host_strings('user', '192.168.0.0', '1222'),
+            'user@192.168.0.0:1222'
         )
 
     def test_nonword_character_in_username(self):
@@ -93,6 +133,8 @@ class TestNetwork(FabricTest):
                 'user@localhost', 'user@localhost:22'),
             ("Both username and port",
                 'localhost', username + '@localhost:22'),
+            ("IPv6 address",
+                '2001:DB8::1', username + '@[2001:DB8::1]:22'),
         ):
             eq_.description = "Host-string denormalization: %s" % description
             yield eq_, denormalize(string1), denormalize(string2)
