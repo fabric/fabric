@@ -95,7 +95,7 @@ def normalize(host_string, omit_port=False):
     user = user_hostport[0] if user_hostport and user_hostport[0] \
         else env.get('user')
 
-    # Split host/port string host and optional port
+    # Split host/port string to host and optional port
     # For IPv6 addresses square brackets are mandatory for host/port separation
     if hostport.count(':') > 1:
         # Looks like IPv6 address
