@@ -125,11 +125,12 @@ def output_loop(chan, which, capture):
                     # Prompt for, and store, password. Give empty prompt so the
                     # initial display "hides" just after the actually-displayed
                     # prompt from the remote end.
+                    prev_input_enabled = chan.input_enabled
                     chan.input_enabled = False
                     password = fabric.network.prompt_for_password(
                         prompt=" ", no_colon=True, stream=pipe
                     )
-                    chan.input_enabled = True
+                    chan.input_enabled = prev_input_enabled
                     # Update env.password, env.passwords if necessary
                     set_password(password)
                     # Reset reprompt flag
