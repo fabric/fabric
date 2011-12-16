@@ -303,7 +303,7 @@ def append(filename, text, use_sudo=False, partial=False, escape=True):
     "append lines to a file" use case. You may override this and force partial
     searching (e.g. ``^<text>``) by specifying ``partial=True``.
 
-    Because ``text`` is single-quoted, single quotes will be transparently 
+    Because ``text`` is single-quoted, single quotes will be transparently
     backslash-escaped. This can be disabled with ``escape=False``.
 
     If ``use_sudo`` is True, will use `sudo` instead of `run`.
@@ -316,13 +316,16 @@ def append(filename, text, use_sudo=False, partial=False, escape=True):
         consistent with other functions in this module.
     .. versionchanged:: 1.0
         Changed default value of ``partial`` kwarg to be ``False``.
+    .. versionchanged:: 1.3.4
+        Changed escaping method to have consistent results with ``egrep`` used in ``contains``. Cf. http://bugs.python.org/issue2650
     """
     func = use_sudo and sudo or run
     # Normalize non-list input to be a list
     if isinstance(text, basestring):
         text = [text]
     for line in text:
-        regex = '^' + re.escape(line) + ('' if partial else '$')
+        escaped_line = re.sub(br'([][.^$*+?{}\\|()])', br'\\\1', line)
+        regex = '^' + escaped_line + ('' if partial else '$')
         if (exists(filename, use_sudo=use_sudo) and line
             and contains(filename, regex, use_sudo=use_sudo)):
             continue
