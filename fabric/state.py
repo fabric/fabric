@@ -416,7 +416,8 @@ output = _AliasDict({
     'user': True
 }, aliases={
     'everything': ['warnings', 'running', 'user', 'output'],
-    'output': ['stdout', 'stderr']
+    'output': ['stdout', 'stderr'],
+    'commands': ['stdout', 'running']
 })
 
 
