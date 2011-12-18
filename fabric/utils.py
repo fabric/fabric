@@ -66,7 +66,7 @@ def indent(text, spaces=4, strip=False):
     return output
 
 
-def puts(text, show_prefix=True, end="\n", flush=False):
+def puts(text, show_prefix=None, end="\n", flush=False):
     """
     An alias for ``print`` whose output is managed by Fabric's output controls.
 
@@ -88,6 +88,8 @@ def puts(text, show_prefix=True, end="\n", flush=False):
     .. seealso:: `~fabric.utils.fastprint`
     """
     from fabric.state import output, env
+    if show_prefix is None:
+        show_prefix = env.output_prefix
     if output.user:
         prefix = ""
         if env.host_string and show_prefix:
