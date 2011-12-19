@@ -129,3 +129,6 @@ def handle_prompt_abort(prompt_for):
     # Explicit "don't prompt me bro"
     if fabric.state.env.abort_on_prompts:
         abort(reason % "abort-on-prompts was set to True")
+    # Implicit "parallel == stdin/prompts have ambiguous target"
+    if fabric.state.env.parallel:
+        abort(reason % "input would be ambiguous in parallel mode")
