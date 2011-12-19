@@ -197,39 +197,39 @@ def execute(task, *args, **kwargs):
             # Create per-run env with connection settings
             local_env = to_dict(host)
             local_env.update(my_env)
-            with settings(**local_env):
-                # Handle parallel execution
-                if requires_parallel(task):
-                    # Import multiprocessing if needed, erroring out usefully
-                    # if it can't.
-                    try:
-                        import multiprocessing
-                    except ImportError:
-                        import traceback
-                        tb = traceback.format_exc()
-                        abort(tb + """
+            state.env.update(local_env)
+            # Handle parallel execution
+            if requires_parallel(task):
+                # Import multiprocessing if needed, erroring out usefully
+                # if it can't.
+                try:
+                    import multiprocessing
+                except ImportError:
+                    import traceback
+                    tb = traceback.format_exc()
+                    abort(tb + """
 At least one task needs to be run in parallel, but the
 multiprocessing module cannot be imported (see above
 traceback.) Please make sure the module is installed
 or that the above ImportError is fixed.""")
 
-                    # Wrap in another callable that nukes the child's cached
-                    # connection object, if needed, to prevent shared-socket
-                    # problems.
-                    def inner(*args, **kwargs):
-                        key = normalize_to_string(state.env.host_string)
-                        state.connections.pop(key, "")
-                        task.run(*args, **kwargs)
-                    # Stuff into Process wrapper
-                    p = multiprocessing.Process(target=inner, args=args,
-                        kwargs=new_kwargs)
-                    # Name/id is host string
-                    p.name = local_env['host_string']
-                    # Add to queue
-                    jobs.append(p)
-                # Handle serial execution
-                else:
-                    task.run(*args, **new_kwargs)
+                # Wrap in another callable that nukes the child's cached
+                # connection object, if needed, to prevent shared-socket
+                # problems.
+                def inner(*args, **kwargs):
+                    key = normalize_to_string(state.env.host_string)
+                    state.connections.pop(key, "")
+                    task.run(*args, **kwargs)
+                # Stuff into Process wrapper
+                p = multiprocessing.Process(target=inner, args=args,
+                    kwargs=new_kwargs)
+                # Name/id is host string
+                p.name = local_env['host_string']
+                # Add to queue
+                jobs.append(p)
+            # Handle serial execution
+            else:
+                task.run(*args, **new_kwargs)
 
         # If running in parallel, block until job queue is emptied
         if jobs:
@@ -244,5 +244,5 @@ or that the above ImportError is fixed.""")
 
     # Or just run once for local-only
     else:
-        with settings(**my_env):
-            task.run(*args, **new_kwargs)
+        state.env.update(my_env)
+        task.run(*args, **new_kwargs)
