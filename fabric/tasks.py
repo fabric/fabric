@@ -200,6 +200,9 @@ def execute(task, *args, **kwargs):
             state.env.update(local_env)
             # Handle parallel execution
             if requires_parallel(task):
+                # Set a few more env flags for parallelism
+                state.env.parallel = True # triggers some extra aborts, etc
+                state.env.linewise = True # to mirror -P behavior
                 # Import multiprocessing if needed, erroring out usefully
                 # if it can't.
                 try:
