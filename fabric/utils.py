@@ -125,7 +125,12 @@ def fastprint(text, show_prefix=False, end="", flush=True):
     return puts(text=text, show_prefix=show_prefix, end=end, flush=flush)
 
 
-def handle_prompt_abort():
+def handle_prompt_abort(prompt_for):
     import fabric.state
+    reason = "Needed to prompt for %s, but %%s" % prompt_for
+    # Explicit "don't prompt me bro"
     if fabric.state.env.abort_on_prompts:
-        abort("Needed to prompt, but abort-on-prompts was set to True!")
+        abort(reason % "abort-on-prompts was set to True")
+    # Implicit "parallel == stdin/prompts have ambiguous target"
+    if fabric.state.env.parallel:
+        abort(reason % "input would be ambiguous in parallel mode")

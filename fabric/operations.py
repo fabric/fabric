@@ -249,7 +249,7 @@ def prompt(text, key=None, default='', validate=None):
             prompt('I seriously need an answer on this! ')
 
     """
-    handle_prompt_abort()
+    handle_prompt_abort("a user-specified prompt() call")
     # Store previous env value for later display, if necessary
     if key:
         previous_value = env.get(key)
