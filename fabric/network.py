@@ -297,7 +297,7 @@ def prompt_for_password(prompt=None, no_colon=False, stream=None):
     defaults to ``sys.stderr``.
     """
     from fabric.state import env
-    handle_prompt_abort()
+    handle_prompt_abort("a connection or sudo password")
     stream = stream or sys.stderr
     # Construct prompt
     default = "[%s] Login password" % env.host_string
@@ -336,7 +336,7 @@ def needs_host(func):
     @wraps(func)
     def host_prompting_wrapper(*args, **kwargs):
         while not env.get('host_string', False):
-            handle_prompt_abort()
+            handle_prompt_abort("the target host connection string")
             host_string = raw_input("No hosts found. Please specify (single)"
                                     " host string for connection: ")
             env.update(to_dict(host_string))
