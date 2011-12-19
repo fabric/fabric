@@ -291,20 +291,6 @@ class TestExecute(FabricTest):
                 task, hosts=hosts, roles=roles, exclude_hosts=exclude_hosts
             )
 
-    @with_fakes
-    def test_should_preserve_previous_settings(self):
-        """
-        should not overwrite env.user, etc after it finishes
-        """
-        outer = dict(user='jeff', host='localhost', port='123')
-        inner = dict(user='frank', host='fabfile.org', port='555')
-        def command():
-            dict_contains(superset=fabric.state.env, subset=inner)
-        with settings(**outer):
-            task = Fake(callable=True, expect_call=True).calls(command)
-            execute(task, host=from_dict(inner))
-            dict_contains(superset=fabric.state.env, subset=outer)
-
     @mock_streams('stdout')
     def test_should_print_executing_line_per_host(self):
         """
