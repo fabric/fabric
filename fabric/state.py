@@ -227,6 +227,14 @@ env_options = [
         help="do not use pseudo-terminal in run/sudo"
     ),
 
+    # Using .ssh/config file
+    make_option('-S', '--no-ssh-config',
+        dest='use_ssh_config',
+        action='store_false',
+        default=True,
+        help='do not use options from .ssh/config file'
+    ),
+
     # Parallel execution model flag
     make_option('-P', '--parallel',
             dest='parallel',
@@ -305,6 +313,8 @@ env = _AttributeDict({
     'sudo_prompt': 'sudo password:',
     'use_shell': True,
     'user': None,
+    'local_home': os.environ.get('HOME'),
+    'local_ssh_config': os.path.join(os.environ.get('HOME'), '.ssh/config'),
     'version': get_version('short')
 })
 
