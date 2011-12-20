@@ -397,8 +397,9 @@ def put(local_path=None, remote_path=None, use_sudo=False,
     with closing(ftp) as ftp:
         home = ftp.normalize('.')
 
-        # Empty remote path implies cwd
-        remote_path = remote_path or home
+        # Empty remote path implies cwd as set by cd context manager
+        # If not set fall back to home directory
+        remote_path = remote_path or env.get('cwd') or home
 
         # Expand tildes
         if remote_path.startswith('~'):
