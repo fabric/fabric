@@ -25,6 +25,8 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :feature:`13` Env vars may now be set at runtime via the new :option:`--set`
+  command-line flag.
 * :feature:`506` A new :ref:`output alias <output-aliases>`, ``commands``, has
   been added, which allows hiding remote stdout and local "running command X"
   output lines.

@@ -310,6 +310,14 @@ def parse_options():
         help="print detailed info about a given command and exit"
     )
 
+    # Allow setting of arbitrary env vars at runtime.
+    parser.add_option('--set',
+        metavar="KEY=VALUE,...",
+        dest='env_settings',
+        default="",
+        help="set env var KEY to value VALUE, comma separate for multi"
+    )
+
     #
     # Add in options which are also destined to show up as `env` vars.
     #
@@ -562,6 +570,22 @@ def main():
         # Handle regular args vs -- args
         arguments = parser.largs
         remainder_arguments = parser.rargs
+
+        # Allow setting of arbitrary env keys.
+        # This comes *before* the "specific" env_options so that those may
+        # override these ones. Specific should override generic, if somebody
+        # was silly enough to specify the same key in both places.
+        # E.g. "fab --set shell=foo --shell=bar" should have env.shell set to
+        # 'bar', not 'foo'.
+        for pair in _escape_split(',', options.env_settings):
+            pair = _escape_split('=', pair)
+            # "--set x" => set env.x to True
+            # "--set x=" => set env.x to ""
+            key = pair[0]
+            value = True
+            if len(pair) == 2:
+                value = pair[1]
+            state.env[key] = value
 
         # Update env with any overridden option values
         # NOTE: This needs to remain the first thing that occurs

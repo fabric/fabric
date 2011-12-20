@@ -230,6 +230,26 @@ below.
     Sets :ref:`env.roles <roles>` to the given comma-separated list of role
     names.
 
+.. cmdoption:: --set KEY=VALUE,...
+
+    Allows you to set default values for arbitrary Fabric env vars. Values set
+    this way have a low precedence -- they will not override more specific env
+    vars which are also specified on the command line. E.g.::
+
+        fab --set password=foo --password=bar
+
+    will result in ``env.password = 'bar'``, not ``'foo'``
+
+    Multiple ``KEY=VALUE`` pairs may be comma-separated, e.g. ``fab --set
+    var1=val1,var2=val2``.
+
+    Other than basic string values, you may also set env vars to True by
+    omitting the ``=VALUE`` (e.g. ``fab --set KEY``), and you may set values to
+    the empty string (and thus a False-equivalent value) by keeping the equals
+    sign, but omitting ``VALUE`` (e.g. ``fab --set KEY=``.)
+
+    .. versionadded:: 1.4
+
 .. cmdoption:: -s SHELL, --shell=SHELL
 
     Sets :ref:`env.shell <shell>` to the given string, overriding the default
