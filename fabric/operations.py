@@ -386,7 +386,7 @@ def put(local_path=None, remote_path=None, use_sudo=False,
         also exhibits the ``.failed`` and ``.succeeded`` attributes.
     """
     # Handle empty local path
-    local_path = local_path or os.getcwd()
+    local_path = local_path or env.lcwd or os.getcwd()
 
     # Test whether local_path is a path or a file-like object
     local_is_path = not (hasattr(local_path, 'read') \
