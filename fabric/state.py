@@ -94,10 +94,14 @@ def _rc_path():
     """
     rc_file = '.fabricrc'
     if not win32:
+        if 'FABRICRC' in os.environ:
+            return os.path.expanduser(os.environ['FABRICRC'])
         return os.path.expanduser("~/" + rc_file)
     else:
         from win32com.shell.shell import SHGetSpecialFolderPath
         from win32com.shell.shellcon import CSIDL_PROFILE
+        if 'FABRICRC' in os.environ:
+            return os.environ['FABRICRC']
         return "%s/%s" % (
             SHGetSpecialFolderPath(0, CSIDL_PROFILE),
             rc_file
@@ -157,7 +161,7 @@ env_options = [
         help="comma-separated list of hosts to exclude"
     ),
 
-    make_option('-i', 
+    make_option('-i',
         action='append',
         dest='key_filename',
         default=None,
