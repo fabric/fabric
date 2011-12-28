@@ -15,7 +15,7 @@ __all__ = ['rsync_project', 'upload_project']
 
 @needs_host
 def rsync_project(remote_dir, local_dir=None, exclude=(), delete=False,
-    extra_opts=''):
+    extra_opts='', up = True):
     """
     Synchronize a remote directory with the current project directory via rsync.
 
@@ -108,9 +108,15 @@ def rsync_project(remote_dir, local_dir=None, exclude=(), delete=False,
     # Get local directory
     if local_dir is None:
         local_dir = '../' + getcwd().split(sep)[-1]
+
     # Create and run final command string
-    cmd = "rsync %s %s %s@%s:%s" % (options, local_dir, env.user,
-        env.host, remote_dir)
+    if up:
+        cmd = "rsync %s %s %s@%s:%s" % (options, local_dir, env.user,
+            env.host, remote_dir)
+    else:
+        cmd = "rsync %s %s@%s:%s %s" % (options, env.user,
+            env.host, remote_dir, local_dir)
+
     if output.running:
         print("[%s] rsync_project: %s" % (env.host_string, cmd))
     return local(cmd)
