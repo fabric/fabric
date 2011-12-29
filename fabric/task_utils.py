@@ -30,6 +30,40 @@ def crawl(name, mapping):
     except (KeyError, TypeError):
         return None
 
+def descend(role, roledefs, roles_seen=[]):
+    """
+    Recursively descend roledefs to allow nested roles and functions 
+    """
+    hosts = []
+    
+    # Test if the key is callable.  Usually only happens
+    # when a function is presented as one of the items
+    # within a role, rather than the role value
+    if callable(role):
+        roledef = role()
+    elif callable(roledefs[role]):
+        roledef = roledefs[role]()
+    else:
+        roledef = roledefs[role]
+ 
+    # Init to prevent top level circular ref
+    if len(roles_seen) == 0:
+        roles_seen.append(role)
+
+    for item in roledef:
+        # prevent circular reference
+        if item in roles_seen:
+            raise Exception("env.roledefs contains a circular reference")
+
+        # Test if the item is a function or references
+        # another role in roledefs
+        if roledefs.has_key(item) or callable(item):
+            roles_seen.append(item)
+            hosts += descend(item, roledefs, roles_seen) 
+            roles_seen.pop()
+        else:
+            hosts.append(item)
+    return hosts
 
 def merge(hosts, roles, exclude, roledefs):
     """
@@ -45,11 +79,7 @@ def merge(hosts, roles, exclude, roledefs):
     # Look up roles, turn into flat list of hosts
     role_hosts = []
     for role in roles:
-        value = roledefs[role]
-        # Handle "lazy" roles (callables)
-        if callable(value):
-            value = value()
-        role_hosts += value
+        role_hosts = descend(role, roledefs)
 
     # Return deduped combo of hosts and role_hosts, preserving order within
     # them (vs using set(), which may lose ordering) and skipping hosts to be
