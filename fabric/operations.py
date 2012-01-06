@@ -60,7 +60,7 @@ def _pty_size():
     return rows, cols
 
 
-def _handle_failure(message, exception=None):
+def _handle_failure(message, exception=None, stdout=None, stderr=None):
     """
     Call `abort` or `warn` with the given message.
 
@@ -68,6 +68,9 @@ def _handle_failure(message, exception=None):
 
     If ``exception`` is given, it is inspected to get a string message, which
     is printed alongside the user-generated ``message``.
+
+    If ``stdout`` and/or ``stderr`` are given, they are assumed to be strings
+    to be printed.
     """
     func = env.warn_only and warn or abort
     # If debug printing is on, append a traceback to the message
@@ -84,6 +87,10 @@ def _handle_failure(message, exception=None):
         else:
             underlying = exception
         message += "\n\nUnderlying exception message:\n" + indent(underlying)
+    if stdout is not None:
+        message += "\n\nStdout:\n%s" % stdout
+    if stderr is not None:
+        message += "\n\nStderr:\n%s" % stderr
     return func(message)
 
 
@@ -880,7 +887,7 @@ def _run_command(command, shell=True, pty=True, combine_stderr=True,
     if status != 0:
         out.failed = True
         msg = "%s() encountered an error (return code %s) while executing '%s'" % (which, status, command)
-        _handle_failure(message=msg)
+        _handle_failure(message=msg, stdout=out, stderr=err)
 
     # Attach return code to output string so users who have set things to
     # warn only, can inspect the error code.
