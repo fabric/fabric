@@ -12,6 +12,7 @@ from fabric import tasks
 from fabric.tasks import WrappedCallableTask, execute
 from fabric.api import run, env, settings, hosts, roles, hide
 from fabric.network import from_dict
+from fabric.state import AliasDict
 
 from utils import eq_, FabricTest, aborts, mock_streams
 
@@ -285,6 +286,88 @@ class TestExecute(FabricTest):
         exclude_hosts = ['a']
         def command():
             eq_(set(env.all_hosts), set(['b', 'c', 'd']))
+        task = Fake(callable=True, expect_call=True).calls(command)
+        with settings(roledefs=roledefs):
+            execute(
+                task, hosts=hosts, roles=roles, exclude_hosts=exclude_hosts
+            )
+
+    @with_fakes
+    def test_should_set_all_hosts_aliasdict(self):
+        """
+        should set env.all_hosts to its derived nested host list
+        """
+        hosts = ['a', 'b']
+        roledefs = AliasDict({'r1' : ['c','d'], 'r2' : ['e','f'],
+            'r3' : ['r1','r2']})
+        roles = ['r3']
+        exclude_hosts = ['a']
+        def command():
+            eq_(set(env.all_hosts), set(['b', 'c', 'd', 'e', 'f']))
+        task = Fake(callable=True, expect_call=True).calls(command)
+        with settings(roledefs=roledefs):
+            execute(
+                task, hosts=hosts, roles=roles, exclude_hosts=exclude_hosts
+            )
+
+    @with_fakes
+    def test_set_all_hosts_aliasdict_function_as_val(self):
+        """
+        should set env.all_hosts to derived host lists via function as val
+        """
+        hosts = ['a', 'b']
+        def getRoles1():
+            return ['c', 'd']
+
+        roledefs = AliasDict({'r1' : getRoles1})
+        roles = ['r1']
+        exclude_hosts = ['a']
+        def command():
+            eq_(set(env.all_hosts), set(['b', 'c', 'd']))
+        task = Fake(callable=True, expect_call=True).calls(command)
+        with settings(roledefs=roledefs):
+            execute(
+                task, hosts=hosts, roles=roles, exclude_hosts=exclude_hosts
+            )
+
+    @with_fakes
+    def test_set_all_hosts_aliasdict_function_in_list(self):
+        """
+        should set env.all_hosts to derived host lists via function in list
+        """
+        hosts = ['a', 'b']
+        def getRoles1():
+            return ['c', 'd']
+
+        roledefs = AliasDict({'r1' : [getRoles1]})
+        roles = ['r1']
+        exclude_hosts = ['a']
+        def command():
+            eq_(set(env.all_hosts), set(['b', 'c', 'd']))
+        task = Fake(callable=True, expect_call=True).calls(command)
+        with settings(roledefs=roledefs):
+            execute(
+                task, hosts=hosts, roles=roles, exclude_hosts=exclude_hosts
+            )
+
+
+    @with_fakes
+    def test_set_all_hosts_aliasdict_nested_functions(self):
+        """
+        should set env.all_hosts to derived host lists via nested functions
+        """
+        hosts = ['a', 'b']
+        def getRoles1():
+            return ['c', 'd']
+
+        def getRoles2():
+            return [getRoles1, 'e']
+
+        roledefs = AliasDict({'r1' : ['f', 'g'], 'r2' : [getRoles2, 'r1']})
+        roles = ['r2']
+        exclude_hosts = ['a']
+        def command():
+            eq_(set(env.all_hosts), set(['b', 'c', 'd', 'e', 'f', 'g']))
         task = Fake(callable=True, expect_call=True).calls(command)
         with settings(roledefs=roledefs):
             execute(

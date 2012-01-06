@@ -340,63 +340,110 @@ def default_channel():
 #
 # Output controls
 #
-
-class _AliasDict(_AttributeDict):
+class AliasDict(_AttributeDict):
     """
     `_AttributeDict` subclass that allows for "aliasing" of keys to other keys.
+    This is useful as an alternative for the env.roledefs to allow nested
+    roles.  It also provides a method for setting a list of keys to a specific
+    value. 
 
-    Upon creation, takes an ``aliases`` mapping, which should map alias names
-    to lists of key names. Aliases do not store their own value, but instead
-    set (override) all mapped keys' values. For example, in the following
-    `_AliasDict`, calling ``mydict['foo'] = True`` will set the values of
-    ``mydict['bar']``, ``mydict['biz']`` and ``mydict['baz']`` all to True::
-
-        mydict = _AliasDict(
-            {'biz': True, 'baz': False},
-            aliases={'foo': ['bar', 'biz', 'baz']}
+        mydict = AliasDict(
+            {'biz': True, 'bar': False, 'boo': True,
+            'foo': ['bar', 'biz'],
+            'bang' : ['foo', 'boo']}
         )
 
-    Because it is possible for the aliased values to be in a heterogenous
-    state, reading aliases is not supported -- only writing to them is allowed.
-    This also means they will not show up in e.g. ``dict.keys()``.
+        foo
+        > ['bar','biz']
 
-    ..note::
+        bang
+        > ['bar','biz','boo']
 
-        Aliases are recursive, so you may refer to an alias within the key list
-        of another alias. Naturally, this means that you can end up with
-        infinite loops if you're not careful.
+        mydict.foo = False
+        mydict.biz
+        > False
 
-    `_AliasDict` provides a special function, `expand_aliases`, which will take
+        mydict.bang = True
+        mydict.biz
+        > True
+        mydict.bar
+        > True
+        mydict.boo
+        > True
+
+    Aliases are expanded upon retrieval.  A caveat exists that you cannot
+    write a non-iterable to an existing key.  Keys and values can be callables.
+        
+    Aliases are recursive, so you may refer to an alias within the key list
+    of another alias. Naturally, this means that you can end up with
+    infinite loops if you're not careful. Callables can also return nesting
+    aliases.
+
+    `AliasDict` provides a special function, `expand_aliases`, which will take
     a list of keys as an argument and will return that list of keys with any
     aliases expanded. This function will **not** dedupe, so any aliases which
     overlap will result in duplicate keys in the resulting list.
     """
-    def __init__(self, arg=None, aliases=None):
-        init = super(_AliasDict, self).__init__
-        if arg is not None:
+    def __init__(self, arg=None):
+        init = super(AliasDict, self).__init__
+        if arg:
             init(arg)
         else:
             init()
-        # Can't use super() here because of _AttributeDict's setattr override
-        dict.__setattr__(self, 'aliases', aliases)
+
+    def __getitem__(self, key):
+        val = super(AliasDict, self).__getitem__(key) 
+        if hasattr(val,"__iter__") or callable(val):
+            val = self.expand(key)
+        return val
 
     def __setitem__(self, key, value):
-        if key in self.aliases:
-            for aliased in self.aliases[key]:
-                self[aliased] = value
+        if not self.has_key(key):
+            super(AliasDict, self).__setitem__(key, value)
+            return
+        curval = super(AliasDict, self).__getitem__(key)
+        if hasattr(curval,"__iter__"):
+            if hasattr(value,"__iter__"):
+                super(AliasDict, self).__setitem__(key, value)
+            else:
+                ret = self.expand(key)
+                for item in ret:
+                    if self.has_key(item):
+                        self[item] = value
         else:
-            return super(_AliasDict, self).__setitem__(key, value)
+            super(AliasDict, self).__setitem__(key, value)
+
+    def expand(self, key):
+        ret = []
+        if callable(key):
+            res = key()
+        else:
+            val = super(AliasDict, self).__getitem__(key)
+            if callable(val):
+                res = val()
+            else:
+                res = val
+ 
+        if hasattr(res,"__iter__"):
+            for item in res:
+                if self.has_key(item) or callable(item):
+                    ret += self.expand(item) 
+                else:
+                    ret.append(item)
+        else:
+            ret.append(key)
+
+        return ret
 
     def expand_aliases(self, keys):
         ret = []
         for key in keys:
-            if key in self.aliases:
-                ret.extend(self.expand_aliases(self.aliases[key]))
+            if hasattr(self[key],"__iter__"):
+                ret += self[key]
             else:
                 ret.append(key)
         return ret
-
-
+            
 # Keys are "levels" or "groups" of output, values are always boolean,
 # determining whether output falling into the given group is printed or not
 # printed.
@@ -405,7 +452,7 @@ class _AliasDict(_AttributeDict):
 # user, and new users, are most likely to expect.
 #
 # See docs/usage.rst for details on what these levels mean.
-output = _AliasDict({
+output = AliasDict({
     'status': True,
     'aborts': True,
     'warnings': True,
@@ -413,8 +460,7 @@ output = _AliasDict({
     'stdout': True,
     'stderr': True,
     'debug': False,
-    'user': True
-}, aliases={
+    'user': True,
     'everything': ['warnings', 'running', 'user', 'output'],
     'output': ['stdout', 'stderr'],
     'commands': ['stdout', 'running']
