@@ -896,7 +896,15 @@ def _run_command(command, shell=True, pty=True, combine_stderr=True,
     out.failed = False
     if status != 0:
         out.failed = True
-        msg = "%s() encountered an error (return code %s) while executing '%s'" % (which, status, command)
+        msg = "%s() received nonzero return code %s while executing" % (
+            which, status
+        )
+        if env.warn_only:
+            msg += " '%s'!" % given_command
+        else:
+            msg += "!\n\nRequested: %s\nExecuted: %s" % (
+                given_command, wrapped_command
+            )
         _handle_failure(message=msg, stdout=out, stderr=err)
 
     # Attach return code to output string so users who have set things to
