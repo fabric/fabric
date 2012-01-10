@@ -87,11 +87,21 @@ def _handle_failure(message, exception=None, stdout=None, stderr=None):
         else:
             underlying = exception
         message += "\n\nUnderlying exception message:\n" + indent(underlying)
-    if stdout is not None:
-        message += "\n\nStdout:\n%s" % stdout
-    if stderr is not None:
-        message += "\n\nStderr:\n%s" % stderr
+    if func is abort:
+        if stdout is not None and not output.stdout and stdout:
+            message += _format_error_output("Standard output", stdout)
+        if stderr is not None and not output.stderr and stderr:
+            message += _format_error_output("Standard error", stderr)
     return func(message)
+
+def _format_error_output(header, body):
+    term_width = _pty_size()[1]
+    header_side_length = (term_width - (len(header) + 2)) / 2
+    mark = "="
+    side = mark * header_side_length
+    return "\n\n%s %s %s\n\n%s\n\n%s" % (
+        side, header, side, body, mark * term_width
+    )
 
 
 def _shell_escape(string):
