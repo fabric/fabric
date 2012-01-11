@@ -18,8 +18,10 @@ import types
 
 import ssh
 
-from fabric import api, state  # For checking callables against the API, & easy mocking
-from fabric.contrib import console, files, project  # Ditto
+# For checking callables against the API, & easy mocking
+from fabric import api, state, colors
+from fabric.contrib import console, files, project
+
 from fabric.network import denormalize, disconnect_all
 from fabric.state import env_options
 from fabric.tasks import Task, execute
@@ -28,7 +30,7 @@ from fabric.utils import abort, indent
 
 # One-time calculation of "all internal callables" to avoid doing this on every
 # check of a given fabfile callable (in is_classic_task()).
-_modules = [api, project, files, console]
+_modules = [api, project, files, console, colors]
 _internals = reduce(lambda x, y: x + filter(callable, vars(y).values()),
     _modules,
     []
