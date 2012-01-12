@@ -25,6 +25,8 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`339` Don't list ``fabric.colors`` members in ``fab ---list``. Thanks to
+  Nick Trew for the report.
 * :release:`1.3.3 <2011-11-23>`
 * :release:`1.2.5 <2011-11-23>`
 * :release:`1.1.7 <2011-11-23>`
