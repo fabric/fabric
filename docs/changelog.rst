@@ -25,6 +25,7 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :release:`1.3.4 <2012-01-12>`
 * :bug:`492` `@parallel <fabric.decorators.parallel>` did not automatically
   trigger :ref:`linewise output <linewise-output>`, as was intended. This has
   been fixed. Thanks to Brandon Huey for the catch.
