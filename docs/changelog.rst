@@ -30,7 +30,7 @@ Changelog
 * :feature:`506` A new :ref:`output alias <output-aliases>`, ``commands``, has
   been added, which allows hiding remote stdout and local "running command X"
   output lines.
-* :feature:`72` SSH agent forwarding support has made it into Fabric's ssh
+* :feature:`72` SSH agent forwarding support has made it into Fabric's SSH
   library, and hooks for using it have been added (enabled by default; use
   :option:`-A` to disable.) Thanks to Ben Davis for porting an existing
   Paramiko patch to `ssh` and providing the necessary tweak to Fabric.
