@@ -25,8 +25,19 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
-* :bug:`339` Don't list ``fabric.colors`` members in ``fab ---list``. Thanks to
-  Nick Trew for the report.
+* :bug:`492` `@parallel <fabric.decorators.parallel>` did not automatically
+  trigger :ref:`linewise output <linewise-output>`, as was intended. This has
+  been fixed. Thanks to Brandon Huey for the catch.
+* :bug:`510` Parallel mode is incompatible with user input, such as
+  password/hostname prompts, and was causing cryptic `Operation not supported
+  by device` errors when such prompts needed to be displayed. This behavior has
+  been updated to cleanly and obviously ``abort`` instead.
+* :bug:`494` Fixed regression bug affecting some `env` values such as
+  `env.port` under parallel mode. Symptoms included
+  `~fabric.contrib.project.rsync_project` bailing out due to a None port value
+  when run under `@parallel <fabric.decorators.parallel>`. Thanks to Rob Terhaar for the report.
+* :bug:`339` Don't show imported `~fabric.colors` members in :option:`--list
+  <-l>` output.  Thanks to Nick Trew for the report.
 * :release:`1.3.3 <2011-11-23>`
 * :release:`1.2.5 <2011-11-23>`
 * :release:`1.1.7 <2011-11-23>`
@@ -34,7 +45,7 @@ Changelog
   blows up but presents the usual "no task by that name" error message instead.
   Thanks to Mitchell Hashimoto for the catch.
 * :bug:`475` Allow escaping of equals signs in per-task args/kwargs.
-* :bug:`450` Improve traceback display when handling ``ImportError``s for
+* :bug:`450` Improve traceback display when handling ``ImportError`` for
   dependencies. Thanks to David Wolever for the patches.
 * :bug:`446` Add QNX to list of secondary-case `~fabric.contrib.files.sed`
   targets. Thanks to Rodrigo Madruga for the tip.
