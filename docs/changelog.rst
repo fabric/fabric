@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :feature:`8` Added :option:`--skip-bad-hosts`/:ref:`env.skip_bad_hosts
+  <skip-bad-hosts>` option to allow skipping past temporarily down/unreachable
+  hosts.
 * :feature:`13` Env vars may now be set at runtime via the new :option:`--set`
   command-line flag.
 * :feature:`506` A new :ref:`output alias <output-aliases>`, ``commands``, has

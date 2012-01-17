@@ -498,6 +498,18 @@ takes a command string as its value.
 
 .. seealso:: :ref:`FAQ on bash as default shell <faq-bash>`, :doc:`execution`
 
+.. _skip-bad-hosts:
+
+``skip_bad_hosts``
+------------------
+
+**Default:** ``False``
+
+If ``True``, causes ``fab`` (or non-``fab`` use of `~fabric.tasks.execute`) to skip over hosts it can't connect to.
+
+.. seealso::
+    :option:`--skip-bad-hosts`, :ref:`excluding-hosts`, :doc:`execution`
+
 ``sudo_prompt``
 ---------------
 

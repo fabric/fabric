@@ -114,6 +114,12 @@ env_options = [
         help="comma-separated list of roles to operate on"
     ),
 
+    make_option('--skip-bad-hosts',
+        action="store_true",
+        default=False,
+        help="skip over hosts that can't be reached"
+    ),
+
     make_option('-x', '--exclude-hosts',
         default=[],
         help="comma-separated list of hosts to exclude"

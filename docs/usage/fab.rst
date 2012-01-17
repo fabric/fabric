@@ -271,6 +271,11 @@ below.
 
 .. seealso:: `~fabric.operations.run`, `~fabric.operations.sudo`
 
+.. cmdoption:: --skip-bad-hosts
+
+    Sets :ref:`env.skip_bad_hosts <skip-bad-hosts>`, causing Fabric to skip
+    unavailable hosts.
+
 .. cmdoption:: -u USER, --user=USER
 
     Sets :ref:`env.user <user>` to the given string; it will then be used as the
