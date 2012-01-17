@@ -727,7 +727,16 @@ def _prefix_env_vars(command):
             path = 'PATH=\"%s\" ' % path
     else:
         path = ''
-    return path + command
+    
+    shell_env = env.shell_env
+    if shell_env:
+        shell_env_str = ' '.join('%s="%s"' % (k, _shell_escape(v))
+            for k, v in shell_env.iteritems())
+        shell_env_str += ' '
+    else:
+        shell_env_str = ''
+    
+    return path + shell_env_str + command
 
 
 def _execute(channel, command, pty=True, combine_stderr=None,

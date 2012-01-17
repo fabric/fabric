@@ -262,6 +262,16 @@ def path(path, behavior='append'):
     """
     return _setenv(path=path, path_behavior=behavior)
 
+def shell_env(**kw):
+    """
+    Set shell environment variables for all wrapped commands.
+    
+    ::
+    
+      with shell_env(ZMQ_DIR='/home/user/local'):
+          run('pip install pyzmq')
+    """
+    return _setenv(shell_env=kw)
 
 def prefix(command):
     """
