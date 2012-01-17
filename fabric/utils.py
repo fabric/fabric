@@ -230,3 +230,51 @@ class _AliasDict(_AttributeDict):
             else:
                 ret.append(key)
         return ret
+
+
+def error(message, func=None, exception=None, stdout=None, stderr=None):
+    """
+    Call ``func`` with given error ``message``.
+
+    If ``func`` is None (the default), the value of ``env.warn_only``
+    determines whether to call ``abort`` or ``warn``.
+
+    If ``exception`` is given, it is inspected to get a string message, which
+    is printed alongside the user-generated ``message``.
+
+    If ``stdout`` and/or ``stderr`` are given, they are assumed to be strings
+    to be printed.
+    """
+    import fabric.state
+    if func is None:
+        func = fabric.state.env.warn_only and warn or abort
+    # If debug printing is on, append a traceback to the message
+    if fabric.state.output.debug:
+        message += "\n\n" + format_exc()
+    # Otherwise, if we were given an exception, append its contents.
+    elif exception is not None:
+        # Figure out how to get a string out of the exception; EnvironmentError
+        # subclasses, for example, "are" integers and .strerror is the string.
+        # Others "are" strings themselves. May have to expand this further for
+        # other error types.
+        if hasattr(exception, 'strerror') and exception.strerror is not None:
+            underlying = exception.strerror
+        else:
+            underlying = exception
+        message += "\n\nUnderlying exception:\n" + indent(str(underlying))
+    if func is abort:
+        if stdout is not None and not output.stdout and stdout:
+            message += _format_error_output("Standard output", stdout)
+        if stderr is not None and not output.stderr and stderr:
+            message += _format_error_output("Standard error", stderr)
+    return func(message)
+
+
+def _format_error_output(header, body):
+    term_width = _pty_size()[1]
+    header_side_length = (term_width - (len(header) + 2)) / 2
+    mark = "="
+    side = mark * header_side_length
+    return "\n\n%s %s %s\n\n%s\n\n%s" % (
+        side, header, side, body, mark * term_width
+    )

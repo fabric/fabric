@@ -7,10 +7,10 @@ from fudge.patcher import with_patched_object
 from nose.tools import eq_
 
 from fabric.state import output, env
-from fabric.utils import warn, indent, abort, puts, fastprint
+from fabric.utils import warn, indent, abort, puts, fastprint, error
 from fabric import utils  # For patching
 from fabric.context_managers import settings
-from utils import mock_streams, aborts
+from utils import mock_streams, aborts, FabricTest
 
 
 @mock_streams('stderr')
@@ -126,3 +126,29 @@ def test_fastprint_calls_puts():
     )
     with patched_context(utils, 'puts', fake_puts):
         fastprint(text)
+
+
+class TestErrorHandling(FabricTest):
+    @with_patched_object(utils, 'warn', Fake('warn', callable=True,
+        expect_call=True))
+    def test_error_warns_if_warn_only_True_and_func_None(self):
+        """
+        warn_only=True, error(func=None) => calls warn()
+        """
+        with settings(warn_only=True):
+            error('foo')
+
+    @with_patched_object(utils, 'abort', Fake('abort', callable=True,
+        expect_call=True))
+    def test_error_aborts_if_warn_only_False_and_func_None(self):
+        """
+        warn_only=False, error(func=None) => calls abort()
+        """
+        with settings(warn_only=False):
+            error('foo')
+
+    def test_error_calls_given_func_if_func_not_None(self):
+        """
+        error(func=callable) => calls callable()
+        """
+        error('foo', func=Fake(callable=True, expect_call=True))

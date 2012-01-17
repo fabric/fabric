@@ -21,7 +21,7 @@ from fabric.network import needs_host, ssh
 from fabric.sftp import SFTP
 from fabric.state import env, connections, output, win32, default_channel
 from fabric.thread_handling import ThreadHandler
-from fabric.utils import abort, indent, warn, puts, handle_prompt_abort
+from fabric.utils import abort, indent, warn, puts, handle_prompt_abort, error
 
 # For terminal size logic below
 if not win32:
@@ -55,50 +55,6 @@ def _pty_size():
         except AttributeError:
             pass
     return rows, cols
-
-
-def _handle_failure(message, exception=None, stdout=None, stderr=None):
-    """
-    Call `abort` or `warn` with the given message.
-
-    The value of ``env.warn_only`` determines which method is called.
-
-    If ``exception`` is given, it is inspected to get a string message, which
-    is printed alongside the user-generated ``message``.
-
-    If ``stdout`` and/or ``stderr`` are given, they are assumed to be strings
-    to be printed.
-    """
-    func = env.warn_only and warn or abort
-    # If debug printing is on, append a traceback to the message
-    if output.debug:
-        message += "\n\n" + format_exc()
-    # Otherwise, if we were given an exception, append its contents.
-    elif exception is not None:
-        # Figure out how to get a string out of the exception; EnvironmentError
-        # subclasses, for example, "are" integers and .strerror is the string.
-        # Others "are" strings themselves. May have to expand this further for
-        # other error types.
-        if hasattr(exception, 'strerror') and exception.strerror is not None:
-            underlying = exception.strerror
-        else:
-            underlying = exception
-        message += "\n\nUnderlying exception message:\n" + indent(underlying)
-    if func is abort:
-        if stdout is not None and not output.stdout and stdout:
-            message += _format_error_output("Standard output", stdout)
-        if stderr is not None and not output.stderr and stderr:
-            message += _format_error_output("Standard error", stderr)
-    return func(message)
-
-def _format_error_output(header, body):
-    term_width = _pty_size()[1]
-    header_side_length = (term_width - (len(header) + 2)) / 2
-    mark = "="
-    side = mark * header_side_length
-    return "\n\n%s %s %s\n\n%s\n\n%s" % (
-        side, header, side, body, mark * term_width
-    )
 
 
 def _shell_escape(string):
@@ -461,7 +417,7 @@ def put(local_path=None, remote_path=None, use_sudo=False,
                 msg = "put() encountered an exception while uploading '%s'"
                 failure = lpath if local_is_path else "<StringIO>"
                 failed_local_paths.append(failure)
-                _handle_failure(message=msg % lpath, exception=e)
+                error(message=msg % lpath, exception=e)
 
         ret = _AttributeList(remote_paths)
         ret.failed = failed_local_paths
@@ -616,7 +572,7 @@ def get(remote_path, local_path=None):
             # Handle invalid local-file-object situations
             if not local_is_path:
                 if len(names) > 1 or ftp.isdir(names[0]):
-                    _handle_failure("[%s] %s is a glob or directory, but local_path is a file object!" % (env.host_string, remote_path))
+                    error("[%s] %s is a glob or directory, but local_path is a file object!" % (env.host_string, remote_path))
 
             for remote_path in names:
                 if ftp.isdir(remote_path):
@@ -637,7 +593,7 @@ def get(remote_path, local_path=None):
         except Exception, e:
             failed_remote_files.append(remote_path)
             msg = "get() encountered an exception while downloading '%s'"
-            _handle_failure(message=msg % remote_path, exception=e)
+            error(message=msg % remote_path, exception=e)
 
         ret = _AttributeList(local_files if local_is_path else [])
         ret.failed = failed_remote_files
@@ -902,7 +858,7 @@ def _run_command(command, shell=True, pty=True, combine_stderr=True,
             msg += "!\n\nRequested: %s\nExecuted: %s" % (
                 given_command, wrapped_command
             )
-        _handle_failure(message=msg, stdout=out, stderr=err)
+        error(message=msg, stdout=out, stderr=err)
 
     # Attach return code to output string so users who have set things to
     # warn only, can inspect the error code.
@@ -1075,7 +1031,7 @@ def local(command, capture=False):
     if p.returncode != 0:
         out.failed = True
         msg = "local() encountered an error (return code %s) while executing '%s'" % (p.returncode, command)
-        _handle_failure(message=msg)
+        error(message=msg)
     out.succeeded = not out.failed
     # If we were capturing, this will be a string; otherwise it will be None.
     return out
