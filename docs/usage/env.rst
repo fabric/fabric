@@ -353,6 +353,19 @@ still be used, of course.)
 
 .. versionadded:: 0.9.1
 
+.. _env-parallel:
+
+``parallel``
+-------------------
+
+**Default:** ``False``
+
+When ``True``, forces all tasks to run in parallel. Implies :ref:`env.linewise
+<env-linewise>`.
+
+.. versionadded:: 1.3
+.. seealso:: :doc:`parallel`
+
 .. _password:
 
 ``password``
@@ -470,19 +483,6 @@ Dictionary defining role name to host list mappings.
 The global role list used when composing per-task host lists.
 
 .. seealso:: :doc:`execution`
-
-.. _env-parallel:
-
-``parallel``
--------------------
-
-**Default:** ``False``
-
-When ``True``, forces all tasks to run in parallel. Implies :ref:`env.linewise
-<env-linewise>`.
-
-.. versionadded:: 1.3
-.. seealso:: :doc:`parallel`
 
 .. _shell:
 
