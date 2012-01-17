@@ -16,13 +16,11 @@ import os
 import sys
 import types
 
-import ssh
-
 # For checking callables against the API, & easy mocking
 from fabric import api, state, colors
 from fabric.contrib import console, files, project
 
-from fabric.network import denormalize, disconnect_all
+from fabric.network import denormalize, disconnect_all, ssh
 from fabric.state import env_options
 from fabric.tasks import Task, execute
 from fabric.task_utils import _Dict, crawl

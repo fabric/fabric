@@ -419,10 +419,3 @@ output = _AliasDict({
     'output': ['stdout', 'stderr'],
     'commands': ['stdout', 'running']
 })
-
-
-#
-# I/O loop sleep parameter (in seconds)
-#
-
-io_sleep = 0.01

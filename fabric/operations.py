@@ -15,14 +15,11 @@ from glob import glob
 from traceback import format_exc
 from contextlib import closing
 
-from ssh.agent import AgentClientProxy
-
 from fabric.context_managers import settings, char_buffered
 from fabric.io import output_loop, input_loop
-from fabric.network import needs_host
+from fabric.network import needs_host, ssh
 from fabric.sftp import SFTP
-from fabric.state import (env, connections, output, win32, default_channel,
-    io_sleep)
+from fabric.state import env, connections, output, win32, default_channel
 from fabric.thread_handling import ThreadHandler
 from fabric.utils import abort, indent, warn, puts, handle_prompt_abort
 
@@ -772,7 +769,7 @@ def _execute(channel, command, pty=True, combine_stderr=None,
 
         # Use SSH agent forwarding from 'ssh', unless user has turned it off.
         if not env.no_agent_forward:
-            forward = AgentClientProxy(channel)
+            forward = ssh.agent.AgentClientProxy(channel)
 
         # Kick off remote command
         if invoke_shell:
@@ -802,7 +799,7 @@ def _execute(channel, command, pty=True, combine_stderr=None,
                     e = worker.exception
                     if e:
                         raise e[0], e[1], e[2]
-            time.sleep(io_sleep)
+            time.sleep(ssh.io_sleep)
 
         # Obtain exit code of remote program now that we're done.
         status = channel.recv_exit_status()

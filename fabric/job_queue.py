@@ -9,7 +9,8 @@ from pprint import pprint
 from Crypto import Random 
 import time
 
-from fabric.state import env, io_sleep
+from fabric.state import env
+from fabric.network import ssh
 
 
 class JobQueue(object):
@@ -148,7 +149,7 @@ class JobQueue(object):
                     job.join()
 
                 self._finished = True
-            time.sleep(io_sleep)
+            time.sleep(ssh.io_sleep)
 
         return [x.exitcode for x in self._completed]
 
