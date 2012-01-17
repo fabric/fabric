@@ -8,6 +8,7 @@ from optparse import make_option
 
 from fabric.network import HostConnectionCache
 from fabric.version import get_version
+from fabric.utils import _AliasDict, _AttributeDict
 
 
 #
@@ -24,45 +25,6 @@ win32 = (sys.platform == 'win32')
 #
 # Environment dictionary - support structures
 #
-
-class _AttributeDict(dict):
-    """
-    Dictionary subclass enabling attribute lookup/assignment of keys/values.
-
-    For example::
-
-        >>> m = _AttributeDict({'foo': 'bar'})
-        >>> m.foo
-        'bar'
-        >>> m.foo = 'not bar'
-        >>> m['foo']
-        'not bar'
-
-    ``_AttributeDict`` objects also provide ``.first()`` which acts like
-    ``.get()`` but accepts multiple keys as arguments, and returns the value of
-    the first hit, e.g.::
-
-        >>> m = _AttributeDict({'foo': 'bar', 'biz': 'baz'})
-        >>> m.first('wrong', 'incorrect', 'foo', 'biz')
-        'bar'
-
-    """
-    def __getattr__(self, key):
-        try:
-            return self[key]
-        except KeyError:
-            # to conform with __getattr__ spec
-            raise AttributeError(key)
-
-    def __setattr__(self, key, value):
-        self[key] = value
-
-    def first(self, *names):
-        for name in names:
-            value = self.get(name)
-            if value:
-                return value
-
 
 # By default, if the user (including code using Fabric as a library) doesn't
 # set the username, we obtain the currently running username and use that.
@@ -340,62 +302,6 @@ def default_channel():
 #
 # Output controls
 #
-
-class _AliasDict(_AttributeDict):
-    """
-    `_AttributeDict` subclass that allows for "aliasing" of keys to other keys.
-
-    Upon creation, takes an ``aliases`` mapping, which should map alias names
-    to lists of key names. Aliases do not store their own value, but instead
-    set (override) all mapped keys' values. For example, in the following
-    `_AliasDict`, calling ``mydict['foo'] = True`` will set the values of
-    ``mydict['bar']``, ``mydict['biz']`` and ``mydict['baz']`` all to True::
-
-        mydict = _AliasDict(
-            {'biz': True, 'baz': False},
-            aliases={'foo': ['bar', 'biz', 'baz']}
-        )
-
-    Because it is possible for the aliased values to be in a heterogenous
-    state, reading aliases is not supported -- only writing to them is allowed.
-    This also means they will not show up in e.g. ``dict.keys()``.
-
-    ..note::
-
-        Aliases are recursive, so you may refer to an alias within the key list
-        of another alias. Naturally, this means that you can end up with
-        infinite loops if you're not careful.
-
-    `_AliasDict` provides a special function, `expand_aliases`, which will take
-    a list of keys as an argument and will return that list of keys with any
-    aliases expanded. This function will **not** dedupe, so any aliases which
-    overlap will result in duplicate keys in the resulting list.
-    """
-    def __init__(self, arg=None, aliases=None):
-        init = super(_AliasDict, self).__init__
-        if arg is not None:
-            init(arg)
-        else:
-            init()
-        # Can't use super() here because of _AttributeDict's setattr override
-        dict.__setattr__(self, 'aliases', aliases)
-
-    def __setitem__(self, key, value):
-        if key in self.aliases:
-            for aliased in self.aliases[key]:
-                self[aliased] = value
-        else:
-            return super(_AliasDict, self).__setitem__(key, value)
-
-    def expand_aliases(self, keys):
-        ret = []
-        for key in keys:
-            if key in self.aliases:
-                ret.extend(self.expand_aliases(self.aliases[key]))
-            else:
-                ret.append(key)
-        return ret
-
 
 # Keys are "levels" or "groups" of output, values are always boolean,
 # determining whether output falling into the given group is printed or not
