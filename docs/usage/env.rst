@@ -336,7 +336,7 @@ using key-based authentication.
 If ``True``, disables the on-by-default forwarding of your local SSH agent to
 the remote end.
 
-.. versionadded:: 1.4.0
+.. versionadded:: 1.4
 
 .. seealso:: :option:`-A`
 
@@ -506,6 +506,8 @@ takes a command string as its value.
 **Default:** ``False``
 
 If ``True``, causes ``fab`` (or non-``fab`` use of `~fabric.tasks.execute`) to skip over hosts it can't connect to.
+
+.. versionadded:: 1.4
 
 .. seealso::
     :option:`--skip-bad-hosts`, :ref:`excluding-hosts`, :doc:`execution`

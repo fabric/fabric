@@ -95,7 +95,7 @@ below.
     Sets :ref:`env.no_agent_forward <no_agent_forward>` to ``True``, disabling
     agent forwarding.
 
-    .. versionadded:: 1.4.0
+    .. versionadded:: 1.4
 
 .. cmdoption:: --abort-on-prompts
 
@@ -269,12 +269,14 @@ below.
     be added to those that are shown by
     default.
 
-.. seealso:: `~fabric.operations.run`, `~fabric.operations.sudo`
+    .. seealso:: `~fabric.operations.run`, `~fabric.operations.sudo`
 
 .. cmdoption:: --skip-bad-hosts
 
     Sets :ref:`env.skip_bad_hosts <skip-bad-hosts>`, causing Fabric to skip
     unavailable hosts.
+
+    .. versionadded:: 1.4
 
 .. cmdoption:: -u USER, --user=USER
 
