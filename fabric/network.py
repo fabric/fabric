@@ -11,6 +11,7 @@ import threading
 import select
 import socket
 import sys
+import os
 
 from fabric.auth import get_password, set_password
 from fabric.utils import abort, handle_prompt_abort
@@ -97,10 +98,26 @@ def normalize(host_string, omit_port=False):
         return ('', '') if omit_port else ('', '', '')
     # Get user, host and port separately
     r = host_regex.match(host_string).groupdict()
-    # Add any necessary defaults in
-    user = r['user'] or env.get('user')
-    host = r['host']
-    port = r['port'] or '22'
+    if env.get('use_ssh_config') and os.path.exists(env.get('local_ssh_config')):
+        ssh_config = ssh.SSHConfig()
+        ssh_config.parse(open(env['local_ssh_config']))
+        _ssh_config = ssh_config.lookup(r['host'])
+        user = r['user'] or _ssh_config.get('user') or env.get('user')
+        key_filename = _ssh_config.get('identityfile')
+        if key_filename:
+            key_filename = key_filename.replace('~', os.environ.get('HOME'))
+            if os.path.exists(key_filename):
+                env.key_filename = os.path.abspath(key_filename)
+        if not _ssh_config.get('hostname'):
+            host = r['host']
+        else:
+            host = _ssh_config.get('hostname')
+        port = r['port'] or _ssh_config.get('port') or '22'
+    else:
+        # Add any necessary defaults in
+        user = r['user'] or env.get('user')
+        host = r['host']
+        port = r['port'] or '22'
     if omit_port:
         return user, host
     return user, host, port
