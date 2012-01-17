@@ -14,6 +14,7 @@ import sys
 
 from fabric.auth import get_password, set_password
 from fabric.utils import abort, handle_prompt_abort
+from fabric.exceptions import NetworkError
 
 try:
     import warnings
@@ -208,10 +209,8 @@ def connect(user, host, port):
         # BadHostKeyException corresponds to key mismatch, i.e. what on the
         # command line results in the big banner error about man-in-the-middle
         # attacks.
-        except ssh.BadHostKeyException:
-            abort("Host key for %s did not match pre-existing key! Server's"
-                   " key was changed recently, or possible man-in-the-middle"
-                   "attack." % env.host)
+        except ssh.BadHostKeyException, e:
+            raise NetworkError("Host key for %s did not match pre-existing key! Server's key was changed recently, or possible man-in-the-middle attack." % env.host, e)
         # Prompt for new password to try on auth failure
         except (
             ssh.AuthenticationException,
@@ -266,17 +265,16 @@ def connect(user, host, port):
             print('')
             sys.exit(0)
         # Handle timeouts
-        except socket.timeout:
-            abort('Timed out trying to connect to %s' % host)
+        except socket.timeout, e:
+            raise NetworkError('Timed out trying to connect to %s' % host, e)
         # Handle DNS error / name lookup failure
-        except socket.gaierror:
-            abort('Name lookup failed for %s' % host)
+        except socket.gaierror, e:
+            raise NetworkError('Name lookup failed for %s' % host, e)
         # Handle generic network-related errors
         # NOTE: In 2.6, socket.error subclasses IOError
         except socket.error, e:
-            abort('Low level socket error connecting to host %s: %s' % (
-                host, e[1])
-            )
+            msg = "Low level socket error connecting to host %s: %s"
+            raise NetworkError(msg % (host, e[1]), e)
 
 
 def prompt_for_password(prompt=None, no_colon=False, stream=None):
