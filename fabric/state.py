@@ -261,14 +261,25 @@ env = _AttributeDict({
     'real_fabfile': None,
     'roles': [],
     'roledefs': {},
+    'skip_bad_hosts': False,
     # -S so sudo accepts passwd via stdin, -p with our known-value prompt for
     # later detection (thus %s -- gets filled with env.sudo_prompt at runtime)
     'sudo_prefix': "sudo -S -p '%s' ",
     'sudo_prompt': 'sudo password:',
+    'use_exceptions_for': {'network': False},
     'use_shell': True,
     'user': None,
     'version': get_version('short')
 })
+
+# Fill in exceptions settings
+exceptions = ['network']
+exception_dict = {}
+for e in exceptions:
+    exception_dict[e] = False
+env.use_exceptions_for = _AliasDict(exception_dict,
+    aliases={'everything': exceptions})
+
 
 # Add in option defaults
 for option in env_options:

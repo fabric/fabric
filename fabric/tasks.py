@@ -3,11 +3,12 @@ from __future__ import with_statement
 from functools import wraps
 
 from fabric import state
-from fabric.utils import abort
+from fabric.utils import abort, warn, error
 from fabric.network import to_dict, normalize_to_string
 from fabric.context_managers import settings
 from fabric.job_queue import JobQueue
 from fabric.task_utils import *
+from fabric.exceptions import NetworkError
 
 
 class Task(object):
@@ -131,6 +132,52 @@ def _parallel_tasks(commands_to_run):
     ))
 
 
+def _execute(task, host, my_env, args, kwargs):
+    """
+    Primary single-host work body of execute()
+    """
+    # Log to stdout
+    if state.output.running and not hasattr(task, 'return_value'):
+        print("[%s] Executing task '%s'" % (host, my_env['command']))
+    # Create per-run env with connection settings
+    local_env = to_dict(host)
+    local_env.update(my_env)
+    state.env.update(local_env)
+    # Handle parallel execution
+    if requires_parallel(task):
+        # Set a few more env flags for parallelism
+        state.env.parallel = True # triggers some extra aborts, etc
+        state.env.linewise = True # to mirror -P behavior
+        # Import multiprocessing if needed, erroring out usefully
+        # if it can't.
+        try:
+            import multiprocessing
+        except ImportError:
+            import traceback
+            tb = traceback.format_exc()
+            abort(tb + """
+At least one task needs to be run in parallel, but the
+multiprocessing module cannot be imported (see above
+traceback.) Please make sure the module is installed
+or that the above ImportError is fixed.""")
+
+        # Wrap in another callable that nukes the child's cached
+        # connection object, if needed, to prevent shared-socket
+        # problems.
+        def inner(*args, **kwargs):
+            key = normalize_to_string(state.env.host_string)
+            state.connections.pop(key, "")
+            task.run(*args, **kwargs)
+        # Stuff into Process wrapper
+        p = multiprocessing.Process(target=inner, args=args,
+            kwargs=kwargs)
+        # Name/id is host string
+        p.name = local_env['host_string']
+        # Add to queue
+        jobs.append(p)
+    # Handle serial execution
+    else:
+        task.run(*args, **kwargs)
 
 def execute(task, *args, **kwargs):
     """
@@ -190,49 +237,18 @@ def execute(task, *args, **kwargs):
 
     # Call on host list
     if my_env['all_hosts']:
+        # Attempt to cycle on hosts, skipping if needed
         for host in my_env['all_hosts']:
-            # Log to stdout
-            if state.output.running and not hasattr(task, 'return_value'):
-                print("[%s] Executing task '%s'" % (host, my_env['command']))
-            # Create per-run env with connection settings
-            local_env = to_dict(host)
-            local_env.update(my_env)
-            state.env.update(local_env)
-            # Handle parallel execution
-            if requires_parallel(task):
-                # Set a few more env flags for parallelism
-                state.env.parallel = True # triggers some extra aborts, etc
-                state.env.linewise = True # to mirror -P behavior
-                # Import multiprocessing if needed, erroring out usefully
-                # if it can't.
-                try:
-                    import multiprocessing
-                except ImportError:
-                    import traceback
-                    tb = traceback.format_exc()
-                    abort(tb + """
-At least one task needs to be run in parallel, but the
-multiprocessing module cannot be imported (see above
-traceback.) Please make sure the module is installed
-or that the above ImportError is fixed.""")
-
-                # Wrap in another callable that nukes the child's cached
-                # connection object, if needed, to prevent shared-socket
-                # problems.
-                def inner(*args, **kwargs):
-                    key = normalize_to_string(state.env.host_string)
-                    state.connections.pop(key, "")
-                    task.run(*args, **kwargs)
-                # Stuff into Process wrapper
-                p = multiprocessing.Process(target=inner, args=args,
-                    kwargs=new_kwargs)
-                # Name/id is host string
-                p.name = local_env['host_string']
-                # Add to queue
-                jobs.append(p)
-            # Handle serial execution
-            else:
-                task.run(*args, **new_kwargs)
+            try:
+                _execute(task, host, my_env, args, new_kwargs)
+            except NetworkError, e:
+                # Backwards compat test re: whether to use an exception or
+                # abort
+                if not state.env.use_exceptions_for['network']:
+                    func = warn if state.env.skip_bad_hosts else abort
+                    error(e.message, func=func, exception=e.wrapped)
+                else:
+                    raise
 
         # If running in parallel, block until job queue is emptied
         if jobs:
