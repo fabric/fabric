@@ -97,12 +97,13 @@ env_options = [
     make_option('--abort-on-prompts',
         action='store_true',
         default=False,
-        help="Abort instead of prompting (for password, host, etc)"
+        help="abort instead of prompting (for password, host, etc)"
     ),
 
     make_option('-c', '--config',
         dest='rcfile',
         default=_rc_path(),
+        metavar='PATH',
         help="specify location of config file to use"
     ),
 
@@ -114,7 +115,8 @@ env_options = [
 
     make_option('-f', '--fabfile',
         default='fabfile',
-        help="Python module file to import, e.g. '../other.py'"
+        metavar='PATH',
+        help="python module file to import, e.g. '../other.py'"
     ),
 
     make_option('--hide',
@@ -130,6 +132,7 @@ env_options = [
     make_option('-i', 
         action='append',
         dest='key_filename',
+        metavar='PATH',
         default=None,
         help="path to SSH private key file. May be repeated."
     ),
@@ -151,7 +154,7 @@ env_options = [
     make_option('--linewise',
         action='store_true',
         default=False,
-        help="Print stdout/stderr line-by-line instead of byte-by-byte"
+        help="print line-by-line instead of byte-by-byte"
     ),
 
     make_option('--no-pty',
@@ -170,7 +173,7 @@ env_options = [
             dest='parallel',
             action='store_true',
             default=False,
-            help="Default to parallel execution method"
+            help="default to parallel execution method"
     ),
 
     make_option('-r', '--reject-unknown-hosts',
@@ -213,15 +216,16 @@ env_options = [
 
     make_option('-x', '--exclude-hosts',
         default=[],
+        metavar='HOSTS',
         help="comma-separated list of hosts to exclude"
     ),
 
     make_option('-z', '--pool-size',
             dest='pool_size',
             type='int',
-            metavar='NUM_FORKS',
+            metavar='INT',
             default=0,
-            help="Number of concurrent processes to use when running in parallel",
+            help="number of concurrent processes to use in parallel mode",
     ),
 
 ]

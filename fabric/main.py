@@ -301,13 +301,14 @@ def parse_options():
     parser.add_option('-F', '--list-format',
         choices=LIST_FORMAT_OPTIONS,
         default='normal',
+        metavar='FORMAT',
         help="formats --list, choices: %s" % ", ".join(LIST_FORMAT_OPTIONS)
     )
 
     # Display info about a specific command
     parser.add_option('-d', '--display',
-        metavar='COMMAND',
-        help="print detailed info about a given command and exit"
+        metavar='NAME',
+        help="print detailed info about command NAME"
     )
 
     # Allow setting of arbitrary env vars at runtime.
@@ -315,7 +316,7 @@ def parse_options():
         metavar="KEY=VALUE,...",
         dest='env_settings',
         default="",
-        help="set env var KEY to value VALUE, comma separate for multi"
+        help="comma separated KEY=VALUE pairs to set Fab env vars"
     )
 
     #
