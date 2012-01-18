@@ -271,29 +271,10 @@ def parse_options():
     # --version)
     #
 
-    # Version number (optparse gives you --version but we have to do it
-    # ourselves to get -V too. sigh)
-    parser.add_option('-V', '--version',
-        action='store_true',
-        dest='show_version',
-        default=False,
-        help="show program's version number and exit"
-    )
-
-    # List Fab commands found in loaded fabfiles/source files
-    parser.add_option('-l', '--list',
-        action='store_true',
-        dest='list_commands',
-        default=False,
-        help="print list of possible commands and exit"
-    )
-
-    # Like --list, but text processing friendly
-    parser.add_option('--shortlist',
-        action='store_true',
-        dest='shortlist',
-        default=False,
-        help="alias for -F short --list"
+    # Display info about a specific command
+    parser.add_option('-d', '--display',
+        metavar='NAME',
+        help="print detailed info about command NAME"
     )
 
     # Control behavior of --list
@@ -305,10 +286,12 @@ def parse_options():
         help="formats --list, choices: %s" % ", ".join(LIST_FORMAT_OPTIONS)
     )
 
-    # Display info about a specific command
-    parser.add_option('-d', '--display',
-        metavar='NAME',
-        help="print detailed info about command NAME"
+    # List Fab commands found in loaded fabfiles/source files
+    parser.add_option('-l', '--list',
+        action='store_true',
+        dest='list_commands',
+        default=False,
+        help="print list of possible commands and exit"
     )
 
     # Allow setting of arbitrary env vars at runtime.
@@ -317,6 +300,23 @@ def parse_options():
         dest='env_settings',
         default="",
         help="comma separated KEY=VALUE pairs to set Fab env vars"
+    )
+
+    # Like --list, but text processing friendly
+    parser.add_option('--shortlist',
+        action='store_true',
+        dest='shortlist',
+        default=False,
+        help="alias for -F short --list"
+    )
+
+    # Version number (optparse gives you --version but we have to do it
+    # ourselves to get -V too. sigh)
+    parser.add_option('-V', '--version',
+        action='store_true',
+        dest='show_version',
+        default=False,
+        help="show program's version number and exit"
     )
 
     #
