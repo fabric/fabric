@@ -82,10 +82,28 @@ def _rc_path():
 # User-facing documentation for these are kept in docs/env.rst.
 env_options = [
 
-    make_option('-r', '--reject-unknown-hosts',
+    make_option('-a', '--no_agent',
         action='store_true',
         default=False,
-        help="reject unknown hosts"
+        help="don't use the running SSH agent"
+    ),
+
+    make_option('-A', '--no-agent-forward',
+        action='store_true',
+        default=False,
+        help="don't forward local agent to remote end"
+    ),
+
+    make_option('--abort-on-prompts',
+        action='store_true',
+        default=False,
+        help="Abort instead of prompting (for password, host, etc)"
+    ),
+
+    make_option('-c', '--config',
+        dest='rcfile',
+        default=_rc_path(),
+        help="specify location of config file to use"
     ),
 
     make_option('-D', '--disable-known-hosts',
@@ -94,35 +112,19 @@ env_options = [
         help="do not load user known_hosts file"
     ),
 
-    make_option('-u', '--user',
-        default=_get_system_username(),
-        help="username to use when connecting to remote hosts"
+    make_option('-f', '--fabfile',
+        default='fabfile',
+        help="Python module file to import, e.g. '../other.py'"
     ),
 
-    make_option('-p', '--password',
-        default=None,
-        help="password for use with authentication and/or sudo"
+    make_option('--hide',
+        metavar='LEVELS',
+        help="comma-separated list of output levels to hide"
     ),
 
     make_option('-H', '--hosts',
         default=[],
         help="comma-separated list of hosts to operate on"
-    ),
-
-    make_option('-R', '--roles',
-        default=[],
-        help="comma-separated list of roles to operate on"
-    ),
-
-    make_option('--skip-bad-hosts',
-        action="store_true",
-        default=False,
-        help="skip over hosts that can't be reached"
-    ),
-
-    make_option('-x', '--exclude-hosts',
-        default=[],
-        help="comma-separated list of hosts to exclude"
     ),
 
     make_option('-i', 
@@ -132,32 +134,75 @@ env_options = [
         help="path to SSH private key file. May be repeated."
     ),
 
-    # Use -a here to mirror ssh(1) options.
-    # Note, much later on: well, no. ssh -a concerns agent *forwarding*. Sigh.
-    make_option('-a', '--no_agent',
-        action='store_true',
-        default=False,
-        help="don't use the running SSH agent"
-    ),
-
-    # Another minor departure from SSH, due to above mixup: use -A to allow
-    # disabling of agent forwarding (which is on by default.)
-    make_option('-A', '--no-agent-forward',
-        action='store_true',
-        default=False,
-        help="don't forward local agent to remote end"
-    ),
-
-    # No matching option for ssh(1) so just picked something appropriate.
     make_option('-k', '--no-keys',
         action='store_true',
         default=False,
         help="don't load private key files from ~/.ssh/"
     ),
 
-    make_option('-f', '--fabfile',
-        default='fabfile',
-        help="Python module file to import, e.g. '../other.py'"
+    make_option('--keepalive',
+        dest='keepalive',
+        type=int,
+        default=0,
+        metavar="N",
+        help="enables a keepalive every N seconds"
+    ),
+
+    make_option('--linewise',
+        action='store_true',
+        default=False,
+        help="Print stdout/stderr line-by-line instead of byte-by-byte"
+    ),
+
+    make_option('--no-pty',
+        dest='always_use_pty',
+        action='store_false',
+        default=True,
+        help="do not use pseudo-terminal in run/sudo"
+    ),
+
+    make_option('-p', '--password',
+        default=None,
+        help="password for use with authentication and/or sudo"
+    ),
+
+    make_option('-P', '--parallel',
+            dest='parallel',
+            action='store_true',
+            default=False,
+            help="Default to parallel execution method"
+    ),
+
+    make_option('-r', '--reject-unknown-hosts',
+        action='store_true',
+        default=False,
+        help="reject unknown hosts"
+    ),
+
+    make_option('-R', '--roles',
+        default=[],
+        help="comma-separated list of roles to operate on"
+    ),
+
+    make_option('-s', '--shell',
+        default='/bin/bash -l -c',
+        help="specify a new shell, defaults to '/bin/bash -l -c'"
+    ),
+
+    make_option('--show',
+        metavar='LEVELS',
+        help="comma-separated list of output levels to show"
+    ),
+
+    make_option('--skip-bad-hosts',
+        action="store_true",
+        default=False,
+        help="skip over hosts that can't be reached"
+    ),
+
+    make_option('-u', '--user',
+        default=_get_system_username(),
+        help="username to use when connecting to remote hosts"
     ),
 
     make_option('-w', '--warn-only',
@@ -166,44 +211,11 @@ env_options = [
         help="warn, instead of abort, when commands fail"
     ),
 
-    make_option('-s', '--shell',
-        default='/bin/bash -l -c',
-        help="specify a new shell, defaults to '/bin/bash -l -c'"
+    make_option('-x', '--exclude-hosts',
+        default=[],
+        help="comma-separated list of hosts to exclude"
     ),
 
-    make_option('-c', '--config',
-        dest='rcfile',
-        default=_rc_path(),
-        help="specify location of config file to use"
-    ),
-
-    # Verbosity controls, analogous to context_managers.(hide|show)
-    make_option('--hide',
-        metavar='LEVELS',
-        help="comma-separated list of output levels to hide"
-    ),
-    make_option('--show',
-        metavar='LEVELS',
-        help="comma-separated list of output levels to show"
-    ),
-
-    # Global PTY flag for run/sudo
-    make_option('--no-pty',
-        dest='always_use_pty',
-        action='store_false',
-        default=True,
-        help="do not use pseudo-terminal in run/sudo"
-    ),
-
-    # Parallel execution model flag
-    make_option('-P', '--parallel',
-            dest='parallel',
-            action='store_true',
-            default=False,
-            help="Default to parallel execution method"
-    ),
-
-    # Limits the number of forks the parallel option uses
     make_option('-z', '--pool-size',
             dest='pool_size',
             type='int',
@@ -212,27 +224,6 @@ env_options = [
             help="Number of concurrent processes to use when running in parallel",
     ),
 
-    # Abort on prompting flag
-    make_option('--abort-on-prompts',
-        action='store_true',
-        default=False,
-        help="Abort instead of prompting (for password, host, etc)"
-    ),
-
-    # Keepalive
-    make_option('--keepalive',
-        dest='keepalive',
-        type=int,
-        default=0,
-        help="enables a keepalive every n seconds"
-    ),
-
-    # Linewise output
-    make_option('--linewise',
-        action='store_true',
-        default=False,
-        help="Print stdout/stderr line-by-line instead of byte-by-byte"
-    ),
 ]
 
 
