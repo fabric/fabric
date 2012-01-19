@@ -203,6 +203,13 @@ env_options = [
         help="skip over hosts that can't be reached"
     ),
 
+    make_option('-t', '--timeout',
+        type='int',
+        default=10,
+        metavar="N",
+        help="set connection timeout to N seconds"
+    ),
+
     make_option('-u', '--user',
         default=_get_system_username(),
         help="username to use when connecting to remote hosts"
