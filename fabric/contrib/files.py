@@ -258,33 +258,32 @@ def comment(filename, regex, use_sudo=False, char='#', backup='.bak'):
     )
 
 
-def contains(filename, text, exact=False, use_sudo=False):
+def contains(filename, regex, exact=False, use_sudo=False):
     """
-    Return True if ``filename`` contains ``text``.
+    Return True if ``filename`` contains text matched by ``regex``.
 
     By default, this function will consider a partial line match (i.e. where
-    the given text only makes up part of the line it's on). Specify
+    the given regex only makes up part of the line it's on). Specify
     ``exact=True`` to change this behavior so that only a line containing
-    exactly ``text`` results in a True return value.
+    exactly ``regex`` results in a True return value.
 
-    Double-quotes in either ``text`` or ``filename`` will be automatically
-    backslash-escaped in order to behave correctly during the remote shell
-    invocation.
+    Note that egrep is run directly, i.e. not through a shell
+
+    Note that the regex is evaluated using the 'egrep' command which
+    has different semantics to python regexes.
 
     If ``use_sudo`` is True, will use `sudo` instead of `run`.
 
     .. versionchanged:: 1.0
-        Swapped the order of the ``filename`` and ``text`` arguments to be
+        Swapped the order of the ``filename`` and ``regex`` arguments to be
         consistent with other functions in this module.
     """
     func = use_sudo and sudo or run
     if exact:
-        text = "^%s$" % text
+        regex = "^%s$" % regex
     with settings(hide('everything'), warn_only=True):
-        return func('egrep "%s" "%s"' % (
-            text.replace('"', r'\"'),
-            filename.replace('"', r'\"')
-        )).succeeded
+        egrep_cmd = 'egrep "%s" "%s"' % (regex, filename)
+        return func(egrep_cmd, shell=False).succeeded
 
 
 def append(filename, text, use_sudo=False, partial=False, escape=True):
@@ -322,9 +321,21 @@ def append(filename, text, use_sudo=False, partial=False, escape=True):
     if isinstance(text, basestring):
         text = [text]
     for line in text:
-        regex = '^' + re.escape(line) + ('' if partial else '$')
+        regex = '^' + _escape_for_regex(line)  + ('' if partial else '$')
         if (exists(filename, use_sudo=use_sudo) and line
             and contains(filename, regex, use_sudo=use_sudo)):
             continue
-        line = line.replace("'", r'\'') if escape else line
+        line = line.replace("'", r"'\\''") if escape else line
         func("echo '%s' >> %s" % (line, filename))
+
+def _escape_for_regex(text):
+    """Escape ``text`` to allow literal matching using egrep"""
+    regex = re.escape(text)
+    # Seems like double escaping is needed for \
+    regex = regex.replace('\\\\', '\\\\\\')
+    # Tripple-escaping seems to be required for $ signs
+    regex = regex.replace(r'\$', r'\\\$')
+    # Whereas single quotes should not be escaped
+    regex = regex.replace(r"\'", "'")
+    return regex
+
