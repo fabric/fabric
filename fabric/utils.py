@@ -232,6 +232,39 @@ class _AliasDict(_AttributeDict):
         return ret
 
 
+def _pty_size():
+    """
+    Obtain (rows, cols) tuple for sizing a pty on the remote end.
+
+    Defaults to 80x24 (which is also the 'ssh' lib's default) but will detect
+    local (stdout-based) terminal window size on non-Windows platforms.
+    """
+    from fabric.state import win32
+    if not win32:
+        import fcntl
+        import termios
+        import struct
+
+    rows, cols = 24, 80
+    if not win32 and sys.stdout.isatty():
+        # We want two short unsigned integers (rows, cols)
+        fmt = 'HH'
+        # Create an empty (zeroed) buffer for ioctl to map onto. Yay for C!
+        buffer = struct.pack(fmt, 0, 0)
+        # Call TIOCGWINSZ to get window size of stdout, returns our filled
+        # buffer
+        try:
+            result = fcntl.ioctl(sys.stdout.fileno(), termios.TIOCGWINSZ,
+                buffer)
+            # Unpack buffer back into Python data types
+            rows, cols = struct.unpack(fmt, result)
+        # Deal with e.g. sys.stdout being monkeypatched, such as in testing.
+        # Or termios not having a TIOCGWINSZ.
+        except AttributeError:
+            pass
+    return rows, cols
+
+
 def error(message, func=None, exception=None, stdout=None, stderr=None):
     """
     Call ``func`` with given error ``message``.
@@ -263,9 +296,9 @@ def error(message, func=None, exception=None, stdout=None, stderr=None):
             underlying = exception
         message += "\n\nUnderlying exception:\n" + indent(str(underlying))
     if func is abort:
-        if stdout is not None and not output.stdout and stdout:
+        if stdout and not fabric.state.output.stdout:
             message += _format_error_output("Standard output", stdout)
-        if stderr is not None and not output.stderr and stderr:
+        if stderr and not fabric.state.output.stderr:
             message += _format_error_output("Standard error", stderr)
     return func(message)
 
