@@ -9,8 +9,8 @@ from nose.tools import eq_
 from fabric.state import output, env
 from fabric.utils import warn, indent, abort, puts, fastprint, error
 from fabric import utils  # For patching
-from fabric.context_managers import settings
-from utils import mock_streams, aborts, FabricTest
+from fabric.context_managers import settings, hide
+from utils import mock_streams, aborts, FabricTest, assert_contains
 
 
 @mock_streams('stderr')
@@ -152,3 +152,29 @@ class TestErrorHandling(FabricTest):
         error(func=callable) => calls callable()
         """
         error('foo', func=Fake(callable=True, expect_call=True))
+
+    @mock_streams('stdout')
+    @with_patched_object(utils, 'abort', Fake('abort', callable=True,
+        expect_call=True).calls(lambda x: sys.stdout.write(x + "\n")))
+    def test_error_includes_stdout_if_given_and_hidden(self):
+        """
+        error() correctly prints stdout if it was previously hidden
+        """
+        # Mostly to catch regression bug(s)
+        stdout = "this is my stdout"
+        with hide('stdout'):
+            error("error message", func=utils.abort, stdout=stdout)
+        assert_contains(stdout, sys.stdout.getvalue())
+
+    @mock_streams('stderr')
+    @with_patched_object(utils, 'abort', Fake('abort', callable=True,
+        expect_call=True).calls(lambda x: sys.stderr.write(x + "\n")))
+    def test_error_includes_stderr_if_given_and_hidden(self):
+        """
+        error() correctly prints stderr if it was previously hidden
+        """
+        # Mostly to catch regression bug(s)
+        stderr = "this is my stderr"
+        with hide('stderr'):
+            error("error message", func=utils.abort, stderr=stderr)
+        assert_contains(stderr, sys.stderr.getvalue())
