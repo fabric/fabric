@@ -161,7 +161,7 @@ def connect(user, host, port):
     """
     Create and return a new SSHClient instance connected to given host.
     """
-    from state import env
+    from state import env, output
 
     #
     # Initialization
@@ -269,25 +269,35 @@ def connect(user, host, port):
         # Handle DNS error / name lookup failure
         except socket.gaierror, e:
             raise NetworkError('Name lookup failed for %s' % host, e)
-        # Handle timeouts or other network errors (so we can retry if needed)
-        except (socket.timeout, socket.error), e:
-            # TODO: how to apply timeout to instantly returning errors?
-            # (e.g. an immediate 'Invalid argument' socket.error)
-            if type(e) is socket.timeout:
-                msg = "Timed out trying to connect to %s" % host
-            # NOTE: In 2.6, socket.error subclasses IOError
-            if type(e) is socket.error:
-                msg = "Low level socket error connecting to host %s: %s" % (
-                    host, e[1]
-                )
-            if tries < env.connection_attempts:
-                print >> sys.stderr, "%s (attempt %s of %s)" % (
-                    msg, tries, env.connection_attempts
-                )
+        # Handle timeouts and retries
+        except socket.timeout, e:
+            giving_up = tries >= env.connection_attempts
+            # Baseline error msg for when debug is off
+            msg = "Timed out trying to connect to %s" % host
+            # Expanded for debug on
+            err = msg + " (attempt %s of %s)" % (tries, env.connection_attempts)
+            if giving_up:
+                err += ", giving up"
+            err += ")"
+            # Debuggin'
+            if output.debug:
+                print >>sys.stderr, err
+            # Having said our piece, try again
+            if not giving_up:
                 continue
-            # TODO: clean up the presentation of this
-            if env.connection_attempts > 0:
-                print >> sys.stderr, "Reached maximum number of connection attempts, aborting"
+            # Here, all attempts failed. Tweak error msg to show # tries.
+            # TODO: find good humanization module, jeez
+            s = "s" if env.connection_attempts > 1 else ""
+            msg += " (tried %s time%s)" % (env.connection_attempts, s)
+            raise NetworkError(msg, e)
+        # Arbitrary/unclassed network issues (must come after socket.timeout,
+        # which is a subtype)
+        except socket.error, e:
+            print repr(e)
+            # NOTE: In 2.6, socket.error subclasses IOError
+            msg = "Low level socket error connecting to host %s: %s" % (
+                host, e[1]
+            )
             raise NetworkError(msg, e)
 
 
