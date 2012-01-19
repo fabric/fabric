@@ -184,11 +184,13 @@ def connect(user, host, port):
     # Initialize loop variables
     connected = False
     password = get_password()
+    tries = 0
 
     # Loop until successful connect (keep prompting for new password)
     while not connected:
         # Attempt connection
         try:
+            tries += 1
             client.connect(
                 hostname=host,
                 port=int(port),
@@ -264,17 +266,29 @@ def connect(user, host, port):
             # Print a newline (in case user was sitting at prompt)
             print('')
             sys.exit(0)
-        # Handle timeouts
-        except socket.timeout, e:
-            raise NetworkError('Timed out trying to connect to %s' % host, e)
         # Handle DNS error / name lookup failure
         except socket.gaierror, e:
             raise NetworkError('Name lookup failed for %s' % host, e)
-        # Handle generic network-related errors
-        # NOTE: In 2.6, socket.error subclasses IOError
-        except socket.error, e:
-            msg = "Low level socket error connecting to host %s: %s"
-            raise NetworkError(msg % (host, e[1]), e)
+        # Handle timeouts or other network errors (so we can retry if needed)
+        except (socket.timeout, socket.error), e:
+            # TODO: how to apply timeout to instantly returning errors?
+            # (e.g. an immediate 'Invalid argument' socket.error)
+            if type(e) is socket.timeout:
+                msg = "Timed out trying to connect to %s" % host
+            # NOTE: In 2.6, socket.error subclasses IOError
+            if type(e) is socket.error:
+                msg = "Low level socket error connecting to host %s: %s" % (
+                    host, e[1]
+                )
+            if tries < env.connection_attempts:
+                print >> sys.stderr, "%s (attempt %s of %s)" % (
+                    msg, tries, env.connection_attempts
+                )
+                continue
+            # TODO: clean up the presentation of this
+            if env.connection_attempts > 0:
+                print >> sys.stderr, "Reached maximum number of connection attempts, aborting"
+            raise NetworkError(msg, e)
 
 
 def prompt_for_password(prompt=None, no_colon=False, stream=None):

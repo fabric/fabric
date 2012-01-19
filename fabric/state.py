@@ -157,6 +157,14 @@ env_options = [
         help="print line-by-line instead of byte-by-byte"
     ),
 
+    make_option('-n', '--connection-attempts',
+        type='int',
+        metavar='M',
+        dest='connection_attempts',
+        default=0,
+        help="make M attempts to connect before giving up"
+    ),
+
     make_option('--no-pty',
         dest='always_use_pty',
         action='store_false',
