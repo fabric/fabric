@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`487` Overhauled the regular expression escaping performed in
+  `~fabric.contrib.files.append` and `~fabric.contrib.files.contains` to try
+  and handle more corner cases. Thanks to Neilen Marais for the patch.
 * :support:`532` Reorganized and cleaned up the output of ``fab --help``.
 * :feature:`8` Added :option:`--skip-bad-hosts`/:ref:`env.skip_bad_hosts
   <skip-bad-hosts>` option to allow skipping past temporarily down/unreachable
