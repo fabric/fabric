@@ -218,7 +218,8 @@ class TestExecute(FabricTest):
         def host_string():
             eq_(env.host_string, hostlist.pop(0))
         task = Fake(callable=True, expect_call=True).calls(host_string)
-        execute(task, hosts=hosts)
+        with hide('everything'):
+            execute(task, hosts=hosts)
 
     def test_should_honor_hosts_decorator(self):
         """
