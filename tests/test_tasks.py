@@ -339,3 +339,14 @@ class TestExecute(FabricTest):
                 '127.0.0.1:2200': 'foo',
                 '127.0.0.1:2201': 'foo'
             })
+
+    @server()
+    def test_should_preserve_None_for_non_returning_tasks(self):
+        """
+        Tasks which don't return anything should still show up in the dict
+        """
+        def task():
+            pass
+        eq_(execute(task), {'<local-only>': None})
+        with hide('everything'):
+            eq_(execute(task, hosts=[env.host_string]), {env.host_string: None})
