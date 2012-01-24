@@ -47,8 +47,6 @@ class TestWrappedCallableTask(unittest.TestCase):
             self.fail(
                 "__init__ raised a TypeError, meaning kwargs weren't handled")
 
-
-
     def test_allows_any_number_of_args(self):
         args = [i for i in range(random.randint(0, 10))]
         def foo(): pass
