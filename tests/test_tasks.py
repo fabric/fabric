@@ -286,7 +286,7 @@ class TestExecute(FabricTest):
         def command():
             eq_(set(env.all_hosts), set(['b', 'c', 'd']))
         task = Fake(callable=True, expect_call=True).calls(command)
-        with settings(roledefs=roledefs):
+        with settings(hide('everything'), roledefs=roledefs):
             execute(
                 task, hosts=hosts, roles=roles, exclude_hosts=exclude_hosts
             )
