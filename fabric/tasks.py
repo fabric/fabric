@@ -177,7 +177,7 @@ or that the above ImportError is fixed.""")
         jobs.append(p)
     # Handle serial execution
     else:
-        task.run(*args, **kwargs)
+        return task.run(*args, **kwargs)
 
 def execute(task, *args, **kwargs):
     """
@@ -209,6 +209,7 @@ def execute(task, *args, **kwargs):
     .. versionadded:: 1.3
     """
     my_env = {}
+    results = {}
     # Obtain task
     if not callable(task):
         # Assume string, set env.command to it
@@ -240,8 +241,9 @@ def execute(task, *args, **kwargs):
         # Attempt to cycle on hosts, skipping if needed
         for host in my_env['all_hosts']:
             try:
-                _execute(task, host, my_env, args, new_kwargs)
+                results[host] = _execute(task, host, my_env, args, new_kwargs)
             except NetworkError, e:
+                results[host] = None
                 # Backwards compat test re: whether to use an exception or
                 # abort
                 if not state.env.use_exceptions_for['network']:
@@ -264,4 +266,6 @@ def execute(task, *args, **kwargs):
     # Or just run once for local-only
     else:
         state.env.update(my_env)
-        task.run(*args, **new_kwargs)
+        results['<local-only>'] = task.run(*args, **new_kwargs)
+    # Return what we can from the inner task executions
+    return results

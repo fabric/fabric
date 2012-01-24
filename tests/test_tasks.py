@@ -14,6 +14,7 @@ from fabric.api import run, env, settings, hosts, roles, hide
 from fabric.network import from_dict
 
 from utils import eq_, FabricTest, aborts, mock_streams
+from server import server
 
 
 def test_base_task_provides_undefined_name():
@@ -312,3 +313,29 @@ class TestExecute(FabricTest):
         with settings(hosts=[]): # protect against really odd test bleed :(
             execute(task)
         eq_(sys.stdout.getvalue(), "")
+
+
+    def test_should_return_dict_for_base_case(self):
+        """
+        Non-network-related tasks should return a dict w/ special key
+        """
+        def task():
+            return "foo"
+        eq_(execute(task), {'<local-only>': 'foo'})
+
+    @server(port=2200)
+    @server(port=2201)
+    def test_should_return_dict_for_serial_use_case(self):
+        """
+        Networked but serial tasks should return per-host-string dict
+        """
+        ports = [2200, 2201]
+        hosts = map(lambda x: '127.0.0.1:%s' % x, ports)
+        def task():
+            run("ls /simple")
+            return "foo"
+        with hide('everything'):
+            eq_(execute(task, hosts=hosts), {
+                '127.0.0.1:2200': 'foo',
+                '127.0.0.1:2201': 'foo'
+            })
