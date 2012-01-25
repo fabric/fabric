@@ -243,7 +243,7 @@ def execute(task, *args, **kwargs):
             try:
                 results[host] = _execute(task, host, my_env, args, new_kwargs)
             except NetworkError, e:
-                results[host] = None
+                results[host] = e
                 # Backwards compat test re: whether to use an exception or
                 # abort
                 if not state.env.use_exceptions_for['network']:

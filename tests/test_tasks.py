@@ -12,6 +12,7 @@ from fabric import tasks
 from fabric.tasks import WrappedCallableTask, execute
 from fabric.api import run, env, settings, hosts, roles, hide
 from fabric.network import from_dict
+from fabric.exceptions import NetworkError
 
 from utils import eq_, FabricTest, aborts, mock_streams
 from server import server
@@ -350,3 +351,14 @@ class TestExecute(FabricTest):
         eq_(execute(task), {'<local-only>': None})
         with hide('everything'):
             eq_(execute(task, hosts=[env.host_string]), {env.host_string: None})
+
+    def test_should_use_sentinel_for_tasks_that_errored(self):
+        """
+        Tasks which errored but didn't abort should contain an eg NetworkError
+        """
+        def task():
+            run("whoops")
+        host_string = 'localhost:1234'
+        with settings(hide('everything'), skip_bad_hosts=True):
+            retval = execute(task, hosts=[host_string])
+        assert isinstance(retval[host_string], NetworkError)
