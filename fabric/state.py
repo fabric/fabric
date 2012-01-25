@@ -242,6 +242,14 @@ env_options = [
             default=0,
             help="number of concurrent processes to use in parallel mode",
     ),
+    
+    # TODO: dry run local also? combine both into --dry-run?
+    make_option('--dry-run-remote',
+        action='store_true',
+        dest='dry_run_remote',
+        default=False,
+        help="Don't execute remote commands, print what would have been executed",
+     )
 
 ]
 

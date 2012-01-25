@@ -22,6 +22,7 @@ from fabric.sftp import SFTP
 from fabric.state import env, connections, output, win32, default_channel
 from fabric.thread_handling import ThreadHandler
 from fabric.utils import abort, indent, warn, puts, handle_prompt_abort, error, _pty_size
+from fabric.dryrun import DryRunSFTP
 
 # For terminal size logic below
 if not win32:
@@ -335,7 +336,11 @@ def put(local_path=None, remote_path=None, use_sudo=False,
     local_is_path = not (hasattr(local_path, 'read') \
         and callable(local_path.read))
 
-    ftp = SFTP(env.host_string)
+    # use a dummy SFTP class here for dry-runs
+    if env.dry_run_remote:
+        ftp = DryRunSFTP(env.host_string)
+    else:
+        ftp = SFTP(env.host_string)
 
     with closing(ftp) as ftp:
         home = ftp.normalize('.')
@@ -514,7 +519,11 @@ def get(remote_path, local_path=None):
     if local_is_path and not os.path.isabs(local_path) and env.lcwd:
         local_path = os.path.join(env.lcwd, local_path)
 
-    ftp = SFTP(env.host_string)
+    # use a dummy SFTP class here for dry-runs
+    if env.dry_run_remote:
+        ftp = DryRunSFTP(env.host_string)
+    else:
+        ftp = SFTP(env.host_string)
 
     with closing(ftp) as ftp:
         home = ftp.normalize('.')
@@ -807,12 +816,16 @@ def _run_command(command, shell=True, pty=True, combine_stderr=True,
     which = 'sudo' if sudo else 'run'
     if output.debug:
         print("[%s] %s: %s" % (env.host_string, which, wrapped_command))
-    elif output.running:
+    elif output.running or env.dry_run_remote:
         print("[%s] %s: %s" % (env.host_string, which, given_command))
 
-    # Actual execution, stdin/stdout/stderr handling, and termination
-    stdout, stderr, status = _execute(default_channel(), wrapped_command, pty,
-        combine_stderr)
+    if env.dry_run_remote:
+        # Fake exeuction, assume command completed ok and returned 0
+        stdout, stderr, status = ("", "", 0)
+    else:    
+        # Actual execution, stdin/stdout/stderr handling, and termination
+        stdout, stderr, status = _execute(default_channel(), wrapped_command, pty,
+            combine_stderr)
 
     # Assemble output string
     out = _AttributeString(stdout)
