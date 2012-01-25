@@ -132,7 +132,7 @@ def _parallel_tasks(commands_to_run):
     ))
 
 
-def _execute(task, host, my_env, args, kwargs):
+def _execute(task, host, my_env, args, kwargs, jobs=None):
     """
     Primary single-host work body of execute()
     """
@@ -241,7 +241,7 @@ def execute(task, *args, **kwargs):
         # Attempt to cycle on hosts, skipping if needed
         for host in my_env['all_hosts']:
             try:
-                results[host] = _execute(task, host, my_env, args, new_kwargs)
+                results[host] = _execute(task, host, my_env, args, new_kwargs, jobs)
             except NetworkError, e:
                 results[host] = e
                 # Backwards compat test re: whether to use an exception or
