@@ -8,6 +8,7 @@ items, though within Fabric itself only ``Process`` objects are used/supported.
 from pprint import pprint
 from Crypto import Random 
 import time
+import Queue
 
 from fabric.state import env
 from fabric.network import ssh
@@ -70,14 +71,19 @@ class JobQueue(object):
 
         self._closed = True
 
-    def append(self, process):
+    def append(self, process, queue=None):
         """
         Add the Process() to the queue, so that later it can be checked up on.
         That is if the JobQueue is still open.
 
         If the queue is closed, this will just silently do nothing.
+
+        To get data back out of this process, give ``process`` access to a
+        ``multiprocessing.Queue`` object, and give it here as ``queue``. Then
+        ``JobQueue.run`` will include the queue's contents in its return value.
         """
         if not self._closed:
+            process._queue = queue
             self._queued.append(process)
             self._num_of_jobs += 1
             if self._debug:
@@ -134,7 +140,6 @@ class JobQueue(object):
                         if self._debug:
                             print("Job queue found finished proc: %s." %
                                     job.name)
-
                         done = self._running.pop(id)
                         self._completed.append(done)
 
@@ -151,7 +156,13 @@ class JobQueue(object):
                 self._finished = True
             time.sleep(ssh.io_sleep)
 
-        return [x.exitcode for x in self._completed]
+        results = {}
+        for job in self._completed:
+            results[job.name] = {
+                'exit_code': job.exitcode,
+                'results': job._queue.get()
+            }
+        return results
 
 
 #### Sample 

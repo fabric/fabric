@@ -10,7 +10,7 @@ import sys
 import fabric
 from fabric import tasks
 from fabric.tasks import WrappedCallableTask, execute
-from fabric.api import run, env, settings, hosts, roles, hide
+from fabric.api import run, env, settings, hosts, roles, hide, parallel
 from fabric.network import from_dict
 from fabric.exceptions import NetworkError
 
@@ -362,3 +362,18 @@ class TestExecute(FabricTest):
         with settings(hide('everything'), skip_bad_hosts=True):
             retval = execute(task, hosts=[host_string])
         assert isinstance(retval[host_string], NetworkError)
+
+    @server(port=2200)
+    @server(port=2201)
+    def test_parallel_return_values(self):
+        """
+        Parallel mode should still return values as in serial mode
+        """
+        @parallel
+        @hosts('127.0.0.1:2200', '127.0.0.1:2201')
+        def task():
+            run("ls /simple")
+            return env.host_string.split(':')[1]
+        with hide('everything'):
+            retval = execute(task)
+        eq_(retval, {'127.0.0.1:2200': '2200', '127.0.0.1:2201': '2201'})
