@@ -226,7 +226,7 @@ def connect(user, host, port):
             # SSHException and there *was* a password -- it is probably
             # something non auth related, and should be sent upwards.
             if e.__class__ is ssh.SSHException and password:
-                abort(str(e))
+                raise NetworkError(str(e), e)
 
             # Otherwise, assume an auth exception, and prompt for new/better
             # password.
