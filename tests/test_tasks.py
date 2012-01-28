@@ -47,8 +47,6 @@ class TestWrappedCallableTask(unittest.TestCase):
             self.fail(
                 "__init__ raised a TypeError, meaning kwargs weren't handled")
 
-
-
     def test_allows_any_number_of_args(self):
         args = [i for i in range(random.randint(0, 10))]
         def foo(): pass
@@ -61,53 +59,47 @@ class TestWrappedCallableTask(unittest.TestCase):
 
     def test_run_is_wrapped_callable(self):
         def foo(): pass
-
         task = tasks.WrappedCallableTask(foo)
         self.assertEqual(task.wrapped, foo)
 
     def test_name_is_the_name_of_the_wrapped_callable(self):
         def foo(): pass
         foo.__name__ = "random_name_%d" % random.randint(1000, 2000)
-
         task = tasks.WrappedCallableTask(foo)
         self.assertEqual(task.name, foo.__name__)
 
     def test_reads_double_under_doc_from_callable(self):
         def foo(): pass
         foo.__doc__ = "Some random __doc__: %d" % random.randint(1000, 2000)
-
         task = tasks.WrappedCallableTask(foo)
         self.assertEqual(task.__doc__, foo.__doc__)
 
     def test_dispatches_to_wrapped_callable_on_run(self):
         random_value = "some random value %d" % random.randint(1000, 2000)
         def foo(): return random_value
-
         task = tasks.WrappedCallableTask(foo)
         self.assertEqual(random_value, task())
 
     def test_passes_all_regular_args_to_run(self):
         def foo(*args): return args
-
-        random_args = tuple([random.randint(1000, 2000) for i in range(random.randint(1, 5))])
+        random_args = tuple(
+            [random.randint(1000, 2000) for i in range(random.randint(1, 5))]
+        )
         task = tasks.WrappedCallableTask(foo)
         self.assertEqual(random_args, task(*random_args))
 
     def test_passes_all_keyword_args_to_run(self):
         def foo(**kwargs): return kwargs
-
         random_kwargs = {}
         for i in range(random.randint(1, 5)):
             random_key = ("foo", "bar", "baz", "foobar", "barfoo")[i]
             random_kwargs[random_key] = random.randint(1000, 2000)
-
         task = tasks.WrappedCallableTask(foo)
         self.assertEqual(random_kwargs, task(**random_kwargs))
 
     def test_calling_the_object_is_the_same_as_run(self):
         random_return = random.randint(1000, 2000)
         def foo(): return random_return
-
         task = tasks.WrappedCallableTask(foo)
         self.assertEqual(task(), task.run())
 
@@ -187,6 +179,20 @@ class TestExecute(FabricTest):
         """
         name = 'task1'
         commands = {name: Fake(callable=True, expect_call=True)}
+        with patched_context(fabric.state, 'commands', commands):
+            execute(name)
+
+    @with_fakes
+    def test_should_handle_name_of_Task_object(self):
+        """
+        handle corner case of Task object referrred to by name
+        """
+        name = 'task2'
+        class MyTask(Task):
+            run = Fake(callable=True, expect_call=True)
+        mytask = MyTask()
+        mytask.name = name
+        commands = {name: mytask}
         with patched_context(fabric.state, 'commands', commands):
             execute(name)
 
@@ -314,10 +320,13 @@ class TestExecute(FabricTest):
             execute(task)
         eq_(sys.stdout.getvalue(), "")
 
+    @with_fakes
     def test_should_work_with_Task_subclasses(self):
         """
         should work for Task subclasses, not just WrappedCallableTask
         """
         class MyTask(Task):
+            name = "mytask"
             run = Fake(callable=True, expect_call=True)
-        execute(MyTask())
+        mytask = MyTask()
+        execute(mytask)
