@@ -20,7 +20,7 @@ import types
 # For checking callables against the API, & easy mocking
 from fabric import api, state, colors
 from fabric.contrib import console, files, project
-
+from fabric.exceptions import FabfileError
 from fabric.network import denormalize, disconnect_all, ssh
 from fabric.state import env_options
 from fabric.tasks import Task, execute
@@ -34,6 +34,7 @@ _internals = reduce(lambda x, y: x + filter(callable, vars(y).values()),
     _modules,
     []
 )
+
 
 # Module recursion cache
 class _ModuleCache(object):
@@ -111,7 +112,7 @@ def find_fabfile():
                     if name.endswith('.py') or _is_package(joined):
                         return os.path.abspath(joined)
             path = os.path.join('..', path)
-    # Implicit 'return None' if nothing was found
+    raise FabfileError("No fabfile was found")
 
 
 def is_classic_task(tup):
@@ -620,6 +621,8 @@ def main():
         # Find local fabfile path or abort
         fabfile_mod = None
         try:
+            fabfile = find_fabfile()
+        except FabfileError:
             for name in state.env.fabfile.split('.'):
                 if hasattr(fabfile_mod, '__path__'):
                     mod_ = find_module(name, fabfile_mod.__path__)
@@ -633,8 +636,6 @@ def main():
                 # fabfile.py
                 fabfile = fabfile_mod.__file__
         except:
-            fabfile = find_fabfile()
-            if not fabfile and not remainder_arguments:
                 abort("""Couldn't find any fabfiles!
 
 Remember that -f can be used to specify fabfile path, and use -h for help.""")
