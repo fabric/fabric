@@ -618,11 +618,12 @@ def main():
         # Load settings from user settings file, into shared env dict.
         state.env.update(load_settings(state.env.rcfile))
 
-        # Find local fabfile path or abort
         fabfile_mod = None
         try:
+            # Find local fabfile path
             fabfile = find_fabfile()
         except FabfileError:
+            # No local path found, try a module import from PYTHONPATH
             for name in state.env.fabfile.split('.'):
                 if hasattr(fabfile_mod, '__path__'):
                     mod_ = find_module(name, fabfile_mod.__path__)
@@ -635,8 +636,9 @@ def main():
             else:
                 # fabfile.py
                 fabfile = fabfile_mod.__file__
-        except:
-                abort("""Couldn't find any fabfiles!
+        except Exception:
+            # No fabfile path or module found, abort
+            abort("""Couldn't find any fabfiles!
 
 Remember that -f can be used to specify fabfile path, and use -h for help.""")
 
