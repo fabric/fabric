@@ -38,6 +38,17 @@ There are a number of ways to get involved with Fabric:
 
 While we may not always reply promptly, we do try to make time eventually to inspect all contributions and either incorporate them or explain why we don't feel the change is a good fit.
 
+Documentation
+-------------
+
+For new features, please add the following documention:
+
+* env var option if applicable, sometimes also a 'fab' cli setting
+* usage documentation, at minimum mentioning that the feature exists and its
+  expected behavior
+* changelog
+
+
 Communication
 -------------
 
