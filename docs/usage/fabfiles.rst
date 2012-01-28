@@ -10,9 +10,10 @@ write them, and how to use them once written.
 Fabfile discovery
 =================
 
-Fabric is capable of loading Python modules (e.g. ``fabfile.py``) or packages
-(e.g. a ``fabfile/`` directory containing an ``__init__.py``). By default, it
-looks for something named either ``fabfile`` or ``fabfile.py``.
+Fabric is capable of loading Python modules (e.g. ``fabfile.py``), packages
+(e.g. a ``fabfile/`` directory containing an ``__init__.py``), or dotted module
+paths (e.g. a module in your PYTHONPATH named ``fabfile``). By default, it looks
+for something named either ``fabfile`` or ``fabfile.py``.
 
 The fabfile discovery algorithm searches in the invoking user's current working
 directory or any parent directories. Thus, it is oriented around "project" use,

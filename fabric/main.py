@@ -10,6 +10,7 @@ to individuals leveraging Fabric as a library, should be kept elsewhere.
 """
 
 from collections import defaultdict
+from imp import find_module, load_module
 from operator import add, isMappingType
 from optparse import OptionParser
 import os
@@ -170,10 +171,14 @@ def load_fabfile(path, importer=None):
         del sys.path[0]
 
     # Actually load tasks
+    docstring, tasks, default = new_tasks_from_module(imported)
+    _seen.clear()
+    return docstring, tasks, default
+
+
+def new_tasks_from_module(imported):
     docstring, new_style, classic, default = load_tasks_from_module(imported)
     tasks = new_style if state.env.new_style_tasks else classic
-    # Clean up after ourselves
-    _seen.clear()
     return docstring, tasks, default
 
 
@@ -613,9 +618,24 @@ def main():
         state.env.update(load_settings(state.env.rcfile))
 
         # Find local fabfile path or abort
-        fabfile = find_fabfile()
-        if not fabfile and not remainder_arguments:
-            abort("""Couldn't find any fabfiles!
+        fabfile_mod = None
+        try:
+            for name in state.env.fabfile.split('.'):
+                if hasattr(fabfile_mod, '__path__'):
+                    mod_ = find_module(name, fabfile_mod.__path__)
+                else:
+                    mod_ = find_module(name)
+                fabfile_mod = load_module(name, *mod_)
+            if hasattr(fabfile_mod, '__path__'):
+                # fabfile/__init__.py or other package
+                fabfile = fabfile_mod.__path__
+            else:
+                # fabfile.py
+                fabfile = fabfile_mod.__file__
+        except:
+            fabfile = find_fabfile()
+            if not fabfile and not remainder_arguments:
+                abort("""Couldn't find any fabfiles!
 
 Remember that -f can be used to specify fabfile path, and use -h for help.""")
 
@@ -627,7 +647,11 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
         # dict
         default = None
         if fabfile:
-            docstring, callables, default = load_fabfile(fabfile)
+            if fabfile_mod:
+                docstring, callables, default = new_tasks_from_module(
+                    fabfile_mod)
+            else:
+                docstring, callables, default = load_fabfile(fabfile)
             state.commands.update(callables)
 
         # Handle case where we were called bare, i.e. just "fab", and print

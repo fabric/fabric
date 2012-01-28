@@ -220,10 +220,10 @@ during ``fab`` execution. Typically set via :option:`--exclude-hosts/-x <-x>`.
 
 **Default:** ``fabfile.py``
 
-Filename pattern which ``fab`` searches for when loading fabfiles.
-To indicate a specific file, use the full path to the file. Obviously, it
-doesn't make sense to set this in a fabfile, but it may be specified in a
-``.fabricrc`` file or on the command line.
+Filename pattern or dotted module path which ``fab`` searches for when loading
+fabfiles.  To indicate a specific file, use the full path to the
+file. Obviously, it doesn't make sense to set this in a fabfile, but it may be
+specified in a ``.fabricrc`` file or on the command line.
 
 .. seealso:: :doc:`fab`
 
