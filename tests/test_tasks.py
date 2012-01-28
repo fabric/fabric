@@ -9,7 +9,7 @@ import sys
 
 import fabric
 from fabric import tasks
-from fabric.tasks import WrappedCallableTask, execute
+from fabric.tasks import WrappedCallableTask, execute, Task
 from fabric.api import run, env, settings, hosts, roles, hide
 from fabric.network import from_dict
 
@@ -313,3 +313,11 @@ class TestExecute(FabricTest):
         with settings(hosts=[]): # protect against really odd test bleed :(
             execute(task)
         eq_(sys.stdout.getvalue(), "")
+
+    def test_should_work_with_Task_subclasses(self):
+        """
+        should work for Task subclasses, not just WrappedCallableTask
+        """
+        class MyTask(Task):
+            run = Fake(callable=True, expect_call=True)
+        execute(MyTask())

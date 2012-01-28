@@ -210,7 +210,9 @@ def execute(task, *args, **kwargs):
     """
     my_env = {}
     # Obtain task
-    if not callable(task):
+    is_callable = callable(task)
+    is_task_obj = hasattr(task, 'run') and callable(task.run)
+    if not (is_callable or is_task_obj):
         # Assume string, set env.command to it
         my_env['command'] = task
         task = crawl(task, state.commands)
@@ -221,7 +223,7 @@ def execute(task, *args, **kwargs):
         dunder_name = getattr(task, '__name__', None)
         my_env['command'] = getattr(task, 'name', dunder_name)
     # Normalize to Task instance
-    if not hasattr(task, 'run'):
+    if not is_task_obj:
         task = WrappedCallableTask(task)
     # Filter out hosts/roles kwargs
     new_kwargs, hosts, roles, exclude_hosts = parse_kwargs(kwargs)
