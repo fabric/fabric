@@ -35,7 +35,9 @@ setup(
     author='Jeff Forcier',
     author_email='jeff@bitprophet.org',
     url='http://fabfile.org',
-    packages=find_packages(),
+    packages=find_packages(
+        exclude=['fabfile', 'fabfile.*',
+                 'tests', 'tests.*', '*.tests', '*.tests.*']),
     test_suite='nose.collector',
     tests_require=['nose', 'fudge<1.0'],
     install_requires=['ssh==dev'],
