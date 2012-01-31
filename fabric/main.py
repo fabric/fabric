@@ -624,19 +624,14 @@ def main():
             fabfile = find_fabfile()
         except FabfileError:
             # No local path found, try a module import from PYTHONPATH
-            for name in state.env.fabfile.split('.'):
-                if hasattr(fabfile_mod, '__path__'):
-                    mod_ = find_module(name, fabfile_mod.__path__)
-                else:
-                    mod_ = find_module(name)
-                fabfile_mod = load_module(name, *mod_)
+            fabfile_mod = __import__(state.env.fabfile)
             if hasattr(fabfile_mod, '__path__'):
                 # fabfile/__init__.py or other package
                 fabfile = fabfile_mod.__path__
             else:
                 # fabfile.py
                 fabfile = fabfile_mod.__file__
-        except Exception:
+        except (ImportError, Exception):
             # No fabfile path or module found, abort
             abort("""Couldn't find any fabfiles!
 
