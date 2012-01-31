@@ -226,10 +226,17 @@ class SFTP(object):
         # Clean up
         if not local_is_path:
             os.remove(real_local_path)
+
+        # Preserve modification and access times
+        if local_is_path:
+            st = os.stat(local_path)
+            if mirror_local_mode:
+                mode = st.st_mode
+            self.ftp.utime(remote_path, (st.st_atime, st.st_mtime))
+
         # Handle modes if necessary
-        if (local_is_path and mirror_local_mode) or (mode is not None):
-            lmode = os.stat(local_path).st_mode if mirror_local_mode else mode
-            lmode = lmode & 07777
+        if mode is not None:
+            lmode = mode & 07777
             rmode = rattrs.st_mode & 07777
             if lmode != rmode:
                 if use_sudo:
