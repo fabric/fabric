@@ -10,7 +10,7 @@ to individuals leveraging Fabric as a library, should be kept elsewhere.
 """
 
 from collections import defaultdict
-from imp import find_module, load_module
+from importlib import import_module
 from operator import add, isMappingType
 from optparse import OptionParser
 import os
@@ -623,17 +623,24 @@ def main():
             # Find local fabfile path
             fabfile = find_fabfile()
         except FabfileError:
-            # No local path found, try a module import from PYTHONPATH
-            fabfile_mod = __import__(state.env.fabfile)
-            if hasattr(fabfile_mod, '__path__'):
-                # fabfile/__init__.py or other package
-                fabfile = fabfile_mod.__path__
-            else:
-                # fabfile.py
-                fabfile = fabfile_mod.__file__
-        except (ImportError, Exception):
-            # No fabfile path or module found, abort
-            abort("""Couldn't find any fabfiles!
+            try:
+                # No local path found, try a module import from PYTHONPATH
+                names = state.env.fabfile.split('.')
+                fabfile_mod = __import__(state.env.fabfile)
+                for name in names[1:]:
+                    if hasattr(fabfile_mod, name):
+                        fabfile_mod = getattr(fabfile_mod, name)
+                    else:
+                        raise ImportError()
+                if hasattr(fabfile_mod, '__path__'):
+                    # fabfile/__init__.py or other package
+                    fabfile = fabfile_mod.__path__
+                else:
+                    # fabfile.py
+                    fabfile = fabfile_mod.__file__
+            except (ImportError, Exception):
+                # No fabfile path or module found, abort
+                abort("""Couldn't find any fabfiles!
 
 Remember that -f can be used to specify fabfile path, and use -h for help.""")
 
