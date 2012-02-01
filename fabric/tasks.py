@@ -7,7 +7,7 @@ from fabric.utils import abort, warn, error
 from fabric.network import to_dict, normalize_to_string
 from fabric.context_managers import settings
 from fabric.job_queue import JobQueue
-from fabric.task_utils import *
+from fabric.task_utils import crawl, merge, parse_kwargs
 from fabric.exceptions import NetworkError
 
 
