@@ -132,7 +132,7 @@ def _parallel_tasks(commands_to_run):
     ))
 
 
-def _execute(task, host, my_env, args, kwargs):
+def _execute(task, host, my_env, args, kwargs, jobs, queue, multiprocessing):
     """
     Primary single-host work body of execute()
     """
@@ -144,40 +144,33 @@ def _execute(task, host, my_env, args, kwargs):
     local_env.update(my_env)
     state.env.update(local_env)
     # Handle parallel execution
-    if requires_parallel(task):
+    if queue is not None: # Since queue is only set for parallel
         # Set a few more env flags for parallelism
         state.env.parallel = True # triggers some extra aborts, etc
         state.env.linewise = True # to mirror -P behavior
-        # Import multiprocessing if needed, erroring out usefully
-        # if it can't.
-        try:
-            import multiprocessing
-        except ImportError:
-            import traceback
-            tb = traceback.format_exc()
-            abort(tb + """
-At least one task needs to be run in parallel, but the
-multiprocessing module cannot be imported (see above
-traceback.) Please make sure the module is installed
-or that the above ImportError is fixed.""")
-
-        # Wrap in another callable that nukes the child's cached
-        # connection object, if needed, to prevent shared-socket
-        # problems.
-        def inner(*args, **kwargs):
+        # Wrap in another callable that:
+        # * nukes the connection cache to prevent shared-access problems
+        # * knows how to send the tasks' return value back over a Queue
+        def inner(args, kwargs, queue):
             key = normalize_to_string(state.env.host_string)
             state.connections.pop(key, "")
-            task.run(*args, **kwargs)
+            result = task.run(*args, **kwargs)
+            queue.put(result)
+
         # Stuff into Process wrapper
-        p = multiprocessing.Process(target=inner, args=args,
-            kwargs=kwargs)
+        kwarg_dict = {
+            'args': args,
+            'kwargs': kwargs,
+            'queue': queue,
+        }
+        p = multiprocessing.Process(target=inner, kwargs=kwarg_dict)
         # Name/id is host string
         p.name = local_env['host_string']
         # Add to queue
-        jobs.append(p)
+        jobs.append(p, queue)
     # Handle serial execution
     else:
-        task.run(*args, **kwargs)
+        return task.run(*args, **kwargs)
 
 def _is_task(task):
     return isinstance(task, Task)
@@ -205,13 +198,27 @@ def execute(task, *args, **kwargs):
     ``task`` when it is called, so ``execute(mytask, 'arg1', kwarg1='value')``
     will (once per host) invoke ``mytask('arg1', kwarg1='value')``.
 
+    This function returns a dictionary mapping host strings to the given task's
+    return value for that host's execution run. For example, ``execute(foo,
+    hosts=['a', 'b'])`` might return ``{'a': None, 'b': 'bar'}`` if ``foo``
+    returned nothing on host `a` but returned ``'bar'`` on host `b`.
+
+    In situations where a task execution fails for a given host but overall
+    progress does not abort (such as when :ref:`env.skip_bad_hosts
+    <skip-bad-hosts>` is True) the return value for that host will be the error
+    object or message.
+
     .. seealso::
         :ref:`The execute usage docs <execute>`, for an expanded explanation
         and some examples.
 
     .. versionadded:: 1.3
+    .. versionchanged:: 1.4
+        Added the return value mapping; previously this function had no defined
+        return value.
     """
     my_env = {}
+    results = {}
     # Obtain task
     is_callable = callable(task)
     if not (is_callable or _is_task(task)):
@@ -239,13 +246,35 @@ def execute(task, *args, **kwargs):
     if state.output.debug:
         jobs._debug = True
 
+    parallel = requires_parallel(task)
+    if parallel:
+        # Import multiprocessing if needed, erroring out usefully
+        # if it can't.
+        try:
+            import multiprocessing
+        except ImportError:
+            import traceback
+            tb = traceback.format_exc()
+            abort(tb + """
+    At least one task needs to be run in parallel, but the
+    multiprocessing module cannot be imported (see above
+    traceback.) Please make sure the module is installed
+    or that the above ImportError is fixed.""")
+    else:
+        multiprocessing = None
+
     # Call on host list
     if my_env['all_hosts']:
         # Attempt to cycle on hosts, skipping if needed
         for host in my_env['all_hosts']:
+            queue = multiprocessing.Queue() if parallel else None
             try:
-                _execute(task, host, my_env, args, new_kwargs)
+                results[host] = _execute(
+                    task, host, my_env, args, new_kwargs, jobs, queue,
+                    multiprocessing
+                )
             except NetworkError, e:
+                results[host] = e
                 # Backwards compat test re: whether to use an exception or
                 # abort
                 if not state.env.use_exceptions_for['network']:
@@ -256,16 +285,21 @@ def execute(task, *args, **kwargs):
 
         # If running in parallel, block until job queue is emptied
         if jobs:
+            err = "One or more hosts failed while executing task '%s'" % (
+                my_env['command']
+            )
             jobs.close()
-            exitcodes = jobs.run()
             # Abort if any children did not exit cleanly (fail-fast).
             # This prevents Fabric from continuing on to any other tasks.
-            if any([x != 0 for x in exitcodes]):
-                abort("One or more hosts failed while executing task '%s'" % (
-                    my_env['command']
-                ))
+            # Otherwise, pull in results from the child run.
+            for name, d in jobs.run().iteritems():
+                if d['exit_code'] != 0:
+                    abort(err)
+                results[name] = d['results']
 
     # Or just run once for local-only
     else:
         state.env.update(my_env)
-        task.run(*args, **new_kwargs)
+        results['<local-only>'] = task.run(*args, **new_kwargs)
+    # Return what we can from the inner task executions
+    return results

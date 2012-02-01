@@ -226,7 +226,7 @@ def connect(user, host, port):
             # SSHException and there *was* a password -- it is probably
             # something non auth related, and should be sent upwards.
             if e.__class__ is ssh.SSHException and password:
-                abort(str(e))
+                raise NetworkError(str(e), e)
 
             # Otherwise, assume an auth exception, and prompt for new/better
             # password.
@@ -293,7 +293,6 @@ def connect(user, host, port):
         # Arbitrary/unclassed network issues (must come after socket.timeout,
         # which is a subtype)
         except socket.error, e:
-            print repr(e)
             # NOTE: In 2.6, socket.error subclasses IOError
             msg = "Low level socket error connecting to host %s: %s" % (
                 host, e[1]

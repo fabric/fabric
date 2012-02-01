@@ -10,10 +10,12 @@ import sys
 import fabric
 from fabric import tasks
 from fabric.tasks import WrappedCallableTask, execute, Task
-from fabric.api import run, env, settings, hosts, roles, hide
+from fabric.api import run, env, settings, hosts, roles, hide, parallel
 from fabric.network import from_dict
+from fabric.exceptions import NetworkError
 
 from utils import eq_, FabricTest, aborts, mock_streams
+from server import server
 
 
 def test_base_task_provides_undefined_name():
@@ -226,7 +228,8 @@ class TestExecute(FabricTest):
         def host_string():
             eq_(env.host_string, hostlist.pop(0))
         task = Fake(callable=True, expect_call=True).calls(host_string)
-        execute(task, hosts=hosts)
+        with hide('everything'):
+            execute(task, hosts=hosts)
 
     def test_should_honor_hosts_decorator(self):
         """
@@ -292,7 +295,7 @@ class TestExecute(FabricTest):
         def command():
             eq_(set(env.all_hosts), set(['b', 'c', 'd']))
         task = Fake(callable=True, expect_call=True).calls(command)
-        with settings(roledefs=roledefs):
+        with settings(hide('everything'), roledefs=roledefs):
             execute(
                 task, hosts=hosts, roles=roles, exclude_hosts=exclude_hosts
             )
@@ -319,6 +322,68 @@ class TestExecute(FabricTest):
         with settings(hosts=[]): # protect against really odd test bleed :(
             execute(task)
         eq_(sys.stdout.getvalue(), "")
+
+    def test_should_return_dict_for_base_case(self):
+        """
+        Non-network-related tasks should return a dict w/ special key
+        """
+        def task():
+            return "foo"
+        eq_(execute(task), {'<local-only>': 'foo'})
+
+    @server(port=2200)
+    @server(port=2201)
+    def test_should_return_dict_for_serial_use_case(self):
+        """
+        Networked but serial tasks should return per-host-string dict
+        """
+        ports = [2200, 2201]
+        hosts = map(lambda x: '127.0.0.1:%s' % x, ports)
+        def task():
+            run("ls /simple")
+            return "foo"
+        with hide('everything'):
+            eq_(execute(task, hosts=hosts), {
+                '127.0.0.1:2200': 'foo',
+                '127.0.0.1:2201': 'foo'
+            })
+
+    @server()
+    def test_should_preserve_None_for_non_returning_tasks(self):
+        """
+        Tasks which don't return anything should still show up in the dict
+        """
+        def task():
+            pass
+        eq_(execute(task), {'<local-only>': None})
+        with hide('everything'):
+            eq_(execute(task, hosts=[env.host_string]), {env.host_string: None})
+
+    def test_should_use_sentinel_for_tasks_that_errored(self):
+        """
+        Tasks which errored but didn't abort should contain an eg NetworkError
+        """
+        def task():
+            run("whoops")
+        host_string = 'localhost:1234'
+        with settings(hide('everything'), skip_bad_hosts=True):
+            retval = execute(task, hosts=[host_string])
+        assert isinstance(retval[host_string], NetworkError)
+
+    @server(port=2200)
+    @server(port=2201)
+    def test_parallel_return_values(self):
+        """
+        Parallel mode should still return values as in serial mode
+        """
+        @parallel
+        @hosts('127.0.0.1:2200', '127.0.0.1:2201')
+        def task():
+            run("ls /simple")
+            return env.host_string.split(':')[1]
+        with hide('everything'):
+            retval = execute(task)
+        eq_(retval, {'127.0.0.1:2200': '2200', '127.0.0.1:2201': '2201'})
 
     @with_fakes
     def test_should_work_with_Task_subclasses(self):
