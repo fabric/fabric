@@ -190,7 +190,7 @@ class SFTP(object):
         return result
 
     def put(self, local_path, remote_path, use_sudo, mirror_local_mode, mode,
-        local_is_path):
+        local_is_path, user=None, group=None):
         from fabric.api import sudo, hide
         pre = self.ftp.getcwd()
         pre = pre if pre else ''
@@ -237,6 +237,10 @@ class SFTP(object):
                         sudo('chmod %o \"%s\"' % (lmode, remote_path))
                 else:
                     self.ftp.chmod(remote_path, lmode)
+        # Changes owner or group if specified
+        if any((user, group)):
+            self.chown(remote_path, use_sudo=use_sudo, user=user, group=group)
+
         if use_sudo:
             # Temporarily nuke 'cwd' so sudo() doesn't "cd" its mv command.
             # (The target path has already been cwd-ified elsewhere.)
@@ -275,3 +279,39 @@ class SFTP(object):
                     True)
                 remote_paths.append(p)
         return remote_paths
+
+    def chown(self, remote_path, use_sudo=False, user=None, group=None):
+        """
+        Changes file ownership of remote path.
+        """
+        from fabric.api import run, sudo, hide
+
+        # If we don't specify a user or group this should be a noop
+        if any((user, group)):
+            # If one or the other of user and group aren't specified,
+            # we need to stat the file to get default values for ids,
+            # since ftp.chown requires both arguments
+            if not all((user, group)):
+                remote_stat = self.ftp.stat(remote_path)
+
+            # If the user name is supplied get its uid
+            if user:
+                uid = int(run("id -u %s" % user))
+            else:
+                # default to using the existing uid of the file
+                uid = remote_stat.st_uid
+
+            # If the group name is supplied get its gid
+            if group:
+                gid = int(
+                    run("getent group %s | awk -F: '{ print $3 }'" % group)
+                    )
+            else:
+                # default to using the existing gid of the file
+                gid = remote_stat.st_gid
+
+            if use_sudo:
+                with hide('everything'):
+                    sudo('chown %d:%d \"%s\"' % (uid, gid, remote_path))
+            else:
+                self.ftp.chown(remote_path, uid, gid)

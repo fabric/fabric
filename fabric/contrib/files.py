@@ -51,7 +51,7 @@ def first(*args, **kwargs):
 
 def upload_template(filename, destination, context=None, use_jinja=False,
     template_dir=None, use_sudo=False, backup=True, mirror_local_mode=False,
-    mode=None):
+    mode=None, user=None, group=None):
     """
     Render and upload a template text file to a remote host.
 
@@ -121,7 +121,9 @@ def upload_template(filename, destination, context=None, use_jinja=False,
         remote_path=destination,
         use_sudo=use_sudo,
         mirror_local_mode=mirror_local_mode,
-        mode=mode
+        mode=mode,
+        user=user,
+        group=group
     )
 
 
