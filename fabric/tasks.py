@@ -11,6 +11,12 @@ from fabric.task_utils import *
 from fabric.exceptions import NetworkError
 
 
+def _get_list(env):
+    def inner(key):
+        return env.get(key, [])
+    return inner
+
+
 class Task(object):
     """
     Abstract base class for objects wishing to be picked up as Fabric tasks.
@@ -62,7 +68,7 @@ class Task(object):
         # from the CLI or from module-level code). This will be the empty list
         # if these have not been set -- which is fine, this method should
         # return an empty list if no hosts have been set anywhere.
-        env_vars = map(env.get, "hosts roles exclude_hosts".split())
+        env_vars = map(_get_list(env), "hosts roles exclude_hosts".split())
         env_vars.append(roledefs)
         return merge(*env_vars)
 
