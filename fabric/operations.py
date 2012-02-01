@@ -12,7 +12,6 @@ import subprocess
 import sys
 import time
 from glob import glob
-from traceback import format_exc
 from contextlib import closing
 
 from fabric.context_managers import settings, char_buffered

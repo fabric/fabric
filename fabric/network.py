@@ -8,6 +8,7 @@ from functools import wraps
 import getpass
 import re
 import threading
+import time
 import select
 import socket
 import sys
@@ -269,8 +270,10 @@ def connect(user, host, port):
         # Handle DNS error / name lookup failure
         except socket.gaierror, e:
             raise NetworkError('Name lookup failed for %s' % host, e)
-        # Handle timeouts and retries
-        except socket.timeout, e:
+        # Handle timeouts and retries, including generic errors
+        # NOTE: In 2.6, socket.error subclasses IOError
+        except socket.error, e:
+            not_timeout = type(e) is not socket.timeout
             giving_up = tries >= env.connection_attempts
             # Baseline error msg for when debug is off
             msg = "Timed out trying to connect to %s" % host
@@ -284,19 +287,20 @@ def connect(user, host, port):
                 print >>sys.stderr, err
             # Having said our piece, try again
             if not giving_up:
+                # Sleep if it wasn't a timeout, so we still get timeout-like
+                # behavior
+                if not_timeout:
+                    time.sleep(env.timeout)
                 continue
+            # Override eror msg if we were retrying other errors
+            if not_timeout:
+                msg = "Low level socket error connecting to host %s: %s" % (
+                    host, e[1]
+                )
             # Here, all attempts failed. Tweak error msg to show # tries.
             # TODO: find good humanization module, jeez
             s = "s" if env.connection_attempts > 1 else ""
             msg += " (tried %s time%s)" % (env.connection_attempts, s)
-            raise NetworkError(msg, e)
-        # Arbitrary/unclassed network issues (must come after socket.timeout,
-        # which is a subtype)
-        except socket.error, e:
-            # NOTE: In 2.6, socket.error subclasses IOError
-            msg = "Low level socket error connecting to host %s: %s" % (
-                host, e[1]
-            )
             raise NetworkError(msg, e)
 
 
