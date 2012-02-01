@@ -161,7 +161,7 @@ env_options = [
         type='int',
         metavar='M',
         dest='connection_attempts',
-        default=0,
+        default=1,
         help="make M attempts to connect before giving up"
     ),
 
