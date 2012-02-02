@@ -1014,30 +1014,34 @@ def reboot(wait=120):
     """
     Reboot the remote system.
 
-    Will temporarily tweak Fabric's internal reconnection settings
-    (:ref:`timeout` and :ref:`connection-attempts`) to ensure that
-    reconnection does not give up for at least ``wait`` seconds.
+    Will temporarily tweak Fabric's reconnection settings (:ref:`timeout` and
+    :ref:`connection-attempts`) to ensure that reconnection does not give up
+    for at least ``wait`` seconds.
 
     .. note::
-        Users who want greater control are encouraged to check out the
-        (extremely short, well commented) source code and write their own
-        adaptation using different timeout/attempt values or additional logic.
-        As of Fabric 1.4 this functionality no longer requires use of internal
-        APIs.
+        As of Fabric 1.4, the ability to reconnect partway through a session no
+        longer requires use of internal APIs.  While we are not officially
+        deprecating this function, adding more features to it will not be a
+        priority.
+
+        Users who want greater control
+        are encouraged to check out this function's (6 lines long, well
+        commented) source code and write their own adaptation using different
+        timeout/attempt values or additional logic.
 
     .. versionadded:: 0.9.2
     .. versionchanged:: 1.4
         Changed the ``wait`` kwarg to be optional, and refactored to leverage
-        new internal reconnection functionality; it may not actually have to
-        wait for ``wait`` seconds before reconnecting.
+        the new reconnection functionality; it may not actually have to wait
+        for ``wait`` seconds before reconnecting.
     """
     # Shorter timeout for a more granular cycle than the default.
     timeout = 5
     # Use 'wait' as max total wait time
     attempts = int(round(wait / float(timeout)))
     # Don't bleed settings, since this is supposed to be self-contained.
-    # User adaptation will probably want to drop this and just have globally
-    # set timeout/attempts settings.
+    # User adaptations will probably want to drop the "with settings()" and
+    # just have globally set timeout/attempts values.
     with settings(
         hide('running'),
         timeout=timeout,
@@ -1049,7 +1053,7 @@ def reboot(wait=120):
         # This is actually an internal-ish API call, but users can simply drop
         # it in real fabfile use -- the next run/sudo/put/get/etc call will
         # automatically trigger a reconnect.
-        # It forces the reconnect while we're still in control and have the
-        # above timeout settings enabled.
+        # We use it here to force the reconnect while this function is still in
+        # control and has the above timeout settings enabled.
         connections.connect(env.host_string)
     # At this point we should be reconnected to the newly rebooted server.
