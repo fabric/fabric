@@ -516,7 +516,9 @@ Connections
 ``fab`` itself doesn't actually make any connections to remote hosts. Instead,
 it simply ensures that for each distinct run of a task on one of its hosts, the
 env var ``env.host_string`` is set to the right value. Users wanting to
-leverage Fabric as a library may do so manually to achieve similar effects.
+leverage Fabric as a library may do so manually to achieve similar effects
+(though as of Fabric 1.3, using `~fabric.tasks.execute` is preferred and more
+powerful.)
 
 ``env.host_string`` is (as the name implies) the "current" host string, and is
 what Fabric uses to determine what connections to make (or re-use) when
@@ -580,11 +582,26 @@ before their program exits. This can be accomplished by calling
 `~fabric.network.disconnect_all` at the end of your script.
 
 .. note::
-
     `~fabric.network.disconnect_all` may be moved to a more public location in
     the future; we're still working on making the library aspects of Fabric
     more solidified and organized.
 
+Multiple connection attempts and skipping bad hosts
+---------------------------------------------------
+
+As of Fabric 1.4, multiple attempts may be made to connect to remote servers
+before aborting with an error: Fabric will try connecting
+:ref:`env.connection_attempts <connection-attempts>` times before giving up,
+with a timeout of :ref:`env.timeout <timeout>` seconds each time. (These
+currently default to 1 try and 10 seconds, to match previous behavior, but they
+may be safely changed to whatever you need.)
+
+Furthermore, even total failure to connect to a server is no longer an absolute
+hard stop: set :ref:`env.skip_bad_hosts <skip-bad-hosts>` to ``True`` and in
+most situations (typically initial connections) Fabric will simply warn and
+continue, instead of aborting.
+
+.. versionadded:: 1.4
 
 .. _password-management:
 

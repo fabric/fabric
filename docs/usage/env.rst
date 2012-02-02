@@ -181,6 +181,18 @@ executed by `~fabric.operations.run`/`~fabric.operations.sudo`.
 
 .. versionadded:: 1.0
 
+.. _connection-attempts:
+
+``connection_attempts``
+-----------------------
+
+**Default:** ``1``
+
+Number of times Fabric will attempt to connect when connecting to a new server. For backwards compatibility reasons, it defaults to only one connection attempt.
+
+.. versionadded:: 1.4
+.. seealso:: :option:`--connection-attempts`, :ref:`timeout`
+
 ``cwd``
 -------
 
@@ -508,7 +520,6 @@ takes a command string as its value.
 If ``True``, causes ``fab`` (or non-``fab`` use of `~fabric.tasks.execute`) to skip over hosts it can't connect to.
 
 .. versionadded:: 1.4
-
 .. seealso::
     :option:`--skip-bad-hosts`, :ref:`excluding-hosts`, :doc:`execution`
 
@@ -522,6 +533,18 @@ identify its password prompt. This may be modified by fabfiles but there's no
 real reason to.
 
 .. seealso:: The `~fabric.operations.sudo` operation
+
+.. _timeout:
+
+``timeout``
+-----------
+
+**Default:** ``10``
+
+Network connection timeout, in seconds.
+
+.. versionadded:: 1.4
+.. seealso:: :option:`--timeout`, :ref:`connection-attempts`
 
 ``use_shell``
 -------------

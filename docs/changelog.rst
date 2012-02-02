@@ -25,6 +25,13 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :feature:`12` Added the ability to try connecting multiple times to
+  temporarily-down remote systems, instead of immediately failing. (Default
+  behavior is still to only try once.) See :ref:`env.timeout <timeout>` and
+  :ref:`env.connection_attempts <connection-attempts>` for controlling both
+  connection timeouts and total number of attempts. `~fabric.operations.reboot`
+  has also been overhauled (but practically deprecated -- see its updated
+  docs.)
 * :feature:`474` `~fabric.tasks.execute` now allows you to access the executed
   task's return values, by itself returning a dictionary whose keys are the
   host strings executed against.
