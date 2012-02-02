@@ -88,10 +88,10 @@ env_options = [
         help="don't use the running SSH agent"
     ),
 
-    make_option('-A', '--no-agent-forward',
+    make_option('-A', '--agent-forward',
         action='store_true',
         default=False,
-        help="don't forward local agent to remote end"
+        help="forward local agent to remote end"
     ),
 
     make_option('--abort-on-prompts',

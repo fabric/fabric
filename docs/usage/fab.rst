@@ -90,10 +90,10 @@ below.
 
     .. versionadded:: 0.9.1
 
-.. cmdoption:: -A, --no-agent-forward
+.. cmdoption:: -A, --agent-forward
 
-    Sets :ref:`env.no_agent_forward <no_agent_forward>` to ``True``, disabling
-    agent forwarding.
+    Sets :ref:`env.agent_forward <agent_forward>` to ``True``, enabling agent
+    forwarding.
 
     .. versionadded:: 1.4
 

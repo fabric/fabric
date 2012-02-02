@@ -121,6 +121,21 @@ when unforeseen circumstances arise.
 .. versionadded:: 1.1
 .. seealso:: :option:`--abort-on-prompts`
 
+
+.. _agent_forward:
+
+``agent_forward``
+--------------------
+
+**Default:** ``False``
+
+If ``True``, enables forwarding of your local SSH agent to the remote end.
+
+.. versionadded:: 1.4
+
+.. seealso:: :option:`-A`
+
+
 ``all_hosts``
 -------------
 
@@ -337,20 +352,6 @@ If ``True``, will tell the SSH layer not to seek out running SSH agents when
 using key-based authentication.
 
 .. versionadded:: 0.9.1
-
-.. _no_agent_forward:
-
-``no_agent_forward``
---------------------
-
-**Default:** ``False``
-
-If ``True``, disables the on-by-default forwarding of your local SSH agent to
-the remote end.
-
-.. versionadded:: 1.4
-
-.. seealso:: :option:`-A`
 
 .. _no_keys:
 

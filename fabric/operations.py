@@ -695,8 +695,8 @@ def _execute(channel, command, pty=True, combine_stderr=None,
             rows, cols = _pty_size()
             channel.get_pty(width=cols, height=rows)
 
-        # Use SSH agent forwarding from 'ssh', unless user has turned it off.
-        if not env.no_agent_forward:
+        # Use SSH agent forwarding from 'ssh' if enabled by user
+        if env.agent_forward:
             forward = ssh.agent.AgentClientProxy(channel)
 
         # Kick off remote command
