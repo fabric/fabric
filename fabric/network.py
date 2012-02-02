@@ -66,16 +66,26 @@ class HostConnectionCache(dict):
     two different connections to the same host being made. If no port is given,
     22 is assumed, so ``example.com`` is equivalent to ``example.com:22``.
     """
-    def __getitem__(self, key):
-        # Normalize given key (i.e. obtain username and port, if not given)
+    def connect(self, key):
+        """
+        Force a new connection to ``key`` host string.
+        """
         user, host, port = normalize(key)
-        # Recombine for use as a key.
-        real_key = join_host_strings(user, host, port)
-        # If not found, create new connection and store it
-        if real_key not in self:
-            self[real_key] = connect(user, host, port)
-        # Return the value either way
-        return dict.__getitem__(self, real_key)
+        key = normalize_to_string(key)
+        self[key] = connect(user, host, port)
+
+    def __getitem__(self, key):
+        """
+        Autoconnect + return connection object
+        """
+        key = normalize_to_string(key)
+        if key not in self:
+            self.connect(key)
+        return dict.__getitem__(self, key)
+
+    #
+    # Dict overrides that normalize input keys
+    #
 
     def __setitem__(self, key, value):
         return dict.__setitem__(self, normalize_to_string(key), value)
@@ -85,6 +95,7 @@ class HostConnectionCache(dict):
 
     def __contains__(self, key):
         return dict.__contains__(self, normalize_to_string(key))
+
 
 def normalize(host_string, omit_port=False):
     """
