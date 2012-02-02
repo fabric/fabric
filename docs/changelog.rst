@@ -49,9 +49,9 @@ Changelog
   output lines.
 * :feature:`72` SSH agent forwarding support has made it into Fabric's SSH
   library, and hooks for using it have been added (disabled by default; use
-  :option:`-A` or :ref:`env.ssh_agent <ssh-agent>` to enable.) Thanks to Ben
-  Davis for porting an existing Paramiko patch to `ssh` and providing the
-  necessary tweak to Fabric.
+  :option:`-A` or :ref:`env.agent_forward <agent_forward>` to enable.) Thanks
+  to Ben Davis for porting an existing Paramiko patch to `ssh` and providing
+  the necessary tweak to Fabric.
 * :bug:`339` Don't list ``fabric.colors`` members in ``fab ---list``. Thanks to
   Nick Trew for the report.
 * :release:`1.3.4 <2012-01-12>`
