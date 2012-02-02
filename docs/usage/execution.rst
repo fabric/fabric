@@ -638,3 +638,49 @@ value for the current value of ``env.host_string``.
 .. [#] We highly recommend the use of SSH `key-based access
     <http://en.wikipedia.org/wiki/Public_key>`_ instead of relying on
     homogeneous password setups, as it's significantly more secure.
+
+
+.. _ssh-config:
+
+Leveraging native SSH config files
+==================================
+
+Command-line SSH clients (such as the one provided by `OpenSSH
+<http://openssh.org>`_) make use of a specific configuration format typically
+known as ``ssh_config``, and will read from a file in the platform-specific
+location ``$HOME/.ssh/config`` (or an arbitrary path given to
+:option:`--ssh-config-path`/:ref:`env.ssh_config_path <ssh-config-path>`.) This
+file allows specification of various SSH options such as default or per-host
+usernames, hostname aliases, and toggling other settings (such as whether to
+use :ref:`agent forwarding <agent_forward>`.)
+
+Fabric's SSH implementation allows loading a subset of these options from one's
+actual SSH config file, should it exist. This behavior is not enabled by
+default (in order to be backwards compatible) but may be turned on by setting
+:ref:`env.use_ssh_config <use-ssh-config>` to ``True`` at the top of your
+fabfile.
+
+If enabled, the following SSH config directives will be loaded and honored by Fabric:
+
+* ``User`` and ``Port`` will be used to fill in the appropriate connection
+  parameters when not otherwise specified, in the following fashion:
+
+  * Globally specified ``User``/``Port`` will be used in place of the current
+    defaults (local username and 22, respectively) if the appropriate env vars
+    are not set.
+  * However, if :ref:`env.user <user>`/:ref:`env.port <port>` *are* set, they
+    override global ``User``/``Port`` values.
+  * Per-host ``User``/``Port`` settings will override the global Fabric env
+    vars.
+  * User/port values in the host string itself (e.g. ``hostname:222``) will
+    override everything, including any ``ssh_config`` values.
+* ``HostName`` can be used to replace the given hostname, just like with
+  regular ``ssh``. So a ``Host foo`` entry specifying ``HostName example.com``
+  will allow you to give Fabric the hostname ``'foo'`` and have that expanded
+  into ``'example.com'`` at connection time.
+* ``IdentityFile`` will append to (not replace) :ref:`env.key_filename
+  <key-filename>`.
+* ``ForwardAgent`` will set :ref:`env.agent_forward <agent_forward>`.
+* ``ConnectTimeout`` and ``ConnectionAttempts`` will set :ref:`env.timeout
+  <timeout>` and :ref:`env.connection_attempts <connection-attempts>`,
+  respectively.

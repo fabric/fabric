@@ -281,6 +281,13 @@ below.
 
     .. seealso:: `~fabric.operations.run`, `~fabric.operations.sudo`
 
+.. cmdoption:: --ssh-config-path
+
+    Sets :ref:`env.ssh_config_path <ssh-config-path>`.
+
+    .. versionadded:: 1.4
+    .. seealso:: :ref:`ssh-config`
+
 .. cmdoption:: --skip-bad-hosts
 
     Sets :ref:`env.skip_bad_hosts <skip-bad-hosts>`, causing Fabric to skip

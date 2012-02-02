@@ -435,6 +435,7 @@ Sets the number of concurrent processes to use when executing tasks in parallel.
 .. versionadded:: 1.3
 .. seealso:: :doc:`parallel`, :option:`-z`
 
+.. _port:
 
 ``port``
 --------
@@ -524,6 +525,20 @@ If ``True``, causes ``fab`` (or non-``fab`` use of `~fabric.tasks.execute`) to s
 .. seealso::
     :option:`--skip-bad-hosts`, :ref:`excluding-hosts`, :doc:`execution`
 
+
+.. _ssh-config-path:
+
+``ssh_config_path``
+-------------------
+
+**Default:** ``$HOME/.ssh/config``
+
+Allows specification of an alternate SSH configuration file path.
+
+.. versionadded:: 1.4
+.. seealso:: :option:`--ssh-config-path`, :ref:`ssh-config`
+
+
 ``sudo_prompt``
 ---------------
 
@@ -555,6 +570,20 @@ Network connection timeout, in seconds.
 Global setting which acts like the ``use_shell`` argument to
 `~fabric.operations.run`/`~fabric.operations.sudo`: if it is set to ``False``,
 operations will not wrap executed commands in ``env.shell``.
+
+
+.. _use-ssh-config:
+
+``use_ssh_config``
+------------------
+
+**Default:** ``False``
+
+Set to ``True`` to cause Fabric to load your local SSH config file.
+
+.. versionadded:: 1.4
+.. seealso:: :ref:`ssh-config`
+
 
 .. _user:
 

@@ -25,6 +25,10 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :feature:`3` Fabric can now load a subset of SSH config functionality
+  directly from your local ``~/.ssh/config`` if :ref:`env.use_ssh_config
+  <use-ssh-config>` is set to ``True``. See :ref:`ssh-config` for details.
+  Thanks to Kirill Pinchuk for the initial patch.
 * :feature:`12` Added the ability to try connecting multiple times to
   temporarily-down remote systems, instead of immediately failing. (Default
   behavior is still to only try once.) See :ref:`env.timeout <timeout>` and
