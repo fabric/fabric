@@ -444,7 +444,7 @@ Sets the number of concurrent processes to use when executing tasks in parallel.
 **Default:** ``None``
 
 Set to the port part of ``env.host_string`` by ``fab`` when iterating over a
-host list. For informational purposes only.
+host list. May also be used to specify a default port.
 
 ``real_fabfile``
 ----------------

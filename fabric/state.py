@@ -65,6 +65,7 @@ def _rc_path():
             rc_file
         )
 
+default_port = '22' # hurr durr
 
 # Options/settings which exist both as environment keys and which can be set on
 # the command line, are defined here. When used via `fab` they will be added to
@@ -178,10 +179,15 @@ env_options = [
     ),
 
     make_option('-P', '--parallel',
-            dest='parallel',
-            action='store_true',
-            default=False,
-            help="default to parallel execution method"
+        dest='parallel',
+        action='store_true',
+        default=False,
+        help="default to parallel execution method"
+    ),
+
+    make_option('--port',
+        default=default_port,
+        help="SSH connection port"
     ),
 
     make_option('-r', '--reject-unknown-hosts',
@@ -263,6 +269,7 @@ env = _AttributeDict({
     'command': None,
     'command_prefixes': [],
     'cwd': '',  # Must be empty string, not None, for concatenation purposes
+    'default_port': default_port,
     'echo_stdin': True,
     'exclude_hosts': [],
     'host': None,
