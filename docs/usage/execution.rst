@@ -652,7 +652,7 @@ location ``$HOME/.ssh/config`` (or an arbitrary path given to
 :option:`--ssh-config-path`/:ref:`env.ssh_config_path <ssh-config-path>`.) This
 file allows specification of various SSH options such as default or per-host
 usernames, hostname aliases, and toggling other settings (such as whether to
-use :ref:`agent forwarding <agent_forward>`.)
+use :ref:`agent forwarding <forward-agent>`.)
 
 Fabric's SSH implementation allows loading a subset of these options from one's
 actual SSH config file, should it exist. This behavior is not enabled by
@@ -680,7 +680,7 @@ If enabled, the following SSH config directives will be loaded and honored by Fa
   into ``'example.com'`` at connection time.
 * ``IdentityFile`` will append to (not replace) :ref:`env.key_filename
   <key-filename>`.
-* ``ForwardAgent`` will set :ref:`env.agent_forward <agent_forward>`.
+* ``ForwardAgent`` will set :ref:`env.forward_agent <forward-agent>`.
 * ``ConnectTimeout`` and ``ConnectionAttempts`` will set :ref:`env.timeout
   <timeout>` and :ref:`env.connection_attempts <connection-attempts>`,
   respectively.

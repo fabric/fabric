@@ -88,7 +88,7 @@ env_options = [
         help="don't use the running SSH agent"
     ),
 
-    make_option('-A', '--agent-forward',
+    make_option('-A', '--forward-agent',
         action='store_true',
         default=False,
         help="forward local agent to remote end"

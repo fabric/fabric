@@ -122,20 +122,6 @@ when unforeseen circumstances arise.
 .. seealso:: :option:`--abort-on-prompts`
 
 
-.. _agent_forward:
-
-``agent_forward``
---------------------
-
-**Default:** ``False``
-
-If ``True``, enables forwarding of your local SSH agent to the remote end.
-
-.. versionadded:: 1.4
-
-.. seealso:: :option:`-A`
-
-
 ``all_hosts``
 -------------
 
@@ -267,6 +253,21 @@ Defines the current user/host/port which Fabric will connect to when executing
 manually set when using Fabric as a library.
 
 .. seealso:: :doc:`execution`
+
+
+.. _forward-agent:
+
+``forward_agent``
+--------------------
+
+**Default:** ``False``
+
+If ``True``, enables forwarding of your local SSH agent to the remote end.
+
+.. versionadded:: 1.4
+
+.. seealso:: :option:`-A`
+
 
 ``host``
 --------

@@ -90,9 +90,9 @@ below.
 
     .. versionadded:: 0.9.1
 
-.. cmdoption:: -A, --agent-forward
+.. cmdoption:: -A, --forward-agent
 
-    Sets :ref:`env.agent_forward <agent_forward>` to ``True``, enabling agent
+    Sets :ref:`env.forward_agent <forward-agent>` to ``True``, enabling agent
     forwarding.
 
     .. versionadded:: 1.4
