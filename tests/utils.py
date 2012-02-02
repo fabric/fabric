@@ -266,8 +266,10 @@ def patched_env(updates):
     return wrapper
 
 
-def fabfile(name):
-    return os.path.join(os.path.dirname(__file__), 'support', name)
+def support(path):
+    return os.path.join(os.path.dirname(__file__), 'support', path)
+
+fabfile = support
 
 
 @contextmanager
