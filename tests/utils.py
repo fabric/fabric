@@ -38,6 +38,13 @@ class FabricTest(object):
         # Deepcopy doesn't work well on AliasDicts; but they're only one layer
         # deep anyways, so...
         self.previous_output = output.items()
+        # Allow hooks from subclasses here for setting env vars (so they get
+        # purged correctly in teardown())
+        self.env_setup()
+        # Temporary local file dir
+        self.tmpdir = tempfile.mkdtemp()
+
+    def env_setup(self):
         # Set up default networking for test server
         env.disable_known_hosts = True
         env.update(to_dict('%s@%s:%s' % (USER, HOST, PORT)))
@@ -45,8 +52,6 @@ class FabricTest(object):
         # Command response mocking is easier without having to account for
         # shell wrapping everywhere.
         env.use_shell = False
-        # Temporary local file dir
-        self.tmpdir = tempfile.mkdtemp()
 
     def teardown(self):
         env.update(self.previous_env)
