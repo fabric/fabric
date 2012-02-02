@@ -275,7 +275,7 @@ Here again, we introduce a handful of new concepts:
 * Fabric is just Python -- so we can make liberal use of regular Python code
   constructs such as variables and string interpolation;
 * `~fabric.context_managers.cd`, an easy way of prefixing commands with a
-  ``cd /to/some/directory`` call. This is similar to ``lcd`` which does the same
+  ``cd /to/some/directory`` call. This is similar to  `~fabric.context_managers.lcd` which does the same
   locally.
 * `~fabric.operations.run`, which is similar to `~fabric.operations.local` but
   runs remotely instead of locally.
