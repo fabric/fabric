@@ -4,7 +4,6 @@ Operations
 
 .. automodule:: fabric.operations
     :members:
-    :exclude-members: sudo, put, run, get, reboot, open_shell
 
     .. autofunction:: get(remote_path, local_path=None)
     .. autofunction:: open_shell(command=None)
