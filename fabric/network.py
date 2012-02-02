@@ -97,22 +97,62 @@ class HostConnectionCache(dict):
         return dict.__contains__(self, normalize_to_string(key))
 
 
+def ssh_config():
+    """
+    Load (memoize) and parse the configured SSH config file.
+
+    Assumes that if it's been called, the SSH config option has been set to
+    True, and aborts if it can't load the requested file.
+    """
+    from fabric.state import env
+    if '_ssh_config' not in env:
+        try:
+            conf = ssh.SSHConfig()
+            path = env.ssh_config_path
+            with open(path) as fd:
+                conf.parse(fd)
+                env._ssh_config = conf
+        except IOError, e:
+            abort("Unable to load SSH config file '%s'" % path)
+    return env._ssh_config
+
+
 def normalize(host_string, omit_port=False):
     """
     Normalizes a given host string, returning explicit host, user, port.
 
     If ``omit_port`` is given and is True, only the host and user are returned.
+
+    This function will process SSH config files if Fabric is configured to do
+    so, and will use them to fill in some default values or swap in hostname
+    aliases.
     """
     from fabric.state import env
     # Gracefully handle "empty" input by returning empty output
     if not host_string:
         return ('', '') if omit_port else ('', '', '')
-    # Get user, host and port separately
+    # Parse host string (need this early on to look up host-specific ssh_config
+    # values)
     r = host_regex.match(host_string).groupdict()
-    # Add any necessary defaults in
-    user = r['user'] or env.get('user')
     host = r['host']
-    port = r['port'] or '22'
+    # Env values
+    user = env.user
+    port = env.port
+    # SSH config data
+    if env.use_ssh_config:
+        # TODO: pull from actual ssh config data, using r['host'] as key
+        ssh = {'host': None, 'user': None, 'port': None}
+        # Only use ssh_config values if the env value appears unmodified from
+        # the true defaults. (If the user has tweaked them, that new value
+        # takes precedence.)
+        if user != env.local_user and ssh['user']:
+            user =  ssh['user']
+        if port != env.default_port and ssh['port']:
+            user = ssh['port']
+    # Merge explicit user/port values with the env/ssh_config derived ones
+    # (Host is already done at this point.)
+    user = r['user'] or user
+    port = r['port'] or port
     if omit_port:
         return user, host
     return user, host, port
