@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :feature:`138` :ref:`env.port <port>` may now be written to at fabfile module
+  level to set a default nonstandard port number. Previously this value was
+  read-only.
 * :feature:`3` Fabric can now load a subset of SSH config functionality
   directly from your local ``~/.ssh/config`` if :ref:`env.use_ssh_config
   <use-ssh-config>` is set to ``True``. See :ref:`ssh-config` for details.
