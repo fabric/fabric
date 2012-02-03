@@ -104,9 +104,15 @@ def ssh_config(host_string=None):
 
     Memoizes the loaded SSH config file, but not the specific per-host results.
 
+    This function performs the necessary "is SSH config enabled?" checks and
+    will simply return an empty dict if not. If SSH config *is* enabled and the
+    value of env.ssh_config_path is not a valid file, it will abort.
+
     May give an explicit host string as ``host_string``.
     """
     from fabric.state import env
+    if not env.use_ssh_config:
+        return {}
     if '_ssh_config' not in env:
         try:
             conf = ssh.SSHConfig()
@@ -136,11 +142,10 @@ def key_filenames():
     # Strip out any empty strings (such as the default value...meh)
     keys = filter(bool, keys)
     # Honor SSH config
-    if env.use_ssh_config:
-        # TODO: fix ssh so it correctly treats IdentityFile as a list
-        conf = ssh_config()
-        if 'identityfile' in conf:
-            keys.append(conf['identityfile'])
+    # TODO: fix ssh so it correctly treats IdentityFile as a list
+    conf = ssh_config()
+    if 'identityfile' in conf:
+        keys.append(conf['identityfile'])
     return map(os.path.expanduser, keys)
 
 
@@ -170,18 +175,17 @@ def normalize(host_string, omit_port=False):
     user = env.user
     port = env.port
     # SSH config data
-    if env.use_ssh_config:
-        conf = ssh_config(host_string)
-        # Only use ssh_config values if the env value appears unmodified from
-        # the true defaults. If the user has tweaked them, that new value
-        # takes precedence.
-        if user == env.local_user and 'user' in conf:
-            user = conf['user']
-        if port == env.default_port and 'port' in conf:
-            port = conf['port']
-        # Also override host if needed
-        if 'hostname' in conf:
-            host = conf['hostname']
+    conf = ssh_config(host_string)
+    # Only use ssh_config values if the env value appears unmodified from
+    # the true defaults. If the user has tweaked them, that new value
+    # takes precedence.
+    if user == env.local_user and 'user' in conf:
+        user = conf['user']
+    if port == env.default_port and 'port' in conf:
+        port = conf['port']
+    # Also override host if needed
+    if 'hostname' in conf:
+        host = conf['hostname']
     # Merge explicit user/port values with the env/ssh_config derived ones
     # (Host is already done at this point.)
     user = r['user'] or user
