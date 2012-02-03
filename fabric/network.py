@@ -141,6 +141,7 @@ def normalize(host_string, omit_port=False):
     # SSH config data
     if env.use_ssh_config:
         # TODO: pull from actual ssh config data, using r['host'] as key
+        conf = ssh_config()
         ssh = {'host': None, 'user': None, 'port': None}
         # Only use ssh_config values if the env value appears unmodified from
         # the true defaults. (If the user has tweaked them, that new value

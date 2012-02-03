@@ -484,3 +484,81 @@ class TestConnections(FabricTest):
         """
         with settings(hide('everything'), skip_bad_hosts=True):
             execute(subtask, hosts=['nope.nonexistent.com'])
+
+
+class TestSSHConfig(FabricTest):
+    def env_setup(self):
+        env.use_ssh_config = True
+        env.ssh_config_path = support("ssh_config")
+
+    def test_global_user_with_default_env(self):
+        """
+        Global User should override default env.user
+        """
+        raise SkipTest()
+
+    def test_global_user_with_nondefault_env(self):
+        """
+        Global User should NOT override nondefault env.user
+        """
+        raise SkipTest
+
+    def test_specific_user_with_default_env(self):
+        """
+        Host-specific User should override default env.user
+        """
+        raise SkipTest
+
+    def test_specific_user_with_nondefault_env(self):
+        """
+        Host-specific User should ALSO override nondefault env.user
+        """
+        raise SkipTest
+
+    def test_user_vs_host_string_value(self):
+        """
+        SSH-config derived user should NOT override host-string user value
+        """
+        raise SkipTest
+
+    def test_global_port_with_default_env(self):
+        """
+        Global Port should override default env.port
+        """
+        raise SkipTest
+
+    def test_global_port_with_nondefault_env(self):
+        """
+        Global Port should NOT override nondefault env.port
+        """
+        raise SkipTest
+
+    def test_specific_port_with_default_env(self):
+        """
+        Host-specific Port should override default env.port
+        """
+        raise SkipTest
+
+    def test_specific_port_with_nondefault_env(self):
+        """
+        Host-specific Port should ALSO override nondefault env.port
+        """
+        raise SkipTest
+
+    def test_port_vs_host_string_value(self):
+        """
+        SSH-config derived port should NOT override host-string port value
+        """
+        raise SkipTest
+
+    def test_hostname_alias(self):
+        """
+        Hostname setting overrides host string's host value
+        """
+        raise SkipTest
+
+    @aborts
+    def test_aborts_with_bad_config_file_path(self):
+        # use_ssh_config is already set in our env_setup()
+        with settings(ssh_config_path="nope_bad_lol"):
+            normalize('foo')

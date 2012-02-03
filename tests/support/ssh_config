@@ -1,0 +1,10 @@
+Host *
+    Port 666
+    User satan
+
+Host myhost
+    Port 664
+    User neighbor
+
+Host myalias
+    HostName otherhost

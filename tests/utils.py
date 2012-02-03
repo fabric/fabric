@@ -16,6 +16,7 @@ import tempfile
 
 from fudge import Fake, patched_context, clear_expectations
 from nose.tools import raises
+from nose import SkipTest
 
 from fabric.context_managers import settings
 from fabric.state import env, output
