@@ -678,7 +678,6 @@ If enabled, the following SSH config directives will be loaded and honored by Fa
   into ``'example.com'`` at connection time.
 * ``IdentityFile`` will append to (not replace) :ref:`env.key_filename
   <key-filename>`.
-* ``ForwardAgent`` will set :ref:`env.forward_agent <forward-agent>`.
-* ``ConnectTimeout`` and ``ConnectionAttempts`` will set :ref:`env.timeout
-  <timeout>` and :ref:`env.connection_attempts <connection-attempts>`,
-  respectively.
+* ``ForwardAgent`` will augment :ref:`env.forward_agent <forward-agent>` in an
+  "OR" manner: if either is set to a positive value, agent forwarding will be
+  enabled.
