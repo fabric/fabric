@@ -495,67 +495,60 @@ class TestSSHConfig(FabricTest):
         """
         Global User should override default env.user
         """
-        raise SkipTest()
+        eq_(normalize("localhost")[0], "satan")
 
     def test_global_user_with_nondefault_env(self):
         """
         Global User should NOT override nondefault env.user
         """
-        raise SkipTest
+        with settings(user="foo"):
+            eq_(normalize("localhost")[0], "foo")
 
     def test_specific_user_with_default_env(self):
         """
         Host-specific User should override default env.user
         """
-        raise SkipTest
-
-    def test_specific_user_with_nondefault_env(self):
-        """
-        Host-specific User should ALSO override nondefault env.user
-        """
-        raise SkipTest
+        eq_(normalize("myhost")[0], "neighbor")
 
     def test_user_vs_host_string_value(self):
         """
         SSH-config derived user should NOT override host-string user value
         """
-        raise SkipTest
+        eq_(normalize("myuser@localhost")[0], "myuser")
+        eq_(normalize("myuser@myhost")[0], "myuser")
 
     def test_global_port_with_default_env(self):
         """
         Global Port should override default env.port
         """
-        raise SkipTest
+        eq_(normalize("localhost")[2], "666")
 
     def test_global_port_with_nondefault_env(self):
         """
         Global Port should NOT override nondefault env.port
         """
-        raise SkipTest
+        with settings(port="777"):
+            eq_(normalize("localhost")[2], "777")
 
     def test_specific_port_with_default_env(self):
         """
         Host-specific Port should override default env.port
         """
-        raise SkipTest
-
-    def test_specific_port_with_nondefault_env(self):
-        """
-        Host-specific Port should ALSO override nondefault env.port
-        """
-        raise SkipTest
+        eq_(normalize("myhost")[2], "664")
 
     def test_port_vs_host_string_value(self):
         """
         SSH-config derived port should NOT override host-string port value
         """
-        raise SkipTest
+        eq_(normalize("localhost:123")[2], "123")
+        eq_(normalize("myhost:123")[2], "123")
 
     def test_hostname_alias(self):
         """
         Hostname setting overrides host string's host value
         """
-        raise SkipTest
+        eq_(normalize("localhost")[1], "localhost")
+        eq_(normalize("myalias")[1], "otherhost")
 
     @aborts
     def test_aborts_with_bad_config_file_path(self):

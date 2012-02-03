@@ -670,8 +670,6 @@ If enabled, the following SSH config directives will be loaded and honored by Fa
     are not set.
   * However, if :ref:`env.user <user>`/:ref:`env.port <port>` *are* set, they
     override global ``User``/``Port`` values.
-  * Per-host ``User``/``Port`` settings will override the global Fabric env
-    vars.
   * User/port values in the host string itself (e.g. ``hostname:222``) will
     override everything, including any ``ssh_config`` values.
 * ``HostName`` can be used to replace the given hostname, just like with

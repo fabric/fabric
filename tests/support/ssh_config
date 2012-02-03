@@ -1,10 +1,10 @@
 Host *
-    Port 666
     User satan
+    Port 666
 
 Host myhost
-    Port 664
     User neighbor
+    Port 664
 
 Host myalias
     HostName otherhost
