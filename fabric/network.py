@@ -6,6 +6,7 @@ from __future__ import with_statement
 
 from functools import wraps
 import getpass
+import os
 import re
 import threading
 import time
@@ -97,24 +98,54 @@ class HostConnectionCache(dict):
         return dict.__contains__(self, normalize_to_string(key))
 
 
-def ssh_config():
+def ssh_config(host_string=None):
     """
-    Load (memoize) and parse the configured SSH config file.
+    Return ssh configuration dict for current env.host_string host value.
 
-    Assumes that if it's been called, the SSH config option has been set to
-    True, and aborts if it can't load the requested file.
+    Memoizes the loaded SSH config file, but not the specific per-host results.
+
+    May give an explicit host string as ``host_string``.
     """
     from fabric.state import env
     if '_ssh_config' not in env:
         try:
             conf = ssh.SSHConfig()
-            path = env.ssh_config_path
+            path = os.path.expanduser(env.ssh_config_path)
             with open(path) as fd:
                 conf.parse(fd)
                 env._ssh_config = conf
         except IOError, e:
             abort("Unable to load SSH config file '%s'" % path)
-    return env._ssh_config
+    host = parse_host_string(host_string or env.host_string)['host']
+    return env._ssh_config.lookup(host)
+
+
+def key_filenames():
+    """
+    Returns list of SSH key filenames for the current env.host_string.
+
+    Takes into account ssh_config and env.key_filename, including normalization
+    to a list. Also performs ``os.path.expanduser`` expansion on any key
+    filenames.
+    """
+    from fabric.state import env
+    keys = env.key_filename
+    # For ease of use, coerce stringish key filename into list
+    if not isinstance(env.key_filename, (list, tuple)):
+        keys = [keys]
+    # Strip out any empty strings (such as the default value...meh)
+    keys = filter(bool, keys)
+    # Honor SSH config
+    if env.use_ssh_config:
+        # TODO: fix ssh so it correctly treats IdentityFile as a list
+        conf = ssh_config()
+        if 'identityfile' in conf:
+            keys.append(conf['identityfile'])
+    return map(os.path.expanduser, keys)
+
+
+def parse_host_string(host_string):
+    return host_regex.match(host_string).groupdict()
 
 
 def normalize(host_string, omit_port=False):
@@ -133,14 +164,14 @@ def normalize(host_string, omit_port=False):
         return ('', '') if omit_port else ('', '', '')
     # Parse host string (need this early on to look up host-specific ssh_config
     # values)
-    r = host_regex.match(host_string).groupdict()
+    r = parse_host_string(host_string)
     host = r['host']
     # Env values
     user = env.user
     port = env.port
     # SSH config data
     if env.use_ssh_config:
-        conf = ssh_config().lookup(host)
+        conf = ssh_config(host_string)
         # Only use ssh_config values if the env value appears unmodified from
         # the true defaults. If the user has tweaked them, that new value
         # takes precedence.
@@ -250,7 +281,7 @@ def connect(user, host, port):
                 port=int(port),
                 username=user,
                 password=password,
-                key_filename=env.key_filename,
+                key_filename=key_filenames(),
                 timeout=env.timeout,
                 allow_agent=not env.no_agent,
                 look_for_keys=not env.no_keys

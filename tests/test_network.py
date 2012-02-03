@@ -12,7 +12,7 @@ from fudge import (Fake, clear_calls, clear_expectations, patch_object, verify,
 
 from fabric.context_managers import settings, hide, show
 from fabric.network import (HostConnectionCache, join_host_strings, normalize,
-    denormalize)
+    denormalize, key_filenames)
 from fabric.io import output_loop
 import fabric.network  # So I can call patch_object correctly. Sigh.
 from fabric.state import env, output, _get_system_username
@@ -570,3 +570,56 @@ class TestSSHConfig(FabricTest):
             host_string='testserver',
         ):
             ok_(run("ls /simple").succeeded)
+
+
+class TestKeyFilenames(FabricTest):
+    def test_empty_everything(self):
+        """
+        No env.key_filename and no ssh_config = empty list
+        """
+        with settings(use_ssh_config=False):
+            with settings(key_filename=""):
+                eq_(key_filenames(), [])
+            with settings(key_filename=[]):
+                eq_(key_filenames(), [])
+
+    def test_just_env(self):
+        """
+        Valid env.key_filename and no ssh_config = just env
+        """
+        with settings(use_ssh_config=False):
+            with settings(key_filename="mykey"):
+                eq_(key_filenames(), ["mykey"])
+            with settings(key_filename=["foo", "bar"]):
+                eq_(key_filenames(), ["foo", "bar"])
+
+    def test_just_ssh_config(self):
+        """
+        No env.key_filename + valid ssh_config = ssh value
+        """
+        with settings(use_ssh_config=True, ssh_config_path=support("ssh_config")):
+            for val in ["", []]:
+                with settings(key_filename=val):
+                    eq_(key_filenames(), ["foobar.pub"])
+
+    def test_both(self):
+        """
+        Both env.key_filename + valid ssh_config = both show up w/ env var first
+        """
+        with settings(use_ssh_config=True, ssh_config_path=support("ssh_config")):
+            with settings(key_filename="bizbaz.pub"):
+                eq_(key_filenames(), ["bizbaz.pub", "foobar.pub"])
+            with settings(key_filename=["bizbaz.pub", "whatever.pub"]):
+                expected = ["bizbaz.pub", "whatever.pub", "foobar.pub"]
+                eq_(key_filenames(), expected)
+
+    def test_specific_host(self):
+        """
+        SSH lookup aspect should correctly select per-host value
+        """
+        with settings(
+            use_ssh_config=True,
+            ssh_config_path=support("ssh_config"),
+            host_string="myhost"
+        ):
+            eq_(key_filenames(), ["neighbor.pub"])

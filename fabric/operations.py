@@ -16,7 +16,7 @@ from contextlib import closing
 
 from fabric.context_managers import settings, char_buffered, hide
 from fabric.io import output_loop, input_loop
-from fabric.network import needs_host, ssh
+from fabric.network import needs_host, ssh, ssh_config
 from fabric.sftp import SFTP
 from fabric.state import env, connections, output, win32, default_channel
 from fabric.thread_handling import ThreadHandler
