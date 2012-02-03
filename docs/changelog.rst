@@ -59,8 +59,6 @@ Changelog
   :option:`-A` or :ref:`env.forward_agent <forward-agent>` to enable.) Thanks
   to Ben Davis for porting an existing Paramiko patch to `ssh` and providing
   the necessary tweak to Fabric.
-* :bug:`339` Don't list ``fabric.colors`` members in ``fab ---list``. Thanks to
-  Nick Trew for the report.
 * :release:`1.3.4 <2012-01-12>`
 * :bug:`492` `@parallel <fabric.decorators.parallel>` did not automatically
   trigger :ref:`linewise output <linewise-output>`, as was intended. This has
