@@ -488,8 +488,12 @@ class TestConnections(FabricTest):
 
 class TestSSHConfig(FabricTest):
     def env_setup(self):
+        super(TestSSHConfig, self).env_setup()
         env.use_ssh_config = True
         env.ssh_config_path = support("ssh_config")
+        # Undo the changes FabricTest makes to env for server support
+        env.user = env.local_user
+        env.port = env.default_port
 
     def test_global_user_with_default_env(self):
         """
@@ -555,3 +559,14 @@ class TestSSHConfig(FabricTest):
         # use_ssh_config is already set in our env_setup()
         with settings(ssh_config_path="nope_bad_lol"):
             normalize('foo')
+
+    @server()
+    def test_real_connection(self):
+        """
+        Test-server connection using ssh_config values
+        """
+        with settings(
+            ssh_config_path=support("testserver_ssh_config"),
+            host_string='testserver',
+        ):
+            ok_(run("ls /simple").succeeded)

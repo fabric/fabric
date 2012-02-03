@@ -55,6 +55,7 @@ class FabricTest(object):
         env.use_shell = False
 
     def teardown(self):
+        env.clear() # In case tests set env vars that didn't exist previously
         env.update(self.previous_env)
         output.update(self.previous_output)
         shutil.rmtree(self.tmpdir)
