@@ -66,6 +66,7 @@ def _rc_path():
         )
 
 default_port = '22' # hurr durr
+default_ssh_config_path = '~/.ssh/config'
 
 # Options/settings which exist both as environment keys and which can be set on
 # the command line, are defined here. When used via `fab` they will be added to
@@ -217,6 +218,12 @@ env_options = [
         help="skip over hosts that can't be reached"
     ),
 
+    make_option('--ssh-config-path',
+        default=default_ssh_config_path,
+        metavar='PATH',
+        help="Path to SSH config file"
+    ),
+
     make_option('-t', '--timeout',
         type='int',
         default=10,
@@ -285,7 +292,7 @@ env = _AttributeDict({
     'roles': [],
     'roledefs': {},
     'skip_bad_hosts': False,
-    'ssh_config_path': '~/.ssh/config',
+    'ssh_config_path': default_ssh_config_path,
     # -S so sudo accepts passwd via stdin, -p with our known-value prompt for
     # later detection (thus %s -- gets filled with env.sudo_prompt at runtime)
     'sudo_prefix': "sudo -S -p '%s' ",
