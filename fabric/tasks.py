@@ -154,30 +154,32 @@ def _execute(task, host, my_env, args, kwargs, jobs, queue, multiprocessing):
         # Set a few more env flags for parallelism
         state.env.parallel = True # triggers some extra aborts, etc
         state.env.linewise = True # to mirror -P behavior
+        name = local_env['host_string']
         # Wrap in another callable that:
         # * nukes the connection cache to prevent shared-access problems
         # * knows how to send the tasks' return value back over a Queue
         # * captures exceptions raised by the task
-        def inner(args, kwargs, queue):
+        def inner(args, kwargs, queue, name):
             key = normalize_to_string(state.env.host_string)
             state.connections.pop(key, "")
             try:
                 result = task.run(*args, **kwargs)
             except BaseException, e: # We really do want to capture everything
-                result = e
-            queue.put(result)
+                result = e.__class__.__name__
+            queue.put({'name': name, 'result': result})
 
         # Stuff into Process wrapper
         kwarg_dict = {
             'args': args,
             'kwargs': kwargs,
             'queue': queue,
+            'name': name
         }
         p = multiprocessing.Process(target=inner, kwargs=kwarg_dict)
         # Name/id is host string
-        p.name = local_env['host_string']
+        p.name = name
         # Add to queue
-        jobs.append(p, queue)
+        jobs.append(p)
     # Handle serial execution
     else:
         return task.run(*args, **kwargs)
@@ -249,13 +251,6 @@ def execute(task, *args, **kwargs):
     # Set up host list
     my_env['all_hosts'] = task.get_hosts(hosts, roles, exclude_hosts, state.env)
 
-    # Get pool size for this task
-    pool_size = task.get_pool_size(my_env['all_hosts'], state.env.pool_size)
-    # Set up job queue in case parallel is needed
-    jobs = JobQueue(pool_size)
-    if state.output.debug:
-        jobs._debug = True
-
     parallel = requires_parallel(task)
     if parallel:
         # Import multiprocessing if needed, erroring out usefully
@@ -273,11 +268,18 @@ def execute(task, *args, **kwargs):
     else:
         multiprocessing = None
 
+    # Get pool size for this task
+    pool_size = task.get_pool_size(my_env['all_hosts'], state.env.pool_size)
+    # Set up job queue in case parallel is needed
+    queue = multiprocessing.Queue() if parallel else None
+    jobs = JobQueue(pool_size, queue)
+    if state.output.debug:
+        jobs._debug = True
+
     # Call on host list
     if my_env['all_hosts']:
         # Attempt to cycle on hosts, skipping if needed
         for host in my_env['all_hosts']:
-            queue = multiprocessing.Queue() if parallel else None
             try:
                 results[host] = _execute(
                     task, host, my_env, args, new_kwargs, jobs, queue,
