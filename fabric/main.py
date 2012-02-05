@@ -278,7 +278,7 @@ def parse_options():
     )
 
     # Control behavior of --list
-    LIST_FORMAT_OPTIONS = ('short', 'normal', 'nested')
+    LIST_FORMAT_OPTIONS = ('short', 'normal', 'nested', 'fulldoc')
     parser.add_option('-F', '--list-format',
         choices=LIST_FORMAT_OPTIONS,
         default='normal',
@@ -401,6 +401,22 @@ def _normal_list(docstrings=True):
     return result
 
 
+def _fulldoc_list(docstrings=True):
+    result = []
+    task_names = _task_names(state.commands)
+    for name in task_names:
+        result.append(indent(name))
+        result.append(indent('-'*len(name)))
+        docstring = _print_docstring(docstrings, name)
+        if docstring:
+            for docstring_line in docstring.splitlines():
+                if docstring_line.strip():
+                    result.append(indent(docstring_line.strip(), spaces=8))
+        result.append('')
+
+    return result
+
+
 def _nested_list(mapping, level=1):
     result = []
     tasks, collections = _sift_tasks(mapping)
@@ -439,7 +455,12 @@ def list_commands(docstring, format_):
     if format_ == "nested":
         header += NESTED_REMINDER
     result.append(header + ":\n")
-    c = _normal_list() if format_ == "normal" else _nested_list(state.commands)
+    if format_ == "normal":
+        c = _normal_list()
+    elif format_ == "fulldoc":
+        c = _fulldoc_list()
+    else:
+        c = _nested_list(state.commands)
     result.extend(c)
     return result
 
