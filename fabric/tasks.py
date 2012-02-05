@@ -157,10 +157,14 @@ def _execute(task, host, my_env, args, kwargs, jobs, queue, multiprocessing):
         # Wrap in another callable that:
         # * nukes the connection cache to prevent shared-access problems
         # * knows how to send the tasks' return value back over a Queue
+        # * captures exceptions raised by the task
         def inner(args, kwargs, queue):
             key = normalize_to_string(state.env.host_string)
             state.connections.pop(key, "")
-            result = task.run(*args, **kwargs)
+            try:
+                result = task.run(*args, **kwargs)
+            except BaseException, e: # We really do want to capture everything
+                result = e
             queue.put(result)
 
         # Stuff into Process wrapper
