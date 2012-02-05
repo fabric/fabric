@@ -387,9 +387,9 @@ def _normal_list(docstrings=True):
     max_width = 75
     try:
         output = subprocess.Popen(["stty", "size"], stdout=subprocess.PIPE).communicate()[0]
-        columns = int(output.split()[1])-1
-        if columns > max_width:
-            max_width = columns
+        available_columns = int(output.split()[1])-1-len(trail)
+        if available_columns > max_width:
+            max_width = available_columns
     except:
         pass
     for name in task_names:
