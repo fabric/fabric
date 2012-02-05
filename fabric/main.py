@@ -14,6 +14,7 @@ from operator import add, isMappingType
 from optparse import OptionParser
 import os
 import sys
+import subprocess
 import types
 
 # For checking callables against the API, & easy mocking
@@ -383,6 +384,14 @@ def _normal_list(docstrings=True):
     max_len = reduce(lambda a, b: max(a, len(b)), task_names, 0)
     sep = '  '
     trail = '...'
+    max_width = 75
+    try:
+        output = subprocess.Popen(["stty", "size"], stdout=subprocess.PIPE).communicate()[0]
+        columns = int(output.split()[1])-1
+        if columns > max_width:
+            max_width = columns
+    except:
+        pass
     for name in task_names:
         output = None
         docstring = _print_docstring(docstrings, name)
@@ -390,7 +399,7 @@ def _normal_list(docstrings=True):
             lines = filter(None, docstring.splitlines())
             first_line = lines[0].strip()
             # Truncate it if it's longer than N chars
-            size = 75 - (max_len + len(sep) + len(trail))
+            size = max_width - (max_len + len(sep) + len(trail))
             if len(first_line) > size:
                 first_line = first_line[:size] + trail
             output = name.ljust(max_len) + sep + first_line
