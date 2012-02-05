@@ -355,7 +355,7 @@ class TestTaskAliases(FabricTest):
             ok_("foo_aliased" in funcs)
             ok_("foo_aliased_two" in funcs)
 
-    def test_nested_alias(self):
+    def test_nested_aliases(self):
         f = fabfile("nested_aliases.py")
         with path_prefix(f):
             docs, funcs = load_fabfile(f)
