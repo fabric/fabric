@@ -165,7 +165,7 @@ def _execute(task, host, my_env, args, kwargs, jobs, queue, multiprocessing):
             try:
                 result = task.run(*args, **kwargs)
             except BaseException, e: # We really do want to capture everything
-                result = e.__class__.__name__
+                result = e
             queue.put({'name': name, 'result': result})
 
         # Stuff into Process wrapper
