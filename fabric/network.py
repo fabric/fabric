@@ -171,9 +171,10 @@ def normalize(host_string, omit_port=False):
     # values)
     r = parse_host_string(host_string)
     host = r['host']
-    # Env values
-    user = env.user
-    port = env.port
+    # Env values (using defaults if somehow earlier defaults were replaced with
+    # empty values)
+    user = env.user or env.local_user
+    port = env.port or env.default_port
     # SSH config data
     conf = ssh_config(host_string)
     # Only use ssh_config values if the env value appears unmodified from

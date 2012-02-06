@@ -287,7 +287,7 @@ env = _AttributeDict({
     'passwords': {},
     'path': '',
     'path_behavior': 'append',
-    'port': None,
+    'port': default_port,
     'real_fabfile': None,
     'roles': [],
     'roledefs': {},
