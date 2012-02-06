@@ -26,6 +26,7 @@ from fabric.state import env_options
 from fabric.tasks import Task, execute
 from fabric.task_utils import _Dict, crawl
 from fabric.utils import abort, indent
+from fabric.operations import _pty_size
 
 # One-time calculation of "all internal callables" to avoid doing this on every
 # check of a given fabfile callable (in is_classic_task()).
@@ -385,13 +386,9 @@ def _normal_list(docstrings=True):
     sep = '  '
     trail = '...'
     max_width = 75
-    try:
-        output = subprocess.Popen(["stty", "size"], stdout=subprocess.PIPE).communicate()[0]
-        available_columns = int(output.split()[1])-1-len(trail)
-        if available_columns > max_width:
-            max_width = available_columns
-    except:
-        pass
+    available_columns = _pty_size()[1]-1-len(trail)
+    if available_columns > max_width:
+        max_width = available_columns
     for name in task_names:
         output = None
         docstring = _print_docstring(docstrings, name)
