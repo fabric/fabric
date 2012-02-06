@@ -62,10 +62,17 @@ def load_settings(path):
     Usage docs are in docs/usage/fab.rst, in "Settings files."
     """
     if os.path.exists(path):
+        # Old-style key-value loading
         comments = lambda s: s and not s.startswith("#")
         settings = filter(comments, open(path, 'r'))
         return dict((k.strip(), v.strip()) for k, _, v in
             [s.partition('=') for s in settings])
+    elif os.path.exists(path+".yml"):
+        with open(path+".yml", 'r') as conf:
+            import yaml
+            settings = yaml.load(conf.read())
+            if isinstance(settings, dict): # non-valid files return strings not dicts
+                return settings
     # Handle nonexistent or empty settings file
     return {}
 
