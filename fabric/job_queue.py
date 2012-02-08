@@ -8,8 +8,10 @@ items, though within Fabric itself only ``Process`` objects are used/supported.
 from pprint import pprint
 from Crypto import Random 
 import time
+import Queue
 
-from fabric.state import env, io_sleep
+from fabric.state import env
+from fabric.network import ssh
 
 
 class JobQueue(object):
@@ -30,7 +32,7 @@ class JobQueue(object):
         ___________________________
                                 End 
     """
-    def __init__(self, max_running):
+    def __init__(self, max_running, comms_queue):
         """
         Setup the class to resonable defaults.
         """
@@ -39,6 +41,7 @@ class JobQueue(object):
         self._completed = []
         self._num_of_jobs = 0
         self._max = max_running
+        self._comms_queue = comms_queue
         self._finished = False
         self._closed = False
         self._debug = False
@@ -75,6 +78,10 @@ class JobQueue(object):
         That is if the JobQueue is still open.
 
         If the queue is closed, this will just silently do nothing.
+
+        To get data back out of this process, give ``process`` access to a
+        ``multiprocessing.Queue`` object, and give it here as ``queue``. Then
+        ``JobQueue.run`` will include the queue's contents in its return value.
         """
         if not self._closed:
             self._queued.append(process)
@@ -133,7 +140,6 @@ class JobQueue(object):
                         if self._debug:
                             print("Job queue found finished proc: %s." %
                                     job.name)
-
                         done = self._running.pop(id)
                         self._completed.append(done)
 
@@ -148,9 +154,21 @@ class JobQueue(object):
                     job.join()
 
                 self._finished = True
-            time.sleep(io_sleep)
+            time.sleep(ssh.io_sleep)
 
-        return [x.exitcode for x in self._completed]
+        results = {}
+        for job in self._completed:
+            results[job.name] = {
+                'exit_code': job.exitcode,
+            }
+        while True:
+            try:
+                datum = self._comms_queue.get(timeout=1)
+                results[datum['name']]['results'] = datum['result']
+            except Queue.Empty:
+                break
+
+        return results
 
 
 #### Sample 

@@ -25,13 +25,54 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :feature:`138` :ref:`env.port <port>` may now be written to at fabfile module
+  level to set a default nonstandard port number. Previously this value was
+  read-only.
+* :feature:`3` Fabric can now load a subset of SSH config functionality
+  directly from your local ``~/.ssh/config`` if :ref:`env.use_ssh_config
+  <use-ssh-config>` is set to ``True``. See :ref:`ssh-config` for details.
+  Thanks to Kirill Pinchuk for the initial patch.
+* :feature:`12` Added the ability to try connecting multiple times to
+  temporarily-down remote systems, instead of immediately failing. (Default
+  behavior is still to only try once.) See :ref:`env.timeout <timeout>` and
+  :ref:`env.connection_attempts <connection-attempts>` for controlling both
+  connection timeouts and total number of attempts. `~fabric.operations.reboot`
+  has also been overhauled (but practically deprecated -- see its updated
+  docs.)
+* :feature:`474` `~fabric.tasks.execute` now allows you to access the executed
+  task's return values, by itself returning a dictionary whose keys are the
+  host strings executed against.
+* :bug:`487` Overhauled the regular expression escaping performed in
+  `~fabric.contrib.files.append` and `~fabric.contrib.files.contains` to try
+  and handle more corner cases. Thanks to Neilen Marais for the patch.
+* :support:`532` Reorganized and cleaned up the output of ``fab --help``.
+* :feature:`8` Added :option:`--skip-bad-hosts`/:ref:`env.skip_bad_hosts
+  <skip-bad-hosts>` option to allow skipping past temporarily down/unreachable
+  hosts.
+* :feature:`13` Env vars may now be set at runtime via the new :option:`--set`
+  command-line flag.
 * :feature:`506` A new :ref:`output alias <output-aliases>`, ``commands``, has
   been added, which allows hiding remote stdout and local "running command X"
   output lines.
-* :feature:`72` SSH agent forwarding support has made it into Fabric's ssh
-  library, and hooks for using it have been added (enabled by default; use
-  :option:`-A` to disable.) Thanks to Ben Davis for porting an existing
-  Paramiko patch to `ssh` and providing the necessary tweak to Fabric.
+* :feature:`72` SSH agent forwarding support has made it into Fabric's SSH
+  library, and hooks for using it have been added (disabled by default; use
+  :option:`-A` or :ref:`env.forward_agent <forward-agent>` to enable.) Thanks
+  to Ben Davis for porting an existing Paramiko patch to `ssh` and providing
+  the necessary tweak to Fabric.
+* :release:`1.3.4 <2012-01-12>`
+* :bug:`492` `@parallel <fabric.decorators.parallel>` did not automatically
+  trigger :ref:`linewise output <linewise-output>`, as was intended. This has
+  been fixed. Thanks to Brandon Huey for the catch.
+* :bug:`510` Parallel mode is incompatible with user input, such as
+  password/hostname prompts, and was causing cryptic `Operation not supported
+  by device` errors when such prompts needed to be displayed. This behavior has
+  been updated to cleanly and obviously ``abort`` instead.
+* :bug:`494` Fixed regression bug affecting some `env` values such as
+  `env.port` under parallel mode. Symptoms included
+  `~fabric.contrib.project.rsync_project` bailing out due to a None port value
+  when run under `@parallel <fabric.decorators.parallel>`. Thanks to Rob Terhaar for the report.
+* :bug:`339` Don't show imported `~fabric.colors` members in :option:`--list
+  <-l>` output.  Thanks to Nick Trew for the report.
 * :release:`1.3.3 <2011-11-23>`
 * :release:`1.2.5 <2011-11-23>`
 * :release:`1.1.7 <2011-11-23>`
@@ -39,7 +80,7 @@ Changelog
   blows up but presents the usual "no task by that name" error message instead.
   Thanks to Mitchell Hashimoto for the catch.
 * :bug:`475` Allow escaping of equals signs in per-task args/kwargs.
-* :bug:`450` Improve traceback display when handling ``ImportError``s for
+* :bug:`450` Improve traceback display when handling ``ImportError`` for
   dependencies. Thanks to David Wolever for the patches.
 * :bug:`446` Add QNX to list of secondary-case `~fabric.contrib.files.sed`
   targets. Thanks to Rodrigo Madruga for the tip.

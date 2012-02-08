@@ -16,11 +16,11 @@ import os
 import sys
 import types
 
-import ssh
+# For checking callables against the API, & easy mocking
+from fabric import api, state, colors
+from fabric.contrib import console, files, project
 
-from fabric import api, state  # For checking callables against the API, & easy mocking
-from fabric.contrib import console, files, project  # Ditto
-from fabric.network import denormalize, disconnect_all
+from fabric.network import denormalize, disconnect_all, ssh
 from fabric.state import env_options
 from fabric.tasks import Task, execute
 from fabric.task_utils import _Dict, crawl
@@ -28,7 +28,7 @@ from fabric.utils import abort, indent
 
 # One-time calculation of "all internal callables" to avoid doing this on every
 # check of a given fabfile callable (in is_classic_task()).
-_modules = [api, project, files, console]
+_modules = [api, project, files, console, colors]
 _internals = reduce(lambda x, y: x + filter(callable, vars(y).values()),
     _modules,
     []
@@ -271,13 +271,19 @@ def parse_options():
     # --version)
     #
 
-    # Version number (optparse gives you --version but we have to do it
-    # ourselves to get -V too. sigh)
-    parser.add_option('-V', '--version',
-        action='store_true',
-        dest='show_version',
-        default=False,
-        help="show program's version number and exit"
+    # Display info about a specific command
+    parser.add_option('-d', '--display',
+        metavar='NAME',
+        help="print detailed info about command NAME"
+    )
+
+    # Control behavior of --list
+    LIST_FORMAT_OPTIONS = ('short', 'normal', 'nested')
+    parser.add_option('-F', '--list-format',
+        choices=LIST_FORMAT_OPTIONS,
+        default='normal',
+        metavar='FORMAT',
+        help="formats --list, choices: %s" % ", ".join(LIST_FORMAT_OPTIONS)
     )
 
     # List Fab commands found in loaded fabfiles/source files
@@ -288,6 +294,14 @@ def parse_options():
         help="print list of possible commands and exit"
     )
 
+    # Allow setting of arbitrary env vars at runtime.
+    parser.add_option('--set',
+        metavar="KEY=VALUE,...",
+        dest='env_settings',
+        default="",
+        help="comma separated KEY=VALUE pairs to set Fab env vars"
+    )
+
     # Like --list, but text processing friendly
     parser.add_option('--shortlist',
         action='store_true',
@@ -296,18 +310,13 @@ def parse_options():
         help="alias for -F short --list"
     )
 
-    # Control behavior of --list
-    LIST_FORMAT_OPTIONS = ('short', 'normal', 'nested')
-    parser.add_option('-F', '--list-format',
-        choices=LIST_FORMAT_OPTIONS,
-        default='normal',
-        help="formats --list, choices: %s" % ", ".join(LIST_FORMAT_OPTIONS)
-    )
-
-    # Display info about a specific command
-    parser.add_option('-d', '--display',
-        metavar='COMMAND',
-        help="print detailed info about a given command and exit"
+    # Version number (optparse gives you --version but we have to do it
+    # ourselves to get -V too. sigh)
+    parser.add_option('-V', '--version',
+        action='store_true',
+        dest='show_version',
+        default=False,
+        help="show program's version number and exit"
     )
 
     #
@@ -562,6 +571,22 @@ def main():
         # Handle regular args vs -- args
         arguments = parser.largs
         remainder_arguments = parser.rargs
+
+        # Allow setting of arbitrary env keys.
+        # This comes *before* the "specific" env_options so that those may
+        # override these ones. Specific should override generic, if somebody
+        # was silly enough to specify the same key in both places.
+        # E.g. "fab --set shell=foo --shell=bar" should have env.shell set to
+        # 'bar', not 'foo'.
+        for pair in _escape_split(',', options.env_settings):
+            pair = _escape_split('=', pair)
+            # "--set x" => set env.x to True
+            # "--set x=" => set env.x to ""
+            key = pair[0]
+            value = True
+            if len(pair) == 2:
+                value = pair[1]
+            state.env[key] = value
 
         # Update env with any overridden option values
         # NOTE: This needs to remain the first thing that occurs

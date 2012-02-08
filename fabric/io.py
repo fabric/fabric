@@ -5,9 +5,10 @@ import time
 from select import select
 
 from fabric.context_managers import settings, char_buffered
-from fabric.state import env, output, win32, io_sleep
+from fabric.state import env, output, win32
 from fabric.auth import get_password, set_password
 import fabric.network
+from fabric.network import ssh
 
 if win32:
     import msvcrt
@@ -160,4 +161,4 @@ def input_loop(chan, using_pty):
                 # output level, don't want it to be accidentally hidden
                 sys.stdout.write(byte)
                 sys.stdout.flush()
-        time.sleep(io_sleep)
+        time.sleep(ssh.io_sleep)

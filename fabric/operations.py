@@ -12,79 +12,21 @@ import subprocess
 import sys
 import time
 from glob import glob
-from traceback import format_exc
 from contextlib import closing
 
-from ssh.agent import AgentClientProxy
-
-from fabric.context_managers import settings, char_buffered
+from fabric.context_managers import settings, char_buffered, hide
 from fabric.io import output_loop, input_loop
-from fabric.network import needs_host
+from fabric.network import needs_host, ssh, ssh_config
 from fabric.sftp import SFTP
-from fabric.state import (env, connections, output, win32, default_channel,
-    io_sleep)
+from fabric.state import env, connections, output, win32, default_channel
 from fabric.thread_handling import ThreadHandler
-from fabric.utils import abort, indent, warn, puts, handle_prompt_abort
+from fabric.utils import abort, indent, warn, puts, handle_prompt_abort, error, _pty_size
 
 # For terminal size logic below
 if not win32:
     import fcntl
     import termios
     import struct
-
-
-def _pty_size():
-    """
-    Obtain (rows, cols) tuple for sizing a pty on the remote end.
-
-    Defaults to 80x24 (which is also the 'ssh' lib's default) but will detect
-    local (stdout-based) terminal window size on non-Windows platforms.
-    """
-    rows, cols = 24, 80
-    if not win32 and sys.stdout.isatty():
-        # We want two short unsigned integers (rows, cols)
-        fmt = 'HH'
-        # Create an empty (zeroed) buffer for ioctl to map onto. Yay for C!
-        buffer = struct.pack(fmt, 0, 0)
-        # Call TIOCGWINSZ to get window size of stdout, returns our filled
-        # buffer
-        try:
-            result = fcntl.ioctl(sys.stdout.fileno(), termios.TIOCGWINSZ,
-                buffer)
-            # Unpack buffer back into Python data types
-            rows, cols = struct.unpack(fmt, result)
-        # Deal with e.g. sys.stdout being monkeypatched, such as in testing.
-        # Or termios not having a TIOCGWINSZ.
-        except AttributeError:
-            pass
-    return rows, cols
-
-
-def _handle_failure(message, exception=None):
-    """
-    Call `abort` or `warn` with the given message.
-
-    The value of ``env.warn_only`` determines which method is called.
-
-    If ``exception`` is given, it is inspected to get a string message, which
-    is printed alongside the user-generated ``message``.
-    """
-    func = env.warn_only and warn or abort
-    # If debug printing is on, append a traceback to the message
-    if output.debug:
-        message += "\n\n" + format_exc()
-    # Otherwise, if we were given an exception, append its contents.
-    elif exception is not None:
-        # Figure out how to get a string out of the exception; EnvironmentError
-        # subclasses, for example, "are" integers and .strerror is the string.
-        # Others "are" strings themselves. May have to expand this further for
-        # other error types.
-        if hasattr(exception, 'strerror') and exception.strerror is not None:
-            underlying = exception.strerror
-        else:
-            underlying = exception
-        message += "\n\nUnderlying exception message:\n" + indent(underlying)
-    return func(message)
 
 
 def _shell_escape(string):
@@ -448,7 +390,7 @@ def put(local_path=None, remote_path=None, use_sudo=False,
                 msg = "put() encountered an exception while uploading '%s'"
                 failure = lpath if local_is_path else "<StringIO>"
                 failed_local_paths.append(failure)
-                _handle_failure(message=msg % lpath, exception=e)
+                error(message=msg % lpath, exception=e)
 
         ret = _AttributeList(remote_paths)
         ret.failed = failed_local_paths
@@ -603,7 +545,7 @@ def get(remote_path, local_path=None):
             # Handle invalid local-file-object situations
             if not local_is_path:
                 if len(names) > 1 or ftp.isdir(names[0]):
-                    _handle_failure("[%s] %s is a glob or directory, but local_path is a file object!" % (env.host_string, remote_path))
+                    error("[%s] %s is a glob or directory, but local_path is a file object!" % (env.host_string, remote_path))
 
             for remote_path in names:
                 if ftp.isdir(remote_path):
@@ -624,7 +566,7 @@ def get(remote_path, local_path=None):
         except Exception, e:
             failed_remote_files.append(remote_path)
             msg = "get() encountered an exception while downloading '%s'"
-            _handle_failure(message=msg % remote_path, exception=e)
+            error(message=msg % remote_path, exception=e)
 
         ret = _AttributeList(local_files if local_is_path else [])
         ret.failed = failed_remote_files
@@ -754,9 +696,10 @@ def _execute(channel, command, pty=True, combine_stderr=None,
             rows, cols = _pty_size()
             channel.get_pty(width=cols, height=rows)
 
-        # Use SSH agent forwarding from 'ssh', unless user has turned it off.
-        if not env.no_agent_forward:
-            forward = AgentClientProxy(channel)
+        # Use SSH agent forwarding from 'ssh' if enabled by user
+        config_agent = ssh_config().get('forwardagent', 'no').lower() == 'yes'
+        if env.forward_agent or config_agent:
+            forward = ssh.agent.AgentClientProxy(channel)
 
         # Kick off remote command
         if invoke_shell:
@@ -786,7 +729,7 @@ def _execute(channel, command, pty=True, combine_stderr=None,
                     e = worker.exception
                     if e:
                         raise e[0], e[1], e[2]
-            time.sleep(io_sleep)
+            time.sleep(ssh.io_sleep)
 
         # Obtain exit code of remote program now that we're done.
         status = channel.recv_exit_status()
@@ -880,8 +823,16 @@ def _run_command(command, shell=True, pty=True, combine_stderr=True,
     out.failed = False
     if status != 0:
         out.failed = True
-        msg = "%s() encountered an error (return code %s) while executing '%s'" % (which, status, command)
-        _handle_failure(message=msg)
+        msg = "%s() received nonzero return code %s while executing" % (
+            which, status
+        )
+        if env.warn_only:
+            msg += " '%s'!" % given_command
+        else:
+            msg += "!\n\nRequested: %s\nExecuted: %s" % (
+                given_command, wrapped_command
+            )
+        error(message=msg, stdout=out, stderr=err)
 
     # Attach return code to output string so users who have set things to
     # warn only, can inspect the error code.
@@ -1054,32 +1005,57 @@ def local(command, capture=False):
     if p.returncode != 0:
         out.failed = True
         msg = "local() encountered an error (return code %s) while executing '%s'" % (p.returncode, command)
-        _handle_failure(message=msg)
+        error(message=msg)
     out.succeeded = not out.failed
     # If we were capturing, this will be a string; otherwise it will be None.
     return out
 
 
 @needs_host
-def reboot(wait):
+def reboot(wait=120):
     """
-    Reboot the remote system, disconnect, and wait for ``wait`` seconds.
+    Reboot the remote system.
 
-    After calling this operation, further execution of `run` or `sudo` will
-    result in a normal reconnection to the server, including any password
-    prompts.
+    Will temporarily tweak Fabric's reconnection settings (:ref:`timeout` and
+    :ref:`connection-attempts`) to ensure that reconnection does not give up
+    for at least ``wait`` seconds.
+
+    .. note::
+        As of Fabric 1.4, the ability to reconnect partway through a session no
+        longer requires use of internal APIs.  While we are not officially
+        deprecating this function, adding more features to it will not be a
+        priority.
+
+        Users who want greater control
+        are encouraged to check out this function's (6 lines long, well
+        commented) source code and write their own adaptation using different
+        timeout/attempt values or additional logic.
 
     .. versionadded:: 0.9.2
+    .. versionchanged:: 1.4
+        Changed the ``wait`` kwarg to be optional, and refactored to leverage
+        the new reconnection functionality; it may not actually have to wait
+        for ``wait`` seconds before reconnecting.
     """
-    sudo('reboot')
-    client = connections[env.host_string]
-    client.close()
-    if env.host_string in connections:
-        del connections[env.host_string]
-    if output.running:
-        puts("Waiting for reboot: ", flush=True, end='')
-        per_tick = 5
-        for second in range(int(wait / per_tick)):
-            puts(".", show_prefix=False, flush=True, end='')
-            time.sleep(per_tick)
-        puts("done.\n", show_prefix=False, flush=True)
+    # Shorter timeout for a more granular cycle than the default.
+    timeout = 5
+    # Use 'wait' as max total wait time
+    attempts = int(round(wait / float(timeout)))
+    # Don't bleed settings, since this is supposed to be self-contained.
+    # User adaptations will probably want to drop the "with settings()" and
+    # just have globally set timeout/attempts values.
+    with settings(
+        hide('running'),
+        timeout=timeout,
+        connection_attempts=attempts
+    ):
+        sudo('reboot')
+        # Try to make sure we don't slip in before pre-reboot lockdown
+        time.sleep(5)
+        # This is actually an internal-ish API call, but users can simply drop
+        # it in real fabfile use -- the next run/sudo/put/get/etc call will
+        # automatically trigger a reconnect.
+        # We use it here to force the reconnect while this function is still in
+        # control and has the above timeout settings enabled.
+        connections.connect(env.host_string)
+    # At this point we should be reconnected to the newly rebooted server.
