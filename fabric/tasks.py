@@ -1,6 +1,7 @@
 from __future__ import with_statement
 
 from functools import wraps
+import sys
 
 from fabric import state
 from fabric.utils import abort, warn, error
@@ -166,6 +167,11 @@ def _execute(task, host, my_env, args, kwargs, jobs, queue, multiprocessing):
                 result = task.run(*args, **kwargs)
             except BaseException, e: # We really do want to capture everything
                 result = e
+                # But still print it out, otherwise users won't know what the
+                # fuck. Especially if the task is run at top level and nobody's
+                # doing anything with the return value.
+                print >> sys.stderr, "!!! Parallel execution exception under host %r:" % name
+                sys.excepthook(*sys.exc_info())
             queue.put({'name': name, 'result': result})
 
         # Stuff into Process wrapper
