@@ -6,6 +6,7 @@ import stat
 import tempfile
 from fnmatch import filter as fnfilter
 
+from fabric.logger import log
 from fabric.state import output, connections, env
 from fabric.utils import warn
 from fabric.context_managers import settings
@@ -123,11 +124,10 @@ class SFTP(object):
             if os.path.isdir(local_path):
                 local_path = os.path.join(local_path, path_vars['basename'])
         if output.running:
-            print("[%s] download: %s <- %s" % (
-                env.host_string,
+            log.info("download: %s <- %s" % (
                 local_path if local_is_path else "<file obj>",
                 remote_path
-            ))
+            ), extras={"show_prefix": True})
         # Warn about overwrites, but keep going
         if local_is_path and os.path.exists(local_path):
             msg = "Local file %s already exists and is being overwritten."
@@ -198,11 +198,10 @@ class SFTP(object):
             basename = os.path.basename(local_path)
             remote_path = os.path.join(remote_path, basename)
         if output.running:
-            print("[%s] put: %s -> %s" % (
-                env.host_string,
+            log.info("put: %s -> %s" % (
                 local_path if local_is_path else '<file obj>',
                 os.path.join(pre, remote_path)
-            ))
+            ), extras={"show_prefix": True})
         # When using sudo, "bounce" the file through a guaranteed-unique file
         # path in the default remote CWD (which, typically, the login user will
         # have write permissions on) in order to sudo(mv) it later.

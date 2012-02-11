@@ -456,13 +456,13 @@ def display_command(name):
         abort(msg % (name, "\n".join(_normal_list(False))))
     # Print out nicely presented docstring if found
     if command.__doc__:
-        print("Displaying detailed information for task '%s':" % name)
-        print('')
-        print(indent(command.__doc__, strip=True))
-        print('')
+        system_log.info("Displaying detailed information for task '%s':" % name)
+        system_log.info('')
+        system_log.info(indent(command.__doc__, strip=True))
+        system_log.info('')
     # Or print notice if not
     else:
-        print("No detailed information available for task '%s':" % name)
+        system_log.info("No detailed information available for task '%s':" % name)
     sys.exit(0)
 
 
