@@ -7,7 +7,7 @@ import os.path
 from datetime import datetime
 from tempfile import mkdtemp
 
-from fabric.network import needs_host
+from fabric.network import needs_host, key_filenames, normalize
 from fabric.operations import local, run, put
 from fabric.state import env, output
 
@@ -85,14 +85,12 @@ def rsync_project(remote_dir, local_dir=None, exclude=(), delete=False,
     exclusions = tuple([str(s).replace('"', '\\\\"') for s in exclude])
     # Honor SSH key(s)
     key_string = ""
-    if env.key_filename:
-        keys = env.key_filename
-        # For ease of use, coerce stringish key filename into list
-        if not isinstance(env.key_filename, (list, tuple)):
-            keys = [keys]
+    keys = key_filenames()
+    if keys:
         key_string = "-i " + " -i ".join(keys)
-    # Honor nonstandard port
-    port_string = ("-p %s" % env.port) if (env.port != '22') else ""
+    # Port
+    user, host, port = normalize(env.host_string)
+    port_string = "-p %s" % port
     # RSH
     rsh_string = ""
     if key_string or port_string:
@@ -109,8 +107,7 @@ def rsync_project(remote_dir, local_dir=None, exclude=(), delete=False,
     if local_dir is None:
         local_dir = '../' + getcwd().split(sep)[-1]
     # Create and run final command string
-    cmd = "rsync %s %s %s@%s:%s" % (options, local_dir, env.user,
-        env.host, remote_dir)
+    cmd = "rsync %s %s %s@%s:%s" % (options, local_dir, user, host, remote_dir)
     if output.running:
         print("[%s] rsync_project: %s" % (env.host_string, cmd))
     return local(cmd)

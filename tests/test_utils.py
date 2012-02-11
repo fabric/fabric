@@ -2,16 +2,15 @@ from __future__ import with_statement
 
 import sys
 
-from fudge import Fake, patched_context, verify, clear_expectations
+from fudge import Fake, patched_context, with_fakes
 from fudge.patcher import with_patched_object
 from nose.tools import eq_
-from nose.tools import raises
 
 from fabric.state import output, env
-from fabric.utils import warn, indent, abort, puts, fastprint
+from fabric.utils import warn, indent, abort, puts, fastprint, error
 from fabric import utils  # For patching
-from fabric.context_managers import settings
-from utils import mock_streams
+from fabric.context_managers import settings, hide
+from utils import mock_streams, aborts, FabricTest, assert_contains
 
 
 @mock_streams('stderr')
@@ -51,8 +50,7 @@ def test_indent_with_strip():
         del eq_.description
 
 
-@mock_streams('stderr')
-@raises(SystemExit)
+@aborts
 def test_abort():
     """
     abort() should raise SystemExit
@@ -117,7 +115,7 @@ def test_puts_without_prefix():
     puts(s, show_prefix=False)
     eq_(sys.stdout.getvalue(), "%s" % (s + "\n"))
 
-
+@with_fakes
 def test_fastprint_calls_puts():
     """
     fastprint() is just an alias to puts()
@@ -127,8 +125,56 @@ def test_fastprint_calls_puts():
         text=text, show_prefix=False, end="", flush=True
     )
     with patched_context(utils, 'puts', fake_puts):
-        try:
-            fastprint(text)
-            verify()
-        finally:
-            clear_expectations()
+        fastprint(text)
+
+
+class TestErrorHandling(FabricTest):
+    @with_patched_object(utils, 'warn', Fake('warn', callable=True,
+        expect_call=True))
+    def test_error_warns_if_warn_only_True_and_func_None(self):
+        """
+        warn_only=True, error(func=None) => calls warn()
+        """
+        with settings(warn_only=True):
+            error('foo')
+
+    @with_patched_object(utils, 'abort', Fake('abort', callable=True,
+        expect_call=True))
+    def test_error_aborts_if_warn_only_False_and_func_None(self):
+        """
+        warn_only=False, error(func=None) => calls abort()
+        """
+        with settings(warn_only=False):
+            error('foo')
+
+    def test_error_calls_given_func_if_func_not_None(self):
+        """
+        error(func=callable) => calls callable()
+        """
+        error('foo', func=Fake(callable=True, expect_call=True))
+
+    @mock_streams('stdout')
+    @with_patched_object(utils, 'abort', Fake('abort', callable=True,
+        expect_call=True).calls(lambda x: sys.stdout.write(x + "\n")))
+    def test_error_includes_stdout_if_given_and_hidden(self):
+        """
+        error() correctly prints stdout if it was previously hidden
+        """
+        # Mostly to catch regression bug(s)
+        stdout = "this is my stdout"
+        with hide('stdout'):
+            error("error message", func=utils.abort, stdout=stdout)
+        assert_contains(stdout, sys.stdout.getvalue())
+
+    @mock_streams('stderr')
+    @with_patched_object(utils, 'abort', Fake('abort', callable=True,
+        expect_call=True).calls(lambda x: sys.stderr.write(x + "\n")))
+    def test_error_includes_stderr_if_given_and_hidden(self):
+        """
+        error() correctly prints stderr if it was previously hidden
+        """
+        # Mostly to catch regression bug(s)
+        stderr = "this is my stderr"
+        with hide('stderr'):
+            error("error message", func=utils.abort, stderr=stderr)
+        assert_contains(stderr, sys.stderr.getvalue())

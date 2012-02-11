@@ -5,18 +5,20 @@ import copy
 import getpass
 import sys
 
-import paramiko
-from nose.tools import with_setup, raises, ok_
+import ssh
+from nose.tools import with_setup, ok_, raises
 from fudge import (Fake, clear_calls, clear_expectations, patch_object, verify,
     with_patched_object, patched_context, with_fakes)
 
 from fabric.context_managers import settings, hide, show
 from fabric.network import (HostConnectionCache, join_host_strings, normalize,
-    denormalize)
+    denormalize, key_filenames)
 from fabric.io import output_loop
 import fabric.network  # So I can call patch_object correctly. Sigh.
 from fabric.state import env, output, _get_system_username
 from fabric.operations import run, sudo, prompt
+from fabric.exceptions import NetworkError
+from fabric.tasks import execute
 
 from utils import *
 from server import (server, PORT, RESPONSES, PASSWORDS, CLIENT_PRIVKEY, USER,
@@ -159,7 +161,7 @@ class TestNetwork(FabricTest):
     @server()
     def test_saved_authentication_returns_client_object(self):
         cache = HostConnectionCache()
-        assert isinstance(cache[env.host_string], paramiko.SSHClient)
+        assert isinstance(cache[env.host_string], ssh.SSHClient)
 
     @server()
     @with_fakes
@@ -170,22 +172,38 @@ class TestNetwork(FabricTest):
             cache[env.host_string]
 
 
-    @raises(SystemExit)
-    @with_patched_object(output, 'aborts', False)
+    @aborts
     def test_aborts_on_prompt_with_abort_on_prompt(self):
+        """
+        abort_on_prompt=True should abort when prompt() is used
+        """
         env.abort_on_prompts = True
         prompt("This will abort")
 
 
     @server()
-    @raises(SystemExit)
-    @with_patched_object(output, 'aborts', False)
+    @aborts
     def test_aborts_on_password_prompt_with_abort_on_prompt(self):
+        """
+        abort_on_prompt=True should abort when password prompts occur
+        """
         env.password = None
         env.abort_on_prompts = True
         with password_response(PASSWORDS[env.user], times_called=1):
             cache = HostConnectionCache()
             cache[env.host_string]
+
+
+    @mock_streams('stdout')
+    @server()
+    def test_does_not_abort_with_password_and_host_with_abort_on_prompt(self):
+        """
+        abort_on_prompt=True should not abort if no prompts are needed
+        """
+        env.abort_on_prompts = True
+        env.password = PASSWORDS[env.user]
+        # env.host_string is automatically filled in when using server()
+        run("ls /simple")
 
 
     @mock_streams('stdout')
@@ -446,3 +464,162 @@ result1
 result2
 """ % {'prefix': env.host_string}
         eq_(expected[1:], sys.stdall.getvalue())
+
+
+def subtask():
+    run("This should never execute")
+
+class TestConnections(FabricTest):
+    @aborts
+    def test_should_abort_when_cannot_connect(self):
+        """
+        By default, connecting to a nonexistent server should abort.
+        """
+        with hide('everything'):
+            execute(subtask, hosts=['nope.nonexistent.com'])
+
+    def test_should_warn_when_skip_bad_hosts_is_True(self):
+        """
+        env.skip_bad_hosts = True => execute() skips current host
+        """
+        with settings(hide('everything'), skip_bad_hosts=True):
+            execute(subtask, hosts=['nope.nonexistent.com'])
+
+
+class TestSSHConfig(FabricTest):
+    def env_setup(self):
+        super(TestSSHConfig, self).env_setup()
+        env.use_ssh_config = True
+        env.ssh_config_path = support("ssh_config")
+        # Undo the changes FabricTest makes to env for server support
+        env.user = env.local_user
+        env.port = env.default_port
+
+    def test_global_user_with_default_env(self):
+        """
+        Global User should override default env.user
+        """
+        eq_(normalize("localhost")[0], "satan")
+
+    def test_global_user_with_nondefault_env(self):
+        """
+        Global User should NOT override nondefault env.user
+        """
+        with settings(user="foo"):
+            eq_(normalize("localhost")[0], "foo")
+
+    def test_specific_user_with_default_env(self):
+        """
+        Host-specific User should override default env.user
+        """
+        eq_(normalize("myhost")[0], "neighbor")
+
+    def test_user_vs_host_string_value(self):
+        """
+        SSH-config derived user should NOT override host-string user value
+        """
+        eq_(normalize("myuser@localhost")[0], "myuser")
+        eq_(normalize("myuser@myhost")[0], "myuser")
+
+    def test_global_port_with_default_env(self):
+        """
+        Global Port should override default env.port
+        """
+        eq_(normalize("localhost")[2], "666")
+
+    def test_global_port_with_nondefault_env(self):
+        """
+        Global Port should NOT override nondefault env.port
+        """
+        with settings(port="777"):
+            eq_(normalize("localhost")[2], "777")
+
+    def test_specific_port_with_default_env(self):
+        """
+        Host-specific Port should override default env.port
+        """
+        eq_(normalize("myhost")[2], "664")
+
+    def test_port_vs_host_string_value(self):
+        """
+        SSH-config derived port should NOT override host-string port value
+        """
+        eq_(normalize("localhost:123")[2], "123")
+        eq_(normalize("myhost:123")[2], "123")
+
+    def test_hostname_alias(self):
+        """
+        Hostname setting overrides host string's host value
+        """
+        eq_(normalize("localhost")[1], "localhost")
+        eq_(normalize("myalias")[1], "otherhost")
+
+    @aborts
+    def test_aborts_with_bad_config_file_path(self):
+        # use_ssh_config is already set in our env_setup()
+        with settings(ssh_config_path="nope_bad_lol"):
+            normalize('foo')
+
+    @server()
+    def test_real_connection(self):
+        """
+        Test-server connection using ssh_config values
+        """
+        with settings(
+            ssh_config_path=support("testserver_ssh_config"),
+            host_string='testserver',
+        ):
+            ok_(run("ls /simple").succeeded)
+
+
+class TestKeyFilenames(FabricTest):
+    def test_empty_everything(self):
+        """
+        No env.key_filename and no ssh_config = empty list
+        """
+        with settings(use_ssh_config=False):
+            with settings(key_filename=""):
+                eq_(key_filenames(), [])
+            with settings(key_filename=[]):
+                eq_(key_filenames(), [])
+
+    def test_just_env(self):
+        """
+        Valid env.key_filename and no ssh_config = just env
+        """
+        with settings(use_ssh_config=False):
+            with settings(key_filename="mykey"):
+                eq_(key_filenames(), ["mykey"])
+            with settings(key_filename=["foo", "bar"]):
+                eq_(key_filenames(), ["foo", "bar"])
+
+    def test_just_ssh_config(self):
+        """
+        No env.key_filename + valid ssh_config = ssh value
+        """
+        with settings(use_ssh_config=True, ssh_config_path=support("ssh_config")):
+            for val in ["", []]:
+                with settings(key_filename=val):
+                    eq_(key_filenames(), ["foobar.pub"])
+
+    def test_both(self):
+        """
+        Both env.key_filename + valid ssh_config = both show up w/ env var first
+        """
+        with settings(use_ssh_config=True, ssh_config_path=support("ssh_config")):
+            with settings(key_filename="bizbaz.pub"):
+                eq_(key_filenames(), ["bizbaz.pub", "foobar.pub"])
+            with settings(key_filename=["bizbaz.pub", "whatever.pub"]):
+                expected = ["bizbaz.pub", "whatever.pub", "foobar.pub"]
+                eq_(key_filenames(), expected)
+
+    def test_specific_host(self):
+        """
+        SSH lookup aspect should correctly select per-host value
+        """
+        with settings(
+            use_ssh_config=True,
+            ssh_config_path=support("ssh_config"),
+            host_string="myhost"
+        ):
+            eq_(key_filenames(), ["neighbor.pub"])

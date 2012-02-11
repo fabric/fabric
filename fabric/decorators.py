@@ -4,17 +4,35 @@ Convenience decorators for use in fabfiles.
 from __future__ import with_statement
 
 from functools import wraps
-from types import StringTypes
+from Crypto import Random
 
 from fabric import tasks
 from .context_managers import settings
 
 
-def task(func):
+def task(*args, **kwargs):
     """
-    Decorator declaring the wrapped function as a :ref:`new-style task <new-style-tasks>`.
+    Decorator declaring the wrapped function to be a new-style task.
+
+    May be invoked as a simple, argument-less decorator (i.e. ``@task``) or
+    with arguments customizing its behavior (e.g. ``@task(alias='myalias')``).
+
+    Please see the :ref:`new-style task <task-decorator>` documentation for
+    details on how to use this decorator.
+
+    .. versionchanged:: 1.2
+        Added the ``alias``, ``aliases``, ``task_class`` and ``default``
+        keyword arguments. See :ref:`task-decorator-arguments` for details.
     """
-    return tasks.WrappedCallableTask(func)
+    invoked = bool(not args or kwargs)
+    task_class = kwargs.pop("task_class", tasks.WrappedCallableTask)
+    if not invoked:
+        func, args = args[0], ()
+
+    def wrapper(func):
+        return task_class(func, *args, **kwargs)
+
+    return wrapper if invoked else wrapper(func)
 
 
 def hosts(*host_list):
@@ -47,7 +65,7 @@ def hosts(*host_list):
             return func(*args, **kwargs)
         _hosts = host_list
         # Allow for single iterable argument as well as *args
-        if len(_hosts) == 1 and not isinstance(_hosts[0], StringTypes):
+        if len(_hosts) == 1 and not isinstance(_hosts[0], basestring):
             _hosts = _hosts[0]
         inner_decorator.hosts = list(_hosts)
         return inner_decorator
@@ -87,7 +105,7 @@ def roles(*role_list):
             return func(*args, **kwargs)
         _roles = role_list
         # Allow for single iterable argument as well as *args
-        if len(_roles) == 1 and not isinstance(_roles[0], StringTypes):
+        if len(_roles) == 1 and not isinstance(_roles[0], basestring):
             _roles = _roles[0]
         inner_decorator.roles = list(_roles)
         return inner_decorator
@@ -105,13 +123,67 @@ def runs_once(func):
     Any function wrapped with this decorator will silently fail to execute the
     2nd, 3rd, ..., Nth time it is called, and will return the value of the
     original run.
+
+    .. warning::
+        This decorator is not compatible with Fabric's :doc:`parallel execution
+        mode </usage/parallel>`; when used alongside
+        `~fabric.decorators.parallel` or :option:`-P`, or when decorating
+        subtasks of parallel tasks, each parallel copy of the decorated task
+        will itself run one time, resulting in multiple runs.
     """
     @wraps(func)
     def decorated(*args, **kwargs):
         if not hasattr(decorated, 'return_value'):
             decorated.return_value = func(*args, **kwargs)
         return decorated.return_value
-    return decorated
+    # Mark as serial (disables parallelism) and return
+    return serial(decorated)
+
+
+def serial(func):
+    """
+    Forces the wrapped function to always run sequentially, never in parallel.
+
+    This decorator takes precedence over the global value of :ref:`env.parallel
+    <env-parallel>`. However, if a task is decorated with both
+    `~fabric.decorators.serial` *and* `~fabric.decorators.parallel`,
+    `~fabric.decorators.parallel` wins.
+
+    .. versionadded:: 1.3
+    """
+    if not getattr(func, 'parallel', False):
+        func.serial = True
+    return func
+
+
+def parallel(pool_size=None):
+    """
+    Forces the wrapped function to run in parallel, instead of sequentially.
+
+    This decorator takes precedence over the global value of :ref:`env.parallel
+    <env-parallel>`. It also takes precedence over `~fabric.decorators.serial`
+    if a task is decorated with both.
+
+    .. versionadded:: 1.3
+    """
+    def real_decorator(func):
+        @wraps(func)
+        def inner(*args, **kwargs):
+            # Required for ssh/PyCrypto to be happy in multiprocessing
+            # (as far as we can tell, this is needed even with the extra such
+            # calls in newer versions of the 'ssh' library.)
+            Random.atfork()
+            return func(*args, **kwargs)
+        inner.parallel = True
+        inner.serial = False
+        inner.pool_size = pool_size
+        return inner
+
+    # Allow non-factory-style decorator use (@decorator vs @decorator())
+    if type(pool_size) == type(real_decorator):
+        return real_decorator(pool_size)
+
+    return real_decorator
 
 
 def with_settings(**kw_settings):
@@ -133,6 +205,7 @@ def with_settings(**kw_settings):
     .. versionadded:: 1.1
     """
     def outer(func):
+        @wraps(func)
         def inner(*args, **kwargs):
             with settings(**kw_settings):
                 return func(*args, **kwargs)

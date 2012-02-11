@@ -15,12 +15,14 @@ import sys
 import tempfile
 
 from fudge import Fake, patched_context, clear_expectations
+from nose.tools import raises
+from nose import SkipTest
 
 from fabric.context_managers import settings
-from fabric.network import interpret_host_string
 from fabric.state import env, output
 from fabric.sftp import SFTP
 import fabric.network
+from fabric.network import normalize, to_dict
 
 from server import PORT, PASSWORDS, USER, HOST
 
@@ -37,20 +39,28 @@ class FabricTest(object):
         # Deepcopy doesn't work well on AliasDicts; but they're only one layer
         # deep anyways, so...
         self.previous_output = output.items()
+        # Allow hooks from subclasses here for setting env vars (so they get
+        # purged correctly in teardown())
+        self.env_setup()
+        # Temporary local file dir
+        self.tmpdir = tempfile.mkdtemp()
+
+    def env_setup(self):
         # Set up default networking for test server
         env.disable_known_hosts = True
-        interpret_host_string('%s@%s:%s' % (USER, HOST, PORT))
+        env.update(to_dict('%s@%s:%s' % (USER, HOST, PORT)))
         env.password = PASSWORDS[USER]
         # Command response mocking is easier without having to account for
         # shell wrapping everywhere.
         env.use_shell = False
-        # Temporary local file dir
-        self.tmpdir = tempfile.mkdtemp()
 
     def teardown(self):
+        env.clear() # In case tests set env vars that didn't exist previously
         env.update(self.previous_env)
         output.update(self.previous_output)
         shutil.rmtree(self.tmpdir)
+        # Clear Fudge mock expectations...again
+        clear_expectations()
 
     def path(self, *path_parts):
         return os.path.join(self.tmpdir, *path_parts)
@@ -256,3 +266,21 @@ def patched_env(updates):
         new_env = deepcopy(env).update(updates)
         return with_patched_object('fabric.state', 'env', new_env)
     return wrapper
+
+
+def support(path):
+    return os.path.join(os.path.dirname(__file__), 'support', path)
+
+fabfile = support
+
+
+@contextmanager
+def path_prefix(module):
+    i = 0
+    sys.path.insert(i, os.path.dirname(module))
+    yield
+    sys.path.pop(i)
+
+
+def aborts(func):
+    return raises(SystemExit)(mock_streams('stderr')(func))

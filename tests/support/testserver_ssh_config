@@ -1,0 +1,5 @@
+Host testserver
+    # TODO: get these pulling from server.py. Meh.
+    HostName 127.0.0.1
+    Port 2200
+    User username

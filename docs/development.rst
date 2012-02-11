@@ -4,10 +4,9 @@ Development
 
 The Fabric development team is headed by `Jeff Forcier
 <http://bitprophet.org>`_, aka ``bitprophet``.  However, dozens of other
-developers pitch in by submitting patches and ideas, via individual emails,
-`Redmine <http://code.fabfile.org>`_, the `mailing list
-<http://lists.nongnu.org/mailman/listinfo/fab-user>`_ and `GitHub
-<http://github.com/bitprophet/fabric>`_.
+developers pitch in by submitting patches and ideas via `GitHub
+<https://github.com/fabric/fabric>`_, :ref:`IRC <irc>` or the `mailing list
+<http://lists.nongnu.org/mailman/listinfo/fab-user>`_.
 
 Get the code
 ============
@@ -23,21 +22,21 @@ There are a number of ways to get involved with Fabric:
 * **Use Fabric and send us feedback!** This is both the easiest and arguably
   the most important way to improve the project -- let us know how you
   currently use Fabric and how you want to use it. (Please do try to search the
-  `ticket tracker <http://code.fabfile.org>`_ first, though, when submitting
-  feature ideas.)
+  `ticket tracker <https://github.com/fabric/fabric/issues>`_ first, though,
+  when submitting feature ideas.)
 * **Report bugs.** Pretty much a special case of the previous item: if you
-  think you've found a bug in Fabric, check on the `Redmine ticket tracker
-  <http://code.fabfile.org>`_ to see if anyone's reported it yet, and if not --
-  file a bug! If possible, try to make sure you can replicate it repeatedly,
-  and let us know the circumstances (what version of Fabric you're using, what
-  platform you're on, and what exactly you were doing when the bug cropped up.)
-* **Submit patches or new features.** See the :ref:`source-code-checkouts`
-  documentation, grab a Git clone of the source, and either email a patch to
-  the mailing list or make your own GitHub fork and post a link to your fork
-  (or a specific commit on a fork) in the appropriate Redmine ticket.
-  While we may not always reply promptly, we do try to make time eventually to
-  inspect all contributions and either incorporate them or explain why we don't
-  feel the change is a good fit.
+  think you've found a bug in Fabric, check on the `ticket tracker
+  <https://github.com/fabric/fabric/issues>`_ to see if anyone's reported it
+  yet, and if not -- file a bug! If possible, try to make sure you can
+  replicate it repeatedly, and let us know the circumstances (what version of
+  Fabric you're using, what platform you're on, and what exactly you were doing
+  when the bug cropped up.)
+* **Submit patches or new features.** Make a `Github <https://github.com>`_
+  account, `create a fork <http://help.github.com/fork-a-repo/>`_ of `the main
+  Fabric repository <https://github.com/fabric/fabric>`_, and `submit a pull
+  request <http://help.github.com/send-pull-requests/>`_.
+
+While we may not always reply promptly, we do try to make time eventually to inspect all contributions and either incorporate them or explain why we don't feel the change is a good fit.
 
 Communication
 -------------

@@ -62,6 +62,7 @@ have already upgraded to Python 2.6/2.7:
     installation
     development
     faq
+    roadmap
 
 Tutorial
 --------
@@ -80,7 +81,7 @@ documentation, which expands upon the concepts outlined in the
 :doc:`tutorial` and also covers advanced topics.
 
 .. toctree::
-    :maxdepth: 1
+    :maxdepth: 2
     :glob:
 
     usage/*
@@ -134,14 +135,18 @@ backwards-compatible) as more use-cases are solved and added.
 
     api/contrib/*
 
-Changes from previous versions
-------------------------------
 
-.. toctree::
-    :maxdepth: 1
-    :glob:
+Changelog
+---------
 
-    changes/*
+Please see :doc:`the changelog </changelog>`.
+
+
+Roadmap
+-------
+
+Please see :doc:`the roadmap </roadmap>`.
+
 
 Getting help
 ============
@@ -173,10 +178,10 @@ related news tidbits (e.g. "Hey, check out this neat article on Fabric!").
 Bugs/ticket tracker
 -------------------
 
-To file new bugs or search existing ones, you may visit Fabric's `Redmine
-<http://redmine.org>`_ instance, located at `code.fabfile.org
-<http://code.fabfile.org>`_. Due to issues with spam, you'll need to (quickly
-and painlessly) register an account in order to post new tickets.
+To file new bugs or search existing ones, you may visit Fabric's `Github Issues
+<https://github.com/fabric/fabric/issues>`_ page. This does require a (free, easy to set up) Github account.
+
+.. _irc:
 
 IRC
 ---

@@ -6,6 +6,8 @@ or performing indenting on multiline output.
 from fabric.logger import log, system_log
 import sys
 import textwrap
+from traceback import format_exc
+
 
 def abort(msg):
     """
@@ -65,7 +67,7 @@ def indent(text, spaces=4, strip=False):
     return output
 
 
-def puts(text, show_prefix=True, end="\n", flush=False):
+def puts(text, show_prefix=None, end="\n", flush=False):
     """
     An alias for ``print`` whose output is managed by Fabric's output controls.
 
@@ -118,7 +120,189 @@ def fastprint(text, show_prefix=False, end="", flush=True):
     return puts(text=text, show_prefix=show_prefix, end=end, flush=flush)
 
 
-def handle_prompt_abort():
+def handle_prompt_abort(prompt_for):
     import fabric.state
+    reason = "Needed to prompt for %s, but %%s" % prompt_for
+    # Explicit "don't prompt me bro"
     if fabric.state.env.abort_on_prompts:
-        abort("Needed to prompt, but abort-on-prompts was set to True!")
+        abort(reason % "abort-on-prompts was set to True")
+    # Implicit "parallel == stdin/prompts have ambiguous target"
+    if fabric.state.env.parallel:
+        abort(reason % "input would be ambiguous in parallel mode")
+
+
+class _AttributeDict(dict):
+    """
+    Dictionary subclass enabling attribute lookup/assignment of keys/values.
+
+    For example::
+
+        >>> m = _AttributeDict({'foo': 'bar'})
+        >>> m.foo
+        'bar'
+        >>> m.foo = 'not bar'
+        >>> m['foo']
+        'not bar'
+
+    ``_AttributeDict`` objects also provide ``.first()`` which acts like
+    ``.get()`` but accepts multiple keys as arguments, and returns the value of
+    the first hit, e.g.::
+
+        >>> m = _AttributeDict({'foo': 'bar', 'biz': 'baz'})
+        >>> m.first('wrong', 'incorrect', 'foo', 'biz')
+        'bar'
+
+    """
+    def __getattr__(self, key):
+        try:
+            return self[key]
+        except KeyError:
+            # to conform with __getattr__ spec
+            raise AttributeError(key)
+
+    def __setattr__(self, key, value):
+        self[key] = value
+
+    def first(self, *names):
+        for name in names:
+            value = self.get(name)
+            if value:
+                return value
+
+
+class _AliasDict(_AttributeDict):
+    """
+    `_AttributeDict` subclass that allows for "aliasing" of keys to other keys.
+
+    Upon creation, takes an ``aliases`` mapping, which should map alias names
+    to lists of key names. Aliases do not store their own value, but instead
+    set (override) all mapped keys' values. For example, in the following
+    `_AliasDict`, calling ``mydict['foo'] = True`` will set the values of
+    ``mydict['bar']``, ``mydict['biz']`` and ``mydict['baz']`` all to True::
+
+        mydict = _AliasDict(
+            {'biz': True, 'baz': False},
+            aliases={'foo': ['bar', 'biz', 'baz']}
+        )
+
+    Because it is possible for the aliased values to be in a heterogenous
+    state, reading aliases is not supported -- only writing to them is allowed.
+    This also means they will not show up in e.g. ``dict.keys()``.
+
+    ..note::
+
+        Aliases are recursive, so you may refer to an alias within the key list
+        of another alias. Naturally, this means that you can end up with
+        infinite loops if you're not careful.
+
+    `_AliasDict` provides a special function, `expand_aliases`, which will take
+    a list of keys as an argument and will return that list of keys with any
+    aliases expanded. This function will **not** dedupe, so any aliases which
+    overlap will result in duplicate keys in the resulting list.
+    """
+    def __init__(self, arg=None, aliases=None):
+        init = super(_AliasDict, self).__init__
+        if arg is not None:
+            init(arg)
+        else:
+            init()
+        # Can't use super() here because of _AttributeDict's setattr override
+        dict.__setattr__(self, 'aliases', aliases)
+
+    def __setitem__(self, key, value):
+        # Attr test required to not blow up when deepcopy'd
+        if hasattr(self, 'aliases') and key in self.aliases:
+            for aliased in self.aliases[key]:
+                self[aliased] = value
+        else:
+            return super(_AliasDict, self).__setitem__(key, value)
+
+    def expand_aliases(self, keys):
+        ret = []
+        for key in keys:
+            if key in self.aliases:
+                ret.extend(self.expand_aliases(self.aliases[key]))
+            else:
+                ret.append(key)
+        return ret
+
+
+def _pty_size():
+    """
+    Obtain (rows, cols) tuple for sizing a pty on the remote end.
+
+    Defaults to 80x24 (which is also the 'ssh' lib's default) but will detect
+    local (stdout-based) terminal window size on non-Windows platforms.
+    """
+    from fabric.state import win32
+    if not win32:
+        import fcntl
+        import termios
+        import struct
+
+    rows, cols = 24, 80
+    if not win32 and sys.stdout.isatty():
+        # We want two short unsigned integers (rows, cols)
+        fmt = 'HH'
+        # Create an empty (zeroed) buffer for ioctl to map onto. Yay for C!
+        buffer = struct.pack(fmt, 0, 0)
+        # Call TIOCGWINSZ to get window size of stdout, returns our filled
+        # buffer
+        try:
+            result = fcntl.ioctl(sys.stdout.fileno(), termios.TIOCGWINSZ,
+                buffer)
+            # Unpack buffer back into Python data types
+            rows, cols = struct.unpack(fmt, result)
+        # Deal with e.g. sys.stdout being monkeypatched, such as in testing.
+        # Or termios not having a TIOCGWINSZ.
+        except AttributeError:
+            pass
+    return rows, cols
+
+
+def error(message, func=None, exception=None, stdout=None, stderr=None):
+    """
+    Call ``func`` with given error ``message``.
+
+    If ``func`` is None (the default), the value of ``env.warn_only``
+    determines whether to call ``abort`` or ``warn``.
+
+    If ``exception`` is given, it is inspected to get a string message, which
+    is printed alongside the user-generated ``message``.
+
+    If ``stdout`` and/or ``stderr`` are given, they are assumed to be strings
+    to be printed.
+    """
+    import fabric.state
+    if func is None:
+        func = fabric.state.env.warn_only and warn or abort
+    # If debug printing is on, append a traceback to the message
+    if fabric.state.output.debug:
+        message += "\n\n" + format_exc()
+    # Otherwise, if we were given an exception, append its contents.
+    elif exception is not None:
+        # Figure out how to get a string out of the exception; EnvironmentError
+        # subclasses, for example, "are" integers and .strerror is the string.
+        # Others "are" strings themselves. May have to expand this further for
+        # other error types.
+        if hasattr(exception, 'strerror') and exception.strerror is not None:
+            underlying = exception.strerror
+        else:
+            underlying = exception
+        message += "\n\nUnderlying exception:\n" + indent(str(underlying))
+    if func is abort:
+        if stdout and not fabric.state.output.stdout:
+            message += _format_error_output("Standard output", stdout)
+        if stderr and not fabric.state.output.stderr:
+            message += _format_error_output("Standard error", stderr)
+    return func(message)
+
+
+def _format_error_output(header, body):
+    term_width = _pty_size()[1]
+    header_side_length = (term_width - (len(header) + 2)) / 2
+    mark = "="
+    side = mark * header_side_length
+    return "\n\n%s %s %s\n\n%s\n\n%s" % (
+        side, header, side, body, mark * term_width
+    )

@@ -13,6 +13,7 @@
 
 from __future__ import with_statement
 import os
+import re
 import sys
 from datetime import datetime
 
@@ -20,13 +21,64 @@ from datetime import datetime
 from docutils.parsers.rst import roles
 from docutils import nodes, utils
 
-def issues_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
-    issue_no = utils.unescape(text)
-    ref = "http://code.fabfile.org/issues/show/" + issue_no
-    node = nodes.reference(rawtext, '#' + issue_no, refuri=ref, **options)
-    return [node], []
+issue_types = ('bug', 'feature', 'support')
 
-roles.register_local_role("issue", issues_role)
+def issues_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
+    """
+    Use: :issue|bug|feature|support:`ticket number`
+
+    When invoked as :issue:, turns into just a "#NN" hyperlink to Github.
+
+    When invoked otherwise, turns into "[Type] <#NN hyperlink>: ".
+    """
+    # Old-style 'just the issue link' behavior
+    issue_no = utils.unescape(text)
+    ref = "https://github.com/fabric/fabric/issues/" + issue_no
+    link = nodes.reference(rawtext, '#' + issue_no, refuri=ref, **options)
+    ret = [link]
+    # Additional 'new-style changelog' stuff
+    if name in issue_types:
+        which = '[<span class="changelog-%s">%s</span>]' % (
+            name, name.capitalize()
+        )
+        ret = [
+            nodes.raw(text=which, format='html'),
+            nodes.inline(text=" "),
+            link,
+            nodes.inline(text=":")
+        ]
+    return ret, []
+
+for x in issue_types + ('issue',):
+    roles.register_local_role(x, issues_role)
+
+
+year_arg_re = re.compile(r'^(.+?)\s*(?<!\x00)<(.*?)>$', re.DOTALL)
+
+def release_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
+    """
+    Invoked as :release:`N.N.N <YYYY-MM-DD>`.
+
+    Turns into: <b>YYYY-MM-DD</b>: released <b><a>Fabric N.N.N</a></b>, with
+    the link going to the Github source page for the tag.
+    """
+    # Make sure year has been specified
+    match = year_arg_re.match(text)
+    if not match:
+        msg = inliner.reporter.error("Must specify release date!")
+        return [inliner.problematic(rawtext, rawtext, msg)], [msg]
+    number, date = match.group(1), match.group(2)
+    return [
+        nodes.strong(text=date),
+        nodes.inline(text=": released "),
+        nodes.reference(
+            text="Fabric %s" % number,
+            refuri="https://github.com/fabric/fabric/tree/%s" % number,
+            classes=['changelog-release']
+        )
+    ], []
+roles.register_local_role('release', release_role)
+
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -120,7 +172,8 @@ html_style = 'rtd.css'
 
 from fabric.api import local, hide
 with hide('everything'):
-    fabric_tags = local('git tag | sort -r | egrep "(0\.9|1\.0)\.."', True).split()
+    get_tags = 'git tag | sort -r | egrep "(1\.[^0]+)\.."'
+    fabric_tags = local(get_tags, True).split()
 html_context = {'fabric_tags': fabric_tags}
 
 

@@ -4,7 +4,7 @@ import sys
 
 from setuptools import setup, find_packages
 
-from fabric.version import get_version
+from fabric.version import get_version, git_sha
 
 
 readme = open('README').read()
@@ -12,10 +12,10 @@ readme = open('README').read()
 v = get_version('short')
 long_description = """
 To find out what's new in this version of Fabric, please see `the changelog
-<http://docs.fabfile.org/en/%s/changes/%s.html>`_.
+<http://docs.fabfile.org/en/%s/changelog.html>`_.
 
 You can also install the `in-development version
-<https://github.com/bitprophet/fabric/tarball/master#egg=fabric-dev>`_ using
+<https://github.com/fabric/fabric/tarball/master#egg=fabric-dev>`_ using
 pip, with `pip install fabric==dev`.
 
 ----
@@ -25,7 +25,7 @@ pip, with `pip install fabric==dev`.
 ----
 
 For more information, please see the Fabric website or execute ``fab --help``.
-""" % (v, v, readme)
+""" % (v, readme)
 
 setup(
     name='Fabric',
@@ -37,8 +37,8 @@ setup(
     url='http://fabfile.org',
     packages=find_packages(),
     test_suite='nose.collector',
-    tests_require=['nose', 'fudge'],
-    install_requires=['pycrypto >= 1.9', 'paramiko >=1.7.6'],
+    tests_require=['nose', 'fudge<1.0'],
+    install_requires=['ssh' + ("==dev" if git_sha() else ">=1.7.12")],
     entry_points={
         'console_scripts': [
             'fab = fabric.main:main',

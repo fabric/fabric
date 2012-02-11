@@ -1,0 +1,10 @@
+{% extends "!page.html" %}
+{% block extrahead %}
+{{ super() }}
+<style type="text/css">
+    span.changelog-support {color: #4070A0;}
+    span.changelog-bug {color: #A04040;}
+    span.changelog-feature {color: #40A056;}
+    a.changelog-release {font-weight: bold;}
+</style>
+{% endblock %}

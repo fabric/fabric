@@ -110,18 +110,19 @@ disassociated from the calling shell, which may be done in a number of ways:
   running shell; these tools have the benefit of allowing you to reattach to
   the process later on if needed (among many other such benefits).
 
+.. _faq-bash:
 
 My remote system doesn't have ``bash`` installed by default, do I need to install ``bash``?
 ===========================================================================================
 
 While Fabric is written with ``bash`` in mind, it's not an absolute
-requirement.  Simply change ``env.shell`` to call your desired shell, and
+requirement.  Simply change :ref:`env.shell <shell>` to call your desired shell, and
 include an argument similar to ``bash``'s ``-c`` argument, which allows us to
 build shell commands of the form::
 
     /bin/bash -l -c "<command string here>"
 
-where ``/bin/bash -l -c`` is the default value of ``env.shell``.
+where ``/bin/bash -l -c`` is the default value of :ref:`env.shell <shell>`.
 
 .. note::
 
@@ -143,10 +144,10 @@ This has been shown to work on FreeBSD and may work on other systems as well.
 I'm sometimes incorrectly asked for a passphrase instead of a password.
 =======================================================================
 
-Due to a bug of sorts in our SSH layer (Paramiko), it's not currently possible
-for Fabric to always accurately detect the type of authentication needed. We
-have to try and guess whether we're being asked for a private key passphrase or
-a remote server password, and in some cases our guess ends up being wrong.
+Due to a bug of sorts in our SSH layer, it's not currently possible for Fabric
+to always accurately detect the type of authentication needed. We have to try
+and guess whether we're being asked for a private key passphrase or a remote
+server password, and in some cases our guess ends up being wrong.
 
 The most common such situation is where you, the local user, appear to have an
 SSH keychain agent running, but the remote server is not able to honor your SSH
@@ -155,8 +156,8 @@ incorrect username. In this situation, Fabric will prompt you with "Please
 enter passphrase for private key", but the text you enter is actually being
 sent to the remote end's password authentication.
 
-We hope to address this in future releases, either by doing heavier
-introspection of Paramiko or patching Paramiko itself.
+We hope to address this in future releases by modifying a fork of the
+aforementioned SSH library.
 
 
 Is Fabric thread-safe?

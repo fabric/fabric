@@ -121,6 +121,7 @@ when unforeseen circumstances arise.
 .. versionadded:: 1.1
 .. seealso:: :option:`--abort-on-prompts`
 
+
 ``all_hosts``
 -------------
 
@@ -181,6 +182,18 @@ executed by `~fabric.operations.run`/`~fabric.operations.sudo`.
 
 .. versionadded:: 1.0
 
+.. _connection-attempts:
+
+``connection_attempts``
+-----------------------
+
+**Default:** ``1``
+
+Number of times Fabric will attempt to connect when connecting to a new server. For backwards compatibility reasons, it defaults to only one connection attempt.
+
+.. versionadded:: 1.4
+.. seealso:: :option:`--connection-attempts`, :ref:`timeout`
+
 ``cwd``
 -------
 
@@ -220,7 +233,8 @@ during ``fab`` execution. Typically set via :option:`--exclude-hosts/-x <-x>`.
 
 **Default:** ``fabfile.py``
 
-Filename which ``fab`` searches for when loading fabfiles. Obviously, it
+Filename pattern which ``fab`` searches for when loading fabfiles.
+To indicate a specific file, use the full path to the file. Obviously, it
 doesn't make sense to set this in a fabfile, but it may be specified in a
 ``.fabricrc`` file or on the command line.
 
@@ -239,6 +253,21 @@ Defines the current user/host/port which Fabric will connect to when executing
 manually set when using Fabric as a library.
 
 .. seealso:: :doc:`execution`
+
+
+.. _forward-agent:
+
+``forward_agent``
+--------------------
+
+**Default:** ``False``
+
+If ``True``, enables forwarding of your local SSH agent to the remote end.
+
+.. versionadded:: 1.4
+
+.. seealso:: :option:`-A`
+
 
 ``host``
 --------
@@ -286,6 +315,23 @@ set/appended to with :option:`-i`.
 
 .. seealso:: `Paramiko's documentation for SSHClient.connect() <http://www.lag.net/paramiko/docs/paramiko.SSHClient-class.html#connect>`_
 
+.. _env-linewise:
+
+``linewise``
+------------
+
+**Default:** ``False``
+
+Forces buffering by line instead of by character/byte, typically when running
+in parallel mode. May be activated via :option:`--linewise`. This option is
+implied by :ref:`env.parallel <env-parallel>` -- even if ``linewise`` is False,
+if ``parallel`` is True then linewise behavior will occur.
+
+.. seealso:: :ref:`linewise-output`
+
+.. versionadded:: 1.3
+
+
 .. _local-user:
 
 ``local_user``
@@ -299,12 +345,12 @@ contain the same value.
 .. _no_agent:
 
 ``no_agent``
-------------------
+------------
 
 **Default:** ``False``
 
-If ``True``, will tell Paramiko not to seek out running SSH agents when using
-key-based authentication.
+If ``True``, will tell the SSH layer not to seek out running SSH agents when
+using key-based authentication.
 
 .. versionadded:: 0.9.1
 
@@ -315,11 +361,24 @@ key-based authentication.
 
 **Default:** ``False``
 
-If ``True``, will tell Paramiko not to load any private key files from one's
-``$HOME/.ssh/`` folder. (Key files explicitly loaded via ``fab -i`` will still
-be used, of course.)
+If ``True``, will tell the SSH layer not to load any private key files from
+one's ``$HOME/.ssh/`` folder. (Key files explicitly loaded via ``fab -i`` will
+still be used, of course.)
 
 .. versionadded:: 0.9.1
+
+.. _env-parallel:
+
+``parallel``
+-------------------
+
+**Default:** ``False``
+
+When ``True``, forces all tasks to run in parallel. Implies :ref:`env.linewise
+<env-linewise>`.
+
+.. versionadded:: 1.3
+.. seealso:: :doc:`parallel`
 
 .. _password:
 
@@ -365,13 +424,27 @@ instead of setting it directly.
 .. versionadded:: 1.0
 
 
+.. _pool-size:
+
+``pool_size``
+-------------
+
+**Default:** ``0``
+
+Sets the number of concurrent processes to use when executing tasks in parallel.
+
+.. versionadded:: 1.3
+.. seealso:: :doc:`parallel`, :option:`-z`
+
+.. _port:
+
 ``port``
 --------
 
 **Default:** ``None``
 
 Set to the port part of ``env.host_string`` by ``fab`` when iterating over a
-host list. For informational purposes only.
+host list. May also be used to specify a default port.
 
 ``real_fabfile``
 ----------------
@@ -438,7 +511,34 @@ Value used as shell wrapper when executing commands with e.g.
 "<command goes here>"`` -- e.g. the default uses Bash's ``-c`` option which
 takes a command string as its value.
 
-.. seealso:: :doc:`execution`
+.. seealso:: :ref:`FAQ on bash as default shell <faq-bash>`, :doc:`execution`
+
+.. _skip-bad-hosts:
+
+``skip_bad_hosts``
+------------------
+
+**Default:** ``False``
+
+If ``True``, causes ``fab`` (or non-``fab`` use of `~fabric.tasks.execute`) to skip over hosts it can't connect to.
+
+.. versionadded:: 1.4
+.. seealso::
+    :option:`--skip-bad-hosts`, :ref:`excluding-hosts`, :doc:`execution`
+
+
+.. _ssh-config-path:
+
+``ssh_config_path``
+-------------------
+
+**Default:** ``$HOME/.ssh/config``
+
+Allows specification of an alternate SSH configuration file path.
+
+.. versionadded:: 1.4
+.. seealso:: :option:`--ssh-config-path`, :ref:`ssh-config`
+
 
 ``sudo_prompt``
 ---------------
@@ -451,6 +551,18 @@ real reason to.
 
 .. seealso:: The `~fabric.operations.sudo` operation
 
+.. _timeout:
+
+``timeout``
+-----------
+
+**Default:** ``10``
+
+Network connection timeout, in seconds.
+
+.. versionadded:: 1.4
+.. seealso:: :option:`--timeout`, :ref:`connection-attempts`
+
 ``use_shell``
 -------------
 
@@ -459,6 +571,20 @@ real reason to.
 Global setting which acts like the ``use_shell`` argument to
 `~fabric.operations.run`/`~fabric.operations.sudo`: if it is set to ``False``,
 operations will not wrap executed commands in ``env.shell``.
+
+
+.. _use-ssh-config:
+
+``use_ssh_config``
+------------------
+
+**Default:** ``False``
+
+Set to ``True`` to cause Fabric to load your local SSH config file.
+
+.. versionadded:: 1.4
+.. seealso:: :ref:`ssh-config`
+
 
 .. _user:
 

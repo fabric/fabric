@@ -6,7 +6,6 @@ from __future__ import with_statement
 
 import hashlib
 import tempfile
-import types
 import re
 import os
 from StringIO import StringIO
@@ -26,7 +25,7 @@ def exists(path, use_sudo=False, verbose=False):
     behavior.
     """
     func = use_sudo and sudo or run
-    cmd = 'test -e "%s"' % path
+    cmd = 'test -e "$(echo %s)"' % path
     # If verbose, run normally
     if verbose:
         with settings(warn_only=True):
@@ -102,8 +101,10 @@ def upload_template(filename, destination, context=None, use_jinja=False,
             from jinja2 import Environment, FileSystemLoader
             jenv = Environment(loader=FileSystemLoader(template_dir or '.'))
             text = jenv.get_template(filename).render(**context or {})
-        except ImportError, e:
-            abort("tried to use Jinja2 but was unable to import: %s" % e)
+        except ImportError:
+            import traceback
+            tb = traceback.format_exc()
+            abort(tb + "\nUnable to import Jinja2 -- see above.")
     else:
         with open(filename) as inputfile:
             text = inputfile.read()
@@ -165,7 +166,7 @@ def sed(filename, before, after, limit='', use_sudo=False, backup='.bak',
 
     with hide('running', 'stdout'):
         platform = run("uname")
-    if platform in ('NetBSD', 'OpenBSD'):
+    if platform in ('NetBSD', 'OpenBSD', 'QNX'):
         # Attempt to protect against failures/collisions
         hasher = hashlib.sha1()
         hasher.update(env.host_string)
@@ -257,33 +258,42 @@ def comment(filename, regex, use_sudo=False, char='#', backup='.bak'):
     )
 
 
-def contains(filename, text, exact=False, use_sudo=False):
+def contains(filename, text, exact=False, use_sudo=False, escape=True):
     """
-    Return True if ``filename`` contains ``text``.
+    Return True if ``filename`` contains ``text`` (which may be a regex.)
 
     By default, this function will consider a partial line match (i.e. where
-    the given text only makes up part of the line it's on). Specify
-    ``exact=True`` to change this behavior so that only a line containing
-    exactly ``text`` results in a True return value.
+    ``text`` only makes up part of the line it's on). Specify ``exact=True`` to
+    change this behavior so that only a line containing exactly ``text``
+    results in a True return value.
 
-    Double-quotes in either ``text`` or ``filename`` will be automatically
-    backslash-escaped in order to behave correctly during the remote shell
-    invocation.
+    This function leverages ``egrep`` on the remote end (so it may not follow
+    Python regular expression syntax perfectly), and skips the usual outer
+    ``env.shell`` wrapper that most commands execute with.
 
     If ``use_sudo`` is True, will use `sudo` instead of `run`.
+
+    If ``escape`` is False, no extra regular expression related escaping is
+    performed (this includes overriding ``exact`` so that no ``^``/``$`` is
+    added.)
 
     .. versionchanged:: 1.0
         Swapped the order of the ``filename`` and ``text`` arguments to be
         consistent with other functions in this module.
+    .. versionchanged:: 1.4
+        Updated the regular expression related escaping to try and solve
+        various corner cases.
+    .. versionchanged:: 1.4
+        Added ``escape`` keyword argument.
     """
     func = use_sudo and sudo or run
-    if exact:
-        text = "^%s$" % text
+    if escape:
+        text = _escape_for_regex(text)
+        if exact:
+            text = "^%s$" % text
     with settings(hide('everything'), warn_only=True):
-        return func('egrep "%s" "%s"' % (
-            text.replace('"', r'\"'),
-            filename.replace('"', r'\"')
-        )).succeeded
+        egrep_cmd = 'egrep "%s" "%s"' % (text, filename)
+        return func(egrep_cmd, shell=False).succeeded
 
 
 def append(filename, text, use_sudo=False, partial=False, escape=True):
@@ -309,21 +319,34 @@ def append(filename, text, use_sudo=False, partial=False, escape=True):
 
     .. versionchanged:: 0.9.1
         Added the ``partial`` keyword argument.
-
     .. versionchanged:: 1.0
         Swapped the order of the ``filename`` and ``text`` arguments to be
         consistent with other functions in this module.
     .. versionchanged:: 1.0
         Changed default value of ``partial`` kwarg to be ``False``.
+    .. versionchanged:: 1.4
+        Updated the regular expression related escaping to try and solve
+        various corner cases.
     """
     func = use_sudo and sudo or run
     # Normalize non-list input to be a list
-    if isinstance(text, types.StringTypes):
+    if isinstance(text, basestring):
         text = [text]
     for line in text:
-        regex = '^' + re.escape(line) + ('' if partial else '$')
-        if (exists(filename) and line
-            and contains(filename, regex, use_sudo=use_sudo)):
+        regex = '^' + _escape_for_regex(line)  + ('' if partial else '$')
+        if (exists(filename, use_sudo=use_sudo) and line
+            and contains(filename, regex, use_sudo=use_sudo, escape=False)):
             continue
-        line = line.replace("'", r'\'') if escape else line
+        line = line.replace("'", r"'\\''") if escape else line
         func("echo '%s' >> %s" % (line, filename))
+
+def _escape_for_regex(text):
+    """Escape ``text`` to allow literal matching using egrep"""
+    regex = re.escape(text)
+    # Seems like double escaping is needed for \
+    regex = regex.replace('\\\\', '\\\\\\')
+    # Triple-escaping seems to be required for $ signs
+    regex = regex.replace(r'\$', r'\\\$')
+    # Whereas single quotes should not be escaped
+    regex = regex.replace(r"\'", "'")
+    return regex

@@ -2,12 +2,10 @@ from __future__ import with_statement
 
 from fabric.api import *
 from fabric.contrib.project import rsync_project
+from fabric.version import get_version
 
 
-docs_host = 'jforcier@fabfile.org'
-
-
-@task
+@task(default=True)
 def build(clean='no', browse_='no'):
     """
     Generate the Sphinx documentation.
@@ -28,14 +26,3 @@ def browse():
     Open the current dev docs in a browser tab.
     """
     local("open docs/_build/html/index.html")
-
-
-@hosts(docs_host)
-@task
-def push():
-    """
-    Build docs and zip for upload to RTD
-    """
-    build_docs(clean='yes')
-    v = _version('short')
-    local("cd docs/_build/html && zip -r ../%s.zip ." % v)
