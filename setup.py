@@ -4,7 +4,7 @@ import sys
 
 from setuptools import setup, find_packages
 
-from fabric.version import get_version
+from fabric.version import get_version, git_sha
 
 
 readme = open('README').read()
@@ -38,7 +38,7 @@ setup(
     packages=find_packages(),
     test_suite='nose.collector',
     tests_require=['nose', 'fudge<1.0'],
-    install_requires=['ssh>=1.7.12'],
+    install_requires=['ssh' + ("==dev" if git_sha() else ">=1.7.12")],
     entry_points={
         'console_scripts': [
             'fab = fabric.main:main',
