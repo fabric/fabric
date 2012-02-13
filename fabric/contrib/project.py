@@ -15,7 +15,7 @@ __all__ = ['rsync_project', 'upload_project']
 
 @needs_host
 def rsync_project(remote_dir, local_dir=None, exclude=(), delete=False,
-    extra_opts=''):
+    extra_opts='', ssh_opts=''):
     """
     Synchronize a remote directory with the current project directory via rsync.
 
@@ -63,6 +63,8 @@ def rsync_project(remote_dir, local_dir=None, exclude=(), delete=False,
       longer exist locally. Defaults to False.
     * ``extra_opts``: an optional, arbitrary string which you may use to pass
       custom arguments or options to ``rsync``.
+    * ``ssh_opts``: Like ``extra_opts`` but specifically for the SSH options
+      string (rsync's ``--rsh`` flag.)
 
     Furthermore, this function transparently honors Fabric's port and SSH key
     settings. Calling this function when the current host string contains a
@@ -75,6 +77,8 @@ def rsync_project(remote_dir, local_dir=None, exclude=(), delete=False,
         rsync [--delete] [--exclude exclude[0][, --exclude[1][, ...]]] \\
             -pthrvz [extra_opts] <local_dir> <host_string>:<remote_dir>
 
+    .. versionadded:: 1.4
+        The ``ssh_opts`` keyword argument.
     """
     # Turn single-string exclude into a one-item list for consistency
     if not hasattr(exclude, '__iter__'):
@@ -93,8 +97,9 @@ def rsync_project(remote_dir, local_dir=None, exclude=(), delete=False,
     port_string = "-p %s" % port
     # RSH
     rsh_string = ""
-    if key_string or port_string:
-        rsh_string = "--rsh='ssh %s %s'" % (port_string, key_string)
+    rsh_parts = [key_string, port_string, ssh_opts]
+    if any(rsh_parts):
+        rsh_string = "--rsh='ssh %s'" % " ".join(rsh_parts)
     # Set up options part of string
     options_map = {
         'delete': '--delete' if delete else '',
