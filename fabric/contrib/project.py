@@ -15,7 +15,7 @@ __all__ = ['rsync_project', 'upload_project']
 
 @needs_host
 def rsync_project(remote_dir, local_dir=None, exclude=(), delete=False,
-    extra_opts=''):
+    links=False, extra_opts=''):
     """
     Synchronize a remote directory with the current project directory via rsync.
 
@@ -61,6 +61,9 @@ def rsync_project(remote_dir, local_dir=None, exclude=(), delete=False,
     * ``delete``: a boolean controlling whether ``rsync``'s ``--delete`` option
       is used. If True, instructs ``rsync`` to remove remote files that no
       longer exist locally. Defaults to False.
+    * ``links``: a boolean controlling whether ``rsync``'s ``--links`` option
+      is used. If True, instructs ``rsync`` to recreate symlinks on the
+      destination that are encountered locally.
     * ``extra_opts``: an optional, arbitrary string which you may use to pass
       custom arguments or options to ``rsync``.
 
@@ -72,7 +75,7 @@ def rsync_project(remote_dir, local_dir=None, exclude=(), delete=False,
     For reference, the approximate ``rsync`` command-line call that is
     constructed by this function is the following::
 
-        rsync [--delete] [--exclude exclude[0][, --exclude[1][, ...]]] \\
+        rsync [--delete] [--links] [--exclude exclude[0][, --exclude[1][, ...]]] \\
             -pthrvz [extra_opts] <local_dir> <host_string>:<remote_dir>
 
     """
@@ -80,7 +83,7 @@ def rsync_project(remote_dir, local_dir=None, exclude=(), delete=False,
     if not hasattr(exclude, '__iter__'):
         exclude = (exclude,)
     # Create --exclude options from exclude list
-    exclude_opts = ' --exclude "%s"' * len(exclude)
+    exclude_opts = '--exclude "%s"' * len(exclude)
     # Double-backslash-escape
     exclusions = tuple([str(s).replace('"', '\\\\"') for s in exclude])
     # Honor SSH key(s)
@@ -98,11 +101,12 @@ def rsync_project(remote_dir, local_dir=None, exclude=(), delete=False,
     # Set up options part of string
     options_map = {
         'delete': '--delete' if delete else '',
+        'links': '--links' if links else '',
         'exclude': exclude_opts % exclusions,
         'rsh': rsh_string,
         'extra': extra_opts
     }
-    options = "%(delete)s%(exclude)s -pthrvz %(extra)s %(rsh)s" % options_map
+    options = "%(delete)s %(links)s %(exclude)s -pthrvz %(extra)s %(rsh)s" % options_map
     # Get local directory
     if local_dir is None:
         local_dir = '../' + getcwd().split(sep)[-1]
