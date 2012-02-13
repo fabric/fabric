@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :feature:`559` `rsync_project <fabric.contrib.project.rsync_project>`_ now
+  allows users to append extra SSH-specific arguments to ``rsync``'s ``--rsh``
+  flag.
 * :feature:`138` :ref:`env.port <port>` may now be written to at fabfile module
   level to set a default nonstandard port number. Previously this value was
   read-only.
