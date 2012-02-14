@@ -24,7 +24,7 @@ would have also been included in the 1.2 line.
 
 Changelog
 =========
-
+* :feature:`540` Add support for dotted python paths to the fabric -f cli option
 * :bug:`410` Fixed a bug where using the `~fabric.decorators.task` decorator
   inside/under another decorator such as `~fabric.decorators.hosts` could cause
   that task to become invalid when invoked by name (due to how old-style vs
@@ -45,6 +45,7 @@ Changelog
   connection timeouts and total number of attempts. `~fabric.operations.reboot`
   has also been overhauled (but practically deprecated -- see its updated
   docs.)
+>>>>>>> fabric
 * :feature:`474` `~fabric.tasks.execute` now allows you to access the executed
   task's return values, by itself returning a dictionary whose keys are the
   host strings executed against.

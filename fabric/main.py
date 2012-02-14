@@ -10,6 +10,7 @@ to individuals leveraging Fabric as a library, should be kept elsewhere.
 """
 
 from collections import defaultdict
+from importlib import import_module
 from operator import add, isMappingType
 from optparse import OptionParser
 import os
@@ -19,7 +20,7 @@ import types
 # For checking callables against the API, & easy mocking
 from fabric import api, state, colors
 from fabric.contrib import console, files, project
-
+from fabric.exceptions import FabfileError
 from fabric.network import denormalize, disconnect_all, ssh
 from fabric.state import env_options
 from fabric.tasks import Task, execute
@@ -33,6 +34,7 @@ _internals = reduce(lambda x, y: x + filter(callable, vars(y).values()),
     _modules,
     []
 )
+
 
 # Module recursion cache
 class _ModuleCache(object):
@@ -110,7 +112,7 @@ def find_fabfile():
                     if name.endswith('.py') or _is_package(joined):
                         return os.path.abspath(joined)
             path = os.path.join('..', path)
-    # Implicit 'return None' if nothing was found
+    raise FabfileError("No fabfile was found")
 
 
 def is_classic_task(tup):
@@ -170,10 +172,14 @@ def load_fabfile(path, importer=None):
         del sys.path[0]
 
     # Actually load tasks
+    docstring, tasks, default = new_tasks_from_module(imported)
+    _seen.clear()
+    return docstring, tasks, default
+
+
+def new_tasks_from_module(imported):
     docstring, new_style, classic, default = load_tasks_from_module(imported)
     tasks = new_style if state.env.new_style_tasks else classic
-    # Clean up after ourselves
-    _seen.clear()
     return docstring, tasks, default
 
 
@@ -612,10 +618,29 @@ def main():
         # Load settings from user settings file, into shared env dict.
         state.env.update(load_settings(state.env.rcfile))
 
-        # Find local fabfile path or abort
-        fabfile = find_fabfile()
-        if not fabfile and not remainder_arguments:
-            abort("""Couldn't find any fabfiles!
+        fabfile_mod = None
+        try:
+            # Find local fabfile path
+            fabfile = find_fabfile()
+        except FabfileError:
+            try:
+                # No local path found, try a module import from PYTHONPATH
+                names = state.env.fabfile.split('.')
+                fabfile_mod = __import__(state.env.fabfile)
+                for name in names[1:]:
+                    if hasattr(fabfile_mod, name):
+                        fabfile_mod = getattr(fabfile_mod, name)
+                    else:
+                        raise ImportError()
+                if hasattr(fabfile_mod, '__path__'):
+                    # fabfile/__init__.py or other package
+                    fabfile = fabfile_mod.__path__
+                else:
+                    # fabfile.py
+                    fabfile = fabfile_mod.__file__
+            except (ImportError, Exception):
+                # No fabfile path or module found, abort
+                abort("""Couldn't find any fabfiles!
 
 Remember that -f can be used to specify fabfile path, and use -h for help.""")
 
@@ -627,7 +652,11 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
         # dict
         default = None
         if fabfile:
-            docstring, callables, default = load_fabfile(fabfile)
+            if fabfile_mod:
+                docstring, callables, default = new_tasks_from_module(
+                    fabfile_mod)
+            else:
+                docstring, callables, default = load_fabfile(fabfile)
             state.commands.update(callables)
 
         # Handle case where we were called bare, i.e. just "fab", and print

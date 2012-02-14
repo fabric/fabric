@@ -118,7 +118,8 @@ env_options = [
     make_option('-f', '--fabfile',
         default='fabfile',
         metavar='PATH',
-        help="python module file to import, e.g. '../other.py'"
+        help=("python path or module file to import, "
+              "e.g. '../other.py', 'spam.eggs'")
     ),
 
     make_option('--hide',

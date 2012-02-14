@@ -19,3 +19,7 @@ class NetworkError(Exception):
         return "%s(%s) => %r" % (
             self.__class__.__name__, self.message, self.wrapped
         )
+
+
+class FabfileError(IOError):
+    """Raised when a fabric file is not found"""
