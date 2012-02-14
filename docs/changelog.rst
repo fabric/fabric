@@ -25,6 +25,10 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`410` Fixed a bug where using the `~fabric.decorators.task` decorator
+  inside/under another decorator such as `~fabric.decorators.hosts` could cause
+  that task to become invalid when invoked by name (due to how old-style vs
+  new-style tasks are detected.) Thanks to Dan Colish for the initial patch.
 * :release:`1.3.4 <2012-01-12>`
 * :bug:`492` `@parallel <fabric.decorators.parallel>` did not automatically
   trigger :ref:`linewise output <linewise-output>`, as was intended. This has
