@@ -211,7 +211,7 @@ def connect(user, host, port):
         except ssh.BadHostKeyException:
             abort("Host key for %s did not match pre-existing key! Server's"
                    " key was changed recently, or possible man-in-the-middle"
-                   "attack." % env.host)
+                   "attack." % host)
         # Prompt for new password to try on auth failure
         except (
             ssh.AuthenticationException,
