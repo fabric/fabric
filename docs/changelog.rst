@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`495` Fixed documentation example showing how to subclass
+  `~fabric.tasks.Task`. Thanks to Brett Haydon for the catch and Mark Merritt
+  for the patch.
 * :bug:`410` Fixed a bug where using the `~fabric.decorators.task` decorator
   inside/under another decorator such as `~fabric.decorators.hosts` could cause
   that task to become invalid when invoked by name (due to how old-style vs
