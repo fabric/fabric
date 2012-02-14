@@ -68,6 +68,8 @@ def hosts(*host_list):
         if len(_hosts) == 1 and not isinstance(_hosts[0], basestring):
             _hosts = _hosts[0]
         inner_decorator.hosts = list(_hosts)
+        if isinstance(func, tasks.Task):
+            inner_decorator = tasks.WrappedCallableTask(inner_decorator)
         return inner_decorator
     return attach_hosts
 
@@ -108,6 +110,8 @@ def roles(*role_list):
         if len(_roles) == 1 and not isinstance(_roles[0], basestring):
             _roles = _roles[0]
         inner_decorator.roles = list(_roles)
+        if isinstance(func, tasks.Task):
+            inner_decorator = tasks.WrappedCallableTask(inner_decorator)
         return inner_decorator
     return attach_roles
 
@@ -177,6 +181,8 @@ def parallel(pool_size=None):
         inner.parallel = True
         inner.serial = False
         inner.pool_size = pool_size
+        if isinstance(func, tasks.Task):
+            inner = tasks.WrappedCallableTask(inner)
         return inner
 
     # Allow non-factory-style decorator use (@decorator vs @decorator())
@@ -209,5 +215,7 @@ def with_settings(**kw_settings):
         def inner(*args, **kwargs):
             with settings(**kw_settings):
                 return func(*args, **kwargs)
+        if isinstance(func, tasks.Task):
+            inner = tasks.WrappedCallableTask(inner)
         return inner
     return outer
