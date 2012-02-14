@@ -16,13 +16,12 @@ Near-term feature releases and support work
 
 * Move non-code-related docs to a new static site on ``www.fabfile.org``
   (:issue:`419`).
-* Fabric **1.4**: Network-related improvements, such as an option for skipping
-  or retrying unreachable or otherwise "bad" hosts (:issue:`8`, :issue:`348`,
-  :issue:`249`) and SSH key changes (:issue:`72`, :issue:`150`.)
-* Work on a new (to us; probably hacking an existing codebase) GitHub-focused
-  IRC bot (:issue:`169`).
 * Fabric **1.5**: Logging integration (:issue:`57`) and other UI tweaks,
   possibly including colored output (:issue:`101`) by default.
+* Work on a new (to us; probably hacking an existing codebase) GitHub-focused
+  IRC bot (:issue:`169`).
+* Depending on ``bitprophet``'s day job, get some early version of "Patchwork"
+  (:issue:`461`) out the door.
 
 
 Longer-term but probably still 1.x plans
