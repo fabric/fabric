@@ -25,6 +25,8 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :release:`1.2.6 <2012-02-13>`
+* :release:`1.1.8 <2012-02-13>`
 * :bug:`495` Fixed documentation example showing how to subclass
   `~fabric.tasks.Task`. Thanks to Brett Haydon for the catch and Mark Merritt
   for the patch.
@@ -43,7 +45,8 @@ Changelog
 * :bug:`494` Fixed regression bug affecting some `env` values such as
   `env.port` under parallel mode. Symptoms included
   `~fabric.contrib.project.rsync_project` bailing out due to a None port value
-  when run under `@parallel <fabric.decorators.parallel>`. Thanks to Rob Terhaar for the report.
+  when run under `@parallel <fabric.decorators.parallel>`. Thanks to Rob
+  Terhaar for the report.
 * :bug:`339` Don't show imported `~fabric.colors` members in :option:`--list
   <-l>` output.  Thanks to Nick Trew for the report.
 * :release:`1.3.3 <2011-11-23>`
