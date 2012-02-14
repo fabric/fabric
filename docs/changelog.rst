@@ -25,6 +25,27 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 * :feature:`540` Add support for dotted python paths to the fabric -f cli option
+* :bug:`410` Fixed a bug where using the `~fabric.decorators.task` decorator
+  inside/under another decorator such as `~fabric.decorators.hosts` could cause
+  that task to become invalid when invoked by name (due to how old-style vs
+  new-style tasks are detected.) Thanks to Dan Colish for the initial patch.
+* :feature:`559` `~fabric.contrib.project.rsync_project` now allows users to
+  append extra SSH-specific arguments to ``rsync``'s ``--rsh`` flag.
+* :feature:`138` :ref:`env.port <port>` may now be written to at fabfile module
+  level to set a default nonstandard port number. Previously this value was
+  read-only.
+* :feature:`3` Fabric can now load a subset of SSH config functionality
+  directly from your local ``~/.ssh/config`` if :ref:`env.use_ssh_config
+  <use-ssh-config>` is set to ``True``. See :ref:`ssh-config` for details.
+  Thanks to Kirill Pinchuk for the initial patch.
+* :feature:`12` Added the ability to try connecting multiple times to
+  temporarily-down remote systems, instead of immediately failing. (Default
+  behavior is still to only try once.) See :ref:`env.timeout <timeout>` and
+  :ref:`env.connection_attempts <connection-attempts>` for controlling both
+  connection timeouts and total number of attempts. `~fabric.operations.reboot`
+  has also been overhauled (but practically deprecated -- see its updated
+  docs.)
+>>>>>>> fabric
 * :feature:`474` `~fabric.tasks.execute` now allows you to access the executed
   task's return values, by itself returning a dictionary whose keys are the
   host strings executed against.
@@ -41,11 +62,10 @@ Changelog
   been added, which allows hiding remote stdout and local "running command X"
   output lines.
 * :feature:`72` SSH agent forwarding support has made it into Fabric's SSH
-  library, and hooks for using it have been added (enabled by default; use
-  :option:`-A` to disable.) Thanks to Ben Davis for porting an existing
-  Paramiko patch to `ssh` and providing the necessary tweak to Fabric.
-* :bug:`339` Don't list ``fabric.colors`` members in ``fab ---list``. Thanks to
-  Nick Trew for the report.
+  library, and hooks for using it have been added (disabled by default; use
+  :option:`-A` or :ref:`env.forward_agent <forward-agent>` to enable.) Thanks
+  to Ben Davis for porting an existing Paramiko patch to `ssh` and providing
+  the necessary tweak to Fabric.
 * :release:`1.3.4 <2012-01-12>`
 * :bug:`492` `@parallel <fabric.decorators.parallel>` did not automatically
   trigger :ref:`linewise output <linewise-output>`, as was intended. This has

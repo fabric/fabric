@@ -32,7 +32,7 @@ class JobQueue(object):
         ___________________________
                                 End 
     """
-    def __init__(self, max_running):
+    def __init__(self, max_running, comms_queue):
         """
         Setup the class to resonable defaults.
         """
@@ -41,6 +41,7 @@ class JobQueue(object):
         self._completed = []
         self._num_of_jobs = 0
         self._max = max_running
+        self._comms_queue = comms_queue
         self._finished = False
         self._closed = False
         self._debug = False
@@ -71,7 +72,7 @@ class JobQueue(object):
 
         self._closed = True
 
-    def append(self, process, queue=None):
+    def append(self, process):
         """
         Add the Process() to the queue, so that later it can be checked up on.
         That is if the JobQueue is still open.
@@ -83,7 +84,6 @@ class JobQueue(object):
         ``JobQueue.run`` will include the queue's contents in its return value.
         """
         if not self._closed:
-            process._queue = queue
             self._queued.append(process)
             self._num_of_jobs += 1
             if self._debug:
@@ -160,8 +160,14 @@ class JobQueue(object):
         for job in self._completed:
             results[job.name] = {
                 'exit_code': job.exitcode,
-                'results': job._queue.get()
             }
+        while True:
+            try:
+                datum = self._comms_queue.get(timeout=1)
+                results[datum['name']]['results'] = datum['result']
+            except Queue.Empty:
+                break
+
         return results
 
 

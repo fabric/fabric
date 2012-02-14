@@ -1,14 +1,21 @@
 from __future__ import with_statement
 
 from functools import wraps
+import sys
 
 from fabric import state
 from fabric.utils import abort, warn, error
 from fabric.network import to_dict, normalize_to_string
 from fabric.context_managers import settings
 from fabric.job_queue import JobQueue
-from fabric.task_utils import *
+from fabric.task_utils import crawl, merge, parse_kwargs
 from fabric.exceptions import NetworkError
+
+
+def _get_list(env):
+    def inner(key):
+        return env.get(key, [])
+    return inner
 
 
 class Task(object):
@@ -62,7 +69,7 @@ class Task(object):
         # from the CLI or from module-level code). This will be the empty list
         # if these have not been set -- which is fine, this method should
         # return an empty list if no hosts have been set anywhere.
-        env_vars = map(env.get, "hosts roles exclude_hosts".split())
+        env_vars = map(_get_list(env), "hosts roles exclude_hosts".split())
         env_vars.append(roledefs)
         return merge(*env_vars)
 
@@ -148,26 +155,37 @@ def _execute(task, host, my_env, args, kwargs, jobs, queue, multiprocessing):
         # Set a few more env flags for parallelism
         state.env.parallel = True # triggers some extra aborts, etc
         state.env.linewise = True # to mirror -P behavior
+        name = local_env['host_string']
         # Wrap in another callable that:
         # * nukes the connection cache to prevent shared-access problems
         # * knows how to send the tasks' return value back over a Queue
-        def inner(args, kwargs, queue):
+        # * captures exceptions raised by the task
+        def inner(args, kwargs, queue, name):
             key = normalize_to_string(state.env.host_string)
             state.connections.pop(key, "")
-            result = task.run(*args, **kwargs)
-            queue.put(result)
+            try:
+                result = task.run(*args, **kwargs)
+            except BaseException, e: # We really do want to capture everything
+                result = e
+                # But still print it out, otherwise users won't know what the
+                # fuck. Especially if the task is run at top level and nobody's
+                # doing anything with the return value.
+                print >> sys.stderr, "!!! Parallel execution exception under host %r:" % name
+                sys.excepthook(*sys.exc_info())
+            queue.put({'name': name, 'result': result})
 
         # Stuff into Process wrapper
         kwarg_dict = {
             'args': args,
             'kwargs': kwargs,
             'queue': queue,
+            'name': name
         }
         p = multiprocessing.Process(target=inner, kwargs=kwarg_dict)
         # Name/id is host string
-        p.name = local_env['host_string']
+        p.name = name
         # Add to queue
-        jobs.append(p, queue)
+        jobs.append(p)
     # Handle serial execution
     else:
         return task.run(*args, **kwargs)
@@ -239,13 +257,6 @@ def execute(task, *args, **kwargs):
     # Set up host list
     my_env['all_hosts'] = task.get_hosts(hosts, roles, exclude_hosts, state.env)
 
-    # Get pool size for this task
-    pool_size = task.get_pool_size(my_env['all_hosts'], state.env.pool_size)
-    # Set up job queue in case parallel is needed
-    jobs = JobQueue(pool_size)
-    if state.output.debug:
-        jobs._debug = True
-
     parallel = requires_parallel(task)
     if parallel:
         # Import multiprocessing if needed, erroring out usefully
@@ -263,11 +274,18 @@ def execute(task, *args, **kwargs):
     else:
         multiprocessing = None
 
+    # Get pool size for this task
+    pool_size = task.get_pool_size(my_env['all_hosts'], state.env.pool_size)
+    # Set up job queue in case parallel is needed
+    queue = multiprocessing.Queue() if parallel else None
+    jobs = JobQueue(pool_size, queue)
+    if state.output.debug:
+        jobs._debug = True
+
     # Call on host list
     if my_env['all_hosts']:
         # Attempt to cycle on hosts, skipping if needed
         for host in my_env['all_hosts']:
-            queue = multiprocessing.Queue() if parallel else None
             try:
                 results[host] = _execute(
                     task, host, my_env, args, new_kwargs, jobs, queue,

@@ -12,7 +12,7 @@ from fudge import (Fake, clear_calls, clear_expectations, patch_object, verify,
 
 from fabric.context_managers import settings, hide, show
 from fabric.network import (HostConnectionCache, join_host_strings, normalize,
-    denormalize)
+    denormalize, key_filenames)
 from fabric.io import output_loop
 import fabric.network  # So I can call patch_object correctly. Sigh.
 from fabric.state import env, output, _get_system_username
@@ -484,3 +484,142 @@ class TestConnections(FabricTest):
         """
         with settings(hide('everything'), skip_bad_hosts=True):
             execute(subtask, hosts=['nope.nonexistent.com'])
+
+
+class TestSSHConfig(FabricTest):
+    def env_setup(self):
+        super(TestSSHConfig, self).env_setup()
+        env.use_ssh_config = True
+        env.ssh_config_path = support("ssh_config")
+        # Undo the changes FabricTest makes to env for server support
+        env.user = env.local_user
+        env.port = env.default_port
+
+    def test_global_user_with_default_env(self):
+        """
+        Global User should override default env.user
+        """
+        eq_(normalize("localhost")[0], "satan")
+
+    def test_global_user_with_nondefault_env(self):
+        """
+        Global User should NOT override nondefault env.user
+        """
+        with settings(user="foo"):
+            eq_(normalize("localhost")[0], "foo")
+
+    def test_specific_user_with_default_env(self):
+        """
+        Host-specific User should override default env.user
+        """
+        eq_(normalize("myhost")[0], "neighbor")
+
+    def test_user_vs_host_string_value(self):
+        """
+        SSH-config derived user should NOT override host-string user value
+        """
+        eq_(normalize("myuser@localhost")[0], "myuser")
+        eq_(normalize("myuser@myhost")[0], "myuser")
+
+    def test_global_port_with_default_env(self):
+        """
+        Global Port should override default env.port
+        """
+        eq_(normalize("localhost")[2], "666")
+
+    def test_global_port_with_nondefault_env(self):
+        """
+        Global Port should NOT override nondefault env.port
+        """
+        with settings(port="777"):
+            eq_(normalize("localhost")[2], "777")
+
+    def test_specific_port_with_default_env(self):
+        """
+        Host-specific Port should override default env.port
+        """
+        eq_(normalize("myhost")[2], "664")
+
+    def test_port_vs_host_string_value(self):
+        """
+        SSH-config derived port should NOT override host-string port value
+        """
+        eq_(normalize("localhost:123")[2], "123")
+        eq_(normalize("myhost:123")[2], "123")
+
+    def test_hostname_alias(self):
+        """
+        Hostname setting overrides host string's host value
+        """
+        eq_(normalize("localhost")[1], "localhost")
+        eq_(normalize("myalias")[1], "otherhost")
+
+    @aborts
+    def test_aborts_with_bad_config_file_path(self):
+        # use_ssh_config is already set in our env_setup()
+        with settings(ssh_config_path="nope_bad_lol"):
+            normalize('foo')
+
+    @server()
+    def test_real_connection(self):
+        """
+        Test-server connection using ssh_config values
+        """
+        with settings(
+            ssh_config_path=support("testserver_ssh_config"),
+            host_string='testserver',
+        ):
+            ok_(run("ls /simple").succeeded)
+
+
+class TestKeyFilenames(FabricTest):
+    def test_empty_everything(self):
+        """
+        No env.key_filename and no ssh_config = empty list
+        """
+        with settings(use_ssh_config=False):
+            with settings(key_filename=""):
+                eq_(key_filenames(), [])
+            with settings(key_filename=[]):
+                eq_(key_filenames(), [])
+
+    def test_just_env(self):
+        """
+        Valid env.key_filename and no ssh_config = just env
+        """
+        with settings(use_ssh_config=False):
+            with settings(key_filename="mykey"):
+                eq_(key_filenames(), ["mykey"])
+            with settings(key_filename=["foo", "bar"]):
+                eq_(key_filenames(), ["foo", "bar"])
+
+    def test_just_ssh_config(self):
+        """
+        No env.key_filename + valid ssh_config = ssh value
+        """
+        with settings(use_ssh_config=True, ssh_config_path=support("ssh_config")):
+            for val in ["", []]:
+                with settings(key_filename=val):
+                    eq_(key_filenames(), ["foobar.pub"])
+
+    def test_both(self):
+        """
+        Both env.key_filename + valid ssh_config = both show up w/ env var first
+        """
+        with settings(use_ssh_config=True, ssh_config_path=support("ssh_config")):
+            with settings(key_filename="bizbaz.pub"):
+                eq_(key_filenames(), ["bizbaz.pub", "foobar.pub"])
+            with settings(key_filename=["bizbaz.pub", "whatever.pub"]):
+                expected = ["bizbaz.pub", "whatever.pub", "foobar.pub"]
+                eq_(key_filenames(), expected)
+
+    def test_specific_host(self):
+        """
+        SSH lookup aspect should correctly select per-host value
+        """
+        with settings(
+            use_ssh_config=True,
+            ssh_config_path=support("ssh_config"),
+            host_string="myhost"
+        ):
+            eq_(key_filenames(), ["neighbor.pub"])

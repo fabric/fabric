@@ -65,6 +65,8 @@ def _rc_path():
             rc_file
         )
 
+default_port = '22' # hurr durr
+default_ssh_config_path = '~/.ssh/config'
 
 # Options/settings which exist both as environment keys and which can be set on
 # the command line, are defined here. When used via `fab` they will be added to
@@ -88,10 +90,10 @@ env_options = [
         help="don't use the running SSH agent"
     ),
 
-    make_option('-A', '--no-agent-forward',
+    make_option('-A', '--forward-agent',
         action='store_true',
         default=False,
-        help="don't forward local agent to remote end"
+        help="forward local agent to remote end"
     ),
 
     make_option('--abort-on-prompts',
@@ -162,7 +164,7 @@ env_options = [
         type='int',
         metavar='M',
         dest='connection_attempts',
-        default=0,
+        default=1,
         help="make M attempts to connect before giving up"
     ),
 
@@ -179,10 +181,15 @@ env_options = [
     ),
 
     make_option('-P', '--parallel',
-            dest='parallel',
-            action='store_true',
-            default=False,
-            help="default to parallel execution method"
+        dest='parallel',
+        action='store_true',
+        default=False,
+        help="default to parallel execution method"
+    ),
+
+    make_option('--port',
+        default=default_port,
+        help="SSH connection port"
     ),
 
     make_option('-r', '--reject-unknown-hosts',
@@ -210,6 +217,12 @@ env_options = [
         action="store_true",
         default=False,
         help="skip over hosts that can't be reached"
+    ),
+
+    make_option('--ssh-config-path',
+        default=default_ssh_config_path,
+        metavar='PATH',
+        help="Path to SSH config file"
     ),
 
     make_option('-t', '--timeout',
@@ -264,6 +277,7 @@ env = _AttributeDict({
     'command': None,
     'command_prefixes': [],
     'cwd': '',  # Must be empty string, not None, for concatenation purposes
+    'default_port': default_port,
     'echo_stdin': True,
     'exclude_hosts': [],
     'host': None,
@@ -274,17 +288,19 @@ env = _AttributeDict({
     'passwords': {},
     'path': '',
     'path_behavior': 'append',
-    'port': None,
+    'port': default_port,
     'real_fabfile': None,
     'roles': [],
     'roledefs': {},
     'skip_bad_hosts': False,
+    'ssh_config_path': default_ssh_config_path,
     # -S so sudo accepts passwd via stdin, -p with our known-value prompt for
     # later detection (thus %s -- gets filled with env.sudo_prompt at runtime)
     'sudo_prefix': "sudo -S -p '%s' ",
     'sudo_prompt': 'sudo password:',
     'use_exceptions_for': {'network': False},
     'use_shell': True,
+    'use_ssh_config': False,
     'user': None,
     'version': get_version('short')
 })

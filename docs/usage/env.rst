@@ -121,6 +121,7 @@ when unforeseen circumstances arise.
 .. versionadded:: 1.1
 .. seealso:: :option:`--abort-on-prompts`
 
+
 ``all_hosts``
 -------------
 
@@ -181,6 +182,18 @@ executed by `~fabric.operations.run`/`~fabric.operations.sudo`.
 
 .. versionadded:: 1.0
 
+.. _connection-attempts:
+
+``connection_attempts``
+-----------------------
+
+**Default:** ``1``
+
+Number of times Fabric will attempt to connect when connecting to a new server. For backwards compatibility reasons, it defaults to only one connection attempt.
+
+.. versionadded:: 1.4
+.. seealso:: :option:`--connection-attempts`, :ref:`timeout`
+
 ``cwd``
 -------
 
@@ -240,6 +253,21 @@ Defines the current user/host/port which Fabric will connect to when executing
 manually set when using Fabric as a library.
 
 .. seealso:: :doc:`execution`
+
+
+.. _forward-agent:
+
+``forward_agent``
+--------------------
+
+**Default:** ``False``
+
+If ``True``, enables forwarding of your local SSH agent to the remote end.
+
+.. versionadded:: 1.4
+
+.. seealso:: :option:`-A`
+
 
 ``host``
 --------
@@ -326,20 +354,6 @@ using key-based authentication.
 
 .. versionadded:: 0.9.1
 
-.. _no_agent_forward:
-
-``no_agent_forward``
---------------------
-
-**Default:** ``False``
-
-If ``True``, disables the on-by-default forwarding of your local SSH agent to
-the remote end.
-
-.. versionadded:: 1.4
-
-.. seealso:: :option:`-A`
-
 .. _no_keys:
 
 ``no_keys``
@@ -422,6 +436,7 @@ Sets the number of concurrent processes to use when executing tasks in parallel.
 .. versionadded:: 1.3
 .. seealso:: :doc:`parallel`, :option:`-z`
 
+.. _port:
 
 ``port``
 --------
@@ -429,7 +444,7 @@ Sets the number of concurrent processes to use when executing tasks in parallel.
 **Default:** ``None``
 
 Set to the port part of ``env.host_string`` by ``fab`` when iterating over a
-host list. For informational purposes only.
+host list. May also be used to specify a default port.
 
 ``real_fabfile``
 ----------------
@@ -508,9 +523,22 @@ takes a command string as its value.
 If ``True``, causes ``fab`` (or non-``fab`` use of `~fabric.tasks.execute`) to skip over hosts it can't connect to.
 
 .. versionadded:: 1.4
-
 .. seealso::
     :option:`--skip-bad-hosts`, :ref:`excluding-hosts`, :doc:`execution`
+
+
+.. _ssh-config-path:
+
+``ssh_config_path``
+-------------------
+
+**Default:** ``$HOME/.ssh/config``
+
+Allows specification of an alternate SSH configuration file path.
+
+.. versionadded:: 1.4
+.. seealso:: :option:`--ssh-config-path`, :ref:`ssh-config`
+
 
 ``sudo_prompt``
 ---------------
@@ -523,6 +551,18 @@ real reason to.
 
 .. seealso:: The `~fabric.operations.sudo` operation
 
+.. _timeout:
+
+``timeout``
+-----------
+
+**Default:** ``10``
+
+Network connection timeout, in seconds.
+
+.. versionadded:: 1.4
+.. seealso:: :option:`--timeout`, :ref:`connection-attempts`
+
 ``use_shell``
 -------------
 
@@ -531,6 +571,20 @@ real reason to.
 Global setting which acts like the ``use_shell`` argument to
 `~fabric.operations.run`/`~fabric.operations.sudo`: if it is set to ``False``,
 operations will not wrap executed commands in ``env.shell``.
+
+
+.. _use-ssh-config:
+
+``use_ssh_config``
+------------------
+
+**Default:** ``False``
+
+Set to ``True`` to cause Fabric to load your local SSH config file.
+
+.. versionadded:: 1.4
+.. seealso:: :ref:`ssh-config`
+
 
 .. _user:
 

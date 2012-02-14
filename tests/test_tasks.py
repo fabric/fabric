@@ -142,13 +142,13 @@ def test_decorator_incompatibility_on_task():
     roles('www')(foo)
 
 def test_decorator_closure_hiding():
+    """
+    @task should not accidentally destroy decorated attributes from @hosts/etc
+    """
     from fabric.decorators import task, hosts
-    def foo(): print env.host_string
-    foo = hosts("me@localhost")(foo)
-    foo = task(foo)
-
-    # this broke in the old way, due to closure stuff hiding in the
-    # function, but task making an object
+    def foo():
+        print env.host_string
+    foo = task(hosts("me@localhost")(foo))
     eq_(["me@localhost"], foo.hosts)
 
 
@@ -353,11 +353,17 @@ class TestExecute(FabricTest):
         """
         Tasks which don't return anything should still show up in the dict
         """
-        def task():
+        def local_task():
             pass
-        eq_(execute(task), {'<local-only>': None})
+        def remote_task():
+            with hide('everything'):
+                run("ls /simple")
+        eq_(execute(local_task), {'<local-only>': None})
         with hide('everything'):
-            eq_(execute(task, hosts=[env.host_string]), {env.host_string: None})
+            eq_(
+                execute(remote_task, hosts=[env.host_string]),
+                {env.host_string: None}
+            )
 
     def test_should_use_sentinel_for_tasks_that_errored(self):
         """

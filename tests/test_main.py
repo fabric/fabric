@@ -355,7 +355,7 @@ class TestTaskAliases(FabricTest):
             ok_("foo_aliased" in funcs)
             ok_("foo_aliased_two" in funcs)
 
-    def test_nested_alias(self):
+    def test_nested_aliases(self):
         f = fabfile("nested_aliases.py")
         with path_prefix(f):
             docs, funcs = load_fabfile(f)
@@ -438,6 +438,16 @@ class TestNamespaces(FabricTest):
             docs, funcs = load_fabfile(module)
             eq_(len(funcs), 1)
             ok_('submodule.classic_task' not in _task_names(funcs))
+
+    def test_task_decorator_plays_well_with_others(self):
+        """
+        @task, when inside @hosts/@roles, should not hide the decorated task.
+        """
+        module = fabfile('decorator_order')
+        with path_prefix(module):
+            docs, funcs = load_fabfile(module)
+            # When broken, crawl() finds None for 'foo' instead.
+            eq_(crawl('foo', funcs), funcs['foo'])
 
 
 #

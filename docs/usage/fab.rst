@@ -90,10 +90,10 @@ below.
 
     .. versionadded:: 0.9.1
 
-.. cmdoption:: -A, --no-agent-forward
+.. cmdoption:: -A, --forward-agent
 
-    Sets :ref:`env.no_agent_forward <no_agent_forward>` to ``True``, disabling
-    agent forwarding.
+    Sets :ref:`env.forward_agent <forward-agent>` to ``True``, enabling agent
+    forwarding.
 
     .. versionadded:: 1.4
 
@@ -115,6 +115,16 @@ below.
     currently print out the task's function signature, so descriptive
     docstrings are a good idea. (They're *always* a good idea, of course --
     just moreso here.)
+
+.. cmdoption:: --connection-attempts=M, -n M
+
+    Set number of times to attempt connections. Sets
+    :ref:`env.connection_attempts <connection-attempts>`.
+
+    .. seealso::
+        :ref:`env.connection_attempts <connection-attempts>`,
+        :ref:`env.timeout <timeout>`
+    .. versionadded:: 1.4
 
 .. cmdoption:: -D, --disable-known-hosts
 
@@ -271,11 +281,27 @@ below.
 
     .. seealso:: `~fabric.operations.run`, `~fabric.operations.sudo`
 
+.. cmdoption:: --ssh-config-path
+
+    Sets :ref:`env.ssh_config_path <ssh-config-path>`.
+
+    .. versionadded:: 1.4
+    .. seealso:: :ref:`ssh-config`
+
 .. cmdoption:: --skip-bad-hosts
 
     Sets :ref:`env.skip_bad_hosts <skip-bad-hosts>`, causing Fabric to skip
     unavailable hosts.
 
+    .. versionadded:: 1.4
+
+.. cmdoption:: --timeout=N, -t N
+
+    Set connection timeout in seconds. Sets :ref:`env.timeout <timeout>`.
+
+    .. seealso::
+        :ref:`env.timeout <timeout>`,
+        :ref:`env.connection_attempts <connection-attempts>`
     .. versionadded:: 1.4
 
 .. cmdoption:: -u USER, --user=USER

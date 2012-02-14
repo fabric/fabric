@@ -81,7 +81,7 @@ documentation, which expands upon the concepts outlined in the
 :doc:`tutorial` and also covers advanced topics.
 
 .. toctree::
-    :maxdepth: 1
+    :maxdepth: 2
     :glob:
 
     usage/*

@@ -12,12 +12,11 @@ import subprocess
 import sys
 import time
 from glob import glob
-from traceback import format_exc
 from contextlib import closing
 
-from fabric.context_managers import settings, char_buffered
+from fabric.context_managers import settings, char_buffered, hide
 from fabric.io import output_loop, input_loop
-from fabric.network import needs_host, ssh
+from fabric.network import needs_host, ssh, ssh_config
 from fabric.sftp import SFTP
 from fabric.state import env, connections, output, win32, default_channel
 from fabric.thread_handling import ThreadHandler
@@ -696,8 +695,9 @@ def _execute(channel, command, pty=True, combine_stderr=None,
             rows, cols = _pty_size()
             channel.get_pty(width=cols, height=rows)
 
-        # Use SSH agent forwarding from 'ssh', unless user has turned it off.
-        if not env.no_agent_forward:
+        # Use SSH agent forwarding from 'ssh' if enabled by user
+        config_agent = ssh_config().get('forwardagent', 'no').lower() == 'yes'
+        if env.forward_agent or config_agent:
             forward = ssh.agent.AgentClientProxy(channel)
 
         # Kick off remote command
@@ -1011,25 +1011,50 @@ def local(command, capture=False):
 
 
 @needs_host
-def reboot(wait):
+def reboot(wait=120):
     """
-    Reboot the remote system, disconnect, and wait for ``wait`` seconds.
+    Reboot the remote system.
 
-    After calling this operation, further execution of `run` or `sudo` will
-    result in a normal reconnection to the server, including any password
-    prompts.
+    Will temporarily tweak Fabric's reconnection settings (:ref:`timeout` and
+    :ref:`connection-attempts`) to ensure that reconnection does not give up
+    for at least ``wait`` seconds.
+
+    .. note::
+        As of Fabric 1.4, the ability to reconnect partway through a session no
+        longer requires use of internal APIs.  While we are not officially
+        deprecating this function, adding more features to it will not be a
+        priority.
+
+        Users who want greater control
+        are encouraged to check out this function's (6 lines long, well
+        commented) source code and write their own adaptation using different
+        timeout/attempt values or additional logic.
 
     .. versionadded:: 0.9.2
+    .. versionchanged:: 1.4
+        Changed the ``wait`` kwarg to be optional, and refactored to leverage
+        the new reconnection functionality; it may not actually have to wait
+        for ``wait`` seconds before reconnecting.
     """
-    sudo('reboot')
-    client = connections[env.host_string]
-    client.close()
-    if env.host_string in connections:
-        del connections[env.host_string]
-    if output.running:
-        puts("Waiting for reboot: ", flush=True, end='')
-        per_tick = 5
-        for second in range(int(wait / per_tick)):
-            puts(".", show_prefix=False, flush=True, end='')
-            time.sleep(per_tick)
-        puts("done.\n", show_prefix=False, flush=True)
+    # Shorter timeout for a more granular cycle than the default.
+    timeout = 5
+    # Use 'wait' as max total wait time
+    attempts = int(round(wait / float(timeout)))
+    # Don't bleed settings, since this is supposed to be self-contained.
+    # User adaptations will probably want to drop the "with settings()" and
+    # just have globally set timeout/attempts values.
+    with settings(
+        hide('running'),
+        timeout=timeout,
+        connection_attempts=attempts
+    ):
+        sudo('reboot')
+        # Try to make sure we don't slip in before pre-reboot lockdown
+        time.sleep(5)
+        # This is actually an internal-ish API call, but users can simply drop
+        # it in real fabfile use -- the next run/sudo/put/get/etc call will
+        # automatically trigger a reconnect.
+        # We use it here to force the reconnect while this function is still in
+        # control and has the above timeout settings enabled.
+        connections.connect(env.host_string)
+    # At this point we should be reconnected to the newly rebooted server.
