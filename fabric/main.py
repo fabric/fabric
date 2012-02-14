@@ -9,8 +9,7 @@ The other callables defined in this module are internal only. Anything useful
 to individuals leveraging Fabric as a library, should be kept elsewhere.
 """
 
-from collections import defaultdict
-from operator import add, isMappingType
+from operator import isMappingType
 from optparse import OptionParser
 import os
 import sys
@@ -20,7 +19,7 @@ import types
 from fabric import api, state, colors
 from fabric.contrib import console, files, project
 
-from fabric.network import denormalize, disconnect_all, ssh
+from fabric.network import disconnect_all, ssh
 from fabric.state import env_options
 from fabric.tasks import Task, execute
 from fabric.task_utils import _Dict, crawl
@@ -33,6 +32,7 @@ _internals = reduce(lambda x, y: x + filter(callable, vars(y).values()),
     _modules,
     []
 )
+
 
 # Module recursion cache
 class _ModuleCache(object):
@@ -263,7 +263,9 @@ def parse_options():
     # Initialize
     #
 
-    parser = OptionParser(usage="fab [options] <command>[:arg1,arg2=val2,host=foo,hosts='h1;h2',...] ...")
+    parser = OptionParser(
+        usage=("fab [options] <command>"
+               "[:arg1,arg2=val2,host=foo,hosts='h1;h2',...] ..."))
 
     #
     # Define options that don't become `env` vars (typically ones which cause
@@ -334,11 +336,13 @@ def parse_options():
     opts, args = parser.parse_args()
     return parser, opts, args
 
+
 def _is_task(name, value):
     """
     Is the object a task as opposed to e.g. a dict or int?
     """
     return is_classic_task((name, value)) or is_task_object(value)
+
 
 def _sift_tasks(mapping):
     tasks, collections = [], []
@@ -350,6 +354,7 @@ def _sift_tasks(mapping):
     tasks = sorted(tasks)
     collections = sorted(collections)
     return tasks, collections
+
 
 def _task_names(mapping):
     """
@@ -416,6 +421,7 @@ def _nested_list(mapping, level=1):
 
 COMMANDS_HEADER = "Available commands"
 NESTED_REMINDER = " (remember to call as module.[...].task)"
+
 
 def list_commands(docstring, format_):
     """
@@ -555,9 +561,6 @@ def update_output_levels(show, hide):
     if hide:
         for key in hide.split(','):
             state.output[key] = False
-
-
-from fabric.tasks import _parallel_tasks
 
 
 def main():

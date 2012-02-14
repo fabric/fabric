@@ -8,9 +8,7 @@ from functools import wraps
 import getpass
 import os
 import re
-import threading
 import time
-import select
 import socket
 import sys
 
@@ -120,7 +118,7 @@ def ssh_config(host_string=None):
             with open(path) as fd:
                 conf.parse(fd)
                 env._ssh_config = conf
-        except IOError, e:
+        except IOError:
             abort("Unable to load SSH config file '%s'" % path)
     host = parse_host_string(host_string or env.host_string)['host']
     return env._ssh_config.lookup(host)
@@ -201,6 +199,7 @@ def to_dict(host_string):
     return {
         'user': user, 'host': host, 'port': port, 'host_string': host_string
     }
+
 
 def from_dict(arg):
     return join_host_strings(arg['user'], arg['host'], arg['port'])

@@ -6,9 +6,10 @@ from __future__ import with_statement
 
 import nose
 
-from fabric.api import *
+from fabric.api import abort, local, task
 
-import docs, tag
+import docs
+import tag
 from utils import msg
 
 

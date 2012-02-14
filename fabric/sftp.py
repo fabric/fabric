@@ -57,7 +57,7 @@ class SFTP(object):
         return ret
 
     def walk(self, top, topdown=True, onerror=None, followlinks=False):
-        from os.path import join, isdir, islink
+        from os.path import join
 
         # We may not have read permission for top, in which case we can't get a
         # list of the files the directory contains. os.path.walk always

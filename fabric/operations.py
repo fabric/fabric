@@ -7,7 +7,6 @@ from __future__ import with_statement
 import os
 import os.path
 import re
-import stat
 import subprocess
 import sys
 import time
@@ -20,13 +19,14 @@ from fabric.network import needs_host, ssh, ssh_config
 from fabric.sftp import SFTP
 from fabric.state import env, connections, output, win32, default_channel
 from fabric.thread_handling import ThreadHandler
-from fabric.utils import abort, indent, warn, puts, handle_prompt_abort, error, _pty_size
-
-# For terminal size logic below
-if not win32:
-    import fcntl
-    import termios
-    import struct
+from fabric.utils import (
+    abort,
+    error,
+    handle_prompt_abort,
+    indent,
+    _pty_size,
+    warn,
+)
 
 
 def _shell_escape(string):

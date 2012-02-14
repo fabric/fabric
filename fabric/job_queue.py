@@ -5,8 +5,6 @@ May use ``multiprocessing.Process`` or ``threading.Thread`` objects as queue
 items, though within Fabric itself only ``Process`` objects are used/supported.
 """
 
-from pprint import pprint
-from Crypto import Random 
 import time
 import Queue
 
@@ -61,7 +59,7 @@ class JobQueue(object):
         Just going to use number of jobs as the JobQueue length.
         """
         return self._num_of_jobs
-    
+
     def close(self):
         """
         A sanity check, so that the need to care about new jobs being added in
@@ -171,12 +169,12 @@ class JobQueue(object):
         return results
 
 
-#### Sample 
+#### Sample
 
 def try_using(parallel_type):
     """
     This will run the queue through it's paces, and show a simple way of using
-    the job queue. 
+    the job queue.
     """
 
     def print_number(number):
@@ -191,7 +189,6 @@ def try_using(parallel_type):
     elif parallel_type == "threading":
         from threading import Thread as Bucket
 
-
     # Make a job_queue with a bubble of len 5, and have it print verbosely
     jobs = JobQueue(5)
     jobs._debug = True
@@ -199,9 +196,9 @@ def try_using(parallel_type):
     # Add 20 procs onto the stack
     for x in range(20):
         jobs.append(Bucket(
-            target = print_number,
-            args = [x],
-            kwargs = {},
+            target=print_number,
+            args=[x],
+            kwargs={},
             ))
 
     # Close up the queue and then start it's execution
