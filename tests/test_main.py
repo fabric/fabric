@@ -439,6 +439,16 @@ class TestNamespaces(FabricTest):
             eq_(len(funcs), 1)
             ok_('submodule.classic_task' not in _task_names(funcs))
 
+    def test_task_decorator_plays_well_with_others(self):
+        """
+        @task, when inside @hosts/@roles, should not hide the decorated task.
+        """
+        module = fabfile('decorator_order')
+        with path_prefix(module):
+            docs, funcs = load_fabfile(module)
+            # When broken, crawl() finds None for 'foo' instead.
+            eq_(crawl('foo', funcs), funcs['foo'])
+
 
 #
 # --list output
