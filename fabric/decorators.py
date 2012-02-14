@@ -35,6 +35,24 @@ def task(*args, **kwargs):
     return wrapper if invoked else wrapper(func)
 
 
+def _list_annotating_decorator(attribute, *values):
+    def attach_list(func):
+        @wraps(func)
+        def inner_decorator(*args, **kwargs):
+            return func(*args, **kwargs)
+        _values = values
+        # Allow for single iterable argument as well as *args
+        if len(_values) == 1 and not isinstance(_values[0], basestring):
+            _values = _values[0]
+        setattr(inner_decorator, attribute, list(_values))
+        # Don't replace @task new-style task objects with inner_decorator by
+        # itself -- wrap in a new Task object first.
+        if isinstance(func, tasks.Task):
+            inner_decorator = tasks.WrappedCallableTask(inner_decorator)
+        return inner_decorator
+    return attach_list
+
+
 def hosts(*host_list):
     """
     Decorator defining which host or hosts to execute the wrapped function on.
@@ -58,18 +76,7 @@ def hosts(*host_list):
         Allow a single, iterable argument (``@hosts(iterable)``) to be used
         instead of requiring ``@hosts(*iterable)``.
     """
-
-    def attach_hosts(func):
-        @wraps(func)
-        def inner_decorator(*args, **kwargs):
-            return func(*args, **kwargs)
-        _hosts = host_list
-        # Allow for single iterable argument as well as *args
-        if len(_hosts) == 1 and not isinstance(_hosts[0], basestring):
-            _hosts = _hosts[0]
-        inner_decorator.hosts = list(_hosts)
-        return inner_decorator
-    return attach_hosts
+    return _list_annotating_decorator('hosts', *host_list)
 
 
 def roles(*role_list):
@@ -99,17 +106,7 @@ def roles(*role_list):
         Allow a single, iterable argument to be used (same as
         `~fabric.decorators.hosts`).
     """
-    def attach_roles(func):
-        @wraps(func)
-        def inner_decorator(*args, **kwargs):
-            return func(*args, **kwargs)
-        _roles = role_list
-        # Allow for single iterable argument as well as *args
-        if len(_roles) == 1 and not isinstance(_roles[0], basestring):
-            _roles = _roles[0]
-        inner_decorator.roles = list(_roles)
-        return inner_decorator
-    return attach_roles
+    return _list_annotating_decorator('roles', *role_list)
 
 
 def runs_once(func):

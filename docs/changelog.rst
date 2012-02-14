@@ -25,6 +25,10 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`410` Fixed a bug where using the `~fabric.decorators.task` decorator
+  inside/under another decorator such as `~fabric.decorators.hosts` could cause
+  that task to become invalid when invoked by name (due to how old-style vs
+  new-style tasks are detected.) Thanks to Dan Colish for the initial patch.
 * :feature:`559` `~fabric.contrib.project.rsync_project` now allows users to
   append extra SSH-specific arguments to ``rsync``'s ``--rsh`` flag.
 * :feature:`138` :ref:`env.port <port>` may now be written to at fabfile module
