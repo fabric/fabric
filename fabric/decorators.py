@@ -45,6 +45,10 @@ def _list_annotating_decorator(attribute, *values):
         if len(_values) == 1 and not isinstance(_values[0], basestring):
             _values = _values[0]
         setattr(inner_decorator, attribute, list(_values))
+        # Don't replace @task new-style task objects with inner_decorator by
+        # itself -- wrap in a new Task object first.
+        if isinstance(func, tasks.Task):
+            inner_decorator = tasks.WrappedCallableTask(inner_decorator)
         return inner_decorator
     return attach_list
 
