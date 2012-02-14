@@ -25,6 +25,7 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :release:`1.3.5 <2012-02-13>`
 * :release:`1.2.6 <2012-02-13>`
 * :release:`1.1.8 <2012-02-13>`
 * :bug:`495` Fixed documentation example showing how to subclass
