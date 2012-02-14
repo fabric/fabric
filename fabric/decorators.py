@@ -34,6 +34,11 @@ def task(*args, **kwargs):
 
     return wrapper if invoked else wrapper(func)
 
+def _wrap_as_new(original, new):
+    if isinstance(original, tasks.Task):
+        return tasks.WrappedCallableTask(new)
+    return new
+
 
 def _list_annotating_decorator(attribute, *values):
     def attach_list(func):
@@ -47,8 +52,7 @@ def _list_annotating_decorator(attribute, *values):
         setattr(inner_decorator, attribute, list(_values))
         # Don't replace @task new-style task objects with inner_decorator by
         # itself -- wrap in a new Task object first.
-        if isinstance(func, tasks.Task):
-            inner_decorator = tasks.WrappedCallableTask(inner_decorator)
+        inner_decorator = _wrap_as_new(func, inner_decorator)
         return inner_decorator
     return attach_list
 
@@ -133,6 +137,7 @@ def runs_once(func):
         if not hasattr(decorated, 'return_value'):
             decorated.return_value = func(*args, **kwargs)
         return decorated.return_value
+    decorated = _wrap_as_new(func, decorated)
     # Mark as serial (disables parallelism) and return
     return serial(decorated)
 
@@ -150,7 +155,7 @@ def serial(func):
     """
     if not getattr(func, 'parallel', False):
         func.serial = True
-    return func
+    return _wrap_as_new(func, func)
 
 
 def parallel(pool_size=None):
@@ -174,7 +179,7 @@ def parallel(pool_size=None):
         inner.parallel = True
         inner.serial = False
         inner.pool_size = pool_size
-        return inner
+        return _wrap_as_new(func, inner)
 
     # Allow non-factory-style decorator use (@decorator vs @decorator())
     if type(pool_size) == type(real_decorator):
@@ -206,5 +211,5 @@ def with_settings(**kw_settings):
         def inner(*args, **kwargs):
             with settings(**kw_settings):
                 return func(*args, **kwargs)
-        return inner
+        return _wrap_as_new(func, inner)
     return outer
