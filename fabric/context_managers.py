@@ -325,7 +325,7 @@ def char_buffered(pipe):
 
     Only applies on Unix-based systems; on Windows this is a no-op.
     """
-    if win32 or not sys.stdin.isatty():
+    if win32 or not pipe.isatty():
         yield
     else:
         old_settings = termios.tcgetattr(pipe)
