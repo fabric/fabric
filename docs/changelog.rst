@@ -25,6 +25,8 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :feature:`563` Implemented :ref:`Python-level host aliasing <host-aliases>`
+  as a compliment to the SSH config aliasing available in 1.4.
 * :release:`1.4.0 <2012-02-13>`
 * :release:`1.3.5 <2012-02-13>`
 * :release:`1.2.6 <2012-02-13>`

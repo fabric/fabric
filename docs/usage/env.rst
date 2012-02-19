@@ -240,6 +240,19 @@ doesn't make sense to set this in a fabfile, but it may be specified in a
 
 .. seealso:: :doc:`fab`
 
+.. _env-hostdefs:
+
+``hostdefs``
+------------
+
+**Default:** ``{}``
+
+Mapping of aliases to replacement host strings, used by host aliasing.
+
+.. versionadded:: 1.5
+.. seealso:: :ref:`host-aliases`
+
+
 .. _host_string:
 
 ``host_string``

@@ -486,6 +486,49 @@ class TestConnections(FabricTest):
             execute(subtask, hosts=['nope.nonexistent.com'])
 
 
+class TestHostAliases(FabricTest):
+    def env_setup(self):
+        super(TestHostAliases, self).env_setup()
+        # Undo the changes FabricTest makes to env for server support
+        env.user = env.local_user
+        env.port = env.default_port
+
+    def test_env_hostdefs_used_as_alias(self):
+        """
+        env.hostdefs used to allow hostname aliasing when normalizing.
+        """
+        with settings(hostdefs={'foo': 'bar'}):
+            eq_(normalize('foo')[1], 'bar')
+
+    def test_only_replaces_hostname_portion(self):
+        """
+        env.hostdefs aliasing only replaces hostname part if others given
+        """
+        with settings(hostdefs={'foo': 'bar'}):
+            eq_(normalize('bob@foo:222'), ('bob', 'bar', '222'))
+
+    def test_overrides_user_and_port_in_alias_value(self):
+        """
+        an alias reference containing user/port wins vs alias value with same
+        """
+        with settings(hostdefs={'foo': 'user@bar:222'}):
+            eq_(normalize('bob@foo:333'), ('bob', 'bar', '333'))
+
+    def test_occurs_prior_to_ssh_config_aliasing(self):
+        """
+        hostdefs aliasing runs prior to ssh_config parsing
+        """
+        with settings(
+            hostdefs={'myalias': 'nototherhost'},
+            use_ssh_config=True,
+            ssh_config_path=support("ssh_config")
+        ):
+            # If SSH config parsing occurred first, this would resolve to
+            # "otherhost" instead.
+            eq_(normalize('myalias')[1], 'nototherhost')
+
+
+
 class TestSSHConfig(FabricTest):
     def env_setup(self):
         super(TestSSHConfig, self).env_setup()
