@@ -514,6 +514,13 @@ class TestHostAliases(FabricTest):
         with settings(hostdefs={'foo': 'user@bar:222'}):
             eq_(normalize('bob@foo:333'), ('bob', 'bar', '333'))
 
+    def test_aliasing_uses_alias_user_and_port_if_needed(self):
+        """
+        Alias values containing user/port wins vs references lacking them
+        """
+        with settings(hostdefs={'foo': 'user@bar:222'}):
+            eq_(normalize('foo:333'), ('user', 'bar', '333'))
+
     def test_occurs_prior_to_ssh_config_aliasing(self):
         """
         hostdefs aliasing runs prior to ssh_config parsing
