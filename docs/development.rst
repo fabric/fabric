@@ -4,9 +4,9 @@ Development
 
 The Fabric development team is headed by `Jeff Forcier
 <http://bitprophet.org>`_, aka ``bitprophet``.  However, dozens of other
-developers pitch in by submitting patches and ideas via `GitHub
-<https://github.com/fabric/fabric>`_, :ref:`IRC <irc>` or the `mailing list
-<http://lists.nongnu.org/mailman/listinfo/fab-user>`_.
+developers pitch in by submitting patches and ideas via `GitHub issues and pull
+requests <https://github.com/fabric/fabric>`_, :ref:`IRC <irc>` or the `mailing
+list <http://lists.nongnu.org/mailman/listinfo/fab-user>`_.
 
 Get the code
 ============
