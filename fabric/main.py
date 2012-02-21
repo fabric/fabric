@@ -20,6 +20,7 @@ import types
 from fabric import api, state, colors
 from fabric.contrib import console, files, project
 
+from fabric.logger import configure_logging, system_log
 from fabric.network import denormalize, disconnect_all, ssh
 from fabric.state import env_options
 from fabric.tasks import Task, execute
@@ -455,13 +456,13 @@ def display_command(name):
         abort(msg % (name, "\n".join(_normal_list(False))))
     # Print out nicely presented docstring if found
     if command.__doc__:
-        print("Displaying detailed information for task '%s':" % name)
-        print('')
-        print(indent(command.__doc__, strip=True))
-        print('')
+        system_log.info("Displaying detailed information for task '%s':" % name)
+        system_log.info('')
+        system_log.info(indent(command.__doc__, strip=True))
+        system_log.info('')
     # Or print notice if not
     else:
-        print("No detailed information available for task '%s':" % name)
+        system_log.info("No detailed information available for task '%s':" % name)
     sys.exit(0)
 
 
@@ -564,6 +565,7 @@ def main():
     """
     Main command-line execution loop.
     """
+    configure_logging()
     try:
         # Parse command line options
         parser, options, arguments = parse_options()
@@ -605,8 +607,8 @@ def main():
 
         # Handle version number option
         if options.show_version:
-            print("Fabric %s" % state.env.version)
-            print("ssh (library) %s" % ssh.__version__)
+            system_log.info("Fabric %s" % state.env.version)
+            system_log.info("ssh (library) %s" % ssh.__version__)
             sys.exit(0)
 
         # Load settings from user settings file, into shared env dict.
@@ -645,9 +647,9 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
         # Now that we're settled on a fabfile, inform user.
         if state.output.debug:
             if fabfile:
-                print("Using fabfile '%s'" % fabfile)
+                system_log.info("Using fabfile '%s'" % fabfile)
             else:
-                print("No fabfile loaded -- remainder command only")
+                system_log.info("No fabfile loaded -- remainder command only")
 
         # Shortlist is now just an alias for the "short" list format;
         # it overrides use of --list-format if somebody were to specify both
@@ -657,7 +659,7 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
 
         # List available commands
         if options.list_commands:
-            print("\n".join(list_commands(docstring, options.list_format)))
+            system_log.info("\n".join(list_commands(docstring, options.list_format)))
             sys.exit(0)
 
         # Handle show (command-specific help) option
@@ -698,7 +700,7 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
 
         if state.output.debug:
             names = ", ".join(x[0] for x in commands_to_run)
-            print("Commands to run: %s" % names)
+            system_log.info("Commands to run: %s" % names)
 
         # At this point all commands must exist, so execute them in order.
         for name, args, kwargs, arg_hosts, arg_roles, arg_exclude_hosts in commands_to_run:
@@ -711,13 +713,13 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
             )
         # If we got here, no errors occurred, so print a final note.
         if state.output.status:
-            print("\nDone.")
+            system_log.info("\nDone.")
     except SystemExit:
         # a number of internal functions might raise this one.
         raise
     except KeyboardInterrupt:
         if state.output.status:
-            print >> sys.stderr, "\nStopped."
+            system_log.error("\nStopped.")
         sys.exit(1)
     except:
         sys.excepthook(*sys.exc_info())

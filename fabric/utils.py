@@ -3,6 +3,7 @@ Internal subroutines for e.g. aborting execution with an error message,
 or performing indenting on multiline output.
 """
 
+from fabric.logger import log, system_log
 import sys
 import textwrap
 from traceback import format_exc
@@ -20,9 +21,8 @@ def abort(msg):
     .. _SystemExit: http://docs.python.org/library/exceptions.html#exceptions.SystemExit
     """
     from fabric.state import output
-    if output.aborts:
-        print >> sys.stderr, "\nFatal error: " + str(msg)
-        print >> sys.stderr, "\nAborting."
+    system_log.error("\nFatal error: " + str(msg))
+    system_log.error(sys.stderr, "\nAborting.")
     sys.exit(1)
 
 
@@ -36,8 +36,7 @@ def warn(msg):
     turned on.
     """
     from fabric.state import output
-    if output.warnings:
-        print >> sys.stderr, "\nWarning: %s\n" % msg
+    system_log.warn("\nWarning: %s\n" % msg)
 
 
 def indent(text, spaces=4, strip=False):
@@ -89,16 +88,10 @@ def puts(text, show_prefix=None, end="\n", flush=False):
     .. versionadded:: 0.9.2
     .. seealso:: `~fabric.utils.fastprint`
     """
-    from fabric.state import output, env
-    if show_prefix is None:
-        show_prefix = env.output_prefix
-    if output.user:
-        prefix = ""
-        if env.host_string and show_prefix:
-            prefix = "[%s] " % env.host_string
-        sys.stdout.write(prefix + str(text) + end)
-        if flush:
-            sys.stdout.flush()
+    # TODO: mark as deprecated and tell people to use fabric.logger.log.info()
+    # TODO: mark using `show_prefix` as deprecated and switch that out to the logger
+    extra = {"show_prefix": show_prefix}
+    log.info(str(text), extra=extra)
 
 
 def fastprint(text, show_prefix=False, end="", flush=True):

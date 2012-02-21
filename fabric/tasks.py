@@ -4,6 +4,7 @@ from functools import wraps
 import sys
 
 from fabric import state
+from fabric.logger import log
 from fabric.utils import abort, warn, error
 from fabric.network import to_dict, normalize_to_string
 from fabric.context_managers import settings
@@ -82,9 +83,8 @@ class Task(object):
         # But ensure it's never larger than the number of hosts
         pool_size = min((pool_size, len(hosts)))
         # Inform user of final pool size for this task
-        if state.output.debug:
-            msg = "Parallel tasks now using pool size of %d"
-            print msg % pool_size
+        msg = "Parallel tasks now using pool size of %d"
+        log.debug(msg % pool_size, extra={"pool_size": pool_size})
         return pool_size
 
 
@@ -145,7 +145,10 @@ def _execute(task, host, my_env, args, kwargs, jobs, queue, multiprocessing):
     """
     # Log to stdout
     if state.output.running and not hasattr(task, 'return_value'):
-        print("[%s] Executing task '%s'" % (host, my_env['command']))
+        # TODO make task-specific loggers
+        log.info("Executing task '%s'", extras={
+                'show_prefix': True, 'host': host,
+                'command': my_env['command']})
     # Create per-run env with connection settings
     local_env = to_dict(host)
     local_env.update(my_env)
@@ -170,7 +173,7 @@ def _execute(task, host, my_env, args, kwargs, jobs, queue, multiprocessing):
                 # But still print it out, otherwise users won't know what the
                 # fuck. Especially if the task is run at top level and nobody's
                 # doing anything with the return value.
-                print >> sys.stderr, "!!! Parallel execution exception under host %r:" % name
+                log.error("!!! Parallel execution exception under host %r:" % name)
                 sys.excepthook(*sys.exc_info())
             queue.put({'name': name, 'result': result})
 

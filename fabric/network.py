@@ -15,6 +15,7 @@ import socket
 import sys
 
 from fabric.auth import get_password, set_password
+from fabric.logger import system_log
 from fabric.utils import abort, handle_prompt_abort
 from fabric.exceptions import NetworkError
 
@@ -24,11 +25,12 @@ try:
     import ssh
 except ImportError, e:
     import traceback
+    # TODO: pipe this through the logger
     traceback.print_exc()
-    print >> sys.stderr, """
+    system_log.error("""
 There was a problem importing our SSH library (see traceback above).
 Please make sure all dependencies are installed and importable.
-""".rstrip()
+""".rstrip())
     sys.exit(1)
 
 
@@ -386,7 +388,7 @@ def connect(user, host, port):
             err += ")"
             # Debuggin'
             if output.debug:
-                print >>sys.stderr, err
+                system_log.error(err)
             # Having said our piece, try again
             if not giving_up:
                 # Sleep if it wasn't a timeout, so we still get timeout-like
@@ -482,8 +484,8 @@ def disconnect_all():
     # Explicitly disconnect from all servers
     for key in connections.keys():
         if output.status:
-            print "Disconnecting from %s..." % denormalize(key),
+            system_log.info("Disconnecting from %s..." % denormalize(key))
         connections[key].close()
         del connections[key]
         if output.status:
-            print "done."
+            system_log.info("done.")
