@@ -154,8 +154,11 @@ def sed(filename, before, after, limit='', use_sudo=False, backup='.bak',
     func = use_sudo and sudo or run
     # Characters to be escaped in both
     for char in "/'":
-        before = before.replace(char, r'\%s' % char)
-        after = after.replace(char, r'\%s' % char)
+        escape_char = r'\%s'
+        if char == "'":
+            escape_char = r"'\%s'"
+        before = before.replace(char, escape_char % char)
+        after = after.replace(char, escape_char % char)
     # Characters to be escaped in replacement only (they're useful in regexen
     # in the 'before' part)
     for char in "()":
