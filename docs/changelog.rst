@@ -25,6 +25,7 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`306` Remote paths now use posixpath for a separator.
 * :feature:`563` Implemented :ref:`Python-level host aliasing <host-aliases>`
   as a compliment to the SSH config aliasing available in 1.4.
 * :release:`1.4.0 <2012-02-13>`
@@ -806,7 +807,7 @@ Documentation updates
 * :issue:`120`: Tweaked documentation, help strings to make it more obvious
   that fabfiles are simply Python modules.
 * :issue:`127`: Added :ref:`note to install docs <pypm>` re: ActiveState's
-  PyPM. Thanks to Sridhar Ratnakumar for the tip. 
+  PyPM. Thanks to Sridhar Ratnakumar for the tip.
 
 
 Changes in version 0.9 (2009-11-08)
@@ -1084,7 +1085,7 @@ the door.
 
 * Various minor tweaks to the (still in-progress) documentation, including one
   thanks to Curt Micol.
-  
+
 * Added a number of TODO items based on user feedback (thanks!)
 
 * Host information now available in granular form (user, host, port) in the
