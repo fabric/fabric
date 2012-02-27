@@ -6,6 +6,7 @@ from __future__ import with_statement
 
 import os
 import os.path
+import posixpath
 import re
 import stat
 import subprocess
@@ -588,7 +589,7 @@ def get(remote_path, local_path=None):
             # Otherwise, be relative to remote home directory (SFTP server's
             # '.')
             else:
-                remote_path = os.path.join(home, remote_path)
+                remote_path = posixpath.join(home, remote_path)
 
         # Track final local destination files so we can return a list
         local_files = []
