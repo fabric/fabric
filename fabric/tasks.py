@@ -170,8 +170,15 @@ def _execute(task, host, my_env, args, kwargs, jobs, queue, multiprocessing):
                 # But still print it out, otherwise users won't know what the
                 # fuck. Especially if the task is run at top level and nobody's
                 # doing anything with the return value.
-                print >> sys.stderr, "!!! Parallel execution exception under host %r:" % name
-                sys.excepthook(*sys.exc_info())
+                # BUT don't do this if it's a SystemExit as that implies use of
+                # abort(), which does its own printing.
+                if e.__class__ is not SystemExit:
+                    print >> sys.stderr, "!!! Parallel execution exception under host %r:" % name
+                    sys.excepthook(*sys.exc_info())
+                # Conversely, if it IS SystemExit, we can raise it to ensure a
+                # correct return value.
+                else:
+                    raise
             queue.put({'name': name, 'result': result})
 
         # Stuff into Process wrapper

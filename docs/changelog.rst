@@ -25,6 +25,10 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`572` Parallel task aborts (as oppposed to unhandled exceptions) now
+  correctly print their abort messages instead of tracebacks, and cause the
+  parent process to exit with the correct (nonzero) return code. Thanks to Ian
+  Langworth for the catch.
 * :bug:`306` Remote paths now use posixpath for a separator. Thanks to Jason
   Coombs for the patch.
 * :feature:`563` Implemented :ref:`Python-level host aliasing <host-aliases>`
