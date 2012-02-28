@@ -9,7 +9,7 @@ install:
   # Get fab to test fab
   - pip install -e .
   # Install third-party multiprocessing on 2.5
-  - "[[ $TRAVIS_PYTHON_VERSION == '2.5' ]] && pip install multiprocessing"
+  - "if [[ $TRAVIS_PYTHON_VERSION == '2.5' ]]; then pip install multiprocessing; fi"
 script: fab test
 notifications:
   irc: "irc.freenode.org#fabric"
