@@ -9,3 +9,5 @@ install:
   # Get fab to test fab
   - pip install -e .
 script: fab test
+notifications:
+  irc: "irc.freenode.org#fabric"
