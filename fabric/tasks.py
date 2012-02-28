@@ -175,6 +175,10 @@ def _execute(task, host, my_env, args, kwargs, jobs, queue, multiprocessing):
                 if e.__class__ is not SystemExit:
                     print >> sys.stderr, "!!! Parallel execution exception under host %r:" % name
                     sys.excepthook(*sys.exc_info())
+                # Conversely, if it IS SystemExit, we can raise it to ensure a
+                # correct return value.
+                else:
+                    raise
             queue.put({'name': name, 'result': result})
 
         # Stuff into Process wrapper
