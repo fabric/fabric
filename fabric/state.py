@@ -281,7 +281,6 @@ env = _AttributeDict({
     'exclude_hosts': [],
     'host': None,
     'host_string': None,
-    'hostdefs': {},
     'lcwd': '',  # Must be empty string, not None, for concatenation purposes
     'local_user': _get_system_username(),
     'output_prefix': True,

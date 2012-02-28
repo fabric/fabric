@@ -162,9 +162,6 @@ def normalize(host_string, omit_port=False):
     This function will process SSH config files if Fabric is configured to do
     so, and will use them to fill in some default values or swap in hostname
     aliases.
-
-    It will also honor ``env.hostdefs`` as an alias map (performed *after* SSH
-    config is processed.)
     """
     from fabric.state import env
     # Gracefully handle "empty" input by returning empty output
@@ -172,24 +169,14 @@ def normalize(host_string, omit_port=False):
         return ('', '') if omit_port else ('', '', '')
     # Parse host string (need this early on to look up host-specific ssh_config
     # values)
-    parsed = parse_host_string(host_string)
-    host = parsed['host']
-    # If the host portion exists in hostdefs, expand and use those values
-    # instead (merging as appropriate)
-    if host in env.hostdefs:
-        aliased = parse_host_string(env.hostdefs[host])
-        # Host always gets overridden
-        host = aliased['host']
-        # User, port only get overridden if the new values are non-empty
-        for key in ('user', 'port'):
-            if not parsed[key]:
-                parsed[key] = aliased[key]
+    r = parse_host_string(host_string)
+    host = r['host']
     # Env values (using defaults if somehow earlier defaults were replaced with
     # empty values)
     user = env.user or env.local_user
     port = env.port or env.default_port
     # SSH config data
-    conf = ssh_config(join_host_strings(user, host, port))
+    conf = ssh_config(host_string)
     # Only use ssh_config values if the env value appears unmodified from
     # the true defaults. If the user has tweaked them, that new value
     # takes precedence.
@@ -202,8 +189,8 @@ def normalize(host_string, omit_port=False):
         host = conf['hostname']
     # Merge explicit user/port values with the env/ssh_config derived ones
     # (Host is already done at this point.)
-    user = parsed['user'] or user
-    port = parsed['port'] or port
+    user = r['user'] or user
+    port = r['port'] or port
     if omit_port:
         return user, host
     return user, host, port

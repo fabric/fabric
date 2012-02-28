@@ -31,8 +31,6 @@ Changelog
   Langworth for the catch.
 * :bug:`306` Remote paths now use posixpath for a separator. Thanks to Jason
   Coombs for the patch.
-* :feature:`563` Implemented :ref:`Python-level host aliasing <host-aliases>`
-  as a compliment to the SSH config aliasing available in 1.4.
 * :release:`1.4.0 <2012-02-13>`
 * :release:`1.3.5 <2012-02-13>`
 * :release:`1.2.6 <2012-02-13>`

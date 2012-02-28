@@ -96,57 +96,6 @@ During execution, Fabric normalizes the host strings given and then stores each
 part (username/hostname/port) in the environment dictionary, for both its use
 and for tasks to reference if the need arises. See :doc:`env` for details.
 
-.. _host-aliases:
-
-Host aliases
-~~~~~~~~~~~~
-
-Fabric supports the concept of "host aliases", which lets you set up more
-usable references to longer or harder to remember host strings. This is highly
-similar to using ``Host`` and ``HostName`` directives in :ref:`SSH config files
-<ssh-config>`, and in most cases using that feature instead will be more
-generally useful (since your regular SSH client can use those aliases too.)
-Fabric's native host aliasing is intended for situations where defining the
-alias map at the Python level is required (e.g. dynamically defined based on
-some other data source.)
-
-Host aliases are implemented as a mapping in :ref:`env.hostdefs
-<env-hostdefs>`, where host strings equal to the mapping's key will be replaced
-at connection time with the appropriate value. For example, this sample fabfile
-allows use of ``"web1"`` in various places, which will be replaced with
-``"web1.example.com"`` automatically::
-
-    from fabric.api import env, hosts, task
-
-    env.hostdefs = {"web1": "web1.example.com"}
-
-    @task
-    @hosts("web1")
-    def mytask():
-        run("This will execute against web1.example.com")
-
-Some notes:
-
-* The values in ``env.hostdefs`` are normal :ref:`host strings <host-strings>`
-  and may include user and/or port specifiers if desired.
-* If a reference *to* an alias includes user or port specifiers, they are
-  preserved after replacement. E.g. in the above example, one could refer to
-  ``"admin@web1"`` and it would result in ``"admin@web1.example.com"``.
-
-  * This includes overriding explicit user/port specifiers in the alias value,
-    so with a ``hostdefs`` of ``{"db": "dbuser@db.example.com"}``, references
-    to ``"myotheruser@db"`` expands to ``"myotheruser@db.example.com"`` and
-    **not** to ``"dbuser@db.example.com"``.
-
-* Host alias replacement occurs before :ref:`SSH config file directives
-  <ssh-config>` are processed, so in the event that a given alias maps to both
-  ``env.hostdefs`` **and** an SSH config ``Host`` directive, the ``hostdefs``
-  replacement "wins."
-* Similarly, if an ``env.hostdefs`` *value* ends up mapping to an SSH config
-  ``Host`` directive, the SSH-config-level replacement will also take place
-  (thus presenting a 2nd potential "level" of aliasing.)
-
-
 Roles
 -----
 
