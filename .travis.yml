@@ -8,6 +8,8 @@ install:
   - pip install -r requirements.txt --use-mirrors
   # Get fab to test fab
   - pip install -e .
+  # Install third-party multiprocessing on 2.5
+  - "[[ $TRAVIS_PYTHON_VERSION == '2.5']] && pip install multiprocessing"
 script: fab test
 notifications:
   irc: "irc.freenode.org#fabric"
