@@ -4,6 +4,8 @@ python:
   - "2.6"
   - "2.7"
 install:
+  # Build/test dependencies
   - pip install -r requirements.txt --use-mirrors
+  # Get fab to test fab
   - pip install -e .
 script: fab test
