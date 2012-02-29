@@ -12,4 +12,7 @@ install:
   - "if [[ $TRAVIS_PYTHON_VERSION == '2.5' ]]; then pip install multiprocessing; fi"
 script: fab test
 notifications:
-  irc: "irc.freenode.org#fabric"
+  irc:
+    channels: "irc.freenode.org#fabric"
+    on_success: change
+    on_failure: change
