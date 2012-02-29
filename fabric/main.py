@@ -25,6 +25,7 @@ from fabric.state import env_options
 from fabric.tasks import Task, execute
 from fabric.task_utils import _Dict, crawl
 from fabric.utils import abort, indent
+from fabric.operations import _pty_size
 
 # One-time calculation of "all internal callables" to avoid doing this on every
 # check of a given fabfile callable (in is_classic_task()).
@@ -374,6 +375,7 @@ def _normal_list(docstrings=True):
     max_len = reduce(lambda a, b: max(a, len(b)), task_names, 0)
     sep = '  '
     trail = '...'
+    max_width = _pty_size()[1] - 1 - len(trail)
     for name in task_names:
         output = None
         docstring = _print_docstring(docstrings, name)
@@ -381,7 +383,7 @@ def _normal_list(docstrings=True):
             lines = filter(None, docstring.splitlines())
             first_line = lines[0].strip()
             # Truncate it if it's longer than N chars
-            size = 75 - (max_len + len(sep) + len(trail))
+            size = max_width - (max_len + len(sep) + len(trail))
             if len(first_line) > size:
                 first_line = first_line[:size] + trail
             output = name.ljust(max_len) + sep + first_line
