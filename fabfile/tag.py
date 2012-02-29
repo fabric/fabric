@@ -2,7 +2,7 @@ from __future__ import with_statement
 
 from contextlib import nested
 
-from fabric.api import *
+from fabric.api import abort, hide, local, settings, task
 
 # Need to import this as fabric.version for reload() purposes
 import fabric.version
@@ -17,17 +17,20 @@ def _seek_version(cmd, txt):
         cmd = cmd % _version('short')
         return local(cmd, capture=True)
 
+
 def current_version_is_tagged():
     return _seek_version(
         'git tag | egrep "^%s$"',
         "Searching for existing tag"
     )
 
+
 def current_version_is_changelogged(filename):
     return _seek_version(
         'egrep "^\* :release:`%s " filename',
         "Looking for changelog entry"
     )
+
 
 def update_code(filename, force):
     """
@@ -45,6 +48,7 @@ def update_code(filename, force):
     if not has_diff and not force:
         abort("You seem to have aborted the file edit, so I'm aborting too.")
     return filename
+
 
 def commits_since_last_tag():
     """
@@ -89,9 +93,9 @@ def tag(force='no', push='no'):
         # Similar process but for the changelog.
         changelog = "docs/changelog.rst"
         if not current_version_is_changelogged(changelog):
-           changed.append(update_code(changelog, force))
+            changed.append(update_code(changelog, force))
         else:
-           print("Changelog already updated, no need to edit...")
+            print("Changelog already updated, no need to edit...")
         # Commit any changes
         if changed:
             with msg("Committing updated version and/or changelog"):

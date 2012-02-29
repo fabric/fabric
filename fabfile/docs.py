@@ -1,8 +1,6 @@
 from __future__ import with_statement
 
-from fabric.api import *
-from fabric.contrib.project import rsync_project
-from fabric.version import get_version
+from fabric.api import lcd, local, task
 
 
 @task(default=True)

@@ -1,10 +1,10 @@
 from fabric.utils import abort, indent
-from fabric import state
 
 
 # For attribute tomfoolery
 class _Dict(dict):
     pass
+
 
 def _crawl(name, mapping):
     """
@@ -15,6 +15,7 @@ def _crawl(name, mapping):
     if not rest:
         return value
     return _crawl(rest, value)
+
 
 def crawl(name, mapping):
     try:
