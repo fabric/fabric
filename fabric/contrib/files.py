@@ -41,12 +41,8 @@ def first(*args, **kwargs):
     exist. May specify ``use_sudo`` which is passed to `exists`.
     """
     for directory in args:
-        if not kwargs.get('use_sudo'):
-            if exists(directory, sudo=False):
-                return directory
-        else:
-            if exists(directory):
-                return directory
+        if exists(directory,**kwargs):
+            return directory
 
 
 def upload_template(filename, destination, context=None, use_jinja=False,
