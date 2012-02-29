@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`499` `contrib.files.first <fabric.contrib.files.first>` used an
+  outdated function signature in its wrapped `~fabric.contrib.files.exists`
+  call. This has been fixed. Thanks to Massimiliano Torromeo for catch & patch.
 * :bug:`551` :option:`--list <-l>` output now detects terminal window size
   and truncates (or doesn't truncate) accordingly. Thanks to Horacio G. de Oro
   for the initial pull request.
