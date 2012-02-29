@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`551` :option:`--list <-l>` output now detects terminal window size
+  and truncates (or doesn't truncate) accordingly. Thanks to Horacio G. de Oro
+  for the initial pull request.
 * :bug:`572` Parallel task aborts (as oppposed to unhandled exceptions) now
   correctly print their abort messages instead of tracebacks, and cause the
   parent process to exit with the correct (nonzero) return code. Thanks to Ian
