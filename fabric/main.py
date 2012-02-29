@@ -14,7 +14,6 @@ from operator import add, isMappingType
 from optparse import OptionParser
 import os
 import sys
-import subprocess
 import types
 
 # For checking callables against the API, & easy mocking
