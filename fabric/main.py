@@ -384,10 +384,7 @@ def _normal_list(docstrings=True):
     max_len = reduce(lambda a, b: max(a, len(b)), task_names, 0)
     sep = '  '
     trail = '...'
-    max_width = 75
-    available_columns = _pty_size()[1]-1-len(trail)
-    if available_columns > max_width:
-        max_width = available_columns
+    max_width = _pty_size()[1] - 1 - len(trail)
     for name in task_names:
         output = None
         docstring = _print_docstring(docstrings, name)
