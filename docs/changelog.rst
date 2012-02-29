@@ -25,7 +25,7 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
-* :feature:`551` :option:`--list <-l>` output now detects terminal window size
+* :bug:`551` :option:`--list <-l>` output now detects terminal window size
   and truncates (or doesn't truncate) accordingly. Thanks to Horacio G. de Oro
   for the initial pull request.
 * :bug:`572` Parallel task aborts (as oppposed to unhandled exceptions) now
