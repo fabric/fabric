@@ -4,7 +4,6 @@ import sys
 import time
 from select import select
 
-from fabric.context_managers import settings, char_buffered
 from fabric.state import env, output, win32
 from fabric.auth import get_password, set_password
 import fabric.network
@@ -24,8 +23,10 @@ def _endswith(char_list, substring):
     substring = list(substring)
     return tail == substring
 
+
 def _is_newline(byte):
     return byte in ('\n', '\r')
+
 
 def _was_newline(capture, byte):
     """

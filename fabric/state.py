@@ -65,7 +65,7 @@ def _rc_path():
             rc_file
         )
 
-default_port = '22' # hurr durr
+default_port = '22'  # hurr durr
 default_ssh_config_path = '~/.ssh/config'
 
 # Options/settings which exist both as environment keys and which can be set on
@@ -131,7 +131,7 @@ env_options = [
         help="comma-separated list of hosts to operate on"
     ),
 
-    make_option('-i', 
+    make_option('-i',
         action='append',
         dest='key_filename',
         metavar='PATH',
