@@ -37,12 +37,14 @@ class Task(object):
     is_default = False
 
     # TODO: make it so that this wraps other decorators as expected
-    def __init__(self, alias=None, aliases=None, default=False,
+    def __init__(self, name=None, alias=None, aliases=None, default=False,
         *args, **kwargs):
         if alias is not None:
             self.aliases = [alias, ]
         if aliases is not None:
             self.aliases = aliases
+        if name is not None:
+            self.name = name
         self.is_default = default
 
     def run(self):
@@ -101,7 +103,10 @@ class WrappedCallableTask(Task):
         # Don't use getattr() here -- we want to avoid touching self.name
         # entirely so the superclass' value remains default.
         if hasattr(callable, '__name__'):
-            self.__name__ = self.name = callable.__name__
+            if self.name == 'undefined':
+                self.__name__ = self.name = callable.__name__
+            else:
+                self.__name__ = self.name
         if hasattr(callable, '__doc__'):
             self.__doc__ = callable.__doc__
 
