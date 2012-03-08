@@ -254,6 +254,11 @@ class SFTP(object):
         else:
             strip = os.path.dirname(os.path.dirname(local_path))
 
+        # behave like rsync.  if the local path ends in /, avoid
+        # creating an additional directory layer on the remote side.
+        if local_path[-1:] == '/':
+            strip = os.path.join(strip, os.path.basename(local_path[:-1]))
+
         remote_paths = []
 
         for context, dirs, files in os.walk(local_path):

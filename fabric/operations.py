@@ -276,6 +276,16 @@ def put(local_path=None, remote_path=None, use_sudo=False,
         argument will cause a temporary file to be utilized due to limitations
         in our SSH layer's API.
 
+    .. note::
+        A trailing slash on the local_path is treated in the same way as
+        rsync - think of a trailing / on a source as meaning "copy the
+        contents of this directory" as opposed to "copy the directory by
+        name". In other words, each of the following commands copies the files
+        in the same way:
+
+            put('src/foo', 'dst')
+            put('src/foo/', 'dst/foo')
+
     ``remote_path`` may also be a relative or absolute location, but applied to
     the remote host. Relative paths are relative to the remote user's home
     directory, but tilde expansion (e.g. ``~/.ssh/``) will also be performed if
