@@ -8,6 +8,7 @@ Context managers for use with the ``with`` statement.
 """
 
 from contextlib import contextmanager, nested
+import os
 import sys
 
 from fabric.state import env, output, win32
@@ -325,6 +326,7 @@ def char_buffered(pipe):
 
     Only applies on Unix-based systems; on Windows this is a no-op.
     """
+    
     if win32 or not pipe.isatty():
         yield
     else:
@@ -334,3 +336,32 @@ def char_buffered(pipe):
             yield
         finally:
             termios.tcsetattr(pipe, termios.TCSADRAIN, old_settings)
+
+
+@contextmanager
+def cwd_in_path():
+    """
+    Prepend os.getcwd() to sys.path for the python environment running the
+    fabfile.
+
+    This allows importing packages/modules in the same directory as the fabfile.
+
+    Initializing a database with sqlalchemy is an example of where this could be
+    useful::
+
+        def db_init():
+            with cwd_in_path():
+                from localmodule import db
+                db.create_all()
+    """
+    if os.getcwd() in sys.path or '' in sys.path:
+        yield
+    else:
+        prev_sys_path = list(sys.path)
+        sys.path.insert(0, os.path.abspath(os.getcwd()))
+        try:
+            yield
+        finally:
+            for item in list(sys.path):
+                if item not in prev_sys_path:
+                    sys.path.remove(item)
