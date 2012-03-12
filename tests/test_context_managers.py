@@ -2,8 +2,8 @@ from __future__ import with_statement
 
 from nose.tools import eq_, ok_
 
-from fabric.state import env
-from fabric.context_managers import cd, settings
+from fabric.state import env, output
+from fabric.context_managers import cd, settings, lcd
 
 
 #
@@ -75,3 +75,19 @@ def test_settings_with_multiple_kwargs():
         eq_(env.testval2, "inner 2")
     eq_(env.testval1, "outer 1")
     eq_(env.testval2, "outer 2")
+
+def test_settings_with_other_context_managers():
+    """
+    settings() should take other context managers, and use them with other overrided
+    key/value pairs.
+    """
+    env.testval1 = "outer 1"
+    prev_lcwd = env.lcwd
+
+    with settings(lcd("here"), testval1="inner 1"):
+        eq_(env.testval1, "inner 1")
+        ok_(env.lcwd.endswith("here")) # Should be the side-effect of adding cd to settings
+
+    ok_(env.testval1, "outer 1")
+    eq_(env.lcwd, prev_lcwd)
+
