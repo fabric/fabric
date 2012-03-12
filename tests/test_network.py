@@ -566,6 +566,7 @@ class TestSSHConfig(FabricTest):
         Test-server connection using ssh_config values
         """
         with settings(
+            hide('everything'),
             ssh_config_path=support("testserver_ssh_config"),
             host_string='testserver',
         ):
