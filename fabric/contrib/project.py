@@ -10,6 +10,7 @@ from tempfile import mkdtemp
 from fabric.network import needs_host, key_filenames, normalize
 from fabric.operations import local, run, put
 from fabric.state import env, output
+from fabric.api import cd
 
 __all__ = ['rsync_project', 'upload_project']
 
@@ -124,7 +125,7 @@ def upload_project(local_dir=None, remote_dir=""):
 
     ``local_dir`` specifies the local project directory to upload, and defaults
     to the current working directory.
-    
+
     ``remote_dir`` specifies the target directory to upload into (meaning that
     a copy of ``local_dir`` will appear as a subdirectory of ``remote_dir``)
     and defaults to the remote user's home directory.
@@ -152,8 +153,10 @@ def upload_project(local_dir=None, remote_dir=""):
         local("tar -czf %s -C %s %s" % (tar_path, local_path, local_name))
         put(tar_path, target_tar)
         try:
-            run("tar -xzf %s" % tar_file)
+            with cd(remote_dir):
+                run("tar -xzf %s" % tar_file)
         finally:
-            run("rm -f %s" % tar_file)
+            with cd(remote_dir):
+                run("rm -f %s" % tar_file)
     finally:
         local("rm -rf %s" % tmp_folder)
