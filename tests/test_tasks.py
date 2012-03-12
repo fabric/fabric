@@ -313,3 +313,11 @@ class TestExecute(FabricTest):
         with settings(hosts=[]): # protect against really odd test bleed :(
             execute(task)
         eq_(sys.stdout.getvalue(), "")
+
+
+    def test_should_restore_default_user_value(self):
+        users = ['test', 'default']
+        def task():
+            eq_(env.user, users.pop(0)) 
+        with settings(user='default'):
+            execute(task, hosts=['test@host1', 'host2'])
