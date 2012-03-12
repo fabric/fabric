@@ -25,6 +25,10 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`584` `~fabric.contrib.project.upload_project` did not take explicit
+  remote directory location into account when untarring, and now uses
+  `~fabric.context_managers.cd` to address this. Thanks to Ben Burry for the
+  patch.
 * :bug:`458` `~fabric.decorators.with_settings` did not perfectly match
   `~fabric.context_managers.settings`, re: ability to inline additional context
   managers. This has been corrected. Thanks to Rory Geoghegan for the patch.

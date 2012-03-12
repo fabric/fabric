@@ -1,6 +1,7 @@
 """
 Useful non-core functionality, e.g. functions composing multiple operations.
 """
+from __future__ import with_statement
 
 from os import getcwd, sep
 import os.path
@@ -10,6 +11,7 @@ from tempfile import mkdtemp
 from fabric.network import needs_host, key_filenames, normalize
 from fabric.operations import local, run, put
 from fabric.state import env, output
+from fabric.context_managers import cd
 
 __all__ = ['rsync_project', 'upload_project']
 
@@ -151,9 +153,10 @@ def upload_project(local_dir=None, remote_dir=""):
         tar_path = os.path.join(tmp_folder, tar_file)
         local("tar -czf %s -C %s %s" % (tar_path, local_path, local_name))
         put(tar_path, target_tar)
-        try:
-            run("tar -xzf %s" % tar_file)
-        finally:
-            run("rm -f %s" % tar_file)
+        with cd(remote_dir):
+            try:
+                run("tar -xzf %s" % tar_file)
+            finally:
+                run("rm -f %s" % tar_file)
     finally:
         local("rm -rf %s" % tmp_folder)
