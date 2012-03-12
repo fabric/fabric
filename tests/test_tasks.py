@@ -314,8 +314,10 @@ class TestExecute(FabricTest):
             execute(task)
         eq_(sys.stdout.getvalue(), "")
 
-
-    def test_should_restore_default_user_value(self):
+    def test_should_restore_env_user_value(self):
+        """
+        should appropriately restore env.user after execute
+        """
         users = ['test', 'default']
         def task():
             eq_(env.user, users.pop(0)) 
