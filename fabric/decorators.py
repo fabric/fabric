@@ -188,7 +188,7 @@ def parallel(pool_size=None):
     return real_decorator
 
 
-def with_settings(**kw_settings):
+def with_settings(*arg_settings, **kw_settings):
     """
     Decorator equivalent of ``fabric.context_managers.settings``.
 
@@ -209,7 +209,7 @@ def with_settings(**kw_settings):
     def outer(func):
         @wraps(func)
         def inner(*args, **kwargs):
-            with settings(**kw_settings):
+            with settings(*arg_settings, **kw_settings):
                 return func(*args, **kwargs)
         return _wrap_as_new(func, inner)
     return outer
