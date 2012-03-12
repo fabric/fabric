@@ -585,9 +585,6 @@ def main():
             print("Fabric %s" % state.env.version)
             sys.exit(0)
 
-        # Load settings from user settings file, into shared env dict.
-        state.env.update(load_settings(state.env.rcfile))
-
         # Find local fabfile path or abort
         fabfile = find_fabfile()
         if not fabfile and not remainder_arguments:
@@ -605,6 +602,9 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
         if fabfile:
             docstring, callables, default = load_fabfile(fabfile)
             state.commands.update(callables)
+
+        # Load settings from user settings file, into shared env dict.
+        state.env.update(load_settings(state.env.rcfile))
 
         # Handle case where we were called bare, i.e. just "fab", and print
         # a help message.
