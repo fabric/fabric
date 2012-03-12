@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`458` `~fabric.decorators.with_settings` did not perfectly match
+  `~fabric.context_managers.settings`, re: ability to inline additional context
+  managers. This has been corrected. Thanks to Rory Geoghegan for the patch.
 * :bug:`499` `contrib.files.first <fabric.contrib.files.first>` used an
   outdated function signature in its wrapped `~fabric.contrib.files.exists`
   call. This has been fixed. Thanks to Massimiliano Torromeo for catch & patch.
