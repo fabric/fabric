@@ -277,7 +277,7 @@ def contains(filename, text, exact=False, use_sudo=False):
     if exact:
         text = "^%s$" % text
     with settings(hide('everything'), warn_only=True):
-        return func('egrep "%s" "%s"' % (
+        return func('egrep "%s" "$(echo %s)"' % (
             text.replace('"', r'\"'),
             filename.replace('"', r'\"')
         )).succeeded
