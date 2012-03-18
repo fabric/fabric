@@ -401,3 +401,18 @@ class TestExecute(FabricTest):
             run = Fake(callable=True, expect_call=True)
         mytask = MyTask()
         execute(mytask)
+
+
+    @server()
+    def test_should_not_mutate_env_parallel(self):
+        """
+        should not change env.parallel's value post-run
+        """
+        @parallel
+        @hosts('127.0.0.1:2200')
+        def mytask():
+            run("ls /simple")
+        eq_(env.parallel, False)
+        with hide('everything'):
+            execute(mytask)
+        eq_(env.parallel, False)
