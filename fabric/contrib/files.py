@@ -8,7 +8,6 @@ import hashlib
 import tempfile
 import re
 import os
-from StringIO import StringIO
 
 from fabric.api import *
 
@@ -112,13 +111,16 @@ def upload_template(filename, destination, context=None, use_jinja=False,
         func("cp %s{,.bak}" % destination)
 
     # Upload the file.
-    put(
-        local_path=StringIO(text),
-        remote_path=destination,
-        use_sudo=use_sudo,
-        mirror_local_mode=mirror_local_mode,
-        mode=mode
-    )
+    with tempfile.TemporaryFile() as tmp:
+        tmp.write(text.encode('utf-8'))
+
+        put(
+            local_path=tmp,
+            remote_path=destination,
+            use_sudo=use_sudo,
+            mirror_local_mode=mirror_local_mode,
+            mode=mode
+        )
 
 
 def sed(filename, before, after, limit='', use_sudo=False, backup='.bak',
@@ -308,7 +310,7 @@ def append(filename, text, use_sudo=False, partial=False, escape=True):
     "append lines to a file" use case. You may override this and force partial
     searching (e.g. ``^<text>``) by specifying ``partial=True``.
 
-    Because ``text`` is single-quoted, single quotes will be transparently 
+    Because ``text`` is single-quoted, single quotes will be transparently
     backslash-escaped. This can be disabled with ``escape=False``.
 
     If ``use_sudo`` is True, will use `sudo` instead of `run`.
@@ -329,12 +331,13 @@ def append(filename, text, use_sudo=False, partial=False, escape=True):
     if isinstance(text, basestring):
         text = [text]
     for line in text:
-        regex = '^' + _escape_for_regex(line)  + ('' if partial else '$')
+        regex = '^' + _escape_for_regex(line) + ('' if partial else '$')
         if (exists(filename, use_sudo=use_sudo) and line
             and contains(filename, regex, use_sudo=use_sudo, escape=False)):
             continue
         line = line.replace("'", r"'\\''") if escape else line
         func("echo '%s' >> %s" % (line, filename))
+
 
 def _escape_for_regex(text):
     """Escape ``text`` to allow literal matching using egrep"""

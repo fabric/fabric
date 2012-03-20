@@ -1,6 +1,9 @@
+# -*- coding: utf-8 -*-
 from __future__ import with_statement
 
-from fabric.api import hide, get, show
+import os
+
+from fabric.api import hide, get
 from fabric.contrib.files import upload_template, contains
 
 from utils import FabricTest, eq_contents
@@ -34,6 +37,23 @@ class TestContrib(FabricTest):
             upload_template(template, remote, {'varname': var})
             get(remote, local)
         eq_contents(local, var)
+
+    @server()
+    def test_upload_template_handles_jinja_template(self):
+        """
+        upload_template() should work OK with Jinja2 template
+        """
+        template = self.mkfile('template_jinja2.txt', '{{ first_name }}')
+        template_name = os.path.basename(template)
+        template_dir = os.path.dirname(template)
+        local = self.path('result.txt')
+        remote = '/configfile.txt'
+        first_name = u'S\u00E9bastien'
+        with hide('everything'):
+            upload_template(template_name, remote, {'first_name': first_name},
+                use_jinja=True, template_dir=template_dir)
+            get(remote, local)
+        eq_contents(local, first_name.encode('utf-8'))
 
     @server(responses={
         'egrep "text" "/file.txt"': (
