@@ -5,9 +5,11 @@ from __future__ import with_statement
 
 from functools import wraps
 from Crypto import Random
+from boto import ec2
 
 from fabric import tasks
 from .context_managers import settings
+from .state import env
 
 
 def task(*args, **kwargs):
@@ -80,6 +82,34 @@ def hosts(*host_list):
         Allow a single, iterable argument (``@hosts(iterable)``) to be used
         instead of requiring ``@hosts(*iterable)``.
     """
+    return _list_annotating_decorator('hosts', *host_list)
+
+
+def ec2_tags(tags):
+    """
+    Decorator defining a tag or tags which will be used to query EC2 for a
+    list of hosts on which the wrapped function will be executed.
+
+    `tags` is a dict of tag_name:value pairs.
+
+    For example, the following will ensure that my_func will be run on all EC2
+    instances that are tagged 'webserver'::
+        
+        @ec2_tags({'role': 'webserver'})
+        def my_func():
+            pass
+    """
+    tag_filter = {}
+    for key, val in tags.iteritems():
+        tag_filter['tag:%s' % key] = val
+
+    host_list = []
+    for region in env.ec2_regions:
+        conn = ec2.connect_to_region(region)
+        reservations = conn.get_all_instances(None, tag_filter)
+        for res in reservations:
+            for instance in res.instances:
+                host_list.append(instance.public_dns_name)
     return _list_annotating_decorator('hosts', *host_list)
 
 

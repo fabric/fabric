@@ -136,6 +136,34 @@ situations where you have common groupings of servers.
 .. versionchanged:: 0.9.2
     Added ability to use callables as ``roledefs`` values.
 
+
+.. _ec2-tags:
+
+EC2 tags
+--------
+
+The ``ec2_tags`` decorator can be used to execute tasks on a number of EC2
+instances, using EC2 tags. Assuming your instances have a 'role' tag with a
+value of 'webserver', this would execute the task on all webserver instances::
+    
+    from fabric.api import ec2_tags
+
+    @ec2_tags({'role': 'webserver'})
+    def my_task():
+        pass
+
+By default, this will search for your instances in all EC2 regions. This is
+inefficient if you only have instances in a couple of regions. The region list
+is stored in env so it can be easily updated. The following task would only
+search the Western Europe EC2 region::
+
+    env.ec2_regions = ['eu-west-1']
+
+    @ec2_tags({'role': 'webserver'})
+    def my_task():
+        pass
+
+
 .. _host-lists:
 
 How host lists are constructed

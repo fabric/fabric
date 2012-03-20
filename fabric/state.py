@@ -278,6 +278,8 @@ env = _AttributeDict({
     'cwd': '',  # Must be empty string, not None, for concatenation purposes
     'default_port': default_port,
     'echo_stdin': True,
+    'ec2_regions': ['eu-west-1', 'us-east-1', 'us-west-1', 'us-west-2', 
+        'sa-east-1', 'ap-southeast-1'],
     'exclude_hosts': [],
     'host': None,
     'host_string': None,
