@@ -83,8 +83,7 @@ class Task(object):
         pool_size = min((pool_size, len(hosts)))
         # Inform user of final pool size for this task
         if state.output.debug:
-            msg = "Parallel tasks now using pool size of %d"
-            print msg % pool_size
+            print "Parallel tasks now using pool size of %d" % pool_size
         return pool_size
 
 
