@@ -74,13 +74,26 @@ def test_escaped_task_arg_split():
     )
 
 
+def test_escaped_task_kwarg_split():
+    """
+    Allow backslashes to escape the = in x=y task kwargs
+    """
+    argstr = r"cmd:arg,escaped\,arg,nota\=kwarg,regular=kwarg,escaped=regular\=kwarg"
+    args = ['arg', 'escaped,arg', 'nota=kwarg']
+    kwargs = {'regular': 'kwarg', 'escaped': 'regular=kwarg'}
+    eq_(
+        parse_arguments([argstr])[0],
+        ('cmd', args, kwargs, [], [], []),
+    )
+
+
+
 #
 # Host/role decorators
 #
 
 # Allow calling Task.get_hosts as function instead (meh.)
 def get_hosts(command, *args):
-    print "calling get_hosts with args %r" % (args,)
     return WrappedCallableTask(command).get_hosts(*args)
 
 def eq_hosts(command, host_list, env=None):
@@ -342,7 +355,7 @@ class TestTaskAliases(FabricTest):
             ok_("foo_aliased" in funcs)
             ok_("foo_aliased_two" in funcs)
 
-    def test_nested_alias(self):
+    def test_nested_aliases(self):
         f = fabfile("nested_aliases.py")
         with path_prefix(f):
             docs, funcs = load_fabfile(f)
@@ -425,6 +438,16 @@ class TestNamespaces(FabricTest):
             docs, funcs = load_fabfile(module)
             eq_(len(funcs), 1)
             ok_('submodule.classic_task' not in _task_names(funcs))
+
+    def test_task_decorator_plays_well_with_others(self):
+        """
+        @task, when inside @hosts/@roles, should not hide the decorated task.
+        """
+        module = fabfile('decorator_order')
+        with path_prefix(module):
+            docs, funcs = load_fabfile(module)
+            # When broken, crawl() finds None for 'foo' instead.
+            eq_(crawl('foo', funcs), funcs['foo'])
 
 
 #

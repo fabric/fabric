@@ -9,28 +9,31 @@ The other callables defined in this module are internal only. Anything useful
 to individuals leveraging Fabric as a library, should be kept elsewhere.
 """
 
-from collections import defaultdict
-from operator import add, isMappingType
+from operator import isMappingType
 from optparse import OptionParser
 import os
 import sys
 import types
 
-from fabric import api, state  # For checking callables against the API, & easy mocking
-from fabric.contrib import console, files, project  # Ditto
-from fabric.network import denormalize, disconnect_all
+# For checking callables against the API, & easy mocking
+from fabric import api, state, colors
+from fabric.contrib import console, files, project
+
+from fabric.network import disconnect_all, ssh
 from fabric.state import env_options
 from fabric.tasks import Task, execute
 from fabric.task_utils import _Dict, crawl
 from fabric.utils import abort, indent
+from fabric.operations import _pty_size
 
 # One-time calculation of "all internal callables" to avoid doing this on every
 # check of a given fabfile callable (in is_classic_task()).
-_modules = [api, project, files, console]
+_modules = [api, project, files, console, colors]
 _internals = reduce(lambda x, y: x + filter(callable, vars(y).values()),
     _modules,
     []
 )
+
 
 # Module recursion cache
 class _ModuleCache(object):
@@ -116,11 +119,16 @@ def is_classic_task(tup):
     Takes (name, object) tuple, returns True if it's a non-Fab public callable.
     """
     name, func = tup
-    return (
-        callable(func)
-        and (func not in _internals)
-        and not name.startswith('_')
-    )
+    try:
+        is_classic = (
+            callable(func)
+            and (func not in _internals)
+            and not name.startswith('_')
+        )
+    # Handle poorly behaved __eq__ implementations
+    except (ValueError, TypeError):
+        is_classic = False
+    return is_classic
 
 
 def load_fabfile(path, importer=None):
@@ -256,7 +264,9 @@ def parse_options():
     # Initialize
     #
 
-    parser = OptionParser(usage="fab [options] <command>[:arg1,arg2=val2,host=foo,hosts='h1;h2',...] ...")
+    parser = OptionParser(
+        usage=("fab [options] <command>"
+               "[:arg1,arg2=val2,host=foo,hosts='h1;h2',...] ..."))
 
     #
     # Define options that don't become `env` vars (typically ones which cause
@@ -264,13 +274,19 @@ def parse_options():
     # --version)
     #
 
-    # Version number (optparse gives you --version but we have to do it
-    # ourselves to get -V too. sigh)
-    parser.add_option('-V', '--version',
-        action='store_true',
-        dest='show_version',
-        default=False,
-        help="show program's version number and exit"
+    # Display info about a specific command
+    parser.add_option('-d', '--display',
+        metavar='NAME',
+        help="print detailed info about command NAME"
+    )
+
+    # Control behavior of --list
+    LIST_FORMAT_OPTIONS = ('short', 'normal', 'nested')
+    parser.add_option('-F', '--list-format',
+        choices=LIST_FORMAT_OPTIONS,
+        default='normal',
+        metavar='FORMAT',
+        help="formats --list, choices: %s" % ", ".join(LIST_FORMAT_OPTIONS)
     )
 
     # List Fab commands found in loaded fabfiles/source files
@@ -281,6 +297,14 @@ def parse_options():
         help="print list of possible commands and exit"
     )
 
+    # Allow setting of arbitrary env vars at runtime.
+    parser.add_option('--set',
+        metavar="KEY=VALUE,...",
+        dest='env_settings',
+        default="",
+        help="comma separated KEY=VALUE pairs to set Fab env vars"
+    )
+
     # Like --list, but text processing friendly
     parser.add_option('--shortlist',
         action='store_true',
@@ -289,18 +313,13 @@ def parse_options():
         help="alias for -F short --list"
     )
 
-    # Control behavior of --list
-    LIST_FORMAT_OPTIONS = ('short', 'normal', 'nested')
-    parser.add_option('-F', '--list-format',
-        choices=LIST_FORMAT_OPTIONS,
-        default='normal',
-        help="formats --list, choices: %s" % ", ".join(LIST_FORMAT_OPTIONS)
-    )
-
-    # Display info about a specific command
-    parser.add_option('-d', '--display',
-        metavar='COMMAND',
-        help="print detailed info about a given command and exit"
+    # Version number (optparse gives you --version but we have to do it
+    # ourselves to get -V too. sigh)
+    parser.add_option('-V', '--version',
+        action='store_true',
+        dest='show_version',
+        default=False,
+        help="show program's version number and exit"
     )
 
     #
@@ -318,11 +337,13 @@ def parse_options():
     opts, args = parser.parse_args()
     return parser, opts, args
 
+
 def _is_task(name, value):
     """
     Is the object a task as opposed to e.g. a dict or int?
     """
     return is_classic_task((name, value)) or is_task_object(value)
+
 
 def _sift_tasks(mapping):
     tasks, collections = [], []
@@ -334,6 +355,7 @@ def _sift_tasks(mapping):
     tasks = sorted(tasks)
     collections = sorted(collections)
     return tasks, collections
+
 
 def _task_names(mapping):
     """
@@ -351,6 +373,7 @@ def _task_names(mapping):
         tasks.extend(map(join, _task_names(module)))
     return tasks
 
+
 def _print_docstring(docstrings, name):
     if not docstrings:
         return False
@@ -366,6 +389,7 @@ def _normal_list(docstrings=True):
     max_len = reduce(lambda a, b: max(a, len(b)), task_names, 0)
     sep = '  '
     trail = '...'
+    max_width = _pty_size()[1] - 1 - len(trail)
     for name in task_names:
         output = None
         docstring = _print_docstring(docstrings, name)
@@ -373,7 +397,7 @@ def _normal_list(docstrings=True):
             lines = filter(None, docstring.splitlines())
             first_line = lines[0].strip()
             # Truncate it if it's longer than N chars
-            size = 75 - (max_len + len(sep) + len(trail))
+            size = max_width - (max_len + len(sep) + len(trail))
             if len(first_line) > size:
                 first_line = first_line[:size] + trail
             output = name.ljust(max_len) + sep + first_line
@@ -399,6 +423,7 @@ def _nested_list(mapping, level=1):
 
 COMMANDS_HEADER = "Available commands"
 NESTED_REMINDER = " (remember to call as module.[...].task)"
+
 
 def list_commands(docstring, format_):
     """
@@ -491,8 +516,9 @@ def parse_arguments(arguments):
         if ':' in cmd:
             cmd, argstr = cmd.split(':', 1)
             for pair in _escape_split(',', argstr):
-                k, _, v = pair.partition('=')
-                if _:
+                result = _escape_split('=', pair)
+                if len(result) > 1:
+                    k, v = result
                     # Catch, interpret host/hosts/role/roles/exclude_hosts
                     # kwargs
                     if k in ['host', 'hosts', 'role', 'roles', 'exclude_hosts']:
@@ -510,7 +536,7 @@ def parse_arguments(arguments):
                     else:
                         kwargs[k] = v
                 else:
-                    args.append(k)
+                    args.append(result[0])
         cmds.append((cmd, args, kwargs, hosts, roles, exclude_hosts))
     return cmds
 
@@ -539,9 +565,6 @@ def update_output_levels(show, hide):
             state.output[key] = False
 
 
-from fabric.tasks import _parallel_tasks
-
-
 def main():
     """
     Main command-line execution loop.
@@ -553,6 +576,22 @@ def main():
         # Handle regular args vs -- args
         arguments = parser.largs
         remainder_arguments = parser.rargs
+
+        # Allow setting of arbitrary env keys.
+        # This comes *before* the "specific" env_options so that those may
+        # override these ones. Specific should override generic, if somebody
+        # was silly enough to specify the same key in both places.
+        # E.g. "fab --set shell=foo --shell=bar" should have env.shell set to
+        # 'bar', not 'foo'.
+        for pair in _escape_split(',', options.env_settings):
+            pair = _escape_split('=', pair)
+            # "--set x" => set env.x to True
+            # "--set x=" => set env.x to ""
+            key = pair[0]
+            value = True
+            if len(pair) == 2:
+                value = pair[1]
+            state.env[key] = value
 
         # Update env with any overridden option values
         # NOTE: This needs to remain the first thing that occurs
@@ -572,6 +611,7 @@ def main():
         # Handle version number option
         if options.show_version:
             print("Fabric %s" % state.env.version)
+            print("ssh (library) %s" % ssh.__version__)
             sys.exit(0)
 
         # Load settings from user settings file, into shared env dict.
@@ -590,6 +630,7 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
         # Load fabfile (which calls its module-level code, including
         # tweaks to env values) and put its commands in the shared commands
         # dict
+        default = None
         if fabfile:
             docstring, callables, default = load_fabfile(fabfile)
             state.commands.update(callables)

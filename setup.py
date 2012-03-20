@@ -38,7 +38,7 @@ setup(
     packages=find_packages(),
     test_suite='nose.collector',
     tests_require=['nose', 'fudge<1.0'],
-    install_requires=['ssh>=1.7.8'],
+    install_requires=['ssh>=1.7.12'],
     entry_points={
         'console_scripts': [
             'fab = fabric.main:main',

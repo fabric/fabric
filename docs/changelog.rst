@@ -25,6 +25,127 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`584` `~fabric.contrib.project.upload_project` did not take explicit
+  remote directory location into account when untarring, and now uses
+  `~fabric.context_managers.cd` to address this. Thanks to Ben Burry for the
+  patch.
+* :bug:`458` `~fabric.decorators.with_settings` did not perfectly match
+  `~fabric.context_managers.settings`, re: ability to inline additional context
+  managers. This has been corrected. Thanks to Rory Geoghegan for the patch.
+* :bug:`499` `contrib.files.first <fabric.contrib.files.first>` used an
+  outdated function signature in its wrapped `~fabric.contrib.files.exists`
+  call. This has been fixed. Thanks to Massimiliano Torromeo for catch & patch.
+* :bug:`551` :option:`--list <-l>` output now detects terminal window size
+  and truncates (or doesn't truncate) accordingly. Thanks to Horacio G. de Oro
+  for the initial pull request.
+* :bug:`572` Parallel task aborts (as oppposed to unhandled exceptions) now
+  correctly print their abort messages instead of tracebacks, and cause the
+  parent process to exit with the correct (nonzero) return code. Thanks to Ian
+  Langworth for the catch.
+* :bug:`306` Remote paths now use posixpath for a separator. Thanks to Jason
+  Coombs for the patch.
+* :release:`1.4.0 <2012-02-13>`
+* :release:`1.3.5 <2012-02-13>`
+* :release:`1.2.6 <2012-02-13>`
+* :release:`1.1.8 <2012-02-13>`
+* :bug:`495` Fixed documentation example showing how to subclass
+  `~fabric.tasks.Task`. Thanks to Brett Haydon for the catch and Mark Merritt
+  for the patch.
+* :bug:`410` Fixed a bug where using the `~fabric.decorators.task` decorator
+  inside/under another decorator such as `~fabric.decorators.hosts` could cause
+  that task to become invalid when invoked by name (due to how old-style vs
+  new-style tasks are detected.) Thanks to Dan Colish for the initial patch.
+* :feature:`559` `~fabric.contrib.project.rsync_project` now allows users to
+  append extra SSH-specific arguments to ``rsync``'s ``--rsh`` flag.
+* :feature:`138` :ref:`env.port <port>` may now be written to at fabfile module
+  level to set a default nonstandard port number. Previously this value was
+  read-only.
+* :feature:`3` Fabric can now load a subset of SSH config functionality
+  directly from your local ``~/.ssh/config`` if :ref:`env.use_ssh_config
+  <use-ssh-config>` is set to ``True``. See :ref:`ssh-config` for details.
+  Thanks to Kirill Pinchuk for the initial patch.
+* :feature:`12` Added the ability to try connecting multiple times to
+  temporarily-down remote systems, instead of immediately failing. (Default
+  behavior is still to only try once.) See :ref:`env.timeout <timeout>` and
+  :ref:`env.connection_attempts <connection-attempts>` for controlling both
+  connection timeouts and total number of attempts. `~fabric.operations.reboot`
+  has also been overhauled (but practically deprecated -- see its updated
+  docs.)
+* :feature:`474` `~fabric.tasks.execute` now allows you to access the executed
+  task's return values, by itself returning a dictionary whose keys are the
+  host strings executed against.
+* :bug:`487` Overhauled the regular expression escaping performed in
+  `~fabric.contrib.files.append` and `~fabric.contrib.files.contains` to try
+  and handle more corner cases. Thanks to Neilen Marais for the patch.
+* :support:`532` Reorganized and cleaned up the output of ``fab --help``.
+* :feature:`8` Added :option:`--skip-bad-hosts`/:ref:`env.skip_bad_hosts
+  <skip-bad-hosts>` option to allow skipping past temporarily down/unreachable
+  hosts.
+* :feature:`13` Env vars may now be set at runtime via the new :option:`--set`
+  command-line flag.
+* :feature:`506` A new :ref:`output alias <output-aliases>`, ``commands``, has
+  been added, which allows hiding remote stdout and local "running command X"
+  output lines.
+* :feature:`72` SSH agent forwarding support has made it into Fabric's SSH
+  library, and hooks for using it have been added (disabled by default; use
+  :option:`-A` or :ref:`env.forward_agent <forward-agent>` to enable.) Thanks
+  to Ben Davis for porting an existing Paramiko patch to `ssh` and providing
+  the necessary tweak to Fabric.
+* :release:`1.3.4 <2012-01-12>`
+* :bug:`492` `@parallel <fabric.decorators.parallel>` did not automatically
+  trigger :ref:`linewise output <linewise-output>`, as was intended. This has
+  been fixed. Thanks to Brandon Huey for the catch.
+* :bug:`510` Parallel mode is incompatible with user input, such as
+  password/hostname prompts, and was causing cryptic `Operation not supported
+  by device` errors when such prompts needed to be displayed. This behavior has
+  been updated to cleanly and obviously ``abort`` instead.
+* :bug:`494` Fixed regression bug affecting some `env` values such as
+  `env.port` under parallel mode. Symptoms included
+  `~fabric.contrib.project.rsync_project` bailing out due to a None port value
+  when run under `@parallel <fabric.decorators.parallel>`. Thanks to Rob
+  Terhaar for the report.
+* :bug:`339` Don't show imported `~fabric.colors` members in :option:`--list
+  <-l>` output.  Thanks to Nick Trew for the report.
+* :release:`1.3.3 <2011-11-23>`
+* :release:`1.2.5 <2011-11-23>`
+* :release:`1.1.7 <2011-11-23>`
+* :bug:`441` Specifying a task module as a task on the command line no longer
+  blows up but presents the usual "no task by that name" error message instead.
+  Thanks to Mitchell Hashimoto for the catch.
+* :bug:`475` Allow escaping of equals signs in per-task args/kwargs.
+* :bug:`450` Improve traceback display when handling ``ImportError`` for
+  dependencies. Thanks to David Wolever for the patches.
+* :bug:`446` Add QNX to list of secondary-case `~fabric.contrib.files.sed`
+  targets. Thanks to Rodrigo Madruga for the tip.
+* :bug:`443` `~fabric.contrib.files.exists` didn't expand tildes; now it does.
+  Thanks to Riccardo Magliocchetti for the patch.
+* :bug:`437` `~fabric.decorators.with_settings` now correctly preserves the
+  wrapped function's docstring and other attributes. Thanks to Eric Buckley for
+  the catch and Luke Plant for the patch.
+* :bug:`400` Handle corner case of systems where ``pwd.getpwuid`` raises
+  ``KeyError`` for the user's UID instead of returning a valid string. Thanks
+  to Dougal Matthews for the catch.
+* :bug:`397` Some poorly behaved objects in third party modules triggered
+  exceptions during Fabric's "classic or new-style task?" test. A fix has been
+  added which tries to work around these.
+* :bug:`341` `~fabric.contrib.files.append` incorrectly failed to detect that
+  the line(s) given already existed in files hidden to the remote user, and
+  continued appending every time it ran. This has been fixed. Thanks to
+  Dominique Peretti for the catch and Martin Vilcans for the patch.
+* :bug:`342` Combining `~fabric.context_managers.cd` with
+  `~fabric.operations.put` and its ``use_sudo`` keyword caused an unrecoverable
+  error. This has been fixed. Thanks to Egor M for the report.
+* :bug:`482` Parallel mode should imply linewise output; omission of this
+  behavior was an oversight.
+* :bug:`230` Fix regression re: combo of no fabfile & arbitrary command use.
+  Thanks to Ali Saifee for the catch.
+* :release:`1.3.2 <2011-11-07>`
+* :release:`1.2.4 <2011-11-07>`
+* :release:`1.1.6 <2011-11-07>`
+* :support:`459` Update our `setup.py` files to note that PyCrypto released
+  2.4.1, which fixes the setuptools problems.
+* :support:`467` (also :issue:`468`, :issue:`469`) Handful of documentation
+  clarification tweaks. Thanks to Paul Hoffman for the patches.
 * :release:`1.3.1 <2011-10-24>`
 * :bug:`457` Ensured that Fabric fast-fails parallel tasks if any child
   processes encountered errors. Previously, multi-task invocations would
@@ -702,7 +823,7 @@ Documentation updates
 * :issue:`120`: Tweaked documentation, help strings to make it more obvious
   that fabfiles are simply Python modules.
 * :issue:`127`: Added :ref:`note to install docs <pypm>` re: ActiveState's
-  PyPM. Thanks to Sridhar Ratnakumar for the tip. 
+  PyPM. Thanks to Sridhar Ratnakumar for the tip.
 
 
 Changes in version 0.9 (2009-11-08)
@@ -980,7 +1101,7 @@ the door.
 
 * Various minor tweaks to the (still in-progress) documentation, including one
   thanks to Curt Micol.
-  
+
 * Added a number of TODO items based on user feedback (thanks!)
 
 * Host information now available in granular form (user, host, port) in the

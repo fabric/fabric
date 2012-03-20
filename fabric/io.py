@@ -4,10 +4,10 @@ import sys
 import time
 from select import select
 
-from fabric.context_managers import settings, char_buffered
-from fabric.state import env, output, win32, io_sleep
+from fabric.state import env, output, win32
 from fabric.auth import get_password, set_password
 import fabric.network
+from fabric.network import ssh
 
 if win32:
     import msvcrt
@@ -23,8 +23,10 @@ def _endswith(char_list, substring):
     substring = list(substring)
     return tail == substring
 
+
 def _is_newline(byte):
     return byte in ('\n', '\r')
+
 
 def _was_newline(capture, byte):
     """
@@ -52,13 +54,14 @@ def output_loop(chan, which, capture):
     reprompt = False
     initial_prefix_printed = False
     line = []
+    linewise = (env.linewise or env.parallel)
     while True:
         # Handle actual read/write
         byte = func(1)
         # Empty byte == EOS
         if byte == '':
             # If linewise, ensure we flush any leftovers in the buffer.
-            if env.linewise and line:
+            if linewise and line:
                 _flush(pipe, _prefix)
                 _flush(pipe, "".join(line))
             break
@@ -76,7 +79,7 @@ def output_loop(chan, which, capture):
                 _prefix = ""
             # Print to user
             if printing:
-                if env.linewise:
+                if linewise:
                     # Print prefix + line after newline is seen
                     if _was_newline(_buffer, byte):
                         _flush(pipe, _prefix)
@@ -159,4 +162,4 @@ def input_loop(chan, using_pty):
                 # output level, don't want it to be accidentally hidden
                 sys.stdout.write(byte)
                 sys.stdout.flush()
-        time.sleep(io_sleep)
+        time.sleep(ssh.io_sleep)

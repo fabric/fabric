@@ -8,6 +8,7 @@ from optparse import make_option
 
 from fabric.network import HostConnectionCache
 from fabric.version import get_version
+from fabric.utils import _AliasDict, _AttributeDict
 
 
 #
@@ -25,45 +26,6 @@ win32 = (sys.platform == 'win32')
 # Environment dictionary - support structures
 #
 
-class _AttributeDict(dict):
-    """
-    Dictionary subclass enabling attribute lookup/assignment of keys/values.
-
-    For example::
-
-        >>> m = _AttributeDict({'foo': 'bar'})
-        >>> m.foo
-        'bar'
-        >>> m.foo = 'not bar'
-        >>> m['foo']
-        'not bar'
-
-    ``_AttributeDict`` objects also provide ``.first()`` which acts like
-    ``.get()`` but accepts multiple keys as arguments, and returns the value of
-    the first hit, e.g.::
-
-        >>> m = _AttributeDict({'foo': 'bar', 'biz': 'baz'})
-        >>> m.first('wrong', 'incorrect', 'foo', 'biz')
-        'bar'
-
-    """
-    def __getattr__(self, key):
-        try:
-            return self[key]
-        except KeyError:
-            # to conform with __getattr__ spec
-            raise AttributeError(key)
-
-    def __setattr__(self, key, value):
-        self[key] = value
-
-    def first(self, *names):
-        for name in names:
-            value = self.get(name)
-            if value:
-                return value
-
-
 # By default, if the user (including code using Fabric as a library) doesn't
 # set the username, we obtain the currently running username and use that.
 def _get_system_username():
@@ -72,7 +34,15 @@ def _get_system_username():
     """
     if not win32:
         import pwd
-        return pwd.getpwuid(os.getuid())[0]
+        try:
+            username = pwd.getpwuid(os.getuid())[0]
+        # getpwuid raises KeyError if it cannot find a username for the given
+        # UID, e.g. on ep.io and similar "non VPS" style services. Rather than
+        # error out, just set the 'default' username to None. Can check for
+        # this value later if required.
+        except KeyError:
+            username = None
+        return username
     else:
         import win32api
         import win32security
@@ -95,6 +65,8 @@ def _rc_path():
             rc_file
         )
 
+default_port = '22'  # hurr durr
+default_ssh_config_path = '~/.ssh/config'
 
 # Options/settings which exist both as environment keys and which can be set on
 # the command line, are defined here. When used via `fab` they will be added to
@@ -112,10 +84,29 @@ def _rc_path():
 # User-facing documentation for these are kept in docs/env.rst.
 env_options = [
 
-    make_option('-r', '--reject-unknown-hosts',
+    make_option('-a', '--no_agent',
         action='store_true',
         default=False,
-        help="reject unknown hosts"
+        help="don't use the running SSH agent"
+    ),
+
+    make_option('-A', '--forward-agent',
+        action='store_true',
+        default=False,
+        help="forward local agent to remote end"
+    ),
+
+    make_option('--abort-on-prompts',
+        action='store_true',
+        default=False,
+        help="abort instead of prompting (for password, host, etc)"
+    ),
+
+    make_option('-c', '--config',
+        dest='rcfile',
+        default=_rc_path(),
+        metavar='PATH',
+        help="specify location of config file to use"
     ),
 
     make_option('-D', '--disable-known-hosts',
@@ -124,14 +115,15 @@ env_options = [
         help="do not load user known_hosts file"
     ),
 
-    make_option('-u', '--user',
-        default=_get_system_username(),
-        help="username to use when connecting to remote hosts"
+    make_option('-f', '--fabfile',
+        default='fabfile',
+        metavar='PATH',
+        help="python module file to import, e.g. '../other.py'"
     ),
 
-    make_option('-p', '--password',
-        default=None,
-        help="password for use with authentication and/or sudo"
+    make_option('--hide',
+        metavar='LEVELS',
+        help="comma-separated list of output levels to hide"
     ),
 
     make_option('-H', '--hosts',
@@ -139,40 +131,109 @@ env_options = [
         help="comma-separated list of hosts to operate on"
     ),
 
-    make_option('-R', '--roles',
-        default=[],
-        help="comma-separated list of roles to operate on"
-    ),
-
-    make_option('-x', '--exclude-hosts',
-        default=[],
-        help="comma-separated list of hosts to exclude"
-    ),
-
-    make_option('-i', 
+    make_option('-i',
         action='append',
         dest='key_filename',
+        metavar='PATH',
         default=None,
         help="path to SSH private key file. May be repeated."
     ),
 
-    # Use -a here to mirror ssh(1) options.
-    make_option('-a', '--no_agent',
-        action='store_true',
-        default=False,
-        help="don't use the running SSH agent"
-    ),
-
-    # No matching option for ssh(1) so just picked something appropriate.
     make_option('-k', '--no-keys',
         action='store_true',
         default=False,
         help="don't load private key files from ~/.ssh/"
     ),
 
-    make_option('-f', '--fabfile',
-        default='fabfile',
-        help="Python module file to import, e.g. '../other.py'"
+    make_option('--keepalive',
+        dest='keepalive',
+        type=int,
+        default=0,
+        metavar="N",
+        help="enables a keepalive every N seconds"
+    ),
+
+    make_option('--linewise',
+        action='store_true',
+        default=False,
+        help="print line-by-line instead of byte-by-byte"
+    ),
+
+    make_option('-n', '--connection-attempts',
+        type='int',
+        metavar='M',
+        dest='connection_attempts',
+        default=1,
+        help="make M attempts to connect before giving up"
+    ),
+
+    make_option('--no-pty',
+        dest='always_use_pty',
+        action='store_false',
+        default=True,
+        help="do not use pseudo-terminal in run/sudo"
+    ),
+
+    make_option('-p', '--password',
+        default=None,
+        help="password for use with authentication and/or sudo"
+    ),
+
+    make_option('-P', '--parallel',
+        dest='parallel',
+        action='store_true',
+        default=False,
+        help="default to parallel execution method"
+    ),
+
+    make_option('--port',
+        default=default_port,
+        help="SSH connection port"
+    ),
+
+    make_option('-r', '--reject-unknown-hosts',
+        action='store_true',
+        default=False,
+        help="reject unknown hosts"
+    ),
+
+    make_option('-R', '--roles',
+        default=[],
+        help="comma-separated list of roles to operate on"
+    ),
+
+    make_option('-s', '--shell',
+        default='/bin/bash -l -c',
+        help="specify a new shell, defaults to '/bin/bash -l -c'"
+    ),
+
+    make_option('--show',
+        metavar='LEVELS',
+        help="comma-separated list of output levels to show"
+    ),
+
+    make_option('--skip-bad-hosts',
+        action="store_true",
+        default=False,
+        help="skip over hosts that can't be reached"
+    ),
+
+    make_option('--ssh-config-path',
+        default=default_ssh_config_path,
+        metavar='PATH',
+        help="Path to SSH config file"
+    ),
+
+    make_option('-t', '--timeout',
+        type='int',
+        default=10,
+        metavar="N",
+        help="set connection timeout to N seconds"
+    ),
+
+    make_option('-u', '--user',
+        default=_get_system_username(),
+        help="username to use when connecting to remote hosts"
     ),
 
     make_option('-w', '--warn-only',
@@ -181,73 +242,20 @@ env_options = [
         help="warn, instead of abort, when commands fail"
     ),
 
-    make_option('-s', '--shell',
-        default='/bin/bash -l -c',
-        help="specify a new shell, defaults to '/bin/bash -l -c'"
+    make_option('-x', '--exclude-hosts',
+        default=[],
+        metavar='HOSTS',
+        help="comma-separated list of hosts to exclude"
     ),
 
-    make_option('-c', '--config',
-        dest='rcfile',
-        default=_rc_path(),
-        help="specify location of config file to use"
-    ),
-
-    # Verbosity controls, analogous to context_managers.(hide|show)
-    make_option('--hide',
-        metavar='LEVELS',
-        help="comma-separated list of output levels to hide"
-    ),
-    make_option('--show',
-        metavar='LEVELS',
-        help="comma-separated list of output levels to show"
-    ),
-
-    # Global PTY flag for run/sudo
-    make_option('--no-pty',
-        dest='always_use_pty',
-        action='store_false',
-        default=True,
-        help="do not use pseudo-terminal in run/sudo"
-    ),
-
-    # Parallel execution model flag
-    make_option('-P', '--parallel',
-            dest='parallel',
-            action='store_true',
-            default=False,
-            help="Default to parallel execution method"
-    ),
-
-    # Limits the number of forks the parallel option uses
     make_option('-z', '--pool-size',
             dest='pool_size',
             type='int',
-            metavar='NUM_FORKS',
+            metavar='INT',
             default=0,
-            help="Number of concurrent processes to use when running in parallel",
+            help="number of concurrent processes to use in parallel mode",
     ),
 
-    # Abort on prompting flag
-    make_option('--abort-on-prompts',
-        action='store_true',
-        default=False,
-        help="Abort instead of prompting (for password, host, etc)"
-    ),
-
-    # Keepalive
-    make_option('--keepalive',
-        dest='keepalive',
-        type=int,
-        default=0,
-        help="enables a keepalive every n seconds"
-    ),
-
-    # Linewise output
-    make_option('--linewise',
-        action='store_true',
-        default=False,
-        help="Print stdout/stderr line-by-line instead of byte-by-byte"
-    ),
 ]
 
 
@@ -268,6 +276,7 @@ env = _AttributeDict({
     'command': None,
     'command_prefixes': [],
     'cwd': '',  # Must be empty string, not None, for concatenation purposes
+    'default_port': default_port,
     'echo_stdin': True,
     'exclude_hosts': [],
     'host': None,
@@ -278,18 +287,31 @@ env = _AttributeDict({
     'passwords': {},
     'path': '',
     'path_behavior': 'append',
-    'port': None,
+    'port': default_port,
     'real_fabfile': None,
     'roles': [],
     'roledefs': {},
+    'skip_bad_hosts': False,
+    'ssh_config_path': default_ssh_config_path,
     # -S so sudo accepts passwd via stdin, -p with our known-value prompt for
     # later detection (thus %s -- gets filled with env.sudo_prompt at runtime)
     'sudo_prefix': "sudo -S -p '%s' ",
     'sudo_prompt': 'sudo password:',
+    'use_exceptions_for': {'network': False},
     'use_shell': True,
+    'use_ssh_config': False,
     'user': None,
     'version': get_version('short')
 })
+
+# Fill in exceptions settings
+exceptions = ['network']
+exception_dict = {}
+for e in exceptions:
+    exception_dict[e] = False
+env.use_exceptions_for = _AliasDict(exception_dict,
+    aliases={'everything': exceptions})
+
 
 # Add in option defaults
 for option in env_options:
@@ -324,62 +346,6 @@ def default_channel():
 # Output controls
 #
 
-class _AliasDict(_AttributeDict):
-    """
-    `_AttributeDict` subclass that allows for "aliasing" of keys to other keys.
-
-    Upon creation, takes an ``aliases`` mapping, which should map alias names
-    to lists of key names. Aliases do not store their own value, but instead
-    set (override) all mapped keys' values. For example, in the following
-    `_AliasDict`, calling ``mydict['foo'] = True`` will set the values of
-    ``mydict['bar']``, ``mydict['biz']`` and ``mydict['baz']`` all to True::
-
-        mydict = _AliasDict(
-            {'biz': True, 'baz': False},
-            aliases={'foo': ['bar', 'biz', 'baz']}
-        )
-
-    Because it is possible for the aliased values to be in a heterogenous
-    state, reading aliases is not supported -- only writing to them is allowed.
-    This also means they will not show up in e.g. ``dict.keys()``.
-
-    ..note::
-
-        Aliases are recursive, so you may refer to an alias within the key list
-        of another alias. Naturally, this means that you can end up with
-        infinite loops if you're not careful.
-
-    `_AliasDict` provides a special function, `expand_aliases`, which will take
-    a list of keys as an argument and will return that list of keys with any
-    aliases expanded. This function will **not** dedupe, so any aliases which
-    overlap will result in duplicate keys in the resulting list.
-    """
-    def __init__(self, arg=None, aliases=None):
-        init = super(_AliasDict, self).__init__
-        if arg is not None:
-            init(arg)
-        else:
-            init()
-        # Can't use super() here because of _AttributeDict's setattr override
-        dict.__setattr__(self, 'aliases', aliases)
-
-    def __setitem__(self, key, value):
-        if key in self.aliases:
-            for aliased in self.aliases[key]:
-                self[aliased] = value
-        else:
-            return super(_AliasDict, self).__setitem__(key, value)
-
-    def expand_aliases(self, keys):
-        ret = []
-        for key in keys:
-            if key in self.aliases:
-                ret.extend(self.expand_aliases(self.aliases[key]))
-            else:
-                ret.append(key)
-        return ret
-
-
 # Keys are "levels" or "groups" of output, values are always boolean,
 # determining whether output falling into the given group is printed or not
 # printed.
@@ -399,12 +365,6 @@ output = _AliasDict({
     'user': True
 }, aliases={
     'everything': ['warnings', 'running', 'user', 'output'],
-    'output': ['stdout', 'stderr']
+    'output': ['stdout', 'stderr'],
+    'commands': ['stdout', 'running']
 })
-
-
-#
-# I/O loop sleep parameter (in seconds)
-#
-
-io_sleep = 0.01

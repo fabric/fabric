@@ -266,7 +266,8 @@ Here's a brief and somewhat contrived example to make this obvious::
     from fabric.tasks import Task
 
     class CustomTask(Task):
-        def __init__(self, func, myarg):
+        def __init__(self, func, myarg, *args, **kwargs):
+            super(CustomTask, self).__init__(*args, **kwargs)
             self.func = func
             self.myarg = myarg
 

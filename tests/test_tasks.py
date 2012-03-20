@@ -9,11 +9,13 @@ import sys
 
 import fabric
 from fabric import tasks
-from fabric.tasks import WrappedCallableTask, execute
-from fabric.api import run, env, settings, hosts, roles, hide
+from fabric.tasks import WrappedCallableTask, execute, Task
+from fabric.api import run, env, settings, hosts, roles, hide, parallel
 from fabric.network import from_dict
+from fabric.exceptions import NetworkError
 
 from utils import eq_, FabricTest, aborts, mock_streams
+from server import server
 
 
 def test_base_task_provides_undefined_name():
@@ -47,8 +49,6 @@ class TestWrappedCallableTask(unittest.TestCase):
             self.fail(
                 "__init__ raised a TypeError, meaning kwargs weren't handled")
 
-
-
     def test_allows_any_number_of_args(self):
         args = [i for i in range(random.randint(0, 10))]
         def foo(): pass
@@ -61,53 +61,47 @@ class TestWrappedCallableTask(unittest.TestCase):
 
     def test_run_is_wrapped_callable(self):
         def foo(): pass
-
         task = tasks.WrappedCallableTask(foo)
         self.assertEqual(task.wrapped, foo)
 
     def test_name_is_the_name_of_the_wrapped_callable(self):
         def foo(): pass
         foo.__name__ = "random_name_%d" % random.randint(1000, 2000)
-
         task = tasks.WrappedCallableTask(foo)
         self.assertEqual(task.name, foo.__name__)
 
     def test_reads_double_under_doc_from_callable(self):
         def foo(): pass
         foo.__doc__ = "Some random __doc__: %d" % random.randint(1000, 2000)
-
         task = tasks.WrappedCallableTask(foo)
         self.assertEqual(task.__doc__, foo.__doc__)
 
     def test_dispatches_to_wrapped_callable_on_run(self):
         random_value = "some random value %d" % random.randint(1000, 2000)
         def foo(): return random_value
-
         task = tasks.WrappedCallableTask(foo)
         self.assertEqual(random_value, task())
 
     def test_passes_all_regular_args_to_run(self):
         def foo(*args): return args
-
-        random_args = tuple([random.randint(1000, 2000) for i in range(random.randint(1, 5))])
+        random_args = tuple(
+            [random.randint(1000, 2000) for i in range(random.randint(1, 5))]
+        )
         task = tasks.WrappedCallableTask(foo)
         self.assertEqual(random_args, task(*random_args))
 
     def test_passes_all_keyword_args_to_run(self):
         def foo(**kwargs): return kwargs
-
         random_kwargs = {}
         for i in range(random.randint(1, 5)):
             random_key = ("foo", "bar", "baz", "foobar", "barfoo")[i]
             random_kwargs[random_key] = random.randint(1000, 2000)
-
         task = tasks.WrappedCallableTask(foo)
         self.assertEqual(random_kwargs, task(**random_kwargs))
 
     def test_calling_the_object_is_the_same_as_run(self):
         random_return = random.randint(1000, 2000)
         def foo(): return random_return
-
         task = tasks.WrappedCallableTask(foo)
         self.assertEqual(task(), task.run())
 
@@ -148,13 +142,13 @@ def test_decorator_incompatibility_on_task():
     roles('www')(foo)
 
 def test_decorator_closure_hiding():
+    """
+    @task should not accidentally destroy decorated attributes from @hosts/etc
+    """
     from fabric.decorators import task, hosts
-    def foo(): print env.host_string
-    foo = hosts("me@localhost")(foo)
-    foo = task(foo)
-
-    # this broke in the old way, due to closure stuff hiding in the
-    # function, but task making an object
+    def foo():
+        print env.host_string
+    foo = task(hosts("me@localhost")(foo))
     eq_(["me@localhost"], foo.hosts)
 
 
@@ -190,6 +184,20 @@ class TestExecute(FabricTest):
         with patched_context(fabric.state, 'commands', commands):
             execute(name)
 
+    @with_fakes
+    def test_should_handle_name_of_Task_object(self):
+        """
+        handle corner case of Task object referrred to by name
+        """
+        name = 'task2'
+        class MyTask(Task):
+            run = Fake(callable=True, expect_call=True)
+        mytask = MyTask()
+        mytask.name = name
+        commands = {name: mytask}
+        with patched_context(fabric.state, 'commands', commands):
+            execute(name)
+
     @aborts
     def test_should_abort_if_task_name_not_found(self):
         """
@@ -220,7 +228,8 @@ class TestExecute(FabricTest):
         def host_string():
             eq_(env.host_string, hostlist.pop(0))
         task = Fake(callable=True, expect_call=True).calls(host_string)
-        execute(task, hosts=hosts)
+        with hide('everything'):
+            execute(task, hosts=hosts)
 
     def test_should_honor_hosts_decorator(self):
         """
@@ -286,24 +295,10 @@ class TestExecute(FabricTest):
         def command():
             eq_(set(env.all_hosts), set(['b', 'c', 'd']))
         task = Fake(callable=True, expect_call=True).calls(command)
-        with settings(roledefs=roledefs):
+        with settings(hide('everything'), roledefs=roledefs):
             execute(
                 task, hosts=hosts, roles=roles, exclude_hosts=exclude_hosts
             )
-
-    @with_fakes
-    def test_should_preserve_previous_settings(self):
-        """
-        should not overwrite env.user, etc after it finishes
-        """
-        outer = dict(user='jeff', host='localhost', port='123')
-        inner = dict(user='frank', host='fabfile.org', port='555')
-        def command():
-            dict_contains(superset=fabric.state.env, subset=inner)
-        with settings(**outer):
-            task = Fake(callable=True, expect_call=True).calls(command)
-            execute(task, host=from_dict(inner))
-            dict_contains(superset=fabric.state.env, subset=outer)
 
     @mock_streams('stdout')
     def test_should_print_executing_line_per_host(self):
@@ -324,5 +319,85 @@ class TestExecute(FabricTest):
         """
         def task():
             pass
-        execute(task)
+        with settings(hosts=[]): # protect against really odd test bleed :(
+            execute(task)
         eq_(sys.stdout.getvalue(), "")
+
+    def test_should_return_dict_for_base_case(self):
+        """
+        Non-network-related tasks should return a dict w/ special key
+        """
+        def task():
+            return "foo"
+        eq_(execute(task), {'<local-only>': 'foo'})
+
+    @server(port=2200)
+    @server(port=2201)
+    def test_should_return_dict_for_serial_use_case(self):
+        """
+        Networked but serial tasks should return per-host-string dict
+        """
+        ports = [2200, 2201]
+        hosts = map(lambda x: '127.0.0.1:%s' % x, ports)
+        def task():
+            run("ls /simple")
+            return "foo"
+        with hide('everything'):
+            eq_(execute(task, hosts=hosts), {
+                '127.0.0.1:2200': 'foo',
+                '127.0.0.1:2201': 'foo'
+            })
+
+    @server()
+    def test_should_preserve_None_for_non_returning_tasks(self):
+        """
+        Tasks which don't return anything should still show up in the dict
+        """
+        def local_task():
+            pass
+        def remote_task():
+            with hide('everything'):
+                run("ls /simple")
+        eq_(execute(local_task), {'<local-only>': None})
+        with hide('everything'):
+            eq_(
+                execute(remote_task, hosts=[env.host_string]),
+                {env.host_string: None}
+            )
+
+    def test_should_use_sentinel_for_tasks_that_errored(self):
+        """
+        Tasks which errored but didn't abort should contain an eg NetworkError
+        """
+        def task():
+            run("whoops")
+        host_string = 'localhost:1234'
+        with settings(hide('everything'), skip_bad_hosts=True):
+            retval = execute(task, hosts=[host_string])
+        assert isinstance(retval[host_string], NetworkError)
+
+    @server(port=2200)
+    @server(port=2201)
+    def test_parallel_return_values(self):
+        """
+        Parallel mode should still return values as in serial mode
+        """
+        @parallel
+        @hosts('127.0.0.1:2200', '127.0.0.1:2201')
+        def task():
+            run("ls /simple")
+            return env.host_string.split(':')[1]
+        with hide('everything'):
+            retval = execute(task)
+        eq_(retval, {'127.0.0.1:2200': '2200', '127.0.0.1:2201': '2201'})
+
+    @with_fakes
+    def test_should_work_with_Task_subclasses(self):
+        """
+        should work for Task subclasses, not just WrappedCallableTask
+        """
+        class MyTask(Task):
+            name = "mytask"
+            run = Fake(callable=True, expect_call=True)
+        mytask = MyTask()
+        execute(mytask)
