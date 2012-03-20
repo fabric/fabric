@@ -25,6 +25,12 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`568` `~fabric.tasks.execute` allowed too much of its internal state
+  changes (to variables such as ``env.host_string`` and ``env.parallel``) to
+  persist after execution completed; this caused a number of different
+  incorrect behaviors. `~fabric.tasks.execute` has been overhauled to clean up
+  its own state changes -- while preserving any state changes made by the task
+  being executed.
 * :bug:`584` `~fabric.contrib.project.upload_project` did not take explicit
   remote directory location into account when untarring, and now uses
   `~fabric.context_managers.cd` to address this. Thanks to Ben Burry for the

@@ -91,3 +91,15 @@ def test_settings_with_other_context_managers():
     ok_(env.testval1, "outer 1")
     eq_(env.lcwd, prev_lcwd)
 
+
+def test_settings_clean_revert():
+    """
+    settings(clean_revert=True) should only revert values matching input values
+    """
+    env.modified = "outer"
+    env.notmodified = "outer"
+    with settings(modified="inner", notmodified="inner", clean_revert=True):
+        eq_(env.modified, "inner")
+        eq_(env.notmodified, "inner")
+        env.modified = "modified internally"
+    eq_(env.modified, "modified internally")

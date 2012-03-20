@@ -83,8 +83,7 @@ class Task(object):
         pool_size = min((pool_size, len(hosts)))
         # Inform user of final pool size for this task
         if state.output.debug:
-            msg = "Parallel tasks now using pool size of %d"
-            print msg % pool_size
+            print "Parallel tasks now using pool size of %d" % pool_size
         return pool_size
 
 
@@ -149,53 +148,53 @@ def _execute(task, host, my_env, args, kwargs, jobs, queue, multiprocessing):
     # Create per-run env with connection settings
     local_env = to_dict(host)
     local_env.update(my_env)
-    state.env.update(local_env)
-    # Handle parallel execution
-    if queue is not None: # Since queue is only set for parallel
-        # Set a few more env flags for parallelism
-        state.env.parallel = True # triggers some extra aborts, etc
-        state.env.linewise = True # to mirror -P behavior
-        name = local_env['host_string']
-        # Wrap in another callable that:
-        # * nukes the connection cache to prevent shared-access problems
-        # * knows how to send the tasks' return value back over a Queue
-        # * captures exceptions raised by the task
-        def inner(args, kwargs, queue, name):
-            key = normalize_to_string(state.env.host_string)
-            state.connections.pop(key, "")
-            try:
-                result = task.run(*args, **kwargs)
-            except BaseException, e: # We really do want to capture everything
-                result = e
-                # But still print it out, otherwise users won't know what the
-                # fuck. Especially if the task is run at top level and nobody's
-                # doing anything with the return value.
-                # BUT don't do this if it's a SystemExit as that implies use of
-                # abort(), which does its own printing.
-                if e.__class__ is not SystemExit:
-                    print >> sys.stderr, "!!! Parallel execution exception under host %r:" % name
-                    sys.excepthook(*sys.exc_info())
-                # Conversely, if it IS SystemExit, we can raise it to ensure a
-                # correct return value.
-                else:
-                    raise
-            queue.put({'name': name, 'result': result})
+    # Set a few more env flags for parallelism
+    if queue is not None:
+        local_env.update({'parallel': True, 'linewise': True})
+    with settings(**local_env):
+        # Handle parallel execution
+        if queue is not None: # Since queue is only set for parallel
+            name = local_env['host_string']
+            # Wrap in another callable that:
+            # * nukes the connection cache to prevent shared-access problems
+            # * knows how to send the tasks' return value back over a Queue
+            # * captures exceptions raised by the task
+            def inner(args, kwargs, queue, name):
+                try:
+                    key = normalize_to_string(state.env.host_string)
+                    state.connections.pop(key, "")
+                    result = task.run(*args, **kwargs)
+                except BaseException, e: # We really do want to capture everything
+                    result = e
+                    # But still print it out, otherwise users won't know what the
+                    # fuck. Especially if the task is run at top level and nobody's
+                    # doing anything with the return value.
+                    # BUT don't do this if it's a SystemExit as that implies use of
+                    # abort(), which does its own printing.
+                    if e.__class__ is not SystemExit:
+                        print >> sys.stderr, "!!! Parallel execution exception under host %r:" % name
+                        sys.excepthook(*sys.exc_info())
+                    # Conversely, if it IS SystemExit, we can raise it to ensure a
+                    # correct return value.
+                    else:
+                        raise
+                queue.put({'name': name, 'result': result})
 
-        # Stuff into Process wrapper
-        kwarg_dict = {
-            'args': args,
-            'kwargs': kwargs,
-            'queue': queue,
-            'name': name
-        }
-        p = multiprocessing.Process(target=inner, kwargs=kwarg_dict)
-        # Name/id is host string
-        p.name = name
-        # Add to queue
-        jobs.append(p)
-    # Handle serial execution
-    else:
-        return task.run(*args, **kwargs)
+            # Stuff into Process wrapper
+            kwarg_dict = {
+                'args': args,
+                'kwargs': kwargs,
+                'queue': queue,
+                'name': name
+            }
+            p = multiprocessing.Process(target=inner, kwargs=kwarg_dict)
+            # Name/id is host string
+            p.name = name
+            # Add to queue
+            jobs.append(p)
+        # Handle serial execution
+        else:
+            return task.run(*args, **kwargs)
 
 def _is_task(task):
     return isinstance(task, Task)
@@ -242,7 +241,7 @@ def execute(task, *args, **kwargs):
         Added the return value mapping; previously this function had no defined
         return value.
     """
-    my_env = {}
+    my_env = {'clean_revert': True}
     results = {}
     # Obtain task
     is_callable = callable(task)
@@ -324,7 +323,8 @@ def execute(task, *args, **kwargs):
 
     # Or just run once for local-only
     else:
-        state.env.update(my_env)
-        results['<local-only>'] = task.run(*args, **new_kwargs)
+        with settings(**my_env):
+            results['<local-only>'] = task.run(*args, **new_kwargs)
     # Return what we can from the inner task executions
+
     return results

@@ -401,3 +401,49 @@ class TestExecute(FabricTest):
             run = Fake(callable=True, expect_call=True)
         mytask = MyTask()
         execute(mytask)
+
+
+class TestExecuteEnvInteractions(FabricTest):
+    def set_network(self):
+        # Don't update env.host/host_string/etc
+        pass
+
+    @server(port=2200)
+    @server(port=2201)
+    def test_should_not_mutate_its_own_env_vars(self):
+        """
+        internal env changes should not bleed out, but task env changes should
+        """
+        # Task that uses a handful of features which involve env vars
+        @parallel
+        @hosts('username@127.0.0.1:2200', 'username@127.0.0.1:2201')
+        def mytask():
+            run("ls /simple")
+        # Pre-assertions
+        assertions = {
+            'parallel': False,
+            'all_hosts': [],
+            'host': None,
+            'hosts': [],
+            'host_string': None
+        }
+        for key, value in assertions.items():
+            eq_(env[key], value)
+        # Run
+        with hide('everything'):
+            result = execute(mytask)
+        eq_(len(result), 2)
+        # Post-assertions
+        for key, value in assertions.items():
+            eq_(env[key], value)
+
+    @server()
+    def test_should_allow_task_to_modify_env_vars(self):
+        @hosts('username@127.0.0.1:2200')
+        def mytask():
+            run("ls /simple")
+            env.foo = "bar"
+        with hide('everything'):
+            execute(mytask)
+        eq_(env.foo, "bar")
+        eq_(env.host_string, None)
