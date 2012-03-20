@@ -5,6 +5,7 @@ May use ``multiprocessing.Process`` or ``threading.Thread`` objects as queue
 items, though within Fabric itself only ``Process`` objects are used/supported.
 """
 
+from __future__ import with_statement
 from pprint import pprint
 from Crypto import Random 
 import time
@@ -12,6 +13,7 @@ import Queue
 
 from fabric.state import env
 from fabric.network import ssh
+from fabric.context_managers import settings
 
 
 class JobQueue(object):
@@ -117,8 +119,8 @@ class JobQueue(object):
             job = self._queued.pop()
             if self._debug:
                 print("Popping '%s' off the queue and starting it" % job.name)
-            env.host_string = env.host = job.name
-            job.start()
+            with settings(clean_revert=True, host_string=job.name, host=job.name):
+                job.start()
             self._running.append(job)
 
         if not self._closed:
