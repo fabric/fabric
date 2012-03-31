@@ -335,6 +335,50 @@ def append(filename, text, use_sudo=False, partial=False, escape=True):
             continue
         line = line.replace("'", r"'\\''") if escape else line
         func("echo '%s' >> %s" % (line, filename))
+def delline(filename, regex, use_sudo=False, backup='.bak'):
+    """
+    Delete a line in ``filename`` when matching given regex patterns.
+
+    Equivalent to ``sed -i<backup> -r -e "<lineno>d <filename>"``.
+
+    If ``use_sudo`` is True, will use `sudo` instead of `run`.
+
+    .. note::
+        ONLY TESTED ON LINUX BOXES
+    .. note::
+        In order to preserve the line being commented out, this function will
+        wrap your ``regex`` argument in parentheses, so you don't need to. It
+        will ensure that any preceding/trailing ``^`` or ``$`` characters are
+        correctly moved outside the parentheses. For example, calling
+        ``comment(filename, r'^foo$')`` will result in a `sed` call with the
+        "before" regex of ``r'^(foo)$'`` (and the "after" regex, naturally, of
+        ``r'#\\1'``.)
+    .. note::
+        As the line number change any time we delete a line, we can't implement
+        multiple deletion of lines. The function must be run again to delete
+        more than one matching line.
+
+    TODO : ``reverse`` implementation (searching from the bottom of file)
+    TODO : ``count`` possible ? (deleting a ``count`` number of matching lines)
+    """
+    carot, dollar = '', ''
+    if regex.startswith('^'):
+        carot = '^'
+        regex = regex[1:]
+    if regex.endswith('$'):
+        dollar = '$'
+        regex = regex[:-1]
+    regex = "%s(%s)%s" % (carot, regex, dollar)
+
+    expr = r"sed -n -r -e '/%s/=' %s"
+    command = expr % (regex, filename)
+    linenos = run(command, shell=False)
+
+    if len(linenos) > 0:
+        expr = r"sed -i%s '%sd' %s"
+        command = expr % (backup, linenos[0], filename)
+        return run(command)
+
 
 def _escape_for_regex(text):
     """Escape ``text`` to allow literal matching using egrep"""
