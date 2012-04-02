@@ -156,6 +156,18 @@ def test_sudo_prefix_without_user():
     eq_(_sudo_prefix(user=None), env.sudo_prefix % env.sudo_prompt)
 
 
+@server
+def test_run_returns_command_attr():
+    """
+    run() returns command attributes in return value
+    """
+    cmd = "ls"
+    full_command = '/bin/bash -l -c "%s"' % cmd
+    ret = run(cmd)
+    eq_(ret.command, cmd)
+    eq_(ret.full_command, full_command)
+
+
 @with_settings(use_shell=True)
 def test_shell_wrap():
     prefix = "prefix"
@@ -788,3 +800,13 @@ def test_local_output_and_capture():
                     local.description = d
                     yield local, "echo 'foo' >/dev/null", capture
                     del local.description
+
+
+def test_local_returns_command_attr():
+    """
+    local() returns command attributes in return value
+    """
+    cmd = "ls"
+    ret = local(cmd)
+    eq_(ret.command, cmd)
+    eq_(ret.full_command, cmd)
