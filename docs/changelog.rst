@@ -25,6 +25,8 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`395` Added :ref:`an FAQ entry <init-scripts-pty>` detailing how to
+  handle init scripts which misbehave when a pseudo-tty is allocated.
 * :bug:`584` `~fabric.contrib.project.upload_project` did not take explicit
   remote directory location into account when untarring, and now uses
   `~fabric.context_managers.cd` to address this. Thanks to Ben Burry for the
