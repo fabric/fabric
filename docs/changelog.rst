@@ -25,6 +25,8 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`395` Added :ref:`an FAQ entry <init-scripts-pty>` detailing how to
+  handle init scripts which misbehave when a pseudo-tty is allocated.
 * :bug:`568` `~fabric.tasks.execute` allowed too much of its internal state
   changes (to variables such as ``env.host_string`` and ``env.parallel``) to
   persist after execution completed; this caused a number of different

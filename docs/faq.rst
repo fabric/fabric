@@ -8,6 +8,22 @@ reading the rest of the documentation, especially the :ref:`usage docs
 <usage-docs>`, so please make sure you check those out if your question is not
 answered here.
 
+.. _init-scripts-pty:
+
+Init scripts don't work!
+========================
+
+Init-style start/stop/restart scripts (e.g. ``/etc/init.d/apache2 start``)
+sometimes don't like Fabric's allocation of a pseudo-tty, which is active by
+default. In almost all cases, explicitly calling the command in question with
+``pty=False`` works correctly::
+
+    sudo("/etc/init.d/apache2 restart", pty=False)
+
+If you have no need for interactive behavior and run into this problem
+frequently, you may want to deactivate pty allocation globally by setting
+:ref:`env.always_use_pty <always-use-pty>` to ``False``.
+
 .. _one-shell-per-command:
 
 My (``cd``/``workon``/``export``/etc) calls don't seem to work!
