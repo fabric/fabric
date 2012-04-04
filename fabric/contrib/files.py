@@ -244,6 +244,8 @@ def comment(filename, regex, use_sudo=False, char='#', backup='.bak'):
     if regex.endswith('$'):
         dollar = '$'
         regex = regex[:-1]
+    regex = regex.replace(')','\)')
+    regex = regex.replace('(','\(')
     regex = "%s(%s)%s" % (carot, regex, dollar)
     return sed(
         filename,
@@ -366,13 +368,18 @@ def delete(filename, regex, use_sudo=False, backup='.bak'):
     if regex.endswith('$'):
         dollar = '$'
         regex = regex[:-1]
+    regex = regex.replace(')','\)')
+    regex = regex.replace('(','\(')
     regex = "%s(%s)%s" % (carot, regex, dollar)
 
     expr = r"sed -n -r -e '/%s/=' %s"
     command = expr % (regex, filename)
     linenos = run(command, shell=False)
+    linenos = linenos.split("\r\n")
+    if linenos.count('') > 0:
+        linenos.remove('')
 
-    if len(linenos) > 0:
+    if linenos:
         expr = r"sed -i%s '%sd' %s"
         command = expr % (backup, linenos[0], filename)
         return run(command)
@@ -393,13 +400,11 @@ def insert(filename, regex, string2add, before=True, use_sudo=False, backup='.ba
         will ensure that any preceding/trailing ``^`` or ``$`` characters are
         correctly moved outside the parentheses.
     .. note::
-        As the line number change any time we insert a line, we can't implement
-        a recursive insertion of many lines. The function must be run again to
-        insert more than one line before or after multiple matching lines.
+        As the regex is always found in the first matching line, we can't
+        implement more than one insertion because it would be inserted always
+        around the first line found.
 
     TODO : ``reverse`` implementation (searching from the bottom of file)
-    TODO : ``count`` possible ? (inserting a ``count`` number of lines before
-           or after multiple matching lines)
     """
     carot, dollar = '', ''
     if regex.startswith('^'):
@@ -408,12 +413,18 @@ def insert(filename, regex, string2add, before=True, use_sudo=False, backup='.ba
     if regex.endswith('$'):
         dollar = '$'
         regex = regex[:-1]
+    regex = regex.replace(')','\)')
+    regex = regex.replace('(','\(')
     regex = "%s(%s)%s" % (carot, regex, dollar)
 
     expr = r"sed -n -r -e '/%s/=' %s"
     command = expr % (regex, filename)
     linenos = run(command, shell=False)
-    if len(linenos) > 0:
+    linenos = linenos.split("\r\n")
+    if linenos.count('') > 0:
+        linenos.remove('')
+
+    if linenos:
         if before:
             expr = r"sed -i%s -r -e '%s i\%s' %s"
         else:
