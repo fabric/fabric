@@ -345,6 +345,8 @@ def delete(filename, regex, use_sudo=False, backup='.bak'):
     If ``use_sudo`` is True, will use `sudo` instead of `run`.
 
     .. note::
+        ONLY TESTED ON LINUX BOXES
+    .. note::
         In order to preserve the wrong line being deleted, this function will
         wrap your ``regex`` argument in parentheses, so you don't need to. It
         will ensure that any preceding/trailing ``^`` or ``$`` characters are
@@ -384,12 +386,20 @@ def insert(filename, regex, string2add, before=True, use_sudo=False, backup='.ba
     If ``use_sudo`` is True, will use `sudo` instead of `run`.
 
     .. note::
+        ONLY TESTED ON LINUX BOXES
+    .. note::
         In order to preserve the wrong line being deleted, this function will
         wrap your ``regex`` argument in parentheses, so you don't need to. It
         will ensure that any preceding/trailing ``^`` or ``$`` characters are
         correctly moved outside the parentheses.
+    .. note::
+        As the line number change any time we insert a line, we can't implement
+        a recursive insertion of many lines. The function must be run again to
+        insert more than one line before or after multiple matching lines.
 
     TODO : ``reverse`` implementation (searching from the bottom of file)
+    TODO : ``count`` possible ? (inserting a ``count`` number of lines before
+           or after multiple matching lines)
     """
     carot, dollar = '', ''
     if regex.startswith('^'):
