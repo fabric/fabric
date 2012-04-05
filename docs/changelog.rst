@@ -25,6 +25,8 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`608` Add ``capture`` kwarg to `~fabric.contrib.project.rsync_project`
+  to aid in debugging rsync problems.
 * :bug:`607` Allow `~fabric.operations.local` to display stdout/stderr when it
   warns/aborts, if it was capturing them.
 * :bug:`395` Added :ref:`an FAQ entry <init-scripts-pty>` detailing how to
