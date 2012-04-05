@@ -25,6 +25,8 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`607` Allow `~fabric.operations.local` to display stdout/stderr when it
+  warns/aborts, if it was capturing them.
 * :bug:`395` Added :ref:`an FAQ entry <init-scripts-pty>` detailing how to
   handle init scripts which misbehave when a pseudo-tty is allocated.
 * :bug:`568` `~fabric.tasks.execute` allowed too much of its internal state
