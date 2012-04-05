@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`610` Change detection of ``env.key_filename``'s type (added as part of
+  SSH config support in 1.4) so it supports arbitrary iterables. Thanks to
+  Brandon Rhodes for the catch.
 * :release:`1.4.1 <2012-04-04>`
 * :release:`1.3.6 <2012-04-04>`
 * :bug:`608` Add ``capture`` kwarg to `~fabric.contrib.project.rsync_project`
