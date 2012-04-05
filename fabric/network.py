@@ -137,7 +137,7 @@ def key_filenames():
     from fabric.state import env
     keys = env.key_filename
     # For ease of use, coerce stringish key filename into list
-    if not isinstance(env.key_filename, (list, tuple)):
+    if isinstance(env.key_filename, basestring) or env.key_filename is None:
         keys = [keys]
     # Strip out any empty strings (such as the default value...meh)
     keys = filter(bool, keys)
