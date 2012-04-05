@@ -372,9 +372,10 @@ def delete(filename, regex, use_sudo=False, backup='.bak'):
     regex = rx.sub('\\\\\\1', regex)
     regex = "%s(%s)%s" % (carot, regex, dollar)
 
+    func = use_sudo and sudo or run
     expr = r"sed -n -r -e '/%s/=' %s"
     command = expr % (regex, filename)
-    linenos = run(command, shell=False)
+    linenos = func(command, shell=False)
     linenos = linenos.split("\r\n")
     if linenos.count('') > 0:
         linenos.remove('')
@@ -382,7 +383,7 @@ def delete(filename, regex, use_sudo=False, backup='.bak'):
     if linenos:
         expr = r"sed -i%s '%sd' %s"
         command = expr % (backup, linenos[0], filename)
-        return run(command)
+        return func(command)
 
 def insert(filename, regex, string2add, before=True, use_sudo=False, backup='.bak'):
     """
@@ -417,9 +418,10 @@ def insert(filename, regex, string2add, before=True, use_sudo=False, backup='.ba
     regex = rx.sub('\\\\\\1', regex)
     regex = "%s(%s)%s" % (carot, regex, dollar)
 
+    func = use_sudo and sudo or run
     expr = r"sed -n -r -e '/%s/=' %s"
     command = expr % (regex, filename)
-    linenos = run(command, shell=False)
+    linenos = func(command, shell=False)
     linenos = linenos.split("\r\n")
     if linenos.count('') > 0:
         linenos.remove('')
@@ -430,7 +432,7 @@ def insert(filename, regex, string2add, before=True, use_sudo=False, backup='.ba
         else:
             expr = r"sed -i%s -r -e '%s a\%s' %s"
         command = expr % (backup, linenos[0], string2add, filename)
-        return run(command)
+        return func(command)
 
 def _escape_for_regex(text):
     """Escape ``text`` to allow literal matching using egrep"""
