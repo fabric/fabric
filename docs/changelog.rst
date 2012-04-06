@@ -25,6 +25,10 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`609` (and :issue:`564`) Document and clean up :ref:`env.sudo_prefix
+  <sudo_prefix>` so it can be more easily modified by users facing uncommon
+  use cases. Thanks to GitHub users `3point2` for the cleanup and `SirScott`
+  for the documentation catch.
 * :release:`1.3.6 <2012-04-04>`
 * :bug:`395` Added :ref:`an FAQ entry <init-scripts-pty>` detailing how to
   handle init scripts which misbehave when a pseudo-tty is allocated.

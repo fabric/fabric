@@ -292,7 +292,7 @@ env = _AttributeDict({
     'roledefs': {},
     # -S so sudo accepts passwd via stdin, -p with our known-value prompt for
     # later detection (thus %s -- gets filled with env.sudo_prompt at runtime)
-    'sudo_prefix': "sudo -S -p '%s' ",
+    'sudo_prefix': "sudo -S -p '%(sudo_prompt)s' ",
     'sudo_prompt': 'sudo password:',
     'use_shell': True,
     'user': None,

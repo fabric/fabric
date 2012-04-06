@@ -636,7 +636,7 @@ def _sudo_prefix(user):
     Return ``env.sudo_prefix`` with ``user`` inserted if necessary.
     """
     # Insert env.sudo_prompt into env.sudo_prefix
-    prefix = env.sudo_prefix % env.sudo_prompt
+    prefix = env.sudo_prefix % env
     if user is not None:
         if str(user).isdigit():
             user = "#%s" % user

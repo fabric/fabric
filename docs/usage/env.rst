@@ -484,16 +484,37 @@ takes a command string as its value.
 
 .. seealso:: :ref:`FAQ on bash as default shell <faq-bash>`, :doc:`execution`
 
+.. _sudo_prefix:
+
+``sudo_prefix``
+---------------
+
+**Default:** ``"sudo -S -p '%(sudo_prompt)s' " % env``
+
+The actual ``sudo`` command prefixed onto `~fabric.operations.sudo` calls'
+command strings. Users who do not have ``sudo`` on their default remote
+``$PATH``, or who need to make other changes (such as removing the ``-p`` when
+passwordless sudo is in effect) may find changing this useful.
+
+.. seealso::
+
+    The `~fabric.operations.sudo` operation; :ref:`env.sudo_prompt
+    <sudo_prompt>`
+
+.. _sudo_prompt:
+
 ``sudo_prompt``
 ---------------
 
-**Default:** ``sudo password:``
+**Default:** ``"sudo password:"``
 
 Passed to the ``sudo`` program on remote systems so that Fabric may correctly
-identify its password prompt. This may be modified by fabfiles but there's no
-real reason to.
+identify its password prompt.
 
-.. seealso:: The `~fabric.operations.sudo` operation
+.. seealso::
+
+    The `~fabric.operations.sudo` operation; :ref:`env.sudo_prefix
+    <sudo_prefix>`
 
 ``use_shell``
 -------------
