@@ -25,6 +25,17 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`610` Change detection of ``env.key_filename``'s type (added as part of
+  SSH config support in 1.4) so it supports arbitrary iterables. Thanks to
+  Brandon Rhodes for the catch.
+* :release:`1.4.1 <2012-04-04>`
+* :release:`1.3.6 <2012-04-04>`
+* :bug:`608` Add ``capture`` kwarg to `~fabric.contrib.project.rsync_project`
+  to aid in debugging rsync problems.
+* :bug:`607` Allow `~fabric.operations.local` to display stdout/stderr when it
+  warns/aborts, if it was capturing them.
+* :bug:`395` Added :ref:`an FAQ entry <init-scripts-pty>` detailing how to
+  handle init scripts which misbehave when a pseudo-tty is allocated.
 * :bug:`568` `~fabric.tasks.execute` allowed too much of its internal state
   changes (to variables such as ``env.host_string`` and ``env.parallel``) to
   persist after execution completed; this caused a number of different
