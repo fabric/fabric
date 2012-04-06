@@ -25,6 +25,10 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`609` (and :issue:`564`) Document and clean up :ref:`env.sudo_prefix
+  <sudo_prefix>` so it can be more easily modified by users facing uncommon
+  use cases. Thanks to GitHub users `3point2` for the cleanup and `SirScott`
+  for the documentation catch.
 * :bug:`610` Change detection of ``env.key_filename``'s type (added as part of
   SSH config support in 1.4) so it supports arbitrary iterables. Thanks to
   Brandon Rhodes for the catch.
