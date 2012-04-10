@@ -294,7 +294,7 @@ def contains(filename, text, exact=False, use_sudo=False, escape=True):
         return func(egrep_cmd, shell=False).succeeded
 
 
-def append(filename, text, use_sudo=False, partial=False, escape=True):
+def append(filename, text, test_existing=True, use_sudo=False, partial=False, escape=True):
     """
     Append string (or list of strings) ``text`` to ``filename``.
 
@@ -332,7 +332,7 @@ def append(filename, text, use_sudo=False, partial=False, escape=True):
         text = [text]
     for line in text:
         regex = '^' + _escape_for_regex(line)  + ('' if partial else '$')
-        if (exists(filename, use_sudo=use_sudo) and line
+        if (exists(filename, use_sudo=use_sudo) and line and test_existing
             and contains(filename, regex, use_sudo=use_sudo, escape=False)):
             continue
         line = line.replace("'", r"'\\''") if escape else line
