@@ -244,7 +244,7 @@ def comment(filename, regex, use_sudo=False, char='#', backup='.bak'):
     if regex.endswith('$'):
         dollar = '$'
         regex = regex[:-1]
-    rx = re.compile('([()/])')
+    rx = re.compile('([(){}/])')
     regex = rx.sub('\\\\\\1', regex)
     regex = "%s(%s)%s" % (carot, regex, dollar)
     return sed(
