@@ -383,8 +383,8 @@ def connect(user, host, port):
                 continue
             # Override eror msg if we were retrying other errors
             if not_timeout:
-                msg = "Low level socket error connecting to host %s: %s" % (
-                    host, e[1]
+                msg = "Low level socket error connecting to host %s on port %s: %s" % (
+                    host, port, e[1]
                 )
             # Here, all attempts failed. Tweak error msg to show # tries.
             # TODO: find good humanization module, jeez
