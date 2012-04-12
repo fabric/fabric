@@ -919,18 +919,27 @@ def sudo(command, shell=True, pty=True, combine_stderr=None, user=None):
     ``sudo`` program can take a string username or an integer userid (uid);
     ``user`` may likewise be a string or an int.
 
+    You may set :ref:`env.sudo_user <sudo_user>` at module level or via
+    `~fabric.context_managers.settings` if you want multiple ``sudo`` calls to
+    have the same ``user`` value. An explicit ``user`` argument will, of
+    course, override this global setting.
+
     Examples::
 
         sudo("~/install_script.py")
         sudo("mkdir /var/www/new_docroot", user="www-data")
         sudo("ls /home/jdoe", user=1001)
         result = sudo("ls /tmp/")
+        with settings(sudo_user='mysql'):
+            sudo("whoami") # prints 'mysql'
 
     .. versionchanged:: 1.0
         See the changed and added notes for `~fabric.operations.run`.
+    .. versionchanged:: 1.5
+        Now honors :ref:`env.sudo_user <sudo_user>`.
     """
     return _run_command(command, shell, pty, combine_stderr, sudo=True,
-        user=user)
+        user=user if user else env.sudo_user)
 
 
 def local(command, capture=False):

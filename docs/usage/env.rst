@@ -571,6 +571,18 @@ identify its password prompt.
     The `~fabric.operations.sudo` operation; :ref:`env.sudo_prefix
     <sudo_prefix>`
 
+.. _sudo_user:
+
+``sudo_user``
+-------------
+
+**Default:** ``None``
+
+Used as a fallback value for `~fabric.operations.sudo`'s ``user`` argument if
+none is given. Useful in combination with `~fabric.context_managers.settings`.
+
+.. seealso:: `~fabric.operations.sudo`
+
 .. _timeout:
 
 ``timeout``

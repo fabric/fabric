@@ -297,6 +297,7 @@ env = _AttributeDict({
     # later detection (thus %s -- gets filled with env.sudo_prompt at runtime)
     'sudo_prefix': "sudo -S -p '%(sudo_prompt)s' ",
     'sudo_prompt': 'sudo password:',
+    'sudo_user': None,
     'use_exceptions_for': {'network': False},
     'use_shell': True,
     'use_ssh_config': False,

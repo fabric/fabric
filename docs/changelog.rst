@@ -25,6 +25,8 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :feature:`615` Updated `~fabric.operations.sudo` to honor the new setting
+  :ref:`env.sudo_user <sudo_user>` as a default for its ``user`` kwarg.
 * :bug:`609` (and :issue:`564`) Document and clean up :ref:`env.sudo_prefix
   <sudo_prefix>` so it can be more easily modified by users facing uncommon
   use cases. Thanks to GitHub users `3point2` for the cleanup and `SirScott`
