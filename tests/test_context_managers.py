@@ -101,12 +101,12 @@ def test_settings_clean_revert():
     with settings(
         modified="inner",
         notmodified="inner",
-        new_key="new",
+        inner_only="only",
         clean_revert=True
     ):
         eq_(env.modified, "inner")
         eq_(env.notmodified, "inner")
-        eq_(env.new_key, "new")
+        eq_(env.inner_only, "only")
         env.modified = "modified internally"
     eq_(env.modified, "modified internally")
-    eq_(env.new_key, "new")
+    ok_("inner_only" not in env)
