@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`617` Fix the ``clean_revert`` behavior of
+  `~fabric.context_managers.settings` so it doesn't ``KeyError`` for newly
+  created settings keys. Thanks to Chris Streeter for the catch.
 * :feature:`615` Updated `~fabric.operations.sudo` to honor the new setting
   :ref:`env.sudo_user <sudo_user>` as a default for its ``user`` kwarg.
 * :bug:`616` Add port number to the error message displayed upon connection
