@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`617` Fix the ``clean_revert`` behavior of
+  `~fabric.context_managers.settings` so it doesn't ``KeyError`` for newly
+  created settings keys. Thanks to Chris Streeter for the catch.
 * :bug:`616` Add port number to the error message displayed upon connection
   failures.
 * :bug:`609` (and :issue:`564`) Document and clean up :ref:`env.sudo_prefix

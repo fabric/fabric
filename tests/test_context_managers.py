@@ -98,8 +98,15 @@ def test_settings_clean_revert():
     """
     env.modified = "outer"
     env.notmodified = "outer"
-    with settings(modified="inner", notmodified="inner", clean_revert=True):
+    with settings(
+        modified="inner",
+        notmodified="inner",
+        new_key="new",
+        clean_revert=True
+    ):
         eq_(env.modified, "inner")
         eq_(env.notmodified, "inner")
+        eq_(env.new_key, "new")
         env.modified = "modified internally"
     eq_(env.modified, "modified internally")
+    eq_(env.new_key, "new")
