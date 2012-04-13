@@ -102,8 +102,11 @@ def _setenv(**kwargs):
                 # If the current env value for this key still matches the
                 # value we set it to beforehand, we are OK to revert it to the
                 # pre-block value.
-                if value == state.env[key] and key in previous:
-                    state.env[key] = previous[key]
+                if value == state.env[key]:
+                    if key in previous:
+                        state.env[key] = previous[key]
+                    else:
+                        del state.env[key]
         else:
             state.env.update(previous)
             for key in new:
