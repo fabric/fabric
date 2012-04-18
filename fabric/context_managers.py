@@ -366,6 +366,10 @@ def prefix(command):
     return _setenv(command_prefixes=state.env.command_prefixes + [command])
 
 
+def su(user):
+    return _setenv(su=True, shell='sudo su - %s -c' % user)
+
+
 @contextmanager
 def char_buffered(pipe):
     """

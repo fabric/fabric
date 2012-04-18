@@ -600,13 +600,15 @@ def _shell_wrap(command, shell=True, sudo_prefix=None):
         sudo_prefix = ""
     else:
         sudo_prefix += " "
+
     # If we're shell wrapping, prefix shell and space, escape the command and
     # then quote it. Otherwise, empty string.
-    if shell:
+    if shell or env.su:
         shell = env.shell + " "
         command = '"%s"' % _shell_escape(command)
     else:
         shell = ""
+
     # Resulting string should now have correct formatting
     return sudo_prefix + shell + command
 
