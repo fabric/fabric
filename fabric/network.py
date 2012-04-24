@@ -413,7 +413,7 @@ def prompt_for_password(prompt=None, no_colon=False, stream=None):
     handle_prompt_abort("a connection or sudo password")
     stream = stream or sys.stderr
     # Construct prompt
-    default = "[%s] Login password" % env.host_string
+    default = "[%s] Login password for '%s'" % (env.host_string, env.user)
     password_prompt = prompt if (prompt is not None) else default
     if not no_colon:
         password_prompt += ": "
