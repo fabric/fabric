@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`624` Login password prompts did not always display the username being
+  authenticated for. This has been fixed. Thanks to Nick Zalutskiy for catch &
+  patch.
 * :bug:`617` Fix the ``clean_revert`` behavior of
   `~fabric.context_managers.settings` so it doesn't ``KeyError`` for newly
   created settings keys. Thanks to Chris Streeter for the catch.
