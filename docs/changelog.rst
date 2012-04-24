@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`624` Login password prompts did not always display the username being
+  authenticated for. This has been fixed. Thanks to Nick Zalutskiy for catch &
+  patch.
 * :bug:`609` (and :issue:`564`) Document and clean up :ref:`env.sudo_prefix
   <sudo_prefix>` so it can be more easily modified by users facing uncommon
   use cases. Thanks to GitHub users `3point2` for the cleanup and `SirScott`
