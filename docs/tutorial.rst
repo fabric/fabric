@@ -415,18 +415,21 @@ its entirety::
         if result.failed and not confirm("Tests failed. Continue anyway?"):
             abort("Aborting at user request.")
 
-    def pack():
-        local('tar czf /tmp/my_project.tgz .')
+    def commit():
+        local("git add -p && git commit")
 
     def prepare_deploy():
         test()
-        pack()
+        commit()
 
     def deploy():
-        put('/tmp/my_project.tgz', '/tmp/')
-        with cd('/srv/django/my_project/'):
-            run('tar xzf /tmp/my_project.tgz')
-            run('touch app.wsgi')
+        code_dir = '/srv/django/myproject'
+        with settings(warn_only=True):
+            if run("test -d %s" % code_dir).failed:
+                run("git clone user@vcshost:/path/to/repo/.git %s" % code_dir)
+        with cd(code_dir):
+            run("git pull")
+            run("touch app.wsgi")
 
 This fabfile makes use of a large portion of Fabric's feature set:
 
