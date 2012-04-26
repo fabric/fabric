@@ -25,6 +25,8 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :support:`626` Clarity updates to the tutorial. Thanks to GitHub user `m4z`
+  for the patches.
 * :bug:`625` `~fabric.context_managers.hide`/`~fabric.context_managers.show`
   did not correctly restore prior display settings if an exception was raised
   inside the block. This has been fixed.
