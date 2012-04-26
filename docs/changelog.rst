@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`625` `~fabric.context_managers.hide`/`~fabric.context_managers.show`
+  did not correctly restore prior display settings if an exception was raised
+  inside the block. This has been fixed.
 * :bug:`624` Login password prompts did not always display the username being
   authenticated for. This has been fixed. Thanks to Nick Zalutskiy for catch &
   patch.
