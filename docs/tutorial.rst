@@ -135,6 +135,7 @@ ready for a deploy::
     def prepare_deploy():
         local("./manage.py test my_app")
         local("git add -p && git commit")
+        local("git push")
 
 The output of which might look a bit like this::
 
@@ -153,6 +154,10 @@ The output of which might look a bit like this::
     [localhost] run: git add -p && git commit
 
     <interactive Git add / git commit edit message session>
+
+    [localhost] run: git push
+
+    <git push session, possibly merging conflicts interactively>
 
     Done.
 
@@ -178,9 +183,13 @@ subtasks::
     def commit():
         local("git add -p && git commit")
 
+    def push():
+        local("git push")
+
     def prepare_deploy():
         test()
         commit()
+        push()
 
 The ``prepare_deploy`` task can be called just as before, but now you can make
 a more granular call to one of the sub-tasks, if desired.
@@ -427,9 +436,13 @@ its entirety::
     def commit():
         local("git add -p && git commit")
 
+    def push():
+        local("git push")
+
     def prepare_deploy():
         test()
         commit()
+        push()
 
     def deploy():
         code_dir = '/srv/django/myproject'
