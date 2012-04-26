@@ -37,9 +37,9 @@ This wouldn't be a proper tutorial without "the usual"::
     def hello():
         print("Hello world!")
 
-Placed in a Python module file named ``fabfile.py``, that function can be
-executed with the ``fab`` tool (installed as part of Fabric) and does just what
-you'd expect::
+Placed in a Python module file named ``fabfile.py`` in your current working
+directory, that ``hello`` function can be executed with the ``fab`` tool
+(installed as part of Fabric) and does just what you'd expect::
 
     $ fab hello
     Hello world!
@@ -99,8 +99,14 @@ As used above, ``fab`` only really saves a couple lines of
 Fabric's API, which contains functions (or **operations**) for executing shell
 commands, transferring files, and so forth.
 
-Let's build a hypothetical Web application fabfile. Fabfiles usually work best
-at the root of a project::
+Let's build a hypothetical Web application fabfile. This example scenario is
+as follows: The Web application is managed via Git on a remote host
+``vcshost``. On ``localhost``, we have a local clone of said Web application.
+When we push changes back to ``vcshost``, we want to be able to immediately
+install these changes on a remote host ``my_server`` in an automated fashion.
+We will do this by automating the local and remote Git commands.
+
+Fabfiles usually work best at the root of a project::
 
     .
     |-- __init__.py
@@ -262,7 +268,8 @@ Making connections
 ==================
 
 Let's start wrapping up our fabfile by putting in the keystone: a ``deploy``
-task that ensures the code on our server is up to date::
+task that is destined to run on one or more remote server(s), and ensures the
+code is up to date::
 
     def deploy():
         code_dir = '/srv/django/myproject'
@@ -278,7 +285,7 @@ Here again, we introduce a handful of new concepts:
   /to/some/directory`` call. This is similar to  `~fabric.context_managers.lcd`
   which does the same locally.
 * `~fabric.operations.run`, which is similar to `~fabric.operations.local` but
-  runs remotely instead of locally.
+  runs **remotely** instead of locally.
 
 We also need to make sure we import the new functions at the top of our file::
 
@@ -297,10 +304,12 @@ With these changes in place, let's deploy::
 
     Done.
 
-We never specified any connection info in our fabfile, so Fabric prompted us at
-runtime. Connection definitions use SSH-like "host strings" (e.g.
-``user@host:port``) and will use your local username as a default -- so in this
-example, we just had to specify the hostname, ``my_server``.
+We never specified any connection info in our fabfile, so Fabric doesn't know
+on which host(s) the remote command should be executed. When this happens,
+Fabric prompts us at runtime. Connection definitions use SSH-like "host
+strings" (e.g. ``user@host:port``) and will use your local username as a
+default -- so in this example, we just had to specify the hostname,
+``my_server``.
 
 
 Remote interactivity
