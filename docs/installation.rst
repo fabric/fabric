@@ -14,9 +14,14 @@ typically called ``fabric`` or ``python-fabric``. E.g.::
 
     $ sudo apt-get install fabric
 
-Advanced users wanting to install a development version may execute ``pip
-install -e .`` (or ``python setup.py install``) inside a :ref:`downloaded
-<downloads>` or :ref:`cloned <source-code-checkouts>` copy of the source code.
+Advanced users wanting to install a development version may use ``pip`` to grab
+the latest master branch::
+
+    $ pip install fabric==dev
+
+Or, to install an editable version for debugging/hacking, execute ``pip install
+-e .`` (or ``python setup.py install``) inside a :ref:`downloaded <downloads>`
+or :ref:`cloned <source-code-checkouts>` copy of the source code.
 
 
 Dependencies
