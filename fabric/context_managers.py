@@ -21,15 +21,17 @@ def _set_output(groups, which):
     """
     Refactored subroutine used by ``hide`` and ``show``.
     """
-    # Preserve original values, pull in new given value to use
-    previous = {}
-    for group in output.expand_aliases(groups):
-        previous[group] = output[group]
-        output[group] = which
-    # Yield control
-    yield
-    # Restore original values
-    output.update(previous)
+    try:
+        # Preserve original values, pull in new given value to use
+        previous = {}
+        for group in output.expand_aliases(groups):
+            previous[group] = output[group]
+            output[group] = which
+        # Yield control
+        yield
+    finally:
+        # Restore original values
+        output.update(previous)
 
 
 @contextmanager
