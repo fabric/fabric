@@ -5,8 +5,16 @@ Installation
 Fabric is best installed via `pip <http://pip.openplans.org>`_ (highly
 recommended) or `easy_install
 <http://wiki.python.org/moin/CheeseShopTutorial>`_ (older, but still works
-fine). You may also opt to use your operating system's package manager (the
-package is typically called ``fabric`` or ``python-fabric``), or execute ``pip
+fine), e.g.::
+
+    $ pip install fabric
+
+You may also opt to use your operating system's package manager; the package is
+typically called ``fabric`` or ``python-fabric``. E.g.::
+
+    $ sudo apt-get install fabric
+
+Advanced users wanting to install a development version may execute ``pip
 install -e .`` (or ``python setup.py install``) inside a :ref:`downloaded
 <downloads>` or :ref:`cloned <source-code-checkouts>` copy of the source code.
 
