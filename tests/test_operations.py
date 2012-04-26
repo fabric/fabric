@@ -145,7 +145,7 @@ def test_sudo_prefix_with_user():
     """
     eq_(
         _sudo_prefix(user="foo"),
-        "%s -u \"foo\" " % (env.sudo_prefix % env.sudo_prompt)
+        "%s -u \"foo\" " % (env.sudo_prefix % env)
     )
 
 
@@ -153,7 +153,7 @@ def test_sudo_prefix_without_user():
     """
     _sudo_prefix() returns standard prefix when user is empty
     """
-    eq_(_sudo_prefix(user=None), env.sudo_prefix % env.sudo_prompt)
+    eq_(_sudo_prefix(user=None), env.sudo_prefix % env)
 
 
 @with_settings(use_shell=True)

@@ -295,8 +295,9 @@ env = _AttributeDict({
     'ssh_config_path': default_ssh_config_path,
     # -S so sudo accepts passwd via stdin, -p with our known-value prompt for
     # later detection (thus %s -- gets filled with env.sudo_prompt at runtime)
-    'sudo_prefix': "sudo -S -p '%s' ",
+    'sudo_prefix': "sudo -S -p '%(sudo_prompt)s' ",
     'sudo_prompt': 'sudo password:',
+    'sudo_user': None,
     'use_exceptions_for': {'network': False},
     'use_shell': True,
     'use_ssh_config': False,

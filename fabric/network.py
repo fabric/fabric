@@ -382,8 +382,8 @@ def connect(user, host, port):
                 continue
             # Override eror msg if we were retrying other errors
             if not_timeout:
-                msg = "Low level socket error connecting to host %s: %s" % (
-                    host, e[1]
+                msg = "Low level socket error connecting to host %s on port %s: %s" % (
+                    host, port, e[1]
                 )
             # Here, all attempts failed. Tweak error msg to show # tries.
             # TODO: find good humanization module, jeez
@@ -413,7 +413,7 @@ def prompt_for_password(prompt=None, no_colon=False, stream=None):
     handle_prompt_abort("a connection or sudo password")
     stream = stream or sys.stderr
     # Construct prompt
-    default = "[%s] Login password" % env.host_string
+    default = "[%s] Login password for '%s'" % (env.host_string, env.user)
     password_prompt = prompt if (prompt is not None) else default
     if not no_colon:
         password_prompt += ": "

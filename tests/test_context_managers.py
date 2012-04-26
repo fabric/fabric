@@ -3,7 +3,7 @@ from __future__ import with_statement
 from nose.tools import eq_, ok_
 
 from fabric.state import env, output
-from fabric.context_managers import cd, settings, lcd
+from fabric.context_managers import cd, settings, lcd, hide
 
 
 #
@@ -38,6 +38,25 @@ def test_cwd_with_absolute_paths():
             eq_(env.cwd, absolute)
         with cd(additional):
             eq_(env.cwd, existing + '/' + additional)
+
+
+#
+# hide/show
+#
+
+def test_hide_show_exception_handling():
+    """
+    hide()/show() should clean up OK if exceptions are raised
+    """
+    try:
+        with hide('stderr'):
+            # now it's False, while the default is True
+            eq_(output.stderr, False)
+            raise Exception
+    except Exception:
+        # Here it should be True again.
+        # If it's False, this means hide() didn't clean up OK.
+        eq_(output.stderr, True)
 
 
 #
@@ -98,8 +117,15 @@ def test_settings_clean_revert():
     """
     env.modified = "outer"
     env.notmodified = "outer"
-    with settings(modified="inner", notmodified="inner", clean_revert=True):
+    with settings(
+        modified="inner",
+        notmodified="inner",
+        inner_only="only",
+        clean_revert=True
+    ):
         eq_(env.modified, "inner")
         eq_(env.notmodified, "inner")
+        eq_(env.inner_only, "only")
         env.modified = "modified internally"
     eq_(env.modified, "modified internally")
+    ok_("inner_only" not in env)

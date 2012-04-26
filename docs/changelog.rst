@@ -25,6 +25,23 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`625` `~fabric.context_managers.hide`/`~fabric.context_managers.show`
+  did not correctly restore prior display settings if an exception was raised
+  inside the block. This has been fixed.
+* :bug:`624` Login password prompts did not always display the username being
+  authenticated for. This has been fixed. Thanks to Nick Zalutskiy for catch &
+  patch.
+* :bug:`617` Fix the ``clean_revert`` behavior of
+  `~fabric.context_managers.settings` so it doesn't ``KeyError`` for newly
+  created settings keys. Thanks to Chris Streeter for the catch.
+* :feature:`615` Updated `~fabric.operations.sudo` to honor the new setting
+  :ref:`env.sudo_user <sudo_user>` as a default for its ``user`` kwarg.
+* :bug:`616` Add port number to the error message displayed upon connection
+  failures.
+* :bug:`609` (and :issue:`564`) Document and clean up :ref:`env.sudo_prefix
+  <sudo_prefix>` so it can be more easily modified by users facing uncommon
+  use cases. Thanks to GitHub users `3point2` for the cleanup and `SirScott`
+  for the documentation catch.
 * :bug:`610` Change detection of ``env.key_filename``'s type (added as part of
   SSH config support in 1.4) so it supports arbitrary iterables. Thanks to
   Brandon Rhodes for the catch.

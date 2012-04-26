@@ -22,15 +22,17 @@ def _set_output(groups, which):
     """
     Refactored subroutine used by ``hide`` and ``show``.
     """
-    # Preserve original values, pull in new given value to use
-    previous = {}
-    for group in output.expand_aliases(groups):
-        previous[group] = output[group]
-        output[group] = which
-    # Yield control
-    yield
-    # Restore original values
-    output.update(previous)
+    try:
+        # Preserve original values, pull in new given value to use
+        previous = {}
+        for group in output.expand_aliases(groups):
+            previous[group] = output[group]
+            output[group] = which
+        # Yield control
+        yield
+    finally:
+        # Restore original values
+        output.update(previous)
 
 
 @contextmanager
@@ -103,7 +105,10 @@ def _setenv(**kwargs):
                 # value we set it to beforehand, we are OK to revert it to the
                 # pre-block value.
                 if value == state.env[key]:
-                    state.env[key] = previous[key]
+                    if key in previous:
+                        state.env[key] = previous[key]
+                    else:
+                        del state.env[key]
         else:
             state.env.update(previous)
             for key in new:
