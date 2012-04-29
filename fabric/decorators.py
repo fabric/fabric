@@ -9,7 +9,6 @@ from Crypto import Random
 from fabric import tasks
 from .context_managers import settings
 
-
 def task(*args, **kwargs):
     """
     Decorator declaring the wrapped function to be a new-style task.
@@ -30,7 +29,12 @@ def task(*args, **kwargs):
         func, args = args[0], ()
 
     def wrapper(func):
-        return task_class(func, *args, **kwargs)
+        obj = task_class(func, *args, **kwargs)
+        try:
+            obj.dependencies = func.dependencies
+        except AttributeError:
+            pass
+        return obj
 
     return wrapper if invoked else wrapper(func)
 
@@ -213,3 +217,43 @@ def with_settings(*arg_settings, **kw_settings):
                 return func(*args, **kwargs)
         return _wrap_as_new(func, inner)
     return outer
+
+def depends(*args):
+    """
+    Decorator declaring the dependant tasks to run prior to 
+    the ``task`` being decorated.
+
+    tasks passed into this decorator may be actual callable objects, or they 
+    may be a registered task names, which are used to look up a callables just 
+    as if the names had been given on the command line 
+    (including :ref:`namespaced tasks <namespaces>`, e.g. ``"deploy.migrate"``.
+
+    Dependent tasks will only be run once. Additionally, the @depends decorator
+    may be declared before or after the @task decorator
+
+    For example::
+
+        @task
+        def foo():
+            print("foo")
+
+        @depends("foo")
+        @task
+        def bar():
+            print("bar")
+
+        @task
+        @depends("bar", "foo")
+        def baz():
+            print("baz")
+
+    The above will print: foo bar baz with foo being printed only once.
+
+    Tasks are run under the execute command.
+
+    .. seealso:: `~fabric.tasks.execute`
+    """
+    def real_decorator(func):
+        func.dependencies = tasks.TaskDependencies(args, runs_once)
+        return func
+    return real_decorator

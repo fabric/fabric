@@ -17,6 +17,33 @@ def _get_list(env):
         return env.get(key, [])
     return inner
 
+class TaskDependencies(object):
+    """
+    Represents dependent tasks to be called before the requested task.
+
+    Generally used via `@depends <~fabric.decorators.depends>` and not directly.
+    """
+    def __init__(self, tasks, *args):
+        self.tasks = tasks
+        self.filters = args
+    
+    def run(self):
+        for candidate in self.tasks:
+            is_callable = callable(candidate)
+            if not (is_callable or _is_task(candidate)):
+                # Assume string, set env.command to it
+                task = crawl(candidate, state.commands)
+                if task is None:
+                    abort("Invalid dependency, %r is not callable or a valid task name" % (candidate,))
+            # Normalize to Task instance if we ended up with a regular callable
+            if not _is_task(task):
+                task = WrappedCallableTask(task)
+            
+            for func in self.filters:
+                task.wrapped = func(task.wrapped)
+            
+            execute(task)
+
 
 class Task(object):
     """
@@ -37,7 +64,7 @@ class Task(object):
     is_default = False
 
     # TODO: make it so that this wraps other decorators as expected
-    def __init__(self, alias=None, aliases=None, default=False,
+    def __init__(self, alias=None, aliases=None, default=False, depends=None,
         *args, **kwargs):
         if alias is not None:
             self.aliases = [alias, ]
@@ -109,6 +136,10 @@ class WrappedCallableTask(Task):
         return self.run(*args, **kwargs)
 
     def run(self, *args, **kwargs):
+        try:
+            self.dependencies.run()
+        except AttributeError:
+            pass
         return self.wrapped(*args, **kwargs)
 
     def __getattr__(self, k):
