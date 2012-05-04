@@ -216,34 +216,7 @@ def _execute(task, host, my_env, args, kwargs, jobs, queue, multiprocessing):
     # Handle parallel execution
     if queue is not None: # Since queue is only set for parallel
         name = local_env['host_string']
-        # Wrap in another callable that:
-        # * expands the env it's given to ensure parallel, linewise, etc are
-        #   all set correctly and explicitly. Such changes are naturally
-        #   insulted from the parent process.
-        # * nukes the connection cache to prevent shared-access problems
-        # * knows how to send the tasks' return value back over a Queue
-        # * captures exceptions raised by the task
-        def inner(args, kwargs, queue, name, env):
-            state.env.update(env)
-            def submit(result):
-                queue.put({'name': name, 'result': result})
-            try:
-                key = normalize_to_string(state.env.host_string)
-                state.connections.pop(key, "")
-                submit(task.run(*args, **kwargs))
-            except BaseException, e: # We really do want to capture everything
-                # SystemExit implies use of abort(), which prints its own
-                # traceback, host info etc -- so we don't want to double up
-                # on that. For everything else, though, we need to make
-                # clear what host encountered the exception that will
-                # print.
-                if e.__class__ is not SystemExit:
-                    sys.stderr.write("!!! Parallel execution exception under host %r:\n" % name)
-                    submit(e)
-                # Here, anything -- unexpected exceptions, or abort()
-                # driven SystemExits -- will bubble up and terminate the
-                # child process.
-                raise
+        executor = ParallelExecutor(task)
 
         # Stuff into Process wrapper
         kwarg_dict = {
@@ -253,7 +226,7 @@ def _execute(task, host, my_env, args, kwargs, jobs, queue, multiprocessing):
             'name': name,
             'env': local_env,
         }
-        p = multiprocessing.Process(target=inner, kwargs=kwarg_dict)
+        p = multiprocessing.Process(target=executor, kwargs=kwarg_dict)
         # Name/id is host string
         p.name = name
         # Add to queue
@@ -262,6 +235,42 @@ def _execute(task, host, my_env, args, kwargs, jobs, queue, multiprocessing):
     else:
         with settings(**local_env):
             return task.run(*args, **kwargs)
+
+class ParallelExecutor(object):
+    """
+    A callable that:
+
+    * expands the env it's given to ensure parallel, linewise, etc are
+      all set correctly and explicitly. Such changes are naturally
+      insulted from the parent process.
+    * nukes the connection cache to prevent shared-access problems
+    * knows how to send the tasks' return value back over a Queue
+    * captures exceptions raised by the task
+    """
+    def __init__(self, task):
+        self.task = task
+
+    def __call__(self, args, kwargs, queue, name, env):
+        state.env.update(env)
+        def submit(result):
+            queue.put({'name': name, 'result': result})
+        try:
+            key = normalize_to_string(state.env.host_string)
+            state.connections.pop(key, "")
+            submit(self.task.run(*args, **kwargs))
+        except BaseException, e: # We really do want to capture everything
+            # SystemExit implies use of abort(), which prints its own
+            # traceback, host info etc -- so we don't want to double up
+            # on that. For everything else, though, we need to make
+            # clear what host encountered the exception that will
+            # print.
+            if e.__class__ is not SystemExit:
+                sys.stderr.write("!!! Parallel execution exception under host %r:\n" % name)
+                submit(e)
+            # Here, anything -- unexpected exceptions, or abort()
+            # driven SystemExits -- will bubble up and terminate the
+            # child process.
+            raise
 
 def _is_task(task):
     return isinstance(task, Task)
