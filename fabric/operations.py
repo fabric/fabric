@@ -699,7 +699,7 @@ def _execute(channel, command, pty=True, combine_stderr=None,
         # Use SSH agent forwarding from 'ssh' if enabled by user
         config_agent = ssh_config().get('forwardagent', 'no').lower() == 'yes'
         if env.forward_agent or config_agent:
-            forward = ssh.agent.AgentClientProxy(channel)
+            forward = ssh.agent.AgentRequestHandler(channel)
 
         # Kick off remote command
         if invoke_shell:
