@@ -25,6 +25,7 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :release:`1.3.7 <2012-05-07>`
 * :support:`626` Clarity updates to the tutorial. Thanks to GitHub user `m4z`
   for the patches.
 * :bug:`625` `~fabric.context_managers.hide`/`~fabric.context_managers.show`
