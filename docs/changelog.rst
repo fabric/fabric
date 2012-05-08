@@ -25,6 +25,10 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`562` Agent forwarding would error out or freeze when multiple uses of
+  the forwarded agent were used per remote invocation (e.g. a single
+  `~fabric.operations.run` command resulting in multiple Git or SVN checkouts.)
+  This has been fixed thanks to Steven McDonald and GitHub user `@lynxis`.
 * :support:`626` Clarity updates to the tutorial. Thanks to GitHub user `m4z`
   for the patches.
 * :bug:`625` `~fabric.context_managers.hide`/`~fabric.context_managers.show`
