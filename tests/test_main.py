@@ -134,16 +134,28 @@ def test_hosts_and_roles_together():
     Use of @roles and @hosts together results in union of both
     """
     @roles('r1', 'r2')
+    @hosts('d')
+    def command():
+        pass
+    eq_hosts(command, ['a', 'b', 'c', 'd'])
+
+@patched_env({'roledefs': fake_roles})
+def test_host_role_merge_deduping():
+    """
+    Use of @roles and @hosts dedupes when merging
+    """
+    @roles('r1', 'r2')
     @hosts('a')
     def command():
         pass
+    # Not ['a', 'a', 'b', 'c'] or etc
     eq_hosts(command, ['a', 'b', 'c'])
+
 
 tuple_roles = {
     'r1': ('a', 'b'),
     'r2': ('b', 'c'),
 }
-
 
 @patched_env({'roledefs': tuple_roles})
 def test_roles_as_tuples():
