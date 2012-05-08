@@ -353,6 +353,21 @@ Assuming no command-line hosts or roles are given when ``mytask`` is executed,
 this fabfile will call ``mytask`` on a host list of ``['a', 'b', 'c']`` -- the
 union of ``role1`` and the contents of the `~fabric.decorators.hosts` call.
 
+
+.. _deduplication:
+
+Host list deduplication
+-----------------------
+
+By default, to support :ref:`combining-host-lists`, Fabric deduplicates the
+final host list so any given host string is only present once. However, this
+prevents explicit/intentional running of a task multiple times on the same
+target host, which is sometimes useful.
+
+To turn off deduplication, set :ref:`env.dedupe_hosts <dedupe_hosts>` to
+``False``.
+
+
 .. _excluding-hosts:
 
 Excluding specific hosts

@@ -202,6 +202,23 @@ Number of times Fabric will attempt to connect when connecting to a new server. 
 Current working directory. Used to keep state for the
 `~fabric.context_managers.cd` context manager.
 
+.. _dedupe-hosts:
+
+``dedupe_hosts``
+----------------
+
+**Default:** ``True``
+
+Deduplicate merged host lists so any given host string is only represented once
+(e.g. when using combinations of ``@hosts`` + ``@roles``, or ``-H`` and
+``-R``.)
+
+When set to ``False``, this option relaxes the deduplication, allowing users
+who explicitly want to run a task multiple times on the same host (say, in
+parallel, though it works fine serially too) to do so.
+
+.. versionadded:: 1.5
+
 .. _disable-known-hosts:
 
 ``disable_known_hosts``
