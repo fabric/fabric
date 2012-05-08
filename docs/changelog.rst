@@ -25,6 +25,7 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :release:`1.4.2 <2012-05-07>`
 * :release:`1.3.7 <2012-05-07>`
 * :bug:`562` Agent forwarding would error out or freeze when multiple uses of
   the forwarded agent were used per remote invocation (e.g. a single
