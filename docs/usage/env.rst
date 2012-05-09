@@ -202,7 +202,7 @@ Number of times Fabric will attempt to connect when connecting to a new server. 
 Current working directory. Used to keep state for the
 `~fabric.context_managers.cd` context manager.
 
-.. _dedupe-hosts:
+.. _dedupe_hosts:
 
 ``dedupe_hosts``
 ----------------
