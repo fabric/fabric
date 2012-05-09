@@ -11,6 +11,7 @@ from fudge import Fake, patched_context, with_fakes
 from nose.tools import ok_, eq_
 
 from fabric.decorators import hosts, roles, task
+from fabric.context_managers import settings
 from fabric.main import (parse_arguments, _escape_split,
         load_fabfile as _load_fabfile, list_commands, _task_names,
         COMMANDS_HEADER, NESTED_REMINDER)
@@ -148,6 +149,23 @@ def test_host_role_merge_deduping():
         pass
     # Not ['a', 'a', 'b', 'c'] or etc
     true_eq_hosts(command, ['a', 'b', 'c'], env={'roledefs': fake_roles})
+
+def test_host_role_merge_deduping_off():
+    """
+    Allow turning deduping off
+    """
+    @roles('r1', 'r2')
+    @hosts('a')
+    def command():
+        pass
+    with settings(dedupe_hosts=False):
+        true_eq_hosts(
+            command,
+            # 'a' 1x host 1x role
+            # 'b' 1x r1 1x r2
+            ['a', 'a', 'b', 'b', 'c'],
+            env={'roledefs': fake_roles}
+        )
 
 
 tuple_roles = {
