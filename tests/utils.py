@@ -253,24 +253,6 @@ def eq_contents(path, text):
         eq_(text, fd.read())
 
 
-def patched_env(updates):
-    """
-    Execute a function with a patched copy of ``fabric.state.env``.
-
-    ``fabric.state.env`` is patched during the wrapped functions' run, with an
-    equivalent copy that has been ``update``d with the given ``updates``.
-
-    E.g. with ``fabric.state.env = {'foo': 'bar', 'biz': 'baz'}``, a function
-    decorated with ``@patched_env({'foo': 'notbar'})`` would see
-    ``fabric.state.env`` as equal to ``{'biz': 'baz', 'foo': 'notbar'}``.
-    """
-    from fabric.state import env
-    def wrapper(func):
-        new_env = deepcopy(env).update(updates)
-        return with_patched_object('fabric.state', 'env', new_env)
-    return wrapper
-
-
 def support(path):
     return os.path.join(os.path.dirname(__file__), 'support', path)
 
