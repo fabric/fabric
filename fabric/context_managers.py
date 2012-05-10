@@ -367,7 +367,7 @@ def prefix(command):
 
 
 def su(user):
-    return _setenv(su=True, shell='sudo su - %s -c' % user)
+    return _setenv(su=True, shell="sudo -p '%s' su - %s -c" % (state.env['sudo_prompt'], user))
 
 
 @contextmanager
