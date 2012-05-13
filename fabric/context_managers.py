@@ -387,3 +387,24 @@ def char_buffered(pipe):
             yield
         finally:
             termios.tcsetattr(pipe, termios.TCSADRAIN, old_settings)
+
+
+quiet = lambda: settings(hide('everything'), warn_only=True)
+quiet.__doc__ = """
+    Alias to ``settings(hide('everything'), warn_only=True)``.
+
+    Useful for wrapping remote interrogative commands which you expect to fail
+    occasionally, and/or which you want to silence.
+
+    Example::
+
+        with quiet():
+            have_build_dir = run("test -e /tmp/build").succeeded
+
+    When used in a task, the above snippet will not produce any ``run: test -e
+    /tmp/build`` line, nor will any stdout/stderr display, and command failure
+    is ignored.
+
+    .. seealso::
+        `~fabric.context_managers.hide`, `~fabric.context_managers.settings`
+"""

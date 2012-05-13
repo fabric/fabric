@@ -12,9 +12,10 @@ import subprocess
 import sys
 import time
 from glob import glob
-from contextlib import closing
+from contextlib import closing, contextmanager
 
-from fabric.context_managers import settings, char_buffered, hide
+from fabric.context_managers import (settings, char_buffered, hide,
+    quiet as quiet_manager)
 from fabric.io import output_loop, input_loop
 from fabric.network import needs_host, ssh, ssh_config
 from fabric.sftp import SFTP
@@ -795,64 +796,70 @@ def open_shell(command=None):
     _execute(default_channel(), command, True, True, True)
 
 
+@contextmanager
+def _noop():
+    yield
+
+
 def _run_command(command, shell=True, pty=True, combine_stderr=True,
-    sudo=False, user=None):
+    sudo=False, user=None, quiet=False):
     """
     Underpinnings of `run` and `sudo`. See their docstrings for more info.
     """
-    # Set up new var so original argument can be displayed verbatim later.
-    given_command = command
-    # Handle context manager modifications, and shell wrapping
-    wrapped_command = _shell_wrap(
-        _prefix_commands(_prefix_env_vars(command), 'remote'),
-        shell,
-        _sudo_prefix(user) if sudo else None
-    )
-    # Execute info line
-    which = 'sudo' if sudo else 'run'
-    if output.debug:
-        print("[%s] %s: %s" % (env.host_string, which, wrapped_command))
-    elif output.running:
-        print("[%s] %s: %s" % (env.host_string, which, given_command))
-
-    # Actual execution, stdin/stdout/stderr handling, and termination
-    stdout, stderr, status = _execute(default_channel(), wrapped_command, pty,
-        combine_stderr)
-
-    # Assemble output string
-    out = _AttributeString(stdout)
-    err = _AttributeString(stderr)
-
-    # Error handling
-    out.failed = False
-    if status != 0:
-        out.failed = True
-        msg = "%s() received nonzero return code %s while executing" % (
-            which, status
+    with quiet_manager() if quiet else _noop():
+        # Set up new var so original argument can be displayed verbatim later.
+        given_command = command
+        # Handle context manager modifications, and shell wrapping
+        wrapped_command = _shell_wrap(
+            _prefix_commands(_prefix_env_vars(command), 'remote'),
+            shell,
+            _sudo_prefix(user) if sudo else None
         )
-        if env.warn_only:
-            msg += " '%s'!" % given_command
-        else:
-            msg += "!\n\nRequested: %s\nExecuted: %s" % (
-                given_command, wrapped_command
+        # Execute info line
+        which = 'sudo' if sudo else 'run'
+        if output.debug:
+            print("[%s] %s: %s" % (env.host_string, which, wrapped_command))
+        elif output.running:
+            print("[%s] %s: %s" % (env.host_string, which, given_command))
+
+        # Actual execution, stdin/stdout/stderr handling, and termination
+        stdout, stderr, status = _execute(default_channel(), wrapped_command,
+            pty, combine_stderr)
+
+        # Assemble output string
+        out = _AttributeString(stdout)
+        err = _AttributeString(stderr)
+
+        # Error handling
+        out.failed = False
+        if status != 0:
+            out.failed = True
+            msg = "%s() received nonzero return code %s while executing" % (
+                which, status
             )
-        error(message=msg, stdout=out, stderr=err)
+            if env.warn_only:
+                msg += " '%s'!" % given_command
+            else:
+                msg += "!\n\nRequested: %s\nExecuted: %s" % (
+                    given_command, wrapped_command
+                )
+            error(message=msg, stdout=out, stderr=err)
 
-    # Attach return code to output string so users who have set things to
-    # warn only, can inspect the error code.
-    out.return_code = status
+        # Attach return code to output string so users who have set things to
+        # warn only, can inspect the error code.
+        out.return_code = status
 
-    # Convenience mirror of .failed
-    out.succeeded = not out.failed
+        # Convenience mirror of .failed
+        out.succeeded = not out.failed
 
-    # Attach stderr for anyone interested in that.
-    out.stderr = err
+        # Attach stderr for anyone interested in that.
+        out.stderr = err
 
-    return out
+        return out
 
 
 @needs_host
-def run(command, shell=True, pty=True, combine_stderr=None):
+def run(command, shell=True, pty=True, combine_stderr=None, quiet=False):
     """
     Run a shell command on a remote host.
 
@@ -888,6 +895,9 @@ def run(command, shell=True, pty=True, combine_stderr=None):
     resulting strings returned by `~fabric.operations.run` will be properly
     separated). For more info, please read :ref:`combine_streams`.
 
+    To force a command to run silently and ignore non-zero return codes,
+    specify ``quiet=True``.
+
     Examples::
 
         run("ls /var/www/")
@@ -905,12 +915,16 @@ def run(command, shell=True, pty=True, combine_stderr=None):
         The default value of ``combine_stderr`` is now ``None`` instead of
         ``True``. However, the default *behavior* is unchanged, as the global
         setting is still ``True``.
+
+    .. versionchanged:: 1.5
+        Added the ``quiet`` kwarg.
     """
-    return _run_command(command, shell, pty, combine_stderr)
+    return _run_command(command, shell, pty, combine_stderr, quiet=quiet)
 
 
 @needs_host
-def sudo(command, shell=True, pty=True, combine_stderr=None, user=None):
+def sudo(command, shell=True, pty=True, combine_stderr=None, user=None,
+    quiet=False):
     """
     Run a shell command on a remote host, with superuser privileges.
 
@@ -928,6 +942,9 @@ def sudo(command, shell=True, pty=True, combine_stderr=None, user=None):
     have the same ``user`` value. An explicit ``user`` argument will, of
     course, override this global setting.
 
+    To force a command to run silently and ignore non-zero return codes,
+    specify ``quiet=True``.
+
     Examples::
 
         sudo("~/install_script.py")
@@ -941,9 +958,11 @@ def sudo(command, shell=True, pty=True, combine_stderr=None, user=None):
         See the changed and added notes for `~fabric.operations.run`.
     .. versionchanged:: 1.5
         Now honors :ref:`env.sudo_user <sudo_user>`.
+    .. versionchanged:: 1.5
+        Added the ``quiet`` kwarg.
     """
     return _run_command(command, shell, pty, combine_stderr, sudo=True,
-        user=user if user else env.sudo_user)
+        user=user if user else env.sudo_user, quiet=quiet)
 
 
 def local(command, capture=False):

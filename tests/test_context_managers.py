@@ -129,3 +129,45 @@ def test_settings_clean_revert():
         env.modified = "modified internally"
     eq_(env.modified, "modified internally")
     ok_("inner_only" not in env)
+
+
+from fabric.operations import run
+from fabric.context_managers import quiet
+from utils import mock_streams, FabricTest
+from server import server
+import sys
+from StringIO import StringIO
+
+class TestQuiet(FabricTest):
+    @server()
+    @mock_streams('both')
+    def test_hides_all_output(self):
+        # Sanity test - normally this is not empty
+        run("ls /simple")
+        ok_(sys.stdout.getvalue())
+        # Reset
+        sys.stdout = StringIO()
+        # Real test
+        with quiet():
+            run("ls /simple")
+        # Empty output
+        ok_(not sys.stdout.getvalue())
+        # Reset
+        sys.stdout = StringIO()
+        # Kwarg test
+        run("ls /simple", quiet=True)
+        ok_(not sys.stdout.getvalue())
+
+
+    @server(responses={'barf': [
+        "this is my stdout",
+        "this is my stderr",
+        1
+    ]})
+    def test_sets_warn_only_to_true(self):
+        # Sanity test to ensure environment
+        with settings(warn_only=False):
+            with quiet():
+                eq_(run("barf").return_code, 1)
+            # Kwarg test
+            eq_(run("barf", quiet=True).return_code, 1)

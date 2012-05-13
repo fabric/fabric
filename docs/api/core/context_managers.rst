@@ -11,3 +11,4 @@ Context Managers
     .. autofunction:: prefix
     .. autofunction:: settings
     .. autofunction:: show(*groups)
+    .. autofunction:: quiet
