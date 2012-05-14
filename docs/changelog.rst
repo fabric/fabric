@@ -34,6 +34,10 @@ Changelog
 * :feature:`633` Allow users to turn off host list deduping by setting
   :ref:`env.dedupe_hosts <dedupe_hosts>` to ``False``. This enables running the
   same task multiple times on a single host, which was previously not possible.
+* :support:`634` Clarified that `~fabric.context_managers.lcd` does no special
+  handling re: the user's current working directory, and thus relative paths
+  given to it will be relative to ``os.getcwd()``. Thanks to `@techtonik
+  <https://github.com/techtonik>`_ for the catch.
 * :release:`1.4.2 <2012-05-07>`
 * :release:`1.3.7 <2012-05-07>`
 * :bug:`562` Agent forwarding would error out or freeze when multiple uses of

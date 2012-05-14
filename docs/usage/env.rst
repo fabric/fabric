@@ -463,6 +463,8 @@ Sets the number of concurrent processes to use when executing tasks in parallel.
 Set to the port part of ``env.host_string`` by ``fab`` when iterating over a
 host list. May also be used to specify a default port.
 
+.. _real-fabfile:
+
 ``real_fabfile``
 ----------------
 

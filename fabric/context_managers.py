@@ -271,6 +271,13 @@ def lcd(path):
     only affects the invocation of `~fabric.operations.local` and the local
     arguments to `~fabric.operations.get`/`~fabric.operations.put`.
 
+    Relative path arguments are relative to the local user's current working
+    directory, which will vary depending on where Fabric (or Fabric-using code)
+    was invoked. You can check what this is with `os.getcwd
+    <http://docs.python.org/release/2.6/library/os.html#os.getcwd>`_. It may be
+    useful to pin things relative to the location of the fabfile in use, which
+    may be found in :ref:`env.real_fabfile <real-fabfile>`
+
     .. versionadded:: 1.0
     """
     return _change_cwd('lcwd', path)
