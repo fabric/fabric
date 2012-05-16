@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :support:`640` (also :issue:`644`) Update packaging manifest so sdist
+  tarballs include all necessary test & doc files. Thanks to Mike Gilbert and
+  `@Arfrever` for catch & patch.
 * :support:`634` Clarified that `~fabric.context_managers.lcd` does no special
   handling re: the user's current working directory, and thus relative paths
   given to it will be relative to ``os.getcwd()``. Thanks to `@techtonik
