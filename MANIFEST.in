@@ -2,7 +2,7 @@ include AUTHORS
 include INSTALL
 include LICENSE
 include README
-recursive-include docs *.rst
+recursive-include docs *
 recursive-exclude docs/_build *
 include fabfile.py
 include requirements.txt
