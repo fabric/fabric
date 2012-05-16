@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :support:`640` (also :issue:`644`) Update packaging manifest so sdist
+  tarballs include all necessary test & doc files. Thanks to Mike Gilbert and
+  `@Arfrever` for catch & patch.
 * :feature:`627` Added convenient ``quiet`` keyword argument to
   `~fabric.operations.run`/`~fabric.operations.sudo` (plus a `context manager
   version <fabric.context_managers.quiet>`) which is an alias for
