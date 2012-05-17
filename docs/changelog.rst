@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :support:`645` Update Sphinx docs to work well when run out of a source
+  tarball as opposed to a Git checkout. Thanks again to `@Arfrever` for the
+  catch.
 * :support:`640` (also :issue:`644`) Update packaging manifest so sdist
   tarballs include all necessary test & doc files. Thanks to Mike Gilbert and
   `@Arfrever` for catch & patch.
