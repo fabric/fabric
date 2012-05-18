@@ -9,5 +9,5 @@ Operations
     .. autofunction:: open_shell(command=None)
     .. autofunction:: put(local_path, remote_path, use_sudo=False, mirror_local_mode=False, mode=None)
     .. autofunction:: reboot(wait=120)
-    .. autofunction:: run(command, shell=True, pty=True, combine_stderr=True)
-    .. autofunction:: sudo(command, shell=True, pty=True, combine_stderr=True, user=None)
+    .. autofunction:: run(command, shell=True, pty=True, combine_stderr=True, quiet=False, stdout=None, stderr=None)
+    .. autofunction:: sudo(command, shell=True, pty=True, combine_stderr=True, user=None, quiet=False, stdout=None, stderr=None)
