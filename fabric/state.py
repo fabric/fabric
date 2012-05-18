@@ -231,6 +231,14 @@ env_options = [
         help="set connection timeout to N seconds"
     ),
 
+    make_option('-T', '--command-timeout',
+        dest='command_timeout',
+        type='int',
+        default=None,
+        metavar="N",
+        help="set remote command timeout to N seconds"
+    ),
+
     make_option('-u', '--user',
         default=_get_system_username(),
         help="username to use when connecting to remote hosts"
@@ -340,6 +348,7 @@ def default_channel():
     Return a channel object based on ``env.host_string``.
     """
     chan = connections[env.host_string].get_transport().open_session()
+    chan.settimeout(env.command_timeout)
     chan.input_enabled = True
     return chan
 
