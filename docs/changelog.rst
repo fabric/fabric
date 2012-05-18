@@ -25,6 +25,8 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :feature:`249` Allow specification of remote command timeout value by
+  setting :ref:`env.command_timeout <command_timeout>`.
 * :feature:`646` Allow specification of which local streams to use when
   `~fabric.operations.run`/`~fabric.operations.sudo` print the remote
   stdout/stderr, via e.g. ``run("command", stderr=sys.stdout)``.
