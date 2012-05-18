@@ -661,7 +661,7 @@ def _prefix_env_vars(command):
 
 
 def _execute(channel, command, pty=True, combine_stderr=None,
-    invoke_shell=False):
+    invoke_shell=False, stdout=None, stderr=None):
     """
     Execute ``command`` over ``channel``.
 
@@ -680,6 +680,10 @@ def _execute(channel, command, pty=True, combine_stderr=None,
     ``stdout``/``stderr`` are captured output strings and ``status`` is the
     program's return code, if applicable.
     """
+    # stdout/stderr redirection
+    stdout = stdout or sys.stdout
+    stderr = stderr or sys.stderr
+
     with char_buffered(sys.stdin):
         # Combine stdout and stderr to get around oddball mixing issues
         if combine_stderr is None:
@@ -713,13 +717,15 @@ def _execute(channel, command, pty=True, combine_stderr=None,
 
         # Init stdout, stderr capturing. Must use lists instead of strings as
         # strings are immutable and we're using these as pass-by-reference
-        stdout, stderr = [], []
+        stdout_buf, stderr_buf = [], []
         if invoke_shell:
-            stdout = stderr = None
+            stdout_buf = stderr_buf = None
 
         workers = (
-            ThreadHandler('out', output_loop, channel, "recv", stdout),
-            ThreadHandler('err', output_loop, channel, "recv_stderr", stderr),
+            ThreadHandler('out', output_loop, channel, "recv",
+                capture=stdout_buf, stream=stdout),
+            ThreadHandler('err', output_loop, channel, "recv_stderr",
+                capture=stderr_buf, stream=stderr),
             ThreadHandler('in', input_loop, channel, using_pty)
         )
 
@@ -748,19 +754,19 @@ def _execute(channel, command, pty=True, combine_stderr=None,
 
         # Update stdout/stderr with captured values if applicable
         if not invoke_shell:
-            stdout = ''.join(stdout).strip()
-            stderr = ''.join(stderr).strip()
+            stdout_buf = ''.join(stdout_buf).strip()
+            stderr_buf = ''.join(stderr_buf).strip()
 
         # Tie off "loose" output by printing a newline. Helps to ensure any
         # following print()s aren't on the same line as a trailing line prefix
         # or similar. However, don't add an extra newline if we've already
         # ended up with one, as that adds a entire blank line instead.
         if output.running \
-            and (output.stdout and stdout and not stdout.endswith("\n")) \
-            or (output.stderr and stderr and not stderr.endswith("\n")):
+            and (output.stdout and stdout_buf and not stdout_buf.endswith("\n")) \
+            or (output.stderr and stderr_buf and not stderr_buf.endswith("\n")):
             print("")
 
-        return stdout, stderr, status
+        return stdout_buf, stderr_buf, status
 
 
 @needs_host
@@ -802,7 +808,7 @@ def _noop():
 
 
 def _run_command(command, shell=True, pty=True, combine_stderr=True,
-    sudo=False, user=None, quiet=False):
+    sudo=False, user=None, quiet=False, stdout=None, stderr=None):
     """
     Underpinnings of `run` and `sudo`. See their docstrings for more info.
     """
@@ -823,12 +829,12 @@ def _run_command(command, shell=True, pty=True, combine_stderr=True,
             print("[%s] %s: %s" % (env.host_string, which, given_command))
 
         # Actual execution, stdin/stdout/stderr handling, and termination
-        stdout, stderr, status = _execute(default_channel(), wrapped_command,
-            pty, combine_stderr)
+        result_stdout, result_stderr, status = _execute(default_channel(), wrapped_command,
+            pty, combine_stderr, stdout, stderr)
 
         # Assemble output string
-        out = _AttributeString(stdout)
-        err = _AttributeString(stderr)
+        out = _AttributeString(result_stdout)
+        err = _AttributeString(result_stderr)
 
         # Error handling
         out.failed = False
@@ -859,7 +865,8 @@ def _run_command(command, shell=True, pty=True, combine_stderr=True,
 
 
 @needs_host
-def run(command, shell=True, pty=True, combine_stderr=None, quiet=False):
+def run(command, shell=True, pty=True, combine_stderr=None, quiet=False,
+    stdout=None, stderr=None):
     """
     Run a shell command on a remote host.
 
@@ -898,6 +905,16 @@ def run(command, shell=True, pty=True, combine_stderr=None, quiet=False):
     To force a command to run silently and ignore non-zero return codes,
     specify ``quiet=True``.
 
+    To override which local streams are used to display remote stdout and/or
+    stderr, specify ``stdout`` or ``stderr``. (By default, the regular
+    ``sys.stdout`` and ``sys.stderr`` Python stream objects are used.)
+
+    For example, ``run("command", stderr=sys.stdout)`` would print the remote
+    standard error to the local standard out, while preserving it as its own
+    distinct attribute on the return value (as per above.) Alternately, you
+    could even provide your own stream objects or loggers, e.g. ``myout =
+    StringIO(); run("command, stdout=myout)``.
+
     Examples::
 
         run("ls /var/www/")
@@ -917,14 +934,15 @@ def run(command, shell=True, pty=True, combine_stderr=None, quiet=False):
         setting is still ``True``.
 
     .. versionchanged:: 1.5
-        Added the ``quiet`` kwarg.
+        Added the ``quiet``, ``stdout`` and ``stderr`` kwargs.
     """
-    return _run_command(command, shell, pty, combine_stderr, quiet=quiet)
+    return _run_command(command, shell, pty, combine_stderr, quiet=quiet,
+        stdout=stdout, stderr=stderr)
 
 
 @needs_host
 def sudo(command, shell=True, pty=True, combine_stderr=None, user=None,
-    quiet=False):
+    quiet=False, stdout=None, stderr=None):
     """
     Run a shell command on a remote host, with superuser privileges.
 
@@ -959,10 +977,11 @@ def sudo(command, shell=True, pty=True, combine_stderr=None, user=None,
     .. versionchanged:: 1.5
         Now honors :ref:`env.sudo_user <sudo_user>`.
     .. versionchanged:: 1.5
-        Added the ``quiet`` kwarg.
+        Added the ``quiet``, ``stdout`` and ``stderr`` kwargs.
     """
     return _run_command(command, shell, pty, combine_stderr, sudo=True,
-        user=user if user else env.sudo_user, quiet=quiet)
+        user=user if user else env.sudo_user, quiet=quiet,
+        stdout=stdout, stderr=stderr)
 
 
 def local(command, capture=False):

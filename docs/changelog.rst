@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :feature:`646` Allow specification of which local streams to use when
+  printing remote stdout/stderr, via e.g. ``run("command",
+  stderr=sys.stdout)``.
 * :support:`645` Update Sphinx docs to work well when run out of a source
   tarball as opposed to a Git checkout. Thanks again to `@Arfrever` for the
   catch.
