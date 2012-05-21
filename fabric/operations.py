@@ -937,8 +937,8 @@ def run(command, shell=True, pty=True, combine_stderr=None, quiet=False,
         ``True``. However, the default *behavior* is unchanged, as the global
         setting is still ``True``.
 
-    .. versionchanged:: 1.5
-        Added the ``quiet``, ``stdout`` and ``stderr`` kwargs.
+    .. versionadded:: 1.5
+        The ``quiet``, ``stdout`` and ``stderr`` kwargs.
 
     .. versionadded:: 1.5
         The return value attributes ``.command`` and ``.real_command``.
@@ -967,9 +967,6 @@ def sudo(command, shell=True, pty=True, combine_stderr=None, user=None,
     have the same ``user`` value. An explicit ``user`` argument will, of
     course, override this global setting.
 
-    To force a command to run silently and ignore non-zero return codes,
-    specify ``quiet=True``.
-
     Examples::
 
         sudo("~/install_script.py")
@@ -981,9 +978,11 @@ def sudo(command, shell=True, pty=True, combine_stderr=None, user=None,
 
     .. versionchanged:: 1.0
         See the changed and added notes for `~fabric.operations.run`.
+
     .. versionchanged:: 1.5
         Now honors :ref:`env.sudo_user <sudo_user>`.
-    .. versionchanged:: 1.5
+
+    .. versionadded:: 1.5
         Added the ``quiet``, ``stdout`` and ``stderr`` kwargs.
 
     .. versionadded:: 1.5
