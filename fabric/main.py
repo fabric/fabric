@@ -9,8 +9,7 @@ The other callables defined in this module are internal only. Anything useful
 to individuals leveraging Fabric as a library, should be kept elsewhere.
 """
 
-from collections import defaultdict
-from operator import add, isMappingType
+from operator import isMappingType
 from optparse import OptionParser
 import os
 import sys
@@ -20,11 +19,12 @@ import types
 from fabric import api, state, colors
 from fabric.contrib import console, files, project
 
-from fabric.network import denormalize, disconnect_all, ssh
+from fabric.network import disconnect_all, ssh
 from fabric.state import env_options
 from fabric.tasks import Task, execute
 from fabric.task_utils import _Dict, crawl
 from fabric.utils import abort, indent
+from fabric.operations import _pty_size
 
 # One-time calculation of "all internal callables" to avoid doing this on every
 # check of a given fabfile callable (in is_classic_task()).
@@ -33,6 +33,7 @@ _internals = reduce(lambda x, y: x + filter(callable, vars(y).values()),
     _modules,
     []
 )
+
 
 # Module recursion cache
 class _ModuleCache(object):
@@ -263,7 +264,9 @@ def parse_options():
     # Initialize
     #
 
-    parser = OptionParser(usage="fab [options] <command>[:arg1,arg2=val2,host=foo,hosts='h1;h2',...] ...")
+    parser = OptionParser(
+        usage=("fab [options] <command>"
+               "[:arg1,arg2=val2,host=foo,hosts='h1;h2',...] ..."))
 
     #
     # Define options that don't become `env` vars (typically ones which cause
@@ -334,11 +337,13 @@ def parse_options():
     opts, args = parser.parse_args()
     return parser, opts, args
 
+
 def _is_task(name, value):
     """
     Is the object a task as opposed to e.g. a dict or int?
     """
     return is_classic_task((name, value)) or is_task_object(value)
+
 
 def _sift_tasks(mapping):
     tasks, collections = [], []
@@ -350,6 +355,7 @@ def _sift_tasks(mapping):
     tasks = sorted(tasks)
     collections = sorted(collections)
     return tasks, collections
+
 
 def _task_names(mapping):
     """
@@ -383,6 +389,7 @@ def _normal_list(docstrings=True):
     max_len = reduce(lambda a, b: max(a, len(b)), task_names, 0)
     sep = '  '
     trail = '...'
+    max_width = _pty_size()[1] - 1 - len(trail)
     for name in task_names:
         output = None
         docstring = _print_docstring(docstrings, name)
@@ -390,7 +397,7 @@ def _normal_list(docstrings=True):
             lines = filter(None, docstring.splitlines())
             first_line = lines[0].strip()
             # Truncate it if it's longer than N chars
-            size = 75 - (max_len + len(sep) + len(trail))
+            size = max_width - (max_len + len(sep) + len(trail))
             if len(first_line) > size:
                 first_line = first_line[:size] + trail
             output = name.ljust(max_len) + sep + first_line
@@ -416,6 +423,7 @@ def _nested_list(mapping, level=1):
 
 COMMANDS_HEADER = "Available commands"
 NESTED_REMINDER = " (remember to call as module.[...].task)"
+
 
 def list_commands(docstring, format_):
     """
@@ -555,9 +563,6 @@ def update_output_levels(show, hide):
     if hide:
         for key in hide.split(','):
             state.output[key] = False
-
-
-from fabric.tasks import _parallel_tasks
 
 
 def main():

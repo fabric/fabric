@@ -16,6 +16,7 @@ import tempfile
 
 from fudge import Fake, patched_context, clear_expectations
 from nose.tools import raises
+from nose import SkipTest
 
 from fabric.context_managers import settings
 from fabric.state import env, output
@@ -38,17 +39,26 @@ class FabricTest(object):
         # Deepcopy doesn't work well on AliasDicts; but they're only one layer
         # deep anyways, so...
         self.previous_output = output.items()
+        # Allow hooks from subclasses here for setting env vars (so they get
+        # purged correctly in teardown())
+        self.env_setup()
+        # Temporary local file dir
+        self.tmpdir = tempfile.mkdtemp()
+
+    def set_network(self):
+        env.update(to_dict('%s@%s:%s' % (USER, HOST, PORT)))
+
+    def env_setup(self):
         # Set up default networking for test server
         env.disable_known_hosts = True
-        env.update(to_dict('%s@%s:%s' % (USER, HOST, PORT)))
+        self.set_network()
         env.password = PASSWORDS[USER]
         # Command response mocking is easier without having to account for
         # shell wrapping everywhere.
         env.use_shell = False
-        # Temporary local file dir
-        self.tmpdir = tempfile.mkdtemp()
 
     def teardown(self):
+        env.clear() # In case tests set env vars that didn't exist previously
         env.update(self.previous_env)
         output.update(self.previous_output)
         shutil.rmtree(self.tmpdir)
@@ -243,26 +253,10 @@ def eq_contents(path, text):
         eq_(text, fd.read())
 
 
-def patched_env(updates):
-    """
-    Execute a function with a patched copy of ``fabric.state.env``.
+def support(path):
+    return os.path.join(os.path.dirname(__file__), 'support', path)
 
-    ``fabric.state.env`` is patched during the wrapped functions' run, with an
-    equivalent copy that has been ``update``d with the given ``updates``.
-
-    E.g. with ``fabric.state.env = {'foo': 'bar', 'biz': 'baz'}``, a function
-    decorated with ``@patched_env({'foo': 'notbar'})`` would see
-    ``fabric.state.env`` as equal to ``{'biz': 'baz', 'foo': 'notbar'}``.
-    """
-    from fabric.state import env
-    def wrapper(func):
-        new_env = deepcopy(env).update(updates)
-        return with_patched_object('fabric.state', 'env', new_env)
-    return wrapper
-
-
-def fabfile(name):
-    return os.path.join(os.path.dirname(__file__), 'support', name)
+fabfile = support
 
 
 @contextmanager

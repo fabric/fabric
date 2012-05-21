@@ -6,29 +6,32 @@ from __future__ import with_statement
 
 import os
 import os.path
+import posixpath
 import re
-import stat
 import subprocess
 import sys
 import time
 from glob import glob
-from traceback import format_exc
-from contextlib import closing
+from contextlib import closing, contextmanager
 
-from fabric.context_managers import settings, char_buffered
+from fabric.context_managers import (settings, char_buffered, hide,
+    quiet as quiet_manager)
 from fabric.io import output_loop, input_loop
-from fabric.network import needs_host, ssh
+from fabric.network import needs_host, ssh, ssh_config
 from fabric.sftp import SFTP
 from fabric.state import env, connections, output, win32, default_channel
 from fabric.thread_handling import ThreadHandler
-from fabric.utils import abort, indent, warn, puts, handle_prompt_abort, error, _pty_size
+from fabric.utils import (
+    abort,
+    error,
+    handle_prompt_abort,
+    indent,
+    _pty_size,
+    warn,
+)
+
 from fabric.dryrun import DryRunSFTP
 
-# For terminal size logic below
-if not win32:
-    import fcntl
-    import termios
-    import struct
 
 
 def _shell_escape(string):
@@ -541,7 +544,7 @@ def get(remote_path, local_path=None):
             # Otherwise, be relative to remote home directory (SFTP server's
             # '.')
             else:
-                remote_path = os.path.join(home, remote_path)
+                remote_path = posixpath.join(home, remote_path)
 
         # Track final local destination files so we can return a list
         local_files = []
@@ -588,7 +591,7 @@ def _sudo_prefix(user):
     Return ``env.sudo_prefix`` with ``user`` inserted if necessary.
     """
     # Insert env.sudo_prompt into env.sudo_prefix
-    prefix = env.sudo_prefix % env.sudo_prompt
+    prefix = env.sudo_prefix % env
     if user is not None:
         if str(user).isdigit():
             user = "#%s" % user
@@ -669,7 +672,7 @@ def _prefix_env_vars(command):
 
 
 def _execute(channel, command, pty=True, combine_stderr=None,
-    invoke_shell=False):
+    invoke_shell=False, stdout=None, stderr=None):
     """
     Execute ``command`` over ``channel``.
 
@@ -688,6 +691,10 @@ def _execute(channel, command, pty=True, combine_stderr=None,
     ``stdout``/``stderr`` are captured output strings and ``status`` is the
     program's return code, if applicable.
     """
+    # stdout/stderr redirection
+    stdout = stdout or sys.stdout
+    stderr = stderr or sys.stderr
+
     with char_buffered(sys.stdin):
         # Combine stdout and stderr to get around oddball mixing issues
         if combine_stderr is None:
@@ -705,9 +712,11 @@ def _execute(channel, command, pty=True, combine_stderr=None,
             rows, cols = _pty_size()
             channel.get_pty(width=cols, height=rows)
 
-        # Use SSH agent forwarding from 'ssh', unless user has turned it off.
-        if not env.no_agent_forward:
-            forward = ssh.agent.AgentClientProxy(channel)
+        # Use SSH agent forwarding from 'ssh' if enabled by user
+        config_agent = ssh_config().get('forwardagent', 'no').lower() == 'yes'
+        forward = None
+        if env.forward_agent or config_agent:
+            forward = ssh.agent.AgentRequestHandler(channel)
 
         # Kick off remote command
         if invoke_shell:
@@ -719,13 +728,15 @@ def _execute(channel, command, pty=True, combine_stderr=None,
 
         # Init stdout, stderr capturing. Must use lists instead of strings as
         # strings are immutable and we're using these as pass-by-reference
-        stdout, stderr = [], []
+        stdout_buf, stderr_buf = [], []
         if invoke_shell:
-            stdout = stderr = None
+            stdout_buf = stderr_buf = None
 
         workers = (
-            ThreadHandler('out', output_loop, channel, "recv", stdout),
-            ThreadHandler('err', output_loop, channel, "recv_stderr", stderr),
+            ThreadHandler('out', output_loop, channel, "recv",
+                capture=stdout_buf, stream=stdout),
+            ThreadHandler('err', output_loop, channel, "recv_stderr",
+                capture=stderr_buf, stream=stderr),
             ThreadHandler('in', input_loop, channel, using_pty)
         )
 
@@ -748,22 +759,25 @@ def _execute(channel, command, pty=True, combine_stderr=None,
 
         # Close channel
         channel.close()
+        # Close any agent forward proxies
+        if forward is not None:
+            forward.close()
 
         # Update stdout/stderr with captured values if applicable
         if not invoke_shell:
-            stdout = ''.join(stdout).strip()
-            stderr = ''.join(stderr).strip()
+            stdout_buf = ''.join(stdout_buf).strip()
+            stderr_buf = ''.join(stderr_buf).strip()
 
         # Tie off "loose" output by printing a newline. Helps to ensure any
         # following print()s aren't on the same line as a trailing line prefix
         # or similar. However, don't add an extra newline if we've already
         # ended up with one, as that adds a entire blank line instead.
         if output.running \
-            and (output.stdout and stdout and not stdout.endswith("\n")) \
-            or (output.stderr and stderr and not stderr.endswith("\n")):
+            and (output.stdout and stdout_buf and not stdout_buf.endswith("\n")) \
+            or (output.stderr and stderr_buf and not stderr_buf.endswith("\n")):
             print("")
 
-        return stdout, stderr, status
+        return stdout_buf, stderr_buf, status
 
 
 @needs_host
@@ -799,68 +813,75 @@ def open_shell(command=None):
     _execute(default_channel(), command, True, True, True)
 
 
+@contextmanager
+def _noop():
+    yield
+
+
 def _run_command(command, shell=True, pty=True, combine_stderr=True,
-    sudo=False, user=None):
+    sudo=False, user=None, quiet=False, stdout=None, stderr=None):
     """
     Underpinnings of `run` and `sudo`. See their docstrings for more info.
     """
-    # Set up new var so original argument can be displayed verbatim later.
-    given_command = command
-    # Handle context manager modifications, and shell wrapping
-    wrapped_command = _shell_wrap(
-        _prefix_commands(_prefix_env_vars(command), 'remote'),
-        shell,
-        _sudo_prefix(user) if sudo else None
-    )
-    # Execute info line
-    which = 'sudo' if sudo else 'run'
-    if output.debug:
-        print("[%s] %s: %s" % (env.host_string, which, wrapped_command))
-    elif output.running or env.dry_run_remote:
-        print("[%s] %s: %s" % (env.host_string, which, given_command))
-
-    if env.dry_run_remote:
-        # Fake exeuction, assume command completed ok and returned 0
-        stdout, stderr, status = ("", "", 0)
-    else:    
-        # Actual execution, stdin/stdout/stderr handling, and termination
-        stdout, stderr, status = _execute(default_channel(), wrapped_command, pty,
-            combine_stderr)
-
-    # Assemble output string
-    out = _AttributeString(stdout)
-    err = _AttributeString(stderr)
-
-    # Error handling
-    out.failed = False
-    if status != 0:
-        out.failed = True
-        msg = "%s() received nonzero return code %s while executing" % (
-            which, status
+    with quiet_manager() if quiet else _noop():
+        # Set up new var so original argument can be displayed verbatim later.
+        given_command = command
+        # Handle context manager modifications, and shell wrapping
+        wrapped_command = _shell_wrap(
+            _prefix_commands(_prefix_env_vars(command), 'remote'),
+            shell,
+            _sudo_prefix(user) if sudo else None
         )
-        if env.warn_only:
-            msg += " '%s'!" % given_command
-        else:
-            msg += "!\n\nRequested: %s\nExecuted: %s" % (
-                given_command, wrapped_command
+        # Execute info line
+        which = 'sudo' if sudo else 'run'
+        if output.debug:
+            print("[%s] %s: %s" % (env.host_string, which, wrapped_command))
+        elif output.running or env.dry_run_remote:
+            print("[%s] %s: %s" % (env.host_string, which, given_command))
+
+        if env.dry_run_remote:
+            # Fake exeuction, assume command completed ok and returned 0
+            stdout, stderr, status = ("", "", 0)
+        else: 
+            # Actual execution, stdin/stdout/stderr handling, and termination
+            result_stdout, result_stderr, status = _execute(default_channel(), wrapped_command,
+                pty, combine_stderr, stdout, stderr)
+
+        # Assemble output string
+        out = _AttributeString(result_stdout)
+        err = _AttributeString(result_stderr)
+
+        # Error handling
+        out.failed = False
+        if status != 0:
+            out.failed = True
+            msg = "%s() received nonzero return code %s while executing" % (
+                which, status
             )
-        error(message=msg, stdout=out, stderr=err)
+            if env.warn_only:
+                msg += " '%s'!" % given_command
+            else:
+                msg += "!\n\nRequested: %s\nExecuted: %s" % (
+                    given_command, wrapped_command
+                )
+            error(message=msg, stdout=out, stderr=err)
 
-    # Attach return code to output string so users who have set things to
-    # warn only, can inspect the error code.
-    out.return_code = status
+        # Attach return code to output string so users who have set things to
+        # warn only, can inspect the error code.
+        out.return_code = status
 
-    # Convenience mirror of .failed
-    out.succeeded = not out.failed
+        # Convenience mirror of .failed
+        out.succeeded = not out.failed
 
-    # Attach stderr for anyone interested in that.
-    out.stderr = err
+        # Attach stderr for anyone interested in that.
+        out.stderr = err
 
-    return out
+        return out
 
 
 @needs_host
-def run(command, shell=True, pty=True, combine_stderr=None):
+def run(command, shell=True, pty=True, combine_stderr=None, quiet=False,
+    stdout=None, stderr=None):
     """
     Run a shell command on a remote host.
 
@@ -896,6 +917,19 @@ def run(command, shell=True, pty=True, combine_stderr=None):
     resulting strings returned by `~fabric.operations.run` will be properly
     separated). For more info, please read :ref:`combine_streams`.
 
+    To force a command to run silently and ignore non-zero return codes,
+    specify ``quiet=True``.
+
+    To override which local streams are used to display remote stdout and/or
+    stderr, specify ``stdout`` or ``stderr``. (By default, the regular
+    ``sys.stdout`` and ``sys.stderr`` Python stream objects are used.)
+
+    For example, ``run("command", stderr=sys.stdout)`` would print the remote
+    standard error to the local standard out, while preserving it as its own
+    distinct attribute on the return value (as per above.) Alternately, you
+    could even provide your own stream objects or loggers, e.g. ``myout =
+    StringIO(); run("command, stdout=myout)``.
+
     Examples::
 
         run("ls /var/www/")
@@ -913,12 +947,17 @@ def run(command, shell=True, pty=True, combine_stderr=None):
         The default value of ``combine_stderr`` is now ``None`` instead of
         ``True``. However, the default *behavior* is unchanged, as the global
         setting is still ``True``.
+
+    .. versionchanged:: 1.5
+        Added the ``quiet``, ``stdout`` and ``stderr`` kwargs.
     """
-    return _run_command(command, shell, pty, combine_stderr)
+    return _run_command(command, shell, pty, combine_stderr, quiet=quiet,
+        stdout=stdout, stderr=stderr)
 
 
 @needs_host
-def sudo(command, shell=True, pty=True, combine_stderr=None, user=None):
+def sudo(command, shell=True, pty=True, combine_stderr=None, user=None,
+    quiet=False, stdout=None, stderr=None):
     """
     Run a shell command on a remote host, with superuser privileges.
 
@@ -931,18 +970,33 @@ def sudo(command, shell=True, pty=True, combine_stderr=None, user=None):
     ``sudo`` program can take a string username or an integer userid (uid);
     ``user`` may likewise be a string or an int.
 
+    You may set :ref:`env.sudo_user <sudo_user>` at module level or via
+    `~fabric.context_managers.settings` if you want multiple ``sudo`` calls to
+    have the same ``user`` value. An explicit ``user`` argument will, of
+    course, override this global setting.
+
+    To force a command to run silently and ignore non-zero return codes,
+    specify ``quiet=True``.
+
     Examples::
 
         sudo("~/install_script.py")
         sudo("mkdir /var/www/new_docroot", user="www-data")
         sudo("ls /home/jdoe", user=1001)
         result = sudo("ls /tmp/")
+        with settings(sudo_user='mysql'):
+            sudo("whoami") # prints 'mysql'
 
     .. versionchanged:: 1.0
         See the changed and added notes for `~fabric.operations.run`.
+    .. versionchanged:: 1.5
+        Now honors :ref:`env.sudo_user <sudo_user>`.
+    .. versionchanged:: 1.5
+        Added the ``quiet``, ``stdout`` and ``stderr`` kwargs.
     """
     return _run_command(command, shell, pty, combine_stderr, sudo=True,
-        user=user)
+        user=user if user else env.sudo_user, quiet=quiet,
+        stdout=stdout, stderr=stderr)
 
 
 def local(command, capture=False):
@@ -1017,32 +1071,57 @@ def local(command, capture=False):
     if p.returncode != 0:
         out.failed = True
         msg = "local() encountered an error (return code %s) while executing '%s'" % (p.returncode, command)
-        error(message=msg)
+        error(message=msg, stdout=out, stderr=err)
     out.succeeded = not out.failed
     # If we were capturing, this will be a string; otherwise it will be None.
     return out
 
 
 @needs_host
-def reboot(wait):
+def reboot(wait=120):
     """
-    Reboot the remote system, disconnect, and wait for ``wait`` seconds.
+    Reboot the remote system.
 
-    After calling this operation, further execution of `run` or `sudo` will
-    result in a normal reconnection to the server, including any password
-    prompts.
+    Will temporarily tweak Fabric's reconnection settings (:ref:`timeout` and
+    :ref:`connection-attempts`) to ensure that reconnection does not give up
+    for at least ``wait`` seconds.
+
+    .. note::
+        As of Fabric 1.4, the ability to reconnect partway through a session no
+        longer requires use of internal APIs.  While we are not officially
+        deprecating this function, adding more features to it will not be a
+        priority.
+
+        Users who want greater control
+        are encouraged to check out this function's (6 lines long, well
+        commented) source code and write their own adaptation using different
+        timeout/attempt values or additional logic.
 
     .. versionadded:: 0.9.2
+    .. versionchanged:: 1.4
+        Changed the ``wait`` kwarg to be optional, and refactored to leverage
+        the new reconnection functionality; it may not actually have to wait
+        for ``wait`` seconds before reconnecting.
     """
-    sudo('reboot')
-    client = connections[env.host_string]
-    client.close()
-    if env.host_string in connections:
-        del connections[env.host_string]
-    if output.running:
-        puts("Waiting for reboot: ", flush=True, end='')
-        per_tick = 5
-        for second in range(int(wait / per_tick)):
-            puts(".", show_prefix=False, flush=True, end='')
-            time.sleep(per_tick)
-        puts("done.\n", show_prefix=False, flush=True)
+    # Shorter timeout for a more granular cycle than the default.
+    timeout = 5
+    # Use 'wait' as max total wait time
+    attempts = int(round(wait / float(timeout)))
+    # Don't bleed settings, since this is supposed to be self-contained.
+    # User adaptations will probably want to drop the "with settings()" and
+    # just have globally set timeout/attempts values.
+    with settings(
+        hide('running'),
+        timeout=timeout,
+        connection_attempts=attempts
+    ):
+        sudo('reboot')
+        # Try to make sure we don't slip in before pre-reboot lockdown
+        time.sleep(5)
+        # This is actually an internal-ish API call, but users can simply drop
+        # it in real fabfile use -- the next run/sudo/put/get/etc call will
+        # automatically trigger a reconnect.
+        # We use it here to force the reconnect while this function is still in
+        # control and has the above timeout settings enabled.
+        connections.connect(env.host_string)
+    # At this point we should be reconnected to the newly rebooted server.

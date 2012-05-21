@@ -5,12 +5,13 @@ May use ``multiprocessing.Process`` or ``threading.Thread`` objects as queue
 items, though within Fabric itself only ``Process`` objects are used/supported.
 """
 
-from pprint import pprint
-from Crypto import Random 
+from __future__ import with_statement
 import time
+import Queue
 
 from fabric.state import env
 from fabric.network import ssh
+from fabric.context_managers import settings
 
 
 class JobQueue(object):
@@ -31,7 +32,7 @@ class JobQueue(object):
         ___________________________
                                 End 
     """
-    def __init__(self, max_running):
+    def __init__(self, max_running, comms_queue):
         """
         Setup the class to resonable defaults.
         """
@@ -40,6 +41,7 @@ class JobQueue(object):
         self._completed = []
         self._num_of_jobs = 0
         self._max = max_running
+        self._comms_queue = comms_queue
         self._finished = False
         self._closed = False
         self._debug = False
@@ -59,7 +61,7 @@ class JobQueue(object):
         Just going to use number of jobs as the JobQueue length.
         """
         return self._num_of_jobs
-    
+
     def close(self):
         """
         A sanity check, so that the need to care about new jobs being added in
@@ -76,6 +78,10 @@ class JobQueue(object):
         That is if the JobQueue is still open.
 
         If the queue is closed, this will just silently do nothing.
+
+        To get data back out of this process, give ``process`` access to a
+        ``multiprocessing.Queue`` object, and give it here as ``queue``. Then
+        ``JobQueue.run`` will include the queue's contents in its return value.
         """
         if not self._closed:
             self._queued.append(process)
@@ -111,8 +117,8 @@ class JobQueue(object):
             job = self._queued.pop()
             if self._debug:
                 print("Popping '%s' off the queue and starting it" % job.name)
-            env.host_string = env.host = job.name
-            job.start()
+            with settings(clean_revert=True, host_string=job.name, host=job.name):
+                job.start()
             self._running.append(job)
 
         if not self._closed:
@@ -134,7 +140,6 @@ class JobQueue(object):
                         if self._debug:
                             print("Job queue found finished proc: %s." %
                                     job.name)
-
                         done = self._running.pop(id)
                         self._completed.append(done)
 
@@ -151,15 +156,27 @@ class JobQueue(object):
                 self._finished = True
             time.sleep(ssh.io_sleep)
 
-        return [x.exitcode for x in self._completed]
+        results = {}
+        for job in self._completed:
+            results[job.name] = {
+                'exit_code': job.exitcode,
+            }
+        while True:
+            try:
+                datum = self._comms_queue.get(timeout=1)
+                results[datum['name']]['results'] = datum['result']
+            except Queue.Empty:
+                break
+
+        return results
 
 
-#### Sample 
+#### Sample
 
 def try_using(parallel_type):
     """
     This will run the queue through it's paces, and show a simple way of using
-    the job queue. 
+    the job queue.
     """
 
     def print_number(number):
@@ -174,7 +191,6 @@ def try_using(parallel_type):
     elif parallel_type == "threading":
         from threading import Thread as Bucket
 
-
     # Make a job_queue with a bubble of len 5, and have it print verbosely
     jobs = JobQueue(5)
     jobs._debug = True
@@ -182,9 +198,9 @@ def try_using(parallel_type):
     # Add 20 procs onto the stack
     for x in range(20):
         jobs.append(Bucket(
-            target = print_number,
-            args = [x],
-            kwargs = {},
+            target=print_number,
+            args=[x],
+            kwargs={},
             ))
 
     # Close up the queue and then start it's execution

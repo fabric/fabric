@@ -14,38 +14,27 @@ you're reading `the latest version
 Near-term feature releases and support work
 ===========================================
 
-* Move non-code-related docs to a new static site on ``www.fabfile.org``
-  (:issue:`419`).
-* Fabric **1.4**: Network-related improvements, such as an option for skipping
-  or retrying unreachable or otherwise "bad" hosts (:issue:`8`, :issue:`348`,
-  :issue:`249`) and SSH key changes (:issue:`72`, :issue:`150`.)
-* Work on a new (to us; probably hacking an existing codebase) GitHub-focused
-  IRC bot (:issue:`169`).
-* Fabric **1.5**: Logging integration (:issue:`57`) and other UI tweaks,
-  possibly including colored output (:issue:`101`) by default.
+* Fabric **1.5**: SSH tunnelling, remote timeouts, improved SSH key debug info,
+  ``sudo`` improvements, and a bit more. See the `milestone issues page
+  <https://github.com/fabric/fabric/issues?milestone=22&state=open>`_ for what
+  remains to be done.
 
 
-Longer-term but probably still 1.x plans
-========================================
+Invoke and Fabric 2.0
+=====================
 
-In no particular order, some potential future feature releases:
-
-* Work on our fork of Paramiko, ``ssh``, to fix `a number of outstanding
-  issues/deficiencies <https://github.com/fabric/fabric/issues/275>`_ that
-  cause problems for Fabric itself (authentication failure reasons being
-  unclear, lack of SSH agent forwarding and/or gateway support, etc.)
-* Improved object-oriented design, both internal refactoring and at the API
-  level (for example, ``Host`` objects as an alternative to host strings.)
-
-
-Fabric 2.0
-==========
-
-* As a lead-in, any additional 1.x-compatible internal refactorings or API
-  add-ons, such as aforementioned OO design patterns. Get as much done as
-  possible without breaking backwards compatibility.
-* Make decisions about what old ways of doing things should be axed in 2.0, or
-  which can be easily "wrapped" in newer mechanisms without requiring lots of
-  legacy code.
-* Any other 2.x-marked tickets introducing new, clearly-backwards-incompatible
-  features (`see list <https://github.com/fabric/fabric/issues?labels=2.x>`_.)
+* Finish and release the Invoke library, which is a revamped and standalone
+  version of Fabric's task running components. See :issue:`565`.
+    * Initially it will be relatively basic, matching Fabric's current
+      functionality, but with a cleaner base to build on.
+    * That opens the door for dependencies and so forth.
+* Start putting together Fabric 2.0, a partly/mostly rewritten Fabric core:
+    * Leverage Invoke for task running, which will leave Fabric itself much
+      more library oriented.
+    * Object-oriented hosts/host lists and all the fun stuff that provides
+      (e.g. no more hacky host string and unintuitive env var manipulation.)
+    * No (or optional & non-default) shared state.
+    * Any other core overhauls difficult to do in a backwards compatible
+      fashion.
+    * `Current issue list
+      <https://github.com/fabric/fabric/issues?labels=2.x>`_

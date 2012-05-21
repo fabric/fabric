@@ -1,6 +1,7 @@
 from __future__ import with_statement
 
 import copy
+from functools import partial
 from operator import isMappingType
 import os
 import sys
@@ -10,6 +11,7 @@ from fudge import Fake, patched_context, with_fakes
 from nose.tools import ok_, eq_
 
 from fabric.decorators import hosts, roles, task
+from fabric.context_managers import settings
 from fabric.main import (parse_arguments, _escape_split,
         load_fabfile as _load_fabfile, list_commands, _task_names,
         COMMANDS_HEADER, NESTED_REMINDER)
@@ -18,8 +20,7 @@ from fabric.state import _AttributeDict
 from fabric.tasks import Task, WrappedCallableTask
 from fabric.task_utils import _crawl, crawl, merge
 
-from utils import (mock_streams, patched_env, eq_, FabricTest, fabfile,
-    path_prefix, aborts)
+from utils import mock_streams, eq_, FabricTest, fabfile, path_prefix, aborts
 
 
 # Stupid load_fabfile wrapper to hide newly added return value.
@@ -96,8 +97,10 @@ def test_escaped_task_kwarg_split():
 def get_hosts(command, *args):
     return WrappedCallableTask(command).get_hosts(*args)
 
-def eq_hosts(command, host_list, env=None):
-    eq_(set(get_hosts(command, [], [], [], env)), set(host_list))
+def eq_hosts(command, host_list, env=None, func=set):
+    eq_(func(get_hosts(command, [], [], [], env)), func(host_list))
+
+true_eq_hosts = partial(eq_hosts, func=lambda x: x)
 
 def test_hosts_decorator_by_itself():
     """
@@ -117,7 +120,6 @@ fake_roles = {
     'r2': ['b', 'c']
 }
 
-@patched_env({'roledefs': fake_roles})
 def test_roles_decorator_by_itself():
     """
     Use of @roles only
@@ -125,27 +127,52 @@ def test_roles_decorator_by_itself():
     @roles('r1')
     def command():
         pass
-    eq_hosts(command, ['a', 'b'])
+    eq_hosts(command, ['a', 'b'], env={'roledefs': fake_roles})
 
-
-@patched_env({'roledefs': fake_roles})
 def test_hosts_and_roles_together():
     """
     Use of @roles and @hosts together results in union of both
     """
     @roles('r1', 'r2')
+    @hosts('d')
+    def command():
+        pass
+    eq_hosts(command, ['a', 'b', 'c', 'd'], env={'roledefs': fake_roles})
+
+def test_host_role_merge_deduping():
+    """
+    Use of @roles and @hosts dedupes when merging
+    """
+    @roles('r1', 'r2')
     @hosts('a')
     def command():
         pass
-    eq_hosts(command, ['a', 'b', 'c'])
+    # Not ['a', 'a', 'b', 'c'] or etc
+    true_eq_hosts(command, ['a', 'b', 'c'], env={'roledefs': fake_roles})
+
+def test_host_role_merge_deduping_off():
+    """
+    Allow turning deduping off
+    """
+    @roles('r1', 'r2')
+    @hosts('a')
+    def command():
+        pass
+    with settings(dedupe_hosts=False):
+        true_eq_hosts(
+            command,
+            # 'a' 1x host 1x role
+            # 'b' 1x r1 1x r2
+            ['a', 'a', 'b', 'b', 'c'],
+            env={'roledefs': fake_roles}
+        )
+
 
 tuple_roles = {
     'r1': ('a', 'b'),
     'r2': ('b', 'c'),
 }
 
-
-@patched_env({'roledefs': tuple_roles})
 def test_roles_as_tuples():
     """
     Test that a list of roles as a tuple succeeds
@@ -153,17 +180,16 @@ def test_roles_as_tuples():
     @roles('r1')
     def command():
         pass
-    eq_hosts(command, ['a', 'b'])
+    eq_hosts(command, ['a', 'b'], env={'roledefs': tuple_roles})
 
 
-@patched_env({'hosts': ('foo', 'bar')})
 def test_hosts_as_tuples():
     """
     Test that a list of hosts as a tuple succeeds
     """
     def command():
         pass
-    eq_hosts(command, ['foo', 'bar'])
+    eq_hosts(command, ['foo', 'bar'], env={'hosts': ('foo', 'bar')})
 
 
 def test_hosts_decorator_overrides_env_hosts():
@@ -257,9 +283,9 @@ def test_get_hosts_excludes_cli_exclude_hosts_from_cli_hosts():
 def test_get_hosts_excludes_cli_exclude_hosts_from_decorator_hosts():
     assert 'foo' not in get_hosts(hosts('foo', 'bar')(dummy), [], [], ['foo'])
 
-@patched_env({'hosts': ['foo', 'bar'], 'exclude_hosts': ['foo']})
 def test_get_hosts_excludes_global_exclude_hosts_from_global_hosts():
-    assert 'foo' not in get_hosts(dummy, [], [], [])
+    fake_env = {'hosts': ['foo', 'bar'], 'exclude_hosts': ['foo']}
+    assert 'foo' not in get_hosts(dummy, [], [], [], fake_env)
 
 
 
@@ -277,7 +303,6 @@ def test_aborts_on_nonexistent_roles():
 
 lazy_role = {'r1': lambda: ['a', 'b']}
 
-@patched_env({'roledefs': lazy_role})
 def test_lazy_roles():
     """
     Roles may be callables returning lists, as well as regular lists
@@ -285,7 +310,7 @@ def test_lazy_roles():
     @roles('r1')
     def command():
         pass
-    eq_hosts(command, ['a', 'b'])
+    eq_hosts(command, ['a', 'b'], env={'roledefs': lazy_role})
 
 
 #
@@ -355,7 +380,7 @@ class TestTaskAliases(FabricTest):
             ok_("foo_aliased" in funcs)
             ok_("foo_aliased_two" in funcs)
 
-    def test_nested_alias(self):
+    def test_nested_aliases(self):
         f = fabfile("nested_aliases.py")
         with path_prefix(f):
             docs, funcs = load_fabfile(f)
@@ -438,6 +463,16 @@ class TestNamespaces(FabricTest):
             docs, funcs = load_fabfile(module)
             eq_(len(funcs), 1)
             ok_('submodule.classic_task' not in _task_names(funcs))
+
+    def test_task_decorator_plays_well_with_others(self):
+        """
+        @task, when inside @hosts/@roles, should not hide the decorated task.
+        """
+        module = fabfile('decorator_order')
+        with path_prefix(module):
+            docs, funcs = load_fabfile(module)
+            # When broken, crawl() finds None for 'foo' instead.
+            eq_(crawl('foo', funcs), funcs['foo'])
 
 
 #

@@ -169,12 +169,14 @@ pygments_style = 'sphinx'
 # Sphinx are currently 'default' and 'sphinxdoc'.
 html_theme = 'default'
 html_style = 'rtd.css'
+html_context = {}
 
-from fabric.api import local, hide
-with hide('everything'):
+from fabric.api import local, hide, settings
+with settings(hide('everything'), warn_only=True):
     get_tags = 'git tag | sort -r | egrep "(1\.[^0]+)\.."'
-    fabric_tags = local(get_tags, True).split()
-html_context = {'fabric_tags': fabric_tags}
+    tag_result = local(get_tags, True)
+    if tag_result.succeeded:
+        html_context['fabric_tags'] = tag_result.split()
 
 
 # Theme options are theme-specific and customize the look and feel of a theme

@@ -2,6 +2,7 @@ from __future__ import with_statement
 
 import hashlib
 import os
+import posixpath
 import stat
 import tempfile
 from fnmatch import filter as fnfilter
@@ -53,11 +54,11 @@ class SFTP(object):
             s = '/'
             ret = [dirpart.rstrip(s) + s + name.lstrip(s) for name in names]
             if not win32:
-                ret = [os.path.join(dirpart, name) for name in names]
+                ret = [posixpath.join(dirpart, name) for name in names]
         return ret
 
     def walk(self, top, topdown=True, onerror=None, followlinks=False):
-        from os.path import join, isdir, islink
+        from os.path import join
 
         # We may not have read permission for top, in which case we can't get a
         # list of the files the directory contains. os.path.walk always
@@ -174,8 +175,8 @@ class SFTP(object):
             # Download any files in current directory
             for f in files:
                 # Construct full and relative remote paths to this file
-                rpath = os.path.join(context, f)
-                rremote = os.path.join(rcontext, f)
+                rpath = posixpath.join(context, f)
+                rremote = posixpath.join(rcontext, f)
                 # If local_path isn't using a format string that expands to
                 # include its remote path, we need to add it here.
                 if "%(path)s" not in local_path \
@@ -196,12 +197,12 @@ class SFTP(object):
         pre = pre if pre else ''
         if local_is_path and self.isdir(remote_path):
             basename = os.path.basename(local_path)
-            remote_path = os.path.join(remote_path, basename)
+            remote_path = posixpath.join(remote_path, basename)
         if output.running:
             print("[%s] put: %s -> %s" % (
                 env.host_string,
                 local_path if local_is_path else '<file obj>',
-                os.path.join(pre, remote_path)
+                posixpath.join(pre, remote_path)
             ))
         # When using sudo, "bounce" the file through a guaranteed-unique file
         # path in the default remote CWD (which, typically, the login user will
@@ -258,19 +259,19 @@ class SFTP(object):
         for context, dirs, files in os.walk(local_path):
             rcontext = context.replace(strip, '', 1)
             rcontext = rcontext.lstrip('/')
-            rcontext = os.path.join(remote_path, rcontext)
+            rcontext = posixpath.join(remote_path, rcontext)
 
             if not self.exists(rcontext):
                 self.mkdir(rcontext, use_sudo)
 
             for d in dirs:
-                n = os.path.join(rcontext, d)
+                n = posixpath.join(rcontext, d)
                 if not self.exists(n):
                     self.mkdir(n, use_sudo)
 
             for f in files:
                 local_path = os.path.join(context, f)
-                n = os.path.join(rcontext, f)
+                n = posixpath.join(rcontext, f)
                 p = self.put(local_path, n, use_sudo, mirror_local_mode, mode,
                     True)
                 remote_paths.append(p)

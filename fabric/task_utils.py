@@ -6,6 +6,7 @@ from fabric import state
 class _Dict(dict):
     pass
 
+
 def _crawl(name, mapping):
     """
     ``name`` of ``'a.b.c'`` => ``mapping['a']['b']['c']``
@@ -15,6 +16,7 @@ def _crawl(name, mapping):
     if not rest:
         return value
     return _crawl(rest, value)
+
 
 def crawl(name, mapping):
     try:
@@ -51,14 +53,19 @@ def merge(hosts, roles, exclude, roledefs):
             value = value()
         role_hosts += value
 
+    # Strip whitespace from host strings.
+    cleaned_hosts = [x.strip() for x in list(hosts) + list(role_hosts)]
     # Return deduped combo of hosts and role_hosts, preserving order within
     # them (vs using set(), which may lose ordering) and skipping hosts to be
     # excluded.
-    cleaned_hosts = [x.strip() for x in list(hosts) + list(role_hosts)]
-    all_hosts = []
-    for host in cleaned_hosts:
-        if host not in all_hosts and host not in exclude:
-            all_hosts.append(host)
+    # But only if the user hasn't indicated they want this behavior disabled.
+    all_hosts = cleaned_hosts
+    if state.env.dedupe_hosts:
+        deduped_hosts = []
+        for host in cleaned_hosts:
+            if host not in deduped_hosts and host not in exclude:
+                deduped_hosts.append(host)
+        all_hosts = deduped_hosts
     return all_hosts
 
 

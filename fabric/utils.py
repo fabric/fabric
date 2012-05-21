@@ -5,6 +5,8 @@ or performing indenting on multiline output.
 
 import sys
 import textwrap
+from traceback import format_exc
+
 
 def abort(msg):
     """

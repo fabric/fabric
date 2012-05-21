@@ -2,8 +2,8 @@ from __future__ import with_statement
 
 from nose.tools import eq_, ok_
 
-from fabric.state import env
-from fabric.context_managers import cd, settings
+from fabric.state import env, output
+from fabric.context_managers import cd, settings, lcd, hide
 
 
 #
@@ -41,6 +41,25 @@ def test_cwd_with_absolute_paths():
 
 
 #
+# hide/show
+#
+
+def test_hide_show_exception_handling():
+    """
+    hide()/show() should clean up OK if exceptions are raised
+    """
+    try:
+        with hide('stderr'):
+            # now it's False, while the default is True
+            eq_(output.stderr, False)
+            raise Exception
+    except Exception:
+        # Here it should be True again.
+        # If it's False, this means hide() didn't clean up OK.
+        eq_(output.stderr, True)
+
+
+#
 # settings()
 #
 
@@ -75,3 +94,80 @@ def test_settings_with_multiple_kwargs():
         eq_(env.testval2, "inner 2")
     eq_(env.testval1, "outer 1")
     eq_(env.testval2, "outer 2")
+
+def test_settings_with_other_context_managers():
+    """
+    settings() should take other context managers, and use them with other overrided
+    key/value pairs.
+    """
+    env.testval1 = "outer 1"
+    prev_lcwd = env.lcwd
+
+    with settings(lcd("here"), testval1="inner 1"):
+        eq_(env.testval1, "inner 1")
+        ok_(env.lcwd.endswith("here")) # Should be the side-effect of adding cd to settings
+
+    ok_(env.testval1, "outer 1")
+    eq_(env.lcwd, prev_lcwd)
+
+
+def test_settings_clean_revert():
+    """
+    settings(clean_revert=True) should only revert values matching input values
+    """
+    env.modified = "outer"
+    env.notmodified = "outer"
+    with settings(
+        modified="inner",
+        notmodified="inner",
+        inner_only="only",
+        clean_revert=True
+    ):
+        eq_(env.modified, "inner")
+        eq_(env.notmodified, "inner")
+        eq_(env.inner_only, "only")
+        env.modified = "modified internally"
+    eq_(env.modified, "modified internally")
+    ok_("inner_only" not in env)
+
+
+from fabric.operations import run
+from fabric.context_managers import quiet
+from utils import mock_streams, FabricTest
+from server import server
+import sys
+from StringIO import StringIO
+
+class TestQuiet(FabricTest):
+    @server()
+    @mock_streams('both')
+    def test_hides_all_output(self):
+        # Sanity test - normally this is not empty
+        run("ls /simple")
+        ok_(sys.stdout.getvalue())
+        # Reset
+        sys.stdout = StringIO()
+        # Real test
+        with quiet():
+            run("ls /simple")
+        # Empty output
+        ok_(not sys.stdout.getvalue())
+        # Reset
+        sys.stdout = StringIO()
+        # Kwarg test
+        run("ls /simple", quiet=True)
+        ok_(not sys.stdout.getvalue())
+
+
+    @server(responses={'barf': [
+        "this is my stdout",
+        "this is my stderr",
+        1
+    ]})
+    def test_sets_warn_only_to_true(self):
+        # Sanity test to ensure environment
+        with settings(warn_only=False):
+            with quiet():
+                eq_(run("barf").return_code, 1)
+            # Kwarg test
+            eq_(run("barf", quiet=True).return_code, 1)

@@ -10,7 +10,8 @@ Context managers for use with the ``with`` statement.
 from contextlib import contextmanager, nested
 import sys
 
-from fabric.state import env, output, win32
+from fabric.state import output, win32
+from fabric import state
 
 if not win32:
     import termios
@@ -21,15 +22,17 @@ def _set_output(groups, which):
     """
     Refactored subroutine used by ``hide`` and ``show``.
     """
-    # Preserve original values, pull in new given value to use
-    previous = {}
-    for group in output.expand_aliases(groups):
-        previous[group] = output[group]
-        output[group] = which
-    # Yield control
-    yield
-    # Restore original values
-    output.update(previous)
+    try:
+        # Preserve original values, pull in new given value to use
+        previous = {}
+        for group in output.expand_aliases(groups):
+            previous[group] = output[group]
+            output[group] = which
+        # Yield control
+        yield
+    finally:
+        # Restore original values
+        output.update(previous)
 
 
 @contextmanager
@@ -84,20 +87,32 @@ def _setenv(**kwargs):
     This context manager is used internally by `settings` and is not intended
     to be used directly.
     """
+    clean_revert = kwargs.pop('clean_revert', False)
     previous = {}
     new = []
     for key, value in kwargs.iteritems():
-        if key in env:
-            previous[key] = env[key]
+        if key in state.env:
+            previous[key] = state.env[key]
         else:
             new.append(key)
-        env[key] = value
+        state.env[key] = value
     try:
         yield
     finally:
-        env.update(previous)
-        for key in new:
-            del env[key]
+        if clean_revert:
+            for key, value in kwargs.iteritems():
+                # If the current env value for this key still matches the
+                # value we set it to beforehand, we are OK to revert it to the
+                # pre-block value.
+                if value == state.env[key]:
+                    if key in previous:
+                        state.env[key] = previous[key]
+                    else:
+                        del state.env[key]
+        else:
+            state.env.update(previous)
+            for key in new:
+                del state.env[key]
 
 
 def settings(*args, **kwargs):
@@ -109,6 +124,9 @@ def settings(*args, **kwargs):
     * Most usefully, it allows temporary overriding/updating of ``env`` with
       any provided keyword arguments, e.g. ``with settings(user='foo'):``.
       Original values, if any, will be restored once the ``with`` block closes.
+        * The keyword argument ``clean_revert`` has special meaning for
+          ``settings`` itself (see below) and will be stripped out before
+          execution.
     * In addition, it will use `contextlib.nested`_ to nest any given
       non-keyword arguments, which should be other context managers, e.g.
       ``with settings(hide('stderr'), show('stdout')):``.
@@ -139,6 +157,41 @@ def settings(*args, **kwargs):
     variables in tandem with hiding (or showing) specific levels of output, or
     in tandem with any other piece of Fabric functionality implemented as a
     context manager.
+
+    If ``clean_revert`` is set to ``True``, ``settings`` will **not** revert
+    keys which are altered within the nested block, instead only reverting keys
+    whose values remain the same as those given. More examples will make this
+    clear; below is how ``settings`` operates normally::
+
+        # Before the block, env.parallel defaults to False, host_string to None
+        with settings(parallel=True, host_string='myhost'):
+            # env.parallel is True
+            # env.host_string is 'myhost'
+            env.host_string = 'otherhost'
+            # env.host_string is now 'otherhost'
+        # Outside the block:
+        # * env.parallel is False again
+        # * env.host_string is None again
+
+    The internal modification of ``env.host_string`` is nullified -- not always
+    desirable. That's where ``clean_revert`` comes in::
+
+        # Before the block, env.parallel defaults to False, host_string to None
+        with settings(parallel=True, host_string='myhost', clean_revert=True):
+            # env.parallel is True
+            # env.host_string is 'myhost'
+            env.host_string = 'otherhost'
+            # env.host_string is now 'otherhost'
+        # Outside the block:
+        # * env.parallel is False again
+        # * env.host_string remains 'otherhost'
+
+    Brand new keys which did not exist in ``env`` prior to using ``settings``
+    are also preserved if ``clean_revert`` is active. When ``False``, such keys
+    are removed when the block exits.
+
+    .. versionadded:: 1.4.1
+        The ``clean_revert`` kwarg.
     """
     managers = list(args)
     if kwargs:
@@ -218,6 +271,13 @@ def lcd(path):
     only affects the invocation of `~fabric.operations.local` and the local
     arguments to `~fabric.operations.get`/`~fabric.operations.put`.
 
+    Relative path arguments are relative to the local user's current working
+    directory, which will vary depending on where Fabric (or Fabric-using code)
+    was invoked. You can check what this is with `os.getcwd
+    <http://docs.python.org/release/2.6/library/os.html#os.getcwd>`_. It may be
+    useful to pin things relative to the location of the fabfile in use, which
+    may be found in :ref:`env.real_fabfile <real-fabfile>`
+
     .. versionadded:: 1.0
     """
     return _change_cwd('lcwd', path)
@@ -225,8 +285,8 @@ def lcd(path):
 
 def _change_cwd(which, path):
     path = path.replace(' ', '\ ')
-    if env.get(which) and not path.startswith('/'):
-        new_cwd = env.get(which) + '/' + path
+    if state.env.get(which) and not path.startswith('/'):
+        new_cwd = state.env.get(which) + '/' + path
     else:
         new_cwd = path
     return _setenv(**{which: new_cwd})
@@ -315,7 +375,7 @@ def prefix(command):
 
     Contrived, but hopefully illustrative.
     """
-    return _setenv(command_prefixes=env.command_prefixes + [command])
+    return _setenv(command_prefixes=state.env.command_prefixes + [command])
 
 
 @contextmanager
@@ -325,7 +385,7 @@ def char_buffered(pipe):
 
     Only applies on Unix-based systems; on Windows this is a no-op.
     """
-    if win32 or not sys.stdin.isatty():
+    if win32 or not pipe.isatty():
         yield
     else:
         old_settings = termios.tcgetattr(pipe)
@@ -334,3 +394,24 @@ def char_buffered(pipe):
             yield
         finally:
             termios.tcsetattr(pipe, termios.TCSADRAIN, old_settings)
+
+
+quiet = lambda: settings(hide('everything'), warn_only=True)
+quiet.__doc__ = """
+    Alias to ``settings(hide('everything'), warn_only=True)``.
+
+    Useful for wrapping remote interrogative commands which you expect to fail
+    occasionally, and/or which you want to silence.
+
+    Example::
+
+        with quiet():
+            have_build_dir = run("test -e /tmp/build").succeeded
+
+    When used in a task, the above snippet will not produce any ``run: test -e
+    /tmp/build`` line, nor will any stdout/stderr display, and command failure
+    is ignored.
+
+    .. seealso::
+        `~fabric.context_managers.hide`, `~fabric.context_managers.settings`
+"""

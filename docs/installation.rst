@@ -5,10 +5,23 @@ Installation
 Fabric is best installed via `pip <http://pip.openplans.org>`_ (highly
 recommended) or `easy_install
 <http://wiki.python.org/moin/CheeseShopTutorial>`_ (older, but still works
-fine). You may also opt to use your operating system's package manager (the
-package is typically called ``fabric`` or ``python-fabric``), or execute ``pip
-install -e .`` (or ``python setup.py install``) inside a :ref:`downloaded
-<downloads>` or :ref:`cloned <source-code-checkouts>` copy of the source code.
+fine), e.g.::
+
+    $ pip install fabric
+
+You may also opt to use your operating system's package manager; the package is
+typically called ``fabric`` or ``python-fabric``. E.g.::
+
+    $ sudo apt-get install fabric
+
+Advanced users wanting to install a development version may use ``pip`` to grab
+the latest master branch::
+
+    $ pip install fabric==dev
+
+Or, to install an editable version for debugging/hacking, execute ``pip install
+-e .`` (or ``python setup.py install``) inside a :ref:`downloaded <downloads>`
+or :ref:`cloned <source-code-checkouts>` copy of the source code.
 
 
 Dependencies
@@ -174,11 +187,6 @@ either of the following locations:
   <https://github.com/fabric/fabric/downloads>`_. This is the spot you want to
   download from for operating system packages, as the only changing part of the
   URL will be the filename itself and the md5 hashes will be consistent.
-* Our `Git repository viewer <http://git.fabfile.org>`_ provides downloads of
-  all tagged releases. See the "Download" column, next to the "Tag" column in
-  the middle of the front page. Please note that due to how cgit generates tag
-  archives, the md5 sums will change over time, so use of this location for
-  package downloads is not recommended.
 * `Fabric's PyPI page <http://pypi.python.org/pypi/Fabric>`_ offers manual
   downloads in addition to being the entry point for ``pip`` and
   ``easy-install``.
@@ -193,14 +201,12 @@ The Fabric developers manage the project's source code with the `Git
 <http://git-scm.com>`_ DVCS. To follow Fabric's development via Git instead of
 downloading official releases, you have the following options:
 
-* Clone the canonical Git repository, ``git://fabfile.org/fabric.git`` (note
-  that a Web view of this repository can be found at `git.fabfile.org
-  <http://git.fabfile.org>`_)
-* Clone the official Github mirror/collaboration repository,
+* Clone the canonical repository straight from `the Fabric organization's
+  repository on Github <https://github.com/fabric/fabric>`_,
   ``git://github.com/fabric/fabric.git``
 * Make your own fork of the Github repository by making a Github account,
-  visiting `GitHub/fabric/fabric <http://github.com/fabric/fabric>`_
-  and clicking the "fork" button.
+  visiting `fabric/fabric <http://github.com/fabric/fabric>`_ and clicking the
+  "fork" button.
 
 .. note::
 

@@ -11,4 +11,3 @@ def msg(txt):
     with hide('everything'):
         yield
     puts("done.", show_prefix=False, flush=True)
-
