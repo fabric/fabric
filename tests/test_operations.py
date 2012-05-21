@@ -11,7 +11,7 @@ import unittest
 import random
 import types
 
-from nose.tools import raises, eq_
+from nose.tools import raises, eq_, ok_
 from fudge import with_patched_object
 
 from fabric.state import env, output
@@ -788,3 +788,27 @@ def test_local_output_and_capture():
                     local.description = d
                     yield local, "echo 'foo' >/dev/null", capture
                     del local.description
+
+
+class TestRunSudoReturnValues(FabricTest):
+    @server()
+    def test_returns_command_given(self):
+        """
+        run("foo").command == foo
+        """
+        with hide('everything'):
+            eq_(run("ls /").command, "ls /")
+
+    @server()
+    def test_returns_fully_wrapped_command(self):
+        """
+        run("foo").real_command involves env.shell + etc
+        """
+        # FabTest turns use_shell off, we must reactivate it.
+        # Doing so will cause a failure: server's default command list assumes
+        # it's off, we're not testing actual wrapping here so we don't really
+        # care. Just warn_only it.
+        with settings(hide('everything'), warn_only=True, use_shell=True):
+            # Slightly flexible test, we're not testing the actual construction
+            # here, just that this attribute exists.
+            ok_(env.shell in run("ls /").real_command)

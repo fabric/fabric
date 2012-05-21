@@ -838,6 +838,8 @@ def _run_command(command, shell=True, pty=True, combine_stderr=True,
 
         # Error handling
         out.failed = False
+        out.command = given_command
+        out.real_command = wrapped_command
         if status != 0:
             out.failed = True
             msg = "%s() received nonzero return code %s while executing" % (
@@ -880,7 +882,9 @@ def run(command, shell=True, pty=True, combine_stderr=None, quiet=False,
     (likely multiline) string. This string will exhibit ``failed`` and
     ``succeeded`` boolean attributes specifying whether the command failed or
     succeeded, and will also include the return code as the ``return_code``
-    attribute.
+    attribute. Furthermore, it includes a copy of the requested & actual
+    command strings executed, as ``.command`` and ``.real_command``,
+    respectively.
 
     Any text entered in your local terminal will be forwarded to the remote
     program as it runs, thus allowing you to interact with password or other
@@ -935,6 +939,9 @@ def run(command, shell=True, pty=True, combine_stderr=None, quiet=False,
 
     .. versionchanged:: 1.5
         Added the ``quiet``, ``stdout`` and ``stderr`` kwargs.
+
+    .. versionadded:: 1.5
+        The return value attributes ``.command`` and ``.real_command``.
     """
     return _run_command(command, shell, pty, combine_stderr, quiet=quiet,
         stdout=stdout, stderr=stderr)
@@ -978,6 +985,9 @@ def sudo(command, shell=True, pty=True, combine_stderr=None, user=None,
         Now honors :ref:`env.sudo_user <sudo_user>`.
     .. versionchanged:: 1.5
         Added the ``quiet``, ``stdout`` and ``stderr`` kwargs.
+
+    .. versionadded:: 1.5
+        The return value attributes ``.command`` and ``.real_command``.
     """
     return _run_command(command, shell, pty, combine_stderr, sudo=True,
         user=user if user else env.sudo_user, quiet=quiet,

@@ -25,6 +25,10 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :feature:`241` Add the command executed as a ``.command`` attribute to the
+  return value of `~fabric.operations.run`/`~fabric.operations.sudo`. (Also
+  includes a second attribute containing the "real" command executed, including
+  the shell wrapper and any escaping.)
 * :feature:`646` Allow specification of which local streams to use when
   `~fabric.operations.run`/`~fabric.operations.sudo` print the remote
   stdout/stderr, via e.g. ``run("command", stderr=sys.stdout)``.
