@@ -21,7 +21,15 @@ Context managers for use with the ``with`` statement.
             run('./manage.py syncdb')
             run('./manage.py loaddata myfixture')
 
-    Note that you need Python 2.6+ for this to work.
+    Note that you need Python 2.6+ for this to work. On Python 2.5, you can do the following::
+
+        from contextlib import nested
+
+        with nested(cd('/path/to/app'), prefix('workon myvenv')):
+            ...
+
+    Finally, note that `~fabric.context_managers.settings` implements
+    ``nested`` itself -- see its API doc for details.
 """
 
 from contextlib import contextmanager, nested
