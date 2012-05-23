@@ -8,20 +8,20 @@ Context managers for use with the ``with`` statement.
 
 .. note:: If you are using multiple directly nested ``with`` statements, it can
     be convenient to use multiple context expressions in one single with
-    statement. Instead of writing
+    statement. Instead of writing::
 
         with cd('/path/to/app'):
             with prefix('workon myvenv'):
                 run('./manage.py syncdb')
                 run('./manage.py loaddata myfixture')
 
-    you can write
+    you can write::
 
         with cd('/path/to/app'), prefix('workon myvenv'):
             run('./manage.py syncdb')
             run('./manage.py loaddata myfixture')
 
-    . Note that you need Python 2.6+ for this to work.
+    Note that you need Python 2.6+ for this to work.
 """
 
 from contextlib import contextmanager, nested
