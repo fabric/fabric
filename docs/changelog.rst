@@ -25,6 +25,8 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :support:`651` Added note about nesting ``with`` statements on Python 2.6+.
+  Thanks to Jens Rantil for the patch.
 * :support:`645` Update Sphinx docs to work well when run out of a source
   tarball as opposed to a Git checkout. Thanks again to `@Arfrever` for the
   catch.
