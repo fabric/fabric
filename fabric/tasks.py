@@ -160,25 +160,26 @@ def _execute(task, host, my_env, args, kwargs, jobs, queue, multiprocessing):
             # * knows how to send the tasks' return value back over a Queue
             # * captures exceptions raised by the task
             def inner(args, kwargs, queue, name):
+                def submit(result):
+                    queue.put({'name': name, 'result': result})
+
                 try:
                     key = normalize_to_string(state.env.host_string)
                     state.connections.pop(key, "")
-                    result = task.run(*args, **kwargs)
+                    submit(task.run(*args, **kwargs))
                 except BaseException, e: # We really do want to capture everything
-                    result = e
-                    # But still print it out, otherwise users won't know what the
-                    # fuck. Especially if the task is run at top level and nobody's
-                    # doing anything with the return value.
-                    # BUT don't do this if it's a SystemExit as that implies use of
-                    # abort(), which does its own printing.
+                    # SystemExit implies use of abort(), which prints its own
+                    # traceback, host info etc -- so we don't want to double up
+                    # on that. For everything else, though, we need to make
+                    # clear what host encountered the exception that will
+                    # print.
                     if e.__class__ is not SystemExit:
                         print >> sys.stderr, "!!! Parallel execution exception under host %r:" % name
-                        sys.excepthook(*sys.exc_info())
-                    # Conversely, if it IS SystemExit, we can raise it to ensure a
-                    # correct return value.
-                    else:
-                        raise
-                queue.put({'name': name, 'result': result})
+                        submit(e)
+                    # Here, anything -- unexpected exceptions, or abort()
+                    # driven SystemExits -- will bubble up and terminate the
+                    # child process.
+                    raise
 
             # Stuff into Process wrapper
             kwarg_dict = {
@@ -316,9 +317,13 @@ def execute(task, *args, **kwargs):
             # Abort if any children did not exit cleanly (fail-fast).
             # This prevents Fabric from continuing on to any other tasks.
             # Otherwise, pull in results from the child run.
-            for name, d in jobs.run().iteritems():
+            ran_jobs = jobs.run()
+            for name, d in ran_jobs.iteritems():
                 if d['exit_code'] != 0:
-                    abort(err)
+                    if isinstance(d['results'], BaseException):
+                        error(err, exception=d['results'])
+                    else:
+                        error(err)
                 results[name] = d['results']
 
     # Or just run once for local-only

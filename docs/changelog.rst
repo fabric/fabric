@@ -25,6 +25,13 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`649` Don't swallow non-`abort`-driven exceptions in parallel mode.
+  Fabric correctly printed such exceptions, and returned them from
+  `~fabric.tasks.execute`, but did not actually cause the child or parent
+  processes to halt with a nonzero status. This has been fixed.
+  `~fabric.tasks.execute` now also honors :ref:`env.warn_only <warn-only>` so
+  users may still opt to call it by hand and inspect the returned exceptions,
+  instead of encountering a hard stop. Thanks to Matt Robenolt for the catch.
 * :feature:`241` Add the command executed as a ``.command`` attribute to the
   return value of `~fabric.operations.run`/`~fabric.operations.sudo`. (Also
   includes a second attribute containing the "real" command executed, including
