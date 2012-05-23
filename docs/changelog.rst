@@ -25,6 +25,8 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :support:`651` Added note about nesting ``with`` statements on Python 2.6+.
+  Thanks to Jens Rantil for the patch.
 * :bug:`649` Don't swallow non-`abort`-driven exceptions in parallel mode.
   Fabric correctly printed such exceptions, and returned them from
   `~fabric.tasks.execute`, but did not actually cause the child or parent
