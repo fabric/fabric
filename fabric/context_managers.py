@@ -5,6 +5,31 @@ Context managers for use with the ``with`` statement.
     with ``from __future__ import with_statement`` in order to make use of
     the ``with`` statement (which is a regular, non ``__future__`` feature of
     Python 2.6+.)
+
+.. note:: If you are using multiple directly nested ``with`` statements, it can
+    be convenient to use multiple context expressions in one single with
+    statement. Instead of writing::
+
+        with cd('/path/to/app'):
+            with prefix('workon myvenv'):
+                run('./manage.py syncdb')
+                run('./manage.py loaddata myfixture')
+
+    you can write::
+
+        with cd('/path/to/app'), prefix('workon myvenv'):
+            run('./manage.py syncdb')
+            run('./manage.py loaddata myfixture')
+
+    Note that you need Python 2.6+ for this to work. On Python 2.5, you can do the following::
+
+        from contextlib import nested
+
+        with nested(cd('/path/to/app'), prefix('workon myvenv')):
+            ...
+
+    Finally, note that `~fabric.context_managers.settings` implements
+    ``nested`` itself -- see its API doc for details.
 """
 
 from contextlib import contextmanager, nested
