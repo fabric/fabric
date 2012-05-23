@@ -4,7 +4,7 @@ Context managers for use with the ``with`` statement.
 .. note:: When using Python 2.5, you will need to start your fabfile
     with ``from __future__ import with_statement`` in order to make use of
     the ``with`` statement (which is a regular, non ``__future__`` feature of
-    Python 2.6+.)
+    Python 2.6+).
 """
 
 from contextlib import contextmanager, nested
