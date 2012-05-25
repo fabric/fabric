@@ -553,9 +553,9 @@ def update_output_levels(show, hide):
 from fabric.tasks import _parallel_tasks
 
 
-def show_commands(docstring, format):
+def show_commands(docstring, format, code=0):
     print("\n".join(list_commands(docstring, format)))
-    sys.exit(0)
+    sys.exit(code)
 
 
 def main():
@@ -665,7 +665,7 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
         if unknown_commands:
             warn("Command(s) not found:\n%s" \
                 % indent(unknown_commands))
-            show_commands(None, options.list_format)
+            show_commands(None, options.list_format, 1)
 
         # Generate remainder command and insert into commands, commands_to_run
         if remainder_command:
