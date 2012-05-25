@@ -433,7 +433,13 @@ will be used to update :doc:`env <env>` when ``fab`` runs, and is loaded prior
 to the loading of any fabfile.
 
 By default, Fabric looks for ``~/.fabricrc``, and this may be overridden by
-specifying the :option:`-c` flag to ``fab``.
+specifying the :option:`-c` flag to ``fab``, or define environement variable
+``FABRICRC`` with the full pathfilename, eg:
+
+.. code-block::
+
+    export FABRICRC=/path/to/rcfile
+    # see below for content of the file
 
 For example, if your typical SSH login username differs from your workstation
 username, and you don't want to modify ``env.user`` in a project's fabfile
