@@ -24,7 +24,7 @@ from fabric.network import denormalize, disconnect_all
 from fabric.state import env_options
 from fabric.tasks import Task, execute
 from fabric.task_utils import _Dict, crawl
-from fabric.utils import abort, indent
+from fabric.utils import abort, indent, warn
 from fabric.operations import _pty_size
 
 # One-time calculation of "all internal callables" to avoid doing this on every
@@ -553,6 +553,11 @@ def update_output_levels(show, hide):
 from fabric.tasks import _parallel_tasks
 
 
+def show_commands(docstring, format):
+    print("\n".join(list_commands(docstring, format)))
+    sys.exit(0)
+
+
 def main():
     """
     Main command-line execution loop.
@@ -633,8 +638,7 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
 
         # List available commands
         if options.list_commands:
-            print("\n".join(list_commands(docstring, options.list_format)))
-            sys.exit(0)
+            show_commands(docstring, options.list_format)
 
         # Handle show (command-specific help) option
         if options.display:
@@ -659,8 +663,9 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
 
         # Abort if any unknown commands were specified
         if unknown_commands:
-            abort("Command(s) not found:\n%s" \
+            warn("Command(s) not found:\n%s" \
                 % indent(unknown_commands))
+            show_commands(None, options.list_format)
 
         # Generate remainder command and insert into commands, commands_to_run
         if remainder_command:

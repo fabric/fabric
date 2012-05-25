@@ -25,6 +25,7 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`652` Show available commands when aborting on invalid command names.
 * :support:`651` Added note about nesting ``with`` statements on Python 2.6+.
   Thanks to Jens Rantil for the patch.
 * :support:`645` Update Sphinx docs to work well when run out of a source
