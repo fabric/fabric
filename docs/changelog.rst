@@ -25,6 +25,7 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`652` Show available commands when aborting on invalid command names.
 * :support:`651` Added note about nesting ``with`` statements on Python 2.6+.
   Thanks to Jens Rantil for the patch.
 * :bug:`649` Don't swallow non-`abort`-driven exceptions in parallel mode.
