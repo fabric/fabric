@@ -500,7 +500,10 @@ That's all there is to it; the `~fabric.decorators.roles` decorators will be hon
     `~fabric.tasks.execute` will also run multiple times, resulting in
     multiplicative numbers of subtask calls -- be careful!
 
-.. seealso:: `~fabric.tasks.execute`
+    If you would like your `execute` calls to only be called once, you
+    may use the `~fabric.decorators.runs_once` decorator.
+
+.. seealso:: `~fabric.tasks.execute`, `~fabric.decorators.runs_once`
 
 
 .. _failures:
