@@ -9,9 +9,10 @@ import tempfile
 import re
 import os
 from StringIO import StringIO
+import traceback
 
 from fabric.api import *
-
+from fabric.colors import red
 
 def exists(path, use_sudo=False, verbose=False):
     """
@@ -346,3 +347,204 @@ def _escape_for_regex(text):
     # Whereas single quotes should not be escaped
     regex = regex.replace(r"\'", "'")
     return regex
+
+CONFIG_FILE_NORMAL = "normal"
+CONFIG_FILE_RECORDS = "records"
+
+def modify_config_file(remote_path, settings=None, comment_char='#', setter_char='=', type=CONFIG_FILE_NORMAL,
+    use_sudo=False, backup=True):
+
+    """
+    Alter the settings of an existing remote config file, trying to uncomment found settings, adding them otherwise.
+
+    The config file is loaded to a local temporary file, processed, and uploaded back to the ``remote_path``.
+
+    By default, backup is made remotely. Set ``backup`` to False to prevent this behavior.
+
+    Two kinds of config files are currently supported.
+    Default config file ``type`` is 'normal' where lines look like this:
+
+		# - Connection Settings -
+        listen_addresses = 'localhost' # what IP address(es) to listen on;
+        #port = 5432
+
+    The ``settings`` must be a list of tuples :
+
+        settings = [('listen_addresses', "'*'"), ('port', '5433')]
+
+    The script will change the config file to :
+
+		# - Connection Settings -
+        listen_addresses = '*' # what IP address(es) to listen on;
+        port = 5433
+
+    Notice how the line with the port setting was uncommented and set to a new value.
+    If an existing line is not found, it is added.
+
+    The ``comment_char`` defaults to '#' and ``setter_char``defaults to '='.
+
+    A basic 'records' config file ``type`` is also supported. Ex: an pg_hba.conf file :
+
+    # TYPE  DATABASE        USER            ADDRESS                 METHOD
+
+    # "local" is for Unix domain socket connections only
+    local   all             all                                     peer
+    # IPv4 local connections:
+    host    all             all             127.0.0.1/32            md5
+    # IPv6 local connections:
+    host    all             all             ::1/128                 md5
+    # Allow replication connections from localhost, by a user with the
+    # replication privilege.
+    #local   replication     postgres                                peer
+    #host    replication     postgres        127.0.0.1/32            md5
+    #host    replication     postgres        ::1/128                 md5
+
+
+    In such a file, we would change the IPv4 local connection to 'trust' and enable local replication like this :
+	modify_config_file('/etc/postgresql/9.1/main/pg_hba.conf',
+				[('host', 'all', 'all', '127.0.0.1/32','trust'),
+				('local', 'replication', '', 'peer')], type="records")
+
+	By default, the file will be copied to ``remote_path`` as the logged-in
+    user; specify ``use_sudo=True`` to use `sudo` instead.
+
+    """
+    changes_done = set()
+    options = dict(comment_char=comment_char, setter_char=setter_char)
+
+    # Create a temporary file
+    with tempfile.NamedTemporaryFile(delete=True) as f:
+
+        # Download the remote file into the temporary file
+        a = get(remote_path, f)
+
+        # Rewind the file to the beginning
+        f.file.seek(0)
+
+        # We're going to read each line and put them into newlines
+        newlines = list()
+
+        for line in f.file.readlines():
+
+            # Compare each line with the wanted changes
+            for setting in settings:
+                # Check for a possible mistake of the user
+                if not isinstance(setting, list) and not isinstance(setting, tuple):
+                    tb = traceback.format_exc()
+                    abort(tb + "\nChanges must be a tuple/list of tuples/lists.\n%s is not a list nor a tuple." % (setting,))
+
+                # Case of a normal config file : each line is of the kind some_variable = some_value
+                if type == CONFIG_FILE_NORMAL:
+                    key, value = setting
+
+                    # Search for a line of the form : some_variable = some_value
+                    # or commented: #some_variable = some_value
+                    # We preserve the ending \n.
+                    search = ("\s*(?P<is_commented>%(comment_char)s*)(?P<left_chunk>\s*"+_escape_for_regex(key)
+                              +"\s*%(setter_char)s\s*)(?P<right_chunk>\s*.*\n*)") % options
+                    m = re.match(search, line)
+
+                    if m:
+                        # A match was found. Check for a comment at the end of the line,
+                        # like some_variable = some_value # this is some comment
+                        r = m.groupdict()
+                        right_chunk = r['right_chunk']
+                        comment = "\n"
+                        if right_chunk is not None:
+                            # We will capture the comment at the end of the line, if any
+                            m2 = re.match("(?P<old_value>.*?)(?P<comment>\s*%(comment_char)s+.*\n*)" % options, right_chunk)
+                            if m2:
+                                comment = m2.groupdict()['comment']
+
+                        puts('Found line:     ' + line, end='')
+
+                        # It's not rare to find multiple commented versions of a setting in a config file.
+                        # If the change was applied in the loop before, make sure we don't set the variable twice in
+                        # this case.
+                        if setting in changes_done:
+                            if r['is_commented']:
+                                # This is a commented setting, leave it so.
+                                puts('Left it commented.')
+                            else:
+                                # This is a setting that's not commented, but we set a similar setting earlier in the
+                                # loop either because we found a commented version and uncommented it then  applied the
+                                # new value, or because it was a duplicate.
+                                # In any case, we comment this new setting so our first setting takes precedence.
+                                puts('Commented it:   '+red(comment_char) + line)
+                                # Recreate the line using the new value set by the user
+                                line = comment_char + line
+                        else:
+                            # Recreate the line using the new value set by the user
+                            line = r['left_chunk'] + str(value) + comment
+
+                            puts('Replaced with:  '+r['left_chunk'] + red(value) + comment)
+
+                        # Mark the change as done
+                        changes_done.add(setting)
+
+                elif type == CONFIG_FILE_RECORDS:
+                    escaped_change = [_escape_for_regex(t) for t in setting]
+                    search = ("\s*(?P<is_commented>%(comment_char)s*)(?P<first_values>\s*"
+                              + "(\s+)".join(escaped_change[:-1]+[')(?P<right_chunk>.*\n*)'])) % options
+
+                    m = re.match(search, line)
+                    if m:
+                        r = m.groupdict()
+                        right_chunk = r['right_chunk']
+                        comment = "\n"
+                        if right_chunk is not None:
+                            # We will capture the comment at the end of the line, if any
+                            m2 = re.match(".*?(?P<comment>\s*%(comment_char)s+.*\n*)" % options, right_chunk)
+                            if m2:
+                                comment = m2.groupdict()['comment']
+
+                        puts('Found line:     ' + line, end='')
+
+                        if setting in changes_done:
+                            if r['is_commented']:
+                                puts('Left it commented')
+                            else:
+                                puts('Commented it:   '+red(comment_char) + line)
+                                # Recreate the line using the new value set by the user
+                                line = comment_char + line
+                        else:
+                            # Recreate the line using the new value set by the user
+                            line = r['first_values'] + str(setting[-1]) + comment
+                            puts('Replaced with:  '+ r['first_values'] + red(str(setting[-1])) + comment)
+
+
+                        changes_done.add(setting)
+
+            # append the line
+            newlines.append(line)
+
+        # So far, some changes have been satisfied : those that were possible by removing the comment on existing lines
+        # and setting a new value.
+        # Let's now add new lines for remaining changes.
+        for setting in settings:
+            if not setting in changes_done:
+                if type == CONFIG_FILE_NORMAL:
+                    line = "%s %s %s" % (setting[0], setter_char, setting[1])
+                    print line
+                    newlines.append(line)
+                elif type == CONFIG_FILE_RECORDS:
+                    line = "\t".join(setting)
+                    print line
+                    newlines.append(line)
+
+        func = use_sudo and sudo or run
+
+        if backup:
+            func("cp %s{,.bak}" % remote_path)
+
+        with tempfile.NamedTemporaryFile(delete=True) as new_file:
+            new_file.writelines(newlines)
+
+            # Upload the file.
+            put(
+                local_path=new_file,
+                remote_path=remote_path,
+                use_sudo=use_sudo
+                #mirror_local_mode=mirror_local_mode,
+                #mode=mode
+            )
