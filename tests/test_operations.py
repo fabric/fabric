@@ -17,7 +17,7 @@ from fudge import with_patched_object
 from fabric.state import env, output
 from fabric.operations import require, prompt, _sudo_prefix, _shell_wrap, \
     _shell_escape
-from fabric.api import get, put, hide, show, cd, lcd, local, run, sudo
+from fabric.api import get, put, hide, show, cd, lcd, local, run, sudo, settings
 from fabric.sftp import SFTP
 
 from fabric.decorators import with_settings

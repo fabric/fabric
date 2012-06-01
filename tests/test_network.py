@@ -31,20 +31,21 @@ from server import (server, PORT, RESPONSES, PASSWORDS, CLIENT_PRIVKEY, USER,
 
 
 class TestNetwork(FabricTest):
+    
     def test_host_string_normalization(self):
         username = _get_system_username()
-        for description, input, output_ in (
-            ("Sanity check: equal strings remain equal",
-                'localhost', 'localhost'),
-            ("Empty username is same as get_system_username",
-                'localhost', username + '@localhost'),
-            ("Empty port is same as port 22",
-                'localhost', 'localhost:22'),
+        for description, expect, value in (
+            ("Nothing specified",
+                (None, 'localhost', None), 'localhost'),
+            ("Specify username",
+                (username, 'localhost', None), username + '@localhost'),
+            ("Specify port 22",
+                (None, 'localhost', '22'), 'localhost:22'),
             ("Both username and port tested at once, for kicks",
-                'localhost', username + '@localhost:22'),
+                (username, 'localhost', '22'), username + '@localhost:22'),
         ):
             eq_.description = "Host-string normalization: %s" % description
-            yield eq_, normalize(input), normalize(output_)
+            yield eq_, normalize(value), expect
             del eq_.description
 
     def test_normalization_without_port(self):
@@ -83,22 +84,25 @@ class TestNetwork(FabricTest):
             eq_.description = template % description
             yield eq_, normalize(input), empties
             del eq_.description
-
+    
     def test_host_string_denormalization(self):
-        username = _get_system_username()
-        for description, string1, string2 in (
-            ("Sanity check: equal strings remain equal",
-                'localhost', 'localhost'),
-            ("Empty username is same as get_system_username",
-                'localhost:22', username + '@localhost:22'),
-            ("Empty port is same as port 22",
-                'user@localhost', 'user@localhost:22'),
-            ("Both username and port",
-                'localhost', username + '@localhost:22'),
-        ):
+        def _denorm(description, string1, expected):
             eq_.description = "Host-string denormalization: %s" % description
-            yield eq_, denormalize(string1), denormalize(string2)
-            del eq_.description
+            return eq_, denormalize(string1), expected
+
+        username = _get_system_username()
+
+        yield _denorm("Sanity check: equal strings remain equal",
+                'localhost', 'localhost')
+
+        yield _denorm("Empty username is same as get_system_username",
+                username + '@localhost', 'localhost')
+
+        yield _denorm("Empty port is same as port 22",
+                'user@localhost:22', 'user@localhost')
+
+        yield _denorm("Both username and port",
+                username + '@localhost:22', 'localhost')
 
     #
     # Connection caching
@@ -158,6 +162,7 @@ class TestNetwork(FabricTest):
     #
     # Connection loop flow
     #
+    @skip('python ssh only')
     @server()
     def test_saved_authentication_returns_client_object(self):
         cache = HostConnectionCache()
@@ -181,7 +186,7 @@ class TestNetwork(FabricTest):
         prompt("This will abort")
 
 
-    @server()
+    @server(pubkeys=False)
     @aborts
     def test_aborts_on_password_prompt_with_abort_on_prompt(self):
         """
@@ -235,6 +240,7 @@ class TestNetwork(FabricTest):
         with hide('everything'):
             eq_(sudo(cmd), RESPONSES[cmd])
 
+    @skip('ssh password auth only')
     @server()
     def test_password_memory_on_user_switch(self):
         """
@@ -271,6 +277,7 @@ class TestNetwork(FabricTest):
             ):
                 sudo("ls /simple")
 
+    @skip('ssh password auth only')
     @mock_streams('stderr')
     @server()
     def test_password_prompt_displays_host_string(self):
@@ -285,6 +292,7 @@ class TestNetwork(FabricTest):
         regex = r'^\[%s\] Login password for \'%s\': ' % (env.host_string, env.user)
         assert_contains(regex, sys.stderr.getvalue())
 
+    @skip('ssh password auth only')
     @mock_streams('stderr')
     @server(pubkeys=True)
     def test_passphrase_prompt_displays_host_string(self):
@@ -316,19 +324,19 @@ class TestNetwork(FabricTest):
     @mock_streams('both')
     @server(pubkeys=True, responses={'oneliner': 'result'})
     def _prompt_display(display_output):
-        env.password = None
-        env.no_agent = env.no_keys = True
+        env.password = "bad-password"
+        env.no_agent = True
+        env.no_keys = False
         env.key_filename = CLIENT_PRIVKEY
         output.output = display_output
         with password_response(
-            (CLIENT_PRIVKEY_PASSPHRASE, PASSWORDS[env.user]),
+            (PASSWORDS[env.user]),
             silent=False
         ):
             sudo('oneliner')
         if display_output:
             expected = """
 [%(prefix)s] sudo: oneliner
-[%(prefix)s] Login password for '%(user)s': 
 [%(prefix)s] out: sudo password:
 [%(prefix)s] out: Sorry, try again.
 [%(prefix)s] out: sudo password: 
@@ -339,13 +347,12 @@ class TestNetwork(FabricTest):
             # course the actual result output.
             expected = """
 [%(prefix)s] sudo: oneliner
-[%(prefix)s] Login password for '%(user)s': 
 [%(prefix)s] out: Sorry, try again.
 [%(prefix)s] out: sudo password: """ % {
     'prefix': env.host_string,
     'user': env.user
 }
-        eq_(expected[1:], sys.stdall.getvalue())
+        eq_(sys.stdall.getvalue(), expected[1:])
 
     @mock_streams('both')
     @server(
@@ -367,8 +374,7 @@ class TestNetwork(FabricTest):
             sudo('twoliner')
         expected = """
 [%(prefix)s] sudo: oneliner
-[%(prefix)s] Login password for '%(user)s': 
-[%(prefix)s] out: sudo password:
+[%(prefix)s] out: sudo password: 
 [%(prefix)s] out: Sorry, try again.
 [%(prefix)s] out: sudo password: 
 [%(prefix)s] out: result
@@ -377,7 +383,7 @@ class TestNetwork(FabricTest):
 [%(prefix)s] out: result1
 [%(prefix)s] out: result2
 """ % {'prefix': env.host_string, 'user': env.user}
-        eq_(expected[1:], sys.stdall.getvalue())
+        eq_(sys.stdall.getvalue(), expected[1:])
 
     @mock_streams('both')
     @server(pubkeys=True, responses={'silent': '', 'normal': 'foo'})
@@ -403,7 +409,6 @@ class TestNetwork(FabricTest):
                 run('silent')
         expected = """
 [%(prefix)s] run: normal
-[%(prefix)s] Login password for '%(user)s': 
 [%(prefix)s] out: foo
 [%(prefix)s] run: silent
 [%(prefix)s] run: normal
@@ -431,7 +436,6 @@ class TestNetwork(FabricTest):
             run('twoliner')
         expected = """
 [%(prefix)s] run: oneliner
-[%(prefix)s] Login password for '%(user)s': 
 [%(prefix)s] out: result
 [%(prefix)s] run: twoliner
 [%(prefix)s] out: result1
@@ -460,7 +464,6 @@ class TestNetwork(FabricTest):
                 run('twoliner')
         expected = """
 [%(prefix)s] run: oneliner
-[%(prefix)s] Login password for '%(user)s': 
 result
 [%(prefix)s] run: twoliner
 result1

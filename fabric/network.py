@@ -15,6 +15,7 @@ import sys
 from fabric.auth import get_password, set_password
 from fabric.utils import abort, handle_prompt_abort
 from fabric.exceptions import NetworkError
+from fabric import native_ssh
 
 try:
     import warnings
@@ -150,7 +151,6 @@ def key_filenames():
 def parse_host_string(host_string):
     return host_regex.match(host_string).groupdict()
 
-
 def normalize(host_string, omit_port=False):
     """
     Normalizes a given host string, returning explicit host, user, port.
@@ -161,7 +161,7 @@ def normalize(host_string, omit_port=False):
     so, and will use them to fill in some default values or swap in hostname
     aliases.
     """
-    from fabric.state import env
+    from state import env
     # Gracefully handle "empty" input by returning empty output
     if not host_string:
         return ('', '') if omit_port else ('', '', '')
@@ -171,8 +171,8 @@ def normalize(host_string, omit_port=False):
     host = r['host']
     # Env values (using defaults if somehow earlier defaults were replaced with
     # empty values)
-    user = env.user or env.local_user
-    port = env.port or env.default_port
+    user = env.user
+    port = env.port
     # SSH config data
     conf = ssh_config(host_string)
     # Only use ssh_config values if the env value appears unmodified from
@@ -193,7 +193,6 @@ def normalize(host_string, omit_port=False):
         return user, host
     return user, host, port
 
-
 def to_dict(host_string):
     user, host, port = normalize(host_string)
     return {
@@ -204,21 +203,29 @@ def to_dict(host_string):
 def from_dict(arg):
     return join_host_strings(arg['user'], arg['host'], arg['port'])
 
+def global_user():
+    '''Return the global user for host_string de-normalization'''
+    from state import env, _get_system_username
+    return env.user or _get_system_username()
+
+def global_port():
+    '''Return the global port for host_string de-normalization'''
+    from state import env
+    return str(env.port) if env.port else env.default_port
 
 def denormalize(host_string):
     """
     Strips out default values for the given host string.
 
-    If the user part is the default user, it is removed;
-    if the port is port 22, it also is removed.
+    If the user is the default user, it is removed;
+    if the port is the default port, it also is removed.
     """
-    from state import env
     r = host_regex.match(host_string).groupdict()
     user = ''
-    if r['user'] is not None and r['user'] != env.user:
+    if r['user'] is not None and r['user'] != global_user():
         user = r['user'] + '@'
     port = ''
-    if r['port'] is not None and r['port'] != '22':
+    if r['port'] is not None and r['port'] != global_port():
         port = ':' + r['port']
     return user + r['host'] + port
 
@@ -236,7 +243,10 @@ def join_host_strings(user, host, port=None):
     port_string = ''
     if port:
         port_string = ":%s" % port
-    return "%s@%s%s" % (user, host, port_string)
+    if user:
+        return "%s@%s%s" % (user, host, port_string)
+    else:
+        return "%s%s" % (host, port_string)
 
 
 def normalize_to_string(host_string):
@@ -245,19 +255,18 @@ def normalize_to_string(host_string):
     """
     return join_host_strings(*normalize(host_string))
 
-
 def connect(user, host, port):
     """
     Create and return a new SSHClient instance connected to given host.
     """
     from state import env, output
-
     #
     # Initialization
     #
 
     # Init client
-    client = ssh.SSHClient()
+    # client = ssh.SSHClient()
+    client = native_ssh.NativeSSHClient(output.debug, env.abort_on_prompts)
 
     # Load known host keys (e.g. ~/.ssh/known_hosts) unless user says not to.
     if not env.disable_known_hosts:
@@ -282,7 +291,7 @@ def connect(user, host, port):
             tries += 1
             client.connect(
                 hostname=host,
-                port=int(port),
+                port=int(port) if port else None,
                 username=user,
                 password=password,
                 key_filename=key_filenames(),

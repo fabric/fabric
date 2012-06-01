@@ -10,7 +10,6 @@ from fabric.network import HostConnectionCache
 from fabric.version import get_version
 from fabric.utils import _AliasDict, _AttributeDict
 
-
 #
 # Win32 flag
 #
@@ -67,7 +66,7 @@ def _rc_path():
                 )
     return expanded_rc_path
 
-default_port = '22'  # hurr durr
+DEFAULT_PORT = '22'  # hurr durr
 default_ssh_config_path = '~/.ssh/config'
 
 # Options/settings which exist both as environment keys and which can be set on
@@ -189,7 +188,7 @@ env_options = [
     ),
 
     make_option('--port',
-        default=default_port,
+        default=None,
         help="SSH connection port"
     ),
 
@@ -234,7 +233,7 @@ env_options = [
     ),
 
     make_option('-u', '--user',
-        default=_get_system_username(),
+        default=None,
         help="username to use when connecting to remote hosts"
     ),
 
@@ -279,7 +278,7 @@ env = _AttributeDict({
     'command_prefixes': [],
     'cwd': '',  # Must be empty string, not None, for concatenation purposes
     'dedupe_hosts': True,
-    'default_port': default_port,
+    'default_port': DEFAULT_PORT,
     'echo_stdin': True,
     'exclude_hosts': [],
     'host': None,
@@ -290,7 +289,7 @@ env = _AttributeDict({
     'passwords': {},
     'path': '',
     'path_behavior': 'append',
-    'port': default_port,
+    'port': None,
     'real_fabfile': None,
     'roles': [],
     'roledefs': {},
