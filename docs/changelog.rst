@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`659` Update docs to reflect that `~fabric.operations.local` currently
+  honors :ref:`env.path <env-path>`. Thanks to `@floledermann
+  <https://github.com/floledermann>`_ for the catch.
 * :bug:`652` Show available commands when aborting on invalid command names.
 * :support:`651` Added note about nesting ``with`` statements on Python 2.6+.
   Thanks to Jens Rantil for the patch.
