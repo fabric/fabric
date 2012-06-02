@@ -3,6 +3,7 @@
 *.pyo
 *.pyt
 *.pytc
+*.egg
 .DS_Store
 .*.swp
 Fabric.egg-info
