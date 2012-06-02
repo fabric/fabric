@@ -7,7 +7,7 @@ from setuptools import setup, find_packages
 from fabric.version import get_version
 
 
-readme = open('README').read()
+readme = open('README.rst').read()
 
 v = get_version('short')
 long_description = """
