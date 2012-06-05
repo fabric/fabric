@@ -127,7 +127,8 @@ def sed(filename, before, after, limit='', use_sudo=False, backup='.bak',
     Run a search-and-replace on ``filename`` with given regex patterns.
 
     Equivalent to ``sed -i<backup> -r -e "/<limit>/ s/<before>/<after>/<flags>g
-    <filename>"``.
+    <filename>"``. Setting ``backup`` to an empty string will, disable backup
+    file creation.
 
     For convenience, ``before`` and ``after`` will automatically escape forward
     slashes, single quotes and parentheses for you, so you don't need to
