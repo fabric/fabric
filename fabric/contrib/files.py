@@ -47,7 +47,7 @@ def first(*args, **kwargs):
 
 def upload_template(filename, destination, context=None, use_jinja=False,
     template_dir=None, use_sudo=False, backup=True, mirror_local_mode=False,
-    mode=None):
+    mode=None, loader=None):
     """
     Render and upload a template text file to a remote host.
 
@@ -95,7 +95,7 @@ def upload_template(filename, destination, context=None, use_jinja=False,
     if use_jinja:
         try:
             from jinja2 import Environment, FileSystemLoader
-            jenv = Environment(loader=FileSystemLoader(template_dir or '.'))
+            jenv = Environment(loader=loader or FileSystemLoader(template_dir or '.'))
             text = jenv.get_template(filename).render(**context or {})
         except ImportError:
             import traceback
