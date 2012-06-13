@@ -4,7 +4,6 @@ include LICENSE
 include README
 recursive-include docs *
 recursive-exclude docs/_build *
-include fabfile.py
 include requirements.txt
 recursive-include tests *
 recursive-exclude tests *.pyc *.pyo
