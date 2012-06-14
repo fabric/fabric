@@ -32,23 +32,24 @@ def _get_system_username():
     """
     Obtain name of current system user, which will be default connection user.
     """
-    if not win32:
-        import pwd
-        try:
-            username = pwd.getpwuid(os.getuid())[0]
-        # getpwuid raises KeyError if it cannot find a username for the given
-        # UID, e.g. on ep.io and similar "non VPS" style services. Rather than
-        # error out, just set the 'default' username to None. Can check for
-        # this value later if required.
-        except KeyError:
-            username = None
-        return username
-    else:
-        import win32api
-        import win32security
-        import win32profile
-        return win32api.GetUserName()
-
+    import getpass
+    username = None
+    try:
+        username = getpass.getuser()
+    # getpass.getuser supported on both Unix and Windows systems.
+    # getpass.getuser may call pwd.getpwuid which in turns may raise KeyError
+    # if it cannot find a username for the given UID, e.g. on ep.io
+    # and similar "non VPS" style services. Rather than error out, just keep
+    # the 'default' username to None. Can check for this value later if needed.
+    except KeyError:
+        pass
+    except ImportError:
+        if win32:
+            import win32api
+            import win32security
+            import win32profile
+            username = win32api.GetUserName()
+    return username
 
 def _rc_path():
     """
