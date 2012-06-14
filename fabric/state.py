@@ -56,15 +56,16 @@ def _rc_path():
     Return platform-specific default file path for $HOME/.fabricrc.
     """
     rc_file = '.fabricrc'
-    if not win32:
-        return os.path.expanduser("~/" + rc_file)
-    else:
-        from win32com.shell.shell import SHGetSpecialFolderPath
-        from win32com.shell.shellcon import CSIDL_PROFILE
-        return "%s/%s" % (
-            SHGetSpecialFolderPath(0, CSIDL_PROFILE),
-            rc_file
-        )
+    rc_path = '~/' + rc_file
+    expanded_rc_path = os.path.expanduser(rc_path)
+    if expanded_rc_path == rc_path and win32:
+            from win32com.shell.shell import SHGetSpecialFolderPath
+            from win32com.shell.shellcon import CSIDL_PROFILE
+            expanded_rc_path = "%s/%s" % (
+                SHGetSpecialFolderPath(0, CSIDL_PROFILE),
+                rc_file
+                )
+    return expanded_rc_path
 
 default_port = '22'  # hurr durr
 default_ssh_config_path = '~/.ssh/config'
