@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`671` :ref:`reject-unknown-hosts` sometimes resulted in a password
+  prompt instead of an abort. This has been fixed. Thanks to Roy Smith for the
+  report.
 * :bug:`659` Update docs to reflect that `~fabric.operations.local` currently
   honors :ref:`env.path <env-path>`. Thanks to `@floledermann
   <https://github.com/floledermann>`_ for the catch.
