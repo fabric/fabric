@@ -308,14 +308,20 @@ def connect(user, host, port):
             ssh.PasswordRequiredException,
             ssh.SSHException
         ), e:
-            # For whatever reason, empty password + no ssh key or agent results
-            # in an SSHException instead of an AuthenticationException. Since
-            # it's difficult to do otherwise, we must assume empty password +
-            # SSHException == auth exception. Conversely: if we get
-            # SSHException and there *was* a password -- it is probably
-            # something non auth related, and should be sent upwards.
-            if e.__class__ is ssh.SSHException and password:
-                raise NetworkError(str(e), e)
+            msg = str(e)
+            # For whatever reason, empty password + no ssh key or agent
+            # results in an SSHException instead of an
+            # AuthenticationException. Since it's difficult to do
+            # otherwise, we must assume empty password + SSHException ==
+            # auth exception. Conversely: if we get SSHException and there
+            # *was* a password -- it is probably something non auth
+            # related, and should be sent upwards.
+            #
+            # This also holds true for rejected/unknown host keys: we have to
+            # guess based on other heuristics.
+            if e.__class__ is ssh.SSHException \
+                and (password or msg.startswith('Unknown server')):
+                raise NetworkError(msg, e)
 
             # Otherwise, assume an auth exception, and prompt for new/better
             # password.
