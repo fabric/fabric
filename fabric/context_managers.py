@@ -421,6 +421,18 @@ def char_buffered(pipe):
             termios.tcsetattr(pipe, termios.TCSADRAIN, old_settings)
 
 
+def shell_env(**kw):
+    """
+    Set shell environment variables for all wrapped commands.
+
+    ::
+
+      with shell_env(ZMQ_DIR='/home/user/local'):
+          run('pip install pyzmq')
+    """
+    return _setenv(shell_env=kw)
+
+
 quiet = lambda: settings(hide('everything'), warn_only=True)
 quiet.__doc__ = """
     Alias to ``settings(hide('everything'), warn_only=True)``.

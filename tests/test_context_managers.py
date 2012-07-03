@@ -3,7 +3,7 @@ from __future__ import with_statement
 from nose.tools import eq_, ok_
 
 from fabric.state import env, output
-from fabric.context_managers import cd, settings, lcd, hide
+from fabric.context_managers import cd, settings, lcd, hide, shell_env
 
 
 #
@@ -130,6 +130,17 @@ def test_settings_clean_revert():
     eq_(env.modified, "modified internally")
     ok_("inner_only" not in env)
 
+#
+# shell_env()
+#
+def test_shell_env():
+    """
+    shell_env() sets the shell_env attribute in the env dict
+    """
+    with shell_env(KEY="value"):
+        eq_(env.shell_env['KEY'], 'value')
+
+    eq_(env.shell_env, {})
 
 from fabric.operations import run
 from fabric.context_managers import quiet
