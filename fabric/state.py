@@ -32,38 +32,40 @@ def _get_system_username():
     """
     Obtain name of current system user, which will be default connection user.
     """
-    if not win32:
-        import pwd
-        try:
-            username = pwd.getpwuid(os.getuid())[0]
-        # getpwuid raises KeyError if it cannot find a username for the given
-        # UID, e.g. on ep.io and similar "non VPS" style services. Rather than
-        # error out, just set the 'default' username to None. Can check for
-        # this value later if required.
-        except KeyError:
-            username = None
-        return username
-    else:
-        import win32api
-        import win32security
-        import win32profile
-        return win32api.GetUserName()
-
+    import getpass
+    username = None
+    try:
+        username = getpass.getuser()
+    # getpass.getuser supported on both Unix and Windows systems.
+    # getpass.getuser may call pwd.getpwuid which in turns may raise KeyError
+    # if it cannot find a username for the given UID, e.g. on ep.io
+    # and similar "non VPS" style services. Rather than error out, just keep
+    # the 'default' username to None. Can check for this value later if needed.
+    except KeyError:
+        pass
+    except ImportError:
+        if win32:
+            import win32api
+            import win32security
+            import win32profile
+            username = win32api.GetUserName()
+    return username
 
 def _rc_path():
     """
     Return platform-specific default file path for $HOME/.fabricrc.
     """
     rc_file = '.fabricrc'
-    if not win32:
-        return os.path.expanduser("~/" + rc_file)
-    else:
-        from win32com.shell.shell import SHGetSpecialFolderPath
-        from win32com.shell.shellcon import CSIDL_PROFILE
-        return "%s/%s" % (
-            SHGetSpecialFolderPath(0, CSIDL_PROFILE),
-            rc_file
-        )
+    rc_path = '~/' + rc_file
+    expanded_rc_path = os.path.expanduser(rc_path)
+    if expanded_rc_path == rc_path and win32:
+            from win32com.shell.shell import SHGetSpecialFolderPath
+            from win32com.shell.shellcon import CSIDL_PROFILE
+            expanded_rc_path = "%s/%s" % (
+                SHGetSpecialFolderPath(0, CSIDL_PROFILE),
+                rc_file
+                )
+    return expanded_rc_path
 
 default_port = '22'  # hurr durr
 default_ssh_config_path = '~/.ssh/config'
