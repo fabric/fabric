@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :feature:`669` Updates to our Windows compatibility to rely more heavily on
+  cross-platform Python stdlib implementations. Thanks to Alexey Diyan for the
+  patch.
 * :bug:`671` :ref:`reject-unknown-hosts` sometimes resulted in a password
   prompt instead of an abort. This has been fixed. Thanks to Roy Smith for the
   report.
