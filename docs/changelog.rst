@@ -25,6 +25,8 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :release:`1.4.3 <2012-07-06>`
+* :release:`1.3.8 <2012-07-06>`
 * :feature:`263` Shell environment variable support for
   `~fabric.operations.run`/`~fabric.operations.sudo` added in the form of the
   `~fabric.context_managers.shell_env` context manager. Thanks to Oliver
