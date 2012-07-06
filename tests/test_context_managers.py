@@ -130,9 +130,11 @@ def test_settings_clean_revert():
     eq_(env.modified, "modified internally")
     ok_("inner_only" not in env)
 
+
 #
 # shell_env()
 #
+
 def test_shell_env():
     """
     shell_env() sets the shell_env attribute in the env dict
