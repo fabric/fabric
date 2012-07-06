@@ -294,6 +294,7 @@ env = _AttributeDict({
     'real_fabfile': None,
     'roles': [],
     'roledefs': {},
+    'shell_env': {},
     'skip_bad_hosts': False,
     'ssh_config_path': default_ssh_config_path,
     # -S so sudo accepts passwd via stdin, -p with our known-value prompt for

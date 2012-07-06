@@ -1,4 +1,5 @@
 """
+
 Functions to be used in fabfiles and other non-core code, such as run()/sudo().
 """
 
@@ -644,20 +645,34 @@ def _prefix_env_vars(command):
     Prefixes ``command`` with any shell environment vars, e.g. ``PATH=foo ``.
 
     Currently, this only applies the PATH updating implemented in
-    `~fabric.context_managers.path`.
+    `~fabric.context_managers.path` and environment variables from
+    `~fabric.context_managers.shell_env`.
     """
+    env_vars = {}
+
     # path(): local shell env var update, appending/prepending/replacing $PATH
     path = env.path
     if path:
         if env.path_behavior == 'append':
-            path = 'PATH=$PATH:\"%s\" ' % path
+            path = '$PATH:\"%s\" ' % path
         elif env.path_behavior == 'prepend':
-            path = 'PATH=\"%s\":$PATH ' % path
+            path = '\"%s\":$PATH ' % path
         elif env.path_behavior == 'replace':
-            path = 'PATH=\"%s\" ' % path
+            path = '\"%s\" ' % path
+
+        env_vars['PATH'] = path
+
+    # shell_env()
+    env_vars.update(env.shell_env)
+
+    if env_vars:
+        exports = ' '.join('%s="%s"' % (k, _shell_escape(v))
+                           for k, v in env_vars.iteritems())
+        shell_env_str = 'export %s && ' % exports
     else:
-        path = ''
-    return path + command
+        shell_env_str = ''
+
+    return shell_env_str + command
 
 
 def _execute(channel, command, pty=True, combine_stderr=None,
