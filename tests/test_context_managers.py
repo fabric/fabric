@@ -1,9 +1,16 @@
 from __future__ import with_statement
 
+import sys
+
 from nose.tools import eq_, ok_
 
 from fabric.state import env, output
-from fabric.context_managers import cd, settings, lcd, hide, shell_env
+from fabric.context_managers import cd, settings, lcd, hide, shell_env, quiet
+from fabric.operations import run
+
+from utils import mock_streams, FabricTest
+from server import server
+from StringIO import StringIO
 
 
 #
@@ -143,13 +150,6 @@ def test_shell_env():
         eq_(env.shell_env['KEY'], 'value')
 
     eq_(env.shell_env, {})
-
-from fabric.operations import run
-from fabric.context_managers import quiet
-from utils import mock_streams, FabricTest
-from server import server
-import sys
-from StringIO import StringIO
 
 class TestQuiet(FabricTest):
     @server()
