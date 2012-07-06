@@ -25,6 +25,7 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :release:`1.3.8 <2012-07-06>`
 * :bug:`671` :ref:`reject-unknown-hosts` sometimes resulted in a password
   prompt instead of an abort. This has been fixed. Thanks to Roy Smith for the
   report.
