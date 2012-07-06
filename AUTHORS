@@ -3,6 +3,10 @@ Fabric's codebase, ordered by date of first contribution. Individuals who
 submitted bug reports or trivial one-line "you forgot to do X" patches are
 generally credited in the commit log only.
 
+IMPORTANT: as of 2012, this file is historical only and we'll probably stop
+updating it. The changelog and/or Git history is the canonical source for
+thanks, credits etc.
+
 Christian Vest Hansen
 Rob Cowie
 Jeff Forcier
