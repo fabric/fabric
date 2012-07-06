@@ -10,5 +10,6 @@ Context Managers
     .. autofunction:: path
     .. autofunction:: prefix
     .. autofunction:: settings
+    .. autofunction:: shell_env(**kwargs)
     .. autofunction:: show(*groups)
     .. autofunction:: quiet
