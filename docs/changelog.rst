@@ -25,6 +25,11 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :feature:`263` Shell environment variable support for
+  `~fabric.operations.run`/`~fabric.operations.sudo` added in the form of the
+  `~fabric.context_managers.shell_env` context manager. Thanks to Oliver
+  Tonnhofer for the original pull request, and to Kamil Kisiel for the final
+  implementation.
 * :feature:`669` Updates to our Windows compatibility to rely more heavily on
   cross-platform Python stdlib implementations. Thanks to Alexey Diyan for the
   patch.
