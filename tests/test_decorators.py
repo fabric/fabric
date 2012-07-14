@@ -1,6 +1,7 @@
 from __future__ import with_statement
 
 import random
+import sys
 
 from nose.tools import eq_, ok_, assert_true, assert_false, assert_equal
 import fudge
@@ -9,8 +10,10 @@ from fudge import Fake, with_fakes, patched_context
 from fabric import decorators, tasks
 from fabric.state import env
 import fabric # for patching fabric.state.xxx
-from fabric.tasks import _parallel_tasks, requires_parallel
-from fabric.context_managers import lcd
+from fabric.tasks import _parallel_tasks, requires_parallel, execute
+from fabric.context_managers import lcd, settings, hide
+
+from utils import mock_streams
 
 
 #
@@ -211,6 +214,20 @@ def test_parallel_wins_vs_serial():
     """
     ok_(requires_parallel(serial2))
     ok_(requires_parallel(serial3))
+
+@mock_streams('stdout')
+def test_global_parallel_honors_runs_once():
+    """
+    fab -P (or env.parallel) should honor @runs_once
+    """
+    @decorators.runs_once
+    def mytask():
+        print "yolo" # 'Carpe diem' for stupid people!
+    with settings(hide('everything'), parallel=True):
+        execute(mytask, hosts=['localhost', '127.0.0.1'])
+    result = sys.stdout.getvalue()
+    eq_(result, "yolo\n")
+    assert result != "yolo\nyolo\n"
 
 
 #
