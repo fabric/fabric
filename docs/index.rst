@@ -5,7 +5,7 @@ Fabric
 About
 =====
 
-.. include:: ../README
+.. include:: ../README.rst
 
 
 Installation
