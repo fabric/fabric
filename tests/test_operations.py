@@ -266,18 +266,29 @@ class TestCombineStderr(FabricTest):
         eq_("stderr", r.stderr)
 
 
-class TestQuietKwarg(FabricTest):
+class TestQuietAndWarnKwargs(FabricTest):
     @server(responses={'wat': ["", "", 1]})
-    def test_implies_warn_only(self):
+    def test_quiet_implies_warn_only(self):
         # Would raise an exception if warn_only was False
         eq_(run("wat", quiet=True).failed, True)
 
     @server()
     @mock_streams('both')
-    def test_implies_hide_everything(self):
+    def test_quiet_implies_hide_everything(self):
         run("ls /", quiet=True)
         eq_(sys.stdout.getvalue(), "")
         eq_(sys.stderr.getvalue(), "")
+
+    @server(responses={'hrm': ["", "", 1]})
+    @mock_streams('both')
+    def test_warn_only_is_same_as_settings_warn_only(self):
+        eq_(run("hrm", warn_only=True).failed, True)
+
+    @server()
+    @mock_streams('both')
+    def test_warn_only_does_not_imply_hide_everything(self):
+        run("ls /simple", warn_only=True)
+        assert sys.stdout.getvalue() != ""
 
 
 #

@@ -16,7 +16,7 @@ from glob import glob
 from contextlib import closing, contextmanager
 
 from fabric.context_managers import (settings, char_buffered, hide,
-    quiet as quiet_manager)
+    quiet as quiet_manager, warn_only as warn_only_manager)
 from fabric.io import output_loop, input_loop
 from fabric.network import needs_host, ssh, ssh_config
 from fabric.sftp import SFTP
@@ -823,11 +823,18 @@ def _noop():
 
 
 def _run_command(command, shell=True, pty=True, combine_stderr=True,
-    sudo=False, user=None, quiet=False, stdout=None, stderr=None):
+    sudo=False, user=None, quiet=False, warn_only=False, stdout=None,
+    stderr=None):
     """
     Underpinnings of `run` and `sudo`. See their docstrings for more info.
     """
-    with quiet_manager() if quiet else _noop():
+    manager = _noop
+    if warn_only:
+        manager = warn_only_manager
+    # Quiet's behavior is a superset of warn_only's, so it wins.
+    if quiet:
+        manager = quiet_manager
+    with manager():
         # Set up new var so original argument can be displayed verbatim later.
         given_command = command
         # Handle context manager modifications, and shell wrapping
@@ -883,7 +890,7 @@ def _run_command(command, shell=True, pty=True, combine_stderr=True,
 
 @needs_host
 def run(command, shell=True, pty=True, combine_stderr=None, quiet=False,
-    stdout=None, stderr=None):
+    warn_only=False, stdout=None, stderr=None):
     """
     Run a shell command on a remote host.
 
@@ -921,8 +928,9 @@ def run(command, shell=True, pty=True, combine_stderr=None, quiet=False,
     resulting strings returned by `~fabric.operations.run` will be properly
     separated). For more info, please read :ref:`combine_streams`.
 
-    To force a command to run silently and ignore non-zero return codes,
-    specify ``quiet=True``.
+    To ignore non-zero return codes, specify ``warn_only=True``. To both ignore
+    non-zero return codes *and* force a command to run silently, specify
+    ``quiet=True``.
 
     To override which local streams are used to display remote stdout and/or
     stderr, specify ``stdout`` or ``stderr``. (By default, the regular
@@ -953,18 +961,18 @@ def run(command, shell=True, pty=True, combine_stderr=None, quiet=False,
         setting is still ``True``.
 
     .. versionadded:: 1.5
-        The ``quiet``, ``stdout`` and ``stderr`` kwargs.
+        The ``quiet``, ``warn_only``, ``stdout`` and ``stderr`` kwargs.
 
     .. versionadded:: 1.5
         The return value attributes ``.command`` and ``.real_command``.
     """
     return _run_command(command, shell, pty, combine_stderr, quiet=quiet,
-        stdout=stdout, stderr=stderr)
+        warn_only=warn_only, stdout=stdout, stderr=stderr)
 
 
 @needs_host
 def sudo(command, shell=True, pty=True, combine_stderr=None, user=None,
-    quiet=False, stdout=None, stderr=None):
+    quiet=False, warn_only=False, stdout=None, stderr=None):
     """
     Run a shell command on a remote host, with superuser privileges.
 
@@ -998,14 +1006,14 @@ def sudo(command, shell=True, pty=True, combine_stderr=None, user=None,
         Now honors :ref:`env.sudo_user <sudo_user>`.
 
     .. versionadded:: 1.5
-        Added the ``quiet``, ``stdout`` and ``stderr`` kwargs.
+        The ``quiet``, ``warn_only``, ``stdout`` and ``stderr`` kwargs.
 
     .. versionadded:: 1.5
         The return value attributes ``.command`` and ``.real_command``.
     """
     return _run_command(command, shell, pty, combine_stderr, sudo=True,
         user=user if user else env.sudo_user, quiet=quiet,
-        stdout=stdout, stderr=stderr)
+        warn_only=warn_only, stdout=stdout, stderr=stderr)
 
 
 def local(command, capture=False):

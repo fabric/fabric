@@ -5,7 +5,8 @@ import sys
 from nose.tools import eq_, ok_
 
 from fabric.state import env, output
-from fabric.context_managers import cd, settings, lcd, hide, shell_env, quiet
+from fabric.context_managers import (cd, settings, lcd, hide, shell_env, quiet,
+    warn_only)
 from fabric.operations import run
 
 from utils import mock_streams, FabricTest
@@ -151,10 +152,10 @@ def test_shell_env():
 
     eq_(env.shell_env, {})
 
-class TestQuiet(FabricTest):
+class TestQuietAndWarnOnly(FabricTest):
     @server()
     @mock_streams('both')
-    def test_hides_all_output(self):
+    def test_quiet_hides_all_output(self):
         # Sanity test - normally this is not empty
         run("ls /simple")
         ok_(sys.stdout.getvalue())
@@ -171,16 +172,28 @@ class TestQuiet(FabricTest):
         run("ls /simple", quiet=True)
         ok_(not sys.stdout.getvalue())
 
-
     @server(responses={'barf': [
         "this is my stdout",
         "this is my stderr",
         1
     ]})
-    def test_sets_warn_only_to_true(self):
+    def test_quiet_sets_warn_only_to_true(self):
         # Sanity test to ensure environment
         with settings(warn_only=False):
             with quiet():
                 eq_(run("barf").return_code, 1)
             # Kwarg test
             eq_(run("barf", quiet=True).return_code, 1)
+
+    @server(responses={'hrm': ["", "", 1]})
+    @mock_streams('both')
+    def test_warn_only_is_same_as_settings_warn_only(self):
+        with warn_only():
+            eq_(run("hrm").failed, True)
+
+    @server()
+    @mock_streams('both')
+    def test_warn_only_does_not_imply_hide_everything(self):
+        with warn_only():
+            run("ls /simple")
+            assert sys.stdout.getvalue().strip() != ""

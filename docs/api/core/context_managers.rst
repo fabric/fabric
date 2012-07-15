@@ -13,3 +13,4 @@ Context Managers
     .. autofunction:: shell_env(**kwargs)
     .. autofunction:: show(*groups)
     .. autofunction:: quiet
+    .. autofunction:: warn_only

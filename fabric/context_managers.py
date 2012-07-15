@@ -457,5 +457,18 @@ quiet.__doc__ = """
     is ignored.
 
     .. seealso::
-        `~fabric.context_managers.hide`, `~fabric.context_managers.settings`
+        :ref:`env.warn_only <warn_only>`,
+        `~fabric.context_managers.settings`,
+        `~fabric.context_managers.hide`
+"""
+
+
+warn_only = lambda: settings(warn_only=True)
+warn_only.__doc__ = """
+    Alias to ``settings(warn_only=True)``.
+
+    .. seealso::
+        :ref:`env.warn_only <warn_only>`,
+        `~fabric.context_managers.settings`,
+        `~fabric.context_managers.quiet`
 """

@@ -64,12 +64,13 @@ Changelog
 * :support:`640` (also :issue:`644`) Update packaging manifest so sdist
   tarballs include all necessary test & doc files. Thanks to Mike Gilbert and
   `@Arfrever` for catch & patch.
-* :feature:`627` Added convenient ``quiet`` keyword argument to
-  `~fabric.operations.run`/`~fabric.operations.sudo` (plus a `context manager
-  version <fabric.context_managers.quiet>`) which is an alias for
-  ``settings(hide('everything'), warn_only=True)``. Useful for remote program
-  calls which are expected to fail and whose output doesn't need to be shown to
-  users.
+* :feature:`627` Added convenient ``quiet`` and ``warn_only`` keyword arguments
+  to `~fabric.operations.run`/`~fabric.operations.sudo` which are aliases for
+  ``settings(hide('everything'), warn_only=True)`` and
+  ``settings(warn_only=True)``, respectively. (Also added corresponding
+  `context <fabric.context_managers.quiet>` `managers
+  <fabric.context_managers.warn_only>`.) Useful for remote program calls which
+  are expected to fail and/or whose output doesn't need to be shown to users.
 * :feature:`633` Allow users to turn off host list deduping by setting
   :ref:`env.dedupe_hosts <dedupe_hosts>` to ``False``. This enables running the
   same task multiple times on a single host, which was previously not possible.
