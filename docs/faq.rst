@@ -56,7 +56,8 @@ without error) like so::
         run("cd /path/to/application && ./update.sh")
 
 Fabric provides a convenient shortcut for this specific use case, in fact:
-`~fabric.context_managers.cd`.
+`~fabric.context_managers.cd`. There is also `~fabric.context_managers.prefix`
+for arbitrary prefix commands.
 
 .. note::
     You might also get away with an absolute path and skip directory changing
