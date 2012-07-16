@@ -25,6 +25,10 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :support:`681` Fixed outdated docstring for `~fabric.decorators.runs_once`
+  which claimed it would get run multiple times in parallel mode. That behavior
+  was fixed in an earlier release but the docs were not updated. Thanks to
+  Jan Brauer for the catch.
 * :release:`1.4.3 <2012-07-06>`
 * :release:`1.3.8 <2012-07-06>`
 * :bug:`671` :ref:`reject-unknown-hosts` sometimes resulted in a password
