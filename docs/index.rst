@@ -190,12 +190,3 @@ We maintain a semi-official IRC channel at ``#fabric`` on Freenode
 (``irc://irc.freenode.net``) where the developers and other users may be found.
 As always with IRC, we can't promise immediate responses, but some folks keep
 logs of the channel and will try to get back to you when they can.
-
-Wiki
-----
-
-There is an official Fabric `MoinMoin <http://moinmo.in>`_ wiki reachable at
-`wiki.fabfile.org <http://wiki.fabfile.org>`_, although as of this writing its
-usage patterns are still being worked out. Like the ticket tracker, spam has
-forced us to put anti-spam measures up: the wiki has a simple, easy captcha in
-place on the edit form.
