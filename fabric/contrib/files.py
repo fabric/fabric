@@ -245,6 +245,8 @@ def comment(filename, regex, use_sudo=False, char='#', backup='.bak'):
     if regex.endswith('$'):
         dollar = '$'
         regex = regex[:-1]
+    rx = re.compile('([(){}\[\]*$+/])')
+    regex = rx.sub('\\\\\\1', regex)
     regex = "%s(%s)%s" % (carot, regex, dollar)
     return sed(
         filename,
@@ -293,7 +295,7 @@ def contains(filename, text, exact=False, use_sudo=False, escape=True):
         return func(egrep_cmd, shell=False).succeeded
 
 
-def append(filename, text, use_sudo=False, partial=False, escape=True):
+def append(filename, text, test_existing=True, use_sudo=False, partial=False, escape=True):
     """
     Append string (or list of strings) ``text`` to ``filename``.
 
@@ -331,11 +333,107 @@ def append(filename, text, use_sudo=False, partial=False, escape=True):
         text = [text]
     for line in text:
         regex = '^' + _escape_for_regex(line)  + ('' if partial else '$')
-        if (exists(filename, use_sudo=use_sudo) and line
+        if (exists(filename, use_sudo=use_sudo) and line and test_existing
             and contains(filename, regex, use_sudo=use_sudo, escape=False)):
             continue
         line = line.replace("'", r"'\\''") if escape else line
         func("echo '%s' >> %s" % (line, filename))
+
+def delete(filename, regex, use_sudo=False, backup='.bak'):
+    """
+    Delete a line in ``filename`` when matching given regex patterns.
+
+    Equivalent to ``sed -i<backup> -r -e "<lineno>d <filename>"``.
+
+    If ``use_sudo`` is True, will use `sudo` instead of `run`.
+
+    .. note::
+        ONLY TESTED ON LINUX BOXES
+    .. note::
+        In order to preserve the wrong line being deleted, this function will
+        wrap your ``regex`` argument in parentheses, so you don't need to. It
+        will ensure that any preceding/trailing ``^`` or ``$`` characters are
+        correctly moved outside the parentheses.
+    .. note::
+        As the line number change any time we delete a line, we can't implement
+        a recursive deletion of many lines. The function must be run again to
+        delete more than one matching line.
+
+    TODO : ``reverse`` implementation (searching from the bottom of file)
+    TODO : ``count`` possible ? (deleting a ``count`` number of matching lines)
+    """
+    carot, dollar = '', ''
+    if regex.startswith('^'):
+        carot = '^'
+        regex = regex[1:]
+    if regex.endswith('$'):
+        dollar = '$'
+        regex = regex[:-1]
+    rx = re.compile('([(){}\[\]*$+/])')
+    regex = rx.sub('\\\\\\1', regex)
+    regex = "%s(%s)%s" % (carot, regex, dollar)
+
+    func = use_sudo and sudo or run
+    expr = r"sed -n -r -e '/%s/=' %s"
+    command = expr % (regex, filename)
+    linenos = func(command, shell=False)
+    linenos = linenos.split("\r\n")
+    if linenos.count('') > 0:
+        linenos.remove('')
+
+    if linenos:
+        expr = r"sed -i%s '%sd' %s"
+        command = expr % (backup, linenos[0], filename)
+        return func(command)
+
+def insert(filename, regex, string2add, before=True, use_sudo=False, backup='.bak'):
+    """
+    Insert a line into ``filename`` before or after a line matching giveno
+    regex patterns.
+
+    If ``before`` is True, the line is added before the matching line, else after.
+    If ``use_sudo`` is True, will use `sudo` instead of `run`.
+
+    .. note::
+        ONLY TESTED ON LINUX BOXES
+    .. note::
+        In order to preserve the wrong line being deleted, this function will
+        wrap your ``regex`` argument in parentheses, so you don't need to. It
+        will ensure that any preceding/trailing ``^`` or ``$`` characters are
+        correctly moved outside the parentheses.
+    .. note::
+        As the regex is always found in the first matching line, we can't
+        implement more than one insertion because it would be inserted always
+        around the first line found.
+
+    TODO : ``reverse`` implementation (searching from the bottom of file)
+    """
+    carot, dollar = '', ''
+    if regex.startswith('^'):
+        carot = '^'
+        regex = regex[1:]
+    if regex.endswith('$'):
+        dollar = '$'
+        regex = regex[:-1]
+    rx = re.compile('([(){}\[\]*$+/])')
+    regex = rx.sub('\\\\\\1', regex)
+    regex = "%s(%s)%s" % (carot, regex, dollar)
+
+    func = use_sudo and sudo or run
+    expr = r"sed -n -r -e '/%s/=' %s"
+    command = expr % (regex, filename)
+    linenos = func(command, shell=False)
+    linenos = linenos.split("\r\n")
+    if linenos.count('') > 0:
+        linenos.remove('')
+
+    if linenos:
+        if before:
+            expr = r"sed -i%s -r -e '%s i\%s' %s"
+        else:
+            expr = r"sed -i%s -r -e '%s a\%s' %s"
+        command = expr % (backup, linenos[0], string2add, filename)
+        return func(command)
 
 def _escape_for_regex(text):
     """Escape ``text`` to allow literal matching using egrep"""
