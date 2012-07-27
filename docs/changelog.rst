@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`693` Fixed edge case where ``abort`` driven failures within parallel
+  tasks could result in a top level exception (a ``KeyError``) regarding error
+  handling. Thanks to Marcin Kuźmiński for the report.
 * :support:`681` Fixed outdated docstring for `~fabric.decorators.runs_once`
   which claimed it would get run multiple times in parallel mode. That behavior
   was fixed in an earlier release but the docs were not updated. Thanks to
