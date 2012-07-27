@@ -14,7 +14,7 @@ import shutil
 import sys
 import tempfile
 
-from fudge import Fake, patched_context, clear_expectations
+from fudge import Fake, patched_context, clear_expectations, with_patched_object
 from nose.tools import raises
 
 from fabric.context_managers import settings
@@ -275,3 +275,9 @@ def path_prefix(module):
 
 def aborts(func):
     return raises(SystemExit)(mock_streams('stderr')(func))
+
+
+def _patched_input(func, fake):
+    return func(sys.modules['__builtin__'], 'raw_input', fake)
+patched_input = partial(_patched_input, patched_context)
+with_patched_input = partial(_patched_input, with_patched_object)
