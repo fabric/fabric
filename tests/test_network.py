@@ -468,6 +468,22 @@ result2
 """ % {'prefix': env.host_string, 'user': env.user}
         eq_(expected[1:], sys.stdall.getvalue())
 
+    @server()
+    def test_env_host_set_when_host_prompt_used(self):
+        """
+        Ensure env.host is set during host prompting
+        """
+        copied_host_string = str(env.host_string)
+        fake = Fake('raw_input', callable=True).returns(copied_host_string)
+        env.host_string = None
+        env.host = None
+        with settings(hide('everything'), patched_input(fake)):
+            run("ls /")
+        # Ensure it did set host_string back to old value
+        eq_(env.host_string, copied_host_string)
+        # Ensure env.host is correct
+        eq_(env.host, normalize(copied_host_string)[1])
+
 
 def subtask():
     run("This should never execute")
