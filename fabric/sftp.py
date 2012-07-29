@@ -212,7 +212,7 @@ class SFTP(object):
             hasher = hashlib.sha1()
             hasher.update(env.host_string)
             hasher.update(target_path)
-            remote_path = hasher.hexdigest()
+            remote_path = "/tmp/" + hasher.hexdigest()
         # Have to bounce off FS if doing file-like objects
         fd, real_local_path = None, local_path
         if not local_is_path:
