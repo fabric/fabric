@@ -2,7 +2,6 @@ from __future__ import with_statement
 
 from StringIO import StringIO  # No need for cStringIO at this time
 from contextlib import contextmanager
-from copy import deepcopy
 from fudge.patcher import with_patched_object
 from functools import wraps, partial
 from types import StringTypes
@@ -13,19 +12,17 @@ import re
 import shutil
 import sys
 import tempfile
+import difflib
 
-from fudge import Fake, patched_context, clear_expectations, with_patched_object
+from fudge import Fake, patched_context, clear_expectations
 from nose.tools import raises
 from nose import SkipTest
 
-from fabric.context_managers import settings
 from fabric.state import env, output
 from fabric.sftp import SFTP
-import fabric.network
-from fabric.network import normalize, to_dict
+from fabric.network import to_dict
 
 from server import PORT, PASSWORDS, USER, HOST
-
 
 class FabricTest(object):
     """
@@ -146,7 +143,7 @@ def mock_streams(which):
             if stderr:
                 my_stderr, sys.stderr = sys.stderr, fake_stderr
             try:
-                ret = func(*args, **kwargs)
+                return func(*args, **kwargs)
             finally:
                 if stdout:
                     sys.stdout = my_stdout
@@ -220,12 +217,21 @@ def line_prefix(prefix, string):
     """
     return "\n".join(prefix + x for x in string.splitlines())
 
+def _diff(old, new):
+    '''simply diff two objects - returns a string'''
+    lines = difflib.unified_diff(
+        str(old).splitlines(),
+        str(new).splitlines(),
+        'expected', 'result',
+        lineterm='')
+    return "\n".join(lines)
 
 def eq_(result, expected, msg=None):
     """
     Shadow of the Nose builtin which presents easier to read multiline output.
     """
-    params = {'expected': expected, 'result': result}
+    params = { 'expected': expected, 'result': result }
+    params['diff'] = _diff(expected, result)
     aka = """
 
 --------------------------------- aka -----------------------------------------
@@ -242,6 +248,9 @@ Expected:
 
 Got:
 %(result)s
+
+Diff:
+%(diff)s
 """ % params
     if (repr(result) != str(result)) or (repr(expected) != str(expected)):
         default_msg += aka
@@ -270,8 +279,19 @@ def path_prefix(module):
 def aborts(func):
     return raises(SystemExit)(mock_streams('stderr')(func))
 
-
 def _patched_input(func, fake):
     return func(sys.modules['__builtin__'], 'raw_input', fake)
 patched_input = partial(_patched_input, patched_context)
 with_patched_input = partial(_patched_input, with_patched_object)
+
+def skip(why):
+    '''skip a test and give a short note why'''
+    def skip_decorator(func):
+        @wraps(func)
+        def wrapper(self):
+            raise SkipTest(why)
+
+        return wrapper
+
+    return skip_decorator
+

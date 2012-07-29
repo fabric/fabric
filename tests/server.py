@@ -115,7 +115,7 @@ class TestServer(ssh.ServerInterface):
         self.event = threading.Event()
         self.passwords = passwords
         self.pubkeys = pubkeys
-        self.files = FakeFilesystem(files)
+        self.files = files
         self.home = home
         self.command = None
 
@@ -179,6 +179,8 @@ class SSHServer(ThreadingMixIn, TCPServer):
     def __init__(
         self, server_address, RequestHandlerClass, bind_and_activate=True
     ):
+        self.handlers = []
+
         # Prevent "address already in use" errors when running tests 2x in a
         # row.
         self.allow_reuse_address = True
@@ -347,7 +349,10 @@ def serve_responses(responses, files, passwords, home, pubkeys, port):
     """
     # Define handler class inline so it can access serve_responses' args
     class SSHHandler(BaseRequestHandler):
+        transport = None
+
         def handle(self):
+            self.server.handlers.append(self)
             try:
                 self.init_transport()
                 self.waiting_for_command = False
@@ -388,7 +393,9 @@ def serve_responses(responses, files, passwords, home, pubkeys, port):
                         self.waiting_for_command = True
 
             finally:
-                self.transport.close()
+                if self.transport:
+                    self.transport.close()
+                self.server.handlers.remove(self)
 
         def init_transport(self):
             transport = ssh.Transport(self.request)
@@ -455,7 +462,7 @@ def server(
         files=FILES,
         passwords=PASSWORDS,
         home=HOME,
-        pubkeys=False,
+        pubkeys=True,
         port=PORT
     ):
     """
@@ -467,8 +474,10 @@ def server(
         @wraps(func)
         def inner(*args, **kwargs):
             # Start server
-            _server = serve_responses(responses, files, passwords, home,
-                pubkeys, port)
+            _server = serve_responses(responses,
+                    FakeFilesystem(files),
+                    passwords, home,
+                    pubkeys, port)
             _server.all_done = threading.Event()
             worker = ThreadHandler('server', _server.serve_forever)
             # Execute function
@@ -478,11 +487,18 @@ def server(
                 # Clean up client side connections
                 with hide('status'):
                     disconnect_all()
+                
                 # Stop server
                 _server.all_done.set()
                 _server.shutdown()
                 # Why this is not called in shutdown() is beyond me.
                 _server.server_close()
+
+                # terminate all current connections
+                for handler in _server.handlers:
+                    if handler.transport:
+                        handler.transport.close()
+
                 worker.thread.join()
                 # Handle subthread exceptions
                 e = worker.exception
