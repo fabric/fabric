@@ -1,5 +1,15 @@
 """
 Module providing easy API for working with remote files and folders.
+Changelog : 2012-07 FSo deeply improved functions :
+- creating wrap_regex() to prepare strings for egrep, sed, ...
+- using this function in all others needing string escaping
+- change append() behavior to process only a line and not a text.
+  Seems to be easier to do an append() eventually with specific
+  parameters on each line we want to add.
+  Replaced ``Partial`` keyword by ``exact_match``  
+- created insert() function to insert a line before or after a
+  line matching a regex
+- created delete() function to do what it seems :)
 """
 
 from __future__ import with_statement
@@ -129,6 +139,8 @@ def sed(filename, before, after, limit='', use_sudo=False, backup='.bak',
     Equivalent to ``sed -i<backup> -r -e "/<limit>/ s/<before>/<after>/<flags>g
     <filename>"``. Setting ``backup`` to an empty string will, disable backup
     file creation.
+    ``limit`` is a string to match when searching for lines on which sed must act,
+    instead of searching ``before`` in each line of the file (default: all lines).
 
     For convenience, ``before`` and ``after`` will automatically escape forward
     slashes, single quotes and parentheses for you, so you don't need to
@@ -147,16 +159,10 @@ def sed(filename, before, after, limit='', use_sudo=False, backup='.bak',
 
     .. versionadded:: 1.1
         The ``flags`` parameter.
+    .. versionchanged:: - FSo 2012/07
+        See headlines of files.py
     """
     func = use_sudo and sudo or run
-    # Characters to be escaped in both
-    for char in "/'":
-        before = before.replace(char, r'\%s' % char)
-        after = after.replace(char, r'\%s' % char)
-    # Characters to be escaped in replacement only (they're useful in regexen
-    # in the 'before' part)
-    for char in "()":
-        after = after.replace(char, r'\%s' % char)
     if limit:
         limit = r'/%s/ ' % limit
     # Test the OS because of differences between sed versions
@@ -181,7 +187,7 @@ def sed(filename, before, after, limit='', use_sudo=False, backup='.bak',
     return func(command, shell=False)
 
 
-def uncomment(filename, regex, use_sudo=False, char='#', backup='.bak'):
+def uncomment(filename, regex, exact_match=True, use_sudo=False, char='#', backup='.bak'):
     """
     Attempt to uncomment all lines in ``filename`` matching ``regex``.
 
@@ -196,18 +202,21 @@ def uncomment(filename, regex, use_sudo=False, char='#', backup='.bak'):
     example, ``# foo`` would become ``foo`` (the single space is stripped) but
     ``    # foo`` would become ``    foo`` (the single space is still stripped,
     but the preceding 4 spaces are not.)
+
+    .. versionchanged:: - FSo 2012/07
+        See headlines of files.py
     """
     return sed(
         filename,
         before=r'^([[:space:]]*)%s[[:space:]]?' % char,
         after=r'\1',
-        limit=regex,
+        limit=wrap_regex(regex,exact_match=exact_match),
         use_sudo=use_sudo,
         backup=backup
     )
 
 
-def comment(filename, regex, use_sudo=False, char='#', backup='.bak'):
+def comment(filename, regex, exact_match=True, use_sudo=False, char='#', backup='.bak'):
     """
     Attempt to comment out all lines in ``filename`` matching ``regex``.
 
@@ -237,30 +246,25 @@ def comment(filename, regex, use_sudo=False, char='#', backup='.bak'):
         ``comment(filename, r'^foo$')`` will result in a `sed` call with the
         "before" regex of ``r'^(foo)$'`` (and the "after" regex, naturally, of
         ``r'#\\1'``.)
+
+    .. versionchanged:: - FSo 2012/07
+        See headlines of files.py
     """
-    carot, dollar = '', ''
-    if regex.startswith('^'):
-        carot = '^'
-        regex = regex[1:]
-    if regex.endswith('$'):
-        dollar = '$'
-        regex = regex[:-1]
-    regex = "%s(%s)%s" % (carot, regex, dollar)
     return sed(
         filename,
-        before=regex,
+        before=wrap_regex(regex,exact_match=exact_match),
         after=r'%s\1' % char,
         use_sudo=use_sudo,
         backup=backup
     )
 
 
-def contains(filename, text, exact=False, use_sudo=False, escape=True):
+def contains(filename, string2add, exact_match=False, use_sudo=False):
     """
     Return True if ``filename`` contains ``text`` (which may be a regex.)
 
     By default, this function will consider a partial line match (i.e. where
-    ``text`` only makes up part of the line it's on). Specify ``exact=True`` to
+    ``text`` only makes up part of the line it's on). Specify ``exact_match=True`` to
     change this behavior so that only a line containing exactly ``text``
     results in a True return value.
 
@@ -270,10 +274,6 @@ def contains(filename, text, exact=False, use_sudo=False, escape=True):
 
     If ``use_sudo`` is True, will use `sudo` instead of `run`.
 
-    If ``escape`` is False, no extra regular expression related escaping is
-    performed (this includes overriding ``exact`` so that no ``^``/``$`` is
-    added.)
-
     .. versionchanged:: 1.0
         Swapped the order of the ``filename`` and ``text`` arguments to be
         consistent with other functions in this module.
@@ -282,35 +282,28 @@ def contains(filename, text, exact=False, use_sudo=False, escape=True):
         various corner cases.
     .. versionchanged:: 1.4
         Added ``escape`` keyword argument.
+    .. versionchanged:: - FSo 2012/07
+        See headlines of files.py
     """
     func = use_sudo and sudo or run
-    if escape:
-        text = _escape_for_regex(text)
-        if exact:
-            text = "^%s$" % text
+    string2add = wrap_regex(string2add, exact_match=exact_match)
     with settings(hide('everything'), warn_only=True):
-        egrep_cmd = 'egrep "%s" "%s"' % (text, filename)
+        egrep_cmd = 'egrep "%s" "%s"' % (string2add, filename)
         return func(egrep_cmd, shell=False).succeeded
 
 
-def append(filename, text, use_sudo=False, partial=False, escape=True):
+def append(filename, string2add, if_exist=False, exact_match=True, use_sudo=False):
     """
-    Append string (or list of strings) ``text`` to ``filename``.
+    Append string ``string2add`` to ``filename``.
 
-    When a list is given, each string inside is handled independently (but in
-    the order given.)
+    If ``string2add`` is already found in ``filename`` and ``if_exist`` is False, the
+    append is not run, and None is returned immediately. Otherwise, the given string
+    is appended to the end of the given ``filename`` via e.g. ``echo '$string2add' >> $filename``.
 
-    If ``text`` is already found in ``filename``, the append is not run, and
-    None is returned immediately. Otherwise, the given text is appended to the
-    end of the given ``filename`` via e.g. ``echo '$text' >> $filename``.
-
-    The test for whether ``text`` already exists defaults to a full line match,
-    e.g. ``^<text>$``, as this seems to be the most sensible approach for the
-    "append lines to a file" use case. You may override this and force partial
-    searching (e.g. ``^<text>``) by specifying ``partial=True``.
-
-    Because ``text`` is single-quoted, single quotes will be transparently 
-    backslash-escaped. This can be disabled with ``escape=False``.
+    The test for whether ``string2add`` already exists defaults to a full line match,
+    e.g. ``^<string2add>$``, default given by the keyword ``exact_match``. This seems to be
+    the most sensible approach for the "append line to a file" use case. You may override this
+    and force partial searching (e.g. just ``<string2add>``) by specifying ``exact_match=False``.
 
     If ``use_sudo`` is True, will use `sudo` instead of `run`.
 
@@ -324,26 +317,124 @@ def append(filename, text, use_sudo=False, partial=False, escape=True):
     .. versionchanged:: 1.4
         Updated the regular expression related escaping to try and solve
         various corner cases.
+    .. versionchanged:: - FSo 2012/07
+        See headlines of files.py
     """
     func = use_sudo and sudo or run
-    # Normalize non-list input to be a list
-    if isinstance(text, basestring):
-        text = [text]
-    for line in text:
-        regex = '^' + _escape_for_regex(line)  + ('' if partial else '$')
-        if (exists(filename, use_sudo=use_sudo) and line
-            and contains(filename, regex, use_sudo=use_sudo, escape=False)):
-            continue
-        line = line.replace("'", r"'\\''") if escape else line
-        func("echo '%s' >> %s" % (line, filename))
+    if not (not if_exist
+        and contains(filename, string2add, exact_match=exact_match, use_sudo=use_sudo)):
+       func("echo '%s' >> %s" % (string2add, filename))
 
-def _escape_for_regex(text):
-    """Escape ``text`` to allow literal matching using egrep"""
-    regex = re.escape(text)
-    # Seems like double escaping is needed for \
-    regex = regex.replace('\\\\', '\\\\\\')
-    # Triple-escaping seems to be required for $ signs
-    regex = regex.replace(r'\$', r'\\\$')
-    # Whereas single quotes should not be escaped
-    regex = regex.replace(r"\'", "'")
+def delete(filename, regex, exact_match=False, use_sudo=True, backup='.bak'):
+    """
+    Delete a line in ``filename`` when matching given regex patterns.
+
+    Equivalent to ``sed -i<backup> -r -e "<lineno>d <filename>"``.
+
+    If ``exact_match`` is True (default), delete any line matching the regex.
+    Otherwise delete any line CONTAINING the regex.
+
+    If ``use_sudo`` is True, will use `sudo` instead of `run`.
+
+    .. note::
+        ONLY TESTED ON LINUX BOXES
+    .. note::
+        In order to preserve the wrong line being deleted, this function will
+        wrap your ``regex`` argument in parentheses, so you don't need to. It
+        will ensure that any preceding/trailing ``^`` or ``$`` characters are
+        correctly moved outside the parentheses.
+    .. note::
+        As the line number change any time we delete a line, we can't implement
+        a recursive deletion of many lines. The function must be run again to
+        delete more than one matching line.
+
+    TODO : ``reverse`` implementation (searching from the bottom of file)
+    TODO : ``count`` possible ? (deleting a ``count`` number of matching lines)
+
+    .. versionchanged:: - FSo 2012/07
+        See headlines of files.py
+    """
+
+    func = use_sudo and sudo or run
+    expr = r"sed -n -r -e '/%s/=' %s"
+    command = expr % (wrap_regex(regex,exact_match=exact_match), filename)
+    linenos = func(command, shell=False)
+    linenos = linenos.split("\r\n")
+    if linenos.count('') > 0:
+        linenos.remove('')
+
+    if linenos:
+        expr = r"sed -i%s '%sd' %s"
+        command = expr % (backup, linenos[0], filename)
+        return func(command)
+
+def insert(filename, regex, string2add, if_exist=False, exact_match=True, before=False,
+    use_sudo=False, backup='.bak'):
+    """
+    Insert a line into ``filename`` before or after a line matching giveno
+    regex patterns.
+
+    If ``before`` is True, the line is added before the matching line, else after.
+
+    If ``regex`` is already found in ``filename`` and ``if_exist`` is False, the
+    insert is not run, and None is returned immediately. Otherwise (string not found
+    and/or ``if_exist=True``), the given string is inserted in the given ``filename``.
+
+    If ``use_sudo`` is True, will use `sudo` instead of `run`.
+
+    .. note::
+        ONLY TESTED ON LINUX BOXES
+    .. note::
+        In order to preserve the wrong line being deleted, this function will
+        wrap your ``regex`` argument in parentheses, so you don't need to. It
+        will ensure that any preceding/trailing ``^`` or ``$`` characters are
+        correctly moved outside the parentheses.
+    .. note::
+        As the regex is always found in the first matching line, we can't
+        implement more than one insertion because it would be inserted always
+        around the first line found.
+
+    TODO : ``reverse`` implementation (searching from the bottom of file)
+
+    .. versionchanged:: - FSo 2012/07
+        See headlines of files.py
+    """
+
+    func = use_sudo and sudo or run
+    regex = wrap_regex(regex,exact_match=exact_match)
+    expr = r"sed -n -r -e '/%s/=' %s"
+    command = expr % (regex, filename)
+    linenos = func(command, shell=False)
+    linenos = linenos.split("\r\n")
+    if linenos.count('') > 0:
+        linenos.remove('')
+    if (linenos and not (not if_exist
+       and contains(filename, string2add, exact_match=exact_match, use_sudo=use_sudo))):
+        if before:
+            expr = r"sed -i%s -r -e '%s i\%s' %s"
+        else:
+            expr = r"sed -i%s -r -e '%s a\%s' %s"
+        command = expr % (backup, linenos[0], wrap_regex(string2add), filename)
+        return func(command)
+
+def wrap_regex(regex,exact_match=False):
+    """
+    Escape ``text`` to handle or not special chars with egrep, sed, ...
+
+    if ``exact_match`` is true, add ``^`` at the beginning and ``$``
+    at the end of the string
+
+    .. versionchanged:: - FSo 2012/07
+        See headlines of files.py
+    """
+    carot, dollar = '^', '$'
+    if regex.startswith('^'):
+       regex = regex[1:]
+    if regex.endswith('$'):
+       regex = regex[:-1]
+#    regex = re.escape(text)
+    rx = re.compile('([(){}\[\]*$+/])')
+    regex = rx.sub('\\\\\\1', regex)
+    regex = "%s(%s)%s" % (carot, regex, dollar) if exact_match else regex
     return regex
+
