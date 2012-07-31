@@ -325,7 +325,7 @@ def append(filename, string2add, if_exist=False, exact_match=True, use_sudo=Fals
         and contains(filename, string2add, exact_match=exact_match, use_sudo=use_sudo)):
        func("echo '%s' >> %s" % (string2add, filename))
 
-def delete(filename, regex, exact_match=False, use_sudo=True, backup='.bak'):
+def delete(filename, regex, exact_match=False, use_sudo=False, backup='.bak'):
     """
     Delete a line in ``filename`` when matching given regex patterns.
 
