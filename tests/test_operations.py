@@ -113,7 +113,7 @@ def p(x):
 
 
 @mock_streams('stdout')
-@with_patched_object(sys.modules['__builtin__'], 'raw_input', p)
+@with_patched_input(p)
 def test_prompt_appends_space():
     """
     prompt() appends a single space when no default is given
@@ -124,7 +124,7 @@ def test_prompt_appends_space():
 
 
 @mock_streams('stdout')
-@with_patched_object(sys.modules['__builtin__'], 'raw_input', p)
+@with_patched_input(p)
 def test_prompt_with_default():
     """
     prompt() appends given default value plus one space on either side

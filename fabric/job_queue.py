@@ -160,6 +160,7 @@ class JobQueue(object):
         for job in self._completed:
             results[job.name] = {
                 'exit_code': job.exitcode,
+                'results': None # In case of SystemExit/etc in parallel subprocess
             }
         while True:
             try:
