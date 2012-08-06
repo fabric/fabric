@@ -275,6 +275,12 @@ def connect(user, host, port):
     password = get_password()
     tries = 0
 
+    proxy_command = None
+    if env.use_ssh_config:
+        host = env._ssh_config.lookup(env.host_string)
+        proxy_command = host.get('proxycommand')
+        user = host.get('user')
+
     # Loop until successful connect (keep prompting for new password)
     while not connected:
         # Attempt connection
@@ -288,7 +294,8 @@ def connect(user, host, port):
                 key_filename=key_filenames(),
                 timeout=env.timeout,
                 allow_agent=not env.no_agent,
-                look_for_keys=not env.no_keys
+                look_for_keys=not env.no_keys,
+                proxy_command=proxy_command,
             )
             connected = True
 
