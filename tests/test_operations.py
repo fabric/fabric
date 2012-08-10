@@ -6,6 +6,7 @@ import sys
 import types
 from contextlib import nested
 from StringIO import StringIO
+from io import BytesIO
 
 import unittest
 import random
@@ -785,7 +786,30 @@ class TestFileTransfers(FabricTest):
             get(f, f)
         assert self.exists_locally(os.path.join(d, f))
 
+    @server()
+    @mock_streams('stdout')
+    def test_stringio_without_name(self):
+        file_obj = StringIO(u'test data')
+        put(file_obj, '/')
+        assert re.search('<file obj>', sys.stdout.getvalue())
 
+    @server()
+    @mock_streams('stdout')
+    def test_stringio_with_name(self):
+        """If a file object (StringIO) has a name attribute, use that in output"""
+        file_obj = StringIO(u'test data')
+        file_obj.name = 'Test StringIO Object'
+        put(file_obj, '/')
+        assert re.search(file_obj.name, sys.stdout.getvalue())
+
+    @server()
+    @mock_streams('stdout')
+    def test_bytesio_with_name(self):
+        """If a file object (BytesIO) has a name attribute, use that in output"""
+        file_obj = BytesIO('test data')
+        file_obj.name = 'Test BytesIO Object'
+        put(file_obj, '/')
+        assert re.search(file_obj.name, sys.stdout.getvalue())
 #
 # local()
 #
