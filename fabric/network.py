@@ -475,8 +475,10 @@ def disconnect_all():
     # Explicitly disconnect from all servers
     for key in connections.keys():
         if output.status:
-            print("Disconnecting from %s..." % denormalize(key), end=" ")
+            # Here we can't use the py3k print(x, end=" ")
+            # because 2.5 backwards compatibility
+            sys.stdout.write("Disconnecting from %s... " % denormalize(key))
         connections[key].close()
         del connections[key]
         if output.status:
-            print("done.")
+            sys.stdout.write("done.\n")
