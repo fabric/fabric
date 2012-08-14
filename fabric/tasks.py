@@ -1,4 +1,5 @@
 from __future__ import with_statement
+from __future__ import print_function
 
 from functools import wraps
 import sys
@@ -83,7 +84,7 @@ class Task(object):
         pool_size = min((pool_size, len(hosts)))
         # Inform user of final pool size for this task
         if state.output.debug:
-            print "Parallel tasks now using pool size of %d" % pool_size
+            print("Parallel tasks now using pool size of %d" % pool_size)
         return pool_size
 
 
@@ -174,7 +175,7 @@ def _execute(task, host, my_env, args, kwargs, jobs, queue, multiprocessing):
                     # clear what host encountered the exception that will
                     # print.
                     if e.__class__ is not SystemExit:
-                        print >> sys.stderr, "!!! Parallel execution exception under host %r:" % name
+                        print("!!! Parallel execution exception under host %r:" % name, file=sys.stderr)
                         submit(e)
                     # Here, anything -- unexpected exceptions, or abort()
                     # driven SystemExits -- will bubble up and terminate the

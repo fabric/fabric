@@ -2,6 +2,7 @@
 Internal subroutines for e.g. aborting execution with an error message,
 or performing indenting on multiline output.
 """
+from __future__ import print_function
 
 import sys
 import textwrap
@@ -21,8 +22,8 @@ def abort(msg):
     """
     from fabric.state import output
     if output.aborts:
-        print >> sys.stderr, "\nFatal error: " + str(msg)
-        print >> sys.stderr, "\nAborting."
+        print("\nFatal error: " + str(msg), file=sys.stderr)
+        print("\nAborting.", file=sys.stderr)
     sys.exit(1)
 
 
@@ -37,7 +38,7 @@ def warn(msg):
     """
     from fabric.state import output
     if output.warnings:
-        print >> sys.stderr, "\nWarning: %s\n" % msg
+        print("\nWarning: %s\n" % msg, file=sys.stderr)
 
 
 def indent(text, spaces=4, strip=False):

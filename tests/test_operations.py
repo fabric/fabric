@@ -1,4 +1,5 @@
 from __future__ import with_statement
+from __future__ import print_function
 
 import os
 import shutil
@@ -109,7 +110,7 @@ def test_require_noniterable_provided_by_key():
 #
 
 def p(x):
-    print x,
+    print(x, end=" ")
 
 
 @mock_streams('stdout')

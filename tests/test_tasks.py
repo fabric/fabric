@@ -1,4 +1,5 @@
 from __future__ import with_statement
+from __future__ import print_function
 
 from contextlib import contextmanager
 from fudge import Fake, patched_context, with_fakes
@@ -147,7 +148,7 @@ def test_decorator_closure_hiding():
     """
     from fabric.decorators import task, hosts
     def foo():
-        print env.host_string
+        print(env.host_string)
     foo = task(hosts("me@localhost")(foo))
     eq_(["me@localhost"], foo.hosts)
 
