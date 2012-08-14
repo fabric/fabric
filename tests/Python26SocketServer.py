@@ -128,8 +128,6 @@ BaseServer:
 
 __version__ = "0.4"
 
-from __future__ import print_function
-
 import socket
 import select
 import sys
@@ -331,8 +329,7 @@ class BaseServer:
 
         """
         print('-' * 40)
-        print('Exception happened during processing of request from', end=" ")
-        print(client_address)
+        print('Exception happened during processing of request from %s' % client_address)
         import traceback
         traceback.print_exc()  # XXX But this goes to stderr!
         print('-' * 40)

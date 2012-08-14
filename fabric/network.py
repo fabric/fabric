@@ -3,7 +3,6 @@ Classes and subroutines dealing with network connections and related topics.
 """
 
 from __future__ import with_statement
-from __future__ import print_function
 
 from functools import wraps
 import getpass
@@ -28,7 +27,7 @@ except ImportError, e:
 There was a problem importing our SSH library (see traceback above).
 Please make sure all dependencies are installed and importable.
 """.rstrip()
-    print(msg, file=sys.stderr)
+    sys.stderr.write(msg + '\n')
     sys.exit(1)
 
 
@@ -380,7 +379,7 @@ def connect(user, host, port):
             err += ")"
             # Debuggin'
             if output.debug:
-                print(err, file=sys.stderr)
+                sys.stderr.write(err + '\n')
             # Having said our piece, try again
             if not giving_up:
                 # Sleep if it wasn't a timeout, so we still get timeout-like

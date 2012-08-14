@@ -1,5 +1,4 @@
 from __future__ import with_statement
-from __future__ import print_function
 
 from functools import wraps
 import sys
@@ -175,7 +174,7 @@ def _execute(task, host, my_env, args, kwargs, jobs, queue, multiprocessing):
                     # clear what host encountered the exception that will
                     # print.
                     if e.__class__ is not SystemExit:
-                        print("!!! Parallel execution exception under host %r:" % name, file=sys.stderr)
+                        sys.stderr.write("!!! Parallel execution exception under host %r:\n" % name)
                         submit(e)
                     # Here, anything -- unexpected exceptions, or abort()
                     # driven SystemExits -- will bubble up and terminate the

@@ -1,5 +1,4 @@
 from __future__ import with_statement
-from __future__ import print_function
 
 from contextlib import contextmanager
 from fudge import Fake, patched_context, with_fakes
