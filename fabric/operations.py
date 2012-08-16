@@ -94,8 +94,9 @@ def require(*keys, **kwargs):
     .. versionchanged:: 1.1
         Allow iterable ``provided_by`` values instead of just single values.
     """
-    # If all keys exist, we're good, so keep going.
-    missing_keys = filter(lambda x: x not in env, keys)
+    # If all keys exist and are non-empty, we're good, so keep going.
+    missing_keys = filter(lambda x: x not in env or (x in env and
+        isinstance(env[x], (dict, list, tuple, set)) and not env[x]), keys)
     if not missing_keys:
         return
     # Pluralization
