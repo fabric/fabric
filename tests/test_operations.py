@@ -104,6 +104,64 @@ def test_require_noniterable_provided_by_key():
     require('foo', provided_by=fake_providing_function)
 
 
+@aborts
+def test_require_key_exists_empty_list():
+    """
+    When given a single existing key but the value is an empty list, require()
+    aborts
+    """
+    # 'hosts' is one of the default values, so we know it'll be there
+    require('hosts')
+
+
+@aborts
+@with_settings(foo={})
+def test_require_key_exists_empty_dict():
+    """
+    When given a single existing key but the value is an empty dict, require()
+    aborts
+    """
+    require('foo')
+
+
+@aborts
+@with_settings(foo=())
+def test_require_key_exists_empty_tuple():
+    """
+    When given a single existing key but the value is an empty tuple, require()
+    aborts
+    """
+    require('foo')
+
+
+@aborts
+@with_settings(foo=set())
+def test_require_key_exists_empty_set():
+    """
+    When given a single existing key but the value is an empty set, require()
+    aborts
+    """
+    require('foo')
+
+
+@with_settings(foo=0, bar=False)
+def test_require_key_exists_false_primitive_values():
+    """
+    When given keys that exist with primitive values that evaluate to False,
+    require() throws no exception
+    """
+    require('foo', 'bar')
+
+
+@with_settings(foo=['foo'], bar={'bar': 'bar'}, baz=('baz',), qux=set('qux'))
+def test_require_complex_non_empty_values():
+    """
+    When given keys that exist with non-primitive values that are not empty,
+    require() throws no exception
+    """
+    require('foo', 'bar', 'baz', 'qux')
+
+
 #
 # prompt()
 #
