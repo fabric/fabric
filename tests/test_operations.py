@@ -859,20 +859,7 @@ class TestFileTransfers(FabricTest):
         put(file_obj, '/')
         assert re.search(file_obj.name, sys.stdout.getvalue())
 
-    @server()
-    @mock_streams('stdout')
-    def test_bytesio_with_name(self):
-        try:
-            from io import BytesIO
-        except ImportError:
-            #Probably running on Python < 2.6
-            assert True
-            return
-        """If a file object (BytesIO) has a name attribute, use that in output"""
-        file_obj = BytesIO('test data')
-        file_obj.name = 'Test BytesIO Object'
-        put(file_obj, '/')
-        assert re.search(file_obj.name, sys.stdout.getvalue())
+
 #
 # local()
 #
