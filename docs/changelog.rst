@@ -25,6 +25,8 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`703` Add a ``shell`` kwarg to many methods in `~fabric.contrib.files`
+  to help avoid conflicts with `~fabric.context_managers.cd` and similar.
 * :bug:`702` `~fabric.operations.require` failed to test for "empty" values in
   the env keys it checks (e.g.
   ``require('a-key-whose-value-is-an-empty-list')`` would register a successful
