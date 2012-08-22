@@ -24,12 +24,16 @@ would have also been included in the 1.2 line.
 
 Changelog
 =========
-
+<<<<<<< HEAD
+* :bug:`711` `~fabric.sftp.get` would fail when filenames had % in their path.
 * :bug:`702` `~fabric.operations.require` failed to test for "empty" values in
   the env keys it checks (e.g.
   ``require('a-key-whose-value-is-an-empty-list')`` would register a successful
   result instead of alerting that the value was in fact empty. This has been
   fixed, thanks to Rich Schumacher.
+=======
+
+>>>>>>> parent of 994a76e... Changelog re #702
 * :bug:`693` Fixed edge case where ``abort`` driven failures within parallel
   tasks could result in a top level exception (a ``KeyError``) regarding error
   handling. Thanks to Marcin Kuźmiński for the report.

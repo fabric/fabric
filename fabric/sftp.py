@@ -5,6 +5,7 @@ import os
 import posixpath
 import stat
 import tempfile
+import re
 from fnmatch import filter as fnfilter
 
 from fabric.state import output, connections, env
@@ -114,8 +115,10 @@ class SFTP(object):
             'path': rremote
         }
         if local_is_path:
-            # Interpolate, then abspath (to make sure any /// are compressed)
-            local_path = os.path.abspath(local_path % path_vars)
+            # Naive fix to issue #711
+            escaped_path = re.sub(r'(%[^()]*\w)', r'%\1', local_path)
+            local_path = os.path.abspath(escaped_path % path_vars )
+
             # Ensure we give ssh.SFTPCLient a file by prepending and/or
             # creating local directories as appropriate.
             dirpath, filepath = os.path.split(local_path)
