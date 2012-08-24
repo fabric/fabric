@@ -50,9 +50,9 @@ class OutputLooper(object):
         self._linewise = (env.linewise or env.parallel)
         self._reprompt = False
         self._read_size = 1
+        # If there is no capture, we can afford to go faster
         if self._capture is None:
             self._read_size = 1024
-        print self._read_size
 
     def loop(self):
         """

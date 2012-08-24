@@ -677,7 +677,7 @@ def _prefix_env_vars(command):
 
 
 def _execute(channel, command, pty=True, combine_stderr=None,
-    invoke_shell=False, stdout=None, stderr=None):
+    invoke_shell=False, stdout=None, stderr=None, interactive=True):
     """
     Execute ``command`` over ``channel``.
 
@@ -691,6 +691,9 @@ def _execute(channel, command, pty=True, combine_stderr=None,
     ``invoke_shell`` controls whether we use ``exec_command`` or
     ``invoke_shell`` (plus a handful of other things, such as always forcing a
     pty.)
+
+    ``interactive`` specifies whether we will forward stdin to running processes 
+    or not. Setting it to false speeds up the read-loop.
 
     Returns a three-tuple of (``stdout``, ``stderr``, ``status``), where
     ``stdout``/``stderr`` are captured output strings and ``status`` is the
@@ -734,16 +737,17 @@ def _execute(channel, command, pty=True, combine_stderr=None,
         # Init stdout, stderr capturing. Must use lists instead of strings as
         # strings are immutable and we're using these as pass-by-reference
         stdout_buf, stderr_buf = [], []
-        if invoke_shell:
+        if invoke_shell or not interactive:
             stdout_buf = stderr_buf = None
 
-        workers = (
+        workers = [
             ThreadHandler('out', output_loop, channel, "recv",
                 capture=stdout_buf, stream=stdout),
             ThreadHandler('err', output_loop, channel, "recv_stderr",
-                capture=stderr_buf, stream=stderr),
-            ThreadHandler('in', input_loop, channel, using_pty)
-        )
+                capture=stderr_buf, stream=stderr) ]
+            
+        if interactive:
+            workers.append(ThreadHandler('in', input_loop, channel, using_pty))
 
         while True:
             if channel.exit_status_ready():
@@ -769,7 +773,7 @@ def _execute(channel, command, pty=True, combine_stderr=None,
             forward.close()
 
         # Update stdout/stderr with captured values if applicable
-        if not invoke_shell:
+        if not (invoke_shell or not interactive):
             stdout_buf = ''.join(stdout_buf).strip()
             stderr_buf = ''.join(stderr_buf).strip()
 
@@ -825,7 +829,7 @@ def _noop():
 
 def _run_command(command, shell=True, pty=True, combine_stderr=True,
     sudo=False, user=None, quiet=False, warn_only=False, stdout=None,
-    stderr=None):
+    stderr=None, interactive=True):
     """
     Underpinnings of `run` and `sudo`. See their docstrings for more info.
     """
@@ -852,8 +856,9 @@ def _run_command(command, shell=True, pty=True, combine_stderr=True,
             print("[%s] %s: %s" % (env.host_string, which, given_command))
 
         # Actual execution, stdin/stdout/stderr handling, and termination
-        result_stdout, result_stderr, status = _execute(default_channel(), wrapped_command,
-            pty, combine_stderr, stdout, stderr)
+        result_stdout, result_stderr, status = _execute(default_channel(), 
+            wrapped_command, pty=pty, combine_stderr=combine_stderr,
+            stdout=stdout, stderr=stderr, interactive=interactive)
 
         # Assemble output string
         out = _AttributeString(result_stdout)
@@ -891,7 +896,7 @@ def _run_command(command, shell=True, pty=True, combine_stderr=True,
 
 @needs_host
 def run(command, shell=True, pty=True, combine_stderr=None, quiet=False,
-    warn_only=False, stdout=None, stderr=None):
+    warn_only=False, stdout=None, stderr=None, interactive = True):
     """
     Run a shell command on a remote host.
 
@@ -968,7 +973,8 @@ def run(command, shell=True, pty=True, combine_stderr=None, quiet=False,
         The return value attributes ``.command`` and ``.real_command``.
     """
     return _run_command(command, shell, pty, combine_stderr, quiet=quiet,
-        warn_only=warn_only, stdout=stdout, stderr=stderr)
+        warn_only=warn_only, stdout=stdout, stderr=stderr, 
+        interactive=interactive)
 
 
 @needs_host
