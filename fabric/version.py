@@ -10,6 +10,9 @@ from subprocess import Popen, PIPE
 from os.path import abspath, dirname
 
 
+VERSION = (1, 5, 0, 'alpha', 0)
+
+
 def git_sha():
     loc = abspath(dirname(__file__))
     p = Popen(
@@ -20,8 +23,6 @@ def git_sha():
     )
     return p.communicate()[0]
 
-
-VERSION = (1, 2, 0, 'alpha', 0)
 
 def get_version(form='short'):
     """
@@ -38,6 +39,7 @@ def get_version(form='short'):
     * ``verbose``: like ``normal`` but fully explicit, e.g. "0.9 final". For
       tag commit messages, or anywhere that it's important to remove ambiguity
       between a branch and the first final release within that branch.
+    * ``all``: Returns all of the above, as a dict.
     """
     # Setup
     versions = {}
@@ -92,6 +94,11 @@ def get_version(form='short'):
     try:
         return versions[form]
     except KeyError:
+        if form == 'all':
+            return versions
         raise TypeError('"%s" is not a valid form specifier.' % form)
 
 __version__ = get_version('short')
+
+if __name__ == "__main__":
+    print get_version('all')

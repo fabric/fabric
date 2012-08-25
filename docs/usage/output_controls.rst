@@ -95,6 +95,8 @@ differently from the rest:
 .. versionchanged:: 1.0
     Debug output now includes full Python tracebacks during aborts.
 
+.. _output-aliases:
+
 Output level aliases
 --------------------
 
@@ -110,6 +112,12 @@ toggle all of the levels they are mapped to.
   (see above.) Thus, when turning off ``everything``, you will only see a bare
   minimum of output (just ``status`` and ``debug`` if it's on), along with your
   own print statements.
+
+* **commands**: Includes ``stdout`` and ``running``. Good for hiding
+  non-erroring commands entirely, while still displaying any stderr output.
+
+.. versionchanged:: 1.4
+    Added the ``commands`` output alias.
 
 
 Hiding and/or showing output levels

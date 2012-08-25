@@ -3,6 +3,7 @@
 *.pyo
 *.pyt
 *.pytc
+*.egg
 .DS_Store
 .*.swp
 Fabric.egg-info
@@ -12,3 +13,5 @@ dist
 build/
 tags
 TAGS
+.tox
+.idea/

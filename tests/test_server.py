@@ -9,7 +9,7 @@ that the Fabric tests using the test server may also have issues, but still.)
 __test__ = False
 
 from nose.tools import eq_, ok_
-import paramiko as ssh
+import ssh
 
 from server import FakeSFTPServer
 
@@ -81,7 +81,7 @@ def test_list_folder():
         ),
     ):
         # Pass in fake server obj. (Can't easily clean up API to be more
-        # testable since it's all implementing Paramiko interface stuff.)
+        # testable since it's all implementing 'ssh' interface stuff.)
         server = AttrHolder()
         server.files = file_map
         interface = FakeSFTPServer(server)

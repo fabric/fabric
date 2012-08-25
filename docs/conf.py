@@ -27,13 +27,13 @@ def issues_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
     """
     Use: :issue|bug|feature|support:`ticket number`
 
-    When invoked as :issue:, turns into just a "#NN" hyperlink to Redmine.
+    When invoked as :issue:, turns into just a "#NN" hyperlink to Github.
 
     When invoked otherwise, turns into "[Type] <#NN hyperlink>: ".
     """
     # Old-style 'just the issue link' behavior
     issue_no = utils.unescape(text)
-    ref = "http://code.fabfile.org/issues/show/" + issue_no
+    ref = "https://github.com/fabric/fabric/issues/" + issue_no
     link = nodes.reference(rawtext, '#' + issue_no, refuri=ref, **options)
     ret = [link]
     # Additional 'new-style changelog' stuff
@@ -59,7 +59,8 @@ def release_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
     """
     Invoked as :release:`N.N.N <YYYY-MM-DD>`.
 
-    Turns into: <b>YYYY-MM-DD</b>: released <b>Fabric N.N.N</b>
+    Turns into: <b>YYYY-MM-DD</b>: released <b><a>Fabric N.N.N</a></b>, with
+    the link going to the Github source page for the tag.
     """
     # Make sure year has been specified
     match = year_arg_re.match(text)
@@ -70,7 +71,11 @@ def release_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
     return [
         nodes.strong(text=date),
         nodes.inline(text=": released "),
-        nodes.strong(text="Fabric %s" % number)
+        nodes.reference(
+            text="Fabric %s" % number,
+            refuri="https://github.com/fabric/fabric/tree/%s" % number,
+            classes=['changelog-release']
+        )
     ], []
 roles.register_local_role('release', release_role)
 
@@ -164,12 +169,14 @@ pygments_style = 'sphinx'
 # Sphinx are currently 'default' and 'sphinxdoc'.
 html_theme = 'default'
 html_style = 'rtd.css'
+html_context = {}
 
-from fabric.api import local, hide
-with hide('everything'):
-    get_tags = 'git tag | sort -r | egrep "(0\.9|1\.[[:digit:]]+)\.."'
-    fabric_tags = local(get_tags, True).split()
-html_context = {'fabric_tags': fabric_tags}
+from fabric.api import local, hide, settings
+with settings(hide('everything'), warn_only=True):
+    get_tags = 'git tag | sort -r | egrep "(1\.[^0]+)\.."'
+    tag_result = local(get_tags, True)
+    if tag_result.succeeded:
+        html_context['fabric_tags'] = tag_result.split()
 
 
 # Theme options are theme-specific and customize the look and feel of a theme

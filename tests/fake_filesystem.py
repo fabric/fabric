@@ -3,7 +3,7 @@ import stat
 from StringIO import StringIO
 from types import StringTypes
 
-import paramiko as ssh
+import ssh
 
 
 class FakeFile(StringIO):

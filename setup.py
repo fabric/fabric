@@ -7,7 +7,7 @@ from setuptools import setup, find_packages
 from fabric.version import get_version
 
 
-readme = open('README').read()
+readme = open('README.rst').read()
 
 v = get_version('short')
 long_description = """
@@ -37,8 +37,8 @@ setup(
     url='http://fabfile.org',
     packages=find_packages(),
     test_suite='nose.collector',
-    tests_require=['nose', 'fudge'],
-    install_requires=['pycrypto >= 1.9', 'paramiko >=1.7.6'],
+    tests_require=['nose', 'fudge<1.0'],
+    install_requires=['ssh>=1.7.14'],
     entry_points={
         'console_scripts': [
             'fab = fabric.main:main',

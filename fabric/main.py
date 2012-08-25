@@ -9,28 +9,31 @@ The other callables defined in this module are internal only. Anything useful
 to individuals leveraging Fabric as a library, should be kept elsewhere.
 """
 
-from collections import defaultdict
-from operator import add, isMappingType
+from operator import isMappingType
 from optparse import OptionParser
 import os
 import sys
 import types
 
-from fabric import api, state  # For checking callables against the API, & easy mocking
-from fabric.contrib import console, files, project  # Ditto
-from fabric.network import denormalize, interpret_host_string, disconnect_all
-from fabric.state import commands, connections, env_options
-from fabric.tasks import Task
-from fabric.utils import abort, indent
+# For checking callables against the API, & easy mocking
+from fabric import api, state, colors
+from fabric.contrib import console, files, project
 
+from fabric.network import disconnect_all, ssh
+from fabric.state import env_options
+from fabric.tasks import Task, execute
+from fabric.task_utils import _Dict, crawl
+from fabric.utils import abort, indent, warn
+from fabric.operations import _pty_size
 
 # One-time calculation of "all internal callables" to avoid doing this on every
 # check of a given fabfile callable (in is_classic_task()).
-_modules = [api, project, files, console]
+_modules = [api, project, files, console, colors]
 _internals = reduce(lambda x, y: x + filter(callable, vars(y).values()),
     _modules,
     []
 )
+
 
 # Module recursion cache
 class _ModuleCache(object):
@@ -116,11 +119,16 @@ def is_classic_task(tup):
     Takes (name, object) tuple, returns True if it's a non-Fab public callable.
     """
     name, func = tup
-    return (
-        callable(func)
-        and (func not in _internals)
-        and not name.startswith('_')
-    )
+    try:
+        is_classic = (
+            callable(func)
+            and (func not in _internals)
+            and not name.startswith('_')
+        )
+    # Handle poorly behaved __eq__ implementations
+    except (ValueError, TypeError):
+        is_classic = False
+    return is_classic
 
 
 def load_fabfile(path, importer=None):
@@ -163,11 +171,11 @@ def load_fabfile(path, importer=None):
         del sys.path[0]
 
     # Actually load tasks
-    docstring, new_style, classic = load_tasks_from_module(imported)
+    docstring, new_style, classic, default = load_tasks_from_module(imported)
     tasks = new_style if state.env.new_style_tasks else classic
     # Clean up after ourselves
     _seen.clear()
-    return docstring, tasks
+    return docstring, tasks, default
 
 
 def load_tasks_from_module(imported):
@@ -184,30 +192,43 @@ def load_tasks_from_module(imported):
     # Return a two-tuple value.  First is the documentation, second is a
     # dictionary of callables only (and don't include Fab operations or
     # underscored callables)
-    new_style, classic = extract_tasks(imported_vars)
-    return imported.__doc__, new_style, classic
+    new_style, classic, default = extract_tasks(imported_vars)
+    return imported.__doc__, new_style, classic, default
 
 
 def extract_tasks(imported_vars):
     """
     Handle extracting tasks from a given list of variables
     """
-    new_style_tasks = defaultdict(dict)
+    new_style_tasks = _Dict()
     classic_tasks = {}
+    default_task = None
     if 'new_style_tasks' not in state.env:
         state.env.new_style_tasks = False
     for tup in imported_vars:
         name, obj = tup
         if is_task_object(obj):
             state.env.new_style_tasks = True
+            # Honor instance.name
             new_style_tasks[obj.name] = obj
+            # Handle aliasing
+            if obj.aliases is not None:
+                for alias in obj.aliases:
+                    new_style_tasks[alias] = obj
+            # Handle defaults
+            if obj.is_default:
+                default_task = obj
         elif is_classic_task(tup):
             classic_tasks[name] = obj
         elif is_task_module(obj):
-            docs, newstyle, classic = load_tasks_from_module(obj)
+            docs, newstyle, classic, default = load_tasks_from_module(obj)
             for task_name, task in newstyle.items():
+                if name not in new_style_tasks:
+                    new_style_tasks[name] = _Dict()
                 new_style_tasks[name][task_name] = task
-    return (new_style_tasks, classic_tasks)
+            if default is not None:
+                new_style_tasks[name].default = default
+    return new_style_tasks, classic_tasks, default_task
 
 
 def is_task_module(a):
@@ -243,7 +264,9 @@ def parse_options():
     # Initialize
     #
 
-    parser = OptionParser(usage="fab [options] <command>[:arg1,arg2=val2,host=foo,hosts='h1;h2',...] ...")
+    parser = OptionParser(
+        usage=("fab [options] <command>"
+               "[:arg1,arg2=val2,host=foo,hosts='h1;h2',...] ..."))
 
     #
     # Define options that don't become `env` vars (typically ones which cause
@@ -251,13 +274,19 @@ def parse_options():
     # --version)
     #
 
-    # Version number (optparse gives you --version but we have to do it
-    # ourselves to get -V too. sigh)
-    parser.add_option('-V', '--version',
-        action='store_true',
-        dest='show_version',
-        default=False,
-        help="show program's version number and exit"
+    # Display info about a specific command
+    parser.add_option('-d', '--display',
+        metavar='NAME',
+        help="print detailed info about command NAME"
+    )
+
+    # Control behavior of --list
+    LIST_FORMAT_OPTIONS = ('short', 'normal', 'nested')
+    parser.add_option('-F', '--list-format',
+        choices=LIST_FORMAT_OPTIONS,
+        default='normal',
+        metavar='FORMAT',
+        help="formats --list, choices: %s" % ", ".join(LIST_FORMAT_OPTIONS)
     )
 
     # List Fab commands found in loaded fabfiles/source files
@@ -268,6 +297,14 @@ def parse_options():
         help="print list of possible commands and exit"
     )
 
+    # Allow setting of arbitrary env vars at runtime.
+    parser.add_option('--set',
+        metavar="KEY=VALUE,...",
+        dest='env_settings',
+        default="",
+        help="comma separated KEY=VALUE pairs to set Fab env vars"
+    )
+
     # Like --list, but text processing friendly
     parser.add_option('--shortlist',
         action='store_true',
@@ -276,18 +313,13 @@ def parse_options():
         help="alias for -F short --list"
     )
 
-    # Control behavior of --list
-    LIST_FORMAT_OPTIONS = ('short', 'normal', 'nested')
-    parser.add_option('-F', '--list-format',
-        choices=LIST_FORMAT_OPTIONS,
-        default='normal',
-        help="formats --list, choices: %s" % ", ".join(LIST_FORMAT_OPTIONS)
-    )
-
-    # Display info about a specific command
-    parser.add_option('-d', '--display',
-        metavar='COMMAND',
-        help="print detailed info about a given command and exit"
+    # Version number (optparse gives you --version but we have to do it
+    # ourselves to get -V too. sigh)
+    parser.add_option('-V', '--version',
+        action='store_true',
+        dest='show_version',
+        default=False,
+        help="show program's version number and exit"
     )
 
     #
@@ -305,11 +337,13 @@ def parse_options():
     opts, args = parser.parse_args()
     return parser, opts, args
 
+
 def _is_task(name, value):
     """
     Is the object a task as opposed to e.g. a dict or int?
     """
     return is_classic_task((name, value)) or is_task_object(value)
+
 
 def _sift_tasks(mapping):
     tasks, collections = [], []
@@ -322,6 +356,7 @@ def _sift_tasks(mapping):
     collections = sorted(collections)
     return tasks, collections
 
+
 def _task_names(mapping):
     """
     Flatten & sort task names in a breadth-first fashion.
@@ -332,25 +367,12 @@ def _task_names(mapping):
     tasks, collections = _sift_tasks(mapping)
     for collection in collections:
         module = mapping[collection]
+        if hasattr(module, 'default'):
+            tasks.append(collection)
         join = lambda x: ".".join((collection, x))
         tasks.extend(map(join, _task_names(module)))
     return tasks
 
-def _crawl(name, mapping):
-    """
-    ``name`` of ``'a.b.c'`` => ``mapping['a']['b']['c']``
-    """
-    key, _, rest = name.partition('.')
-    value = mapping[key]
-    if not rest:
-        return value
-    return _crawl(rest, value)
-
-def crawl(name, mapping):
-    try:
-        return _crawl(name, mapping)
-    except (KeyError, TypeError):
-        return None
 
 def _print_docstring(docstrings, name):
     if not docstrings:
@@ -367,6 +389,7 @@ def _normal_list(docstrings=True):
     max_len = reduce(lambda a, b: max(a, len(b)), task_names, 0)
     sep = '  '
     trail = '...'
+    max_width = _pty_size()[1] - 1 - len(trail)
     for name in task_names:
         output = None
         docstring = _print_docstring(docstrings, name)
@@ -374,7 +397,7 @@ def _normal_list(docstrings=True):
             lines = filter(None, docstring.splitlines())
             first_line = lines[0].strip()
             # Truncate it if it's longer than N chars
-            size = 75 - (max_len + len(sep) + len(trail))
+            size = max_width - (max_len + len(sep) + len(trail))
             if len(first_line) > size:
                 first_line = first_line[:size] + trail
             output = name.ljust(max_len) + sep + first_line
@@ -400,6 +423,7 @@ def _nested_list(mapping, level=1):
 
 COMMANDS_HEADER = "Available commands"
 NESTED_REMINDER = " (remember to call as module.[...].task)"
+
 
 def list_commands(docstring, format_):
     """
@@ -492,10 +516,12 @@ def parse_arguments(arguments):
         if ':' in cmd:
             cmd, argstr = cmd.split(':', 1)
             for pair in _escape_split(',', argstr):
-                k, _, v = pair.partition('=')
-                if _:
-                    # Catch, interpret host/hosts/role/roles/exclude_hosts kwargs
-                    if k in ['host', 'hosts', 'role', 'roles','exclude_hosts']:
+                result = _escape_split('=', pair)
+                if len(result) > 1:
+                    k, v = result
+                    # Catch, interpret host/hosts/role/roles/exclude_hosts
+                    # kwargs
+                    if k in ['host', 'hosts', 'role', 'roles', 'exclude_hosts']:
                         if k == 'host':
                             hosts = [v.strip()]
                         elif k == 'hosts':
@@ -510,7 +536,7 @@ def parse_arguments(arguments):
                     else:
                         kwargs[k] = v
                 else:
-                    args.append(k)
+                    args.append(result[0])
         cmds.append((cmd, args, kwargs, hosts, roles, exclude_hosts))
     return cmds
 
@@ -521,63 +547,6 @@ def parse_remainder(arguments):
     """
     return ' '.join(arguments)
 
-
-def _merge(hosts, roles, exclude=[]):
-    """
-    Merge given host and role lists into one list of deduped hosts.
-    """
-    # Abort if any roles don't exist
-    bad_roles = [x for x in roles if x not in state.env.roledefs]
-    if bad_roles:
-        abort("The following specified roles do not exist:\n%s" % (
-            indent(bad_roles)
-        ))
-
-    # Look up roles, turn into flat list of hosts
-    role_hosts = []
-    for role in roles:
-        value = state.env.roledefs[role]
-        # Handle "lazy" roles (callables)
-        if callable(value):
-            value = value()
-        role_hosts += value
-
-    # Return deduped combo of hosts and role_hosts, preserving order within
-    # them (vs using set(), which may lose ordering).
-    cleaned_hosts = _clean_hosts(list(hosts) + list(role_hosts))
-    all_hosts = []
-    for host in cleaned_hosts:
-        if host not in all_hosts:
-            all_hosts.append(host)
-    return all_hosts
-
-def _clean_hosts(host_list):
-    """
-    Clean host strings to ensure no trailing whitespace, etc.
-    """
-    return [host.strip() for host in host_list]
-
-def get_hosts(command, cli_hosts, cli_roles, cli_exclude_hosts):
-    """
-    Return the host list the given command should be using.
-
-    See :ref:`execution-model` for detailed documentation on how host lists are
-    set.
-    """
-    # Command line per-command takes precedence over anything else.
-    if cli_hosts or cli_roles:
-        return _merge(cli_hosts, cli_roles, cli_exclude_hosts)
-    # Decorator-specific hosts/roles go next
-    func_hosts = getattr(command, 'hosts', [])
-    func_roles = getattr(command, 'roles', [])
-    func_exclude_hosts = getattr(command, 'exclude_hosts', [])
-    if func_hosts or func_roles:
-        return _merge(func_hosts, func_roles, func_exclude_hosts)
-    # Finally, the env is checked (which might contain globally set lists from
-    # the CLI or from module-level code). This will be the empty list if these
-    # have not been set -- which is fine, this method should return an empty
-    # list if no hosts have been set anywhere.
-    return _merge(state.env['hosts'], state.env['roles'], state.env['exclude_hosts'])
 
 def update_output_levels(show, hide):
     """
@@ -596,12 +565,9 @@ def update_output_levels(show, hide):
             state.output[key] = False
 
 
-def _run_task(task, args, kwargs):
-    # First, try class-based tasks
-    if hasattr(task, 'run') and callable(task.run):
-        return task.run(*args, **kwargs)
-    # Fallback to callable behavior
-    return task(*args, **kwargs)
+def show_commands(docstring, format, code=0):
+    print("\n".join(list_commands(docstring, format)))
+    sys.exit(code)
 
 
 def main():
@@ -616,13 +582,30 @@ def main():
         arguments = parser.largs
         remainder_arguments = parser.rargs
 
+        # Allow setting of arbitrary env keys.
+        # This comes *before* the "specific" env_options so that those may
+        # override these ones. Specific should override generic, if somebody
+        # was silly enough to specify the same key in both places.
+        # E.g. "fab --set shell=foo --shell=bar" should have env.shell set to
+        # 'bar', not 'foo'.
+        for pair in _escape_split(',', options.env_settings):
+            pair = _escape_split('=', pair)
+            # "--set x" => set env.x to True
+            # "--set x=" => set env.x to ""
+            key = pair[0]
+            value = True
+            if len(pair) == 2:
+                value = pair[1]
+            state.env[key] = value
+
         # Update env with any overridden option values
         # NOTE: This needs to remain the first thing that occurs
         # post-parsing, since so many things hinge on the values in env.
         for option in env_options:
             state.env[option.dest] = getattr(options, option.dest)
 
-        # Handle --hosts, --roles, --exclude-hosts (comma separated string => list)
+        # Handle --hosts, --roles, --exclude-hosts (comma separated string =>
+        # list)
         for key in ['hosts', 'roles', 'exclude_hosts']:
             if key in state.env and isinstance(state.env[key], basestring):
                 state.env[key] = state.env[key].split(',')
@@ -633,15 +616,8 @@ def main():
         # Handle version number option
         if options.show_version:
             print("Fabric %s" % state.env.version)
+            print("ssh (library) %s" % ssh.__version__)
             sys.exit(0)
-
-        # Handle case where we were called bare, i.e. just "fab", and print
-        # a help message.
-        actions = (options.list_commands, options.shortlist, options.display,
-            arguments, remainder_arguments)
-        if not any(actions):
-            parser.print_help()
-            sys.exit(1)
 
         # Load settings from user settings file, into shared env dict.
         state.env.update(load_settings(state.env.rcfile))
@@ -649,7 +625,9 @@ def main():
         # Find local fabfile path or abort
         fabfile = find_fabfile()
         if not fabfile and not remainder_arguments:
-            abort("Couldn't find any fabfiles!")
+            abort("""Couldn't find any fabfiles!
+
+Remember that -f can be used to specify fabfile path, and use -h for help.""")
 
         # Store absolute path to fabfile in case anyone needs it
         state.env.real_fabfile = fabfile
@@ -657,9 +635,18 @@ def main():
         # Load fabfile (which calls its module-level code, including
         # tweaks to env values) and put its commands in the shared commands
         # dict
+        default = None
         if fabfile:
-            docstring, callables = load_fabfile(fabfile)
+            docstring, callables, default = load_fabfile(fabfile)
             state.commands.update(callables)
+
+        # Handle case where we were called bare, i.e. just "fab", and print
+        # a help message.
+        actions = (options.list_commands, options.shortlist, options.display,
+            arguments, remainder_arguments, default)
+        if not any(actions):
+            parser.print_help()
+            sys.exit(1)
 
         # Abort if no commands found
         if not state.commands and not remainder_arguments:
@@ -676,18 +663,18 @@ def main():
         # it overrides use of --list-format if somebody were to specify both
         if options.shortlist:
             options.list_format = 'short'
+            options.list_commands = True
 
         # List available commands
         if options.list_commands:
-            print("\n".join(list_commands(docstring, options.list_format)))
-            sys.exit(0)
+            show_commands(docstring, options.list_format)
 
         # Handle show (command-specific help) option
         if options.display:
             display_command(options.display)
 
         # If user didn't specify any commands to run, show help
-        if not (arguments or remainder_arguments):
+        if not (arguments or remainder_arguments or default):
             parser.print_help()
             sys.exit(0)  # Or should it exit with error (1)?
 
@@ -705,8 +692,9 @@ def main():
 
         # Abort if any unknown commands were specified
         if unknown_commands:
-            abort("Command(s) not found:\n%s" \
+            warn("Command(s) not found:\n%s" \
                 % indent(unknown_commands))
+            show_commands(None, options.list_format, 1)
 
         # Generate remainder command and insert into commands, commands_to_run
         if remainder_command:
@@ -714,35 +702,23 @@ def main():
             state.commands[r] = lambda: api.run(remainder_command)
             commands_to_run.append((r, [], {}, [], [], []))
 
+        # Ditto for a default, if found
+        if not commands_to_run and default:
+            commands_to_run.append((default.name, [], {}, [], [], []))
+
         if state.output.debug:
             names = ", ".join(x[0] for x in commands_to_run)
             print("Commands to run: %s" % names)
 
         # At this point all commands must exist, so execute them in order.
-        for name, args, kwargs, cli_hosts, cli_roles, cli_exclude_hosts in commands_to_run:
-            # Get callable by itself
-            task = crawl(name, state.commands)
-            # Set current task name (used for some error messages)
-            state.env.command = name
-            # Set host list (also copy to env)
-            state.env.all_hosts = hosts = get_hosts(
-                task, cli_hosts, cli_roles, cli_exclude_hosts)
-            # If hosts found, execute the function on each host in turn
-            for host in hosts:
-                # Preserve user
-                prev_user = state.env.user
-                # Split host string and apply to env dict
-                username, hostname, port = interpret_host_string(host)
-                # Log to stdout
-                if state.output.running:
-                    print("[%s] Executing task '%s'" % (host, name))
-                # Actually run command
-                _run_task(task, args, kwargs)
-                # Put old user back
-                state.env.user = prev_user
-            # If no hosts found, assume local-only and run once
-            if not hosts:
-                _run_task(task, args, kwargs)
+        for name, args, kwargs, arg_hosts, arg_roles, arg_exclude_hosts in commands_to_run:
+            execute(
+                name,
+                hosts=arg_hosts,
+                roles=arg_roles,
+                exclude_hosts=arg_exclude_hosts,
+                *args, **kwargs
+            )
         # If we got here, no errors occurred, so print a final note.
         if state.output.status:
             print("\nDone.")

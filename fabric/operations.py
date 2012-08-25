@@ -1,4 +1,5 @@
 """
+
 Functions to be used in fabfiles and other non-core code, such as run()/sudo().
 """
 
@@ -6,83 +7,29 @@ from __future__ import with_statement
 
 import os
 import os.path
+import posixpath
 import re
-import stat
 import subprocess
 import sys
 import time
 from glob import glob
-from traceback import format_exc
+from contextlib import closing, contextmanager
 
-from contextlib import closing
-
-from fabric.context_managers import settings, char_buffered
+from fabric.context_managers import (settings, char_buffered, hide,
+    quiet as quiet_manager, warn_only as warn_only_manager)
 from fabric.io import output_loop, input_loop
-from fabric.network import needs_host
+from fabric.network import needs_host, ssh, ssh_config
 from fabric.sftp import SFTP
-from fabric.state import (env, connections, output, win32, default_channel,
-    io_sleep)
+from fabric.state import env, connections, output, win32, default_channel
 from fabric.thread_handling import ThreadHandler
-from fabric.utils import abort, indent, warn, puts, handle_prompt_abort
-
-# For terminal size logic below
-if not win32:
-    import fcntl
-    import termios
-    import struct
-
-
-def _pty_size():
-    """
-    Obtain (rows, cols) tuple for sizing a pty on the remote end.
-
-    Defaults to 80x24 (which is also the Paramiko default) but will detect
-    local (stdout-based) terminal window size on non-Windows platforms.
-    """
-    rows, cols = 24, 80
-    if not win32 and sys.stdin.isatty():
-        # We want two short unsigned integers (rows, cols)
-        fmt = 'HH'
-        # Create an empty (zeroed) buffer for ioctl to map onto. Yay for C!
-        buffer = struct.pack(fmt, 0, 0)
-        # Call TIOCGWINSZ to get window size of stdout, returns our filled buffer
-        try:
-            result = fcntl.ioctl(sys.stdout.fileno(), termios.TIOCGWINSZ,
-                buffer)
-            # Unpack buffer back into Python data types
-            rows, cols = struct.unpack(fmt, result)
-        # Deal with e.g. sys.stdout being monkeypatched, such as in testing.
-        # Or termios not having a TIOCGWINSZ.
-        except AttributeError:
-            pass
-    return rows, cols
-
-
-def _handle_failure(message, exception=None):
-    """
-    Call `abort` or `warn` with the given message.
-
-    The value of ``env.warn_only`` determines which method is called.
-
-    If ``exception`` is given, it is inspected to get a string message, which
-    is printed alongside the user-generated ``message``.
-    """
-    func = env.warn_only and warn or abort
-    # If debug printing is on, append a traceback to the message
-    if output.debug:
-        message += "\n\n" + format_exc()
-    # Otherwise, if we were given an exception, append its contents.
-    elif exception is not None:
-        # Figure out how to get a string out of the exception; EnvironmentError
-        # subclasses, for example, "are" integers and .strerror is the string.
-        # Others "are" strings themselves. May have to expand this further for
-        # other error types.
-        if hasattr(exception, 'strerror') and exception.strerror is not None:
-            underlying = exception.strerror
-        else:
-            underlying = exception
-        message += "\n\nUnderlying exception message:\n" + indent(underlying)
-    return func(message)
+from fabric.utils import (
+    abort,
+    error,
+    handle_prompt_abort,
+    indent,
+    _pty_size,
+    warn,
+)
 
 
 def _shell_escape(string):
@@ -147,8 +94,9 @@ def require(*keys, **kwargs):
     .. versionchanged:: 1.1
         Allow iterable ``provided_by`` values instead of just single values.
     """
-    # If all keys exist, we're good, so keep going.
-    missing_keys = filter(lambda x: x not in env, keys)
+    # If all keys exist and are non-empty, we're good, so keep going.
+    missing_keys = filter(lambda x: x not in env or (x in env and
+        isinstance(env[x], (dict, list, tuple, set)) and not env[x]), keys)
     if not missing_keys:
         return
     # Pluralization
@@ -247,7 +195,7 @@ def prompt(text, key=None, default='', validate=None):
             prompt('I seriously need an answer on this! ')
 
     """
-    handle_prompt_abort()
+    handle_prompt_abort("a user-specified prompt() call")
     # Store previous env value for later display, if necessary
     if key:
         previous_value = env.get(key)
@@ -393,11 +341,14 @@ def put(local_path=None, remote_path=None, use_sudo=False,
     ftp = SFTP(env.host_string)
 
     with closing(ftp) as ftp:
-        # Expand tildes (assumption: default remote cwd is user $HOME)
         home = ftp.normalize('.')
 
         # Empty remote path implies cwd
         remote_path = remote_path or home
+
+        # Expand tildes
+        if remote_path.startswith('~'):
+            remote_path = remote_path.replace('~', home, 1)
 
         # Honor cd() (assumes Unix style file paths on remote end)
         if not os.path.isabs(remote_path) and env.get('cwd'):
@@ -442,7 +393,7 @@ def put(local_path=None, remote_path=None, use_sudo=False,
                 msg = "put() encountered an exception while uploading '%s'"
                 failure = lpath if local_is_path else "<StringIO>"
                 failed_local_paths.append(failure)
-                _handle_failure(message=msg % lpath, exception=e)
+                error(message=msg % lpath, exception=e)
 
         ret = _AttributeList(remote_paths)
         ret.failed = failed_local_paths
@@ -584,7 +535,7 @@ def get(remote_path, local_path=None):
             # Otherwise, be relative to remote home directory (SFTP server's
             # '.')
             else:
-                remote_path = os.path.join(home, remote_path)
+                remote_path = posixpath.join(home, remote_path)
 
         # Track final local destination files so we can return a list
         local_files = []
@@ -597,7 +548,7 @@ def get(remote_path, local_path=None):
             # Handle invalid local-file-object situations
             if not local_is_path:
                 if len(names) > 1 or ftp.isdir(names[0]):
-                    _handle_failure("[%s] %s is a glob or directory, but local_path is a file object!" % (env.host_string, remote_path))
+                    error("[%s] %s is a glob or directory, but local_path is a file object!" % (env.host_string, remote_path))
 
             for remote_path in names:
                 if ftp.isdir(remote_path):
@@ -618,7 +569,7 @@ def get(remote_path, local_path=None):
         except Exception, e:
             failed_remote_files.append(remote_path)
             msg = "get() encountered an exception while downloading '%s'"
-            _handle_failure(message=msg % remote_path, exception=e)
+            error(message=msg % remote_path, exception=e)
 
         ret = _AttributeList(local_files if local_is_path else [])
         ret.failed = failed_remote_files
@@ -631,7 +582,7 @@ def _sudo_prefix(user):
     Return ``env.sudo_prefix`` with ``user`` inserted if necessary.
     """
     # Insert env.sudo_prompt into env.sudo_prefix
-    prefix = env.sudo_prefix % env.sudo_prompt
+    prefix = env.sudo_prefix % env
     if user is not None:
         if str(user).isdigit():
             user = "#%s" % user
@@ -695,24 +646,38 @@ def _prefix_env_vars(command):
     Prefixes ``command`` with any shell environment vars, e.g. ``PATH=foo ``.
 
     Currently, this only applies the PATH updating implemented in
-    `~fabric.context_managers.path`.
+    `~fabric.context_managers.path` and environment variables from
+    `~fabric.context_managers.shell_env`.
     """
+    env_vars = {}
+
     # path(): local shell env var update, appending/prepending/replacing $PATH
     path = env.path
     if path:
         if env.path_behavior == 'append':
-            path = 'PATH=$PATH:\"%s\" ' % path
+            path = '$PATH:\"%s\" ' % path
         elif env.path_behavior == 'prepend':
-            path = 'PATH=\"%s\":$PATH ' % path
+            path = '\"%s\":$PATH ' % path
         elif env.path_behavior == 'replace':
-            path = 'PATH=\"%s\" ' % path
+            path = '\"%s\" ' % path
+
+        env_vars['PATH'] = path
+
+    # shell_env()
+    env_vars.update(env.shell_env)
+
+    if env_vars:
+        exports = ' '.join('%s="%s"' % (k, _shell_escape(v))
+                           for k, v in env_vars.iteritems())
+        shell_env_str = 'export %s && ' % exports
     else:
-        path = ''
-    return path + command
+        shell_env_str = ''
+
+    return shell_env_str + command
 
 
 def _execute(channel, command, pty=True, combine_stderr=None,
-    invoke_shell=False):
+    invoke_shell=False, stdout=None, stderr=None):
     """
     Execute ``command`` over ``channel``.
 
@@ -731,6 +696,10 @@ def _execute(channel, command, pty=True, combine_stderr=None,
     ``stdout``/``stderr`` are captured output strings and ``status`` is the
     program's return code, if applicable.
     """
+    # stdout/stderr redirection
+    stdout = stdout or sys.stdout
+    stderr = stderr or sys.stderr
+
     with char_buffered(sys.stdin):
         # Combine stdout and stderr to get around oddball mixing issues
         if combine_stderr is None:
@@ -748,6 +717,12 @@ def _execute(channel, command, pty=True, combine_stderr=None,
             rows, cols = _pty_size()
             channel.get_pty(width=cols, height=rows)
 
+        # Use SSH agent forwarding from 'ssh' if enabled by user
+        config_agent = ssh_config().get('forwardagent', 'no').lower() == 'yes'
+        forward = None
+        if env.forward_agent or config_agent:
+            forward = ssh.agent.AgentRequestHandler(channel)
+
         # Kick off remote command
         if invoke_shell:
             channel.invoke_shell()
@@ -758,13 +733,15 @@ def _execute(channel, command, pty=True, combine_stderr=None,
 
         # Init stdout, stderr capturing. Must use lists instead of strings as
         # strings are immutable and we're using these as pass-by-reference
-        stdout, stderr = [], []
+        stdout_buf, stderr_buf = [], []
         if invoke_shell:
-            stdout = stderr = None
+            stdout_buf = stderr_buf = None
 
         workers = (
-            ThreadHandler('out', output_loop, channel, "recv", stdout),
-            ThreadHandler('err', output_loop, channel, "recv_stderr", stderr),
+            ThreadHandler('out', output_loop, channel, "recv",
+                capture=stdout_buf, stream=stdout),
+            ThreadHandler('err', output_loop, channel, "recv_stderr",
+                capture=stderr_buf, stream=stderr),
             ThreadHandler('in', input_loop, channel, using_pty)
         )
 
@@ -776,7 +753,7 @@ def _execute(channel, command, pty=True, combine_stderr=None,
                     e = worker.exception
                     if e:
                         raise e[0], e[1], e[2]
-            time.sleep(io_sleep)
+            time.sleep(ssh.io_sleep)
 
         # Obtain exit code of remote program now that we're done.
         status = channel.recv_exit_status()
@@ -787,22 +764,25 @@ def _execute(channel, command, pty=True, combine_stderr=None,
 
         # Close channel
         channel.close()
+        # Close any agent forward proxies
+        if forward is not None:
+            forward.close()
 
         # Update stdout/stderr with captured values if applicable
         if not invoke_shell:
-            stdout = ''.join(stdout).strip()
-            stderr = ''.join(stderr).strip()
+            stdout_buf = ''.join(stdout_buf).strip()
+            stderr_buf = ''.join(stderr_buf).strip()
 
         # Tie off "loose" output by printing a newline. Helps to ensure any
         # following print()s aren't on the same line as a trailing line prefix
         # or similar. However, don't add an extra newline if we've already
         # ended up with one, as that adds a entire blank line instead.
         if output.running \
-            and (output.stdout and stdout and not stdout.endswith("\n")) \
-            or (output.stderr and stderr and not stderr.endswith("\n")):
+            and (output.stdout and stdout_buf and not stdout_buf.endswith("\n")) \
+            or (output.stderr and stderr_buf and not stderr_buf.endswith("\n")):
             print("")
 
-        return stdout, stderr, status
+        return stdout_buf, stderr_buf, status
 
 
 @needs_host
@@ -838,56 +818,80 @@ def open_shell(command=None):
     _execute(default_channel(), command, True, True, True)
 
 
+@contextmanager
+def _noop():
+    yield
+
+
 def _run_command(command, shell=True, pty=True, combine_stderr=True,
-    sudo=False, user=None):
+    sudo=False, user=None, quiet=False, warn_only=False, stdout=None,
+    stderr=None):
     """
     Underpinnings of `run` and `sudo`. See their docstrings for more info.
     """
-    # Set up new var so original argument can be displayed verbatim later.
-    given_command = command
-    # Handle context manager modifications, and shell wrapping
-    wrapped_command = _shell_wrap(
-        _prefix_commands(_prefix_env_vars(command), 'remote'),
-        shell,
-        _sudo_prefix(user) if sudo else None
-    )
-    # Execute info line
-    which = 'sudo' if sudo else 'run'
-    if output.debug:
-        print("[%s] %s: %s" % (env.host_string, which, wrapped_command))
-    elif output.running:
-        print("[%s] %s: %s" % (env.host_string, which, given_command))
+    manager = _noop
+    if warn_only:
+        manager = warn_only_manager
+    # Quiet's behavior is a superset of warn_only's, so it wins.
+    if quiet:
+        manager = quiet_manager
+    with manager():
+        # Set up new var so original argument can be displayed verbatim later.
+        given_command = command
+        # Handle context manager modifications, and shell wrapping
+        wrapped_command = _shell_wrap(
+            _prefix_commands(_prefix_env_vars(command), 'remote'),
+            shell,
+            _sudo_prefix(user) if sudo else None
+        )
+        # Execute info line
+        which = 'sudo' if sudo else 'run'
+        if output.debug:
+            print("[%s] %s: %s" % (env.host_string, which, wrapped_command))
+        elif output.running:
+            print("[%s] %s: %s" % (env.host_string, which, given_command))
 
-    # Actual execution, stdin/stdout/stderr handling, and termination
-    stdout, stderr, status = _execute(default_channel(), wrapped_command, pty,
-        combine_stderr)
+        # Actual execution, stdin/stdout/stderr handling, and termination
+        result_stdout, result_stderr, status = _execute(default_channel(), wrapped_command,
+            pty, combine_stderr, stdout, stderr)
 
-    # Assemble output string
-    out = _AttributeString(stdout)
-    err = _AttributeString(stderr)
+        # Assemble output string
+        out = _AttributeString(result_stdout)
+        err = _AttributeString(result_stderr)
 
-    # Error handling
-    out.failed = False
-    if status != 0:
-        out.failed = True
-        msg = "%s() encountered an error (return code %s) while executing '%s'" % (which, status, command)
-        _handle_failure(message=msg)
+        # Error handling
+        out.failed = False
+        out.command = given_command
+        out.real_command = wrapped_command
+        if status != 0:
+            out.failed = True
+            msg = "%s() received nonzero return code %s while executing" % (
+                which, status
+            )
+            if env.warn_only:
+                msg += " '%s'!" % given_command
+            else:
+                msg += "!\n\nRequested: %s\nExecuted: %s" % (
+                    given_command, wrapped_command
+                )
+            error(message=msg, stdout=out, stderr=err)
 
-    # Attach return code to output string so users who have set things to
-    # warn only, can inspect the error code.
-    out.return_code = status
+        # Attach return code to output string so users who have set things to
+        # warn only, can inspect the error code.
+        out.return_code = status
 
-    # Convenience mirror of .failed
-    out.succeeded = not out.failed
+        # Convenience mirror of .failed
+        out.succeeded = not out.failed
 
-    # Attach stderr for anyone interested in that.
-    out.stderr = err
+        # Attach stderr for anyone interested in that.
+        out.stderr = err
 
-    return out
+        return out
 
 
 @needs_host
-def run(command, shell=True, pty=True, combine_stderr=None):
+def run(command, shell=True, pty=True, combine_stderr=None, quiet=False,
+    warn_only=False, stdout=None, stderr=None):
     """
     Run a shell command on a remote host.
 
@@ -901,7 +905,9 @@ def run(command, shell=True, pty=True, combine_stderr=None):
     (likely multiline) string. This string will exhibit ``failed`` and
     ``succeeded`` boolean attributes specifying whether the command failed or
     succeeded, and will also include the return code as the ``return_code``
-    attribute.
+    attribute. Furthermore, it includes a copy of the requested & actual
+    command strings executed, as ``.command`` and ``.real_command``,
+    respectively.
 
     Any text entered in your local terminal will be forwarded to the remote
     program as it runs, thus allowing you to interact with password or other
@@ -923,6 +929,20 @@ def run(command, shell=True, pty=True, combine_stderr=None):
     resulting strings returned by `~fabric.operations.run` will be properly
     separated). For more info, please read :ref:`combine_streams`.
 
+    To ignore non-zero return codes, specify ``warn_only=True``. To both ignore
+    non-zero return codes *and* force a command to run silently, specify
+    ``quiet=True``.
+
+    To override which local streams are used to display remote stdout and/or
+    stderr, specify ``stdout`` or ``stderr``. (By default, the regular
+    ``sys.stdout`` and ``sys.stderr`` Python stream objects are used.)
+
+    For example, ``run("command", stderr=sys.stdout)`` would print the remote
+    standard error to the local standard out, while preserving it as its own
+    distinct attribute on the return value (as per above.) Alternately, you
+    could even provide your own stream objects or loggers, e.g. ``myout =
+    StringIO(); run("command, stdout=myout)``.
+
     Examples::
 
         run("ls /var/www/")
@@ -940,12 +960,20 @@ def run(command, shell=True, pty=True, combine_stderr=None):
         The default value of ``combine_stderr`` is now ``None`` instead of
         ``True``. However, the default *behavior* is unchanged, as the global
         setting is still ``True``.
+
+    .. versionadded:: 1.5
+        The ``quiet``, ``warn_only``, ``stdout`` and ``stderr`` kwargs.
+
+    .. versionadded:: 1.5
+        The return value attributes ``.command`` and ``.real_command``.
     """
-    return _run_command(command, shell, pty, combine_stderr)
+    return _run_command(command, shell, pty, combine_stderr, quiet=quiet,
+        warn_only=warn_only, stdout=stdout, stderr=stderr)
 
 
 @needs_host
-def sudo(command, shell=True, pty=True, combine_stderr=None, user=None):
+def sudo(command, shell=True, pty=True, combine_stderr=None, user=None,
+    quiet=False, warn_only=False, stdout=None, stderr=None):
     """
     Run a shell command on a remote host, with superuser privileges.
 
@@ -958,18 +986,35 @@ def sudo(command, shell=True, pty=True, combine_stderr=None, user=None):
     ``sudo`` program can take a string username or an integer userid (uid);
     ``user`` may likewise be a string or an int.
 
+    You may set :ref:`env.sudo_user <sudo_user>` at module level or via
+    `~fabric.context_managers.settings` if you want multiple ``sudo`` calls to
+    have the same ``user`` value. An explicit ``user`` argument will, of
+    course, override this global setting.
+
     Examples::
 
         sudo("~/install_script.py")
         sudo("mkdir /var/www/new_docroot", user="www-data")
         sudo("ls /home/jdoe", user=1001)
         result = sudo("ls /tmp/")
+        with settings(sudo_user='mysql'):
+            sudo("whoami") # prints 'mysql'
 
     .. versionchanged:: 1.0
         See the changed and added notes for `~fabric.operations.run`.
+
+    .. versionchanged:: 1.5
+        Now honors :ref:`env.sudo_user <sudo_user>`.
+
+    .. versionadded:: 1.5
+        The ``quiet``, ``warn_only``, ``stdout`` and ``stderr`` kwargs.
+
+    .. versionadded:: 1.5
+        The return value attributes ``.command`` and ``.real_command``.
     """
     return _run_command(command, shell, pty, combine_stderr, sudo=True,
-        user=user)
+        user=user if user else env.sudo_user, quiet=quiet,
+        warn_only=warn_only, stdout=stdout, stderr=stderr)
 
 
 def local(command, capture=False):
@@ -1044,32 +1089,57 @@ def local(command, capture=False):
     if p.returncode != 0:
         out.failed = True
         msg = "local() encountered an error (return code %s) while executing '%s'" % (p.returncode, command)
-        _handle_failure(message=msg)
+        error(message=msg, stdout=out, stderr=err)
     out.succeeded = not out.failed
     # If we were capturing, this will be a string; otherwise it will be None.
     return out
 
 
 @needs_host
-def reboot(wait):
+def reboot(wait=120):
     """
-    Reboot the remote system, disconnect, and wait for ``wait`` seconds.
+    Reboot the remote system.
 
-    After calling this operation, further execution of `run` or `sudo` will
-    result in a normal reconnection to the server, including any password
-    prompts.
+    Will temporarily tweak Fabric's reconnection settings (:ref:`timeout` and
+    :ref:`connection-attempts`) to ensure that reconnection does not give up
+    for at least ``wait`` seconds.
+
+    .. note::
+        As of Fabric 1.4, the ability to reconnect partway through a session no
+        longer requires use of internal APIs.  While we are not officially
+        deprecating this function, adding more features to it will not be a
+        priority.
+
+        Users who want greater control
+        are encouraged to check out this function's (6 lines long, well
+        commented) source code and write their own adaptation using different
+        timeout/attempt values or additional logic.
 
     .. versionadded:: 0.9.2
+    .. versionchanged:: 1.4
+        Changed the ``wait`` kwarg to be optional, and refactored to leverage
+        the new reconnection functionality; it may not actually have to wait
+        for ``wait`` seconds before reconnecting.
     """
-    sudo('reboot')
-    client = connections[env.host_string]
-    client.close()
-    if env.host_string in connections:
-        del connections[env.host_string]
-    if output.running:
-        puts("Waiting for reboot: ", flush=True, end='')
-        per_tick = 5
-        for second in range(int(wait / per_tick)):
-            puts(".", show_prefix=False, flush=True, end='')
-            time.sleep(per_tick)
-        puts("done.\n", show_prefix=False, flush=True)
+    # Shorter timeout for a more granular cycle than the default.
+    timeout = 5
+    # Use 'wait' as max total wait time
+    attempts = int(round(wait / float(timeout)))
+    # Don't bleed settings, since this is supposed to be self-contained.
+    # User adaptations will probably want to drop the "with settings()" and
+    # just have globally set timeout/attempts values.
+    with settings(
+        hide('running'),
+        timeout=timeout,
+        connection_attempts=attempts
+    ):
+        sudo('reboot')
+        # Try to make sure we don't slip in before pre-reboot lockdown
+        time.sleep(5)
+        # This is actually an internal-ish API call, but users can simply drop
+        # it in real fabfile use -- the next run/sudo/put/get/etc call will
+        # automatically trigger a reconnect.
+        # We use it here to force the reconnect while this function is still in
+        # control and has the above timeout settings enabled.
+        connections.connect(env.host_string)
+    # At this point we should be reconnected to the newly rebooted server.

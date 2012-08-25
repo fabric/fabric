@@ -4,10 +4,10 @@ import sys
 import time
 from select import select
 
-from fabric.context_managers import settings, char_buffered
-from fabric.state import env, output, win32, io_sleep
+from fabric.state import env, output, win32
 from fabric.auth import get_password, set_password
 import fabric.network
+from fabric.network import ssh
 
 if win32:
     import msvcrt
@@ -24,23 +24,46 @@ def _endswith(char_list, substring):
     return tail == substring
 
 
-def output_loop(chan, which, capture):
+def _is_newline(byte):
+    return byte in ('\n', '\r')
+
+
+def _was_newline(capture, byte):
+    """
+    Determine if we are 'past' a newline and need to print the line prefix.
+    """
+    endswith_newline = _endswith(capture, '\n') or _endswith(capture, '\r')
+    return endswith_newline and not _is_newline(byte)
+
+
+def output_loop(chan, attr, stream, capture):
+    """
+    Loop, reading from <chan>.<attr>(), writing to <stream> and buffering to <capture>.
+    """
+    # Internal capture-buffer-like buffer, used solely for state keeping.
+    # Unlike 'capture', nothing is ever purged from this.
+    _buffer = []
     # Obtain stdout or stderr related values
-    func = getattr(chan, which)
-    if which == 'recv':
-        prefix = "out"
-        pipe = sys.stdout
-    else:
-        prefix = "err"
-        pipe = sys.stderr
-    printing = getattr(output, 'stdout' if (which == 'recv') else 'stderr')
+    func = getattr(chan, attr)
+    _prefix = "[%s] %s: " % (
+        env.host_string,
+        "out" if attr == 'recv' else "err"
+    )
+    printing = getattr(output, 'stdout' if (attr == 'recv') else 'stderr')
     # Initialize loop variables
     reprompt = False
     initial_prefix_printed = False
+    line = []
+    linewise = (env.linewise or env.parallel)
     while True:
         # Handle actual read/write
         byte = func(1)
+        # Empty byte == EOS
         if byte == '':
+            # If linewise, ensure we flush any leftovers in the buffer.
+            if linewise and line:
+                _flush(stream, _prefix)
+                _flush(stream, "".join(line))
             break
         # A None capture variable implies that we're in open_shell()
         if capture is None:
@@ -51,23 +74,33 @@ def output_loop(chan, which, capture):
         # Otherwise, we're in run/sudo and need to handle capturing and
         # prompts.
         else:
-            _prefix = "[%s] %s: " % (env.host_string, prefix)
             # Allow prefix to be turned off.
             if not env.output_prefix:
                 _prefix = ""
             # Print to user
             if printing:
-                # Initial prefix
-                if not initial_prefix_printed:
-                    _flush(pipe, _prefix)
-                    initial_prefix_printed = True
-                # Byte itself
-                _flush(pipe, byte)
-                # Trailing prefix to start off next line
-                if byte in ("\n", "\r"):
-                    _flush(pipe, _prefix)
+                if linewise:
+                    # Print prefix + line after newline is seen
+                    if _was_newline(_buffer, byte):
+                        _flush(stream, _prefix)
+                        _flush(stream, "".join(line))
+                        line = []
+                    # Add to line buffer
+                    line += byte
+                else:
+                    # Prefix, if necessary
+                    if (
+                        not initial_prefix_printed
+                        or _was_newline(_buffer, byte)
+                    ):
+                        _flush(stream, _prefix)
+                        initial_prefix_printed = True
+                    # Byte itself
+                    _flush(stream, byte)
             # Store in capture buffer
             capture += byte
+            # Store in internal buffer
+            _buffer += byte
             # Handle prompts
             prompt = _endswith(capture, env.sudo_prompt)
             try_again = (_endswith(capture, env.again_prompt + '\n')
@@ -87,16 +120,16 @@ def output_loop(chan, which, capture):
                     # the user's input, they need to see why we're
                     # prompting them.
                     if not printing:
-                        _flush(pipe, _prefix)
+                        _flush(stream, _prefix)
                         if reprompt:
-                            _flush(pipe, env.again_prompt + '\n' + _prefix)
-                        _flush(pipe, env.sudo_prompt)
+                            _flush(stream, env.again_prompt + '\n' + _prefix)
+                        _flush(stream, env.sudo_prompt)
                     # Prompt for, and store, password. Give empty prompt so the
                     # initial display "hides" just after the actually-displayed
                     # prompt from the remote end.
                     chan.input_enabled = False
                     password = fabric.network.prompt_for_password(
-                        prompt=" ", no_colon=True, stream=pipe
+                        prompt=" ", no_colon=True, stream=stream
                     )
                     chan.input_enabled = True
                     # Update env.password, env.passwords if necessary
@@ -129,4 +162,4 @@ def input_loop(chan, using_pty):
                 # output level, don't want it to be accidentally hidden
                 sys.stdout.write(byte)
                 sys.stdout.flush()
-        time.sleep(io_sleep)
+        time.sleep(ssh.io_sleep)
