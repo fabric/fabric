@@ -179,7 +179,6 @@ def normalize(host_string, omit_port=False):
     aliases.
     """
     from fabric.state import env
-
     # Gracefully handle "empty" input by returning empty output
     if not host_string:
         return ('', '') if omit_port else ('', '', '')
@@ -232,9 +231,14 @@ def denormalize(host_string):
     """
     from fabric.state import env
 
-    user, host, port = normalize(host_string)
-    user = '' if not user or user == env.get('user') else user + '@'
-    port = '' if not port or port == '22' else ':' + port
+    r = parse_host_string(host_string)
+    user = ''
+    if r['user'] is not None and r['user'] != env.user:
+        user = r['user'] + '@'
+    port = ''
+    if r['port'] is not None and r['port'] != '22':
+        port = ':' + r['port']
+    host = r['host']
     host = '[%s]' % host if port and host.count(':') > 1 else host
     return user + host + port
 
