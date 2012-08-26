@@ -30,8 +30,7 @@ Please make sure all dependencies are installed and importable.
     sys.exit(1)
 
 
-host_pattern = r'((?P<user>.+)@)?(?P<host>[^:]+)(:(?P<port>\d+))?'
-host_regex = re.compile(host_pattern)
+ipv6_regex = re.compile('^\[?(?P<host>[0-9A-Fa-f:]+)\]?(:(?P<port>\d+))?$')
 
 
 class HostConnectionCache(dict):
@@ -148,7 +147,25 @@ def key_filenames():
 
 
 def parse_host_string(host_string):
-    return host_regex.match(host_string).groupdict()
+    # Split host_string to user (optional) and host/port
+    user_hostport = host_string.rsplit('@', 1)
+    hostport = user_hostport.pop()
+    user = user_hostport[0] if user_hostport and user_hostport[0] else None
+
+    # Split host/port string to host and optional port
+    # For IPv6 addresses square brackets are mandatory for host/port separation
+    if hostport.count(':') > 1:
+        # Looks like IPv6 address
+        r = ipv6_regex.match(hostport).groupdict()
+        host = r['host'] or None
+        port = r['port'] or None
+    else:
+        # Hostname or IPv4 address
+        host_port = hostport.rsplit(':', 1)
+        host = host_port.pop(0) or None
+        port = host_port[0] if host_port and host_port[0] else None
+
+    return {'user': user, 'host': host, 'port': port}
 
 
 def normalize(host_string, omit_port=False):
@@ -212,15 +229,18 @@ def denormalize(host_string):
     If the user part is the default user, it is removed;
     if the port is port 22, it also is removed.
     """
-    from state import env
-    r = host_regex.match(host_string).groupdict()
+    from fabric.state import env
+
+    r = parse_host_string(host_string)
     user = ''
     if r['user'] is not None and r['user'] != env.user:
         user = r['user'] + '@'
     port = ''
     if r['port'] is not None and r['port'] != '22':
         port = ':' + r['port']
-    return user + r['host'] + port
+    host = r['host']
+    host = '[%s]' % host if port and host.count(':') > 1 else host
+    return user + host + port
 
 
 def join_host_strings(user, host, port=None):
@@ -230,13 +250,17 @@ def join_host_strings(user, host, port=None):
     This function is not responsible for handling missing user/port strings;
     for that, see the ``normalize`` function.
 
+    If ``host`` looks like IPv6 address, it will be enclosed in square brackets
+
     If ``port`` is omitted, the returned string will be of the form
     ``user@host``.
     """
-    port_string = ''
     if port:
-        port_string = ":%s" % port
-    return "%s@%s%s" % (user, host, port_string)
+        # Square brackets are necessary for IPv6 host/port separation
+        template = "%s@[%s]:%s" if host.count(':') > 1 else "%s@%s:%s"
+        return template % (user, host, port)
+    else:
+        return "%s@%s" % (user, host)
 
 
 def normalize_to_string(host_string):
