@@ -12,6 +12,16 @@ from fabric.utils import warn
 from fabric.context_managers import settings
 
 
+def _format_local(local_path, local_is_path):
+    """Format a path for log output"""
+    if local_is_path:
+        return local_path
+    else:
+        # This allows users to set a name attr on their StringIO objects
+        # just like an open file object would have
+        return getattr(local_path, 'name', '<file obj>')
+
+
 class SFTP(object):
     """
     SFTP helper class, which is also a facade for ssh.SFTPClient.
@@ -126,7 +136,7 @@ class SFTP(object):
         if output.running:
             print("[%s] download: %s <- %s" % (
                 env.host_string,
-                local_path if local_is_path else "<file obj>",
+                _format_local(local_path, local_is_path),
                 remote_path
             ))
         # Warn about overwrites, but keep going
@@ -201,7 +211,7 @@ class SFTP(object):
         if output.running:
             print("[%s] put: %s -> %s" % (
                 env.host_string,
-                local_path if local_is_path else '<file obj>',
+                _format_local(local_path, local_is_path),
                 posixpath.join(pre, remote_path)
             ))
         # When using sudo, "bounce" the file through a guaranteed-unique file
