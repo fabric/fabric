@@ -6,7 +6,7 @@ from fudge import Fake, patched_context, with_fakes
 from fudge.patcher import with_patched_object
 from nose.tools import eq_
 
-from fabric.state import output, env
+from fabric.state import output
 from fabric.utils import warn, indent, abort, puts, fastprint, error
 from fabric import utils  # For patching
 from fabric.context_managers import settings, hide
@@ -111,9 +111,9 @@ def test_puts_without_prefix():
     puts() shouldn't prefix output with env.host_string if show_prefix is False
     """
     s = "my output"
-    h = "localhost"
     puts(s, show_prefix=False)
     eq_(sys.stdout.getvalue(), "%s" % (s + "\n"))
+
 
 @with_fakes
 def test_fastprint_calls_puts():

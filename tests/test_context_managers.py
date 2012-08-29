@@ -91,6 +91,7 @@ def test_settings():
         eq_(env.testval, "inner value")
     eq_(env.testval, "outer value")
 
+
 def test_settings_with_multiple_kwargs():
     """
     settings() should temporarily override env dict with given key/value pairS
@@ -102,6 +103,7 @@ def test_settings_with_multiple_kwargs():
         eq_(env.testval2, "inner 2")
     eq_(env.testval1, "outer 1")
     eq_(env.testval2, "outer 2")
+
 
 def test_settings_with_other_context_managers():
     """
@@ -151,6 +153,7 @@ def test_shell_env():
         eq_(env.shell_env['KEY'], 'value')
 
     eq_(env.shell_env, {})
+
 
 class TestQuietAndWarnOnly(FabricTest):
     @server()

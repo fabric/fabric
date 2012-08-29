@@ -46,10 +46,11 @@ def _get_system_username():
     except ImportError:
         if win32:
             import win32api
-            import win32security
-            import win32profile
+            import win32security  # noqa
+            import win32profile  # noqa
             username = win32api.GetUserName()
     return username
+
 
 def _rc_path():
     """
@@ -64,7 +65,7 @@ def _rc_path():
             expanded_rc_path = "%s/%s" % (
                 SHGetSpecialFolderPath(0, CSIDL_PROFILE),
                 rc_file
-                )
+            )
     return expanded_rc_path
 
 default_port = '22'  # hurr durr

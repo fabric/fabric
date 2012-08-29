@@ -144,6 +144,30 @@ Or skip the ``pool_size`` kwarg and instead::
 
     $ fab -P -z 5 heavy_task
 
+
+Per Role Bubbles
+----------------
+
+On the other hand, instead of just limiting the total number of concurrent Fabric
+processes, sometimes you want to limit concurrency based host roles. This allows
+a finer grained control of concurrent processes on your machines.
+
+By default, there's a ``default`` role bubble that has a limit of the number of hosts
+or ``pool_size``. This can be overridden by defining its own limit. Hosts that
+are defined on the task, arguments or don't have a role limit, will be put into
+the ``default`` bubble.
+
+Example::
+
+    from fabric.api import env
+
+    env.role_limits = {
+        'default': 10,
+        'web': 2,
+        'api': 2,
+        'media': 5,
+    }
+
 .. _linewise-output:
 
 Linewise vs bytewise output

@@ -33,7 +33,6 @@ Context managers for use with the ``with`` statement.
 """
 
 from contextlib import contextmanager, nested
-import sys
 
 from fabric.state import output, win32
 from fabric import state

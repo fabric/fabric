@@ -1,7 +1,6 @@
 from __future__ import with_statement
 
 import random
-import sys
 
 from nose.tools import eq_, ok_, assert_true, assert_false, assert_equal
 import fudge
@@ -9,11 +8,9 @@ from fudge import Fake, with_fakes, patched_context
 
 from fabric import decorators, tasks
 from fabric.state import env
-import fabric # for patching fabric.state.xxx
+import fabric  # for patching fabric.state.xxx
 from fabric.tasks import _parallel_tasks, requires_parallel, execute
 from fabric.context_managers import lcd, settings, hide
-
-from utils import mock_streams
 
 
 #
@@ -35,7 +32,6 @@ def fake_function(*args, **kwargs):
     return Fake(*args, **kwargs).has_attr(__name__='fake')
 
 
-
 #
 # @task
 #
@@ -44,11 +40,12 @@ def test_task_returns_an_instance_of_wrappedfunctask_object():
     def foo():
         pass
     task = decorators.task(foo)
-    ok_(isinstance(task, tasks.WrappedCallableTask))
+    ok_(isinstance(task, tasks.Task))
 
 
 def test_task_will_invoke_provided_class():
-    def foo(): pass
+    def foo():
+        pass
     fake = Fake()
     fake.expects("__init__").with_args(foo)
     fudge.clear_calls()
@@ -61,7 +58,9 @@ def test_task_will_invoke_provided_class():
 
 def test_task_passes_args_to_the_task_class():
     random_vars = ("some text", random.randint(100, 200))
-    def foo(): pass
+
+    def foo():
+        pass
 
     fake = Fake()
     fake.expects("__init__").with_args(foo, *random_vars)
@@ -77,7 +76,9 @@ def test_passes_kwargs_to_the_task_class():
         "msg": "some text",
         "number": random.randint(100, 200),
     }
-    def foo(): pass
+
+    def foo():
+        pass
 
     fake = Fake()
     fake.expects("__init__").with_args(foo, **random_vars)
@@ -89,17 +90,17 @@ def test_passes_kwargs_to_the_task_class():
 
 
 def test_integration_tests_for_invoked_decorator_with_no_args():
-    r = random.randint(100, 200)
     @decorators.task()
     def foo():
-        return r
+        return random.randint(100, 200)
 
-    eq_(r, foo())
+    ok_(foo() > 99)
 
 
 def test_integration_tests_for_decorator():
     r = random.randint(100, 200)
-    @decorators.task(task_class=tasks.WrappedCallableTask)
+
+    @decorators.task(task_class=tasks.Task)
     def foo():
         return r
 
@@ -108,12 +109,12 @@ def test_integration_tests_for_decorator():
 
 def test_original_non_invoked_style_task():
     r = random.randint(100, 200)
+
     @decorators.task
     def foo():
         return r
 
     eq_(r, foo())
-
 
 
 #
@@ -145,6 +146,7 @@ def test_runs_once_returns_same_value_each_run():
 def single_run():
     pass
 
+
 def test_runs_once():
     assert_false(hasattr(single_run, 'return_value'))
     single_run()
@@ -152,33 +154,36 @@ def test_runs_once():
     assert_equal(None, single_run())
 
 
-
 #
 # @serial / @parallel
 #
 
-
 @decorators.serial
 def serial():
     pass
+
 
 @decorators.serial
 @decorators.parallel
 def serial2():
     pass
 
+
 @decorators.parallel
 @decorators.serial
 def serial3():
     pass
 
+
 @decorators.parallel
 def parallel():
     pass
 
+
 @decorators.parallel(pool_size=20)
 def parallel2():
     pass
+
 
 fake_tasks = {
     'serial': serial,
@@ -188,10 +193,12 @@ fake_tasks = {
     'parallel2': parallel2,
 }
 
+
 def parallel_task_helper(actual_tasks, expected):
     commands_to_run = map(lambda x: [x], actual_tasks)
     with patched_context(fabric.state, 'commands', fake_tasks):
         eq_(_parallel_tasks(commands_to_run), expected)
+
 
 def test_parallel_tasks():
     for desc, task_names, expected in (
@@ -208,6 +215,7 @@ def test_parallel_tasks():
         yield parallel_task_helper, task_names, expected
         del parallel_task_helper.description
 
+
 def test_parallel_wins_vs_serial():
     """
     @parallel takes precedence over @serial when both are used on one task
@@ -215,19 +223,18 @@ def test_parallel_wins_vs_serial():
     ok_(requires_parallel(serial2))
     ok_(requires_parallel(serial3))
 
-@mock_streams('stdout')
+
 def test_global_parallel_honors_runs_once():
     """
     fab -P (or env.parallel) should honor @runs_once
     """
     @decorators.runs_once
     def mytask():
-        print "yolo" # 'Carpe diem' for stupid people!
+        from fabric.state import env
+        return env.host_string
     with settings(hide('everything'), parallel=True):
-        execute(mytask, hosts=['localhost', '127.0.0.1'])
-    result = sys.stdout.getvalue()
-    eq_(result, "yolo\n")
-    assert result != "yolo\nyolo\n"
+        results = execute(mytask, hosts=['localhost', '127.0.0.1'])
+    eq_(results['localhost'], results['127.0.0.1'])
 
 
 #
@@ -238,10 +245,10 @@ def test_global_parallel_honors_runs_once():
 def use_roles():
     pass
 
+
 def test_roles():
     assert_true(hasattr(use_roles, 'roles'))
     assert_equal(use_roles.roles, ['test'])
-
 
 
 #
@@ -252,10 +259,10 @@ def test_roles():
 def use_hosts():
     pass
 
+
 def test_hosts():
     assert_true(hasattr(use_hosts, 'hosts'))
     assert_equal(use_hosts.hosts, ['test'])
-
 
 
 #
@@ -265,11 +272,14 @@ def test_hosts():
 def test_with_settings_passes_env_vars_into_decorated_function():
     env.value = True
     random_return = random.randint(1000, 2000)
+
     def some_task():
         return env.value
+
     decorated_task = decorators.with_settings(value=random_return)(some_task)
     ok_(some_task(), msg="sanity check")
     eq_(random_return, decorated_task())
+
 
 def test_with_settings_with_other_context_managers():
     """
@@ -281,7 +291,7 @@ def test_with_settings_with_other_context_managers():
 
     def some_task():
         eq_(env.testval1, "inner 1")
-        ok_(env.lcwd.endswith("here")) # Should be the side-effect of adding cd to settings
+        ok_(env.lcwd.endswith("here"))  # Should be the side-effect of adding cd to settings
 
     decorated_task = decorators.with_settings(
         lcd("here"),

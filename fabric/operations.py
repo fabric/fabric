@@ -341,7 +341,7 @@ def put(local_path=None, remote_path=None, use_sudo=False,
     local_path = local_path or os.getcwd()
 
     # Test whether local_path is a path or a file-like object
-    local_is_path = not (hasattr(local_path, 'read') \
+    local_is_path = not (hasattr(local_path, 'read')
         and callable(local_path.read))
 
     ftp = SFTP(env.host_string)
@@ -523,7 +523,7 @@ def get(remote_path, local_path=None):
     local_path = local_path or "%(host)s/%(path)s"
 
     # Test whether local_path is a path or a file-like object
-    local_is_path = not (hasattr(local_path, 'write') \
+    local_is_path = not (hasattr(local_path, 'write')
         and callable(local_path.write))
 
     # Honor lcd() where it makes sense

@@ -1,6 +1,6 @@
 from __future__ import with_statement
 
-from fabric.api import hide, get, show
+from fabric.api import hide, get
 from fabric.contrib.files import upload_template, contains
 
 from utils import FabricTest, eq_contents
@@ -48,4 +48,4 @@ class TestContrib(FabricTest):
         """
         with hide('everything'):
             result = contains('/file.txt', 'text', use_sudo=True)
-            assert result == False
+            assert result is False

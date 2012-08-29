@@ -5,7 +5,6 @@ from __future__ import with_statement
 
 from os import getcwd, sep
 import os.path
-from datetime import datetime
 from tempfile import mkdtemp
 
 from fabric.network import needs_host, key_filenames, normalize
@@ -14,6 +13,7 @@ from fabric.state import env, output
 from fabric.context_managers import cd
 
 __all__ = ['rsync_project', 'upload_project']
+
 
 @needs_host
 def rsync_project(remote_dir, local_dir=None, exclude=(), delete=False,
@@ -129,7 +129,7 @@ def upload_project(local_dir=None, remote_dir=""):
 
     ``local_dir`` specifies the local project directory to upload, and defaults
     to the current working directory.
-    
+
     ``remote_dir`` specifies the target directory to upload into (meaning that
     a copy of ``local_dir`` will appear as a subdirectory of ``remote_dir``)
     and defaults to the remote user's home directory.

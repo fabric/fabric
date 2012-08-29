@@ -3,27 +3,21 @@ from __future__ import with_statement
 import os
 import shutil
 import sys
-import types
 from contextlib import nested
 from StringIO import StringIO
 
-import unittest
-import random
-import types
-
 from nose.tools import raises, eq_, ok_
-from fudge import with_patched_object
 
 from fabric.state import env, output
 from fabric.operations import require, prompt, _sudo_prefix, _shell_wrap, \
     _shell_escape
-from fabric.api import get, put, hide, show, cd, lcd, local, run, sudo
+from fabric.api import get, put, hide, show, cd, lcd, local, run
 from fabric.sftp import SFTP
 
+from fabric.context_managers import settings
 from fabric.decorators import with_settings
 from utils import *
-from server import (server, PORT, RESPONSES, FILES, PASSWORDS, CLIENT_PRIVKEY,
-    USER, CLIENT_PRIVKEY_PASSPHRASE)
+from server import (server, FILES)
 
 #
 # require()

@@ -1,5 +1,6 @@
 from fabric.decorators import task
 
+
 @task
 def foo():
     """

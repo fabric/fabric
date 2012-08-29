@@ -452,6 +452,7 @@ def needs_host(func):
     command (in the case where multiple commands have no hosts set, of course.)
     """
     from fabric.state import env
+
     @wraps(func)
     def host_prompting_wrapper(*args, **kwargs):
         while not env.get('host_string', False):

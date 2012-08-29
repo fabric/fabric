@@ -24,36 +24,30 @@ def task(*args, **kwargs):
         Added the ``alias``, ``aliases``, ``task_class`` and ``default``
         keyword arguments. See :ref:`task-decorator-arguments` for details.
     """
-    invoked = bool(not args or kwargs)
-    task_class = kwargs.pop("task_class", tasks.WrappedCallableTask)
-    if not invoked:
-        func, args = args[0], ()
+    def wrapped_task_from_fun(**opts):
+        def task_from_fun(fun):
+            Task = type(fun.__name__, (tasks.Task,), dict({
+                'run': staticmethod(fun),
+                '__name__': fun.__name__,
+                '__doc__': fun.__doc__,
+                '__module__': fun.__module__},
+                **fun.__dict__))
+            return Task(name=fun.__name__, **opts)
+        return task_from_fun
 
-    def wrapper(func):
-        return task_class(func, *args, **kwargs)
-
-    return wrapper if invoked else wrapper(func)
-
-def _wrap_as_new(original, new):
-    if isinstance(original, tasks.Task):
-        return tasks.WrappedCallableTask(new)
-    return new
+    if len(args) == 1 and callable(args[0]):
+        return wrapped_task_from_fun()(args[0])
+    return wrapped_task_from_fun(**kwargs)
 
 
 def _list_annotating_decorator(attribute, *values):
     def attach_list(func):
-        @wraps(func)
-        def inner_decorator(*args, **kwargs):
-            return func(*args, **kwargs)
         _values = values
         # Allow for single iterable argument as well as *args
         if len(_values) == 1 and not isinstance(_values[0], basestring):
             _values = _values[0]
-        setattr(inner_decorator, attribute, list(_values))
-        # Don't replace @task new-style task objects with inner_decorator by
-        # itself -- wrap in a new Task object first.
-        inner_decorator = _wrap_as_new(func, inner_decorator)
-        return inner_decorator
+        setattr(func, attribute, list(_values))
+        return func
     return attach_list
 
 
@@ -130,7 +124,6 @@ def runs_once(func):
         if not hasattr(decorated, 'return_value'):
             decorated.return_value = func(*args, **kwargs)
         return decorated.return_value
-    decorated = _wrap_as_new(func, decorated)
     # Mark as serial (disables parallelism) and return
     return serial(decorated)
 
@@ -148,7 +141,7 @@ def serial(func):
     """
     if not getattr(func, 'parallel', False):
         func.serial = True
-    return _wrap_as_new(func, func)
+    return func
 
 
 def parallel(pool_size=None):
@@ -172,7 +165,7 @@ def parallel(pool_size=None):
         inner.parallel = True
         inner.serial = False
         inner.pool_size = pool_size
-        return _wrap_as_new(func, inner)
+        return inner
 
     # Allow non-factory-style decorator use (@decorator vs @decorator())
     if type(pool_size) == type(real_decorator):
@@ -204,5 +197,5 @@ def with_settings(*arg_settings, **kw_settings):
         def inner(*args, **kwargs):
             with settings(*arg_settings, **kw_settings):
                 return func(*args, **kwargs)
-        return _wrap_as_new(func, inner)
+        return inner
     return outer

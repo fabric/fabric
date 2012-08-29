@@ -518,6 +518,17 @@ The global role list used when composing per-task host lists.
 
 .. seealso:: :doc:`execution`
 
+.. _role_limits:
+
+``role_limits``
+---------------
+
+**Default:** ``{}``
+
+Per role bubbles for parallel execution.
+
+.. seealso:: :doc:`parallel`
+
 .. _shell:
 
 ``shell``

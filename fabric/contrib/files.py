@@ -5,12 +5,11 @@ Module providing easy API for working with remote files and folders.
 from __future__ import with_statement
 
 import hashlib
-import tempfile
 import re
 import os
 from StringIO import StringIO
 
-from fabric.api import *
+from fabric.api import *  # noqa
 
 
 def exists(path, use_sudo=False, verbose=False):
@@ -168,7 +167,7 @@ def sed(filename, before, after, limit='', use_sudo=False, backup='.bak',
         hasher = hashlib.sha1()
         hasher.update(env.host_string)
         hasher.update(filename)
-        tmp = "/tmp/%s" % hasher.hexdigest()
+        tmp = "/tmp/%s" % hasher.hexdigest()  # noqa
         # Use temp file to work around lack of -i
         expr = r"""cp -p %(filename)s %(tmp)s \
 && sed -r -e '%(limit)ss/%(before)s/%(after)s/%(flags)sg' %(filename)s > %(tmp)s \
@@ -309,7 +308,7 @@ def append(filename, text, use_sudo=False, partial=False, escape=True):
     "append lines to a file" use case. You may override this and force partial
     searching (e.g. ``^<text>``) by specifying ``partial=True``.
 
-    Because ``text`` is single-quoted, single quotes will be transparently 
+    Because ``text`` is single-quoted, single quotes will be transparently
     backslash-escaped. This can be disabled with ``escape=False``.
 
     If ``use_sudo`` is True, will use `sudo` instead of `run`.
@@ -330,12 +329,13 @@ def append(filename, text, use_sudo=False, partial=False, escape=True):
     if isinstance(text, basestring):
         text = [text]
     for line in text:
-        regex = '^' + _escape_for_regex(line)  + ('' if partial else '$')
+        regex = '^' + _escape_for_regex(line) + ('' if partial else '$')
         if (exists(filename, use_sudo=use_sudo) and line
             and contains(filename, regex, use_sudo=use_sudo, escape=False)):
             continue
         line = line.replace("'", r"'\\''") if escape else line
         func("echo '%s' >> %s" % (line, filename))
+
 
 def _escape_for_regex(text):
     """Escape ``text`` to allow literal matching using egrep"""

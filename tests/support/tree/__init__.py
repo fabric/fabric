@@ -1,11 +1,12 @@
-from fabric.api import task
+import system, db  # noqa
 
-import system, db
+from fabric.api import task
 
 
 @task
 def deploy():
     pass
+
 
 @task
 def build_docs():
