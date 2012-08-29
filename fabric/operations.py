@@ -318,6 +318,10 @@ def put(local_path=None, remote_path=None, use_sudo=False,
         put('*.py', 'cgi-bin/')
         put('index.html', 'index.html', mode=0755)
 
+    .. note::
+        If a file-like object such as StringIO has a ``name`` attribute, that
+        will be used in Fabric's printed output instead of the default
+        ``<file obj>``
     .. versionchanged:: 1.0
         Now honors the remote working directory as manipulated by
         `~fabric.context_managers.cd`, and the local working directory as
@@ -330,6 +334,8 @@ def put(local_path=None, remote_path=None, use_sudo=False,
     .. versionchanged:: 1.0
         Return value is now an iterable of uploaded remote file paths which
         also exhibits the ``.failed`` and ``.succeeded`` attributes.
+    .. versionchanged:: 1.5
+        Allow a ``name`` attribute on file-like objects for log output
     """
     # Handle empty local path
     local_path = local_path or os.getcwd()
@@ -490,6 +496,11 @@ def get(remote_path, local_path=None):
         transfers. (We hope to patch our SSH layer in the future to enable true
         straight-to-memory downloads.)
 
+    .. note::
+        If a file-like object such as StringIO has a ``name`` attribute, that
+        will be used in Fabric's printed output instead of the default
+        ``<file obj>``
+
     .. versionchanged:: 1.0
         Now honors the remote working directory as manipulated by
         `~fabric.context_managers.cd`, and the local working directory as
@@ -505,6 +516,8 @@ def get(remote_path, local_path=None):
     .. versionchanged:: 1.0
         Return value is now an iterable of downloaded local file paths, which
         also exhibits the ``.failed`` and ``.succeeded`` attributes.
+    .. versionchanged:: 1.5
+        Allow a ``name`` attribute on file-like objects for log output
     """
     # Handle empty local path / default kwarg value
     local_path = local_path or "%(host)s/%(path)s"
