@@ -27,6 +27,8 @@ Changelog
 
 * :feature:`699` Allow `name` attribute on file-like objects for get/put. Thanks
   to Peter Lyons for the pull request.
+* :bug:`711` `~fabric.sftp.get` would fail when filenames had % in their path.  
+  Thanks to John Begeman
 * :bug:`702` `~fabric.operations.require` failed to test for "empty" values in
   the env keys it checks (e.g.
   ``require('a-key-whose-value-is-an-empty-list')`` would register a successful
