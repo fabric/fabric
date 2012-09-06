@@ -87,7 +87,7 @@ class Task(object):
 
     def get_role(self, host, arg_hosts, env=None):
         """Return best guess for role for this task."""
-        if host in arg_hosts + self.hosts:
+        if host in arg_hosts or host in self.hosts:
             return 'default'
 
         env = env or {'roledefs': {}}
