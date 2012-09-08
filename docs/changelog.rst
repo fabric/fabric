@@ -25,6 +25,7 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :feature:`491` (also :feature:`385`) IPv6 host string support
 * :feature:`699` Allow `name` attribute on file-like objects for get/put. Thanks
   to Peter Lyons for the pull request.
 * :bug:`711` `~fabric.sftp.get` would fail when filenames had % in their path.  
