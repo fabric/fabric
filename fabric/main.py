@@ -237,7 +237,7 @@ def is_task_module(a):
     """
     #return (type(a) is types.ModuleType and
     #        any(map(is_task_object, vars(a).values())))
-    if type(a) is types.ModuleType and a not in _seen:
+    if isinstance(a, types.ModuleType) and a not in _seen:
         # Flag module as seen
         _seen.add(a)
         # Signal that we need to check it out
@@ -378,7 +378,7 @@ def _print_docstring(docstrings, name):
     if not docstrings:
         return False
     docstring = crawl(name, state.commands).__doc__
-    if type(docstring) in types.StringTypes:
+    if isinstance(docstring, basestring):
         return docstring
 
 

@@ -34,6 +34,9 @@ Changelog
   ``require('a-key-whose-value-is-an-empty-list')`` would register a successful
   result instead of alerting that the value was in fact empty. This has been
   fixed, thanks to Rich Schumacher.
+* :bug:`718` ``isinstance(foo, Bar)`` is used in `~fabric.main` instead
+  of ``type(foo) == Bar`` in order to fix some edge cases.
+  Thanks to Mikhail Korobov.
 * :bug:`693` Fixed edge case where ``abort`` driven failures within parallel
   tasks could result in a top level exception (a ``KeyError``) regarding error
   handling. Thanks to Marcin Kuźmiński for the report.
