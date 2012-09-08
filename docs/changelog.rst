@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`718` ``isinstance(foo, Bar)`` is used in `~fabric.main` instead
+  of ``type(foo) == Bar`` in order to fix some edge cases.
+  Thanks to Mikhail Korobov.
 * :bug:`693` Fixed edge case where ``abort`` driven failures within parallel
   tasks could result in a top level exception (a ``KeyError``) regarding error
   handling. Thanks to Marcin Kuźmiński for the report.
