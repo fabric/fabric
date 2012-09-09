@@ -167,7 +167,7 @@ def test_require_complex_non_empty_values():
 #
 
 def p(x):
-    print(x)
+    sys.stdout.write(x)
 
 
 @mock_streams('stdout')

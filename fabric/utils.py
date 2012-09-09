@@ -36,7 +36,7 @@ def warn(msg):
     """
     from fabric.state import output
     if output.warnings:
-        sys.stderr.write("\nWarning: %s\n" % msg)
+        sys.stderr.write("\nWarning: %s\n\n" % msg)
 
 
 def indent(text, spaces=4, strip=False):
