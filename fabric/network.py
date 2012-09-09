@@ -23,10 +23,11 @@ try:
 except ImportError, e:
     import traceback
     traceback.print_exc()
-    print >> sys.stderr, """
+    msg = """
 There was a problem importing our SSH library (see traceback above).
 Please make sure all dependencies are installed and importable.
 """.rstrip()
+    sys.stderr.write(msg + '\n')
     sys.exit(1)
 
 
@@ -402,7 +403,7 @@ def connect(user, host, port):
             err += ")"
             # Debuggin'
             if output.debug:
-                print >>sys.stderr, err
+                sys.stderr.write(err + '\n')
             # Having said our piece, try again
             if not giving_up:
                 # Sleep if it wasn't a timeout, so we still get timeout-like
@@ -498,8 +499,10 @@ def disconnect_all():
     # Explicitly disconnect from all servers
     for key in connections.keys():
         if output.status:
-            print "Disconnecting from %s..." % denormalize(key),
+            # Here we can't use the py3k print(x, end=" ")
+            # because 2.5 backwards compatibility
+            sys.stdout.write("Disconnecting from %s... " % denormalize(key))
         connections[key].close()
         del connections[key]
         if output.status:
-            print "done."
+            sys.stdout.write("done.\n")

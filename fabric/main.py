@@ -8,7 +8,6 @@ fabfile, and executing the commands given.
 The other callables defined in this module are internal only. Anything useful
 to individuals leveraging Fabric as a library, should be kept elsewhere.
 """
-
 from operator import isMappingType
 from optparse import OptionParser
 import os
@@ -727,7 +726,7 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
         raise
     except KeyboardInterrupt:
         if state.output.status:
-            print >> sys.stderr, "\nStopped."
+            sys.stderr.write("\nStopped.\n")
         sys.exit(1)
     except:
         sys.excepthook(*sys.exc_info())

@@ -222,7 +222,7 @@ def test_global_parallel_honors_runs_once():
     """
     @decorators.runs_once
     def mytask():
-        print "yolo" # 'Carpe diem' for stupid people!
+        print("yolo") # 'Carpe diem' for stupid people!
     with settings(hide('everything'), parallel=True):
         execute(mytask, hosts=['localhost', '127.0.0.1'])
     result = sys.stdout.getvalue()
