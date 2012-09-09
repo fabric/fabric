@@ -147,7 +147,7 @@ def test_decorator_closure_hiding():
     """
     from fabric.decorators import task, hosts
     def foo():
-        print env.host_string
+        print(env.host_string)
     foo = task(hosts("me@localhost")(foo))
     eq_(["me@localhost"], foo.hosts)
 
