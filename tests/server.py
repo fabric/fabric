@@ -401,7 +401,7 @@ def serve_responses(responses, files, passwords, home, pubkeys, port):
             self.transport = transport
 
         def split_sudo_prompt(self):
-            prefix = re.escape(_sudo_prefix(None).rstrip()) + ' +'
+            prefix = re.escape(_sudo_prefix(None, None).rstrip()) + ' +'
             result = re.findall(r'^(%s)?(.*)$' % prefix, self.command)[0]
             self.sudo_prompt, self.command = result
 
