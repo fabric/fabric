@@ -55,6 +55,12 @@ Patch submission guidelines
 * **Try writing some tests** if possible -- again, following existing tests is
   often easiest, and a good way to tell whether the feature you're modifying is
   easily testable.
+* **Use** ``hub pull-request`` when writing a patch for a **pre-existing Github
+  Issue**. This isn't an absolute requirement, but makes the maintainers' lives
+  much easier! Specifically: `install hub
+  <https://github.com/defunkt/hub/#installation>`_ and then run `hub
+  pull-request <https://github.com/defunkt/hub/#git-pull-request>`_ to turn the
+  issue into a pull request containing your code.
 
 Coding style
 ------------
