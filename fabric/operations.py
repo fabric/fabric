@@ -1038,8 +1038,11 @@ def local(command, capture=False, shell=None):
     Python ``subprocess`` module with ``shell=True`` activated. If you need to
     do anything special, consider using the ``subprocess`` module directly.
 
-    `shell` specifies the shell to use (e.g. /bin/bash), otherwise it
-    defaults in the ``subprocess`` module.
+    ``shell`` is passed directly to `subprocess.Popen
+    <http://docs.python.org/library/subprocess.html#subprocess.Popen>`_'s
+    ``execute`` argument (which determines the local shell to use.)  As per the
+    linked documentation, on Unix the default behavior is to use ``/bin/sh``,
+    so this option is useful for setting that value to e.g.  ``/bin/bash``.
     
     `local` is not currently capable of simultaneously printing and
     capturing output, as `~fabric.operations.run`/`~fabric.operations.sudo`
