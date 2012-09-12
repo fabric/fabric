@@ -25,6 +25,8 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :feature:`725` Updated `~fabric.operations.local` to allow override
+  of shell. Thanks to Mustafa Khattab.
 * :bug:`704` Fix up a bunch of Python 2.x style ``print`` statements to be
   forwards compatible. Thanks to Francesco Del Degan for the patch.
 * :feature:`491` (also :feature:`385`) IPv6 host string support. Thanks to Max
