@@ -1030,7 +1030,7 @@ def sudo(command, shell=True, pty=True, combine_stderr=None, user=None,
         warn_only=warn_only, stdout=stdout, stderr=stderr)
 
 
-def local(command, capture=False):
+def local(command, capture=False, shell=None):
     """
     Run a command on the local system.
 
@@ -1038,6 +1038,9 @@ def local(command, capture=False):
     Python ``subprocess`` module with ``shell=True`` activated. If you need to
     do anything special, consider using the ``subprocess`` module directly.
 
+    `shell` specifies the shell to use (e.g. /bin/bash), otherwise it
+    defaults in the ``subprocess`` module.
+    
     `local` is not currently capable of simultaneously printing and
     capturing output, as `~fabric.operations.run`/`~fabric.operations.sudo`
     do. The ``capture`` kwarg allows you to switch between printing and
@@ -1054,7 +1057,7 @@ def local(command, capture=False):
     and `~fabric.operations.sudo`, this return value exhibits the
     ``return_code``, ``stderr``, ``failed`` and ``succeeded`` attributes. See
     `run` for details.
-
+    
     `~fabric.operations.local` will honor the `~fabric.context_managers.lcd`
     context manager, allowing you to control its current working directory
     independently of the remote end (which honors
@@ -1087,8 +1090,12 @@ def local(command, capture=False):
         err_stream = None if output.stderr else dev_null
     try:
         cmd_arg = wrapped_command if win32 else [wrapped_command]
-        p = subprocess.Popen(cmd_arg, shell=True, stdout=out_stream,
-            stderr=err_stream)
+        if shell is not None:
+            p = subprocess.Popen(cmd_arg, shell=True, stdout=out_stream,
+                                 stderr=err_stream, executable=shell)
+        else:
+            p = subprocess.Popen(cmd_arg, shell=True, stdout=out_stream,
+                                 stderr=err_stream)
         (stdout, stderr) = p.communicate()
     finally:
         if dev_null is not None:
