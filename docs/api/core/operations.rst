@@ -11,3 +11,4 @@ Operations
     .. autofunction:: reboot(wait=120)
     .. autofunction:: run(command, shell=True, pty=True, combine_stderr=True, quiet=False, warn_only=False, stdout=None, stderr=None)
     .. autofunction:: sudo(command, shell=True, pty=True, combine_stderr=True, user=None, quiet=False, warn_only=False, stdout=None, stderr=None)
+    .. autofunction:: local(command, capture=False)
