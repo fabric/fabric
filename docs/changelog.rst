@@ -25,7 +25,8 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
-* :feature:`723` Add the ``group=`` argument to `~fabric.operations.sudo`
+* :feature:`723` Add the ``group=`` argument to
+  `~fabric.operations.sudo`. Thanks to Antti Kaihola for the pull request.
 * :bug:`704` Fix up a bunch of Python 2.x style ``print`` statements to be
   forwards compatible. Thanks to Francesco Del Degan for the patch.
 * :feature:`491` (also :feature:`385`) IPv6 host string support. Thanks to Max
