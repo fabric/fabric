@@ -758,13 +758,13 @@ def _execute(channel, command, pty=True, combine_stderr=None,
         if invoke_shell:
             stdout_buf = stderr_buf = None
 
-        workers = [
+        workers = (
             ThreadHandler('out', output_loop, channel, "recv",
                 capture=stdout_buf, stream=stdout),
             ThreadHandler('err', output_loop, channel, "recv_stderr",
-                capture=stderr_buf, stream=stderr) ]
-            
-        workers.append(ThreadHandler('in', input_loop, channel, using_pty))
+                capture=stderr_buf, stream=stderr),
+            ThreadHandler('in', input_loop, channel, using_pty)
+        )
 
         while True:
             if channel.exit_status_ready():
@@ -790,7 +790,7 @@ def _execute(channel, command, pty=True, combine_stderr=None,
             forward.close()
 
         # Update stdout/stderr with captured values if applicable
-        if not (invoke_shell or not interactive):
+        if not invoke_shell:
             stdout_buf = ''.join(stdout_buf).strip()
             stderr_buf = ''.join(stderr_buf).strip()
 
@@ -873,9 +873,8 @@ def _run_command(command, shell=True, pty=True, combine_stderr=True,
             print("[%s] %s: %s" % (env.host_string, which, given_command))
 
         # Actual execution, stdin/stdout/stderr handling, and termination
-        result_stdout, result_stderr, status = _execute(default_channel(), 
-            wrapped_command, pty=pty, combine_stderr=combine_stderr,
-            stdout=stdout, stderr=stderr)
+        result_stdout, result_stderr, status = _execute(default_channel(), wrapped_command,
+            pty, combine_stderr, stdout, stderr)
 
         # Assemble output string
         out = _AttributeString(result_stdout)
@@ -913,7 +912,7 @@ def _run_command(command, shell=True, pty=True, combine_stderr=True,
 
 @needs_host
 def run(command, shell=True, pty=True, combine_stderr=None, quiet=False,
-    warn_only=False, stdout=None, stderr=None, interactive = True):
+    warn_only=False, stdout=None, stderr=None):
     """
     Run a shell command on a remote host.
 
@@ -990,8 +989,7 @@ def run(command, shell=True, pty=True, combine_stderr=None, quiet=False,
         The return value attributes ``.command`` and ``.real_command``.
     """
     return _run_command(command, shell, pty, combine_stderr, quiet=quiet,
-        warn_only=warn_only, stdout=stdout, stderr=stderr, 
-        interactive=interactive)
+        warn_only=warn_only, stdout=stdout, stderr=stderr)
 
 
 @needs_host

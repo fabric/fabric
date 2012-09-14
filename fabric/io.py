@@ -2,6 +2,7 @@ from __future__ import with_statement
 
 import sys
 import time
+import re
 from select import select
 
 from fabric.state import env, output, win32
@@ -20,8 +21,8 @@ def _endswith(char_list, substring):
     return tail == substring
 
 
-def _is_newline(byte):
-    return byte in ('\n', '\r')
+def _has_newline(bytes):
+    return '\r' in bytes or '\n' in bytes
 
 
 def _was_newline(capture, byte):
@@ -29,7 +30,7 @@ def _was_newline(capture, byte):
     Determine if we are 'past' a newline and need to print the line prefix.
     """
     endswith_newline = _endswith(capture, '\n') or _endswith(capture, '\r')
-    return endswith_newline and not _is_newline(byte)
+    return endswith_newline and not _has_newline(bytes)
 
 def output_loop(chan, attr, stream, capture):
     ol = OutputLooper(chan, attr, stream, capture)
@@ -50,9 +51,6 @@ class OutputLooper(object):
         self._linewise = (env.linewise or env.parallel)
         self._reprompt = False
         self._read_size = 1
-        # If there is no capture, we can afford to go faster
-        if self._capture is None:
-            self._read_size = 1024
 
     def loop(self):
         """
@@ -67,9 +65,10 @@ class OutputLooper(object):
         line = []
         while True:
             # Handle actual read
-            byte = self._read_func(self._read_size)
+            bytes = self._read_func(self._read_size)
+            print "Read %s" % bytes
             # Empty byte == EOS
-            if byte == '':
+            if bytes == '':
                 # If linewise, ensure we flush any leftovers in the buffer.
                 if self._linewise and line:
                     self._flush(self._prefix)
@@ -80,7 +79,7 @@ class OutputLooper(object):
                 # Just print directly -- no prefixes, no capturing, nada
                 # And since we know we're using a pty in this mode, just go
                 # straight to stdout.
-                self._flush(byte)
+                self._flush(bytes)
             # Otherwise, we're in run/sudo and need to handle capturing and
             # prompts.
             else:
@@ -89,28 +88,50 @@ class OutputLooper(object):
                     self._prefix = ""
                 # Print to user
                 if self._printing:
-                    if self._linewise:
-                        # Print prefix + line after newline is seen
-                        if _was_newline(_buffer, byte):
-                            self._flush(self._prefix)
-                            self._flush("".join(line))
-                            line = []
-                        # Add to line buffer
-                        line += byte
+                    read_lines =  []
+                    if _has_newline(bytes):
+                        read_lines = re.split(bytes, r'\r|\n|\r\n')
+                        current_line_fragment = read_lines.pop(0)
                     else:
-                        # Prefix, if necessary
-                        if (
-                            not initial_prefix_printed
-                            or _was_newline(_buffer, byte)
-                        ):
-                            self._flush(self._prefix)
+                        current_line_fragment = bytes
+
+                    if self._linewise:
+                        if _has_newline(bytes):
+                            line += current_line_fragment
+                            self.flush(self._prefix)
+                            self.flush("".join(line))
+                            line = []
+                        else:
+                            line += bytes
+                    else:
+                        if not initial_prefix_printed:
+                            self.flush(self._prefix)
                             initial_prefix_printed = True
-                        # Byte itself
-                        self._flush(byte)
+                        self.flush(current_line_fragment)
+
+                    # Print remaining entire lines captured so far
+                    # Except the last one !
+                    next_fragment = read_lines.pop()
+
+                    for nline in read_lines:
+                        self.flush(self._prefix)
+                        self.flush(nline)
+
+                    self.initial_prefix_printed = False
+
+                    # next_fragement represents what's after the last CR read
+                    # from the network: an incomplete line (or '')
+                    if self._linewise:
+                        line = [next_fragment]
+                    else:
+                        self.flush(self._prefix)
+                        self.flush(next_fragment)
+                        self.initial_prefix_printed = True
+
                 # Store in capture buffer
-                self._capture += byte
+                self._capture += bytes
                 # Store in internal buffer
-                _buffer += byte
+                _buffer += bytes
                 # Handle prompts
                 prompt = _endswith(self._capture, env.sudo_prompt)
                 try_again = (_endswith(self._capture, env.again_prompt + '\n')
