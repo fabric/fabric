@@ -88,6 +88,13 @@ strings specifying a username, hostname and port combination, in the form of
 username, and/or port 22, respectively. Thus, ``admin@foo.com:222``,
 ``deploy@website`` and ``nameserver1`` could all be valid host strings.
 
+IPv6 address notation is also supported, for example ``::1``, ``[::1]:1222``,
+``user@2001:db8::1`` or ``user@[2001:db8::1]:1222``. Square brackets
+are necessary only to separate the address from the port number. If no
+port number is used, the brackets are optional. Also if host string is
+specified via command-line argument, it may be necessary to escape
+brackets in some shells.
+
 .. note::
     The user/hostname split occurs at the last ``@`` found, so e.g. email
     address usernames are valid and will be parsed correctly.

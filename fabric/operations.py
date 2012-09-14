@@ -318,6 +318,10 @@ def put(local_path=None, remote_path=None, use_sudo=False,
         put('*.py', 'cgi-bin/')
         put('index.html', 'index.html', mode=0755)
 
+    .. note::
+        If a file-like object such as StringIO has a ``name`` attribute, that
+        will be used in Fabric's printed output instead of the default
+        ``<file obj>``
     .. versionchanged:: 1.0
         Now honors the remote working directory as manipulated by
         `~fabric.context_managers.cd`, and the local working directory as
@@ -330,6 +334,8 @@ def put(local_path=None, remote_path=None, use_sudo=False,
     .. versionchanged:: 1.0
         Return value is now an iterable of uploaded remote file paths which
         also exhibits the ``.failed`` and ``.succeeded`` attributes.
+    .. versionchanged:: 1.5
+        Allow a ``name`` attribute on file-like objects for log output
     """
     # Handle empty local path
     local_path = local_path or os.getcwd()
@@ -490,6 +496,11 @@ def get(remote_path, local_path=None):
         transfers. (We hope to patch our SSH layer in the future to enable true
         straight-to-memory downloads.)
 
+    .. note::
+        If a file-like object such as StringIO has a ``name`` attribute, that
+        will be used in Fabric's printed output instead of the default
+        ``<file obj>``
+
     .. versionchanged:: 1.0
         Now honors the remote working directory as manipulated by
         `~fabric.context_managers.cd`, and the local working directory as
@@ -505,6 +516,8 @@ def get(remote_path, local_path=None):
     .. versionchanged:: 1.0
         Return value is now an iterable of downloaded local file paths, which
         also exhibits the ``.failed`` and ``.succeeded`` attributes.
+    .. versionchanged:: 1.5
+        Allow a ``name`` attribute on file-like objects for log output
     """
     # Handle empty local path / default kwarg value
     local_path = local_path or "%(host)s/%(path)s"
@@ -577,16 +590,24 @@ def get(remote_path, local_path=None):
         return ret
 
 
-def _sudo_prefix(user):
+def _sudo_prefix_argument(argument, value):
+    if value is None:
+        return ""
+    if str(value).isdigit():
+        value = "#%s" % value
+    return ' %s "%s"' % (argument, value)
+
+
+def _sudo_prefix(user, group=None):
     """
-    Return ``env.sudo_prefix`` with ``user`` inserted if necessary.
+    Return ``env.sudo_prefix`` with ``user``/``group`` inserted if necessary.
     """
     # Insert env.sudo_prompt into env.sudo_prefix
     prefix = env.sudo_prefix % env
-    if user is not None:
-        if str(user).isdigit():
-            user = "#%s" % user
-        return "%s -u \"%s\" " % (prefix, user)
+    if user is not None or group is not None:
+        return "%s%s%s " % (prefix,
+                            _sudo_prefix_argument('-u', user),
+                            _sudo_prefix_argument('-g', group))
     return prefix
 
 
@@ -829,7 +850,7 @@ def _noop():
 
 def _run_command(command, shell=True, pty=True, combine_stderr=True,
     sudo=False, user=None, quiet=False, warn_only=False, stdout=None,
-    stderr=None, interactive=True):
+    stderr=None, group=None):
     """
     Underpinnings of `run` and `sudo`. See their docstrings for more info.
     """
@@ -846,7 +867,7 @@ def _run_command(command, shell=True, pty=True, combine_stderr=True,
         wrapped_command = _shell_wrap(
             _prefix_commands(_prefix_env_vars(command), 'remote'),
             shell,
-            _sudo_prefix(user) if sudo else None
+            _sudo_prefix(user, group) if sudo else None
         )
         # Execute info line
         which = 'sudo' if sudo else 'run'
@@ -858,7 +879,7 @@ def _run_command(command, shell=True, pty=True, combine_stderr=True,
         # Actual execution, stdin/stdout/stderr handling, and termination
         result_stdout, result_stderr, status = _execute(default_channel(), 
             wrapped_command, pty=pty, combine_stderr=combine_stderr,
-            stdout=stdout, stderr=stderr, interactive=interactive)
+            stdout=stdout, stderr=stderr)
 
         # Assemble output string
         out = _AttributeString(result_stdout)
@@ -979,7 +1000,7 @@ def run(command, shell=True, pty=True, combine_stderr=None, quiet=False,
 
 @needs_host
 def sudo(command, shell=True, pty=True, combine_stderr=None, user=None,
-    quiet=False, warn_only=False, stdout=None, stderr=None):
+         quiet=False, warn_only=False, stdout=None, stderr=None, group=None):
     """
     Run a shell command on a remote host, with superuser privileges.
 
@@ -987,10 +1008,11 @@ def sudo(command, shell=True, pty=True, combine_stderr=None, user=None,
     the given ``command`` in a call to the ``sudo`` program to provide
     superuser privileges.
 
-    `sudo` accepts an additional ``user`` argument, which is passed to ``sudo``
-    and allows you to run as some user other than root.  On most systems, the
-    ``sudo`` program can take a string username or an integer userid (uid);
-    ``user`` may likewise be a string or an int.
+    `sudo` accepts additional ``user`` and ``group`` arguments, which are
+    passed to ``sudo`` and allow you to run as some user and/or group other
+    than root.  On most systems, the ``sudo`` program can take a string
+    username/group or an integer userid/groupid (uid/gid); ``user`` and
+    ``group`` may likewise be strings or integers.
 
     You may set :ref:`env.sudo_user <sudo_user>` at module level or via
     `~fabric.context_managers.settings` if you want multiple ``sudo`` calls to
@@ -1018,12 +1040,14 @@ def sudo(command, shell=True, pty=True, combine_stderr=None, user=None,
     .. versionadded:: 1.5
         The return value attributes ``.command`` and ``.real_command``.
     """
-    return _run_command(command, shell, pty, combine_stderr, sudo=True,
-        user=user if user else env.sudo_user, quiet=quiet,
+    return _run_command(
+        command, shell, pty, combine_stderr, sudo=True,
+        user=user if user else env.sudo_user,
+        group=group, quiet=quiet,
         warn_only=warn_only, stdout=stdout, stderr=stderr)
 
 
-def local(command, capture=False):
+def local(command, capture=False, shell=None):
     """
     Run a command on the local system.
 
@@ -1031,6 +1055,12 @@ def local(command, capture=False):
     Python ``subprocess`` module with ``shell=True`` activated. If you need to
     do anything special, consider using the ``subprocess`` module directly.
 
+    ``shell`` is passed directly to `subprocess.Popen
+    <http://docs.python.org/library/subprocess.html#subprocess.Popen>`_'s
+    ``execute`` argument (which determines the local shell to use.)  As per the
+    linked documentation, on Unix the default behavior is to use ``/bin/sh``,
+    so this option is useful for setting that value to e.g.  ``/bin/bash``.
+    
     `local` is not currently capable of simultaneously printing and
     capturing output, as `~fabric.operations.run`/`~fabric.operations.sudo`
     do. The ``capture`` kwarg allows you to switch between printing and
@@ -1047,7 +1077,7 @@ def local(command, capture=False):
     and `~fabric.operations.sudo`, this return value exhibits the
     ``return_code``, ``stderr``, ``failed`` and ``succeeded`` attributes. See
     `run` for details.
-
+    
     `~fabric.operations.local` will honor the `~fabric.context_managers.lcd`
     context manager, allowing you to control its current working directory
     independently of the remote end (which honors
@@ -1080,8 +1110,12 @@ def local(command, capture=False):
         err_stream = None if output.stderr else dev_null
     try:
         cmd_arg = wrapped_command if win32 else [wrapped_command]
-        p = subprocess.Popen(cmd_arg, shell=True, stdout=out_stream,
-            stderr=err_stream)
+        if shell is not None:
+            p = subprocess.Popen(cmd_arg, shell=True, stdout=out_stream,
+                                 stderr=err_stream, executable=shell)
+        else:
+            p = subprocess.Popen(cmd_arg, shell=True, stdout=out_stream,
+                                 stderr=err_stream)
         (stdout, stderr) = p.communicate()
     finally:
         if dev_null is not None:

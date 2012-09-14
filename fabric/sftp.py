@@ -5,11 +5,22 @@ import os
 import posixpath
 import stat
 import tempfile
+import re
 from fnmatch import filter as fnfilter
 
 from fabric.state import output, connections, env
 from fabric.utils import warn
 from fabric.context_managers import settings
+
+
+def _format_local(local_path, local_is_path):
+    """Format a path for log output"""
+    if local_is_path:
+        return local_path
+    else:
+        # This allows users to set a name attr on their StringIO objects
+        # just like an open file object would have
+        return getattr(local_path, 'name', '<file obj>')
 
 
 class SFTP(object):
@@ -114,8 +125,10 @@ class SFTP(object):
             'path': rremote
         }
         if local_is_path:
-            # Interpolate, then abspath (to make sure any /// are compressed)
-            local_path = os.path.abspath(local_path % path_vars)
+            # Naive fix to issue #711
+            escaped_path = re.sub(r'(%[^()]*\w)', r'%\1', local_path)
+            local_path = os.path.abspath(escaped_path % path_vars )
+
             # Ensure we give ssh.SFTPCLient a file by prepending and/or
             # creating local directories as appropriate.
             dirpath, filepath = os.path.split(local_path)
@@ -126,7 +139,7 @@ class SFTP(object):
         if output.running:
             print("[%s] download: %s <- %s" % (
                 env.host_string,
-                local_path if local_is_path else "<file obj>",
+                _format_local(local_path, local_is_path),
                 remote_path
             ))
         # Warn about overwrites, but keep going
@@ -201,7 +214,7 @@ class SFTP(object):
         if output.running:
             print("[%s] put: %s -> %s" % (
                 env.host_string,
-                local_path if local_is_path else '<file obj>',
+                _format_local(local_path, local_is_path),
                 posixpath.join(pre, remote_path)
             ))
         # When using sudo, "bounce" the file through a guaranteed-unique file

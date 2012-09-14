@@ -8,7 +8,6 @@ fabfile, and executing the commands given.
 The other callables defined in this module are internal only. Anything useful
 to individuals leveraging Fabric as a library, should be kept elsewhere.
 """
-
 from operator import isMappingType
 from optparse import OptionParser
 import os
@@ -237,7 +236,7 @@ def is_task_module(a):
     """
     #return (type(a) is types.ModuleType and
     #        any(map(is_task_object, vars(a).values())))
-    if type(a) is types.ModuleType and a not in _seen:
+    if isinstance(a, types.ModuleType) and a not in _seen:
         # Flag module as seen
         _seen.add(a)
         # Signal that we need to check it out
@@ -378,7 +377,7 @@ def _print_docstring(docstrings, name):
     if not docstrings:
         return False
     docstring = crawl(name, state.commands).__doc__
-    if type(docstring) in types.StringTypes:
+    if isinstance(docstring, basestring):
         return docstring
 
 
@@ -727,7 +726,7 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
         raise
     except KeyboardInterrupt:
         if state.output.status:
-            print >> sys.stderr, "\nStopped."
+            sys.stderr.write("\nStopped.\n")
         sys.exit(1)
     except:
         sys.excepthook(*sys.exc_info())

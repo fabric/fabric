@@ -167,7 +167,7 @@ def test_require_complex_non_empty_values():
 #
 
 def p(x):
-    print x,
+    sys.stdout.write(x)
 
 
 @mock_streams('stdout')
@@ -202,7 +202,7 @@ def test_sudo_prefix_with_user():
     _sudo_prefix() returns prefix plus -u flag for nonempty user
     """
     eq_(
-        _sudo_prefix(user="foo"),
+        _sudo_prefix(user="foo", group=None),
         "%s -u \"foo\" " % (env.sudo_prefix % env)
     )
 
@@ -211,7 +211,27 @@ def test_sudo_prefix_without_user():
     """
     _sudo_prefix() returns standard prefix when user is empty
     """
-    eq_(_sudo_prefix(user=None), env.sudo_prefix % env)
+    eq_(_sudo_prefix(user=None, group=None), env.sudo_prefix % env)
+
+
+def test_sudo_prefix_with_group():
+    """
+    _sudo_prefix() returns prefix plus -g flag for nonempty group
+    """
+    eq_(
+        _sudo_prefix(user=None, group="foo"),
+        "%s -g \"foo\" " % (env.sudo_prefix % env)
+    )
+
+
+def test_sudo_prefix_with_user_and_group():
+    """
+    _sudo_prefix() returns prefix plus -u and -g for nonempty user and group
+    """
+    eq_(
+        _sudo_prefix(user="foo", group="bar"),
+        "%s -u \"foo\" -g \"bar\" " % (env.sudo_prefix % env)
+    )
 
 
 @with_settings(use_shell=True)
@@ -842,6 +862,22 @@ class TestFileTransfers(FabricTest):
         with nested(lcd(d), hide('everything')):
             get(f, f)
         assert self.exists_locally(os.path.join(d, f))
+
+    @server()
+    @mock_streams('stdout')
+    def test_stringio_without_name(self):
+        file_obj = StringIO(u'test data')
+        put(file_obj, '/')
+        assert re.search('<file obj>', sys.stdout.getvalue())
+
+    @server()
+    @mock_streams('stdout')
+    def test_stringio_with_name(self):
+        """If a file object (StringIO) has a name attribute, use that in output"""
+        file_obj = StringIO(u'test data')
+        file_obj.name = 'Test StringIO Object'
+        put(file_obj, '/')
+        assert re.search(file_obj.name, sys.stdout.getvalue())
 
 
 #

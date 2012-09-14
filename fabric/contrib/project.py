@@ -117,7 +117,12 @@ def rsync_project(remote_dir, local_dir=None, exclude=(), delete=False,
     if local_dir is None:
         local_dir = '../' + getcwd().split(sep)[-1]
     # Create and run final command string
-    cmd = "rsync %s %s %s@%s:%s" % (options, local_dir, user, host, remote_dir)
+    if env.host.count(':') > 1:
+        # Square brackets are mandatory for IPv6 rsync address,
+        # even if port number is not specified
+        cmd = "rsync %s %s [%s@%s]:%s" % (options, local_dir, user, host, remote_dir)
+    else:
+        cmd = "rsync %s %s %s@%s:%s" % (options, local_dir, user, host, remote_dir)
     if output.running:
         print("[%s] rsync_project: %s" % (env.host_string, cmd))
     return local(cmd, capture=capture)
@@ -129,7 +134,7 @@ def upload_project(local_dir=None, remote_dir=""):
 
     ``local_dir`` specifies the local project directory to upload, and defaults
     to the current working directory.
-    
+
     ``remote_dir`` specifies the target directory to upload into (meaning that
     a copy of ``local_dir`` will appear as a subdirectory of ``remote_dir``)
     and defaults to the remote user's home directory.

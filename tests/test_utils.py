@@ -20,7 +20,7 @@ def test_warn():
     warn() should print 'Warning' plus given text
     """
     warn("Test")
-    assert "\nWarning: Test\n\n" == sys.stderr.getvalue()
+    eq_("\nWarning: Test\n\n", sys.stderr.getvalue())
 
 
 def test_indent():

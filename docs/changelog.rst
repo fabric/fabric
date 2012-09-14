@@ -25,11 +25,26 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :feature:`723` Add the ``group=`` argument to
+  `~fabric.operations.sudo`. Thanks to Antti Kaihola for the pull request.
+* :feature:`725` Updated `~fabric.operations.local` to allow override
+  of which local shell is used. Thanks to Mustafa Khattab.
+* :bug:`704` Fix up a bunch of Python 2.x style ``print`` statements to be
+  forwards compatible. Thanks to Francesco Del Degan for the patch.
+* :feature:`491` (also :feature:`385`) IPv6 host string support. Thanks to Max
+  Arnold for the patch.
+* :feature:`699` Allow `name` attribute on file-like objects for get/put. Thanks
+  to Peter Lyons for the pull request.
+* :bug:`711` `~fabric.sftp.get` would fail when filenames had % in their path.  
+  Thanks to John Begeman
 * :bug:`702` `~fabric.operations.require` failed to test for "empty" values in
   the env keys it checks (e.g.
   ``require('a-key-whose-value-is-an-empty-list')`` would register a successful
   result instead of alerting that the value was in fact empty. This has been
   fixed, thanks to Rich Schumacher.
+* :bug:`718` ``isinstance(foo, Bar)`` is used in `~fabric.main` instead
+  of ``type(foo) == Bar`` in order to fix some edge cases.
+  Thanks to Mikhail Korobov.
 * :bug:`693` Fixed edge case where ``abort`` driven failures within parallel
   tasks could result in a top level exception (a ``KeyError``) regarding error
   handling. Thanks to Marcin Kuźmiński for the report.

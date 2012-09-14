@@ -36,21 +36,47 @@ There are a number of ways to get involved with Fabric:
   Fabric repository <https://github.com/fabric/fabric>`_, and `submit a pull
   request <http://help.github.com/send-pull-requests/>`_.
 
-While we may not always reply promptly, we do try to make time eventually to inspect all contributions and either incorporate them or explain why we don't feel the change is a good fit.
+While we may not always reply promptly, we do try to make time eventually to
+inspect all contributions and either incorporate them or explain why we don't
+feel the change is a good fit.
 
-Communication
--------------
+Patch submission guidelines
+---------------------------
 
-If a ticket-tracker ticket exists for a given issue, **please** keep all
-communication in that ticket's comments -- for example, when submitting patches
-via Github, it's easier for us if you leave a note in the ticket **instead of**
-sending a Github pull request.
+* **Create a new Git branch specific to your change(s).** For example, if
+  you're adding a new feature to foo the bars, do something like the
+  following::
 
-The core devs receive emails for just about any ticket-tracker activity, so
-additional notices via Github or other means only serve to slow things down.
+    $ git checkout master # or the latest release branch -- see below
+    $ git pull
+    $ git checkout -b foo-the-bars
+    <hack hack hack>
+    $ git push origin HEAD
+    <submit pull request based on your new 'foo-the-bars' branch>
 
-Style
------
+  This makes life much easier for maintainers if you have (or ever plan to
+  have) additional changes in your own ``master`` branch.
+* Base **bugfixes** off the **latest release branch** (e.g. ``1.4``) and **new
+  features** off of **master**. If you're unsure which category your change
+  falls in, just ask on IRC or the mailing list -- it's often a judgement call.
+* **Make sure documentation is updated** -- at the very least, keep docstrings
+  current, and if necessary, update the ReST documentation in ``docs/``.  For
+  example, new ``env.*`` settings should be added to ``docs/usage/env.rst``.
+* **Add a changelog entry** at the top of ``docs/changelog.rst`` following
+  existing entries' styles. Don't forget to attribute yourself if you'd like
+  credit!
+* **Try writing some tests** if possible -- again, following existing tests is
+  often easiest, and a good way to tell whether the feature you're modifying is
+  easily testable.
+* **Use** ``hub pull-request`` when writing a patch for a **pre-existing Github
+  Issue**. This isn't an absolute requirement, but makes the maintainers' lives
+  much easier! Specifically: `install hub
+  <https://github.com/defunkt/hub/#installation>`_ and then run `hub
+  pull-request <https://github.com/defunkt/hub/#git-pull-request>`_ to turn the
+  issue into a pull request containing your code.
+
+Coding style
+------------
 
 Fabric tries hard to honor `PEP-8`_, especially (but not limited to!) the
 following:
@@ -68,6 +94,17 @@ following:
   else.
 
 .. _PEP-8: http://www.python.org/dev/peps/pep-0008/
+
+Communication
+-------------
+
+If a ticket-tracker ticket exists for a given issue, **please** keep all
+communication in that ticket's comments -- for example, when submitting patches
+via Github, it's easier for us if you leave a note in the ticket **instead of**
+sending a Github pull request.
+
+The core devs receive emails for just about any ticket-tracker activity, so
+additional notices via Github or other means only serve to slow things down.
 
 Branching/Repository Layout
 ===========================
