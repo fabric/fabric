@@ -698,7 +698,7 @@ def _prefix_env_vars(command):
 
 
 def _execute(channel, command, pty=True, combine_stderr=None,
-    invoke_shell=False, stdout=None, stderr=None, interactive=True):
+    invoke_shell=False, stdout=None, stderr=None):
     """
     Execute ``command`` over ``channel``.
 
@@ -712,9 +712,6 @@ def _execute(channel, command, pty=True, combine_stderr=None,
     ``invoke_shell`` controls whether we use ``exec_command`` or
     ``invoke_shell`` (plus a handful of other things, such as always forcing a
     pty.)
-
-    ``interactive`` specifies whether we will forward stdin to running processes 
-    or not. Setting it to false speeds up the read-loop.
 
     Returns a three-tuple of (``stdout``, ``stderr``, ``status``), where
     ``stdout``/``stderr`` are captured output strings and ``status`` is the
@@ -758,7 +755,7 @@ def _execute(channel, command, pty=True, combine_stderr=None,
         # Init stdout, stderr capturing. Must use lists instead of strings as
         # strings are immutable and we're using these as pass-by-reference
         stdout_buf, stderr_buf = [], []
-        if invoke_shell or not interactive:
+        if invoke_shell:
             stdout_buf = stderr_buf = None
 
         workers = [
@@ -767,8 +764,7 @@ def _execute(channel, command, pty=True, combine_stderr=None,
             ThreadHandler('err', output_loop, channel, "recv_stderr",
                 capture=stderr_buf, stream=stderr) ]
             
-        if interactive:
-            workers.append(ThreadHandler('in', input_loop, channel, using_pty))
+        workers.append(ThreadHandler('in', input_loop, channel, using_pty))
 
         while True:
             if channel.exit_status_ready():
