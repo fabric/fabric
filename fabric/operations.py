@@ -590,16 +590,24 @@ def get(remote_path, local_path=None):
         return ret
 
 
-def _sudo_prefix(user):
+def _sudo_prefix_argument(argument, value):
+    if value is None:
+        return ""
+    if str(value).isdigit():
+        value = "#%s" % value
+    return ' %s "%s"' % (argument, value)
+
+
+def _sudo_prefix(user, group=None):
     """
-    Return ``env.sudo_prefix`` with ``user`` inserted if necessary.
+    Return ``env.sudo_prefix`` with ``user``/``group`` inserted if necessary.
     """
     # Insert env.sudo_prompt into env.sudo_prefix
     prefix = env.sudo_prefix % env
-    if user is not None:
-        if str(user).isdigit():
-            user = "#%s" % user
-        return "%s -u \"%s\" " % (prefix, user)
+    if user is not None or group is not None:
+        return "%s%s%s " % (prefix,
+                            _sudo_prefix_argument('-u', user),
+                            _sudo_prefix_argument('-g', group))
     return prefix
 
 
@@ -838,7 +846,7 @@ def _noop():
 
 def _run_command(command, shell=True, pty=True, combine_stderr=True,
     sudo=False, user=None, quiet=False, warn_only=False, stdout=None,
-    stderr=None):
+    stderr=None, group=None):
     """
     Underpinnings of `run` and `sudo`. See their docstrings for more info.
     """
@@ -855,7 +863,7 @@ def _run_command(command, shell=True, pty=True, combine_stderr=True,
         wrapped_command = _shell_wrap(
             _prefix_commands(_prefix_env_vars(command), 'remote'),
             shell,
-            _sudo_prefix(user) if sudo else None
+            _sudo_prefix(user, group) if sudo else None
         )
         # Execute info line
         which = 'sudo' if sudo else 'run'
@@ -986,7 +994,7 @@ def run(command, shell=True, pty=True, combine_stderr=None, quiet=False,
 
 @needs_host
 def sudo(command, shell=True, pty=True, combine_stderr=None, user=None,
-    quiet=False, warn_only=False, stdout=None, stderr=None):
+         quiet=False, warn_only=False, stdout=None, stderr=None, group=None):
     """
     Run a shell command on a remote host, with superuser privileges.
 
@@ -994,10 +1002,11 @@ def sudo(command, shell=True, pty=True, combine_stderr=None, user=None,
     the given ``command`` in a call to the ``sudo`` program to provide
     superuser privileges.
 
-    `sudo` accepts an additional ``user`` argument, which is passed to ``sudo``
-    and allows you to run as some user other than root.  On most systems, the
-    ``sudo`` program can take a string username or an integer userid (uid);
-    ``user`` may likewise be a string or an int.
+    `sudo` accepts additional ``user`` and ``group`` arguments, which are
+    passed to ``sudo`` and allow you to run as some user and/or group other
+    than root.  On most systems, the ``sudo`` program can take a string
+    username/group or an integer userid/groupid (uid/gid); ``user`` and
+    ``group`` may likewise be strings or integers.
 
     You may set :ref:`env.sudo_user <sudo_user>` at module level or via
     `~fabric.context_managers.settings` if you want multiple ``sudo`` calls to
@@ -1025,8 +1034,10 @@ def sudo(command, shell=True, pty=True, combine_stderr=None, user=None,
     .. versionadded:: 1.5
         The return value attributes ``.command`` and ``.real_command``.
     """
-    return _run_command(command, shell, pty, combine_stderr, sudo=True,
-        user=user if user else env.sudo_user, quiet=quiet,
+    return _run_command(
+        command, shell, pty, combine_stderr, sudo=True,
+        user=user if user else env.sudo_user,
+        group=group, quiet=quiet,
         warn_only=warn_only, stdout=stdout, stderr=stderr)
 
 
