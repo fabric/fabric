@@ -43,9 +43,22 @@ feel the change is a good fit.
 Patch submission guidelines
 ---------------------------
 
-* **Commit bugfixes to the latest release branch** (e.g. ``1.4``), **not
-  master**.  Master is only for new features or possibly-disruptive bugfixes
-  (which is a judgement call -- when in doubt, ask.)
+* **Create a new Git branch specific to your change(s).** For example, if
+  you're adding a new feature to foo the bars, do something like the
+  following::
+
+    $ git checkout master # or the latest release branch -- see below
+    $ git pull
+    $ git checkout -b foo-the-bars
+    <hack hack hack>
+    $ git push origin HEAD
+    <submit pull request based on your new 'foo-the-bars' branch>
+
+  This makes life much easier for maintainers if you have (or ever plan to
+  have) additional changes in your own ``master`` branch.
+* Base **bugfixes** off the **latest release branch** (e.g. ``1.4``) and **new
+  features** off of **master**. If you're unsure which category your change
+  falls in, just ask on IRC or the mailing list -- it's often a judgement call.
 * **Make sure documentation is updated** -- at the very least, keep docstrings
   current, and if necessary, update the ReST documentation in ``docs/``.  For
   example, new ``env.*`` settings should be added to ``docs/usage/env.rst``.
