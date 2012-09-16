@@ -498,6 +498,17 @@ listed in the user's known-hosts file.
 
 .. seealso:: :doc:`ssh`
 
+
+``system_known_hosts``
+------------------------
+
+**Default:** ``None``
+
+If set, should be the path to a known_hosts file.  The SSH layer will
+read this file before reading the user's known-hosts file.
+
+.. seealso:: :doc:`ssh`
+
 ``roledefs``
 ------------
 
