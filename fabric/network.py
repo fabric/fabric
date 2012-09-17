@@ -315,10 +315,7 @@ def connect(user, host, port, sock=None):
     client = ssh.SSHClient()
 
     # Load system hosts file (e.g. /etc/ssh/ssh_known_hosts)
-    try:
-        known_hosts = env.system_known_hosts
-    except AttributeError:
-        known_hosts = None
+    known_hosts = env.get('system_known_hosts')
     if known_hosts:
         client.load_system_host_keys(known_hosts)
 
