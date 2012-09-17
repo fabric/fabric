@@ -1364,3 +1364,4 @@ Changes from release candidate 1 to final release
   ``sed`` options it uses.
 * Various changes to internal fabfile, version mechanisms, and other
   non-user-facing things.
+* Updated ssh handlings to optionally read a system-wide known_hosts file.
