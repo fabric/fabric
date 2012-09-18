@@ -344,7 +344,6 @@ def default_channel():
     """
     chan = connections[env.host_string].get_transport().open_session()
     chan.input_enabled = True
-    chan.settimeout(0.2)
     return chan
 
 

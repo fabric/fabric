@@ -66,7 +66,7 @@ class OutputLooper(object):
         while True:
             # Handle actual read
             bytes = self._read_func(self._read_size)
-            print "Read %s" % bytes
+            # print "read :"+repr(bytes)+"\nXXXX"
             # Empty byte == EOS
             if bytes == '':
                 # If linewise, ensure we flush any leftovers in the buffer.
@@ -90,7 +90,8 @@ class OutputLooper(object):
                 if self._printing:
                     read_lines =  []
                     if _has_newline(bytes):
-                        read_lines = re.split(bytes, r'\r|\n|\r\n')
+                        read_lines = re.split(r"\r|\n|\r\n", bytes)
+                        #print("read_lines:" + repr(read_lines)+"\YYY")
                         current_line_fragment = read_lines.pop(0)
                     else:
                         current_line_fragment = bytes
@@ -98,35 +99,39 @@ class OutputLooper(object):
                     if self._linewise:
                         if _has_newline(bytes):
                             line += current_line_fragment
-                            self.flush(self._prefix)
-                            self.flush("".join(line))
+                            self._flush(self._prefix)
+                            self._flush("".join(line)+"\n")
                             line = []
                         else:
                             line += bytes
                     else:
                         if not initial_prefix_printed:
-                            self.flush(self._prefix)
+                            self._flush(self._prefix)
                             initial_prefix_printed = True
-                        self.flush(current_line_fragment)
+                        self._flush(current_line_fragment)
+                        if _has_newline(bytes):
+                            self._flush("\n")
 
-                    # Print remaining entire lines captured so far
-                    # Except the last one !
-                    next_fragment = read_lines.pop()
+                    # Do we have more stuff to print ?
+                    if len(read_lines) > 0:
+                        # Print remaining entire lines captured so far
+                        # Except the last one !
+                        next_fragment = read_lines.pop()
 
-                    for nline in read_lines:
-                        self.flush(self._prefix)
-                        self.flush(nline)
+                        for nline in read_lines:
+                            self._flush(self._prefix)
+                            self._flush(nline +"\n")
 
-                    self.initial_prefix_printed = False
+                        self.initial_prefix_printed = False
 
-                    # next_fragement represents what's after the last CR read
-                    # from the network: an incomplete line (or '')
-                    if self._linewise:
-                        line = [next_fragment]
-                    else:
-                        self.flush(self._prefix)
-                        self.flush(next_fragment)
-                        self.initial_prefix_printed = True
+                        # next_fragment represents what's after the last CR read
+                        # from the network: an incomplete line (or '')
+                        if self._linewise:
+                            line = [next_fragment]
+                        else:
+                            self._flush(self._prefix)
+                            self._flush(next_fragment)
+                            self.initial_prefix_printed = True
 
                 # Store in capture buffer
                 self._capture += bytes
