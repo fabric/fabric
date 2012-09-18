@@ -3,6 +3,7 @@ from __future__ import with_statement
 import sys
 import time
 import re
+import socket
 from select import select
 
 from fabric.state import env, output, win32
@@ -12,6 +13,11 @@ from fabric.network import ssh
 
 if win32:
     import msvcrt
+
+import logging
+logging.basicConfig(filename='/tmp/fab2.log', level=logging.DEBUG)
+logger = logging.getLogger('io.py')
+
 
 
 
@@ -50,7 +56,7 @@ class OutputLooper(object):
         self._printing = getattr(output, 'stdout' if (attr == 'recv') else 'stderr')
         self._linewise = (env.linewise or env.parallel)
         self._reprompt = False
-        self._read_size = 1
+        self._read_size = 4
 
     def loop(self):
         """
@@ -63,10 +69,19 @@ class OutputLooper(object):
         # Initialize loop variables
         initial_prefix_printed = False
         line = []
+
+        # Allow prefix to be turned off.
+        if not env.output_prefix:
+            self._prefix = ""
+
         while True:
             # Handle actual read
-            bytes = self._read_func(self._read_size)
-            # print "read :"+repr(bytes)+"\nXXXX"
+            try:
+                bytes = self._read_func(self._read_size)
+                logger.info("read :"+repr(bytes))
+            except socket.timeout:
+                logger.info("Nothing read")
+                continue
             # Empty byte == EOS
             if bytes == '':
                 # If linewise, ensure we flush any leftovers in the buffer.
@@ -83,9 +98,6 @@ class OutputLooper(object):
             # Otherwise, we're in run/sudo and need to handle capturing and
             # prompts.
             else:
-                # Allow prefix to be turned off.
-                if not env.output_prefix:
-                    self._prefix = ""
                 # Print to user
                 if self._printing:
                     read_lines =  []
@@ -125,7 +137,7 @@ class OutputLooper(object):
                         self.initial_prefix_printed = False
 
                         # next_fragment represents what's after the last CR read
-                        # from the network: an incomplete line (or '')
+                        # from the network: an incomplete line
                         if self._linewise:
                             line = [next_fragment]
                         else:
@@ -133,18 +145,24 @@ class OutputLooper(object):
                             self._flush(next_fragment)
                             self.initial_prefix_printed = True
 
-                # Store in capture buffer
-                self._capture += bytes
-                # Store in internal buffer
-                _buffer += bytes
-                # Handle prompts
-                prompt = _endswith(self._capture, env.sudo_prompt)
-                try_again = (_endswith(self._capture, env.again_prompt + '\n')
-                    or _endswith(self._capture, env.again_prompt + '\r\n'))
-                if prompt:
-                    self.prompt()
-                elif try_again:
-                    self.try_again()
+                # Now we have handled printing, handle interactivity
+                read_lines = re.split(r"(\r|\n|\r\n)", bytes)
+                for fragment in read_lines:
+                    logger.info("Frag:" + repr(fragment))
+                    # Store in capture buffer
+                    self._capture += fragment
+                    # Store in internal buffer
+                    _buffer += fragment
+                    # Handle prompts
+                    prompt = _endswith(self._capture, env.sudo_prompt)
+                    try_again = (_endswith(self._capture, env.again_prompt + '\n')
+                        or _endswith(self._capture, env.again_prompt + '\r\n'))
+                    if prompt:
+                        logger.info("Prompting")
+                        self.prompt()
+                    elif try_again:
+                        logger.info("Try again")
+                        self.try_again()
 
     def prompt(self):
         # Obtain cached password, if any
