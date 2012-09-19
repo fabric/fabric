@@ -56,7 +56,7 @@ class OutputLooper(object):
         self._printing = getattr(output, 'stdout' if (attr == 'recv') else 'stderr')
         self._linewise = (env.linewise or env.parallel)
         self._reprompt = False
-        self._read_size = 4
+        self._read_size = 4096
 
     def loop(self):
         """
@@ -98,12 +98,9 @@ class OutputLooper(object):
             # Otherwise, we're in run/sudo and need to handle capturing and
             # prompts.
             else:
-
-
                 # Print to user
                 if self._printing:
                     # Small state machine to eat \n after \r
-                    # self._flush("will dump "+repr(bytes)+"\n")
                     if bytes[-1] == "\r":
                         seen_cr = True
                     if bytes[0] == "\n" and seen_cr:
@@ -143,7 +140,6 @@ class OutputLooper(object):
                 # Now we have handled printing, handle interactivity
                 read_lines = re.split(r"(\r|\n|\r\n)", bytes)
                 for fragment in read_lines:
-                    logger.info("Frag:" + repr(fragment))
                     # Store in capture buffer
                     self._capture += fragment
                     # Store in internal buffer
