@@ -100,20 +100,21 @@ class OutputLooper(object):
             else:
                 # Print to user
                 if self._printing:
+                    printable_bytes = bytes
                     # Small state machine to eat \n after \r
-                    if bytes[-1] == "\r":
+                    if printable_bytes[-1] == "\r":
                         seen_cr = True
-                    if bytes[0] == "\n" and seen_cr:
-                        bytes = bytes[1:]
+                    if printable_bytes[0] == "\n" and seen_cr:
+                        printable_bytes = printable_bytes[1:]
                         seen_cr = False
 
-                    while _has_newline(bytes) and bytes!="":
+                    while _has_newline(printable_bytes) and printable_bytes!="":
                         # at most 1 split !
-                        cr = re.search("(\r\n|\r|\n)", bytes)
+                        cr = re.search("(\r\n|\r|\n)", printable_bytes)
                         if cr is None:
                             break
-                        end_of_line = bytes[:cr.start(0)]
-                        bytes = bytes[cr.end(0):]
+                        end_of_line = printable_bytes[:cr.start(0)]
+                        printable_bytes = printable_bytes[cr.end(0):]
 
                         if not initial_prefix_printed:
                             self._flush(self._prefix)
@@ -130,12 +131,12 @@ class OutputLooper(object):
 
 
                     if self._linewise:
-                        line += [bytes]
+                        line += [printable_bytes]
                     else:
                         if not initial_prefix_printed:
                             self._flush(self._prefix)
                             initial_prefix_printed = True
-                        self._flush(bytes)
+                        self._flush(printable_bytes)
 
                 # Now we have handled printing, handle interactivity
                 read_lines = re.split(r"(\r|\n|\r\n)", bytes)
