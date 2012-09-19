@@ -419,7 +419,7 @@ class TestNetwork(FabricTest):
 [%(prefix)s] out: result1
 [%(prefix)s] out: result2
 """ % {'prefix': env.host_string, 'user': env.user}
-        eq_(expected[1:], sys.stdall.getvalue())
+        eq_(sys.stdall.getvalue(), expected[1:])
 
     @mock_streams('both')
     @server(pubkeys=True, responses={'silent': '', 'normal': 'foo'})
