@@ -422,36 +422,6 @@ class TestNetwork(FabricTest):
         eq_(sys.stdall.getvalue(), expected[1:])
 
     @mock_streams('both')
-    @server(
-        pubkeys=True,
-        responses={'crliner': 'scranning for projects\n[INFO]\n\nresult1\n\nresult2'}
-    )
-    def test_consecutive_crs_should_be_kept_linewise(self):
-        """
-        Consecutive crs should be preserved in linewise mode
-        """
-        env.password = None
-        env.linewise = True
-        env.no_agent = env.no_keys = True
-        env.key_filename = CLIENT_PRIVKEY
-        with password_response(
-            (CLIENT_PRIVKEY_PASSPHRASE, PASSWORDS[USER]),
-            silent=False
-        ):
-            run('crliner')
-        expected = """
-[%(prefix)s] run: crliner
-[%(prefix)s] Login password for '%(user)s': 
-[%(prefix)s] out: 
-[%(prefix)s] out: 
-[%(prefix)s] out: result1
-[%(prefix)s] out: 
-[%(prefix)s] out: result2
-""" % {'prefix': env.host_string, 'user': env.user}
-        eq_(sys.stdall.getvalue(), expected[1:])
-
-
-    @mock_streams('both')
     @server(pubkeys=True, responses={'silent': '', 'normal': 'foo'})
     def test_silent_commands_should_not_have_blank_line(self):
         """
