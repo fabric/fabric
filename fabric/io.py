@@ -68,6 +68,7 @@ class OutputLooper(object):
 
         # Initialize loop variables
         initial_prefix_printed = False
+        seen_cr = False
         line = []
 
         # Allow prefix to be turned off.
@@ -78,7 +79,6 @@ class OutputLooper(object):
             # Handle actual read
             try:
                 bytes = self._read_func(self._read_size)
-                logger.info("read :"+repr(bytes))
             except socket.timeout:
                 logger.info("Nothing read")
                 continue
@@ -98,52 +98,47 @@ class OutputLooper(object):
             # Otherwise, we're in run/sudo and need to handle capturing and
             # prompts.
             else:
+
+
                 # Print to user
                 if self._printing:
-                    read_lines =  []
-                    if _has_newline(bytes):
-                        read_lines = re.split(r"\r|\n|\r\n", bytes)
-                        #print("read_lines:" + repr(read_lines)+"\YYY")
-                        current_line_fragment = read_lines.pop(0)
-                    else:
-                        current_line_fragment = bytes
+                    # Small state machine to eat \n after \r
+                    # self._flush("will dump "+repr(bytes)+"\n")
+                    if bytes[-1] == "\r":
+                        seen_cr = True
+                    if bytes[0] == "\n" and seen_cr:
+                        bytes = bytes[1:]
+                        seen_cr = False
 
-                    if self._linewise:
-                        if _has_newline(bytes):
-                            line += current_line_fragment
+                    while _has_newline(bytes) and bytes!="":
+                        # at most 1 split !
+                        cr = re.search("(\r\n|\r|\n)", bytes)
+                        if cr is None:
+                            break
+                        end_of_line = bytes[:cr.start(0)]
+                        bytes = bytes[cr.end(0):]
+
+                        if not initial_prefix_printed:
                             self._flush(self._prefix)
-                            self._flush("".join(line)+"\n")
+
+                        if _has_newline(end_of_line):
+                            end_of_line = ''
+
+                        if self._linewise:
+                            self._flush("".join(line)+end_of_line+"\n")
                             line = []
                         else:
-                            line += bytes
+                            self._flush(end_of_line+"\n")
+                        initial_prefix_printed = False
+
+
+                    if self._linewise:
+                        line += [bytes]
                     else:
                         if not initial_prefix_printed:
                             self._flush(self._prefix)
                             initial_prefix_printed = True
-                        self._flush(current_line_fragment)
-                        if _has_newline(bytes):
-                            self._flush("\n")
-
-                    # Do we have more stuff to print ?
-                    if len(read_lines) > 0:
-                        # Print remaining entire lines captured so far
-                        # Except the last one !
-                        next_fragment = read_lines.pop()
-
-                        for nline in read_lines:
-                            self._flush(self._prefix)
-                            self._flush(nline +"\n")
-
-                        self.initial_prefix_printed = False
-
-                        # next_fragment represents what's after the last CR read
-                        # from the network: an incomplete line
-                        if self._linewise:
-                            line = [next_fragment]
-                        else:
-                            self._flush(self._prefix)
-                            self._flush(next_fragment)
-                            self.initial_prefix_printed = True
+                        self._flush(bytes)
 
                 # Now we have handled printing, handle interactivity
                 read_lines = re.split(r"(\r|\n|\r\n)", bytes)
