@@ -298,6 +298,7 @@ def connect(user, host, port):
     # Initialize loop variables
     connected = False
     password = get_password()
+    passwords_grp = env.passwords_grp[:]
     tries = 0
 
     # Loop until successful connect (keep prompting for new password)
@@ -378,7 +379,12 @@ def connect(user, host, port):
                 # which one raised the exception. Best not to try.
                 prompt = "[%s] Passphrase for private key"
                 text = prompt % env.host_string
-            password = prompt_for_password(text)
+            # check passwords group
+            if passwords_grp:                                                   
+                password = passwords_grp.pop(0)                                 
+            else:                                                               
+                # Update env.password, env.passwords if empty                       
+                password = prompt_for_password(text)                            
             # Update env.password, env.passwords if empty
             set_password(password)
         # Ctrl-D / Ctrl-C for exit
