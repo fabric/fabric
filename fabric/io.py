@@ -14,9 +14,6 @@ from fabric.network import ssh
 if win32:
     import msvcrt
 
-import logging
-logging.basicConfig(filename='/tmp/fab2.log', level=logging.DEBUG)
-logger = logging.getLogger('io.py')
 
 
 
@@ -80,7 +77,6 @@ class OutputLooper(object):
             try:
                 bytes = self._read_func(self._read_size)
             except socket.timeout:
-                logger.info("Nothing read")
                 continue
             # Empty byte == EOS
             if bytes == '':
@@ -150,10 +146,8 @@ class OutputLooper(object):
                     try_again = (_endswith(self._capture, env.again_prompt + '\n')
                         or _endswith(self._capture, env.again_prompt + '\r\n'))
                     if prompt:
-                        logger.info("Prompting")
                         self.prompt()
                     elif try_again:
-                        logger.info("Try again")
                         self.try_again()
 
     def prompt(self):
