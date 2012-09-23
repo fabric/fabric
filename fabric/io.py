@@ -15,9 +15,6 @@ if win32:
     import msvcrt
 
 
-
-
-
 def _endswith(char_list, substring):
     tail = char_list[-1 * len(substring):]
     substring = list(substring)
@@ -35,9 +32,11 @@ def _was_newline(capture, byte):
     endswith_newline = _endswith(capture, '\n') or _endswith(capture, '\r')
     return endswith_newline and not _has_newline(bytes)
 
+
 def output_loop(chan, attr, stream, capture):
     ol = OutputLooper(chan, attr, stream, capture)
     ol.loop()
+
 
 class OutputLooper(object):
     def __init__(self, chan, attr, stream, capture):
@@ -125,7 +124,6 @@ class OutputLooper(object):
                             self._flush(end_of_line+"\n")
                         initial_prefix_printed = False
 
-
                     if self._linewise:
                         line += [printable_bytes]
                     else:
@@ -183,7 +181,7 @@ class OutputLooper(object):
             self._reprompt = False
         # Send current password down the pipe
         self._chan.sendall(password + '\n')
-        
+ 
     def try_again(self):
         # Remove text from capture buffer
         self._capture = self._capture[:len(env.again_prompt)]
