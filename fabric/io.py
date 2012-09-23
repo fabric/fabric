@@ -21,8 +21,8 @@ def _endswith(char_list, substring):
     return tail == substring
 
 
-def _has_newline(bytes):
-    return '\r' in bytes or '\n' in bytes
+def _has_newline(bytelist):
+    return '\r' in bytelist or '\n' in bytelist
 
 
 def _was_newline(capture, byte):
@@ -30,7 +30,7 @@ def _was_newline(capture, byte):
     Determine if we are 'past' a newline and need to print the line prefix.
     """
     endswith_newline = _endswith(capture, '\n') or _endswith(capture, '\r')
-    return endswith_newline and not _has_newline(bytes)
+    return endswith_newline and not _has_newline(bytelist)
 
 
 def output_loop(chan, attr, stream, capture):
@@ -74,11 +74,11 @@ class OutputLooper(object):
         while True:
             # Handle actual read
             try:
-                bytes = self._read_func(self._read_size)
+                bytelist = self._read_func(self._read_size)
             except socket.timeout:
                 continue
             # Empty byte == EOS
-            if bytes == '':
+            if bytelist == '':
                 # If linewise, ensure we flush any leftovers in the buffer.
                 if self._linewise and line:
                     self._flush(self._prefix)
@@ -89,13 +89,13 @@ class OutputLooper(object):
                 # Just print directly -- no prefixes, no capturing, nada
                 # And since we know we're using a pty in this mode, just go
                 # straight to stdout.
-                self._flush(bytes)
+                self._flush(bytelist)
             # Otherwise, we're in run/sudo and need to handle capturing and
             # prompts.
             else:
                 # Print to user
                 if self._printing:
-                    printable_bytes = bytes
+                    printable_bytes = bytelist
                     # Small state machine to eat \n after \r
                     if printable_bytes[-1] == "\r":
                         seen_cr = True
@@ -133,7 +133,7 @@ class OutputLooper(object):
                         self._flush(printable_bytes)
 
                 # Now we have handled printing, handle interactivity
-                read_lines = re.split(r"(\r|\n|\r\n)", bytes)
+                read_lines = re.split(r"(\r|\n|\r\n)", bytelist)
                 for fragment in read_lines:
                     # Store in capture buffer
                     self._capture += fragment
