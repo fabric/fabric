@@ -25,14 +25,6 @@ def _has_newline(bytelist):
     return '\r' in bytelist or '\n' in bytelist
 
 
-def _was_newline(capture, byte):
-    """
-    Determine if we are 'past' a newline and need to print the line prefix.
-    """
-    endswith_newline = _endswith(capture, '\n') or _endswith(capture, '\r')
-    return endswith_newline and not _has_newline(bytelist)
-
-
 def output_loop(chan, attr, stream, capture):
     ol = OutputLooper(chan, attr, stream, capture)
     ol.loop()
