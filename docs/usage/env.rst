@@ -558,6 +558,15 @@ Allows specification of an alternate SSH configuration file path.
 .. versionadded:: 1.4
 .. seealso:: :option:`--ssh-config-path`, :ref:`ssh-config`
 
+``success_return_codes``
+------------------------
+
+**Default:** ``[0]``
+
+Allows specification of a list of return codes to be treated as successful.
+
+..versionadded:: 1.4
+
 .. _sudo_prefix:
 
 ``sudo_prefix``
