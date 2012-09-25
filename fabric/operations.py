@@ -884,7 +884,7 @@ def _run_command(command, shell=True, pty=True, combine_stderr=True,
         out.failed = False
         out.command = given_command
         out.real_command = wrapped_command
-        if status != 0:
+        if status not in env.success_return_codes:
             out.failed = True
             msg = "%s() received nonzero return code %s while executing" % (
                 which, status
@@ -1120,7 +1120,7 @@ def local(command, capture=False, shell=None):
     out.failed = False
     out.return_code = p.returncode
     out.stderr = err
-    if p.returncode != 0:
+    if p.returncode not in env.success_return_codes:
         out.failed = True
         msg = "local() encountered an error (return code %s) while executing '%s'" % (p.returncode, command)
         error(message=msg, stdout=out, stderr=err)
