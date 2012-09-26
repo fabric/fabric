@@ -3,7 +3,7 @@ import stat
 from StringIO import StringIO
 from types import StringTypes
 
-import ssh
+from fabric.network import ssh
 
 
 class FakeFile(StringIO):

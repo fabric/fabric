@@ -5,14 +5,13 @@ import copy
 import getpass
 import sys
 
-import ssh
 from nose.tools import with_setup, ok_, raises
 from fudge import (Fake, clear_calls, clear_expectations, patch_object, verify,
     with_patched_object, patched_context, with_fakes)
 
 from fabric.context_managers import settings, hide, show
 from fabric.network import (HostConnectionCache, join_host_strings, normalize,
-    denormalize, key_filenames)
+    denormalize, key_filenames, ssh)
 from fabric.io import output_loop
 import fabric.network  # So I can call patch_object correctly. Sigh.
 from fabric.state import env, output, _get_system_username

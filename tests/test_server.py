@@ -9,7 +9,8 @@ that the Fabric tests using the test server may also have issues, but still.)
 __test__ = False
 
 from nose.tools import eq_, ok_
-import ssh
+
+from fabric.network import ssh
 
 from server import FakeSFTPServer
 
