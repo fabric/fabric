@@ -109,9 +109,16 @@ def _setenv(variables):
     """
     Context manager temporarily overriding ``env`` with given key/value pairs.
 
+    A callable that returns a dict can also be passed. This is necessary when
+    new values are being calculated from current values, in order to ensure that
+    the "current" value is current at the time that the context is entered, not
+    when the context manager is initialized. (See Issue #736.)
+
     This context manager is used internally by `settings` and is not intended
     to be used directly.
     """
+    if callable(variables):
+        variables = variables()
     clean_revert = variables.pop('clean_revert', False)
     previous = {}
     new = []
