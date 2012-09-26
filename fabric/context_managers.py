@@ -407,7 +407,7 @@ def prefix(command):
 
     Contrived, but hopefully illustrative.
     """
-    return _setenv({'command_prefixes': state.env.command_prefixes + [command]})
+    return _setenv(lambda: {'command_prefixes': state.env.command_prefixes + [command]})
 
 
 @contextmanager
