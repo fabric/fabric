@@ -615,7 +615,7 @@ def main():
         # Handle version number option
         if options.show_version:
             print("Fabric %s" % state.env.version)
-            print("ssh (library) %s" % ssh.__version__)
+            print("Paramiko %s" % ssh.__version__)
             sys.exit(0)
 
         # Load settings from user settings file, into shared env dict.

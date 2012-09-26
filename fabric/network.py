@@ -19,7 +19,7 @@ from fabric.exceptions import NetworkError
 try:
     import warnings
     warnings.simplefilter('ignore', DeprecationWarning)
-    import ssh
+    import paramiko as ssh
 except ImportError, e:
     import traceback
     traceback.print_exc()
