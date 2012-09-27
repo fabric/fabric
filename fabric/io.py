@@ -9,6 +9,7 @@ from fabric.auth import get_password, set_password
 import fabric.network
 from fabric.network import ssh
 
+
 if win32:
     import msvcrt
 
@@ -35,6 +36,15 @@ def _was_newline(capture, byte):
     endswith_newline = _endswith(capture, '\n') or _endswith(capture, '\r')
     return endswith_newline and not _is_newline(byte)
 
+def _get_prompt_response(capture,request_prompts):
+    """
+    Iterate through the request prompts dict and return the response and
+    original request if we find a match
+    """
+    for request_prompt in request_prompts.keys():
+        if _endswith(capture,request_prompt):
+            return (request_prompt,request_prompts[request_prompt])
+    return None
 
 def output_loop(chan, attr, stream, capture):
     """
@@ -102,9 +112,15 @@ def output_loop(chan, attr, stream, capture):
             # Store in internal buffer
             _buffer += byte
             # Handle prompts
-            prompt = _endswith(capture, env.sudo_prompt)
-            try_again = (_endswith(capture, env.again_prompt + '\n')
-                or _endswith(capture, env.again_prompt + '\r\n'))
+            prompt_pair = _get_prompt_response(capture,env['request_prompts'])
+            if prompt_pair:
+                del capture[-1 * len(prompt_pair[0]):]
+                chan.sendall(str(prompt_pair[1]) + '\n')
+            else:
+                prompt = _endswith(capture, env.sudo_prompt)
+                try_again = (_endswith(capture, env.again_prompt + '\n')
+                    or _endswith(capture, env.again_prompt + '\r\n'))
+            
             if prompt:
                 # Obtain cached password, if any
                 password = get_password()
