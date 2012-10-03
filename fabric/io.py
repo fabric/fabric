@@ -94,7 +94,7 @@ class OutputLooper(object):
                         printable_bytes = printable_bytes[1:]
                         seen_cr = False
 
-                    while _has_newline(printable_bytes) and printable_bytes!="":
+                    while _has_newline(printable_bytes) and printable_bytes != "":
                         # at most 1 split !
                         cr = re.search("(\r\n|\r|\n)", printable_bytes)
                         if cr is None:
@@ -109,10 +109,10 @@ class OutputLooper(object):
                             end_of_line = ''
 
                         if self.linewise:
-                            self._flush("".join(line)+end_of_line+"\n")
+                            self._flush("".join(line) + end_of_line + "\n")
                             line = []
                         else:
-                            self._flush(end_of_line+"\n")
+                            self._flush(end_of_line + "\n")
                         initial_prefix_printed = False
 
                     if self.linewise:
