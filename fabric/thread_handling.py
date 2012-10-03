@@ -18,3 +18,8 @@ class ThreadHandler(object):
         thread.start()
         # Make thread available to instantiator
         self.thread = thread
+
+    def raise_if_needed(self):
+        if self.exception:
+            e = self.exception
+            raise e[0], e[1], e[2]
