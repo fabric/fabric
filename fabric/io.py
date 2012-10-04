@@ -148,7 +148,7 @@ class OutputLooper(object):
 
         # Print trailing new line if the last thing we printed was our line
         # prefix.
-        if "".join(self.write_buffer) == self.prefix:
+        if self.prefix and "".join(self.write_buffer) == self.prefix:
             self._flush('\n')
 
     def prompt(self):
