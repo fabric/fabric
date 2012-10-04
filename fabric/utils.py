@@ -312,3 +312,39 @@ def _format_error_output(header, body):
     return "\n\n%s %s %s\n\n%s\n\n%s" % (
         side, header, side, body, mark * term_width
     )
+
+
+# TODO: replace with collections.deque(maxlen=xxx) in Python 2.6
+class RingBuffer(list):
+    def __init__(self, value, maxlen):
+        # Heh.
+        self._super = super(RingBuffer, self)
+        self._maxlen = maxlen
+        return self._super.__init__(value)
+
+    def _free(self):
+        return self._maxlen - len(self)
+
+    def append(self, value):
+        if self._free() == 0:
+            del self[0]
+        return self._super.append(value)
+
+    def extend(self, values):
+        overage = len(values) - self._free()
+        if overage > 0:
+            del self[0:overage]
+        return self._super.extend(values)
+
+    # Paranoia from here on out.
+    def insert(self, index, value):
+        raise ValueError("Can't insert into the middle of a ring buffer!")
+
+    def __setslice__(self, i, j, sequence):
+        raise ValueError("Can't set a slice of a ring buffer!")
+
+    def __setitem__(self, key, value):
+        if isinstance(key, slice):
+            raise ValueError("Can't set a slice of a ring buffer!")
+        else:
+            return self._super.__setitem__(key, value)

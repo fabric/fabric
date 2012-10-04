@@ -10,6 +10,7 @@ from fabric.state import env, output, win32
 from fabric.auth import get_password, set_password
 import fabric.network
 from fabric.network import ssh
+from fabric.utils import RingBuffer
 
 if win32:
     import msvcrt
@@ -44,6 +45,12 @@ class OutputLooper(object):
         self.linewise = (env.linewise or env.parallel)
         self.reprompt = False
         self.read_size = 4096
+        self.write_buffer = RingBuffer([], maxlen=len(self.prefix))
+
+    def _flush(self, text):
+        self.stream.write(text)
+        self.stream.flush()
+        self.write_buffer.extend(text)
 
     def loop(self):
         """
@@ -94,7 +101,7 @@ class OutputLooper(object):
                         printable_bytes = printable_bytes[1:]
                         seen_cr = False
 
-                    while _has_newline(printable_bytes) and printable_bytes!="":
+                    while _has_newline(printable_bytes) and printable_bytes != "":
                         # at most 1 split !
                         cr = re.search("(\r\n|\r|\n)", printable_bytes)
                         if cr is None:
@@ -109,10 +116,10 @@ class OutputLooper(object):
                             end_of_line = ''
 
                         if self.linewise:
-                            self._flush("".join(line)+end_of_line+"\n")
+                            self._flush("".join(line) + end_of_line + "\n")
                             line = []
                         else:
-                            self._flush(end_of_line+"\n")
+                            self._flush(end_of_line + "\n")
                         initial_prefix_printed = False
 
                     if self.linewise:
@@ -138,6 +145,11 @@ class OutputLooper(object):
                         self.prompt()
                     elif try_again:
                         self.try_again()
+
+        # Print trailing new line if the last thing we printed was our line
+        # prefix.
+        if self.prefix and "".join(self.write_buffer) == self.prefix:
+            self._flush('\n')
 
     def prompt(self):
         # Obtain cached password, if any
@@ -178,10 +190,6 @@ class OutputLooper(object):
         self.capture = self.capture[:len(env.again_prompt)]
         # Set state so we re-prompt the user at the next prompt.
         self.reprompt = True
-
-    def _flush(self, text):
-        self.stream.write(text)
-        self.stream.flush()
 
 
 def input_loop(chan, using_pty):
