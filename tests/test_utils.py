@@ -1,13 +1,14 @@
 from __future__ import with_statement
 
 import sys
+from unittest import TestCase
 
 from fudge import Fake, patched_context, with_fakes
 from fudge.patcher import with_patched_object
 from nose.tools import eq_
 
 from fabric.state import output, env
-from fabric.utils import warn, indent, abort, puts, fastprint, error
+from fabric.utils import warn, indent, abort, puts, fastprint, error, RingBuffer
 from fabric import utils  # For patching
 from fabric.context_managers import settings, hide
 from utils import mock_streams, aborts, FabricTest, assert_contains
@@ -178,3 +179,31 @@ class TestErrorHandling(FabricTest):
         with hide('stderr'):
             error("error message", func=utils.abort, stderr=stderr)
         assert_contains(stderr, sys.stderr.getvalue())
+
+
+class TestRingBuffer(TestCase):
+    def setUp(self):
+        self.b = RingBuffer([], maxlen=5)
+
+    def test_append_empty(self):
+        self.b.append('x')
+        eq_(self.b, ['x'])
+
+    def test_append_full(self):
+        self.b.extend("abcde")
+        self.b.append('f')
+        eq_(self.b, ['b', 'c', 'd', 'e', 'f'])
+
+    def test_extend_empty(self):
+        self.b.extend("abc")
+        eq_(self.b, ['a', 'b', 'c'])
+
+    def test_extend_overrun(self):
+        self.b.extend("abc")
+        self.b.extend("defg")
+        eq_(self.b, ['c', 'd', 'e', 'f', 'g'])
+
+    def test_extend_full(self):
+        self.b.extend("abcde")
+        self.b.extend("fgh")
+        eq_(self.b, ['d', 'e', 'f', 'g', 'h'])
