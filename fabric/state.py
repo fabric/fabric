@@ -302,7 +302,7 @@ env = _AttributeDict({
     'sudo_prefix': "sudo -S -p '%(sudo_prompt)s' ",
     'sudo_prompt': 'sudo password:',
     'sudo_user': None,
-    'request_prompts' : {},
+    'prompt_responses' : {},
     'use_exceptions_for': {'network': False},
     'use_shell': True,
     'use_ssh_config': False,

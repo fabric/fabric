@@ -36,14 +36,14 @@ def _was_newline(capture, byte):
     endswith_newline = _endswith(capture, '\n') or _endswith(capture, '\r')
     return endswith_newline and not _is_newline(byte)
 
-def _get_prompt_response(capture, request_prompts):
+def _get_prompt_response(capture, prompt_responses):
     """
     Iterate through the request prompts dict and return the response and
     original request if we find a match
     """
-    for request_prompt in request_prompts.keys():
+    for request_prompt in prompt_responses.keys():
         if _endswith(capture, request_prompt):
-            return (request_prompt, request_prompts[request_prompt])
+            return (request_prompt, prompt_responses[request_prompt])
     return None
 
 def output_loop(chan, attr, stream, capture):
@@ -112,7 +112,7 @@ def output_loop(chan, attr, stream, capture):
             # Store in internal buffer
             _buffer += byte
             # Handle prompts
-            prompt_pair = _get_prompt_response(capture, env['request_prompts'])
+            prompt_pair = _get_prompt_response(capture, env['prompt_responses'])
             if prompt_pair:
                 del capture[-1 * len(prompt_pair[0]):]
                 chan.sendall(str(prompt_pair[1]) + '\n')
