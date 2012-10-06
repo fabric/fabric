@@ -291,6 +291,13 @@ def connect(user, host, port):
     if not env.reject_unknown_hosts:
         client.set_missing_host_key_policy(ssh.AutoAddPolicy())
 
+    # Use client provided private key instance if it exists
+    if env.has_key('pkey'):
+        pkey = env.pkey
+        env.key_filename = None
+    else:
+        pkey = None
+
     #
     # Connection attempt loop
     #
@@ -309,6 +316,7 @@ def connect(user, host, port):
                 hostname=host,
                 port=int(port),
                 username=user,
+                pkey=pkey,
                 password=password,
                 key_filename=key_filenames(),
                 timeout=env.timeout,
