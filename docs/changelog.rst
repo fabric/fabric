@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`749` Gracefully work around calls to ``fabric.version`` on systems
+  lacking ``/bin/sh`` (which causes an ``OSError`` in ``subprocess.Popen``
+  calls.)
 * :feature:`723` Add the ``group=`` argument to
   `~fabric.operations.sudo`. Thanks to Antti Kaihola for the pull request.
 * :feature:`725` Updated `~fabric.operations.local` to allow override
