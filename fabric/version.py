@@ -14,13 +14,18 @@ VERSION = (1, 5, 0, 'alpha', 0)
 
 def git_sha():
     loc = abspath(dirname(__file__))
-    p = Popen(
-        "cd \"%s\" && git log -1 --format=format:%%h" % loc,
-        shell=True,
-        stdout=PIPE,
-        stderr=PIPE
-    )
-    return p.communicate()[0]
+    try:
+        p = Popen(
+            "cd \"%s\" && git log -1 --format=format:%%h" % loc,
+            shell=True,
+            stdout=PIPE,
+            stderr=PIPE
+        )
+        return p.communicate()[0]
+    # OSError occurs on Unix-derived platforms lacking Popen's configured shell
+    # default, /bin/sh. E.g. Android.
+    except OSError:
+        return None
 
 
 def get_version(form='short'):
