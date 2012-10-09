@@ -278,3 +278,18 @@ latex_documents = [
 
 # If false, no module index is generated.
 #latex_use_modindex = True
+
+
+# Restore decorated functions so that autodoc inspects the rigt arguments
+def unwrap_decorated_functions():
+    from fabric import operations
+    for name in ['get', 'open_shell', 'put', 'reboot', 'run', 'sudo']:
+        func = getattr(operations, name)
+        setattr(operations, name, func.undecorated)
+
+    from fabric import context_managers
+    for name in ['show', 'hide']:
+        func = getattr(context_managers, name)
+        setattr(context_managers, name, func.undecorated)
+
+unwrap_decorated_functions()
