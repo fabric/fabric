@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`749` Gracefully work around calls to ``fabric.version`` on systems
+  lacking ``/bin/sh`` (which causes an ``OSError`` in ``subprocess.Popen``
+  calls.)
 * :bug:`718` ``isinstance(foo, Bar)`` is used in `~fabric.main` instead
   of ``type(foo) == Bar`` in order to fix some edge cases.
   Thanks to Mikhail Korobov.
