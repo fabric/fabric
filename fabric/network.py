@@ -485,6 +485,7 @@ def needs_host(func):
                                     " host string for connection: ")
             env.update(to_dict(host_string))
         return func(*args, **kwargs)
+    host_prompting_wrapper.undecorated = func
     return host_prompting_wrapper
 
 
