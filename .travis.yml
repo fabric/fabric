@@ -13,8 +13,6 @@ install:
 script: fab test
 notifications:
   email:
-    recipients:
-      - jeff@bitprophet.org
     on_failure: change
   irc:
     channels: "irc.freenode.org#fabric"
