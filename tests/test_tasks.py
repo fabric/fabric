@@ -70,6 +70,11 @@ class TestWrappedCallableTask(unittest.TestCase):
         task = tasks.WrappedCallableTask(foo)
         self.assertEqual(task.name, foo.__name__)
 
+    def test_name_can_be_overridden(self):
+        def foo(): pass
+        eq_(tasks.WrappedCallableTask(foo).name, 'foo')
+        eq_(tasks.WrappedCallableTask(foo, name='notfoo').name, 'notfoo')
+
     def test_reads_double_under_doc_from_callable(self):
         def foo(): pass
         foo.__doc__ = "Some random __doc__: %d" % random.randint(1000, 2000)
