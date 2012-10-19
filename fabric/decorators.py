@@ -23,6 +23,8 @@ def task(*args, **kwargs):
     .. versionchanged:: 1.2
         Added the ``alias``, ``aliases``, ``task_class`` and ``default``
         keyword arguments. See :ref:`task-decorator-arguments` for details.
+    .. versionchanged:: 1.5
+        Added the ``name`` keyword argument.
     """
     invoked = bool(not args or kwargs)
     task_class = kwargs.pop("task_class", tasks.WrappedCallableTask)
