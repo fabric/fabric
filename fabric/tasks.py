@@ -37,7 +37,7 @@ class Task(object):
     is_default = False
 
     # TODO: make it so that this wraps other decorators as expected
-    def __init__(self, name=None, alias=None, aliases=None, default=False,
+    def __init__(self, alias=None, aliases=None, default=False, name=None,
         *args, **kwargs):
         if alias is not None:
             self.aliases = [alias, ]
