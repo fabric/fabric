@@ -25,6 +25,8 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :feature:`761` Allow advanced users to parameterize ``fabric.main.main()`` to
+  force loading of specific fabfiles.
 * :bug:`749` Gracefully work around calls to ``fabric.version`` on systems
   lacking ``/bin/sh`` (which causes an ``OSError`` in ``subprocess.Popen``
   calls.)
