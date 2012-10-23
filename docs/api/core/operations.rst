@@ -3,7 +3,7 @@ Operations
 ==========
 
 .. automodule:: fabric.operations
-    :members:
+    :members: local, prompt, require
 
     .. autofunction:: get(remote_path, local_path=None)
     .. autofunction:: open_shell(command=None)
