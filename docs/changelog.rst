@@ -25,6 +25,8 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :feature:`735` Add ``ok_ret_codes`` option to ``env`` to allow alternate
+  return codes to be treated os "ok". Thanks to Andy Kraut for the pull request.
 * :feature:`723` Add the ``group=`` argument to
   `~fabric.operations.sudo`. Thanks to Antti Kaihola for the pull request.
 * :feature:`725` Updated `~fabric.operations.local` to allow override
