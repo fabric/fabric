@@ -565,7 +565,7 @@ Allows specification of an alternate SSH configuration file path.
 
 Allows specification of a list of return codes to be treated as successful.
 
-..versionadded:: 1.4
+..versionadded:: 1.5
 
 .. _sudo_prefix:
 
