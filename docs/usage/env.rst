@@ -558,7 +558,7 @@ Allows specification of an alternate SSH configuration file path.
 .. versionadded:: 1.4
 .. seealso:: :option:`--ssh-config-path`, :ref:`ssh-config`
 
-``success_return_codes``
+``ok_ret_codes``
 ------------------------
 
 **Default:** ``[0]``
