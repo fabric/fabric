@@ -25,6 +25,10 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :feature:`665` (and #629) Update `~fabric.contrib.files.upload_template` to
+  have a more useful return value, namely that of its internal
+  `~fabric.operations.put` call. Thanks to Miquel Torres for the catch &
+  Rodrigue Alcazar for the patch.
 * :feature:`578` Add ``name`` argument to `~fabric.decorators.task` (:ref:`docs
   <task-decorator-arguments>`) to allow overriding of the default "function
   name is task name" behavior. Thanks to Daniel Simmons for catch & patch.

@@ -51,6 +51,9 @@ def upload_template(filename, destination, context=None, use_jinja=False,
     """
     Render and upload a template text file to a remote host.
 
+    Returns the result of the inner call to `~fabric.operations.put` -- see its
+    documentation for details.
+
     ``filename`` should be the path to a text file, which may contain `Python
     string interpolation formatting
     <http://docs.python.org/release/2.5.4/lib/typesseq-strings.html>`_ and will
