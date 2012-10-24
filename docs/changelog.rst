@@ -25,6 +25,8 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :feature:`735` Add ``ok_ret_codes`` option to ``env`` to allow alternate
+  return codes to be treated os "ok". Thanks to Andy Kraut for the pull request.
 * :feature:`665` (and #629) Update `~fabric.contrib.files.upload_template` to
   have a more useful return value, namely that of its internal
   `~fabric.operations.put` call. Thanks to Miquel Torres for the catch &
