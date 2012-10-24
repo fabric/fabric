@@ -51,6 +51,9 @@ def upload_template(filename, destination, context=None, use_jinja=False,
     """
     Render and upload a template text file to a remote host.
 
+    Returns the result of the inner call to `~fabric.operations.put` -- see its
+    documentation for details.
+
     ``filename`` should be the path to a text file, which may contain `Python
     string interpolation formatting
     <http://docs.python.org/release/2.5.4/lib/typesseq-strings.html>`_ and will
@@ -112,7 +115,7 @@ def upload_template(filename, destination, context=None, use_jinja=False,
         func("cp %s{,.bak}" % destination)
 
     # Upload the file.
-    put(
+    return put(
         local_path=StringIO(text),
         remote_path=destination,
         use_sudo=use_sudo,
@@ -309,7 +312,7 @@ def append(filename, text, use_sudo=False, partial=False, escape=True):
     "append lines to a file" use case. You may override this and force partial
     searching (e.g. ``^<text>``) by specifying ``partial=True``.
 
-    Because ``text`` is single-quoted, single quotes will be transparently 
+    Because ``text`` is single-quoted, single quotes will be transparently
     backslash-escaped. This can be disabled with ``escape=False``.
 
     If ``use_sudo`` is True, will use `sudo` instead of `run`.

@@ -79,14 +79,15 @@ def _is_package(path):
     )
 
 
-def find_fabfile():
+def find_fabfile(names=None):
     """
     Attempt to locate a fabfile, either explicitly or by searching parent dirs.
 
     Usage docs are in docs/usage/fabfiles.rst, in "Fabfile discovery."
     """
-    # Obtain env value
-    names = [state.env.fabfile]
+    # Obtain env value if not given specifically
+    if names is None:
+        names = [state.env.fabfile]
     # Create .py version if necessary
     if not names[0].endswith('.py'):
         names += [names[0] + '.py']
@@ -569,7 +570,7 @@ def show_commands(docstring, format, code=0):
     sys.exit(code)
 
 
-def main():
+def main(fabfile_locations=None):
     """
     Main command-line execution loop.
     """
@@ -615,14 +616,14 @@ def main():
         # Handle version number option
         if options.show_version:
             print("Fabric %s" % state.env.version)
-            print("ssh (library) %s" % ssh.__version__)
+            print("Paramiko %s" % ssh.__version__)
             sys.exit(0)
 
         # Load settings from user settings file, into shared env dict.
         state.env.update(load_settings(state.env.rcfile))
 
         # Find local fabfile path or abort
-        fabfile = find_fabfile()
+        fabfile = find_fabfile(fabfile_locations)
         if not fabfile and not remainder_arguments:
             abort("""Couldn't find any fabfiles!
 

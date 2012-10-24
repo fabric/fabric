@@ -27,6 +27,18 @@ Changelog
 
 * :feature:`735` Add ``ok_ret_codes`` option to ``env`` to allow alternate
   return codes to be treated os "ok". Thanks to Andy Kraut for the pull request.
+* :feature:`665` (and #629) Update `~fabric.contrib.files.upload_template` to
+  have a more useful return value, namely that of its internal
+  `~fabric.operations.put` call. Thanks to Miquel Torres for the catch &
+  Rodrigue Alcazar for the patch.
+* :feature:`578` Add ``name`` argument to `~fabric.decorators.task` (:ref:`docs
+  <task-decorator-arguments>`) to allow overriding of the default "function
+  name is task name" behavior. Thanks to Daniel Simmons for catch & patch.
+* :feature:`761` Allow advanced users to parameterize ``fabric.main.main()`` to
+  force loading of specific fabfiles.
+* :bug:`749` Gracefully work around calls to ``fabric.version`` on systems
+  lacking ``/bin/sh`` (which causes an ``OSError`` in ``subprocess.Popen``
+  calls.)
 * :feature:`723` Add the ``group=`` argument to
   `~fabric.operations.sudo`. Thanks to Antti Kaihola for the pull request.
 * :feature:`725` Updated `~fabric.operations.local` to allow override

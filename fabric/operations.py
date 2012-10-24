@@ -770,10 +770,11 @@ def _execute(channel, command, pty=True, combine_stderr=None,
             if channel.exit_status_ready():
                 break
             else:
+                # Check for thread exceptions here so we can raise ASAP
+                # (without chance of getting blocked by, or hidden by an
+                # exception within, recv_exit_status())
                 for worker in workers:
-                    e = worker.exception
-                    if e:
-                        raise e[0], e[1], e[2]
+                    worker.raise_if_needed()
             time.sleep(ssh.io_sleep)
 
         # Obtain exit code of remote program now that we're done.
@@ -782,6 +783,7 @@ def _execute(channel, command, pty=True, combine_stderr=None,
         # Wait for threads to exit so we aren't left with stale threads
         for worker in workers:
             worker.thread.join()
+            worker.raise_if_needed()
 
         # Close channel
         channel.close()

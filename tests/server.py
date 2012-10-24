@@ -14,12 +14,10 @@ from StringIO import StringIO
 from functools import wraps
 from Python26SocketServer import BaseRequestHandler, ThreadingMixIn, TCPServer
 
-import ssh
-
 from fabric.operations import _sudo_prefix
 from fabric.api import env, hide
 from fabric.thread_handling import ThreadHandler
-from fabric.network import disconnect_all
+from fabric.network import disconnect_all, ssh
 
 from fake_filesystem import FakeFilesystem, FakeFile
 
