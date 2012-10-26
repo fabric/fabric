@@ -407,8 +407,7 @@ When ``True``, forces all tasks to run in parallel. Implies :ref:`env.linewise
 The default password used by the SSH layer when connecting to remote hosts,
 **and/or** when answering `~fabric.operations.sudo` prompts.
 
-.. seealso:: :ref:`passwords`
-.. seealso:: :ref:`password-management`
+.. seealso:: :ref:`env.passwords <passwords>`, :ref:`password-management`, :option:`--initial-password-prompt <-I>`
 
 .. _passwords:
 

@@ -178,6 +178,19 @@ below.
     (usually a private key.) This option may be repeated multiple times. Sets
     (or appends to) :ref:`env.key_filename <key-filename>`.
 
+.. cmdoption:: -I, --initial-password-prompt
+
+    Forces a password prompt at the start of the session (after fabfile load
+    and option parsing, but before executing any tasks) in order to pre-fill
+    :ref:`env.password <password>`.
+
+    This is useful for fire-and-forget runs (especially parallel sessions, in
+    which runtime input is not possible) when setting the password via
+    :option:`--password <-p>` or by setting :ref:`env.password <password>` in
+    your fabfile, is undesirable.
+
+    .. seealso:: :ref:`password-management`
+
 .. cmdoption:: -k
 
     Sets :ref:`env.no_keys <no_keys>` to ``True``, forcing the SSH layer to not
@@ -212,6 +225,8 @@ below.
     Sets :ref:`env.password <password>` to the given string; it will then be
     used as the default password when making SSH connections or calling the
     ``sudo`` program.
+
+    .. seealso:: :option:`--initial-password-prompt <-I>`
 
 .. cmdoption:: -P, --parallel
 

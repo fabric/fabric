@@ -639,9 +639,11 @@ re-entry when multiple systems share the same password [#]_, or if a remote
 system's ``sudo`` configuration doesn't do its own caching.
 
 The first layer is a simple default or fallback password cache,
-:ref:`env.password <password>`. This env var stores a single password which (if
-non-empty) will be tried in the event that the host-specific cache (see below)
-has no entry for the current :ref:`host string <host_string>`.
+:ref:`env.password <password>` (which may also be set at the command line via
+:option:`--password <-p>` or :option:`--initial-password-prompt <-I>`). This
+env var stores a single password which (if non-empty) will be tried in the
+event that the host-specific cache (see below) has no entry for the current
+:ref:`host string <host_string>`.
 
 :ref:`env.passwords <passwords>` (plural!) serves as a per-user/per-host cache,
 storing the most recently entered password for every unique user/host/port
