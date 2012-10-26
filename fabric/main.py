@@ -8,6 +8,7 @@ fabfile, and executing the commands given.
 The other callables defined in this module are internal only. Anything useful
 to individuals leveraging Fabric as a library, should be kept elsewhere.
 """
+import getpass
 from operator import isMappingType
 from optparse import OptionParser
 import os
@@ -287,6 +288,12 @@ def parse_options():
         default='normal',
         metavar='FORMAT',
         help="formats --list, choices: %s" % ", ".join(LIST_FORMAT_OPTIONS)
+    )
+
+    parser.add_option('-I', '--initial-password-prompt',
+        action='store_true',
+        default=False,
+        help="Force password prompt up-front"
     )
 
     # List Fab commands found in loaded fabfiles/source files
@@ -705,6 +712,11 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
         # Ditto for a default, if found
         if not commands_to_run and default:
             commands_to_run.append((default.name, [], {}, [], [], []))
+
+        # Initial password prompt, if requested
+        if options.initial_password_prompt:
+            prompt = "Initial value for env.password: "
+            state.env.password = getpass.getpass(prompt)
 
         if state.output.debug:
             names = ", ".join(x[0] for x in commands_to_run)
