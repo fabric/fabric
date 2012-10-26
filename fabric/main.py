@@ -22,8 +22,8 @@ from fabric.network import disconnect_all, ssh
 from fabric.state import env_options
 from fabric.tasks import Task, execute
 from fabric.task_utils import _Dict, crawl
-from fabric.utils import abort, indent, warn
-from fabric.operations import _pty_size
+from fabric.utils import abort, indent, warn, _pty_size
+
 
 # One-time calculation of "all internal callables" to avoid doing this on every
 # check of a given fabfile callable (in is_classic_task()).
