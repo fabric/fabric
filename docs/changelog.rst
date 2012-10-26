@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :feature:`763` Add :option:`--initial-password-prompt <-I>` to allow
+  prefilling the password cache at the start of a run. Great for sudo-powered
+  parallel runs.
 * :feature:`665` (and #629) Update `~fabric.contrib.files.upload_template` to
   have a more useful return value, namely that of its internal
   `~fabric.operations.put` call. Thanks to Miquel Torres for the catch &
