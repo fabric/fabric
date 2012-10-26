@@ -189,6 +189,10 @@ below.
     :option:`--password <-p>` or by setting :ref:`env.password <password>` in
     your fabfile, is undesirable.
 
+    .. note:: The value entered into this prompt will *overwrite* anything
+      supplied via :ref:`env.password <password>` at module level, or via
+      :option:`--password <-p>`.
+
     .. seealso:: :ref:`password-management`
 
 .. cmdoption:: -k
