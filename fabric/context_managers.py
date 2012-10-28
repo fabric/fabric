@@ -105,17 +105,24 @@ def hide(*groups):
 
 
 @contextmanager
-def _setenv(**kwargs):
+def _setenv(variables):
     """
     Context manager temporarily overriding ``env`` with given key/value pairs.
+
+    A callable that returns a dict can also be passed. This is necessary when
+    new values are being calculated from current values, in order to ensure that
+    the "current" value is current at the time that the context is entered, not
+    when the context manager is initialized. (See Issue #736.)
 
     This context manager is used internally by `settings` and is not intended
     to be used directly.
     """
-    clean_revert = kwargs.pop('clean_revert', False)
+    if callable(variables):
+        variables = variables()
+    clean_revert = variables.pop('clean_revert', False)
     previous = {}
     new = []
-    for key, value in kwargs.iteritems():
+    for key, value in variables.iteritems():
         if key in state.env:
             previous[key] = state.env[key]
         else:
@@ -125,7 +132,7 @@ def _setenv(**kwargs):
         yield
     finally:
         if clean_revert:
-            for key, value in kwargs.iteritems():
+            for key, value in variables.iteritems():
                 # If the current env value for this key still matches the
                 # value we set it to beforehand, we are OK to revert it to the
                 # pre-block value.
@@ -220,7 +227,7 @@ def settings(*args, **kwargs):
     """
     managers = list(args)
     if kwargs:
-        managers.append(_setenv(**kwargs))
+        managers.append(_setenv(kwargs))
     return nested(*managers)
 
 
@@ -314,7 +321,7 @@ def _change_cwd(which, path):
         new_cwd = state.env.get(which) + '/' + path
     else:
         new_cwd = path
-    return _setenv(**{which: new_cwd})
+    return _setenv({which: new_cwd})
 
 
 def path(path, behavior='append'):
@@ -345,7 +352,7 @@ def path(path, behavior='append'):
 
     .. versionadded:: 1.0
     """
-    return _setenv(path=path, path_behavior=behavior)
+    return _setenv({'path': path, 'path_behavior': behavior})
 
 
 def prefix(command):
@@ -400,7 +407,7 @@ def prefix(command):
 
     Contrived, but hopefully illustrative.
     """
-    return _setenv(command_prefixes=state.env.command_prefixes + [command])
+    return _setenv(lambda: {'command_prefixes': state.env.command_prefixes + [command]})
 
 
 @contextmanager
@@ -437,7 +444,7 @@ def shell_env(**kw):
 
     Multiple key-value pairs may be given simultaneously.
     """
-    return _setenv(shell_env=kw)
+    return _setenv({'shell_env': kw})
 
 
 quiet = lambda: settings(hide('everything'), warn_only=True)
