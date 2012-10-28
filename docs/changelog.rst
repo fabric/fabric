@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`736` Ensure context managers that build env vars play nice with
+  ``contextlib.nested`` by deferring env var reference to entry time, not call
+  time. Thanks to Matthew Tretter for catch & patch.
 * :feature:`763` Add :option:`--initial-password-prompt <-I>` to allow
   prefilling the password cache at the start of a run. Great for sudo-powered
   parallel runs.
