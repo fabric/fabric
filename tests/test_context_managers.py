@@ -6,7 +6,7 @@ from nose.tools import eq_, ok_
 
 from fabric.state import env, output
 from fabric.context_managers import (cd, settings, lcd, hide, shell_env, quiet,
-    warn_only)
+    warn_only, prefix)
 from fabric.operations import run
 
 from utils import mock_streams, FabricTest
@@ -46,6 +46,21 @@ def test_cwd_with_absolute_paths():
             eq_(env.cwd, absolute)
         with cd(additional):
             eq_(env.cwd, existing + '/' + additional)
+
+
+#
+#  prefix
+#
+
+def test_nested_prefix():
+    """
+    prefix context managers can be created outside of the with block and nested
+    """
+    cm1 = prefix('1')
+    cm2 = prefix('2')
+    with cm1:
+        with cm2:
+            eq_(env.command_prefixes, ['1', '2'])
 
 
 #
