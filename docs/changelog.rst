@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`766` Use the variable name of a new-style ``fabric.tasks.Task``
+  subclass object when the object name attribute is undefined.  Thanks to
+  `@todddeluca` for the patch.
 * :bug:`604` Fixed wrong treatment of backslashes in put operation when uploading
   directory tree on Windows. Thanks to Jason Coombs for the catch and
   `@diresys` & Oliver Janik for the patch.
