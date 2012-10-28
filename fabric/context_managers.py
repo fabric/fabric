@@ -21,7 +21,8 @@ Context managers for use with the ``with`` statement.
             run('./manage.py syncdb')
             run('./manage.py loaddata myfixture')
 
-    Note that you need Python 2.6+ for this to work. On Python 2.5, you can do the following::
+    Note that you need Python 2.7+ for this to work. On Python 2.5 or 2.6, you
+    can do the following::
 
         from contextlib import nested
 
