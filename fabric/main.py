@@ -209,8 +209,11 @@ def extract_tasks(imported_vars):
         name, obj = tup
         if is_task_object(obj):
             state.env.new_style_tasks = True
-            # Honor instance.name
-            new_style_tasks[obj.name] = obj
+            # Use instance.name if defined
+            if obj.name and obj.name != 'undefined':
+                new_style_tasks[obj.name] = obj
+            else:
+                new_style_tasks[name] = obj
             # Handle aliasing
             if obj.aliases is not None:
                 for alias in obj.aliases:
