@@ -61,7 +61,13 @@ def _set_output(groups, which):
         output.update(previous)
 
 
-@contextmanager
+def documented_contextmanager(func):
+    wrapper = contextmanager(func)
+    wrapper.undecorated = func
+    return wrapper
+
+
+@documented_contextmanager
 def show(*groups):
     """
     Context manager for setting the given output ``groups`` to True.
@@ -85,7 +91,7 @@ def show(*groups):
     return _set_output(groups, True)
 
 
-@contextmanager
+@documented_contextmanager
 def hide(*groups):
     """
     Context manager for setting the given output ``groups`` to False.
@@ -105,7 +111,7 @@ def hide(*groups):
     return _set_output(groups, False)
 
 
-@contextmanager
+@documented_contextmanager
 def _setenv(variables):
     """
     Context manager temporarily overriding ``env`` with given key/value pairs.
@@ -411,7 +417,7 @@ def prefix(command):
     return _setenv(lambda: {'command_prefixes': state.env.command_prefixes + [command]})
 
 
-@contextmanager
+@documented_contextmanager
 def char_buffered(pipe):
     """
     Force local terminal ``pipe`` be character, not line, buffered.
