@@ -56,7 +56,7 @@ def upload_template(filename, destination, context=None, use_jinja=False,
 
     ``filename`` should be the path to a text file, which may contain `Python
     string interpolation formatting
-    <http://docs.python.org/release/2.5.4/lib/typesseq-strings.html>`_ and will
+    <http://docs.python.org/library/stdtypes.html#string-formatting>`_ and will
     be rendered with the given context dictionary ``context`` (if given.)
 
     Alternately, if ``use_jinja`` is set to True and you have the Jinja2
