@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :feature:`684` Update how `~fabric.decorators.task` wraps task functions to
+  preserve additional metadata; this allows decorated functions to play nice
+  with Sphinx autodoc. Thanks to Jaka Hudoklin for catch & patch.
 * :bug:`749` Gracefully work around calls to ``fabric.version`` on systems
   lacking ``/bin/sh`` (which causes an ``OSError`` in ``subprocess.Popen``
   calls.)
