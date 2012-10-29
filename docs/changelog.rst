@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`767` Fix (and add test for) regression re: having linewise output
+  automatically activate when parallelism is in effect. Thanks to Alexander
+  Fortin and Dustin McQuay for the bug reports.
 * :bug:`736` Ensure context managers that build env vars play nice with
   ``contextlib.nested`` by deferring env var reference to entry time, not call
   time. Thanks to Matthew Tretter for catch & patch.
