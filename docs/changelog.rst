@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :feature:`684` Update how `~fabric.decorators.task` wraps task functions to
+  preserve additional metadata; this allows decorated functions to play nice
+  with Sphinx autodoc. Thanks to Jaka Hudoklin for catch & patch.
 * :support:`103` (via :issue:`748`) Long standing Sphinx autodoc issue requiring
   error-prone duplication of function signatures in our API docs has been
   fixed. Thanks to Alex Morega for the patch.

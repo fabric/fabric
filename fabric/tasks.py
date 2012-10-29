@@ -109,6 +109,8 @@ class WrappedCallableTask(Task):
                 self.__name__ = self.name
         if hasattr(callable, '__doc__'):
             self.__doc__ = callable.__doc__
+        if hasattr(callable, '__module__'):
+            self.__module__ = callable.__module__
 
     def __call__(self, *args, **kwargs):
         return self.run(*args, **kwargs)
