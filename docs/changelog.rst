@@ -25,7 +25,7 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
-* :bug:`103` (via :issue:`748`) Long standing Sphinx autodoc issue requiring
+* :support:`103` (via :issue:`748`) Long standing Sphinx autodoc issue requiring
   error-prone duplication of function signatures in our API docs has been
   fixed. Thanks to Alex Morega for the patch.
 * :bug:`767` Fix (and add test for) regression re: having linewise output
