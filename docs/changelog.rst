@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`604` Fixed wrong treatment of backslashes in put operation when uploading
+  directory tree on Windows. Thanks to @jaraco for the catch. Thanks to @dieresys
+  for the patch.
 * :feature:`684` Update how `~fabric.decorators.task` wraps task functions to
   preserve additional metadata; this allows decorated functions to play nice
   with Sphinx autodoc. Thanks to Jaka Hudoklin for catch & patch.
