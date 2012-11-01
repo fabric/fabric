@@ -15,6 +15,12 @@ def unwrap_tasks(module):
     signature and so forth. Without use of ``unwrap_tasks``, autodoc is unable
     to access the function signature (though it is able to see e.g.
     ``__doc__``.)
+
+    For example, at the bottom of your ``conf.py``::
+
+        from fabric.docs import unwrap_tasks
+        import my_package.my_fabfile
+        unwrap_tasks(my_package.my_fabfile)
     
     If you run this within an actual Fabric-code-using session (instead of
     within a Sphinx ``conf.py``), please seek immediate medical attention.
