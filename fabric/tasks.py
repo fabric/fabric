@@ -93,9 +93,11 @@ class WrappedCallableTask(Task):
     """
     Wraps a given callable transparently, while marking it as a valid Task.
 
-    Generally used via `@task <~fabric.decorators.task>` and not directly.
+    Generally used via `~fabric.decorators.task` and not directly.
 
     .. versionadded:: 1.1
+
+    .. seealso:: `~fabric.docs.unwrap_tasks`, `~fabric.decorators.task`
     """
     def __init__(self, callable, *args, **kwargs):
         super(WrappedCallableTask, self).__init__(*args, **kwargs)

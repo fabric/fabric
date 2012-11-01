@@ -25,6 +25,8 @@ def task(*args, **kwargs):
         keyword arguments. See :ref:`task-decorator-arguments` for details.
     .. versionchanged:: 1.5
         Added the ``name`` keyword argument.
+
+    .. seealso:: `~fabric.docs.unwrap_tasks`, `~fabric.tasks.WrappedCallableTask`
     """
     invoked = bool(not args or kwargs)
     task_class = kwargs.pop("task_class", tasks.WrappedCallableTask)
