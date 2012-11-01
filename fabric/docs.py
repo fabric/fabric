@@ -37,10 +37,11 @@ def unwrap_tasks(module, hide_nontasks=False):
 
     .. seealso:: `~fabric.tasks.WrappedCallableTask`, `~fabric.decorators.task`
     """
-    for name, obj in vars(module).iteritems():
+    for name, obj in vars(module).items():
         if isinstance(obj, WrappedCallableTask):
             setattr(module, name, obj.wrapped)
         else:
-            if hide_nontasks and getattr(obj, '__doc__', False):
+            has_docstring = getattr(obj, '__doc__', False)
+            if hide_nontasks and has_docstring and not name.startswith('_'):
                 setattr(module, '_%s' % name, obj)
                 delattr(module, name)
