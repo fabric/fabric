@@ -1,7 +1,7 @@
 from fabric.tasks import WrappedCallableTask
 
 
-def unwrap_tasks(module):
+def unwrap_tasks(module, hide_nontasks=False):
     """
     Replace task objects on ``module`` with their wrapped functions instead.
 
@@ -21,6 +21,14 @@ def unwrap_tasks(module):
         from fabric.docs import unwrap_tasks
         import my_package.my_fabfile
         unwrap_tasks(my_package.my_fabfile)
+
+    You can go above and beyond, and explicitly **hide** all non-task
+    functions, by saying ``hide_nontasks=True``. This renames all objects
+    failing the "is it a task?" check so they appear to be private, which will
+    then cause autodoc to skip over them.
+
+    ``hide_nontasks`` is thus useful when you have a fabfile mixing in
+    subroutines with real tasks and want to document *just* the real tasks.
     
     If you run this within an actual Fabric-code-using session (instead of
     within a Sphinx ``conf.py``), please seek immediate medical attention.
@@ -32,3 +40,7 @@ def unwrap_tasks(module):
     for name, obj in vars(module).iteritems():
         if isinstance(obj, WrappedCallableTask):
             setattr(module, name, obj.wrapped)
+        else:
+            if hide_nontasks and getattr(obj, '__doc__', False):
+                setattr(module, '_%s' % name, obj)
+                delattr(module, name)
