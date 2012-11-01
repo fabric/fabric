@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`766` Use the variable name of a new-style ``fabric.tasks.Task``
+  subclass object when the object name attribute is undefined.  Thanks to
+  `@todddeluca` for the patch.
 * :feature:`684` Update how `~fabric.decorators.task` wraps task functions to
   preserve additional metadata; this allows decorated functions to play nice
   with Sphinx autodoc. Thanks to Jaka Hudoklin for catch & patch.
