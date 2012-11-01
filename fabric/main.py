@@ -213,6 +213,7 @@ def extract_tasks(imported_vars):
             if obj.name and obj.name != 'undefined':
                 new_style_tasks[obj.name] = obj
             else:
+                obj.name = name
                 new_style_tasks[name] = obj
             # Handle aliasing
             if obj.aliases is not None:

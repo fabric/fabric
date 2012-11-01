@@ -430,6 +430,7 @@ class TestNamespaces(FabricTest):
             docs, funcs = load_fabfile(module)
             eq_(len(funcs), 1)
             ok_('foo' in funcs)
+            eq_(funcs['foo'].name, 'foo')
 
     def test_recursion_steps_into_nontask_modules(self):
         """
