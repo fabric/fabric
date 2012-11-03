@@ -14,6 +14,8 @@ import sys
 import time
 from glob import glob
 from contextlib import closing, contextmanager
+from textwrap import dedent
+from uuid import uuid4
 
 from fabric.context_managers import (settings, char_buffered, hide,
     quiet as quiet_manager, warn_only as warn_only_manager)
@@ -807,6 +809,39 @@ def _execute(channel, command, pty=True, combine_stderr=None,
 
         return stdout_buf, stderr_buf, status
 
+DEFAULT_SCRIPT_NAME = 'fab.%s' % uuid4()
+
+def exec_remote( script, name=None, verbose=True,
+                 shell=True, pty=True, combine_stderr=True, dir=None):
+    """Run arbitrary scripts on a remote host."""
+
+    script = dedent(script).strip()
+    if verbose:
+        prefix = "[%s]" % env.host_string
+        #if env.colors:
+        #    prefix = env.color_settings['host_prefix'](prefix)
+        print("%s run: %s" % (prefix, name or script))
+    name = name or DEFAULT_SCRIPT_NAME
+    if dir is not None:
+        with cd(dir):
+            return _exec_remote(script, name, verbose, shell, pty, combine_stderr)
+    else:
+        return _exec_remote(script, name, verbose, shell, pty, combine_stderr)
+
+def _exec_remote( script, name=None, verbose=True,
+                 shell=True, pty=True, combine_stderr=True):
+    with hide('running', 'stdout', 'stderr'):
+        run('cat > ' + name + ' << FABEND\n' + script + '\nFABEND\n')
+        run('chmod +x ' + name)
+        try:
+            if verbose > 1:
+                with show('stdout', 'stderr'):
+                    output = run('./' + name, shell, pty, combine_stderr)
+            else:
+                output = run('./' + name, shell, pty, combine_stderr)
+        finally:
+            run('rm ' + name)
+    return output
 
 @needs_host
 def open_shell(command=None):
@@ -1056,7 +1091,7 @@ def local(command, capture=False, shell=None):
     ``execute`` argument (which determines the local shell to use.)  As per the
     linked documentation, on Unix the default behavior is to use ``/bin/sh``,
     so this option is useful for setting that value to e.g.  ``/bin/bash``.
-    
+
     `local` is not currently capable of simultaneously printing and
     capturing output, as `~fabric.operations.run`/`~fabric.operations.sudo`
     do. The ``capture`` kwarg allows you to switch between printing and
@@ -1073,7 +1108,7 @@ def local(command, capture=False, shell=None):
     and `~fabric.operations.sudo`, this return value exhibits the
     ``return_code``, ``stderr``, ``failed`` and ``succeeded`` attributes. See
     `run` for details.
-    
+
     `~fabric.operations.local` will honor the `~fabric.context_managers.lcd`
     context manager, allowing you to control its current working directory
     independently of the remote end (which honors
