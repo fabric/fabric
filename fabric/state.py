@@ -123,6 +123,12 @@ env_options = [
         help="python module file to import, e.g. '../other.py'"
     ),
 
+    make_option('-g', '--gateway',
+        default=None,
+        metavar='HOST',
+        help="gateway host to connect through"
+    ),
+
     make_option('--hide',
         metavar='LEVELS',
         help="comma-separated list of output levels to hide"
@@ -282,6 +288,7 @@ env = _AttributeDict({
     'default_port': default_port,
     'echo_stdin': True,
     'exclude_hosts': [],
+    'gateway': None,
     'host': None,
     'host_string': None,
     'lcwd': '',  # Must be empty string, not None, for concatenation purposes

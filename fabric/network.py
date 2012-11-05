@@ -34,6 +34,14 @@ Please make sure all dependencies are installed and importable.
 ipv6_regex = re.compile('^\[?(?P<host>[0-9A-Fa-f:]+)\]?(:(?P<port>\d+))?$')
 
 
+def direct_tcpip(client, host, port):
+    return client.get_transport().open_channel(
+        'direct-tcpip',
+        (host, int(port)),
+        ('', 0)
+    )
+
+
 class HostConnectionCache(dict):
     """
     Dict subclass allowing for caching of host connections/clients.
@@ -69,9 +77,20 @@ class HostConnectionCache(dict):
         """
         Force a new connection to ``key`` host string.
         """
+        from fabric.state import env
         user, host, port = normalize(key)
         key = normalize_to_string(key)
-        self[key] = connect(user, host, port)
+        sock = None
+        if env.gateway:
+            gateway = normalize_to_string(env.gateway)
+            # Ensure initial gateway connection
+            if gateway not in self:
+                self[gateway] = connect(user, host, port)
+            # Now we should have an open gw connection and can ask it for a
+            # direct-tcpip channel to the real target. (Bypass our own
+            # __getitem__ override to avoid hilarity.)
+            sock = direct_tcpip(dict.__getitem__(self, gateway), host, port)
+        self[key] = connect(user, host, port, sock)
 
     def __getitem__(self, key):
         """
@@ -271,9 +290,12 @@ def normalize_to_string(host_string):
     return join_host_strings(*normalize(host_string))
 
 
-def connect(user, host, port):
+def connect(user, host, port, sock=None):
     """
     Create and return a new SSHClient instance connected to given host.
+
+    If ``sock`` is given, it's passed into ``SSHClient.connect()`` directly.
+    Used for gateway connections by e.g. ``HostConnectionCache``.
     """
     from state import env, output
 
@@ -313,7 +335,8 @@ def connect(user, host, port):
                 key_filename=key_filenames(),
                 timeout=env.timeout,
                 allow_agent=not env.no_agent,
-                look_for_keys=not env.no_keys
+                look_for_keys=not env.no_keys,
+                sock=sock
             )
             connected = True
 
@@ -421,6 +444,11 @@ def connect(user, host, port):
             s = "s" if env.connection_attempts > 1 else ""
             msg += " (tried %s time%s)" % (env.connection_attempts, s)
             raise NetworkError(msg, e)
+        # Ensure that if we terminated without connecting and we were given an
+        # explicit socket, close it out.
+        finally:
+            if not connected and sock is not None:
+                sock.close()
 
 
 def prompt_for_password(prompt=None, no_colon=False, stream=None):
