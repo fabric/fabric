@@ -25,6 +25,7 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :release:`1.4.4 <20-12-11-06>`
 * :feature:`684` Update how `~fabric.decorators.task` wraps task functions to
   preserve additional metadata; this allows decorated functions to play nice
   with Sphinx autodoc. Thanks to Jaka Hudoklin for catch & patch.
