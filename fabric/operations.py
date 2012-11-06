@@ -1065,6 +1065,7 @@ def local(command, capture=False, shell=None):
     When ``capture=False``, the local subprocess' stdout and stderr streams are
     hooked up directly to your terminal, though you may use the global
     :doc:`output controls </usage/output_controls>` ``output.stdout`` and
+<<<<<<< HEAD
     ``output.stderr`` to hide one or both if desired. In this mode,
     `~fabric.operations.local` returns None.
 
@@ -1073,6 +1074,18 @@ def local(command, capture=False, shell=None):
     and `~fabric.operations.sudo`, this return value exhibits the
     ``return_code``, ``stderr``, ``failed`` and ``succeeded`` attributes. See
     `run` for details.
+=======
+    ``output.stderr`` to hide one or both if desired. In this mode, the return
+    value's stdout/stderr values are always empty.
+
+    When ``capture=True``, you will not see any output from the subprocess in
+    your terminal, but the return value will contain the captured
+    stdout/stderr.
+    
+    In either case, as with `~fabric.operations.run` and
+    `~fabric.operations.sudo`, this return value exhibits the ``return_code``,
+    ``stderr``, ``failed`` and ``succeeded`` attributes. See `run` for details.
+>>>>>>> 1.4
     
     `~fabric.operations.local` will honor the `~fabric.context_managers.lcd`
     context manager, allowing you to control its current working directory
