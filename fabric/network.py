@@ -46,9 +46,12 @@ class HostConnectionCache(dict):
     """
     Dict subclass allowing for caching of host connections/clients.
 
-    This subclass does not offer any extra methods, but will intelligently
-    create new client connections when keys are requested, or return previously
-    created connections instead.
+    This subclass will intelligently create new client connections when keys
+    are requested, or return previously created connections instead.
+
+    It also handles creating new socket-like objects when required to implement
+    gateway connections and `ProxyCommand`, and handing them to the inner
+    connection methods.
 
     Key values are the same as host specifiers throughout Fabric: optional
     username + ``@``, mandatory hostname, optional ``:`` + port number.
