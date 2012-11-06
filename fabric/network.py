@@ -84,6 +84,7 @@ class HostConnectionCache(dict):
         user, host, port = normalize(key)
         key = normalize_to_string(key)
         sock = None
+        proxy_command = ssh_config().get('proxycommand', None)
         if env.gateway:
             gateway = normalize_to_string(env.gateway)
             # Ensure initial gateway connection
@@ -93,6 +94,8 @@ class HostConnectionCache(dict):
             # direct-tcpip channel to the real target. (Bypass our own
             # __getitem__ override to avoid hilarity.)
             sock = direct_tcpip(dict.__getitem__(self, gateway), host, port)
+        elif proxy_command:
+            sock = ssh.ProxyCommand(proxy_command)
         self[key] = connect(user, host, port, sock)
 
     def __getitem__(self, key):
