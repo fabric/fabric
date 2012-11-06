@@ -708,3 +708,11 @@ If enabled, the following SSH config directives will be loaded and honored by Fa
 * ``ForwardAgent`` will augment :ref:`env.forward_agent <forward-agent>` in an
   "OR" manner: if either is set to a positive value, agent forwarding will be
   enabled.
+* ``ProxyCommand`` will trigger use of a proxy command for host connections,
+  just as with regular ``ssh``.
+
+  .. note::
+    If all you want to do is bounce SSH traffic off a gateway, you may find
+    :ref:`env.gateway <gateway>` to be a more efficient connection method
+    (which will also honor more Fabric-level settings) than the typical ``ssh
+    gatewayhost nc %h %p`` method of using ``ProxyCommand`` as a gateway.
