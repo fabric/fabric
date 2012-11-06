@@ -257,6 +257,24 @@ doesn't make sense to set this in a fabfile, but it may be specified in a
 
 .. seealso:: :doc:`fab`
 
+
+.. _gateway:
+
+``gateway``
+-----------
+
+**Default:** ``None``
+
+Enables SSH-driven gatewaying through the indicated host. The value should be a
+normal Fabric host string as used in e.g. :ref:`env.host_string <host_string>`.
+When this is set, newly created connections will be set to route their SSH
+traffic through the remote SSH daemon to the final destination.
+
+.. versionadded:: 1.5
+
+.. seealso:: :option:`--gateway <-g>`
+
+
 .. _host_string:
 
 ``host_string``

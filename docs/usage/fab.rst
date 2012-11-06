@@ -149,6 +149,12 @@ below.
     .. versionadded:: 1.1
     .. seealso:: :option:`--shortlist`, :option:`--list <-l>`
 
+.. cmdoption:: -g HOST, --gateway=HOST
+
+    Sets :ref:`env.gateway <gateway>` to ``HOST`` host string.
+
+    .. versionadded:: 1.5
+
 .. cmdoption:: -h, --help
 
     Displays a standard help message, with all possible options and a brief
