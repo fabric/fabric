@@ -716,3 +716,13 @@ If enabled, the following SSH config directives will be loaded and honored by Fa
     :ref:`env.gateway <gateway>` to be a more efficient connection method
     (which will also honor more Fabric-level settings) than the typical ``ssh
     gatewayhost nc %h %p`` method of using ``ProxyCommand`` as a gateway.
+
+  .. note::
+    If your SSH config file contains ``ProxyCommand`` directives *and* you have
+    set :ref:`env.gateway <gateway>` to a non-``None`` value, ``env.gateway``
+    will take precedence and the ``ProxyCommand`` will be ignored.
+
+    If one has a pre-created SSH config file, rationale states it will be
+    easier for you to modify ``env.gateway`` (e.g. via
+    `~fabric.context_managers.settings`) than to work around your conf file's
+    contents entirely.
