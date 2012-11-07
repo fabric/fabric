@@ -1,7 +1,7 @@
 include AUTHORS
 include INSTALL
 include LICENSE
-include README
+include README.rst
 recursive-include docs *
 recursive-exclude docs/_build *
 include requirements.txt
