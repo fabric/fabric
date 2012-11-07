@@ -14,10 +14,9 @@ you're reading `the latest version
 Near-term feature releases and support work
 ===========================================
 
-* Fabric **1.5**: SSH tunnelling, remote timeouts, improved SSH key debug info,
-  ``sudo`` improvements, and a bit more. See the `milestone issues page
-  <https://github.com/fabric/fabric/issues?milestone=22&state=open>`_ for what
-  remains to be done.
+* Nothing specifically planned -- will continue to put out bugfix releases and
+  merge small/medium sized features that don't require large tweaks to
+  internals, for the intermediate future.
 
 
 Invoke and Fabric 2.0
