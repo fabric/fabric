@@ -37,10 +37,20 @@ def unwrap_tasks(module, hide_nontasks=False):
 
     .. seealso:: `~fabric.tasks.WrappedCallableTask`, `~fabric.decorators.task`
     """
+    set_tasks = []
     for name, obj in vars(module).items():
         if isinstance(obj, WrappedCallableTask):
-            setattr(module, name, obj.wrapped)
+            setattr(module, obj.name, obj.wrapped)
+            # Handle situation where a task's real name shadows a builtin.
+            # If the builtin comes after the task in vars().items(), the object
+            # we just setattr'd above will get re-hidden :(
+            set_tasks.append(obj.name)
+            # In the same vein, "privately" named wrapped functions whose task
+            # name is public, needs to get renamed so autodoc picks it up.
+            obj.wrapped.func_name = obj.name
         else:
+            if name in set_tasks:
+                continue
             has_docstring = getattr(obj, '__doc__', False)
             if hide_nontasks and has_docstring and not name.startswith('_'):
                 setattr(module, '_%s' % name, obj)
