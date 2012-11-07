@@ -25,6 +25,11 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :release:`1.5.0 <2012-11-06>`
+* :release:`1.4.4 <2012-11-06>`
+* :feature:`684` Update how `~fabric.decorators.task` wraps task functions to
+  preserve additional metadata; this allows decorated functions to play nice
+  with Sphinx autodoc. Thanks to Jaka Hudoklin for catch & patch.
 * :feature:`38` (also :issue:`698`) Implement both SSH-level and
   ``ProxyCommand``-based gatewaying for SSH traffic. (This is distinct from
   tunneling non-SSH traffic over the SSH connection, which is :issue:`78` and
