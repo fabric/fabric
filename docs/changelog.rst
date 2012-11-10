@@ -25,6 +25,8 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`771` Sphinx autodoc helper `~fabric.docs.unwrap_tasks` didn't play nice
+  with ``@task(name=xxx)`` in some situations. This has been fixed.
 * :release:`1.5.0 <2012-11-06>`
 * :release:`1.4.4 <2012-11-06>`
 * :feature:`38` (also :issue:`698`) Implement both SSH-level and
