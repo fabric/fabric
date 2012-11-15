@@ -80,7 +80,7 @@ class HostConnectionCache(dict):
         """
         Force a new connection to ``key`` host string.
         """
-        from fabric.state import env
+        from fabric.state import env, output
         user, host, port = normalize(key)
         key = normalize_to_string(key)
         sock = None
@@ -89,6 +89,8 @@ class HostConnectionCache(dict):
             gateway = normalize_to_string(env.gateway)
             # Ensure initial gateway connection
             if gateway not in self:
+                if output.debug:
+                    print "Creating new gateway connection to %r" % gateway
                 self[gateway] = connect(*normalize(gateway))
             # Now we should have an open gw connection and can ask it for a
             # direct-tcpip channel to the real target. (Bypass our own
