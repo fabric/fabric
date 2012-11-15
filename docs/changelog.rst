@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`776` Fixed serious-but-non-obvious bug in direct-tcpip driven
+  gatewaying (e.g. that triggered by ``-g`` or ``env.gateway``.) Should work
+  correctly now.
 * :bug:`771` Sphinx autodoc helper `~fabric.docs.unwrap_tasks` didn't play nice
   with ``@task(name=xxx)`` in some situations. This has been fixed.
 * :release:`1.5.0 <2012-11-06>`
