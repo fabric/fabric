@@ -89,7 +89,7 @@ class HostConnectionCache(dict):
             gateway = normalize_to_string(env.gateway)
             # Ensure initial gateway connection
             if gateway not in self:
-                self[gateway] = connect(user, host, port)
+                self[gateway] = connect(*normalize(gateway))
             # Now we should have an open gw connection and can ask it for a
             # direct-tcpip channel to the real target. (Bypass our own
             # __getitem__ override to avoid hilarity.)

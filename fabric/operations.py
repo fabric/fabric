@@ -838,7 +838,8 @@ def open_shell(command=None):
 
     .. versionadded:: 1.0
     """
-    _execute(default_channel(), command, True, True, True)
+    _execute(channel=default_channel(), command=command, pty=True,
+        combine_stderr=True, invoke_shell=True)
 
 
 @contextmanager
@@ -875,8 +876,10 @@ def _run_command(command, shell=True, pty=True, combine_stderr=True,
             print("[%s] %s: %s" % (env.host_string, which, given_command))
 
         # Actual execution, stdin/stdout/stderr handling, and termination
-        result_stdout, result_stderr, status = _execute(default_channel(), wrapped_command,
-            pty, combine_stderr, stdout, stderr)
+        result_stdout, result_stderr, status = _execute(
+            channel=default_channel(), command=wrapped_command, pty=pty,
+            combine_stderr=combine_stderr, invoke_shell=False, stdout=stdout,
+            stderr=stderr)
 
         # Assemble output string
         out = _AttributeString(result_stdout)
