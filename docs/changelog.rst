@@ -25,6 +25,7 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* Added current host string to prompt abort error messages.
 * :release:`1.5.1 <2012-11-15>`
 * :bug:`776` Fixed serious-but-non-obvious bug in direct-tcpip driven
   gatewaying (e.g. that triggered by ``-g`` or ``env.gateway``.) Should work
