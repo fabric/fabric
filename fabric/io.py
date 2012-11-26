@@ -11,6 +11,7 @@ from fabric.auth import get_password, set_password
 import fabric.network
 from fabric.network import ssh
 from fabric.utils import RingBuffer
+from fabric.exceptions import CommandTimeout
 
 if win32:
     import msvcrt
@@ -31,10 +32,11 @@ def output_loop(*args, **kwargs):
 
 
 class OutputLooper(object):
-    def __init__(self, chan, attr, stream, capture):
+    def __init__(self, chan, attr, stream, capture, timeout):
         self.chan = chan
         self.stream = stream
         self.capture = capture
+        self.timeout = timeout
         self.read_func = getattr(chan, attr)
         self.prefix = "[%s] %s: " % (
             env.host_string,
@@ -54,6 +56,11 @@ class OutputLooper(object):
     def loop(self):
         """
         Loop, reading from <chan>.<attr>(), writing to <stream> and buffering to <capture>.
+
+        Will raise `~fabric.exceptions.CommandTimeout` if network timeouts
+        continue to be seen past the defined ``self.timeout`` threshold.
+        (Timeouts before then are considered part of normal short-timeout fast
+        network reading; see Fabric issue #733 for background.)
         """
         # Internal capture-buffer-like buffer, used solely for state keeping.
         # Unlike 'capture', nothing is ever purged from this.
@@ -68,11 +75,15 @@ class OutputLooper(object):
         if not env.output_prefix:
             self.prefix = ""
 
+        start = time.time()
         while True:
             # Handle actual read
             try:
                 bytelist = self.read_func(self.read_size)
             except socket.timeout:
+                elapsed = time.time() - start
+                if self.timeout is not None and elapsed > self.timeout:
+                    raise CommandTimeout
                 continue
             # Empty byte == EOS
             if bytelist == '':

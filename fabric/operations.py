@@ -753,7 +753,7 @@ def _execute(channel, command, pty=True, combine_stderr=None,
             if command:
                 channel.sendall(command + "\n")
         else:
-            channel.exec_command(command=command, timeout=timeout)
+            channel.exec_command(command=command)
 
         # Init stdout, stderr capturing. Must use lists instead of strings as
         # strings are immutable and we're using these as pass-by-reference
@@ -763,9 +763,9 @@ def _execute(channel, command, pty=True, combine_stderr=None,
 
         workers = (
             ThreadHandler('out', output_loop, channel, "recv",
-                capture=stdout_buf, stream=stdout),
+                capture=stdout_buf, stream=stdout, timeout=timeout),
             ThreadHandler('err', output_loop, channel, "recv_stderr",
-                capture=stderr_buf, stream=stderr),
+                capture=stderr_buf, stream=stderr, timeout=timeout),
             ThreadHandler('in', input_loop, channel, using_pty)
         )
 
