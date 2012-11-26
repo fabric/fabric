@@ -329,6 +329,15 @@ below.
         :ref:`env.connection_attempts <connection-attempts>`
     .. versionadded:: 1.4
 
+.. cmdoption:: --command-timeout=N, -T N
+
+   Set remote command timeout in seconds. Sets
+   :ref:`env.command_timeout <command_timeout>`.
+
+   .. seealso::
+	:ref:`env.command_timeout <command_timeout>`,
+    .. versionadded:: 1.6
+
 .. cmdoption:: -u USER, --user=USER
 
     Sets :ref:`env.user <user>` to the given string; it will then be used as the

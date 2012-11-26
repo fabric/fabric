@@ -182,6 +182,18 @@ executed by `~fabric.operations.run`/`~fabric.operations.sudo`.
 
 .. versionadded:: 1.0
 
+.. _command-timeout:
+
+``command_timeout``
+-----------
+
+**Default:** ``10``
+
+Network connection timeout, in seconds.
+
+.. versionadded:: 1.6
+.. seealso:: :option:`--command-timeout`
+
 .. _connection-attempts:
 
 ``connection_attempts``

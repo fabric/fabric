@@ -25,6 +25,8 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :feature:`249` Allow specification of remote command timeout value by
+  setting :ref:`env.command_timeout <command_timeout>`.
 * :bug:`776` Fixed serious-but-non-obvious bug in direct-tcpip driven
   gatewaying (e.g. that triggered by ``-g`` or ``env.gateway``.) Should work
   correctly now.

@@ -239,6 +239,14 @@ env_options = [
         help="set connection timeout to N seconds"
     ),
 
+    make_option('-T', '--command-timeout',
+        dest='command_timeout',
+        type='int',
+        default=None,
+        metavar="N",
+        help="set remote command timeout to N seconds"
+    ),
+
     make_option('-u', '--user',
         default=_get_system_username(),
         help="username to use when connecting to remote hosts"
