@@ -369,6 +369,15 @@ class TestQuietAndWarnKwargs(FabricTest):
         assert sys.stdout.getvalue() != ""
 
 
+class TestRun(FabricTest):
+    """
+    @server-using generic run()/sudo() tests
+    """
+    @server()
+    def test_command_timeout(self):
+        run("slow response")
+
+
 #
 # get() and put()
 #

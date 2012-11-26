@@ -58,7 +58,8 @@ tests""",
     "both_streams": [
         "stdout",
         "stderr"
-    ]
+    ],
+    "slow response": ["", "", 0, 3],
 }
 FILES = FakeFilesystem({
     '/file.txt': 'contents',
@@ -407,6 +408,7 @@ def serve_responses(responses, files, passwords, home, pubkeys, port):
             result = responses[self.command]
             stderr = ""
             status = 0
+            sleep = 0
             if isinstance(result, types.StringTypes):
                 stdout = result
             else:
@@ -417,7 +419,10 @@ def serve_responses(responses, files, passwords, home, pubkeys, port):
                     stdout, stderr = result
                 elif size == 3:
                     stdout, stderr, status = result
+                elif size == 4:
+                    stdout, stderr, status, sleep = result
             stdout, stderr = _equalize((stdout, stderr))
+            time.sleep(sleep)
             return stdout, stderr, status
 
         def sudo_password(self):
