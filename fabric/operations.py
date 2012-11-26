@@ -698,7 +698,7 @@ def _prefix_env_vars(command):
 
 
 def _execute(channel, command, pty=True, combine_stderr=None,
-    invoke_shell=False, stdout=None, stderr=None):
+    invoke_shell=False, stdout=None, stderr=None, timeout=None):
     """
     Execute ``command`` over ``channel``.
 
@@ -720,6 +720,9 @@ def _execute(channel, command, pty=True, combine_stderr=None,
     # stdout/stderr redirection
     stdout = stdout or sys.stdout
     stderr = stderr or sys.stderr
+
+    # Timeout setting control
+    timeout = env.command_timeout if (timeout is None) else timeout
 
     with char_buffered(sys.stdin):
         # Combine stdout and stderr to get around oddball mixing issues
@@ -750,7 +753,7 @@ def _execute(channel, command, pty=True, combine_stderr=None,
             if command:
                 channel.sendall(command + "\n")
         else:
-            channel.exec_command(command)
+            channel.exec_command(command=command, timeout=timeout)
 
         # Init stdout, stderr capturing. Must use lists instead of strings as
         # strings are immutable and we're using these as pass-by-reference
