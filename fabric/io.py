@@ -26,9 +26,8 @@ def _has_newline(bytelist):
     return '\r' in bytelist or '\n' in bytelist
 
 
-def output_loop(chan, attr, stream, capture):
-    ol = OutputLooper(chan, attr, stream, capture)
-    ol.loop()
+def output_loop(*args, **kwargs):
+    OutputLooper(*args, **kwargs).loop()
 
 
 class OutputLooper(object):
