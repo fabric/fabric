@@ -59,7 +59,6 @@ tests""",
         "stdout",
         "stderr"
     ],
-    "slow response": ["", "", 0, 3],
 }
 FILES = FakeFilesystem({
     '/file.txt': 'contents',

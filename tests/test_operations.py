@@ -19,6 +19,7 @@ from fabric.operations import require, prompt, _sudo_prefix, _shell_wrap, \
     _shell_escape
 from fabric.api import get, put, hide, show, cd, lcd, local, run, sudo
 from fabric.sftp import SFTP
+from fabric.exceptions import CommandTimeout
 
 from fabric.decorators import with_settings
 from utils import *
@@ -373,9 +374,11 @@ class TestRun(FabricTest):
     """
     @server-using generic run()/sudo() tests
     """
-    @server()
-    def test_command_timeout(self):
-        run("slow response")
+    @server(responses={'slow': ['', '', 0, 3]}) # sleep 3 seconds
+    @raises(CommandTimeout)
+    def test_command_timeout_via_env_var(self):
+        env.command_timeout = 2 # timeout after 2 seconds
+        run("slow")
 
 
 #
