@@ -370,15 +370,23 @@ class TestQuietAndWarnKwargs(FabricTest):
         assert sys.stdout.getvalue() != ""
 
 
+slow_server = server(responses={'slow': ['', '', 0, 3]})
+slow = lambda x: slow_server(raises(CommandTimeout)(x))
+
 class TestRun(FabricTest):
     """
     @server-using generic run()/sudo() tests
     """
-    @server(responses={'slow': ['', '', 0, 3]}) # sleep 3 seconds
-    @raises(CommandTimeout)
+    @slow
     def test_command_timeout_via_env_var(self):
         env.command_timeout = 2 # timeout after 2 seconds
-        run("slow")
+        with hide('everything'):
+            run("slow")
+
+    @slow
+    def test_command_timeout_via_kwarg(self):
+        with hide('everything'):
+            run("slow", timeout=2)
 
 
 #

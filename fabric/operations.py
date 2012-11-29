@@ -852,7 +852,7 @@ def _noop():
 
 def _run_command(command, shell=True, pty=True, combine_stderr=True,
     sudo=False, user=None, quiet=False, warn_only=False, stdout=None,
-    stderr=None, group=None):
+    stderr=None, group=None, timeout=None):
     """
     Underpinnings of `run` and `sudo`. See their docstrings for more info.
     """
@@ -882,7 +882,7 @@ def _run_command(command, shell=True, pty=True, combine_stderr=True,
         result_stdout, result_stderr, status = _execute(
             channel=default_channel(), command=wrapped_command, pty=pty,
             combine_stderr=combine_stderr, invoke_shell=False, stdout=stdout,
-            stderr=stderr)
+            stderr=stderr, timeout=timeout)
 
         # Assemble output string
         out = _AttributeString(result_stdout)
@@ -920,7 +920,7 @@ def _run_command(command, shell=True, pty=True, combine_stderr=True,
 
 @needs_host
 def run(command, shell=True, pty=True, combine_stderr=None, quiet=False,
-    warn_only=False, stdout=None, stderr=None):
+    warn_only=False, stdout=None, stderr=None, timeout=None):
     """
     Run a shell command on a remote host.
 
@@ -972,11 +972,17 @@ def run(command, shell=True, pty=True, combine_stderr=None, quiet=False,
     could even provide your own stream objects or loggers, e.g. ``myout =
     StringIO(); run("command, stdout=myout)``.
 
+    If you want an exception raised when the remote program takes too long to
+    run, specify ``timeout=N`` where ``N`` is an integer number of seconds,
+    after which to time out. This will cause ``run`` to raise a
+    `~fabric.exceptions.CommandTimeout` exception.
+
     Examples::
 
         run("ls /var/www/")
         run("ls /home/myuser", shell=False)
         output = run('ls /var/www/site1')
+        run("take_a_long_time", timeout=5)
 
     .. versionadded:: 1.0
         The ``succeeded`` and ``stderr`` return value attributes, the
@@ -995,9 +1001,12 @@ def run(command, shell=True, pty=True, combine_stderr=None, quiet=False,
 
     .. versionadded:: 1.5
         The return value attributes ``.command`` and ``.real_command``.
+
+    .. versionadded:: 1.6
+        The ``timeout`` argument.
     """
     return _run_command(command, shell, pty, combine_stderr, quiet=quiet,
-        warn_only=warn_only, stdout=stdout, stderr=stderr)
+        warn_only=warn_only, stdout=stdout, stderr=stderr, timeout=timeout)
 
 
 @needs_host
