@@ -388,6 +388,17 @@ class TestRun(FabricTest):
         with hide('everything'):
             run("slow", timeout=2)
 
+    @slow
+    def test_command_timeout_via_env_var_in_sudo(self):
+        env.command_timeout = 2 # timeout after 2 seconds
+        with hide('everything'):
+            sudo("slow")
+
+    @slow
+    def test_command_timeout_via_kwarg_of_sudo(self):
+        with hide('everything'):
+            sudo("slow", timeout=2)
+
 
 #
 # get() and put()

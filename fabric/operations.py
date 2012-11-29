@@ -1011,7 +1011,8 @@ def run(command, shell=True, pty=True, combine_stderr=None, quiet=False,
 
 @needs_host
 def sudo(command, shell=True, pty=True, combine_stderr=None, user=None,
-         quiet=False, warn_only=False, stdout=None, stderr=None, group=None):
+    quiet=False, warn_only=False, stdout=None, stderr=None, group=None,
+    timeout=None):
     """
     Run a shell command on a remote host, with superuser privileges.
 
@@ -1054,8 +1055,9 @@ def sudo(command, shell=True, pty=True, combine_stderr=None, user=None,
     return _run_command(
         command, shell, pty, combine_stderr, sudo=True,
         user=user if user else env.sudo_user,
-        group=group, quiet=quiet,
-        warn_only=warn_only, stdout=stdout, stderr=stderr)
+        group=group, quiet=quiet, warn_only=warn_only, stdout=stdout,
+        stderr=stderr, timeout=timeout
+    )
 
 
 def local(command, capture=False, shell=None):
