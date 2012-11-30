@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :feature:`787` Utilize new Paramiko feature allowing us to skip the use of
+  temporary local files when using file-like objects in
+  `~fabric.operations.get`/`~fabric.operations.put`.
 * :feature:`249` Allow specification of remote command timeout value by
   setting :ref:`env.command_timeout <command_timeout>`. Thanks to Paul
   McMillan for suggestion & initial patch.
