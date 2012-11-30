@@ -274,11 +274,6 @@ def put(local_path=None, remote_path=None, use_sudo=False,
         contents of the file-like object by rewinding it using ``seek`` (and
         will use ``tell`` afterwards to preserve the previous file position).
 
-    .. note::
-        Use of a file-like object in `~fabric.operations.put`'s ``local_path``
-        argument will cause a temporary file to be utilized due to limitations
-        in our SSH layer's API.
-
     ``remote_path`` may also be a relative or absolute location, but applied to
     the remote host. Relative paths are relative to the remote user's home
     directory, but tilde expansion (e.g. ``~/.ssh/``) will also be performed if
@@ -489,14 +484,6 @@ def get(remote_path, local_path=None):
         sense here and/or may not even be possible.
 
     .. note::
-        Due to how our SSH layer works, a temporary file will still be written
-        to your hard disk even if you specify a file-like object such as a
-        StringIO for the ``local_path`` argument. Cleanup is performed,
-        however -- we just note this for users expecting straight-to-memory
-        transfers. (We hope to patch our SSH layer in the future to enable true
-        straight-to-memory downloads.)
-
-    .. note::
         If a file-like object such as StringIO has a ``name`` attribute, that
         will be used in Fabric's printed output instead of the default
         ``<file obj>``
@@ -568,15 +555,12 @@ def get(remote_path, local_path=None):
                     result = ftp.get_dir(remote_path, local_path)
                     local_files.extend(result)
                 else:
-                    # Result here can be file contents (if not local_is_path)
-                    # or final resultant file path (if local_is_path)
+                    # Perform actual get. If getting to real local file path,
+                    # add result (will be true final path value) to
+                    # local_files. File-like objects are omitted.
                     result = ftp.get(remote_path, local_path, local_is_path,
                         os.path.basename(remote_path))
-                    if not local_is_path:
-                        # Overwrite entire contents of local_path
-                        local_path.seek(0)
-                        local_path.write(result)
-                    else:
+                    if local_is_path:
                         local_files.append(result)
 
         except Exception, e:

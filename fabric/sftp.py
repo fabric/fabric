@@ -146,23 +146,16 @@ class SFTP(object):
         if local_is_path and os.path.exists(local_path):
             msg = "Local file %s already exists and is being overwritten."
             warn(msg % local_path)
-        # Have to bounce off FS if doing file-like objects
-        fd, real_local_path = None, local_path
+        # File-like objects: reset to file seek 0 (to ensure full overwrite)
+        # and then use Paramiko's getfo() directly
+        getter = self.ftp.get
         if not local_is_path:
-            fd, real_local_path = tempfile.mkstemp()
-        self.ftp.get(remote_path, real_local_path)
-        # Return file contents (if it needs stuffing into a file-like obj)
-        # or the final local file path (otherwise)
-        result = None
-        if not local_is_path:
-            file_obj = os.fdopen(fd)
-            result = file_obj.read()
-            # Clean up temporary file
-            file_obj.close()
-            os.remove(real_local_path)
-        else:
-            result = real_local_path
-        return result
+            local_path.seek(0)
+            getter = self.ftp.getfo
+        getter(remote_path, local_path)
+        # Return local_path object for posterity. (If mutated, caller will want
+        # to know.)
+        return local_path
 
     def get_dir(self, remote_path, local_path):
         # Decide what needs to be stripped from remote paths so they're all
