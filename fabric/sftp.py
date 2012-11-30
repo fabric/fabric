@@ -4,7 +4,6 @@ import hashlib
 import os
 import posixpath
 import stat
-import tempfile
 import re
 from fnmatch import filter as fnfilter
 
@@ -219,20 +218,15 @@ class SFTP(object):
             hasher.update(env.host_string)
             hasher.update(target_path)
             remote_path = hasher.hexdigest()
-        # Have to bounce off FS if doing file-like objects
-        fd, real_local_path = None, local_path
+        # Read, ensuring we handle file-like objects correct re: seek pointer
+        putter = self.ftp.put
         if not local_is_path:
-            fd, real_local_path = tempfile.mkstemp()
             old_pointer = local_path.tell()
             local_path.seek(0)
-            file_obj = os.fdopen(fd, 'wb')
-            file_obj.write(local_path.read())
-            file_obj.close()
-            local_path.seek(old_pointer)
-        rattrs = self.ftp.put(real_local_path, remote_path)
-        # Clean up
+            putter = self.ftp.putfo
+        rattrs = putter(local_path, remote_path)
         if not local_is_path:
-            os.remove(real_local_path)
+            local_path.seek(old_pointer)
         # Handle modes if necessary
         if (local_is_path and mirror_local_mode) or (mode is not None):
             lmode = os.stat(local_path).st_mode if mirror_local_mode else mode
