@@ -1,10 +1,10 @@
 # These requirements are for DEVELOPMENT ONLY!
 # You do not need e.g. Sphinx or Fudge just to run the 'fab' tool.
-# Instead, these are necessary for executing the test suite.
-#
-# PLEASE NOTE: due to how Pip currently works, you will need to manually
-# execute "pip install Mercurial" before using this file. Otherwise it will
-# bail out upon trying to install Fudge from BitBucket.
+# Instead, these are necessary for executing the test suite or developing the
+# cutting edge (which may have different requirements from released versions.)
+
+# Development version of Paramiko, just in case we're in one of those phases.
+-e git+https://github.com/paramiko/paramiko#egg=paramiko
 
 # Test runner/testing utils
 nose
