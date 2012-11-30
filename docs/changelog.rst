@@ -31,6 +31,8 @@ Changelog
 * :feature:`249` Allow specification of remote command timeout value by
   setting :ref:`env.command_timeout <command_timeout>`. Thanks to Paul
   McMillan for suggestion & initial patch.
+* Added current host string to prompt abort error messages.
+* :release:`1.5.1 <2012-11-15>`
 * :bug:`776` Fixed serious-but-non-obvious bug in direct-tcpip driven
   gatewaying (e.g. that triggered by ``-g`` or ``env.gateway``.) Should work
   correctly now.
