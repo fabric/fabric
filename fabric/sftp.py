@@ -271,8 +271,9 @@ class SFTP(object):
 
         for context, dirs, files in os.walk(local_path):
             rcontext = context.replace(strip, '', 1)
-            rcontext = rcontext.lstrip('/')
+            # normalize pathname separators with POSIX separator
             rcontext = rcontext.replace(os.sep, '/')
+            rcontext = rcontext.lstrip('/')
             rcontext = posixpath.join(remote_path, rcontext)
 
             if not self.exists(rcontext):
