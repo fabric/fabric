@@ -233,8 +233,10 @@ def execute(task, *args, **kwargs):
     taskname:host=hostname``.
 
     Any other arguments or keyword arguments will be passed verbatim into
-    ``task`` when it is called, so ``execute(mytask, 'arg1', kwarg1='value')``
-    will (once per host) invoke ``mytask('arg1', kwarg1='value')``.
+    ``task`` (the function itself -- not the ``@task`` decorator wrapping your
+    function!) when it is called, so ``execute(mytask, 'arg1',
+    kwarg1='value')`` will (once per host) invoke ``mytask('arg1',
+    kwarg1='value')``.
 
     This function returns a dictionary mapping host strings to the given task's
     return value for that host's execution run. For example, ``execute(foo,
