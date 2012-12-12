@@ -35,7 +35,7 @@ The `~fabric.context_managers.settings` context manager
 
 In many situations, it's useful to only temporarily modify ``env`` vars so that
 a given settings change only applies to a block of code. Fabric provides a
-`~fabric.context_managers.settings` context manager, which takes any numbr of
+`~fabric.context_managers.settings` context manager, which takes any number of
 key/value pairs and will use them to modify ``env`` within its wrapped block.
 
 For example, there are many situations where setting ``warn_only`` (see below)
