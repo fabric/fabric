@@ -217,9 +217,9 @@ class TestQuietAndWarnOnly(FabricTest):
 
 # path() (distinct from shell_env)
 
-class PathTest(FabricTest):
+class TestPathManager(FabricTest):
     def setup(self):
-        super(PathTest, self).setup()
+        super(TestPathManager, self).setup()
         self.real = os.environ.get('PATH')
 
     def via_local(self):
