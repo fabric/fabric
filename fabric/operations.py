@@ -688,8 +688,10 @@ def _prefix_env_vars(command):
     env_vars.update(env.shell_env)
 
     if env_vars:
-        exports = ' '.join('%s="%s"' % (k, _shell_escape(v))
-                           for k, v in env_vars.iteritems())
+        exports = ' '.join(
+            '%s="%s"' % (k, v if k == 'PATH' else _shell_escape(v))
+            for k, v in env_vars.iteritems()
+        )
         shell_env_str = 'export %s && ' % exports
     else:
         shell_env_str = ''
