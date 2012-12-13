@@ -25,6 +25,10 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`775` Shell escaping was incorrectly applied to the value of ``$PATH``
+  updates in our shell environment handling, causing (at the very least)
+  `~fabric.operations.local` binary paths to become inoperable in certain
+  situations.  This has been fixed.
 * :feature:`787` Utilize new Paramiko feature allowing us to skip the use of
   temporary local files when using file-like objects in
   `~fabric.operations.get`/`~fabric.operations.put`.

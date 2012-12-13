@@ -143,7 +143,7 @@ def _setenv(variables):
                 # If the current env value for this key still matches the
                 # value we set it to beforehand, we are OK to revert it to the
                 # pre-block value.
-                if value == state.env[key]:
+                if key in state.env and value == state.env[key]:
                     if key in previous:
                         state.env[key] = previous[key]
                     else:
