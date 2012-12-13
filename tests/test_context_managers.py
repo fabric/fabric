@@ -1,13 +1,14 @@
 from __future__ import with_statement
 
+import os
 import sys
 
 from nose.tools import eq_, ok_
 
 from fabric.state import env, output
 from fabric.context_managers import (cd, settings, lcd, hide, shell_env, quiet,
-    warn_only, prefix)
-from fabric.operations import run
+    warn_only, prefix, path)
+from fabric.operations import run, local
 
 from utils import mock_streams, FabricTest
 from server import server
@@ -212,3 +213,21 @@ class TestQuietAndWarnOnly(FabricTest):
         with warn_only():
             run("ls /simple")
             assert sys.stdout.getvalue().strip() != ""
+
+
+# path() (distinct from shell_env)
+
+class PathTest(FabricTest):
+    def setup(self):
+        super(PathTest, self).setup()
+        self.real = os.environ.get('PATH')
+
+    def via_local(self):
+        with hide('everything'):
+            return local("echo $PATH", capture=True)
+
+    def test_lack_of_path_has_default_local_path(self):
+        """
+        No use of 'with path' == default local $PATH
+        """
+        eq_(self.real, self.via_local())
