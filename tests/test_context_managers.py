@@ -231,3 +231,10 @@ class PathTest(FabricTest):
         No use of 'with path' == default local $PATH
         """
         eq_(self.real, self.via_local())
+
+    def test_use_of_path_appends_by_default(self):
+        """
+        'with path' appends by default
+        """
+        with path('foo'):
+            eq_(self.via_local(), self.real + ":foo")
