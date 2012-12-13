@@ -25,6 +25,10 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`775` Shell escaping was incorrectly applied to the value of ``$PATH``
+  updates in our shell environment handling, causing (at the very least)
+  `~fabric.operations.local` binary paths to become inoperable in certain
+  situations.  This has been fixed.
 * Added current host string to prompt abort error messages.
 * :release:`1.5.1 <2012-11-15>`
 * :bug:`776` Fixed serious-but-non-obvious bug in direct-tcpip driven
