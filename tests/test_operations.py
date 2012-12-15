@@ -17,7 +17,7 @@ from fudge import with_patched_object
 from fabric.state import env, output
 from fabric.operations import require, prompt, _sudo_prefix, _shell_wrap, \
     _shell_escape
-from fabric.api import get, put, hide, show, cd, lcd, local, run, sudo
+from fabric.api import get, put, hide, show, cd, lcd, local, run, sudo, quiet
 from fabric.sftp import SFTP
 from fabric.exceptions import CommandTimeout
 
@@ -368,6 +368,13 @@ class TestQuietAndWarnKwargs(FabricTest):
     def test_warn_only_does_not_imply_hide_everything(self):
         run("ls /simple", warn_only=True)
         assert sys.stdout.getvalue() != ""
+
+
+class TestMultipleOKReturnCodes(FabricTest):
+    @server(responses={'no srsly its ok': ['', '', 1]})
+    def test_expand_to_include_1(self):
+        with settings(quiet(), ok_ret_codes=[0, 1]):
+            eq_(run("no srsly its ok").succeeded, True)
 
 
 slow_server = server(responses={'slow': ['', '', 0, 3]})
