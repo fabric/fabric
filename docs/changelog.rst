@@ -25,6 +25,8 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :feature:`735` Add ``ok_ret_codes`` option to ``env`` to allow alternate
+  return codes to be treated os "ok". Thanks to Andy Kraut for the pull request.
 * :bug:`775` Shell escaping was incorrectly applied to the value of ``$PATH``
   updates in our shell environment handling, causing (at the very least)
   `~fabric.operations.local` binary paths to become inoperable in certain
