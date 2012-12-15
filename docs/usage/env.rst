@@ -592,9 +592,11 @@ Allows specification of an alternate SSH configuration file path.
 
 **Default:** ``[0]``
 
-Allows specification of a list of return codes to be treated as successful.
+Return codes in this list are used to determine whether calls to
+`~fabric.operations.run`/`~fabric.operations.sudo`/`~fabric.operations.sudo`
+are considered successful.
 
-..versionadded:: 1.5
+..versionadded:: 1.6
 
 .. _sudo_prefix:
 
