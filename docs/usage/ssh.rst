@@ -18,8 +18,8 @@ identifiers (IP address, sometimes with a hostname as well) and SSH keys. (For
 details on how this works, please see the `OpenSSH documentation
 <http://openssh.org/manual.html>`_.)
 
-The ``ssh`` library is capable of loading up your ``known_hosts`` file, and
-will then compare any host it connects to, with that mapping. Settings are
+The ``paramiko`` library is capable of loading up your ``known_hosts`` file,
+and will then compare any host it connects to, with that mapping. Settings are
 available to determine what happens when an unknown host (a host whose username
 or IP is not found in ``known_hosts``) is seen:
 
@@ -29,9 +29,9 @@ or IP is not found in ``known_hosts``) is seen:
 * **Add**: the new host key is added to the in-memory list of known hosts, the
   connection is made, and things continue normally. Note that this does **not**
   modify your on-disk ``known_hosts`` file!
-* **Ask**: not yet implemented at the Fabric level, this is an ``ssh`` library
-  option which would result in the user being prompted about the unknown key
-  and whether to accept it.
+* **Ask**: not yet implemented at the Fabric level, this is a ``paramiko``
+  library option which would result in the user being prompted about the
+  unknown key and whether to accept it.
 
 Whether to reject or add hosts, as above, is controlled in Fabric via the
 :ref:`env.reject_unknown_hosts <reject-unknown-hosts>` option, which is False

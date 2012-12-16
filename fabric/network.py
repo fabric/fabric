@@ -382,7 +382,7 @@ def connect(user, host, port, sock=None):
             # Otherwise, assume an auth exception, and prompt for new/better
             # password.
 
-            # The 'ssh' library doesn't handle prompting for locked private
+            # Paramiko doesn't handle prompting for locked private
             # keys (i.e.  keys with a passphrase and not loaded into an agent)
             # so we have to detect this and tweak our prompt slightly.
             # (Otherwise, however, the logic flow is the same, because

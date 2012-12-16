@@ -31,8 +31,8 @@ In order for Fabric's installation to succeed, you will need four primary pieces
 
 * the Python programming language;
 * the ``setuptools`` packaging/installation library;
-* the Python ``ssh`` SSH2 library;
-* and ``ssh``'s dependency, the PyCrypto cryptography library.
+* the Python ``paramiko`` SSH2 library;
+* and ``paramiko``'s dependency, the PyCrypto cryptography library.
 
 and, if using the :doc:`parallel execution mode </usage/parallel>`:
 
@@ -234,11 +234,11 @@ installation of Fabric via ``pypm``::
 
     C:\> pypm install fabric
     The following packages will be installed into "%APPDATA%\Python" (2.7):
-     ssh-1.7.8 pycrypto-2.4 fabric-1.3.0
+     paramiko-1.7.8 pycrypto-2.4 fabric-1.3.0
     Get: [pypm-free.activestate.com] fabric 1.3.0
-    Get: [pypm-free.activestate.com] ssh 1.7.8
+    Get: [pypm-free.activestate.com] paramiko 1.7.8
     Get: [pypm-free.activestate.com] pycrypto 2.4
-    Installing ssh-1.7.8
+    Installing paramiko-1.7.8
     Installing pycrypto-2.4
     Installing fabric-1.3.0
     Fixing script %APPDATA%\Python\Scripts\fab-script.py
