@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`604` Fixed wrong treatment of backslashes in put operation when uploading
+  directory tree on Windows. Thanks to @jaraco for the catch. Thanks to @dieresys
+  for the patch.
 * :bug:`792` The newish `~fabric.context_managers.shell_env` context manager
   was incorrectly omitted from the ``fabric.api`` import endpoint. This has
   been remedied. Thanks to Vishal Rana for the catch.
