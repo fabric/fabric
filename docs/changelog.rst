@@ -26,7 +26,8 @@ Changelog
 =========
 
 * :bug:`604` Fixed wrong treatment of backslashes in put operation when uploading
-  directory tree on Windows. Thanks to @jaraco for the catch. Thanks to @dieresys
+  directory tree on Windows. Thanks to Jason Coombs for the catch and
+  `@diresys` & Oliver Janik for the patch.
   for the patch.
 * :bug:`792` The newish `~fabric.context_managers.shell_env` context manager
   was incorrectly omitted from the ``fabric.api`` import endpoint. This has
