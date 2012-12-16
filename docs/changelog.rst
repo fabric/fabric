@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`792` The newish `~fabric.context_managers.shell_env` context manager
+  was incorrectly omitted from the ``fabric.api`` import endpoint. This has
+  been remedied. Thanks to Vishal Rana for the catch.
 * :feature:`735` Add ``ok_ret_codes`` option to ``env`` to allow alternate
   return codes to be treated os "ok". Thanks to Andy Kraut for the pull request.
 * :bug:`775` Shell escaping was incorrectly applied to the value of ``$PATH``
