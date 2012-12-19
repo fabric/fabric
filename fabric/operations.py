@@ -956,7 +956,7 @@ def run(command, shell=True, pty=True, combine_stderr=None, quiet=False,
     standard error to the local standard out, while preserving it as its own
     distinct attribute on the return value (as per above.) Alternately, you
     could even provide your own stream objects or loggers, e.g. ``myout =
-    StringIO(); run("command, stdout=myout)``.
+    StringIO(); run("command", stdout=myout)``.
 
     If you want an exception raised when the remote program takes too long to
     run, specify ``timeout=N`` where ``N`` is an integer number of seconds,
