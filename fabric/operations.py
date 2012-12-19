@@ -969,7 +969,7 @@ def run(command, shell=True, pty=True, combine_stderr=None, quiet=False,
     standard error to the local standard out, while preserving it as its own
     distinct attribute on the return value (as per above.) Alternately, you
     could even provide your own stream objects or loggers, e.g. ``myout =
-    StringIO(); run("command, stdout=myout)``.
+    StringIO(); run("command", stdout=myout)``.
 
     Examples::
 
