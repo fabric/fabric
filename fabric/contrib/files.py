@@ -137,6 +137,7 @@ def sed(filename, before, after, limit='', use_sudo=False, backup='.bak',
     slashes, single quotes and parentheses for you, so you don't need to
     specify e.g.  ``http:\/\/foo\.com``, instead just using ``http://foo\.com``
     is fine.
+    Also single quote `'` in before and after would be escaped with `'\''`.
 
     If ``use_sudo`` is True, will use `sudo` instead of `run`.
 
@@ -153,9 +154,12 @@ def sed(filename, before, after, limit='', use_sudo=False, backup='.bak',
     """
     func = use_sudo and sudo or run
     # Characters to be escaped in both
-    for char in "/'":
+    for char in "/":
         before = before.replace(char, r'\%s' % char)
         after = after.replace(char, r'\%s' % char)
+    # single quote escpaping is slightly different
+    before = before.replace("'", r"'\''")
+    after = after.replace("'", r"'\''")
     # Characters to be escaped in replacement only (they're useful in regexen
     # in the 'before' part)
     for char in "()":
