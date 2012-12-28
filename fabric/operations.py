@@ -676,7 +676,7 @@ def _prefix_env_vars(command):
         exp_cmd = '' if win32 else 'export '
 
         exports = ' '.join(
-            '%s%s="%s"' % (set_cmd, k, _shell_escape(v))
+            '%s%s="%s"' % (set_cmd, k, v if k == 'PATH' else _shell_escape(v))
             for k, v in env_vars.iteritems()
         )
         shell_env_str = '%s%s && ' % (exp_cmd, exports)
