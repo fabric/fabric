@@ -621,6 +621,9 @@ def main(fabfile_locations=None):
             if key in state.env and isinstance(state.env[key], basestring):
                 state.env[key] = state.env[key].split(',')
 
+        # Feed the env.tasks : tasks that are asked to be executed.
+        state.env['tasks'] = arguments
+        
         # Handle output control level show/hide
         update_output_levels(show=options.show, hide=options.hide)
 

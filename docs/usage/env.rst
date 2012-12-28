@@ -642,6 +642,16 @@ none is given. Useful in combination with `~fabric.context_managers.settings`.
 
 .. seealso:: `~fabric.operations.sudo`
 
+``tasks``
+-------------
+
+**Default:** ``[]``
+
+Set by ``fab`` to the full tasks list to be executed for the currently executing command. For
+informational purposes only.
+
+.. seealso:: :doc:`execution`
+
 .. _timeout:
 
 ``timeout``
