@@ -642,6 +642,8 @@ none is given. Useful in combination with `~fabric.context_managers.settings`.
 
 .. seealso:: `~fabric.operations.sudo`
 
+.. _env-tasks:
+
 ``tasks``
 -------------
 
