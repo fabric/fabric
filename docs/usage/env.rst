@@ -647,8 +647,8 @@ none is given. Useful in combination with `~fabric.context_managers.settings`.
 
 **Default:** ``[]``
 
-Set by ``fab`` to the full tasks list to be executed for the currently executing command. For
-informational purposes only.
+Set by ``fab`` to the full tasks list to be executed for the currently
+executing command. For informational purposes only.
 
 .. seealso:: :doc:`execution`
 
