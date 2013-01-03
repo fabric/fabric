@@ -24,6 +24,12 @@ However, if you want to live on the edge, you can pull down the source code
 from our Git repository, or fork us on Github. The :doc:`installation` page has
 details for how to access the source code.
 
+.. warning::
+
+    If you install Fabric from Git, you will need to install its dependency
+    Paramiko from Git as well. See :doc:`the installation docs <installation>`
+    for details.
+
 
 Development
 ===========
