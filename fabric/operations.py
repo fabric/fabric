@@ -658,13 +658,15 @@ def _prefix_env_vars(command):
 
     # path(): local shell env var update, appending/prepending/replacing $PATH
     path = env.path
+    syspath = os.environ.get('PATH', '')
+
     if path:
-        if env.path_behavior == 'append':
-            path = '$PATH:\"%s\" ' % path
-        elif env.path_behavior == 'prepend':
-            path = '\"%s\":$PATH ' % path
+        if env.path_behavior == 'append' and syspath:
+            path = '%s:\"%s\" ' % (syspath, path)
+        elif env.path_behavior == 'prepend' and syspath:
+            path = '\"%s\":%s ' % (path, syspath)
         elif env.path_behavior == 'replace':
-            path = '\"%s\" ' % path
+            pass #nothing to do here
 
         env_vars['PATH'] = path
 
@@ -1059,7 +1061,7 @@ def local(command, capture=False, shell=None):
     ``execute`` argument (which determines the local shell to use.)  As per the
     linked documentation, on Unix the default behavior is to use ``/bin/sh``,
     so this option is useful for setting that value to e.g.  ``/bin/bash``.
-    
+
     `local` is not currently capable of simultaneously printing and
     capturing output, as `~fabric.operations.run`/`~fabric.operations.sudo`
     do. The ``capture`` kwarg allows you to switch between printing and
@@ -1074,11 +1076,11 @@ def local(command, capture=False, shell=None):
     When ``capture=True``, you will not see any output from the subprocess in
     your terminal, but the return value will contain the captured
     stdout/stderr.
-    
+
     In either case, as with `~fabric.operations.run` and
     `~fabric.operations.sudo`, this return value exhibits the ``return_code``,
     ``stderr``, ``failed`` and ``succeeded`` attributes. See `run` for details.
-    
+
     `~fabric.operations.local` will honor the `~fabric.context_managers.lcd`
     context manager, allowing you to control its current working directory
     independently of the remote end (which honors
