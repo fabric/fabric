@@ -565,8 +565,8 @@ The alternate approach
 
 Similar to the above, but using ``fab``'s ability to call multiple tasks in
 succession instead of an explicit ``execute`` call, is to mutate
-:ref:`env.hosts <env-hosts>` in a host-list lookup task and then call
-``do_work`` in the same session::
+:ref:`env.hosts <hosts>` in a host-list lookup task and then call ``do_work``
+in the same session::
 
     from fabric.api import run, task
 

@@ -52,10 +52,12 @@ Changelog
   ``ProxyCommand``-based gatewaying for SSH traffic. (This is distinct from
   tunneling non-SSH traffic over the SSH connection, which is :issue:`78` and
   not implemented yet.)
+
     * Thanks in no particular order to Erwin Bolwidt, Oskari Saarenmaa, Steven
       Noonan, Vladimir Lazarenko, Lincoln de Sousa, Valentino Volonghi, Olle
       Lundberg and Github user `@acrish` for providing the original patches to
       both Fabric and Paramiko.
+
 * :feature:`684` (also :issue:`569`) Update how `~fabric.decorators.task` wraps
   task functions to preserve additional metadata; this allows decorated
   functions to play nice with Sphinx autodoc. Thanks to Jaka Hudoklin for catch
@@ -134,7 +136,7 @@ Changelog
   Fabric correctly printed such exceptions, and returned them from
   `~fabric.tasks.execute`, but did not actually cause the child or parent
   processes to halt with a nonzero status. This has been fixed.
-  `~fabric.tasks.execute` now also honors :ref:`env.warn_only <warn-only>` so
+  `~fabric.tasks.execute` now also honors :ref:`env.warn_only <warn_only>` so
   users may still opt to call it by hand and inspect the returned exceptions,
   instead of encountering a hard stop. Thanks to Matt Robenolt for the catch.
 * :feature:`241` Add the command executed as a ``.command`` attribute to the
