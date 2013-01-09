@@ -8,6 +8,13 @@ reading the rest of the documentation, especially the :ref:`usage docs
 <usage-docs>`, so please make sure you check those out if your question is not
 answered here.
 
+
+How do I dynamically set host lists?
+====================================
+
+See :ref:`dynamic-hosts`.
+
+
 .. _init-scripts-pty:
 
 Init scripts don't work!
