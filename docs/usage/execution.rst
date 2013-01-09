@@ -103,6 +103,8 @@ During execution, Fabric normalizes the host strings given and then stores each
 part (username/hostname/port) in the environment dictionary, for both its use
 and for tasks to reference if the need arises. See :doc:`env` for details.
 
+.. _roles:
+
 Roles
 -----
 
@@ -511,6 +513,50 @@ That's all there is to it; the `~fabric.decorators.roles` decorators will be hon
     may use the `~fabric.decorators.runs_once` decorator.
 
 .. seealso:: `~fabric.tasks.execute`, `~fabric.decorators.runs_once`
+
+
+Using ``execute`` with dynamically-set host lists
+-------------------------------------------------
+
+A common intermediate-to-advanced use case for Fabric is to parameterize lookup
+of one's target host list at runtime (when use of :ref:`roles` does not
+suffice). ``execute`` can make this extremely simple, like so::
+
+    from fabric.api import run, execute, task
+
+    # For example, code talking to an HTTP API, or a database, or ...
+    from mylib import external_datastore
+
+    # This is the actual algorithm involved. It does not care about host
+    # lists at all.
+    def do_work():
+        run("something interesting on a host")
+
+    # This is the user-facing task invoked on the command line.
+    @task
+    def deploy(lookup_param):
+        # This is the magic you don't get with @hosts or @roles.
+        # Even lazy-loading roles require you to declare available roles
+        # beforehand. Here, the sky is the limit.
+        host_list = external_datastore.query(lookup_param)
+        # Put this dynamically generated host list together with the work to be
+        # done.
+        execute(do_work, hosts=host_list)
+    
+For example, if ``external_datastore`` was a simplistic "look up hosts by tag
+in a database" service, and you wanted to run a task on all hosts tagged as
+being related to your application stack, you might call the above like this::
+
+    $ fab deploy:app
+
+But wait! A data migration has gone awry on the DB servers. Let's fix up our
+migration code in our source repo, and deploy just the DB boxes again::
+
+    $ fab deploy:db
+
+This use case looks similar to Fabric's roles, but has much more potential, and
+is by no means limited to a single argument. Define the task however you wish,
+query your external data store in whatever way you need -- it's just Python.
 
 
 .. _failures:
