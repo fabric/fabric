@@ -47,7 +47,7 @@ Changelog
   temporary local files when using file-like objects in
   `~fabric.operations.get`/`~fabric.operations.put`.
 * :feature:`249` Allow specification of remote command timeout value by
-  setting :ref:`env.command_timeout <command_timeout>`. Thanks to Paul
+  setting :ref:`env.command_timeout <command-timeout>`. Thanks to Paul
   McMillan for suggestion & initial patch.
 * Added current host string to prompt abort error messages.
 * :release:`1.5.1 <2012-11-15>`

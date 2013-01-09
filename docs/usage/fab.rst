@@ -332,10 +332,10 @@ below.
 .. cmdoption:: --command-timeout=N, -T N
 
    Set remote command timeout in seconds. Sets
-   :ref:`env.command_timeout <command_timeout>`.
+   :ref:`env.command_timeout <command-timeout>`.
 
    .. seealso::
-	:ref:`env.command_timeout <command_timeout>`,
+	:ref:`env.command_timeout <command-timeout>`,
     .. versionadded:: 1.6
 
 .. cmdoption:: -u USER, --user=USER

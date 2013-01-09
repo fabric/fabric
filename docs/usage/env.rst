@@ -185,7 +185,7 @@ executed by `~fabric.operations.run`/`~fabric.operations.sudo`.
 .. _command-timeout:
 
 ``command_timeout``
------------
+-------------------
 
 **Default:** ``10``
 
