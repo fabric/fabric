@@ -103,6 +103,8 @@ During execution, Fabric normalizes the host strings given and then stores each
 part (username/hostname/port) in the environment dictionary, for both its use
 and for tasks to reference if the need arises. See :doc:`env` for details.
 
+.. _execution-roles:
+
 Roles
 -----
 
@@ -511,6 +513,86 @@ That's all there is to it; the `~fabric.decorators.roles` decorators will be hon
     may use the `~fabric.decorators.runs_once` decorator.
 
 .. seealso:: `~fabric.tasks.execute`, `~fabric.decorators.runs_once`
+
+
+.. _dynamic-hosts:
+
+Using ``execute`` with dynamically-set host lists
+-------------------------------------------------
+
+A common intermediate-to-advanced use case for Fabric is to parameterize lookup
+of one's target host list at runtime (when use of :ref:`execution-roles` does not
+suffice). ``execute`` can make this extremely simple, like so::
+
+    from fabric.api import run, execute, task
+
+    # For example, code talking to an HTTP API, or a database, or ...
+    from mylib import external_datastore
+
+    # This is the actual algorithm involved. It does not care about host
+    # lists at all.
+    def do_work():
+        run("something interesting on a host")
+
+    # This is the user-facing task invoked on the command line.
+    @task
+    def deploy(lookup_param):
+        # This is the magic you don't get with @hosts or @roles.
+        # Even lazy-loading roles require you to declare available roles
+        # beforehand. Here, the sky is the limit.
+        host_list = external_datastore.query(lookup_param)
+        # Put this dynamically generated host list together with the work to be
+        # done.
+        execute(do_work, hosts=host_list)
+    
+For example, if ``external_datastore`` was a simplistic "look up hosts by tag
+in a database" service, and you wanted to run a task on all hosts tagged as
+being related to your application stack, you might call the above like this::
+
+    $ fab deploy:app
+
+But wait! A data migration has gone awry on the DB servers. Let's fix up our
+migration code in our source repo, and deploy just the DB boxes again::
+
+    $ fab deploy:db
+
+This use case looks similar to Fabric's roles, but has much more potential, and
+is by no means limited to a single argument. Define the task however you wish,
+query your external data store in whatever way you need -- it's just Python.
+
+The alternate approach
+~~~~~~~~~~~~~~~~~~~~~~
+
+Similar to the above, but using ``fab``'s ability to call multiple tasks in
+succession instead of an explicit ``execute`` call, is to mutate
+:ref:`env.hosts <env-hosts>` in a host-list lookup task and then call
+``do_work`` in the same session::
+
+    from fabric.api import run, task
+
+    from mylib import external_datastore
+
+    # Marked as a publicly visible task, but otherwise unchanged: still just
+    # "do the work, let somebody else worry about what hosts to run on".
+    @task
+    def do_work():
+        run("something interesting on a host")
+
+    @task
+    def set_hosts(lookup_param):
+        # Update env.hosts instead of calling execute()
+        env.hosts = external_datastore.query(lookup_param)
+
+Then invoke like so::
+
+    $ fab set_hosts:app do_work
+
+One benefit of this approach over the previous one is that you can replace
+``do_work`` with any other "workhorse" task::
+
+    $ fab set_hosts:db snapshot
+    $ fab set_hosts:cassandra,cluster2 repair_ring
+    $ fab set_hosts:redis,environ=prod status
 
 
 .. _failures:
