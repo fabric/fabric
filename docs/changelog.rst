@@ -25,6 +25,8 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :feature:`818` Added :ref:`env.eagerly_disconnect <eagerly-disconnect>`
+  option to help prevent pile-up of many open connections.
 * :feature:`706` Added :ref:`env.tasks <env-tasks>`, returning list of tasks to
   be executed by current ``fab`` command.
 * :bug:`766` Use the variable name of a new-style ``fabric.tasks.Task``

@@ -117,6 +117,12 @@ env_options = [
         help="do not load user known_hosts file"
     ),
 
+    make_option('-e', '--eagerly-disconnect',
+        action='store_true',
+        default=False,
+        help="disconnect from hosts as soon as possible"
+    ),
+
     make_option('-f', '--fabfile',
         default='fabfile',
         metavar='PATH',
@@ -294,6 +300,7 @@ env = _AttributeDict({
     'cwd': '',  # Must be empty string, not None, for concatenation purposes
     'dedupe_hosts': True,
     'default_port': default_port,
+    'eagerly_disconnect': False,
     'echo_stdin': True,
     'exclude_hosts': [],
     'gateway': None,

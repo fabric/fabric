@@ -244,6 +244,25 @@ host key is actually valid (e.g. cloud servers such as EC2.)
 
 .. seealso:: :doc:`ssh`
 
+
+.. _eagerly-disconnect:
+
+``eagerly_disconnect``
+----------------------
+
+**Default:** ``False``
+
+If ``True``, causes ``fab`` to close connections after each individual task
+execution, instead of at the end of the run. This helps prevent a lot of
+typically-unused network sessions from piling up and causing problems with
+limits on per-process open files, or network hardware.
+
+.. note::
+    When active, this setting will result in the disconnect messages appearing
+    throughout your output, instead of at the end. This may be improved in
+    future releases.
+
+
 .. _exclude-hosts:
 
 ``exclude_hosts``

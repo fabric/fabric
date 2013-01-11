@@ -5,7 +5,7 @@ import sys
 
 from fabric import state
 from fabric.utils import abort, warn, error
-from fabric.network import to_dict, normalize_to_string
+from fabric.network import to_dict, normalize_to_string, disconnect_all
 from fabric.context_managers import settings
 from fabric.job_queue import JobQueue
 from fabric.task_utils import crawl, merge, parse_kwargs
@@ -322,6 +322,10 @@ def execute(task, *args, **kwargs):
                     error(e.message, func=func, exception=e.wrapped)
                 else:
                     raise
+
+            # If requested, clear out connections here and not just at the end.
+            if state.env.eagerly_disconnect:
+                disconnect_all()
 
         # If running in parallel, block until job queue is emptied
         if jobs:
