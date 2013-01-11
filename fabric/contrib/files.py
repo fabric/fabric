@@ -166,17 +166,25 @@ def sed(filename, before, after, limit='', use_sudo=False, backup='.bak',
 
     with hide('running', 'stdout'):
         platform = run("uname")
-    if platform in ('NetBSD', 'OpenBSD', 'QNX'):
+    if platform in ('NetBSD', 'OpenBSD', 'QNX', 'SunOS'):
         # Attempt to protect against failures/collisions
         hasher = hashlib.sha1()
         hasher.update(env.host_string)
         hasher.update(filename)
         tmp = "/tmp/%s" % hasher.hexdigest()
         # Use temp file to work around lack of -i
-        expr = r"""cp -p %(filename)s %(tmp)s \
-&& sed -r -e '%(limit)ss/%(before)s/%(after)s/%(flags)sg' %(filename)s > %(tmp)s \
-&& cp -p %(filename)s %(filename)s%(backup)s \
-&& mv %(tmp)s %(filename)s"""
+        if platform in ('SunOS'):
+            # Solaris' sed doesn't support extended regular expressions
+            expr = r"""cp -p %(filename)s %(tmp)s \
+            && sed -e '%(limit)ss/%(before)s/%(after)s/%(flags)sg' %(filename)s > %(tmp)s \
+            && cp -p %(filename)s %(filename)s%(backup)s \
+            && mv %(tmp)s %(filename)s"""
+        else:
+            expr = r"""cp -p %(filename)s %(tmp)s \
+            && sed -r -e '%(limit)ss/%(before)s/%(after)s/%(flags)sg' %(filename)s > %(tmp)s \
+            && cp -p %(filename)s %(filename)s%(backup)s \
+            && mv %(tmp)s %(filename)s"""
+            
         command = expr % locals()
     else:
         expr = r"sed -i%s -r -e '%ss/%s/%s/%sg' %s"
