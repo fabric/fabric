@@ -36,7 +36,8 @@ Context managers for use with the ``with`` statement.
 from contextlib import contextmanager, nested
 import sys
 
-from fabric.state import output, win32
+from fabric.thread_handling import ThreadHandler
+from fabric.state import output, win32, connections, env
 from fabric import state
 
 if not win32:
@@ -460,6 +461,100 @@ def shell_env(**kw):
         implement this feature.
     """
     return _setenv({'shell_env': kw})
+
+
+@documented_contextmanager
+def rtunnel(rport, lport=None):
+    """
+    Set a remote-forwarding tunnel from the server into a host reachable from
+    the client.
+
+    For example, you can set a let the remote host access a database that it is
+    installed on the client host::
+
+        # Map localhost:6379 on the server to localhost:6379 on the client
+        with rtunnel(6379):
+            run("redis-cli -i")
+
+    The database might be installed on a client only reachable from the client
+    host:
+
+        # Map localhost:6379 on the server to redis.internal:6379 on the client
+        with rtunnel(6379, "redis.internal")
+            run("redis-cli -i")
+
+    `rtunnel` accepts two arguments: a remote port (or host+port), and a local
+    port (or host+port, or host).
+    """
+    if isinstance(rport, basestring):
+        rhost, rport = rport.split(':')
+        rport = int(rport)
+    else:
+        rhost = 'localhost'
+
+    if lport is None:
+        lhost = "localhost"
+        lport = rport
+    elif isinstance(lport, basestring):
+        if ':' in lport:
+            lhost, lport = lport.split(':')
+            lport = int(lport)
+        else:
+            lhost = lport
+            lport = rport
+    else:
+        lhost = "localhost"
+
+    sockets = []
+    channels = []
+    threads = []
+
+    def forwarder(chan):
+        import socket, select
+        sock = socket.socket()
+        sockets.append(sock)
+        try:
+            sock.connect((lhost, lport))
+        except Exception, e:
+            print "[%s] rtunnel: cannot connect to %s:%d (from local)" % (env.host_string, lhost, lport)
+            chan.close()
+            raise
+
+        print "[%s] rtunnel: opened reverse tunnel: %r -> %r -> %r" \
+              % (env.host_string, chan.origin_addr,
+                 chan.getpeername(), (lhost, lport))
+        while True:
+            r, w, x = select.select([sock, chan], [], [])
+            if sock in r:
+                data = sock.recv(1024)
+                if len(data) == 0:
+                    break
+                chan.send(data)
+            if chan in r:
+                data = chan.recv(1024)
+                if len(data) == 0:
+                    break
+                sock.send(data)
+        chan.close()
+        sock.close()
+
+    def accept(channel, (src_addr, src_port), (dest_addr, dest_port)):
+        channels.append(channel)
+        th = ThreadHandler('fwd', forwarder, channel)
+        threads.append(th)
+
+    transport = connections[env.host_string].get_transport()
+    transport.request_port_forward(rhost, rport, handler=accept)
+    try:
+        yield
+    finally:
+        for sock,chan,th in zip(sockets, channels, threads):
+            sock.close()
+            chan.close()
+            th.thread.join()
+            th.raise_if_needed()
+        transport.cancel_port_forward(rhost, rport)
+
 
 
 quiet = lambda: settings(hide('everything'), warn_only=True)
