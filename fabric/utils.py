@@ -91,11 +91,13 @@ def puts(text, show_prefix=None, end="\n", flush=False):
     from fabric.state import output, env
     if show_prefix is None:
         show_prefix = env.output_prefix
+    if isinstance(text, unicode):
+        text = text.encode(sys.__stdout__.encoding, "replace")
     if output.user:
         prefix = ""
         if env.host_string and show_prefix:
             prefix = "[%s] " % env.host_string
-        sys.stdout.write(prefix + str(text) + end)
+        sys.stdout.write(prefix + text + end)
         if flush:
             sys.stdout.flush()
 

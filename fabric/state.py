@@ -306,6 +306,7 @@ env = _AttributeDict({
     'gateway': None,
     'host': None,
     'host_string': None,
+    'host_encoding': "utf-8",
     'lcwd': '',  # Must be empty string, not None, for concatenation purposes
     'local_user': _get_system_username(),
     'output_prefix': True,

@@ -356,6 +356,13 @@ The global host list used when composing per-task host lists.
 
 .. _keepalive:
 
+``host_encoding``
+-----------------
+
+**Default:** ``utf-8``
+
+Character set on remote host.
+
 ``keepalive``
 -------------
 
