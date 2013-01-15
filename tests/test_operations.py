@@ -273,6 +273,12 @@ def test_shell_wrap_does_not_escape_command_if_shell_is_false():
     cmd = "cd \"Application Support\""
     eq_(_shell_wrap(cmd, shell=False), cmd)
 
+def test_shell_wrap_encode():
+    """
+    _shell_wrap() encode command-line if unicode has passed
+    """
+    cmd = u"\u65e5\u672c\u8a9e"
+    eq_(_shell_wrap(cmd, shell=False), cmd.encode(env.host_encoding))
 
 def test_shell_escape_escapes_doublequotes():
     """

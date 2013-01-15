@@ -48,13 +48,13 @@ def _shell_escape(string):
     return string
 
 
-class _AttributeString(str):
+class _AttributeString(unicode):
     """
     Simple string subclass to allow arbitrary attribute access.
     """
     @property
     def stdout(self):
-        return str(self)
+        return unicode(self)
 
 
 class _AttributeList(list):
@@ -599,6 +599,8 @@ def _shell_wrap(command, shell=True, sudo_prefix=None):
     """
     Conditionally wrap given command in env.shell (while honoring sudo.)
     """
+    if isinstance(command, unicode):
+        command = command.encode(env.host_encoding)
     # Honor env.shell, while allowing the 'shell' kwarg to override it (at
     # least in terms of turning it off.)
     if shell and not env.use_shell:

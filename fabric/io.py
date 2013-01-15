@@ -49,6 +49,7 @@ class OutputLooper(object):
         self.write_buffer = RingBuffer([], maxlen=len(self.prefix))
 
     def _flush(self, text):
+        text = unicode(text, env.host_encoding, "replace").encode(sys.__stdout__.encoding)
         self.stream.write(text)
         self.stream.flush()
         self.write_buffer.extend(text)
@@ -144,7 +145,7 @@ class OutputLooper(object):
                 read_lines = re.split(r"(\r|\n|\r\n)", bytelist)
                 for fragment in read_lines:
                     # Store in capture buffer
-                    self.capture += fragment
+                    self.capture += unicode(fragment, env.host_encoding, "ignore")
                     # Store in internal buffer
                     _buffer += fragment
                     # Handle prompts
