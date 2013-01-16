@@ -25,6 +25,7 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :release:`1.5.2 <2013-01-15>`
 * :feature:`818` Added :ref:`env.eagerly_disconnect <eagerly-disconnect>`
   option to help prevent pile-up of many open connections.
 * :feature:`706` Added :ref:`env.tasks <env-tasks>`, returning list of tasks to
