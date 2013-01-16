@@ -25,6 +25,7 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :release:`1.5.2 <2013-01-15>`
 * :bug:`766` Use the variable name of a new-style ``fabric.tasks.Task``
   subclass object when the object name attribute is undefined.  Thanks to
   `@todddeluca` for the patch.
