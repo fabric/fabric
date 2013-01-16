@@ -710,6 +710,9 @@ def _execute(channel, command, pty=True, combine_stderr=None,
     # Timeout setting control
     timeout = env.command_timeout if (timeout is None) else timeout
 
+    # What to do with CTRl-C?
+    remote_interrupt = env.remote_interrupt
+
     with char_buffered(sys.stdin):
         # Combine stdout and stderr to get around oddball mixing issues
         if combine_stderr is None:
@@ -755,6 +758,11 @@ def _execute(channel, command, pty=True, combine_stderr=None,
             ThreadHandler('in', input_loop, channel, using_pty)
         )
 
+        if remote_interrupt is None:
+            remote_interrupt = invoke_shell
+        if remote_interrupt and not using_pty:
+            remote_interrupt = False
+
         while True:
             if channel.exit_status_ready():
                 break
@@ -764,7 +772,12 @@ def _execute(channel, command, pty=True, combine_stderr=None,
                 # exception within, recv_exit_status())
                 for worker in workers:
                     worker.raise_if_needed()
-            time.sleep(ssh.io_sleep)
+            try:
+                time.sleep(ssh.io_sleep)
+            except KeyboardInterrupt:
+                if not remote_interrupt:
+                    raise
+                channel.send('\x03')
 
         # Obtain exit code of remote program now that we're done.
         status = channel.recv_exit_status()

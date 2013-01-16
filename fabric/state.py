@@ -314,6 +314,7 @@ env = _AttributeDict({
     'path_behavior': 'append',
     'port': default_port,
     'real_fabfile': None,
+    'remote_interrupt': None,
     'roles': [],
     'roledefs': {},
     'shell_env': {},
