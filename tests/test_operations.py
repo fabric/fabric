@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from __future__ import with_statement
 
 import os
@@ -440,6 +441,17 @@ class TestFileTransfers(FabricTest):
         with hide('everything'):
             get(remote, local)
         eq_contents(local, FILES[remote])
+    @server()
+
+    def test_get_single_file_encoded(self):
+        """
+        get() with a single non-globbed filename(encoded)
+        """
+        remote = u'ファイル.txt'
+        local = self.path(remote)
+        with hide('everything'):
+            get(remote, local)
+        eq_contents(local, FILES[remote.encode(env.host_encoding)])
 
     @server()
     def test_get_sibling_globs(self):
@@ -451,6 +463,17 @@ class TestFileTransfers(FabricTest):
             get('file*.txt', self.tmpdir)
         for remote in remotes:
             eq_contents(self.path(remote), FILES[remote])
+
+    @server()
+    def test_get_sibling_globs_unicode(self):
+        """
+        get() with globbed files, but no directories(unicode)
+        """
+        remotes = [u'ファイル.txt', u'ファイル2.txt']
+        with hide('everything'):
+            get(u'ファイル*.txt', self.tmpdir)
+        for remote in remotes:
+            eq_contents(self.path(remote), FILES[remote.encode(env.host_encoding)])
 
     @server()
     def test_get_single_file_in_folder(self):
@@ -713,6 +736,38 @@ class TestFileTransfers(FabricTest):
             path = "/tree/file1.txt"
             sftp = SFTP(env.host_string)
             eq_(sftp.glob(path), [path])
+
+    @server()
+    def test_glob_should_handle_nonglob_unicode_filename(self):
+        """
+        sftp.glob() should handle non glob unicode filename
+        """
+        with hide('everything'):
+            path = u"ファイル.txt"
+            sftp = SFTP(env.host_string)
+            eq_(sftp.glob(path), [path.encode(env.host_encoding)])
+
+    @server()
+    def test_glob_should_handle_glob_unicode_filename(self):
+        """
+        sftp.glob() should handle glob unicode filename
+        """
+        with hide('everything'):
+            path = "*.txt"
+            hit = u"ファイル2.txt"
+            sftp = SFTP(env.host_string)
+            ok_(hit.encode(env.host_encoding) in sftp.glob(path))
+
+    @server()
+    def test_glob_should_handle_glob_pattern_in_unicode(self):
+        """
+        sftp.glob() should handle glob pattern in unicode
+        """
+        with hide('everything'):
+            path = u"ファイル*.txt"
+            hit = u"ファイル2.txt"
+            sftp = SFTP(env.host_string)
+            ok_(hit.encode(env.host_encoding) in sftp.glob(path))
 
     #
     # put()

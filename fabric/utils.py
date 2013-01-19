@@ -20,7 +20,7 @@ def abort(msg):
     """
     from fabric.state import output
     if output.aborts:
-        sys.stderr.write("\nFatal error: %s\n" % str(msg))
+        sys.stderr.write("\nFatal error: %s\n" % msg)
         sys.stderr.write("\nAborting.\n")
     sys.exit(1)
 

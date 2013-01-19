@@ -21,6 +21,13 @@ def _format_local(local_path, local_is_path):
         # just like an open file object would have
         return getattr(local_path, 'name', '<file obj>')
 
+def path_encode(func):
+    def wrapper(*args, **kw):
+        path = args[1]
+        if isinstance(path, unicode):
+            path = path.encode(env.host_encoding)
+        return func(args[0], path)
+    return wrapper
 
 class SFTP(object):
     """
@@ -34,18 +41,21 @@ class SFTP(object):
     def __getattr__(self, attr):
         return getattr(self.ftp, attr)
 
+    @path_encode
     def isdir(self, path):
         try:
             return stat.S_ISDIR(self.ftp.lstat(path).st_mode)
         except IOError:
             return False
 
+    @path_encode
     def islink(self, path):
         try:
             return stat.S_ISLNK(self.ftp.lstat(path).st_mode)
         except IOError:
             return False
 
+    @path_encode
     def exists(self, path):
         try:
             self.ftp.lstat(path).st_mode
@@ -53,10 +63,12 @@ class SFTP(object):
             return False
         return True
 
+    @path_encode
     def glob(self, path):
         from fabric.state import win32
         dirpart, pattern = os.path.split(path)
-        rlist = self.ftp.listdir(dirpart)
+        # listdir() returns unicode object for non-ascii filename.
+        rlist = [ f.encode(env.host_encoding) for f in self.ftp.listdir(dirpart) ]
 
         names = fnfilter([f for f in rlist if not f[0] == '.'], pattern)
         ret = [path]

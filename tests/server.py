@@ -63,6 +63,10 @@ tests""",
 FILES = FakeFilesystem({
     '/file.txt': 'contents',
     '/file2.txt': 'contents2',
+    u'/\u30d5\u30a1\u30a4\u30eb.txt'.encode(env.host_encoding):
+        u'\u30b3\u30f3\u30c6\u30f3\u30c4'.encode(env.host_encoding),
+    u'/\u30d5\u30a1\u30a4\u30eb2.txt'.encode(env.host_encoding):
+        u'\u30b3\u30f3\u30c6\u30f3\u30c4'.encode(env.host_encoding),
     '/folder/file3.txt': 'contents3',
     '/empty_folder': None,
     '/tree/file1.txt': 'x',
