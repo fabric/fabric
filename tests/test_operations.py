@@ -745,7 +745,7 @@ class TestFileTransfers(FabricTest):
         with hide('everything'):
             path = u"ファイル.txt"
             sftp = SFTP(env.host_string)
-            eq_(sftp.glob(path), [path.encode(env.host_encoding)])
+            eq_(sftp.glob(path), [path])
 
     @server()
     def test_glob_should_handle_glob_unicode_filename(self):
@@ -756,18 +756,18 @@ class TestFileTransfers(FabricTest):
             path = "*.txt"
             hit = u"ファイル2.txt"
             sftp = SFTP(env.host_string)
-            ok_(hit.encode(env.host_encoding) in sftp.glob(path))
+            ok_(hit in sftp.glob(path))
 
     @server()
     def test_glob_should_handle_glob_pattern_in_unicode(self):
         """
-        sftp.glob() should handle glob pattern in unicode
+        sftp.glob() should accept unicode pattern and return unicode filename.
         """
         with hide('everything'):
             path = u"ファイル*.txt"
             hit = u"ファイル2.txt"
             sftp = SFTP(env.host_string)
-            ok_(hit.encode(env.host_encoding) in sftp.glob(path))
+            ok_(hit in sftp.glob(path))
 
     #
     # put()
