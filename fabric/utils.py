@@ -20,7 +20,7 @@ def abort(msg):
     """
     from fabric.state import output
     if output.aborts:
-        sys.stderr.write("\nFatal error: %s\n" % msg)
+        sys.stderr.write("\nFatal error: %s\n" % msg.encode(sys.__stderr__.encoding))
         sys.stderr.write("\nAborting.\n")
     sys.exit(1)
 
@@ -36,7 +36,7 @@ def warn(msg):
     """
     from fabric.state import output
     if output.warnings:
-        sys.stderr.write("\nWarning: %s\n\n" % msg)
+        sys.stderr.write("\nWarning: %s\n\n" % msg.encode(sys.__stderr__.encoding))
 
 
 def indent(text, spaces=4, strip=False):
