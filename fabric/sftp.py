@@ -2,6 +2,7 @@ from __future__ import with_statement
 
 import hashlib
 import os
+import sys
 import posixpath
 import stat
 import re
@@ -67,6 +68,7 @@ class SFTP(object):
     def glob(self, path):
         from fabric.state import win32
         dirpart, pattern = os.path.split(path)
+        # dirpath is expected that it is encoded in host's encoding. But
         # listdir() returns unicode object for non-ascii filename.
         rlist = [ f.encode(env.host_encoding) for f in self.ftp.listdir(dirpart) ]
 
@@ -77,7 +79,8 @@ class SFTP(object):
             ret = [dirpart.rstrip(s) + s + name.lstrip(s) for name in names]
             if not win32:
                 ret = [posixpath.join(dirpart, name) for name in names]
-        return ret
+        # return unicode object for pathname to local use.
+        return [path.decode(env.host_encoding) for path in ret]
 
     def walk(self, top, topdown=True, onerror=None, followlinks=False):
         from os.path import join
