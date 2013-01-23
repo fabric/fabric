@@ -546,6 +546,7 @@ listed in the user's known-hosts file.
 
 .. seealso:: :doc:`ssh`
 
+.. _system-known-hosts:
 
 ``system_known_hosts``
 ------------------------

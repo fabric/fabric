@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :feature:`730` Add :ref:`env.system_known_hosts/--system-known-hosts
+  <system-known-hosts>` to allow loading a user-specified system-level SSH
+  ``known_hosts`` file. Thanks to Roy Smith for the patch.
 * :release:`1.5.2 <2013-01-15>`
 * :feature:`818` Added :ref:`env.eagerly_disconnect <eagerly-disconnect>`
   option to help prevent pile-up of many open connections.
@@ -1438,4 +1441,3 @@ Changes from release candidate 1 to final release
   ``sed`` options it uses.
 * Various changes to internal fabfile, version mechanisms, and other
   non-user-facing things.
-* Updated ssh handlings to optionally read a system-wide known_hosts file.
