@@ -16,3 +16,4 @@ notifications:
     channels: "irc.freenode.org#fabric"
     on_success: change
     on_failure: change
+  email: false
