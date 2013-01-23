@@ -314,6 +314,11 @@ def connect(user, host, port, sock=None):
     # Init client
     client = ssh.SSHClient()
 
+    # Load system hosts file (e.g. /etc/ssh/ssh_known_hosts)
+    known_hosts = env.get('system_known_hosts')
+    if known_hosts:
+        client.load_system_host_keys(known_hosts)
+
     # Load known host keys (e.g. ~/.ssh/known_hosts) unless user says not to.
     if not env.disable_known_hosts:
         client.load_system_host_keys()
