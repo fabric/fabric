@@ -212,7 +212,8 @@ env_options = [
     ),
 
     make_option('--system-known-hosts',
-                help="load system known_hosts file before reading user known_hosts"),
+        help="load system known_hosts file before reading user known_hosts"
+    ),
 
     make_option('-R', '--roles',
         default=[],
