@@ -25,6 +25,8 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* Enable sudo extraction of compressed archive via `use_sudo` kwarg in 
+  `fabric.contrib.project.upload_project`.
 * :feature:`823` Add :ref:`env.remote_interrupt <remote-interrupt>` which
   controls whether Ctrl-C is forwarded to the remote end or is captured locally
   (previously, only the latter behavior was implemented). Thanks to Geert
