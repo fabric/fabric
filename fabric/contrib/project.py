@@ -9,7 +9,7 @@ from datetime import datetime
 from tempfile import mkdtemp
 
 from fabric.network import needs_host, key_filenames, normalize
-from fabric.operations import local, run, put
+from fabric.operations import local, run, sudo, put
 from fabric.state import env, output
 from fabric.context_managers import cd
 
@@ -135,7 +135,7 @@ def rsync_project(remote_dir, local_dir=None, exclude=(), delete=False,
     return local(cmd, capture=capture)
 
 
-def upload_project(local_dir=None, remote_dir=""):
+def upload_project(local_dir=None, remote_dir="", use_sudo=False):
     """
     Upload the current project to a remote system via ``tar``/``gzip``.
 
@@ -146,6 +146,10 @@ def upload_project(local_dir=None, remote_dir=""):
     a copy of ``local_dir`` will appear as a subdirectory of ``remote_dir``)
     and defaults to the remote user's home directory.
 
+    ``use_sudo`` specifies which method should be used when executing commands 
+    remotely. ``sudo`` will be used if use_sudo is True, otherwise ``run`` will 
+    be used.
+
     This function makes use of the ``tar`` and ``gzip`` programs/libraries,
     thus it will not work too well on Win32 systems unless one is using Cygwin
     or something similar. It will attempt to clean up the local and remote
@@ -153,7 +157,12 @@ def upload_project(local_dir=None, remote_dir=""):
 
     .. versionchanged:: 1.1
         Added the ``local_dir`` and ``remote_dir`` kwargs.
+
+    .. versionchanged:: 1.6
+        Added the ``use_sudo`` kwarg.
     """
+    runner = use_sudo and sudo or run
+
     local_dir = local_dir or os.getcwd()
 
     # Remove final '/' in local_dir so that basename() works
@@ -167,11 +176,11 @@ def upload_project(local_dir=None, remote_dir=""):
     try:
         tar_path = os.path.join(tmp_folder, tar_file)
         local("tar -czf %s -C %s %s" % (tar_path, local_path, local_name))
-        put(tar_path, target_tar)
+        put(tar_path, target_tar, use_sudo=use_sudo)
         with cd(remote_dir):
             try:
-                run("tar -xzf %s" % tar_file)
+                runner("tar -xzf %s" % tar_file)
             finally:
-                run("rm -f %s" % tar_file)
+                runner("rm -f %s" % tar_file
     finally:
         local("rm -rf %s" % tmp_folder)

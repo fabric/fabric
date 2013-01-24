@@ -25,6 +25,8 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :feature:`826` Enable sudo extraction of compressed archive via `use_sudo`
+  kwarg in `.upload_project`. Thanks to ``@abec`` for the patch.
 * :bug:`694` Allow users to work around ownership issues in the default remote
   login directory: add ``temp_dir`` kwarg for explicit specification of which
   "bounce" folder to use when calling `.put` with ``use_sudo=True``. Thanks to
