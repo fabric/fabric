@@ -27,6 +27,7 @@ Changelog
 
 * :bug:`703` Add a ``shell`` kwarg to many methods in `~fabric.contrib.files`
   to help avoid conflicts with `~fabric.context_managers.cd` and similar.
+  Thanks to `@mikek` for the patch.
 * :feature:`730` Add :ref:`env.system_known_hosts/--system-known-hosts
   <system-known-hosts>` to allow loading a user-specified system-level SSH
   ``known_hosts`` file. Thanks to Roy Smith for the patch.
