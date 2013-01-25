@@ -142,10 +142,10 @@ def sed(filename, before, after, limit='', use_sudo=False, backup='.bak',
 
     The ``shell`` argument will be eventually passed to `run`/`sudo`. It
     defaults to False in order to avoid problems with many nested levels of
-    quotes and backslashes. Setting it to True helps at least with
-    ``~fabric.operations.cd`` context manager wrapping any explicit or implicit
-    ``sudo`` calls. (The ``cd`` by it's nature is a shell built-in, not a
-    standalone command, so it should be called within a shell.)
+    quotes and backslashes. However, setting it to True may help when using
+    ``~fabric.operations.cd`` to wrap explicit or implicit ``sudo`` calls.
+    (``cd`` by it's nature is a shell built-in, not a standalone command, so it
+    should be called within a shell.)
 
     Other options may be specified with sed-compatible regex flags -- for
     example, to make the search and replace case insensitive, specify
@@ -154,7 +154,7 @@ def sed(filename, before, after, limit='', use_sudo=False, backup='.bak',
 
     .. versionadded:: 1.1
         The ``flags`` parameter.
-    .. versionadded:: 1.5
+    .. versionadded:: 1.6
         Added the ``shell`` keyword argument.
     """
     func = use_sudo and sudo or run
@@ -207,7 +207,7 @@ def uncomment(filename, regex, use_sudo=False, char='#', backup='.bak',
     ``    # foo`` would become ``    foo`` (the single space is still stripped,
     but the preceding 4 spaces are not.)
 
-    .. versionadded:: 1.5
+    .. versionchanged:: 1.6
         Added the ``shell`` keyword argument.
     """
     return sed(
@@ -305,7 +305,7 @@ def contains(filename, text, exact=False, use_sudo=False, escape=True,
         various corner cases.
     .. versionchanged:: 1.4
         Added ``escape`` keyword argument.
-    .. versionadded:: 1.5
+    .. versionadded:: 1.6
         Added the ``shell`` keyword argument.
     """
     func = use_sudo and sudo or run
@@ -353,7 +353,7 @@ def append(filename, text, use_sudo=False, partial=False, escape=True,
     .. versionchanged:: 1.4
         Updated the regular expression related escaping to try and solve
         various corner cases.
-    .. versionadded:: 1.5
+    .. versionadded:: 1.6
         Added the ``shell`` keyword argument.
     """
     func = use_sudo and sudo or run
