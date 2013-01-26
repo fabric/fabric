@@ -1165,7 +1165,7 @@ def reboot(wait=120):
     # Shorter timeout for a more granular cycle than the default.
     timeout = 5
     # Use 'wait' as max total wait time
-    attempts = int(round(wait / float(timeout)))
+    attempts = int(round(float(wait) / float(timeout)))
     # Don't bleed settings, since this is supposed to be self-contained.
     # User adaptations will probably want to drop the "with settings()" and
     # just have globally set timeout/attempts values.
