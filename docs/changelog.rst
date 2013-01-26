@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`791` Cast `~fabric.operations.reboot`'s ``wait`` parameter to a numeric
+  type in case the caller submitted a string by mistake. Thanks to Thomas
+  Schreiber for the patch.
 * :release:`1.5.2 <2013-01-15>`
 * :bug:`766` Use the variable name of a new-style ``fabric.tasks.Task``
   subclass object when the object name attribute is undefined.  Thanks to
