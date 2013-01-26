@@ -25,6 +25,8 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :feature:`402` Attempt to detect stale SSH sessions and reconnect when they
+  arise. Thanks to `@webengineer` for the patch.
 * :bug:`791` Cast `~fabric.operations.reboot`'s ``wait`` parameter to a numeric
   type in case the caller submitted a string by mistake. Thanks to Thomas
   Schreiber for the patch.
