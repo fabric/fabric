@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`654` Parallel runs whose sum total of returned data was large (e.g.
+  large return values from the task, or simply a large number of hosts in the
+  host list) were causing frustrating hangs. This has been fixed.
 * :bug:`791` Cast `~fabric.operations.reboot`'s ``wait`` parameter to a numeric
   type in case the caller submitted a string by mistake. Thanks to Thomas
   Schreiber for the patch.
