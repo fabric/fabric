@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`654` Parallel runs whose sum total of returned data was large (e.g.
+  large return values from the task, or simply a large number of hosts in the
+  host list) were causing frustrating hangs. This has been fixed.
 * :feature:`402` Attempt to detect stale SSH sessions and reconnect when they
   arise. Thanks to `@webengineer` for the patch.
 * :bug:`791` Cast `~fabric.operations.reboot`'s ``wait`` parameter to a numeric
