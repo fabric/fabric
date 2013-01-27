@@ -173,7 +173,7 @@ def sed(filename, before, after, limit='', use_sudo=False, backup='.bak',
         hasher.update(filename)
         tmp = "/tmp/%s" % hasher.hexdigest()
         # Use temp file to work around lack of -i
-        if platform in ('SunOS'):
+        if platform in ('SunOS',):
             # Solaris' sed doesn't support extended regular expressions
             expr = r"""cp -p %(filename)s %(tmp)s \
             && sed -e '%(limit)ss/%(before)s/%(after)s/%(flags)sg' %(filename)s > %(tmp)s \
