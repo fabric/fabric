@@ -464,6 +464,11 @@ def connect(user, host, port, sock=None):
                 sock.close()
 
 
+def _password_prompt(prompt, stream):
+    # NOTE: Using encode-to-ascii to prevent (Windows, at least) getpass from
+    # choking if given Unicode.
+    return getpass.getpass(prompt.encode('ascii', 'ignore'), stream)
+
 def prompt_for_password(prompt=None, no_colon=False, stream=None):
     """
     Prompts for and returns a new password if required; otherwise, returns
@@ -490,12 +495,12 @@ def prompt_for_password(prompt=None, no_colon=False, stream=None):
     if not no_colon:
         password_prompt += ": "
     # Get new password value
-    new_password = getpass.getpass(password_prompt, stream)
+    new_password = _password_prompt(password_prompt, stream)
     # Otherwise, loop until user gives us a non-empty password (to prevent
     # returning the empty string, and to avoid unnecessary network overhead.)
     while not new_password:
         print("Sorry, you can't enter an empty password. Please try again.")
-        new_password = getpass.getpass(password_prompt, stream)
+        new_password = _password_prompt(password_prompt, stream)
     return new_password
 
 
