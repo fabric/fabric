@@ -121,6 +121,11 @@ class JobQueue(object):
                 job.start()
             self._running.append(job)
 
+        # Prep return value so we can start filling it during main loop
+        results = {}
+        for job in self._queued:
+            results[job.name] = dict.fromkeys(('exit_code', 'results'))
+
         if not self._closed:
             raise Exception("Need to close() before starting.")
 
@@ -130,6 +135,7 @@ class JobQueue(object):
         while len(self._running) < self._max:
             _advance_the_queue()
 
+        # Main loop!
         while not self._finished:
             while len(self._running) < self._max and self._queued:
                 _advance_the_queue()
@@ -154,22 +160,32 @@ class JobQueue(object):
                     job.join()
 
                 self._finished = True
+
+            # Each loop pass, try pulling results off the queue to keep its
+            # size down.
+            self._fill_results(results)
+
             time.sleep(ssh.io_sleep)
 
-        results = {}
+        # Consume anything left in the results queue
+        self._fill_results(results)
+
+        # Attach exit codes now that we're all done & have joined all jobs
         for job in self._completed:
-            results[job.name] = {
-                'exit_code': job.exitcode,
-                'results': None # In case of SystemExit/etc in parallel subprocess
-            }
+            results[job.name]['exit_code'] = job.exitcode
+
+        return results
+
+    def _fill_results(self, results):
+        """
+        Attempt to pull data off self._comms_queue and add to 'results' dict.
+        """
         while True:
             try:
                 datum = self._comms_queue.get(timeout=1)
                 results[datum['name']]['results'] = datum['result']
             except Queue.Empty:
                 break
-
-        return results
 
 
 #### Sample
