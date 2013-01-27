@@ -25,6 +25,8 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :feature:`805` Update `~fabric.context_managers.shell_env` to play nice with
+  Windows (7, at least) systems. Thanks to Fernando Macedo for the patch.
 * :bug:`654` Parallel runs whose sum total of returned data was large (e.g.
   large return values from the task, or simply a large number of hosts in the
   host list) were causing frustrating hangs. This has been fixed.
