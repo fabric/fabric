@@ -25,6 +25,7 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :issue:`390` Don't use sed utility with -i and -r flags on Solaris since they are not supported there.
 * :feature:`706` Added :ref:`env.tasks <env-tasks>`, returning list of tasks to
   be executed by current ``fab`` command.
 * :bug:`766` Use the variable name of a new-style ``fabric.tasks.Task``
