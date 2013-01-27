@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`806` Force strings given to ``getpass`` during password prompts to be
+  ASCII, to prevent issues on some platforms when Unicode is encountered.
+  Thanks to Alex Louden for the patch.
 * :feature:`805` Update `~fabric.context_managers.shell_env` to play nice with
   Windows (7, at least) systems. Thanks to Fernando Macedo for the patch.
 * :bug:`654` Parallel runs whose sum total of returned data was large (e.g.
