@@ -502,7 +502,7 @@ def _accept(all_channels, all_threads, all_sockets, local_host, local_port,
     all_threads.append(th)
 
 @documented_contextmanager
-def remote_tunnel(remote_port, local_port=None, local_host="localhost", remote_host="localhost"):
+def remote_tunnel(remote_port, local_port=None, local_host="localhost", remote_bind_address="127.0.0.1"):
     """
     Set a remote-forwarding tunnel from the server into a host reachable from
     the client.
@@ -529,14 +529,15 @@ def remote_tunnel(remote_port, local_port=None, local_host="localhost", remote_h
     * `local_host` (opt) is the locally-reachable computer (DNS name or IP address)
        to connect to; the default is `localhost` (that is, the same computer
        Fabric is running on).
-    * `remote_host` (opt) is the remote IP address to bind to for listening,
+    * `remote_bind_address` (opt) is the remote IP address to bind to for listening,
       on the current target. It should be an IP address assigned to an interface
-      on such target. You can use "0.0.0.0" to bind to all interfaces.
+      on such target (or a DNS name that resolves to such IP). You can use "0.0.0.0"
+      to bind to all interfaces.
 
     .. note::
 
         By default, most SSHD servers only allow remote tunnels to listen to
-        the localhost interface (127.0.0.1). In these cases, `remote_host` is
+        the localhost interface (127.0.0.1). In these cases, `remote_bind_address` is
         ignored by the server, and the tunnel will listen only to 127.0.0.1.
     """
     if local_port is None:
@@ -547,7 +548,7 @@ def remote_tunnel(remote_port, local_port=None, local_host="localhost", remote_h
     threads = []
 
     transport = connections[env.host_string].get_transport()
-    transport.request_port_forward(remote_host, remote_port,
+    transport.request_port_forward(remote_bind_address, remote_port,
         handler=functools.partial(_accept, channels, threads, sockets, local_host, local_port))
 
     try:
@@ -558,7 +559,7 @@ def remote_tunnel(remote_port, local_port=None, local_host="localhost", remote_h
             chan.close()
             th.thread.join()
             th.raise_if_needed()
-        transport.cancel_port_forward(remote_host, remote_port)
+        transport.cancel_port_forward(remote_bind_address, remote_port)
 
 
 
