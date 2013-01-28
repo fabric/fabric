@@ -548,7 +548,7 @@ def rtunnel(rport, lport=None):
     try:
         yield
     finally:
-        for sock,chan,th in zip(sockets, channels, threads):
+        for sock, chan, th in zip(sockets, channels, threads):
             sock.close()
             chan.close()
             th.thread.join()
