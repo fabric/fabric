@@ -511,20 +511,34 @@ def remote_tunnel(remote_port, local_port=None, local_host="localhost", remote_h
     installed on the client host::
 
         # Map localhost:6379 on the server to localhost:6379 on the client
-        with rtunnel(6379):
+        with remote_tunnel(6379):
             run("redis-cli -i")
 
     The database might be installed on a client only reachable from the client
     host:
 
         # Map localhost:6379 on the server to redis.internal:6379 on the client
-        with rtunnel(6379, "redis.internal")
+        with remote_tunnel(6379, local_host="redis.internal")
             run("redis-cli -i")
 
-    `rtunnel` accepts two arguments: a remote port (or host+port), and a local
-    port (or host+port, or host).
-    """
+    `remote_tunnel` accepts up to four arguments:
 
+    * `remote_port` (mandatory) is the remote port to listen to.
+    * `local_port` (opt) is the local port to connect to; the default is the
+       same port as the remote one.
+    * `local_host` (opt) is the locally-reachable computer (DNS name or IP address)
+       to connect to; the default is `localhost` (that is, the same computer
+       Fabric is running on).
+    * `remote_host` (opt) is the remote IP address to bind to for listening,
+      on the current target. It should be an IP address assigned to an interface
+      on such target. You can use "0.0.0.0" to bind to all interfaces.
+
+    .. note::
+
+        By default, most SSHD servers only allow remote tunnels to listen to
+        the localhost interface (127.0.0.1). In these cases, `remote_host` is
+        ignored by the server, and the tunnel will listen only to 127.0.0.1.
+    """
     if local_port is None:
         local_port = remote_port
 
