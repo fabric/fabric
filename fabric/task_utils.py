@@ -1,4 +1,4 @@
-from fabric.utils import abort, indent
+from fabric.utils import abort, indent, HostString
 from fabric import state
 
 
@@ -46,11 +46,13 @@ def merge(hosts, roles, exclude, roledefs):
 
     # Look up roles, turn into flat list of hosts
     role_hosts = []
+    hosts_roles = [None] * len(list(hosts))
     for role in roles:
         value = roledefs[role]
         # Handle "lazy" roles (callables)
         if callable(value):
             value = value()
+        hosts_roles += [role] * len(list(value))
         role_hosts += value
 
     # Strip whitespace from host strings.
@@ -62,11 +64,17 @@ def merge(hosts, roles, exclude, roledefs):
     all_hosts = cleaned_hosts
     if state.env.dedupe_hosts:
         deduped_hosts = []
-        for host in cleaned_hosts:
+        deduped_hosts_roles = []
+        for host, role in zip(cleaned_hosts, hosts_roles):
             if host not in deduped_hosts and host not in exclude:
                 deduped_hosts.append(host)
+                deduped_hosts_roles.append(role)
         all_hosts = deduped_hosts
-    return all_hosts
+        hosts_roles = deduped_hosts_roles
+
+    # Attach the role attribute to hosts
+    return [HostString(host, role) 
+            for host, role in zip(all_hosts, hosts_roles)]
 
 
 def parse_kwargs(kwargs):

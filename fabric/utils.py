@@ -350,3 +350,17 @@ class RingBuffer(list):
             raise ValueError("Can't set a slice of a ring buffer!")
         else:
             return self._super.__setitem__(key, value)
+
+
+class HostString(str):
+    """
+    A subclass of :class:`str` used to store host strings.
+
+    It adds a :attr:`role` attribute, to be able to retrieve which role the
+    host was selected from.
+    """
+
+    def __new__(self, value, role=None):
+        ret = super(HostString, self).__new__(self, value)
+        ret.role = role
+        return ret

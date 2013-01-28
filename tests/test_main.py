@@ -312,6 +312,35 @@ def test_lazy_roles():
         pass
     eq_hosts(command, ['a', 'b'], env={'roledefs': lazy_role})
 
+def test_host_string_role_attr():
+    """
+    Role from which a host was selected can be retrieved with the host
+    string's role attribute.
+    """
+    # Hosts list built from roles
+    fake_env = {'roledefs': {'role1': ['a'], 'role2': ['a']}}
+    hosts = get_hosts(dummy, [], ['role1'], [], fake_env)
+    eq_(hosts, ['a'])
+    eq_(hosts[0].role, 'role1')
+    hosts = get_hosts(dummy, [], ['role2'], [], fake_env)
+    eq_(hosts, ['a'])
+    eq_(hosts[0].role, 'role2')
+    # Hosts list built from hosts
+    hosts = get_hosts(dummy, ['host'], [], [])
+    eq_(hosts, ['host'])
+    eq_(hosts[0].role, None)
+    hosts = get_hosts(dummy, [], [], [], {'hosts': ['host']})
+    eq_(hosts, ['host'])
+    eq_(hosts[0].role, None)
+    # Hosts list built from roles + hosts
+    hosts = get_hosts(dummy, ['b'], ['role1'], [], fake_env)
+    eq_(hosts, ['b', 'a'])
+    eq_(hosts[0].role, None)
+    eq_(hosts[1].role, 'role1')
+    # Hosts list built from roles + hosts (with duplicates)
+    hosts = get_hosts(dummy, ['a'], ['role1'], [], fake_env)
+    eq_(hosts, ['a'])
+    eq_(hosts[0].role, None)
 
 #
 # Fabfile loading
