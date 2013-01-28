@@ -35,6 +35,9 @@ Context managers for use with the ``with`` statement.
 
 from contextlib import contextmanager, nested
 import sys
+import functools
+import socket
+import select
 
 from fabric.thread_handling import ThreadHandler
 from fabric.state import output, win32, connections, env
@@ -455,8 +458,43 @@ def shell_env(**kw):
     return _setenv({'shell_env': kw})
 
 
+def _forwarder(chan, sock, local_host, local_port):
+    try:
+        sock.connect((local_host, local_port))
+    except Exception, e:
+        print "[%s] rtunnel: cannot connect to %s:%d (from local)" % (env.host_string, local_host, local_port)
+        chan.close()
+        raise
+
+    print "[%s] rtunnel: opened reverse tunnel: %r -> %r -> %r"\
+          % (env.host_string, chan.origin_addr,
+             chan.getpeername(), (local_host, local_port))
+    while True:
+        r, w, x = select.select([sock, chan], [], [])
+        if sock in r:
+            data = sock.recv(1024)
+            if len(data) == 0:
+                break
+            chan.send(data)
+        if chan in r:
+            data = chan.recv(1024)
+            if len(data) == 0:
+                break
+            sock.send(data)
+    chan.close()
+    sock.close()
+
+
+def _accept(all_channels, all_threads, all_sockets, local_host, local_port,
+            channel, (src_addr, src_port), (dest_addr, dest_port)):
+    all_channels.append(channel)
+    sock = socket.socket()
+    all_sockets.append(sock)
+    th = ThreadHandler('fwd', _forwarder, channel, sock, local_host, local_port)
+    all_threads.append(th)
+
 @documented_contextmanager
-def rtunnel(rport, lport=None):
+def remote_tunnel(remote_port, local_port=None, local_host="localhost", remote_host="localhost"):
     """
     Set a remote-forwarding tunnel from the server into a host reachable from
     the client.
@@ -478,65 +516,18 @@ def rtunnel(rport, lport=None):
     `rtunnel` accepts two arguments: a remote port (or host+port), and a local
     port (or host+port, or host).
     """
-    if isinstance(rport, basestring):
-        rhost, rport = rport.split(':')
-        rport = int(rport)
-    else:
-        rhost = 'localhost'
 
-    if lport is None:
-        lhost = "localhost"
-        lport = rport
-    elif isinstance(lport, basestring):
-        if ':' in lport:
-            lhost, lport = lport.split(':')
-            lport = int(lport)
-        else:
-            lhost = lport
-            lport = rport
-    else:
-        lhost = "localhost"
+    if local_port is None:
+        local_port = remote_port
 
     sockets = []
     channels = []
     threads = []
 
-    def forwarder(chan):
-        import socket, select
-        sock = socket.socket()
-        sockets.append(sock)
-        try:
-            sock.connect((lhost, lport))
-        except Exception, e:
-            print "[%s] rtunnel: cannot connect to %s:%d (from local)" % (env.host_string, lhost, lport)
-            chan.close()
-            raise
-
-        print "[%s] rtunnel: opened reverse tunnel: %r -> %r -> %r" \
-              % (env.host_string, chan.origin_addr,
-                 chan.getpeername(), (lhost, lport))
-        while True:
-            r, w, x = select.select([sock, chan], [], [])
-            if sock in r:
-                data = sock.recv(1024)
-                if len(data) == 0:
-                    break
-                chan.send(data)
-            if chan in r:
-                data = chan.recv(1024)
-                if len(data) == 0:
-                    break
-                sock.send(data)
-        chan.close()
-        sock.close()
-
-    def accept(channel, (src_addr, src_port), (dest_addr, dest_port)):
-        channels.append(channel)
-        th = ThreadHandler('fwd', forwarder, channel)
-        threads.append(th)
-
     transport = connections[env.host_string].get_transport()
-    transport.request_port_forward(rhost, rport, handler=accept)
+    transport.request_port_forward(remote_host, remote_port,
+        handler=functools.partial(_accept, channels, threads, sockets, local_host, local_port))
+
     try:
         yield
     finally:
@@ -545,7 +536,7 @@ def rtunnel(rport, lport=None):
             chan.close()
             th.thread.join()
             th.raise_if_needed()
-        transport.cancel_port_forward(rhost, rport)
+        transport.cancel_port_forward(remote_host, remote_port)
 
 
 
