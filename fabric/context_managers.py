@@ -458,17 +458,8 @@ def shell_env(**kw):
     return _setenv({'shell_env': kw})
 
 
-def _forwarder(chan, sock, local_host, local_port):
-    try:
-        sock.connect((local_host, local_port))
-    except Exception, e:
-        print "[%s] rtunnel: cannot connect to %s:%d (from local)" % (env.host_string, local_host, local_port)
-        chan.close()
-        raise
-
-    print "[%s] rtunnel: opened reverse tunnel: %r -> %r -> %r"\
-          % (env.host_string, chan.origin_addr,
-             chan.getpeername(), (local_host, local_port))
+def _forwarder(chan, sock):
+    # Bidirectionally forward data between a socket and a Paramiko channel.
     while True:
         r, w, x = select.select([sock, chan], [], [])
         if sock in r:
@@ -484,14 +475,6 @@ def _forwarder(chan, sock, local_host, local_port):
     chan.close()
     sock.close()
 
-
-def _accept(all_channels, all_threads, all_sockets, local_host, local_port,
-            channel, (src_addr, src_port), (dest_addr, dest_port)):
-    all_channels.append(channel)
-    sock = socket.socket()
-    all_sockets.append(sock)
-    th = ThreadHandler('fwd', _forwarder, channel, sock, local_host, local_port)
-    all_threads.append(th)
 
 @documented_contextmanager
 def remote_tunnel(remote_port, local_port=None, local_host="localhost", remote_bind_address="127.0.0.1"):
@@ -539,9 +522,27 @@ def remote_tunnel(remote_port, local_port=None, local_host="localhost", remote_b
     channels = []
     threads = []
 
+    def accept(channel, (src_addr, src_port), (dest_addr, dest_port)):
+        channels.append(channel)
+        sock = socket.socket()
+        sockets.append(sock)
+
+        try:
+            sock.connect((local_host, local_port))
+        except Exception, e:
+            print "[%s] rtunnel: cannot connect to %s:%d (from local)" % (env.host_string, local_host, local_port)
+            chan.close()
+            return
+
+        print "[%s] rtunnel: opened reverse tunnel: %r -> %r -> %r"\
+              % (env.host_string, channel.origin_addr,
+                 channel.getpeername(), (local_host, local_port))
+
+        th = ThreadHandler('fwd', _forwarder, channel, sock)
+        threads.append(th)
+
     transport = connections[env.host_string].get_transport()
-    transport.request_port_forward(remote_bind_address, remote_port,
-        handler=functools.partial(_accept, channels, threads, sockets, local_host, local_port))
+    transport.request_port_forward(remote_bind_address, remote_port, handler=accept)
 
     try:
         yield
