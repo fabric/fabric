@@ -523,6 +523,27 @@ far. For informational purposes only.
 
 .. seealso:: :doc:`fab`
 
+
+.. _remote-interrupt:
+
+``remote_interrupt``
+--------------------
+
+**Default:** ``None``
+
+Controls whether Ctrl-C triggers an interrupt remotely or is captured locally,
+as follows:
+
+* ``None`` (the default): only `~fabric.operations.open_shell` will exhibit
+  remote interrupt behavior, and
+  `~fabric.operations.run`/`~fabric.operations.sudo` will capture interrupts
+  locally.
+* ``False``: even `~fabric.operations.open_shell` captures locally.
+* ``True``: all functions will send the interrupt to the remote end.
+
+.. versionadded:: 1.6
+
+
 .. _rcfile:
 
 ``rcfile``

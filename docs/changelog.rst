@@ -25,6 +25,10 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :feature:`823` Add :ref:`env.remote_interrupt <remote-interrupt>` which
+  controls whether Ctrl-C is forwarded to the remote end or is captured locally
+  (previously, only the latter behavior was implemented). Thanks to Geert
+  Jansen for the patch.
 * :release:`1.5.3 <2013-01-28>`
 * :bug:`806` Force strings given to ``getpass`` during password prompts to be
   ASCII, to prevent issues on some platforms when Unicode is encountered.
