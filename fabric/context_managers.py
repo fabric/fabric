@@ -35,7 +35,6 @@ Context managers for use with the ``with`` statement.
 
 from contextlib import contextmanager, nested
 import sys
-import functools
 import socket
 import select
 
