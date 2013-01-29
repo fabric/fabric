@@ -25,6 +25,7 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :release:`1.5.3 <2013-01-28>`
 * :bug:`806` Force strings given to ``getpass`` during password prompts to be
   ASCII, to prevent issues on some platforms when Unicode is encountered.
   Thanks to Alex Louden for the patch.
