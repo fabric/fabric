@@ -77,6 +77,38 @@ for arbitrary prefix commands.
     about your current working directory!
 
 
+How do I use ``su`` to run commands as another user?
+====================================================
+
+This is a special case of :ref:`one-shell-per-command`. As that FAQ explains,
+commands like ``su`` which are 'stateful' do not work well in Fabric, so
+workarounds must be used.
+
+In the case of running commands as a user distinct from the login user, you
+have two options:
+
+#. Use `~fabric.operations.sudo` with its ``user=`` kwarg, e.g.
+   ``sudo("command", user="otheruser")``. If you want to factor the ``user``
+   part out of a bunch of commands, use `~fabric.context_managers.settings` to
+   set ``env.sudo_user``::
+
+       with settings(sudo_user="otheruser"):
+           sudo("command 1")
+           sudo("command 2")
+           ...
+
+#. If your target system cannot use ``sudo`` for some reason, you can still use
+   ``su``, but you need to invoke it in a non-interactive fashion by telling it
+   to run a specific command instead of opening a shell. Typically this is the
+   ``-c`` flag, e.g. ``su otheruser -c "command"``.
+
+   To run multiple commands in the same ``su -c`` "wrapper", you could e.g.
+   write a wrapper function around `~fabric.operations.run`::
+
+       def run_su(command, user="otheruser"):
+           return run('su %s -c "%s"' % (user, command))
+
+
 Why do I sometimes see ``err: stdin: is not a tty``?
 ====================================================
 
