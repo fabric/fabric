@@ -128,6 +128,8 @@ def runs_once(func):
     Any function wrapped with this decorator will silently fail to execute the
     2nd, 3rd, ..., Nth time it is called, and will return the value of the
     original run.
+    
+    .. note:: ``runs_once`` does not work with parallel task execution.
     """
     @wraps(func)
     def decorated(*args, **kwargs):
