@@ -25,6 +25,8 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :feature:`845` Downstream synchronization option implemented for
+  `~fabric.contrib.project.rsync_project`.
 * :bug:`843` Ensure string ``pool_size`` values get run through ``int()``
   before deriving final result (stdlib ``min()`` has odd behavior here...).
   Thanks to Chris Kastorff for the catch.
