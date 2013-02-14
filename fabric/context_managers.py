@@ -447,11 +447,17 @@ def shell_env(**kw):
         with shell_env(ZMQ_DIR='/home/user/local'):
             run('pip install pyzmq')
 
-    As with `~fabric.context_managers.prefix`, this effectively turns the ``run`` command into::
+    As with `~fabric.context_managers.prefix`, this effectively turns the
+    ``run`` command into::
 
         $ export ZMQ_DIR='/home/user/local' && pip install pyzmq
 
     Multiple key-value pairs may be given simultaneously.
+
+    .. note::
+        If used to affect the behavior of `~fabric.operations.local` when
+        running from a Windows localhost, ``SET`` commands will be used to
+        implement this feature.
     """
     return _setenv({'shell_env': kw})
 
