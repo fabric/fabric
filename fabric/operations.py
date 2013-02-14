@@ -646,13 +646,16 @@ def _prefix_commands(command, which):
     return prefix + command
 
 
-def _prefix_env_vars(command):
+def _prefix_env_vars(command, local=False):
     """
     Prefixes ``command`` with any shell environment vars, e.g. ``PATH=foo ``.
 
     Currently, this only applies the PATH updating implemented in
     `~fabric.context_managers.path` and environment variables from
     `~fabric.context_managers.shell_env`.
+
+    Will switch to using Windows style 'SET' commands when invoked by
+    ``local()`` and on a Windows localhost.
     """
     env_vars = {}
 
@@ -672,8 +675,11 @@ def _prefix_env_vars(command):
     env_vars.update(env.shell_env)
 
     if env_vars:
-        set_cmd = 'SET ' if win32 else ''
-        exp_cmd = '' if win32 else 'export '
+        set_cmd, exp_cmd = '', ''
+        if win32 and local:
+            set_cmd = 'SET '
+        else:
+            exp_cmd = 'export '
 
         exports = ' '.join(
             '%s%s="%s"' % (set_cmd, k, v if k == 'PATH' else _shell_escape(v))
@@ -1109,7 +1115,8 @@ def local(command, capture=False, shell=None):
     """
     given_command = command
     # Apply cd(), path() etc
-    wrapped_command = _prefix_commands(_prefix_env_vars(command), 'local')
+    with_env = _prefix_env_vars(command, local=True)
+    wrapped_command = _prefix_commands(with_env, 'local')
     if output.debug:
         print("[localhost] local: %s" % (wrapped_command))
     elif output.running:
