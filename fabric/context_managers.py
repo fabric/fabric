@@ -484,43 +484,44 @@ def _forwarder(chan, sock):
 
 
 @documented_contextmanager
-def remote_tunnel(remote_port, local_port=None, local_host="localhost", remote_bind_address="127.0.0.1"):
+def remote_tunnel(remote_port, local_port=None, local_host="localhost",
+    remote_bind_address="127.0.0.1"):
     """
-    Set a remote-forwarding tunnel from the server into a host reachable from
-    the client.
+    Create a tunnel forwarding a locally-visible port to the remote target.
 
-    For example, you can set a let the remote host access a database that it is
+    For example, you can let the remote host access a database that is
     installed on the client host::
 
-        # Map localhost:6379 on the server to localhost:6379 on the client
+        # Map localhost:6379 on the server to localhost:6379 on the client,
+        # so that the remote 'redis-cli' program ends up speaking to the local
+        # redis-server.
         with remote_tunnel(6379):
             run("redis-cli -i")
 
     The database might be installed on a client only reachable from the client
-    host:
+    host (as opposed to *on* the client itself)::
 
         # Map localhost:6379 on the server to redis.internal:6379 on the client
         with remote_tunnel(6379, local_host="redis.internal")
             run("redis-cli -i")
 
-    `remote_tunnel` accepts up to four arguments:
+    ``remote_tunnel`` accepts up to four arguments:
 
-    * `remote_port` (mandatory) is the remote port to listen to.
-    * `local_port` (opt) is the local port to connect to; the default is the
-       same port as the remote one.
-    * `local_host` (opt) is the locally-reachable computer (DNS name or IP address)
-       to connect to; the default is `localhost` (that is, the same computer
-       Fabric is running on).
-    * `remote_bind_address` (opt) is the remote IP address to bind to for listening,
-      on the current target. It should be an IP address assigned to an interface
-      on such target (or a DNS name that resolves to such IP). You can use "0.0.0.0"
-      to bind to all interfaces.
+    * ``remote_port`` (mandatory) is the remote port to listen to.
+    * ``local_port`` (optional) is the local port to connect to; the default is
+      the same port as the remote one.
+    * ``local_host`` (optional) is the locally-reachable computer (DNS name or
+      IP address) to connect to; the default is ``localhost`` (that is, the
+      same computer Fabric is running on).
+    * ``remote_bind_address`` (optional) is the remote IP address to bind to
+      for listening, on the current target. It should be an IP address assigned
+      to an interface on the target (or a DNS name that resolves to such IP).
+      You can use "0.0.0.0" to bind to all interfaces.
 
     .. note::
-
-        By default, most SSHD servers only allow remote tunnels to listen to
-        the localhost interface (127.0.0.1). In these cases, `remote_bind_address` is
-        ignored by the server, and the tunnel will listen only to 127.0.0.1.
+        By default, most SSH servers only allow remote tunnels to listen to the
+        localhost interface (127.0.0.1). In these cases, `remote_bind_address`
+        is ignored by the server, and the tunnel will listen only to 127.0.0.1.
     """
     if local_port is None:
         local_port = remote_port

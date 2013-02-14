@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :feature:`821` Add `~fabric.context_managers.remote_tunnel` to allow reverse
+  SSH tunneling (exposing locally-visible network ports to the remote end).
+  Thanks to Giovanni Bajo for the patch.
 * :feature:`823` Add :ref:`env.remote_interrupt <remote-interrupt>` which
   controls whether Ctrl-C is forwarded to the remote end or is captured locally
   (previously, only the latter behavior was implemented). Thanks to Geert
