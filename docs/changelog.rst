@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`839` Fix bug in `~fabric.contrib.project.rsync_project` where IPv6
+  address were not always correctly detected. Thanks to Antonio Barrero for
+  catch & patch.
 * :bug:`587` Warn instead of aborting when :ref:`env.use_ssh_config
   <use-ssh-config>` is True but the configured SSH conf file doesn't exist.
   This allows multi-user fabfiles to enable SSH config without causing hard
