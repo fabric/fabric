@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`843` Ensure string ``pool_size`` values get run through ``int()``
+  before deriving final result (stdlib ``min()`` has odd behavior here...).
+  Thanks to Chris Kastorff for the catch.
 * :bug:`839` Fix bug in `~fabric.contrib.project.rsync_project` where IPv6
   address were not always correctly detected. Thanks to Antonio Barrero for
   catch & patch.

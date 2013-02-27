@@ -80,7 +80,8 @@ class Task(object):
         # change)
         default_pool_size = default or len(hosts)
         # Allow per-task override
-        pool_size = getattr(self, 'pool_size', default_pool_size)
+        # Also cast to int in case somebody gave a string
+        pool_size = int(getattr(self, 'pool_size', default_pool_size))
         # But ensure it's never larger than the number of hosts
         pool_size = min((pool_size, len(hosts)))
         # Inform user of final pool size for this task
