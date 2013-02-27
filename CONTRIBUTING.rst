@@ -32,5 +32,3 @@ Patch submission guidelines
   <https://github.com/defunkt/hub/#installation>`_ and then run `hub
   pull-request <https://github.com/defunkt/hub/#git-pull-request>`_ to turn the
   issue into a pull request containing your code.
-
-.. vim:set ft=rst :
