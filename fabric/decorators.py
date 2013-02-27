@@ -3,7 +3,9 @@ Convenience decorators for use in fabfiles.
 """
 from __future__ import with_statement
 
+import types
 from functools import wraps
+
 from Crypto import Random
 
 from fabric import tasks
@@ -167,6 +169,8 @@ def parallel(pool_size=None):
 
     .. versionadded:: 1.3
     """
+    called_without_args = type(pool_size) == types.FunctionType
+
     def real_decorator(func):
         @wraps(func)
         def inner(*args, **kwargs):
@@ -177,11 +181,11 @@ def parallel(pool_size=None):
             return func(*args, **kwargs)
         inner.parallel = True
         inner.serial = False
-        inner.pool_size = pool_size
+        inner.pool_size = None if called_without_args else pool_size
         return _wrap_as_new(func, inner)
 
     # Allow non-factory-style decorator use (@decorator vs @decorator())
-    if type(pool_size) == type(real_decorator):
+    if called_without_args:
         return real_decorator(pool_size)
 
     return real_decorator
