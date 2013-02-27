@@ -30,7 +30,8 @@ class TestParallel(FabricTest):
         """
         @parallel
         def _task():
-            run("ls /simple")
+            with hide('everything'):
+                run("ls /simple")
             assert USER not in env.host
             assert str(PORT) not in env.host
 
