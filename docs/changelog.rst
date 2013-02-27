@@ -25,6 +25,11 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`587` Warn instead of aborting when :ref:`env.use_ssh_config
+  <use-ssh-config>` is True but the configured SSH conf file doesn't exist.
+  This allows multi-user fabfiles to enable SSH config without causing hard
+  stops for users lacking SSH configs. Thanks to Rodrigo Pimentel for the
+  report.
 * :release:`1.5.3 <2013-01-28>`
 * :bug:`806` Force strings given to ``getpass`` during password prompts to be
   ASCII, to prevent issues on some platforms when Unicode is encountered.
