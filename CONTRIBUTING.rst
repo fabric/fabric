@@ -14,9 +14,16 @@ Patch submission guidelines
 
   This makes life much easier for maintainers if you have (or ever plan to
   have) additional changes in your own ``master`` branch.
-* Base **bugfixes** off the **latest release branch** (e.g. ``1.4``) and **new
-  features** off of **master**. If you're unsure which category your change
-  falls in, just ask on IRC or the mailing list -- it's often a judgement call.
+
+    * A corollary: please **don't put multiple fixes/features in the same
+      branch/pull request**! In other words, if you're hacking on new feature X
+      and find a bugfix that doesn't *require* new feature X, **make a new
+      distinct branch and PR** for the bugfix.
+
+* Base **bugfixes** off the **latest release branch** (e.g. ``1.4``, ``1.5`` or
+  whatever's newest) and **new features** off of **master**. If you're unsure
+  which category your change falls in, just ask on IRC or the mailing list --
+  it's often a judgement call.
 * **Make sure documentation is updated** -- at the very least, keep docstrings
   current, and if necessary, update the ReST documentation in ``docs/``.  For
   example, new ``env.*`` settings should be added to ``docs/usage/env.rst``.
