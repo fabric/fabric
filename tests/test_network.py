@@ -18,6 +18,7 @@ from fabric.state import env, output, _get_system_username
 from fabric.operations import run, sudo, prompt
 from fabric.exceptions import NetworkError
 from fabric.tasks import execute
+from fabric import utils # for patching
 
 from utils import *
 from server import (server, PORT, RESPONSES, PASSWORDS, CLIENT_PRIVKEY, USER,
@@ -614,8 +615,9 @@ class TestSSHConfig(FabricTest):
         eq_(normalize("localhost")[1], "localhost")
         eq_(normalize("myalias")[1], "otherhost")
 
-    @aborts
-    def test_aborts_with_bad_config_file_path(self):
+    @with_patched_object(utils, 'warn', Fake('warn', callable=True,
+        expect_call=True))
+    def test_warns_with_bad_config_file_path(self):
         # use_ssh_config is already set in our env_setup()
         with settings(ssh_config_path="nope_bad_lol"):
             normalize('foo')

@@ -25,6 +25,11 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`587` Warn instead of aborting when :ref:`env.use_ssh_config
+  <use-ssh-config>` is True but the configured SSH conf file doesn't exist.
+  This allows multi-user fabfiles to enable SSH config without causing hard
+  stops for users lacking SSH configs. Thanks to Rodrigo Pimentel for the
+  report.
 * :feature:`821` Add `~fabric.context_managers.remote_tunnel` to allow reverse
   SSH tunneling (exposing locally-visible network ports to the remote end).
   Thanks to Giovanni Bajo for the patch.
