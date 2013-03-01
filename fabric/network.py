@@ -171,7 +171,10 @@ def key_filenames():
     # Honor SSH config
     conf = ssh_config()
     if 'identityfile' in conf:
-        keys.extend(conf['identityfile'])
+        # Handle Paramiko 1.9 vs 1.10 treatment of this setting.
+        # 1.9 is a string, 1.10 is a list of strings.
+        value = conf['identityfile']
+        keys.extend([value] if isinstance(value, basestring) else value)
     return map(os.path.expanduser, keys)
 
 
