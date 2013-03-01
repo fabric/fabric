@@ -675,14 +675,3 @@ class TestKeyFilenames(FabricTest):
             with settings(key_filename=["bizbaz.pub", "whatever.pub"]):
                 expected = ["bizbaz.pub", "whatever.pub", "foobar.pub"]
                 eq_(key_filenames(), expected)
-
-    def test_specific_host(self):
-        """
-        SSH lookup aspect should correctly select per-host value
-        """
-        with settings(
-            use_ssh_config=True,
-            ssh_config_path=support("ssh_config"),
-            host_string="myhost"
-        ):
-            eq_(key_filenames(), ["neighbor.pub"])

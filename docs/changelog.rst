@@ -25,6 +25,10 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`844` Account for SSH config overhaul in Paramiko 1.10 by e.g. updating
+  treatment of ``IdentityFile`` to handle multiple values. **This and related
+  SSH config parsing changes are backwards incompatible**; we are including
+  them in this release because they do fix incorrect, off-spec behavior.
 * :bug:`843` Ensure string ``pool_size`` values get run through ``int()``
   before deriving final result (stdlib ``min()`` has odd behavior here...).
   Thanks to Chris Kastorff for the catch.

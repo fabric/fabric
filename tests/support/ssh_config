@@ -1,8 +1,3 @@
-Host *
-    User satan
-    Port 666
-    IdentityFile foobar.pub
-
 Host myhost
     User neighbor
     Port 664
@@ -10,3 +5,8 @@ Host myhost
 
 Host myalias
     HostName otherhost
+
+Host *
+    User satan
+    Port 666
+    IdentityFile foobar.pub
