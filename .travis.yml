@@ -10,6 +10,8 @@ install:
   - pip install -e .
   # Install third-party multiprocessing on 2.5
   - "if [[ $TRAVIS_PYTHON_VERSION == '2.5' ]]; then pip install multiprocessing; fi"
+  # Deal with issue on Travis builders re: multiprocessing.Queue :(
+  - "sudo rm -rf /dev/shm && sudo ln -s /run/shm /dev/shm"
 script: fab test
 notifications:
   irc:
