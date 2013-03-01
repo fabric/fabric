@@ -169,10 +169,9 @@ def key_filenames():
     # Strip out any empty strings (such as the default value...meh)
     keys = filter(bool, keys)
     # Honor SSH config
-    # TODO: fix ssh so it correctly treats IdentityFile as a list
     conf = ssh_config()
     if 'identityfile' in conf:
-        keys.append(conf['identityfile'])
+        keys.extend(conf['identityfile'])
     return map(os.path.expanduser, keys)
 
 

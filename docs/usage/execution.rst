@@ -785,7 +785,7 @@ If enabled, the following SSH config directives will be loaded and honored by Fa
   regular ``ssh``. So a ``Host foo`` entry specifying ``HostName example.com``
   will allow you to give Fabric the hostname ``'foo'`` and have that expanded
   into ``'example.com'`` at connection time.
-* ``IdentityFile`` will append to (not replace) :ref:`env.key_filename
+* ``IdentityFile`` will extend (not replace) :ref:`env.key_filename
   <key-filename>`.
 * ``ForwardAgent`` will augment :ref:`env.forward_agent <forward-agent>` in an
   "OR" manner: if either is set to a positive value, agent forwarding will be
