@@ -25,6 +25,7 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :release:`1.6.0 <2013-03-01>`
 * :release:`1.5.4 <2013-03-01>`
 * :bug:`844` Account for SSH config overhaul in Paramiko 1.10 by e.g. updating
   treatment of ``IdentityFile`` to handle multiple values. **This and related
