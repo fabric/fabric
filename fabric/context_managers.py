@@ -482,6 +482,8 @@ quiet.__doc__ = """
         :ref:`env.warn_only <warn_only>`,
         `~fabric.context_managers.settings`,
         `~fabric.context_managers.hide`
+
+    .. versionadded:: 1.5
 """
 
 
