@@ -106,7 +106,7 @@ def upload_template(filename, destination, context=None, use_jinja=False,
             abort(tb + "\nUnable to import Jinja2 -- see above.")
     else:
         if template_dir:
-            filename = template_dir + "/" + filename
+            filename = os.path.join(template_dir, filename)
         with open(filename) as inputfile:
             text = inputfile.read()
         if context:
