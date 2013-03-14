@@ -40,7 +40,7 @@ While we may not always reply promptly, we do try to make time eventually to
 inspect all contributions and either incorporate them or explain why we don't
 feel the change is a good fit.
 
-.. include:: ../CONTRIBUTING
+.. include:: ../CONTRIBUTING.rst
 
 Coding style
 ------------
