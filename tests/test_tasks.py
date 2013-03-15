@@ -109,6 +109,35 @@ class TestWrappedCallableTask(unittest.TestCase):
         task = WrappedCallableTask(foo)
         eq_(task(), task.run())
 
+    def test_calling_with_wrong_arg_count_returns_NotImplemented(self):
+        def foo(a, b, c): return 'great value'
+
+        task = WrappedCallableTask(foo)
+        eq_(task(), NotImplemented)
+
+    def test_calling_kwargs_with_args_returns_NotImplemented(self):
+        def bar(**kwargs): return 'great value'
+        task = WrappedCallableTask(bar)
+        eq_(task(1, 2, 3), NotImplemented)
+
+    def test_calling_with_right_arg_count_calls_callable(self):
+        def foo(a, b, c): return 'great value'
+        task = WrappedCallableTask(foo)
+        eq_(task(2, 2, 3), 'great value')
+
+    def test_calling_with_args_or_kwargs_calls_callable(self):
+        def foo(*args): return 'great value'
+        def bar(**kwargs): return 'great value'
+        task = WrappedCallableTask(foo)
+        eq_(task(1, 2, 3), 'great value')
+
+        task = WrappedCallableTask(bar)
+        eq_(task(a=1, b=2, c=3), 'great value')
+
+    def test_calling_with_builtin_calls_callable(self):
+        task = WrappedCallableTask(any)
+        eq_(task([True]), True)
+
 
 class TestTask(unittest.TestCase):
     def test_takes_an_alias_kwarg_and_wraps_it_in_aliases_list(self):

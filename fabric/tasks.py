@@ -1,6 +1,7 @@
 from __future__ import with_statement
 
 from functools import wraps
+import inspect
 import sys
 
 from fabric import state
@@ -120,6 +121,23 @@ class WrappedCallableTask(Task):
         return self.run(*args, **kwargs)
 
     def run(self, *args, **kwargs):
+        can_run = False
+
+        try:
+            argnames, varargs, keywords, defaults = inspect.getargspec(
+                    self.wrapped)
+        except TypeError:
+            # builtins, ouch
+            can_run = True
+        else:
+            if varargs or kwargs:
+                can_run = True
+            elif len(argnames) == len(args) + len(kwargs):
+                can_run = True
+
+        if not can_run:
+            print("Wrong amount of arguments passed to %s" % self.wrapped.__name__)
+            return NotImplemented
         return self.wrapped(*args, **kwargs)
 
     def __getattr__(self, k):
