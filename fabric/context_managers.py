@@ -1,11 +1,6 @@
 """
 Context managers for use with the ``with`` statement.
 
-.. note:: When using Python 2.5, you will need to start your fabfile
-    with ``from __future__ import with_statement`` in order to make use of
-    the ``with`` statement (which is a regular, non ``__future__`` feature of
-    Python 2.6+.)
-
 .. note:: If you are using multiple directly nested ``with`` statements, it can
     be convenient to use multiple context expressions in one single with
     statement. Instead of writing::
@@ -21,26 +16,18 @@ Context managers for use with the ``with`` statement.
             run('./manage.py syncdb')
             run('./manage.py loaddata myfixture')
 
-    Note that you need Python 2.7+ for this to work. On Python 2.5 or 2.6, you
-    can do the following::
-
-        from contextlib import nested
-
-        with nested(cd('/path/to/app'), prefix('workon myvenv')):
-            ...
-
     Finally, note that `~fabric.context_managers.settings` implements
     ``nested`` itself -- see its API doc for details.
 """
 
-from contextlib import contextmanager, nested
-import sys
+from contextlib import contextmanager
 import socket
 import select
 
 from fabric.thread_handling import ThreadHandler
 from fabric.state import output, win32, connections, env
 from fabric import state
+import collections
 
 if not win32:
     import termios
@@ -127,12 +114,12 @@ def _setenv(variables):
     This context manager is used internally by `settings` and is not intended
     to be used directly.
     """
-    if callable(variables):
+    if isinstance(variables, collections.Callable):
         variables = variables()
     clean_revert = variables.pop('clean_revert', False)
     previous = {}
     new = []
-    for key, value in variables.iteritems():
+    for key, value in variables.items():
         if key in state.env:
             previous[key] = state.env[key]
         else:
@@ -142,7 +129,7 @@ def _setenv(variables):
         yield
     finally:
         if clean_revert:
-            for key, value in variables.iteritems():
+            for key, value in variables.items():
                 # If the current env value for this key still matches the
                 # value we set it to beforehand, we are OK to revert it to the
                 # pre-block value.
@@ -530,21 +517,23 @@ def remote_tunnel(remote_port, local_port=None, local_host="localhost",
     channels = []
     threads = []
 
-    def accept(channel, (src_addr, src_port), (dest_addr, dest_port)):
+    def accept(channel, xxx_todo_changeme, xxx_todo_changeme1):
+        (src_addr, src_port) = xxx_todo_changeme
+        (dest_addr, dest_port) = xxx_todo_changeme1
         channels.append(channel)
         sock = socket.socket()
         sockets.append(sock)
 
         try:
             sock.connect((local_host, local_port))
-        except Exception, e:
-            print "[%s] rtunnel: cannot connect to %s:%d (from local)" % (env.host_string, local_host, local_port)
+        except Exception as e:
+            print("[%s] rtunnel: cannot connect to %s:%d (from local)" % (env.host_string, local_host, local_port))
             chan.close()
             return
 
-        print "[%s] rtunnel: opened reverse tunnel: %r -> %r -> %r"\
+        print("[%s] rtunnel: opened reverse tunnel: %r -> %r -> %r"\
               % (env.host_string, channel.origin_addr,
-                 channel.getpeername(), (local_host, local_port))
+                 channel.getpeername(), (local_host, local_port)))
 
         th = ThreadHandler('fwd', _forwarder, channel, sock)
         threads.append(th)

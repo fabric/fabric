@@ -1,4 +1,4 @@
-from __future__ import with_statement
+
 
 import random
 import sys
@@ -189,7 +189,7 @@ fake_tasks = {
 }
 
 def parallel_task_helper(actual_tasks, expected):
-    commands_to_run = map(lambda x: [x], actual_tasks)
+    commands_to_run = [[x] for x in actual_tasks]
     with patched_context(fabric.state, 'commands', fake_tasks):
         eq_(_parallel_tasks(commands_to_run), expected)
 

@@ -1,4 +1,4 @@
-from __future__ import with_statement
+
 
 from functools import wraps
 import sys
@@ -10,6 +10,7 @@ from fabric.context_managers import settings
 from fabric.job_queue import JobQueue
 from fabric.task_utils import crawl, merge, parse_kwargs
 from fabric.exceptions import NetworkError
+import collections
 
 
 def _get_list(env):
@@ -71,7 +72,7 @@ class Task(object):
         # from the CLI or from module-level code). This will be the empty list
         # if these have not been set -- which is fine, this method should
         # return an empty list if no hosts have been set anywhere.
-        env_vars = map(_get_list(env), "hosts roles exclude_hosts".split())
+        env_vars = list(map(_get_list(env), "hosts roles exclude_hosts".split()))
         env_vars.append(roledefs)
         return merge(*env_vars)
 
@@ -87,7 +88,7 @@ class Task(object):
         pool_size = min((pool_size, len(hosts)))
         # Inform user of final pool size for this task
         if state.output.debug:
-            print("Parallel tasks now using pool size of %d" % pool_size)
+            print(("Parallel tasks now using pool size of %d" % pool_size))
         return pool_size
 
 
@@ -143,10 +144,7 @@ def requires_parallel(task):
 
 
 def _parallel_tasks(commands_to_run):
-    return any(map(
-        lambda x: requires_parallel(crawl(x[0], state.commands)),
-        commands_to_run
-    ))
+    return any([requires_parallel(crawl(x[0], state.commands)) for x in commands_to_run])
 
 
 def _execute(task, host, my_env, args, kwargs, jobs, queue, multiprocessing):
@@ -155,7 +153,7 @@ def _execute(task, host, my_env, args, kwargs, jobs, queue, multiprocessing):
     """
     # Log to stdout
     if state.output.running and not hasattr(task, 'return_value'):
-        print("[%s] Executing task '%s'" % (host, my_env['command']))
+        print(("[%s] Executing task '%s'" % (host, my_env['command'])))
     # Create per-run env with connection settings
     local_env = to_dict(host)
     local_env.update(my_env)
@@ -180,7 +178,7 @@ def _execute(task, host, my_env, args, kwargs, jobs, queue, multiprocessing):
                 key = normalize_to_string(state.env.host_string)
                 state.connections.pop(key, "")
                 submit(task.run(*args, **kwargs))
-            except BaseException, e: # We really do want to capture everything
+            except BaseException as e: # We really do want to capture everything
                 # SystemExit implies use of abort(), which prints its own
                 # traceback, host info etc -- so we don't want to double up
                 # on that. For everything else, though, we need to make
@@ -263,7 +261,7 @@ def execute(task, *args, **kwargs):
     my_env = {'clean_revert': True}
     results = {}
     # Obtain task
-    is_callable = callable(task)
+    is_callable = isinstance(task, collections.Callable)
     if not (is_callable or _is_task(task)):
         # Assume string, set env.command to it
         my_env['command'] = task
@@ -316,7 +314,7 @@ def execute(task, *args, **kwargs):
                     task, host, my_env, args, new_kwargs, jobs, queue,
                     multiprocessing
                 )
-            except NetworkError, e:
+            except NetworkError as e:
                 results[host] = e
                 # Backwards compat test re: whether to use an exception or
                 # abort
@@ -340,7 +338,7 @@ def execute(task, *args, **kwargs):
             # This prevents Fabric from continuing on to any other tasks.
             # Otherwise, pull in results from the child run.
             ran_jobs = jobs.run()
-            for name, d in ran_jobs.iteritems():
+            for name, d in ran_jobs.items():
                 if d['exit_code'] != 0:
                     if isinstance(d['results'], BaseException):
                         error(err, exception=d['results'])

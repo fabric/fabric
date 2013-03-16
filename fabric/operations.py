@@ -3,7 +3,7 @@
 Functions to be used in fabfiles and other non-core code, such as run()/sudo().
 """
 
-from __future__ import with_statement
+
 
 import os
 import os.path
@@ -30,6 +30,7 @@ from fabric.utils import (
     _pty_size,
     warn,
 )
+import collections
 
 
 def _shell_escape(string):
@@ -95,8 +96,8 @@ def require(*keys, **kwargs):
         Allow iterable ``provided_by`` values instead of just single values.
     """
     # If all keys exist and are non-empty, we're good, so keep going.
-    missing_keys = filter(lambda x: x not in env or (x in env and
-        isinstance(env[x], (dict, list, tuple, set)) and not env[x]), keys)
+    missing_keys = [x for x in keys if x not in env or (x in env and
+        isinstance(env[x], (dict, list, tuple, set)) and not env[x])]
     if not missing_keys:
         return
     # Pluralization
@@ -211,20 +212,20 @@ def prompt(text, key=None, default='', validate=None):
     value = None
     while value is None:
         # Get input
-        value = raw_input(prompt_str) or default
+        value = input(prompt_str) or default
         # Handle validation
         if validate:
             # Callable
-            if callable(validate):
+            if isinstance(validate, collections.Callable):
                 # Callable validate() must raise an exception if validation
                 # fails.
                 try:
                     value = validate(value)
-                except Exception, e:
+                except Exception as e:
                     # Reset value so we stay in the loop
                     value = None
                     print("Validation failed for the following reason:")
-                    print(indent(e.message) + "\n")
+                    print((indent(e.message) + "\n"))
             # String / regex must match and will be empty if validation fails.
             else:
                 # Need to transform regex into full-matching one if it's not.
@@ -234,7 +235,7 @@ def prompt(text, key=None, default='', validate=None):
                     validate += r'$'
                 result = re.findall(validate, value)
                 if not result:
-                    print("Regular expression validation failed: '%s' does not match '%s'\n" % (value, validate))
+                    print(("Regular expression validation failed: '%s' does not match '%s'\n" % (value, validate)))
                     # Reset value so we stay in the loop
                     value = None
     # At this point, value must be valid, so update env if necessary
@@ -337,7 +338,7 @@ def put(local_path=None, remote_path=None, use_sudo=False,
 
     # Test whether local_path is a path or a file-like object
     local_is_path = not (hasattr(local_path, 'read') \
-        and callable(local_path.read))
+        and isinstance(local_path.read, collections.Callable))
 
     ftp = SFTP(env.host_string)
 
@@ -390,7 +391,7 @@ def put(local_path=None, remote_path=None, use_sudo=False,
                     p = ftp.put(lpath, remote_path, use_sudo, mirror_local_mode,
                         mode, local_is_path)
                     remote_paths.append(p)
-            except Exception, e:
+            except Exception as e:
                 msg = "put() encountered an exception while uploading '%s'"
                 failure = lpath if local_is_path else "<StringIO>"
                 failed_local_paths.append(failure)
@@ -511,7 +512,7 @@ def get(remote_path, local_path=None):
 
     # Test whether local_path is a path or a file-like object
     local_is_path = not (hasattr(local_path, 'write') \
-        and callable(local_path.write))
+        and isinstance(local_path.write, collections.Callable))
 
     # Honor lcd() where it makes sense
     if local_is_path and not os.path.isabs(local_path) and env.lcwd:
@@ -563,7 +564,7 @@ def get(remote_path, local_path=None):
                     if local_is_path:
                         local_files.append(result)
 
-        except Exception, e:
+        except Exception as e:
             failed_remote_files.append(remote_path)
             msg = "get() encountered an exception while downloading '%s'"
             error(message=msg % remote_path, exception=e)
@@ -683,7 +684,7 @@ def _prefix_env_vars(command, local=False):
 
         exports = ' '.join(
             '%s%s="%s"' % (set_cmd, k, v if k == 'PATH' else _shell_escape(v))
-            for k, v in env_vars.iteritems()
+            for k, v in env_vars.items()
         )
         shell_env_str = '%s%s && ' % (exp_cmd, exports)
     else:
@@ -882,9 +883,9 @@ def _run_command(command, shell=True, pty=True, combine_stderr=True,
         # Execute info line
         which = 'sudo' if sudo else 'run'
         if output.debug:
-            print("[%s] %s: %s" % (env.host_string, which, wrapped_command))
+            print(("[%s] %s: %s" % (env.host_string, which, wrapped_command)))
         elif output.running:
-            print("[%s] %s: %s" % (env.host_string, which, given_command))
+            print(("[%s] %s: %s" % (env.host_string, which, given_command)))
 
         # Actual execution, stdin/stdout/stderr handling, and termination
         result_stdout, result_stderr, status = _execute(
@@ -1118,9 +1119,9 @@ def local(command, capture=False, shell=None):
     with_env = _prefix_env_vars(command, local=True)
     wrapped_command = _prefix_commands(with_env, 'local')
     if output.debug:
-        print("[localhost] local: %s" % (wrapped_command))
+        print(("[localhost] local: %s" % (wrapped_command)))
     elif output.running:
-        print("[localhost] local: " + given_command)
+        print(("[localhost] local: " + given_command))
     # Tie in to global output controls as best we can; our capture argument
     # takes precedence over the output settings.
     dev_null = None

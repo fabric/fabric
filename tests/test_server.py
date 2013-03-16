@@ -91,7 +91,7 @@ def test_list_folder():
         # not "no files found"
         ok_(results != ssh.SFTP_NO_SUCH_FILE)
         # Grab filename from SFTPAttribute objects in result
-        output = map(lambda x: x.filename, results)
+        output = [x.filename for x in results]
         # Yield test generator
         eq_.description = "list_folder: %s" % desc
         yield eq_, set(expected), set(output)

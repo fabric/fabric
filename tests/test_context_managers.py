@@ -1,4 +1,4 @@
-from __future__ import with_statement
+
 
 import os
 import sys
@@ -12,7 +12,7 @@ from fabric.operations import run, local
 
 from utils import mock_streams, FabricTest
 from server import server
-from StringIO import StringIO
+from io import StringIO
 
 
 #

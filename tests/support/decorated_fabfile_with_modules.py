@@ -1,5 +1,5 @@
 from fabric.decorators import task
-import module_fabtasks as tasks
+from . import module_fabtasks as tasks
 
 @task
 def foo():

@@ -2,7 +2,7 @@
 Classes and subroutines dealing with network connections and related topics.
 """
 
-from __future__ import with_statement
+
 
 from functools import wraps
 import getpass
@@ -20,7 +20,7 @@ try:
     import warnings
     warnings.simplefilter('ignore', DeprecationWarning)
     import paramiko as ssh
-except ImportError, e:
+except ImportError as e:
     import traceback
     traceback.print_exc()
     msg = """
@@ -90,7 +90,7 @@ class HostConnectionCache(dict):
             # Ensure initial gateway connection
             if gateway not in self:
                 if output.debug:
-                    print "Creating new gateway connection to %r" % gateway
+                    print("Creating new gateway connection to %r" % gateway)
                 self[gateway] = connect(*normalize(gateway))
             # Now we should have an open gw connection and can ask it for a
             # direct-tcpip channel to the real target. (Bypass our own
@@ -164,16 +164,16 @@ def key_filenames():
     from fabric.state import env
     keys = env.key_filename
     # For ease of use, coerce stringish key filename into list
-    if isinstance(env.key_filename, basestring) or env.key_filename is None:
+    if isinstance(env.key_filename, str) or env.key_filename is None:
         keys = [keys]
     # Strip out any empty strings (such as the default value...meh)
-    keys = filter(bool, keys)
+    keys = list(filter(bool, keys))
     # Honor SSH config
     conf = ssh_config()
     if 'identityfile' in conf:
         # Assume a list here as we require Paramiko 1.10+
         keys.extend(conf['identityfile'])
-    return map(os.path.expanduser, keys)
+    return list(map(os.path.expanduser, keys))
 
 
 def parse_host_string(host_string):
@@ -307,7 +307,7 @@ def connect(user, host, port, sock=None):
     If ``sock`` is given, it's passed into ``SSHClient.connect()`` directly.
     Used for gateway connections by e.g. ``HostConnectionCache``.
     """
-    from state import env, output
+    from .state import env, output
 
     #
     # Initialization
@@ -363,14 +363,14 @@ def connect(user, host, port, sock=None):
         # BadHostKeyException corresponds to key mismatch, i.e. what on the
         # command line results in the big banner error about man-in-the-middle
         # attacks.
-        except ssh.BadHostKeyException, e:
+        except ssh.BadHostKeyException as e:
             raise NetworkError("Host key for %s did not match pre-existing key! Server's key was changed recently, or possible man-in-the-middle attack." % host, e)
         # Prompt for new password to try on auth failure
         except (
             ssh.AuthenticationException,
             ssh.PasswordRequiredException,
             ssh.SSHException
-        ), e:
+        ) as e:
             msg = str(e)
             # For whatever reason, empty password + no ssh key or agent
             # results in an SSHException instead of an
@@ -425,11 +425,11 @@ def connect(user, host, port, sock=None):
             print('')
             sys.exit(0)
         # Handle DNS error / name lookup failure
-        except socket.gaierror, e:
+        except socket.gaierror as e:
             raise NetworkError('Name lookup failed for %s' % host, e)
         # Handle timeouts and retries, including generic errors
         # NOTE: In 2.6, socket.error subclasses IOError
-        except socket.error, e:
+        except socket.error as e:
             not_timeout = type(e) is not socket.timeout
             giving_up = tries >= env.connection_attempts
             # Baseline error msg for when debug is off
@@ -529,7 +529,7 @@ def needs_host(func):
     def host_prompting_wrapper(*args, **kwargs):
         while not env.get('host_string', False):
             handle_prompt_abort("the target host connection string")
-            host_string = raw_input("No hosts found. Please specify (single)"
+            host_string = input("No hosts found. Please specify (single)"
                                     " host string for connection: ")
             env.update(to_dict(host_string))
         return func(*args, **kwargs)
@@ -546,7 +546,7 @@ def disconnect_all():
     """
     from fabric.state import connections, output
     # Explicitly disconnect from all servers
-    for key in connections.keys():
+    for key in list(connections.keys()):
         if output.status:
             # Here we can't use the py3k print(x, end=" ")
             # because 2.5 backwards compatibility
