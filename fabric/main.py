@@ -9,7 +9,7 @@ The other callables defined in this module are internal only. Anything useful
 to individuals leveraging Fabric as a library, should be kept elsewhere.
 """
 import getpass
-from operator import isMappingType
+import collections
 from optparse import OptionParser
 import os
 import sys
@@ -357,15 +357,15 @@ def _is_task(name, value):
 
 
 def _sift_tasks(mapping):
-    tasks, collections = [], []
+    tasks, _collections = [], []
     for name, value in mapping.iteritems():
         if _is_task(name, value):
             tasks.append(name)
-        elif isMappingType(value):
-            collections.append(name)
+        elif isinstance(value, collections.Mapping):
+            _collections.append(name)
     tasks = sorted(tasks)
-    collections = sorted(collections)
-    return tasks, collections
+    _collections = sorted(_collections)
+    return tasks, _collections
 
 
 def _task_names(mapping):
