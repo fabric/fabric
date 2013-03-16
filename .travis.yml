@@ -15,8 +15,4 @@ install:
   - "sudo rm -rf /dev/shm && sudo ln -s /run/shm /dev/shm"
 script: fab test
 notifications:
-  irc:
-    channels: "irc.freenode.org#fabric"
-    on_success: change
-    on_failure: change
   email: false
