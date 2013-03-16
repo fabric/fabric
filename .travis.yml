@@ -3,6 +3,7 @@ python:
   - "2.5"
   - "2.6"
   - "2.7"
+  - "3.3"
 install:
   # Build/test dependencies
   - pip install -r requirements.txt --use-mirrors
