@@ -1,7 +1,7 @@
 # "Integration test" for Fabric to be run occasionally / before releasing.
 # Executes idempotent/nonthreatening commands against localhost by default.
 
-from __future__ import with_statement
+
 
 from fabric.api import *
 
@@ -16,8 +16,8 @@ def test():
         for pty in flags:
             for combine_stderr in flags:
                 for func in funcs:
-                    print(">>> %s(%s, shell=%s, pty=%s, combine_stderr=%s)" % (
-                        func.func_name, cmd, shell, pty, combine_stderr))
+                    print((">>> %s(%s, shell=%s, pty=%s, combine_stderr=%s)" % (
+                        func.__name__, cmd, shell, pty, combine_stderr)))
                     print(line)
                     func(
                         cmd,
@@ -25,4 +25,4 @@ def test():
                         pty=pty,
                         combine_stderr=combine_stderr
                     )
-                    print(line + "\n")
+                    print((line + "\n"))

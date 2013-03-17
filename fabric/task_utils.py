@@ -1,5 +1,6 @@
 from fabric.utils import abort, indent
 from fabric import state
+import collections
 
 
 # For attribute tomfoolery
@@ -49,7 +50,7 @@ def merge(hosts, roles, exclude, roledefs):
     for role in roles:
         value = roledefs[role]
         # Handle "lazy" roles (callables)
-        if callable(value):
+        if isinstance(value, collections.Callable):
             value = value()
         role_hosts += value
 
@@ -74,7 +75,7 @@ def parse_kwargs(kwargs):
     hosts = []
     roles = []
     exclude_hosts = []
-    for key, value in kwargs.iteritems():
+    for key, value in kwargs.items():
         if key == 'host':
             hosts = [value]
         elif key == 'hosts':

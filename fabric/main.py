@@ -9,7 +9,7 @@ The other callables defined in this module are internal only. Anything useful
 to individuals leveraging Fabric as a library, should be kept elsewhere.
 """
 import getpass
-from operator import isMappingType
+import collections
 from optparse import OptionParser
 import os
 import sys
@@ -24,12 +24,13 @@ from fabric.state import env_options
 from fabric.tasks import Task, execute
 from fabric.task_utils import _Dict, crawl
 from fabric.utils import abort, indent, warn, _pty_size
+from functools import reduce
 
 
 # One-time calculation of "all internal callables" to avoid doing this on every
 # check of a given fabfile callable (in is_classic_task()).
 _modules = [api, project, files, console, colors]
-_internals = reduce(lambda x, y: x + filter(callable, vars(y).values()),
+_internals = reduce(lambda x, y: x + list(filter(callable, list(vars(y).values()))),
     _modules,
     []
 )
@@ -63,7 +64,7 @@ def load_settings(path):
     """
     if os.path.exists(path):
         comments = lambda s: s and not s.startswith("#")
-        settings = filter(comments, open(path, 'r'))
+        settings = list(filter(comments, open(path, 'r')))
         return dict((k.strip(), v.strip()) for k, _, v in
             [s.partition('=') for s in settings])
     # Handle nonexistent or empty settings file
@@ -122,7 +123,7 @@ def is_classic_task(tup):
     name, func = tup
     try:
         is_classic = (
-            callable(func)
+            isinstance(func, collections.Callable)
             and (func not in _internals)
             and not name.startswith('_')
         )
@@ -189,7 +190,7 @@ def load_tasks_from_module(imported):
         imported_vars = [(name, imported_vars[name]) for name in \
                          imported_vars if name in imported_vars["__all__"]]
     else:
-        imported_vars = imported_vars.items()
+        imported_vars = list(imported_vars.items())
     # Return a two-tuple value.  First is the documentation, second is a
     # dictionary of callables only (and don't include Fab operations or
     # underscored callables)
@@ -227,7 +228,7 @@ def extract_tasks(imported_vars):
             classic_tasks[name] = obj
         elif is_task_module(obj):
             docs, newstyle, classic, default = load_tasks_from_module(obj)
-            for task_name, task in newstyle.items():
+            for task_name, task in list(newstyle.items()):
                 if name not in new_style_tasks:
                     new_style_tasks[name] = _Dict()
                 new_style_tasks[name][task_name] = task
@@ -357,15 +358,15 @@ def _is_task(name, value):
 
 
 def _sift_tasks(mapping):
-    tasks, collections = [], []
-    for name, value in mapping.iteritems():
+    tasks, _collections = [], []
+    for name, value in mapping.items():
         if _is_task(name, value):
             tasks.append(name)
-        elif isMappingType(value):
-            collections.append(name)
+        elif isinstance(value, collections.Mapping):
+            _collections.append(name)
     tasks = sorted(tasks)
-    collections = sorted(collections)
-    return tasks, collections
+    _collections = sorted(_collections)
+    return tasks, _collections
 
 
 def _task_names(mapping):
@@ -381,7 +382,7 @@ def _task_names(mapping):
         if hasattr(module, 'default'):
             tasks.append(collection)
         join = lambda x: ".".join((collection, x))
-        tasks.extend(map(join, _task_names(module)))
+        tasks.extend(list(map(join, _task_names(module))))
     return tasks
 
 
@@ -389,7 +390,7 @@ def _print_docstring(docstrings, name):
     if not docstrings:
         return False
     docstring = crawl(name, state.commands).__doc__
-    if isinstance(docstring, basestring):
+    if isinstance(docstring, str):
         return docstring
 
 
@@ -405,7 +406,7 @@ def _normal_list(docstrings=True):
         output = None
         docstring = _print_docstring(docstrings, name)
         if docstring:
-            lines = filter(None, docstring.splitlines())
+            lines = [_f for _f in docstring.splitlines() if _f]
             first_line = lines[0].strip()
             # Truncate it if it's longer than N chars
             size = max_width - (max_len + len(sep) + len(trail))
@@ -423,7 +424,7 @@ def _nested_list(mapping, level=1):
     result = []
     tasks, collections = _sift_tasks(mapping)
     # Tasks come first
-    result.extend(map(lambda x: indent(x, spaces=level * 4), tasks))
+    result.extend([indent(x, spaces=level * 4) for x in tasks])
     for collection in collections:
         module = mapping[collection]
         # Section/module "header"
@@ -474,13 +475,13 @@ def display_command(name):
         abort(msg % (name, "\n".join(_normal_list(False))))
     # Print out nicely presented docstring if found
     if command.__doc__:
-        print("Displaying detailed information for task '%s':" % name)
+        print(("Displaying detailed information for task '%s':" % name))
         print('')
-        print(indent(command.__doc__, strip=True))
+        print((indent(command.__doc__, strip=True)))
         print('')
     # Or print notice if not
     else:
-        print("No detailed information available for task '%s':" % name)
+        print(("No detailed information available for task '%s':" % name))
     sys.exit(0)
 
 
@@ -577,7 +578,7 @@ def update_output_levels(show, hide):
 
 
 def show_commands(docstring, format, code=0):
-    print("\n".join(list_commands(docstring, format)))
+    print(("\n".join(list_commands(docstring, format))))
     sys.exit(code)
 
 
@@ -618,7 +619,7 @@ def main(fabfile_locations=None):
         # Handle --hosts, --roles, --exclude-hosts (comma separated string =>
         # list)
         for key in ['hosts', 'roles', 'exclude_hosts']:
-            if key in state.env and isinstance(state.env[key], basestring):
+            if key in state.env and isinstance(state.env[key], str):
                 state.env[key] = state.env[key].split(',')
 
         # Feed the env.tasks : tasks that are asked to be executed.
@@ -629,8 +630,8 @@ def main(fabfile_locations=None):
 
         # Handle version number option
         if options.show_version:
-            print("Fabric %s" % state.env.version)
-            print("Paramiko %s" % ssh.__version__)
+            print(("Fabric %s" % state.env.version))
+            print(("Paramiko %s" % ssh.__version__))
             sys.exit(0)
 
         # Load settings from user settings file, into shared env dict.
@@ -669,7 +670,7 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
         # Now that we're settled on a fabfile, inform user.
         if state.output.debug:
             if fabfile:
-                print("Using fabfile '%s'" % fabfile)
+                print(("Using fabfile '%s'" % fabfile))
             else:
                 print("No fabfile loaded -- remainder command only")
 
@@ -727,7 +728,7 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
 
         if state.output.debug:
             names = ", ".join(x[0] for x in commands_to_run)
-            print("Commands to run: %s" % names)
+            print(("Commands to run: %s" % names))
 
         # At this point all commands must exist, so execute them in order.
         for name, args, kwargs, arg_hosts, arg_roles, arg_exclude_hosts in commands_to_run:

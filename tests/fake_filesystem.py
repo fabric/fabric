@@ -1,6 +1,6 @@
 import os
 import stat
-from StringIO import StringIO
+from io import StringIO
 from types import StringTypes
 
 from fabric.network import ssh
@@ -46,7 +46,7 @@ class FakeFilesystem(dict):
     def __init__(self, d=None):
         # Replicate input dictionary using our custom __setitem__
         d = d or {}
-        for key, value in d.iteritems():
+        for key, value in d.items():
             self[key] = value
 
     def __setitem__(self, key, value):

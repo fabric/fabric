@@ -3,6 +3,7 @@ python:
   - "2.5"
   - "2.6"
   - "2.7"
+  - "3.3"
 install:
   # Build/test dependencies
   - pip install -r requirements.txt --use-mirrors
@@ -14,8 +15,4 @@ install:
   - "sudo rm -rf /dev/shm && sudo ln -s /run/shm /dev/shm"
 script: fab test
 notifications:
-  irc:
-    channels: "irc.freenode.org#fabric"
-    on_success: change
-    on_failure: change
   email: false

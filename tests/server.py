@@ -1,4 +1,4 @@
-from __future__ import with_statement
+
 
 import copy
 import itertools
@@ -10,7 +10,7 @@ import sys
 import threading
 import time
 import types
-from StringIO import StringIO
+from io import StringIO
 from functools import wraps
 from Python26SocketServer import BaseRequestHandler, ThreadingMixIn, TCPServer
 
@@ -90,7 +90,7 @@ def _equalize(lists, fillval=None):
     """
     Pad all given list items in ``lists`` to be the same length.
     """
-    lists = map(list, lists)
+    lists = list(map(list, lists))
     upper = max(len(x) for x in lists)
     for lst in lists:
         diff = upper - len(lst)
@@ -260,7 +260,7 @@ class FakeSFTPServer(ssh.SFTPServerInterface):
         self.server = server
         files = self.server.files
         # Expand such that omitted, implied folders get added explicitly
-        for folder in missing_folders(files.keys()):
+        for folder in missing_folders(list(files.keys())):
             files[folder] = None
         self.files = files
 
@@ -272,7 +272,7 @@ class FakeSFTPServer(ssh.SFTPServerInterface):
 
     def list_folder(self, path):
         path = self.files.normalize(path)
-        expanded_files = map(expand, self.files)
+        expanded_files = list(map(expand, self.files))
         expanded_path = expand(path)
         candidates = [x for x in expanded_files if contains(x, expanded_path)]
         children = []
@@ -408,7 +408,7 @@ def serve_responses(responses, files, passwords, home, pubkeys, port):
             stderr = ""
             status = 0
             sleep = 0
-            if isinstance(result, types.StringTypes):
+            if isinstance(result, str):
                 stdout = result
             else:
                 size = len(result)
@@ -489,6 +489,6 @@ def server(
                 # Handle subthread exceptions
                 e = worker.exception
                 if e:
-                    raise e[0], e[1], e[2]
+                    raise e[0](e[1]).with_traceback(e[2])
         return inner
     return run_server

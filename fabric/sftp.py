@@ -1,4 +1,4 @@
-from __future__ import with_statement
+
 
 import hashlib
 import os
@@ -79,7 +79,7 @@ class SFTP(object):
             # Note that listdir and error are globals in this module due to
             # earlier import-*.
             names = self.ftp.listdir(top)
-        except Exception, err:
+        except Exception as err:
             if onerror is not None:
                 onerror(err)
             return
@@ -136,11 +136,11 @@ class SFTP(object):
             if os.path.isdir(local_path):
                 local_path = os.path.join(local_path, path_vars['basename'])
         if output.running:
-            print("[%s] download: %s <- %s" % (
+            print(("[%s] download: %s <- %s" % (
                 env.host_string,
                 _format_local(local_path, local_is_path),
                 remote_path
-            ))
+            )))
         # Warn about overwrites, but keep going
         if local_is_path and os.path.exists(local_path):
             msg = "Local file %s already exists and is being overwritten."
@@ -204,11 +204,11 @@ class SFTP(object):
             basename = os.path.basename(local_path)
             remote_path = posixpath.join(remote_path, basename)
         if output.running:
-            print("[%s] put: %s -> %s" % (
+            print(("[%s] put: %s -> %s" % (
                 env.host_string,
                 _format_local(local_path, local_is_path),
                 posixpath.join(pre, remote_path)
-            ))
+            )))
         # When using sudo, "bounce" the file through a guaranteed-unique file
         # path in the default remote CWD (which, typically, the login user will
         # have write permissions on) in order to sudo(mv) it later.
@@ -230,8 +230,8 @@ class SFTP(object):
         # Handle modes if necessary
         if (local_is_path and mirror_local_mode) or (mode is not None):
             lmode = os.stat(local_path).st_mode if mirror_local_mode else mode
-            lmode = lmode & 07777
-            rmode = rattrs.st_mode & 07777
+            lmode = lmode & 0o7777
+            rmode = rattrs.st_mode & 0o7777
             if lmode != rmode:
                 if use_sudo:
                     with hide('everything'):

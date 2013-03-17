@@ -1,7 +1,7 @@
 """
 Useful non-core functionality, e.g. functions composing multiple operations.
 """
-from __future__ import with_statement
+
 
 from os import getcwd, sep
 import os.path
@@ -131,7 +131,7 @@ def rsync_project(remote_dir, local_dir=None, exclude=(), delete=False,
         cmd = "rsync %s %s:%s %s" % (options, remote_prefix, remote_dir, local_dir)
 
     if output.running:
-        print("[%s] rsync_project: %s" % (env.host_string, cmd))
+        print(("[%s] rsync_project: %s" % (env.host_string, cmd)))
     return local(cmd, capture=capture)
 
 

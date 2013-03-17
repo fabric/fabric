@@ -1,4 +1,4 @@
-from __future__ import with_statement
+
 
 from contextlib import nested
 
@@ -9,7 +9,7 @@ import fabric.version
 # But nothing is stopping us from making a convenient binding!
 _version = fabric.version.get_version
 
-from utils import msg
+from .utils import msg
 
 
 def _seek_version(cmd, txt):
@@ -39,7 +39,7 @@ def update_code(filename, force):
     Normally, if the version file has not been modified, we abort assuming the
     user quit without saving. Specify ``force=yes`` to override this.
     """
-    raw_input("Version update in %r required! Press Enter to load $EDITOR." % filename)
+    input("Version update in %r required! Press Enter to load $EDITOR." % filename)
     with hide('running'):
         local("$EDITOR %s" % filename)
     # Try to detect whether user bailed out of the edit
