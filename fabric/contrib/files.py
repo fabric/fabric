@@ -61,7 +61,9 @@ def upload_template(filename, destination, context=None, use_jinja=False,
 
     Alternately, if ``use_jinja`` is set to True and you have the Jinja2
     templating library available, Jinja will be used to render the template
-    instead. Templates will be loaded from the invoking user's current working
+    instead.
+
+    Templates will be loaded from the invoking user's current working
     directory by default, or from ``template_dir`` if given.
 
     The resulting rendered file will be uploaded to the remote file path
@@ -105,6 +107,8 @@ def upload_template(filename, destination, context=None, use_jinja=False,
             tb = traceback.format_exc()
             abort(tb + "\nUnable to import Jinja2 -- see above.")
     else:
+        if template_dir:
+            filename = os.path.join(template_dir, filename)
         with open(filename) as inputfile:
             text = inputfile.read()
         if context:
