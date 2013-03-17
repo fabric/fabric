@@ -2,6 +2,8 @@
 Changelog
 =========
 
+* :bug:`852` Fix to respect 'template_dir' for non Jinja2 templates. Thanks to
+  Adam Kowalski for the patch.
 * :support:`1105 backported` Enhance ``setup.py`` to allow Paramiko 1.13+ under
   Python 2.6+. Thanks to to ``@Arfrever`` for catch & patch.
 * :release:`1.8.3 <2014-03-21>`
