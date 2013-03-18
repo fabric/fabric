@@ -105,7 +105,7 @@ def upload_template(filename, destination, context=None, use_jinja=False,
             tb = traceback.format_exc()
             abort(tb + "\nUnable to import Jinja2 -- see above.")
     else:
-        with open(filename) as inputfile:
+        with open(os.path.expanduser(filename)) as inputfile:
             text = inputfile.read()
         if context:
             text = text % context
