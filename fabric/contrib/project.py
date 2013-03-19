@@ -17,7 +17,7 @@ __all__ = ['rsync_project', 'upload_project']
 
 @needs_host
 def rsync_project(remote_dir, local_dir=None, exclude=(), delete=False,
-    extra_opts='', ssh_opts='', capture=False):
+    extra_opts='', ssh_opts='', capture=False, upload=True):
     """
     Synchronize a remote directory with the current project directory via rsync.
 
@@ -68,6 +68,8 @@ def rsync_project(remote_dir, local_dir=None, exclude=(), delete=False,
     * ``ssh_opts``: Like ``extra_opts`` but specifically for the SSH options
       string (rsync's ``--rsh`` flag.)
     * ``capture``: Sent directly into an inner `~fabric.operations.local` call.
+    * ``upload``: a boolean controlling whether file synchronization is
+      performed up or downstream. Upstream by default.
 
     Furthermore, this function transparently honors Fabric's port and SSH key
     settings. Calling this function when the current host string contains a
@@ -120,9 +122,14 @@ def rsync_project(remote_dir, local_dir=None, exclude=(), delete=False,
     if host.count(':') > 1:
         # Square brackets are mandatory for IPv6 rsync address,
         # even if port number is not specified
-        cmd = "rsync %s %s [%s@%s]:%s" % (options, local_dir, user, host, remote_dir)
+        remote_prefix = "[%s@%s]" % (user, host)
     else:
-        cmd = "rsync %s %s %s@%s:%s" % (options, local_dir, user, host, remote_dir)
+        remote_prefix = "%s@%s" % (user, host)
+    if upload:
+        cmd = "rsync %s %s %s:%s" % (options, local_dir, remote_prefix, remote_dir)
+    else:
+        cmd = "rsync %s %s:%s %s" % (options, remote_prefix, remote_dir, local_dir)
+
     if output.running:
         print("[%s] rsync_project: %s" % (env.host_string, cmd))
     return local(cmd, capture=capture)

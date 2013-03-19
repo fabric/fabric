@@ -240,15 +240,16 @@ def execute(task, *args, **kwargs):
     kwarg1='value')`` will (once per host) invoke ``mytask('arg1',
     kwarg1='value')``.
 
-    This function returns a dictionary mapping host strings to the given task's
-    return value for that host's execution run. For example, ``execute(foo,
-    hosts=['a', 'b'])`` might return ``{'a': None, 'b': 'bar'}`` if ``foo``
-    returned nothing on host `a` but returned ``'bar'`` on host `b`.
+    :returns:
+        a dictionary mapping host strings to the given task's return value for
+        that host's execution run. For example, ``execute(foo, hosts=['a',
+        'b'])`` might return ``{'a': None, 'b': 'bar'}`` if ``foo`` returned
+        nothing on host `a` but returned ``'bar'`` on host `b`.
 
-    In situations where a task execution fails for a given host but overall
-    progress does not abort (such as when :ref:`env.skip_bad_hosts
-    <skip-bad-hosts>` is True) the return value for that host will be the error
-    object or message.
+        In situations where a task execution fails for a given host but overall
+        progress does not abort (such as when :ref:`env.skip_bad_hosts
+        <skip-bad-hosts>` is True) the return value for that host will be the
+        error object or message.
 
     .. seealso::
         :ref:`The execute usage docs <execute>`, for an expanded explanation
