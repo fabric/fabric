@@ -44,12 +44,9 @@ def merge(hosts, roles, exclude, roledefs):
             indent(bad_roles)
         ))
 
-    # Abort if hosts is a str and not the proper list format
-    if isinstance(hosts, basestring) :
-        abort("The following hosts list is a string, not the expected list: %s" % (
-            indent(hosts)
-        ))
-
+    # Coerce strings to one-item lists
+    if isinstance(hosts, basestring):
+        hosts = [hosts]
 
     # Look up roles, turn into flat list of hosts
     role_hosts = []
