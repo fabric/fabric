@@ -189,7 +189,8 @@ def sed(filename, before, after, limit='', use_sudo=False, backup='.bak',
 && cp -p %(filename)s %(filename)s%(backup)s \
 && mv %(tmp)s %(filename)s"""
     else:
-        expr = r"sed -i%(backup)s -r -e %(script)s %(filename)s"
+        context['extended_regex'] = '-E' if platform == 'Darwin' else '-r'
+        expr = r"sed -i%(backup)s %(extended_regex)s -e %(script)s %(filename)s"
     command = expr % context
     return func(command, shell=shell)
 
