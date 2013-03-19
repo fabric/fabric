@@ -25,6 +25,7 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`367` Expand paths with tilde inside (``contrib.files``).
 * :feature:`845` Downstream synchronization option implemented for
   `~fabric.contrib.project.rsync_project`. Thanks to Antonio Barrero for the
   patch.
