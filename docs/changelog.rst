@@ -25,6 +25,8 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`861` Gracefully handle situations where users give a single string
+  literal to ``env.hosts``. Thanks to Bill Tucker for catch & patch.
 * :bug:`367` Expand paths with tilde inside (``contrib.files``).
 * :feature:`845` Downstream synchronization option implemented for
   `~fabric.contrib.project.rsync_project`. Thanks to Antonio Barrero for the
