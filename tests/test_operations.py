@@ -241,9 +241,9 @@ def test_shell_wrap():
     command = "command"
     for description, shell, sudo_prefix, result in (
         ("shell=True, sudo_prefix=None",
-            True, None, "%s \"%s\"" % (env.shell, command)),
+            True, None, '%s "%s"' % (env.shell, command)),
         ("shell=True, sudo_prefix=string",
-            True, prefix, prefix + " %s \"%s\"" % (env.shell, command)),
+            True, prefix, prefix + ' %s "%s"' % (env.shell, command)),
         ("shell=False, sudo_prefix=None",
             False, None, command),
         ("shell=False, sudo_prefix=string",
