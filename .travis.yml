@@ -12,7 +12,15 @@ install:
   - "if [[ $TRAVIS_PYTHON_VERSION == '2.5' ]]; then pip install multiprocessing; fi"
   # Deal with issue on Travis builders re: multiprocessing.Queue :(
   - "sudo rm -rf /dev/shm && sudo ln -s /run/shm /dev/shm"
-script: fab test
+before_script:
+  # Allow us to SSH passwordless to localhost
+  - ssh-keygen -f ~/.ssh/id_rsa -N ""
+  - cp ~/.ssh/{id_rsa.pub,authorized_keys}
+script:
+  # Normal tests
+  - fab test
+  # Integration tests
+  - fab test:"--tests\=integration"
 notifications:
   irc:
     channels: "irc.freenode.org#fabric"
