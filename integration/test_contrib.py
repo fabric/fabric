@@ -1,12 +1,12 @@
 import types
 
-from fabric.api import env
+from fabric.api import env, run
 from fabric.contrib import files
 
 
 class Integration(object):
     def setup(self):
-        env.host_string = "localhost"
+        env.host_string = "127.0.0.1"
 
 
 def tildify(path):
@@ -20,7 +20,7 @@ def expect_contains(path, value):
     assert files.contains(tildify(path), value)
 
 
-class TestTildeExpansion(object):
+class TestTildeExpansion(Integration):
     def test_append(self):
         for target in ('~/append_test', '~/append_test with spaces'):
             files.append(target, ['line'])
