@@ -300,6 +300,13 @@ def test_aborts_on_nonexistent_roles():
     """
     merge([], ['badrole'], [], {})
 
+@aborts
+def test_aborts_on_non_list_hosts():
+    """
+     Aborts if hosts is a string, not a list
+    """
+    merge('badhosts', [], [], {})
+
 
 lazy_role = {'r1': lambda: ['a', 'b']}
 
