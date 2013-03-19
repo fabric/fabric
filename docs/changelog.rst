@@ -25,6 +25,7 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`84` Fixed problem with missing -r flag in Mac OS X sed version.
 * :bug:`861` Gracefully handle situations where users give a single string
   literal to ``env.hosts``. Thanks to Bill Tucker for catch & patch.
 * :bug:`367` Expand paths with tilde inside (``contrib.files``).
