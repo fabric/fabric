@@ -1,6 +1,6 @@
 import types
 
-from fabric.api import env, run
+from fabric.api import env, run, local
 from fabric.contrib import files
 
 
@@ -41,6 +41,11 @@ class TestTildeExpansion(Integration):
             expect_contains(target, 'after')
      
     def test_upload_template(self):
-        for target in ('~/upload_template_test', '~/upload template test with space'):
-            files.upload_template(target, target)
+        for i, target in enumerate((
+            '~/upload_template_test',
+            '~/upload template test with space'
+        )):
+            src = "source%s" % i
+            local("touch %s" % src)
+            files.upload_template(src, target)
             expect(target)
