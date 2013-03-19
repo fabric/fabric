@@ -19,6 +19,9 @@ def expect(path):
 def expect_contains(path, value):
     assert files.contains(tildify(path), value)
 
+def escape(path):
+    return path.replace(' ', r'\ ')
+
 
 class TestTildeExpansion(Integration):
     def test_append(self):
@@ -28,12 +31,12 @@ class TestTildeExpansion(Integration):
 
     def test_exists(self):
         for target in ('~/exists_test', '~/exists test with space'):
-            run("touch %s" % target)
+            run("touch %s" % escape(target))
             expect(target)
      
     def test_sed(self):
         for target in ('~/sed_test', '~/sed test with space'):
-            run("echo 'before' > %s" % target)
+            run("echo 'before' > %s" % escape(target))
             files.sed(target, 'before', 'after')
             expect_contains(target, 'after')
      
