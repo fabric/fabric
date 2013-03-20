@@ -11,7 +11,7 @@ class TestContrib(FabricTest):
     # Make sure it knows / is a directory.
     # This is in lieu of starting down the "actual honest to god fake operating
     # system" road...:(
-    @server(responses={'test -d /': ""})
+    @server(responses={'test -d "$(echo /)"': ""})
     def test_upload_template_uses_correct_remote_filename(self):
         """
         upload_template() shouldn't munge final remote filename
