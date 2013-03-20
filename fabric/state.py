@@ -237,6 +237,12 @@ env_options = [
         help="skip over hosts that can't be reached"
     ),
 
+    make_option('--require-auth',
+        action="store_true",
+        default=False,
+        help="skip over hosts that fail key based authentication"
+    ),
+
     make_option('--ssh-config-path',
         default=default_ssh_config_path,
         metavar='PATH',
@@ -324,6 +330,7 @@ env = _AttributeDict({
     'roledefs': {},
     'shell_env': {},
     'skip_bad_hosts': False,
+    'require_auth': False,
     'ssh_config_path': default_ssh_config_path,
     'ok_ret_codes': [0],     # a list of return codes that indicate success
     # -S so sudo accepts passwd via stdin, -p with our known-value prompt for

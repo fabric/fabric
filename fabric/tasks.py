@@ -317,11 +317,29 @@ def execute(task, *args, **kwargs):
                     multiprocessing
                 )
             except NetworkError, e:
+                import paramiko as ssh
                 results[host] = e
+
+                func = abort
+                trip_error = False
+
+                # If we require authentication on all hosts without passwords,
+                # then this exception indicates that key based auth has failed.
+                # This is not guaranteed to be correct behavior, but it's a reasonable
+                # assumption if the fab user has used 'require_auth'
+                # We need to inspect the class of the wrapped exception because it is
+                # a paramiko/ssh level exception, wrapped in a NetworkError for prettiness &c.
+                if e.wrapped.__class__ is ssh.AuthenticationException and state.env.require_auth:
+                    func = warn
+                    trip_error = True
+
                 # Backwards compat test re: whether to use an exception or
                 # abort
-                if not state.env.use_exceptions_for['network']:
+                elif not state.env.use_exceptions_for['network']:
                     func = warn if state.env.skip_bad_hosts else abort
+                    trip_error = True
+
+                if trip_error:
                     error(e.message, func=func, exception=e.wrapped)
                 else:
                     raise
