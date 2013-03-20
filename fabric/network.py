@@ -372,6 +372,14 @@ def connect(user, host, port, sock=None):
             ssh.SSHException
         ), e:
             msg = str(e)
+
+            # This is the case of key based authentication failure
+            # that we want to throw back to the user nicely and skip
+            # rather than retry -- require_auth should fail loudly,
+            # but without hanging in a connection loop
+            if e.__class__ is ssh.AuthenticationException and env.require_auth:
+                raise NetworkError('Key based authentication failed for %s' % host, e)
+
             # For whatever reason, empty password + no ssh key or agent
             # results in an SSHException instead of an
             # AuthenticationException. Since it's difficult to do
