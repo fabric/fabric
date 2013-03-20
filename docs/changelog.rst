@@ -25,6 +25,8 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`844` Allow users to disable Fabric's auto-escaping in `.run`/`.sudo`.
+  Thanks to Christian Long and Michael McHugh for the patch.
 * :bug:`84` Fixed problem with missing -r flag in Mac OS X sed version.
 * :bug:`861` Gracefully handle situations where users give a single string
   literal to ``env.hosts``. Thanks to Bill Tucker for catch & patch.
