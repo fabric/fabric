@@ -627,6 +627,20 @@ If ``True``, causes ``fab`` (or non-``fab`` use of `~fabric.tasks.execute`) to s
     :option:`--skip-bad-hosts`, :ref:`excluding-hosts`, :doc:`execution`
 
 
+.. _require-auth:
+
+``require_auth``
+------------------
+
+**Default:** ``False``
+
+If ``True``, causes ``fab`` (or non-``fab`` use of `~fabric.tasks.execute`) to skip over hosts when authentication fails, instead of prompting.
+
+.. versionadded:: 1.6
+.. seealso::
+    :option:`--require-auth`, :ref:`excluding-hosts`, :doc:`execution`
+
+
 .. _ssh-config-path:
 
 ``ssh_config_path``
