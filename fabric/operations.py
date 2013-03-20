@@ -595,7 +595,7 @@ def _sudo_prefix(user, group=None):
     return prefix
 
 
-def _shell_wrap(command, shell=True, sudo_prefix=None):
+def _shell_wrap(command, shell_escape, shell=True, sudo_prefix=None):
     """
     Conditionally wrap given command in env.shell (while honoring sudo.)
     """
@@ -608,11 +608,13 @@ def _shell_wrap(command, shell=True, sudo_prefix=None):
         sudo_prefix = ""
     else:
         sudo_prefix += " "
-    # If we're shell wrapping, prefix shell and space, escape the command and
-    # then quote it. Otherwise, empty string.
+    # If we're shell wrapping, prefix shell and space. Next, escape the command
+    # if requested, and then quote it. Otherwise, empty string.
     if shell:
         shell = env.shell + " "
-        command = '"%s"' % _shell_escape(command)
+        if shell_escape:
+            command = _shell_escape(command)
+        command = '"%s"' % command
     else:
         shell = ""
     # Resulting string should now have correct formatting
@@ -860,7 +862,7 @@ def _noop():
 
 def _run_command(command, shell=True, pty=True, combine_stderr=True,
     sudo=False, user=None, quiet=False, warn_only=False, stdout=None,
-    stderr=None, group=None, timeout=None):
+    stderr=None, group=None, timeout=None, shell_escape=None):
     """
     Underpinnings of `run` and `sudo`. See their docstrings for more info.
     """
@@ -873,9 +875,15 @@ def _run_command(command, shell=True, pty=True, combine_stderr=True,
     with manager():
         # Set up new var so original argument can be displayed verbatim later.
         given_command = command
+
+        # Check if shell_escape has been overridden in env
+        if shell_escape is None:
+            shell_escape = env.get('shell_escape', True)
+
         # Handle context manager modifications, and shell wrapping
         wrapped_command = _shell_wrap(
             _prefix_commands(_prefix_env_vars(command), 'remote'),
+            shell_escape,
             shell,
             _sudo_prefix(user, group) if sudo else None
         )
@@ -928,7 +936,7 @@ def _run_command(command, shell=True, pty=True, combine_stderr=True,
 
 @needs_host
 def run(command, shell=True, pty=True, combine_stderr=None, quiet=False,
-    warn_only=False, stdout=None, stderr=None, timeout=None):
+    warn_only=False, stdout=None, stderr=None, timeout=None, shell_escape=None):
     """
     Run a shell command on a remote host.
 
@@ -985,6 +993,9 @@ def run(command, shell=True, pty=True, combine_stderr=None, quiet=False,
     after which to time out. This will cause ``run`` to raise a
     `~fabric.exceptions.CommandTimeout` exception.
 
+    If you want to disable Fabric's automatic attempts at escaping quotes,
+    dollar signs etc., specify ``shell_escape=False``.
+
     Examples::
 
         run("ls /var/www/")
@@ -1012,15 +1023,19 @@ def run(command, shell=True, pty=True, combine_stderr=None, quiet=False,
 
     .. versionadded:: 1.6
         The ``timeout`` argument.
+
+    .. versionadded:: 1.7
+        The ``shell_escape`` argument.
     """
     return _run_command(command, shell, pty, combine_stderr, quiet=quiet,
-        warn_only=warn_only, stdout=stdout, stderr=stderr, timeout=timeout)
+        warn_only=warn_only, stdout=stdout, stderr=stderr, timeout=timeout,
+        shell_escape=shell_escape)
 
 
 @needs_host
 def sudo(command, shell=True, pty=True, combine_stderr=None, user=None,
     quiet=False, warn_only=False, stdout=None, stderr=None, group=None,
-    timeout=None):
+    timeout=None, shell_escape=None):
     """
     Run a shell command on a remote host, with superuser privileges.
 
@@ -1059,12 +1074,15 @@ def sudo(command, shell=True, pty=True, combine_stderr=None, user=None,
 
     .. versionadded:: 1.5
         The return value attributes ``.command`` and ``.real_command``.
+
+    .. versionadded:: 1.7
+        The ``shell_escape`` argument.
     """
     return _run_command(
         command, shell, pty, combine_stderr, sudo=True,
         user=user if user else env.sudo_user,
         group=group, quiet=quiet, warn_only=warn_only, stdout=stdout,
-        stderr=stderr, timeout=timeout
+        stderr=stderr, timeout=timeout, shell_escape=shell_escape,
     )
 
 
