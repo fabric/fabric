@@ -30,13 +30,13 @@ class TestParallel(FabricTest):
         """
         @parallel
         def _task():
-            with hide('everything'):
-                run("ls /simple")
+            run("ls /simple")
             assert USER not in env.host
             assert str(PORT) not in env.host
 
         host_string = '%s@%s:%%s' % (USER, HOST)
-        execute(_task, hosts=[host_string % 2200, host_string % 2201])
+        with hide('everything'):
+            execute(_task, hosts=[host_string % 2200, host_string % 2201])
 
     @server(port=2200)
     @server(port=2201)
@@ -84,10 +84,10 @@ class TestParallel(FabricTest):
 
         @parallel
         def mytask():
-            with hide('everything'):
-                run("ls /")
+            run("ls /")
             return env.linewise
 
-        result = execute(mytask, hosts=[host1, host2])
+        with hide('everything'):
+            result = execute(mytask, hosts=[host1, host2])
         eq_(result[host1], True)
         eq_(result[host2], True)
