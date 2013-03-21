@@ -1,12 +1,9 @@
 import types
 
-from fabric.api import env, run, local
+from fabric.api import run, local
 from fabric.contrib import files
 
-
-class Integration(object):
-    def setup(self):
-        env.host_string = "127.0.0.1"
+from util import Integration
 
 
 def tildify(path):
