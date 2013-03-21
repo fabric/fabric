@@ -837,6 +837,34 @@ class TestFileTransfers(FabricTest):
         eq_(["<StringIO>"], retval.failed)
         assert not retval.succeeded
 
+    @server()
+    def test_put_sends_all_files_with_glob(self):
+        """
+        put() should send all items that match a glob.
+        """
+        paths = ['foo1.txt', 'foo2.txt']
+        glob = 'foo*.txt'
+        remote_directory = '/'
+        for path in paths:
+            self.mkfile(path, 'foo!')
+
+        with hide('everything'):
+            retval = put(self.path(glob), remote_directory)
+        eq_(sorted(retval), sorted([remote_directory + path for path in paths]))
+
+    @server()
+    def test_put_sends_correct_file_with_globbing_off(self):
+        """
+        put() should send a file with a glob pattern in the path, when globbing disabled.
+        """
+        text = "globbed!"
+        local = self.mkfile('foo[bar].txt', text)
+        local2 = self.path('foo2.txt')
+        with hide('everything'):
+            put(local, '/', use_glob=False)
+            get('/foo[bar].txt', local2)
+        eq_contents(local2, text)
+
     #
     # Interactions with cd()
     #
