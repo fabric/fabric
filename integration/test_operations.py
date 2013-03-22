@@ -8,7 +8,7 @@ from util import Integration
 
 
 def assert_mode(path, mode):
-    assert run("gstat -c \"%%a\" %s" % path).stdout == mode
+    assert run("stat -c \"%%a\" %s" % path).stdout == mode
 
 
 class TestOperations(Integration):
