@@ -663,11 +663,11 @@ def _prefix_env_vars(command, local=False):
     path = env.path
     if path:
         if env.path_behavior == 'append':
-            path = '$PATH:\"%s\" ' % path
+            path = '$PATH:\"%s\"' % path
         elif env.path_behavior == 'prepend':
-            path = '\"%s\":$PATH ' % path
+            path = '\"%s\":$PATH' % path
         elif env.path_behavior == 'replace':
-            path = '\"%s\" ' % path
+            path = '\"%s\"' % path
 
         env_vars['PATH'] = path
 
