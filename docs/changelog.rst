@@ -25,6 +25,12 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`870` Changes to shell env var escaping highlighted some extraneous and
+  now damaging whitespace in `with path(): <.path>`. This has been removed and
+  a regression test added.
+* :bug:`871` Use of string mode values in `put(local, remote, mode="NNNN")
+  <.put>` would sometimes cause ``Unsupported operand`` errors. This has been
+  fixed.
 * :bug:`84` Fixed problem with missing -r flag in Mac OS X sed version. Thanks
   to Konrad Hałas for the patch.
 * :bug:`861` Gracefully handle situations where users give a single string
