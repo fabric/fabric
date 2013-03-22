@@ -12,14 +12,25 @@ def assert_mode(path, mode):
 
 
 class TestOperations(Integration):
+    filepath = "/tmp/whocares"
+    dirpath = "/tmp/whatever/bin"
+
+    def setup(self):
+        super(TestOperations, self).setup()
+        # Nuke to prevent bleed
+        run("rm -rf %s %s" % (self.dirpath, self.filepath))
+        # Setup just for kicks
+        run("mkdir -p %s" % self.dirpath)
+
     def test_no_trailing_space_in_shell_path_in_run(self):
-        from fabric.api import show
-        with show('debug'):
-            run("mkdir -p /tmp/whatever/bin")
-            put(StringIO("#!/bin/bash\necho hi"), "/tmp/whatever/bin/myapp", mode="0755")
-            with path('/tmp/whatever/bin'):
-                assert run('myapp').stdout == 'hi'
+        put(StringIO("#!/bin/bash\necho hi"), "%s/myapp" % self.dirpath, mode="0755")
+        with path(self.dirpath):
+            assert run('myapp').stdout == 'hi'
 
     def test_string_put_mode_arg_doesnt_error(self):
-        put(StringIO("#!/bin/bash\necho hi"), "/tmp/whocares", mode="0755")
-        assert_mode('/tmp/whocares', "755")
+        put(StringIO("#!/bin/bash\necho hi"), self.filepath, mode="0755")
+        assert_mode(self.filepath, "755")
+
+    def test_int_put_mode_works_ok_too(self):
+        put(StringIO("#!/bin/bash\necho hi"), self.filepath, mode=0755)
+        assert_mode(self.filepath, "755")
