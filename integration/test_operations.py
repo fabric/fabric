@@ -7,6 +7,10 @@ from fabric.api import run, path, put
 from util import Integration
 
 
+def assert_mode(path, mode):
+    assert run("gstat -c \"%%a\" %s" % path).stdout == mode
+
+
 class TestOperations(Integration):
     def test_no_trailing_space_in_shell_path_in_run(self):
         from fabric.api import show
@@ -18,3 +22,4 @@ class TestOperations(Integration):
 
     def test_string_put_mode_arg_doesnt_error(self):
         put(StringIO("#!/bin/bash\necho hi"), "/tmp/whocares", mode="0755")
+        assert_mode('/tmp/whocares', "755")
