@@ -30,6 +30,7 @@ from fabric.utils import (
     _pty_size,
     warn,
 )
+from fabric.winrm_hack import execute_winrm_command
 
 
 def _shell_escape(string):
@@ -693,6 +694,67 @@ def _prefix_env_vars(command, local=False):
 
     return shell_env_str + command
 
+def _massage_execution_results(given_command, which, wrapped_command, result_stdout,
+        result_stderr, status):
+    # Assemble output string
+    out = _AttributeString(result_stdout)
+    err = _AttributeString(result_stderr)
+
+    # Error handling
+    out.failed = False
+    out.command = given_command
+    out.real_command = wrapped_command
+    if status not in env.ok_ret_codes:
+        out.failed = True
+        msg = "%s() received nonzero return code %s while executing" % (
+            which, status
+        )
+        if env.warn_only:
+            msg += " '%s'!" % given_command
+        else:
+            msg += "!\n\nRequested: %s\nExecuted: %s" % (
+                given_command, wrapped_command
+            )
+        error(message=msg, stdout=out, stderr=err)
+
+    # Attach return code to output string so users who have set things to
+    # warn only, can inspect the error code.
+    out.return_code = status
+
+    # Convenience mirror of .failed
+    out.succeeded = not out.failed
+
+    # Attach stderr for anyone interested in that.
+    out.stderr = err
+
+    return out
+
+def _run_command_winrm(command, shell=False, combine_stderr=None,
+        quiet=False, stdout=None, warn_only=False, stderr=None, timeout=None):
+    which = "remote"
+    prefixed_command = _prefix_commands(command, which)
+    # TODO: wrap command
+    wrapped_command = prefixed_command
+
+    host = env.host_string
+
+    manager = _noop
+    if warn_only:
+        manager = warn_only_manager
+    # Quiet's behavior is a superset of warn_only's, so it wins.
+    if quiet:
+        manager = quiet_manager
+
+    with manager():
+        if output.debug:
+            print("[%s] %s: %s" % (host, which, wrapped_command))
+        elif output.running:
+            print("[%s] %s: %s" % (host, which, command))
+        result_stdout, result_stderr, status = execute_winrm_command(host,
+                wrapped_command)
+
+        return _massage_execution_results(command, which, wrapped_command,
+                result_stdout, result_stderr, status)
 
 def _execute(channel, command, pty=True, combine_stderr=None,
     invoke_shell=False, stdout=None, stderr=None, timeout=None):
@@ -859,7 +921,6 @@ def open_shell(command=None):
 def _noop():
     yield
 
-
 def _run_command(command, shell=True, pty=True, combine_stderr=True,
     sudo=False, user=None, quiet=False, warn_only=False, stdout=None,
     stderr=None, group=None, timeout=None, shell_escape=None):
@@ -933,6 +994,12 @@ def _run_command(command, shell=True, pty=True, combine_stderr=True,
 
         return out
 
+@needs_host
+def winrm_run(command, shell=True, combine_stderr=None, quiet=False,
+        warn_only=False, stdout=None, stderr=None, timeout=None,
+        shell_escape=None):
+    return _run_command_winrm(command, shell, combine_stderr, quiet,
+            warn_only, stdout, stderr, timeout)
 
 @needs_host
 def run(command, shell=True, pty=True, combine_stderr=None, quiet=False,

@@ -11,7 +11,7 @@ from fabric.context_managers import (cd, hide, settings, show, path, prefix,
 from fabric.decorators import (hosts, roles, runs_once, with_settings, task,
         serial, parallel)
 from fabric.operations import (require, prompt, put, get, run, sudo, local,
-    reboot, open_shell)
+    reboot, open_shell, winrm_run)
 from fabric.state import env, output
 from fabric.utils import abort, warn, puts, fastprint
 from fabric.tasks import execute
