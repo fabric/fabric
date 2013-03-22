@@ -28,9 +28,18 @@ Changelog
 * :bug:`844` Allow users to disable Fabric's auto-escaping in `.run`/`.sudo`.
   Thanks to Christian Long and Michael McHugh for the patch.
 * :bug:`84` Fixed problem with missing -r flag in Mac OS X sed version.
+* :bug:`870` Changes to shell env var escaping highlighted some extraneous and
+  now damaging whitespace in `with path(): <.path>`. This has been removed and
+  a regression test added.
+* :bug:`871` Use of string mode values in `put(local, remote, mode="NNNN")
+  <.put>` would sometimes cause ``Unsupported operand`` errors. This has been
+  fixed.
+* :bug:`84` Fixed problem with missing -r flag in Mac OS X sed version. Thanks
+  to Konrad Hałas for the patch.
 * :bug:`861` Gracefully handle situations where users give a single string
   literal to ``env.hosts``. Thanks to Bill Tucker for catch & patch.
-* :bug:`367` Expand paths with tilde inside (``contrib.files``).
+* :bug:`367` Expand paths with tilde inside (``contrib.files``). Thanks to
+  Konrad Hałas for catch & patch.
 * :feature:`845` Downstream synchronization option implemented for
   `~fabric.contrib.project.rsync_project`. Thanks to Antonio Barrero for the
   patch.

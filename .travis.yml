@@ -19,7 +19,7 @@ before_script:
   - "netstat -tan | grep LISTEN"
 script:
   # Normal tests
-  #- fab test
+  - fab test
   # Integration tests
   - fab test:"--tests\=integration"
 notifications:

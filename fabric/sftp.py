@@ -230,8 +230,14 @@ class SFTP(object):
         # Handle modes if necessary
         if (local_is_path and mirror_local_mode) or (mode is not None):
             lmode = os.stat(local_path).st_mode if mirror_local_mode else mode
+            # Cast to octal integer in case of string
+            if isinstance(lmode, basestring):
+                lmode = int(lmode, 8)
             lmode = lmode & 07777
-            rmode = rattrs.st_mode & 07777
+            rmode = rattrs.st_mode
+            # Only bitshift if we actually got an rmode
+            if rmode is not None:
+                rmode = (rmode & 07777)
             if lmode != rmode:
                 if use_sudo:
                     with hide('everything'):
