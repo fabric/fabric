@@ -546,6 +546,18 @@ class TestConnections(FabricTest):
         with settings(hide('everything'), skip_bad_hosts=True):
             execute(subtask, hosts=['nope.nonexistent.com'])
 
+    @mock_streams('stderr')
+    @server()
+    def test_should_warn_when_require_auth_is_True(self):
+        """
+        env.require_auth = True => execute() warns on failed authentication
+        """
+        env.password = None
+        with settings(password_response(PASSWORDS[env.user], times_called=1),
+                      hide='everything', require_auth=True):
+            execute(subtask, host=HOST)
+        assert_contains('Warning', sys.stderr.getvalue())
+
 
 class TestSSHConfig(FabricTest):
     def env_setup(self):
