@@ -558,6 +558,18 @@ class TestConnections(FabricTest):
             execute(subtask, host=HOST)
         assert_contains('Warning', sys.stderr.getvalue())
 
+    @aborts
+    @server()
+    def test_should_abort_when_require_auth_is_False(self):
+        """
+        env.require_auth = False => execute() aborts on failed authentication
+        """
+        env.password = None
+        with settings(password_response(PASSWORDS[env.user], times_called=1),
+                      hide='everything', require_auth=False):
+            execute(subtask, host=HOST)
+
+
 
 class TestSSHConfig(FabricTest):
     def env_setup(self):
