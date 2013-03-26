@@ -200,6 +200,11 @@ This has been shown to work on FreeBSD and may work on other systems as well.
 I'm sometimes incorrectly asked for a passphrase instead of a password.
 =======================================================================
 
+.. note::
+
+    If you are using an ssh config file (typically in ``~/.ssh/config``) and
+    have this problem, see :ref:`ssh-config`.
+
 Due to a bug of sorts in our SSH layer, it's not currently possible for Fabric
 to always accurately detect the type of authentication needed. We have to try
 and guess whether we're being asked for a private key passphrase or a remote
