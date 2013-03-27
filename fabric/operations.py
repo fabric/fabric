@@ -729,12 +729,43 @@ def _massage_execution_results(given_command, which, wrapped_command, result_std
 
     return out
 
+def _prefix_env_vars_cmd(command, local=False):
+    """Like _prefix_env_vars but work with cmd."""
+    env_vars = {}
+
+    path = env.path
+    if path:
+        if env.path_behavior == 'append':
+            path = '%%PATH%%;\"%s\" ' % path
+        elif env.path_behavior == 'prepend':
+            path = '%s;%%PATH%% ' % path
+        elif env.path_behavior == 'replace':
+            path = '\"%s\" ' % path
+
+        env_vars['PATH'] = path
+
+    env_vars.update(env.shell_env)
+
+    if env_vars:
+        set_cmd, exp_cmd = '', ''
+        set_cmd = 'set '
+
+        exports = ' '.join(
+            '%s%s=%s' % (set_cmd, k, v if k == 'PATH' else _shell_escape(v))
+            for k, v in env_vars.iteritems()
+        )
+        shell_env_str = '%s%s && ' % (exp_cmd, exports)
+    else:
+        shell_env_str = ''
+
+    return shell_env_str + command
+
 def _run_command_winrm(command, shell=False, combine_stderr=None,
         quiet=False, warn_only=False, stdout=None, stderr=None, timeout=None):
     which = "remote"
-    prefixed_command = _prefix_commands(command, which)
+
     # TODO: wrap command
-    wrapped_command = prefixed_command
+    wrapped_command = _prefix_commands(_prefix_env_vars_cmd(command), which)
 
     host = env.host_string
 
