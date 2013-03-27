@@ -730,7 +730,7 @@ def _massage_execution_results(given_command, which, wrapped_command, result_std
     return out
 
 def _run_command_winrm(command, shell=False, combine_stderr=None,
-        quiet=False, stdout=None, warn_only=False, stderr=None, timeout=None):
+        quiet=False, warn_only=False, stdout=None, stderr=None, timeout=None):
     which = "remote"
     prefixed_command = _prefix_commands(command, which)
     # TODO: wrap command
