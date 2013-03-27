@@ -42,13 +42,16 @@ class WinRMCommand(object):
         return self._status_code
 
     def poll(self):
-        stdout, stderr, status_code, is_done = \
-            self.client._raw_get_command_output(self.shell_id, self.command_id)
-        self._stdout_buffer.append(stdout)
-        self._stderr_buffer.append(stderr)
-        self._is_done = is_done
-        if is_done:
-            self._status_code = status_code
+        if self._is_done:
+            return
+        else:
+            stdout, stderr, status_code, is_done = \
+                self.client._raw_get_command_output(self.shell_id, self.command_id)
+            self._stdout_buffer.append(stdout)
+            self._stderr_buffer.append(stderr)
+            self._is_done = is_done
+            if is_done:
+                self._status_code = status_code
 
     def recv(self, nbytes=None):
         with self._recv_lock:
