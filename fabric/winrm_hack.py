@@ -3,6 +3,7 @@ import threading
 import time
 
 from fabric.io import output_loop
+from fabric.state import env
 from fabric.thread_handling import ThreadHandler
 
 from winrm.winrm_service import WinRMWebService
@@ -92,7 +93,7 @@ def execute_winrm_command(host, command, combine_stderr=None, stdout=None,
     invoke_shell = False
     remote_interrupt = False
 
-    channel = DummyChannel(host, "vagrant", "vagrant")
+    channel = DummyChannel(host, env.user, env.password)
 
     with channel.exec_command(command=command) as winrm_command:
         stdout_buffer, stderr_buffer = [], []
