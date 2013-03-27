@@ -782,7 +782,7 @@ def _run_command_winrm(command, shell=False, combine_stderr=None,
         elif output.running:
             print("[%s] %s: %s" % (host, which, command))
         result_stdout, result_stderr, status = execute_winrm_command(host,
-                wrapped_command)
+                wrapped_command, timeout=timeout)
 
         return _massage_execution_results(command, which, wrapped_command,
                 result_stdout, result_stderr, status)

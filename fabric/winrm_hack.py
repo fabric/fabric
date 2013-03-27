@@ -73,11 +73,15 @@ class WinRMCommand(object):
         self.cleanup()
 
 class DummyChannel(object):
-    def __init__(self, host, username, password):
+    def __init__(self, host, username, password, timeout=None):
         self.client = WinRMWebService(endpoint="http://{0}:5985/wsman".format(host),
                 transport="plaintext",
                 username=username,
                 password=password)
+        if timeout is not None:
+            self.client.set_timeout(timeout)
+        else:
+            self.client.set_timeout(3600)
 
     def exec_command(self, command):
         shell_id = self.client.open_shell()
@@ -93,7 +97,7 @@ def execute_winrm_command(host, command, combine_stderr=None, stdout=None,
     invoke_shell = False
     remote_interrupt = False
 
-    channel = DummyChannel(host, env.user, env.password)
+    channel = DummyChannel(host, env.user, env.password, timeout=timeout)
 
     with channel.exec_command(command=command) as winrm_command:
         stdout_buffer, stderr_buffer = [], []
