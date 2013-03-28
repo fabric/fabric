@@ -1,12 +1,6 @@
-import collections
 import sys
-import threading
-import time
-import Queue
 
-from fabric.io import output_loop
 from fabric.state import env
-from fabric.thread_handling import ThreadHandler
 
 import winrm.winrm_service
 
@@ -50,71 +44,6 @@ class _WinRMCommandWrapper(object):
     def __exit__(self, *a, **kw):
         self.cleanup()
 
-class _StreamData(object):
-    def __init__(self, queue, buffer_size):
-        self.queue = queue
-        self.fifo = collections.deque(maxlen=buffer_size)
-        self.is_done = False
-
-class WinRMChannel(object):
-    """Dummy winrm 'channel' that mimics an ssh channel API.
-    
-    Note
-    ----
-    because of limitations in winrm API, streams cannot be handled in different
-    threads: both stdout and stderr are updated in a single call
-    """
-    def __init__(self, stdout_queue, stderr_queue):
-        self.buffer_size = 4096
-
-        self._stdout = _StreamData(stdout_queue, self.buffer_size)
-        self._stderr = _StreamData(stderr_queue, self.buffer_size)
-
-        self._recv_lock = threading.Lock()
-
-        self._combine_stderr = False
-
-    def set_combine_stderr(self, combine_stderr):
-        self._combine_stderr = combine_stderr
-
-    def _recv(self, nbytes, stream_data):
-        with self._recv_lock:
-            if nbytes > self.buffer_size:
-                raise ValueError("Too many bytes requested !")
-            if stream_data.is_done:
-                return ""
-            ret = []
-            for i in range(min(len(stream_data.fifo), nbytes)):
-                ret.append(stream_data.fifo.popleft())
-
-            # FIXME: we need to ensure we're not returning an empty buffer
-            # (interpreted as closed channel), so we keep asking some data
-            # until we have something (one data buffer in the queue may be
-            # empty)
-            while len(ret) < 1:
-                new_data, is_done = stream_data.queue.get()
-                needs_to_buffer = len(new_data) + len(ret) > nbytes
-                if needs_to_buffer:
-                    to_buffer = new_data[nbytes - len(ret):]
-                    ret.extend(new_data[:nbytes - len(ret)])
-                    stream_data.fifo.extend(to_buffer)
-                else:
-                    ret.extend(new_data)
-                stream_data.queue.task_done()
-                if is_done:
-                    stream_data.is_done = True
-                    break
-            return "".join(ret)
-
-    def recv(self, nbytes):
-        return self._recv(nbytes, self._stdout)
-
-    def recv_stderr(self, nbytes):
-        if self._combine_stderr:
-            return ""
-        else:
-            return self._recv(nbytes, self._stderr)
-
 def execute_winrm_command(host, command, combine_stderr=None, stdout=None,
         stderr=None, timeout=None):
     # stdout/stderr redirection
@@ -127,39 +56,24 @@ def execute_winrm_command(host, command, combine_stderr=None, stdout=None,
     invoke_shell = False
     remote_interrupt = False
 
-    stdout_queue = Queue.Queue()
-    stderr_queue = Queue.Queue()
-
     winrm_service = WinRMWebServiceWrapper(host, env.user, env.password, timeout=timeout)
 
     with winrm_service.exec_command(command=command) as winrm_command:
         stdout_buffer, stderr_buffer = [], []
 
-        streams_channel = WinRMChannel(stdout_queue, stderr_queue)
-        streams_channel.set_combine_stderr(combine_stderr)
-
-        workers = (
-            ThreadHandler('out', output_loop, streams_channel, "recv",
-                capture=stdout_buffer, stream=stdout, timeout=timeout),
-            ThreadHandler('err', output_loop, streams_channel, "recv_stderr",
-                capture=stderr_buffer, stream=stderr, timeout=timeout),
-        )
-
         is_done = False
         while not is_done:
             _stdout, _stderr, status, is_done = winrm_command._raw_get_command_output()
-            stdout_queue.put((_stdout, is_done))
-            # FIXME: merge pushing data into WinRMChannel API to handle this
-            # more cleanly
-            if combine_stderr:
-                stdout_queue.put((_stderr, is_done))
-            else:
-                stderr_queue.put((_stderr, is_done))
-
-        # Wait for threads to exit so we aren't left with stale threads
-        for worker in workers:
-            worker.thread.join()
-            worker.raise_if_needed()
+            for (buf, stream) in ((_stdout, stdout), (_stderr, stderr)):
+                lines = buf.splitlines()
+                for line in lines[:-1]:
+                    stream.write("[{}] {}: {}\n".format(env.host_string, "out", line))
+                if lines:
+                    if buf.endswith("\n"):
+                        suffix = "\n"
+                    else:
+                        suffix = ""
+                    stream.write("[{}] {}: {}{}".format(env.host_string, "out", lines[-1], suffix))
 
         # Update stdout/stderr with captured values if applicable
         if not invoke_shell:
