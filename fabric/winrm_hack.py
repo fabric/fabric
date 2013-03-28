@@ -72,6 +72,11 @@ class WinRMChannel(object):
 
         self._recv_lock = threading.Lock()
 
+        self._combine_stderr = False
+
+    def set_combine_stderr(self, combine_stderr):
+        self._combine_stderr = combine_stderr
+
     def _recv(self, nbytes, stream_data):
         with self._recv_lock:
             if nbytes > self.buffer_size:
@@ -105,13 +110,19 @@ class WinRMChannel(object):
         return self._recv(nbytes, self._stdout)
 
     def recv_stderr(self, nbytes):
-        return self._recv(nbytes, self._stderr)
+        if self._combine_stderr:
+            return ""
+        else:
+            return self._recv(nbytes, self._stderr)
 
 def execute_winrm_command(host, command, combine_stderr=None, stdout=None,
         stderr=None, timeout=None):
     # stdout/stderr redirection
     stdout = stdout or sys.stdout
     stderr = stderr or sys.stderr
+
+    if combine_stderr is None:
+        combine_stderr = env.combine_stderr
 
     invoke_shell = False
     remote_interrupt = False
@@ -125,6 +136,7 @@ def execute_winrm_command(host, command, combine_stderr=None, stdout=None,
         stdout_buffer, stderr_buffer = [], []
 
         streams_channel = WinRMChannel(stdout_queue, stderr_queue)
+        streams_channel.set_combine_stderr(combine_stderr)
 
         workers = (
             ThreadHandler('out', output_loop, streams_channel, "recv",
@@ -137,7 +149,12 @@ def execute_winrm_command(host, command, combine_stderr=None, stdout=None,
         while not is_done:
             _stdout, _stderr, status, is_done = winrm_command._raw_get_command_output()
             stdout_queue.put((_stdout, is_done))
-            stderr_queue.put((_stderr, is_done))
+            # FIXME: merge pushing data into WinRMChannel API to handle this
+            # more cleanly
+            if combine_stderr:
+                stdout_queue.put((_stderr, is_done))
+            else:
+                stderr_queue.put((_stderr, is_done))
 
         # Wait for threads to exit so we aren't left with stale threads
         for worker in workers:
