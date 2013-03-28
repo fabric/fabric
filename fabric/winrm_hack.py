@@ -82,7 +82,11 @@ class WinRMChannel(object):
             for i in range(min(len(stream_data.fifo), nbytes)):
                 ret.append(stream_data.fifo.popleft())
 
-            while len(ret) < nbytes:
+            # FIXME: we need to ensure we're not returning an empty buffer
+            # (interpreted as closed channel), so we keep asking some data
+            # until we have something (one data buffer in the queue may be
+            # empty)
+            while len(ret) < 1:
                 new_data, is_done = stream_data.queue.get()
                 needs_to_buffer = len(new_data) + len(ret) > nbytes
                 if needs_to_buffer:
