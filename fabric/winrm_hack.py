@@ -50,6 +50,12 @@ class _WinRMCommandWrapper(object):
     def __exit__(self, *a, **kw):
         self.cleanup()
 
+class _StreamData(object):
+    def __init__(self, queue, buffer_size):
+        self.queue = queue
+        self.fifo = collections.deque(maxlen=buffer_size)
+        self.is_done = False
+
 class WinRMChannel(object):
     """Dummy winrm 'channel' that mimics an ssh channel API.
     
@@ -60,46 +66,42 @@ class WinRMChannel(object):
     """
     def __init__(self, stdout_queue, stderr_queue):
         self.buffer_size = 4096
-        self._stdout_queue = stdout_queue
-        self._stderr_queue = stderr_queue
 
-        self._stdout_fifo = collections.deque(maxlen=self.buffer_size)
-        self._stderr_fifo = collections.deque(maxlen=self.buffer_size)
-
-        self._is_done = False
+        self._stdout = _StreamData(stdout_queue, self.buffer_size)
+        self._stderr = _StreamData(stderr_queue, self.buffer_size)
 
         self._recv_lock = threading.Lock()
 
-    def _recv(self, nbytes, queue, fifo):
+    def _recv(self, nbytes, stream_data):
         with self._recv_lock:
             if nbytes > self.buffer_size:
                 raise ValueError("Too many bytes requested !")
-            if self._is_done:
+            if stream_data.is_done:
                 return ""
             ret = []
-            for i in range(min(len(fifo), nbytes)):
-                ret.append(fifo.popleft())
+            for i in range(min(len(stream_data.fifo), nbytes)):
+                ret.append(stream_data.fifo.popleft())
 
             while len(ret) < nbytes:
-                new_data, is_done = queue.get()
+                new_data, is_done = stream_data.queue.get()
                 needs_to_buffer = len(new_data) + len(ret) > nbytes
                 if needs_to_buffer:
                     to_buffer = new_data[nbytes - len(ret):]
                     ret.extend(new_data[:nbytes - len(ret)])
-                    fifo.extend(to_buffer)
+                    stream_data.fifo.extend(to_buffer)
                 else:
                     ret.extend(new_data)
-                queue.task_done()
+                stream_data.queue.task_done()
                 if is_done:
-                    self._is_done = True
+                    stream_data.is_done = True
                     break
             return "".join(ret)
 
     def recv(self, nbytes):
-        return self._recv(nbytes, self._stdout_queue, self._stdout_fifo)
+        return self._recv(nbytes, self._stdout)
 
     def recv_stderr(self, nbytes):
-        return self._recv(nbytes, self._stderr_queue, self._stderr_fifo)
+        return self._recv(nbytes, self._stderr)
 
 def execute_winrm_command(host, command, combine_stderr=None, stdout=None,
         stderr=None, timeout=None):
@@ -118,7 +120,7 @@ def execute_winrm_command(host, command, combine_stderr=None, stdout=None,
     with winrm_service.exec_command(command=command) as winrm_command:
         stdout_buffer, stderr_buffer = [], []
 
-        streams_channel = FakeChannel(stdout_queue, stderr_queue)
+        streams_channel = WinRMChannel(stdout_queue, stderr_queue)
 
         workers = (
             ThreadHandler('out', output_loop, streams_channel, "recv",
@@ -129,9 +131,9 @@ def execute_winrm_command(host, command, combine_stderr=None, stdout=None,
 
         is_done = False
         while not is_done:
-            stdout, stderr, status, is_done = winrm_command._raw_get_command_output()
-            stdout_queue.put((stdout, is_done))
-            stderr_queue.put((stderr, is_done))
+            _stdout, _stderr, status, is_done = winrm_command._raw_get_command_output()
+            stdout_queue.put((_stdout, is_done))
+            stderr_queue.put((_stderr, is_done))
 
         # Wait for threads to exit so we aren't left with stale threads
         for worker in workers:
