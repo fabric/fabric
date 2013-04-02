@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`868` Substantial speedup of parallel tasks by removing an unnecessary
+  blocking timeout in the ``JobQueue`` loop. Thanks to Simo Kinnunen for the
+  patch.
 * :bug:`870` Changes to shell env var escaping highlighted some extraneous and
   now damaging whitespace in `with path(): <.path>`. This has been removed and
   a regression test added.
