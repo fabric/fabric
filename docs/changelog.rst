@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :feature:`812` Add ``use_glob`` option to `.put` so users trying to upload
+  real filenames containing glob patterns (``*``, ``[`` etc) can disable the
+  default globbing behavior. Thanks to Michael McHugh for the patch.
 * :bug:`844` Allow users to disable Fabric's auto-escaping in `.run`/`.sudo`.
   Thanks to Christian Long and Michael McHugh for the patch.
 * :bug:`84` Fixed problem with missing -r flag in Mac OS X sed version.

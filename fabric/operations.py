@@ -251,7 +251,7 @@ def prompt(text, key=None, default='', validate=None):
 
 @needs_host
 def put(local_path=None, remote_path=None, use_sudo=False,
-    mirror_local_mode=False, mode=None):
+    mirror_local_mode=False, mode=None, use_glob=True):
     """
     Upload one or more files to a remote host.
 
@@ -263,8 +263,8 @@ def put(local_path=None, remote_path=None, use_sudo=False,
 
     ``local_path`` may be a relative or absolute local file or directory path,
     and may contain shell-style wildcards, as understood by the Python ``glob``
-    module.  Tilde expansion (as implemented by ``os.path.expanduser``) is also
-    performed.
+    module (give ``use_glob=False`` to disable this behavior).  Tilde expansion
+    (as implemented by ``os.path.expanduser``) is also performed.
 
     ``local_path`` may alternately be a file-like object, such as the result of
     ``open('path')`` or a ``StringIO`` instance.
@@ -331,6 +331,8 @@ def put(local_path=None, remote_path=None, use_sudo=False,
         also exhibits the ``.failed`` and ``.succeeded`` attributes.
     .. versionchanged:: 1.5
         Allow a ``name`` attribute on file-like objects for log output
+    .. versionchanged:: 1.7
+        Added ``use_glob`` option to allow disabling of globbing.
     """
     # Handle empty local path
     local_path = local_path or os.getcwd()
@@ -362,8 +364,15 @@ def put(local_path=None, remote_path=None, use_sudo=False,
             if not os.path.isabs(local_path) and env.lcwd:
                 local_path = os.path.join(env.lcwd, local_path)
 
-            # Glob local path
-            names = glob(local_path)
+            if use_glob:
+                # Glob local path
+                names = glob(local_path)
+            else:
+                # Check if file exists first so ValueError gets raised
+                if os.path.exists(local_path):
+                    names = [local_path]
+                else:
+                    names = []
         else:
             names = [local_path]
 
