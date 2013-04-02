@@ -251,7 +251,7 @@ def prompt(text, key=None, default='', validate=None):
 
 @needs_host
 def put(local_path=None, remote_path=None, use_sudo=False,
-    mirror_local_mode=False, mode=None, use_glob=None):
+    mirror_local_mode=False, mode=None, use_glob=True):
     """
     Upload one or more files to a remote host.
 
@@ -364,7 +364,7 @@ def put(local_path=None, remote_path=None, use_sudo=False,
             if not os.path.isabs(local_path) and env.lcwd:
                 local_path = os.path.join(env.lcwd, local_path)
 
-            if use_glob or (use_glob is None and env.get('use_glob', True)):
+            if use_glob:
                 # Glob local path
                 names = glob(local_path)
             else:
