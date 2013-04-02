@@ -162,12 +162,15 @@ class JobQueue(object):
                 self._finished = True
 
             # Each loop pass, try pulling results off the queue to keep its
-            # size down.
+            # size down. At this point, we don't actually care if any results
+            # have arrived yet; they will be picked up after the main loop.
             self._fill_results(results)
 
             time.sleep(ssh.io_sleep)
 
-        # Consume anything left in the results queue
+        # Consume anything left in the results queue. Note that there is no
+        # need to block here, as the main loop ensures that all workers will
+        # already have finished.
         self._fill_results(results)
 
         # Attach exit codes now that we're all done & have joined all jobs
@@ -179,10 +182,11 @@ class JobQueue(object):
     def _fill_results(self, results):
         """
         Attempt to pull data off self._comms_queue and add to 'results' dict.
+        If no data is available (i.e. the queue is empty), bail immediately.
         """
         while True:
             try:
-                datum = self._comms_queue.get(timeout=1)
+                datum = self._comms_queue.get_nowait()
                 results[datum['name']]['results'] = datum['result']
             except Queue.Empty:
                 break
