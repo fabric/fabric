@@ -251,7 +251,7 @@ def prompt(text, key=None, default='', validate=None):
 
 @needs_host
 def put(local_path=None, remote_path=None, use_sudo=False,
-    mirror_local_mode=False, mode=None):
+    mirror_local_mode=False, mode=None, use_glob=None):
     """
     Upload one or more files to a remote host.
 
@@ -294,6 +294,9 @@ def put(local_path=None, remote_path=None, use_sudo=False,
 
     Alternately, you may use the ``mode`` kwarg to specify an exact mode, in
     the same vein as ``os.chmod`` or the Unix ``chmod`` command.
+
+    In the case that a file contains glob characters (ie ``~/foo[bar].txt``),
+    specify ``use_glob=False`` and put will not attempt to glob the local path.
 
     `~fabric.operations.put` will honor `~fabric.context_managers.cd`, so
     relative values in ``remote_path`` will be prepended by the current remote
@@ -362,8 +365,15 @@ def put(local_path=None, remote_path=None, use_sudo=False,
             if not os.path.isabs(local_path) and env.lcwd:
                 local_path = os.path.join(env.lcwd, local_path)
 
-            # Glob local path
-            names = glob(local_path)
+            if use_glob or (use_glob is None and env.get('use_glob', True)):
+                # Glob local path
+                names = glob(local_path)
+            else:
+                # Check if file exists first so ValueError gets raised
+                if os.path.exists(local_path):
+                    names = [local_path]
+                else:
+                    names = []
         else:
             names = [local_path]
 
