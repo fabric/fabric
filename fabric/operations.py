@@ -263,8 +263,8 @@ def put(local_path=None, remote_path=None, use_sudo=False,
 
     ``local_path`` may be a relative or absolute local file or directory path,
     and may contain shell-style wildcards, as understood by the Python ``glob``
-    module.  Tilde expansion (as implemented by ``os.path.expanduser``) is also
-    performed.
+    module (give ``use_glob=False`` to disable this behavior).  Tilde expansion
+    (as implemented by ``os.path.expanduser``) is also performed.
 
     ``local_path`` may alternately be a file-like object, such as the result of
     ``open('path')`` or a ``StringIO`` instance.
@@ -294,9 +294,6 @@ def put(local_path=None, remote_path=None, use_sudo=False,
 
     Alternately, you may use the ``mode`` kwarg to specify an exact mode, in
     the same vein as ``os.chmod`` or the Unix ``chmod`` command.
-
-    In the case that a file contains glob characters (ie ``~/foo[bar].txt``),
-    specify ``use_glob=False`` and put will not attempt to glob the local path.
 
     `~fabric.operations.put` will honor `~fabric.context_managers.cd`, so
     relative values in ``remote_path`` will be prepended by the current remote
