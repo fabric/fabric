@@ -334,6 +334,8 @@ def put(local_path=None, remote_path=None, use_sudo=False,
         also exhibits the ``.failed`` and ``.succeeded`` attributes.
     .. versionchanged:: 1.5
         Allow a ``name`` attribute on file-like objects for log output
+    .. versionchanged:: 1.7
+        Added ``use_glob`` option to allow disabling of globbing.
     """
     # Handle empty local path
     local_path = local_path or os.getcwd()
