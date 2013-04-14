@@ -169,7 +169,7 @@ packages:
 
 * `git <http://git-scm.com>`_ and `Mercurial`_, in order to obtain some of the
   other dependencies below;
-* `Nose <http://code.google.com/p/python-nose/>`_
+* `Nose <https://github.com/nose-devs/nose>`_
 * `Coverage <http://nedbatchelder.com/code/modules/coverage.html>`_
 * `PyLint <http://www.logilab.org/857>`_
 * `Fudge <http://farmdev.com/projects/fudge/index.html>`_
