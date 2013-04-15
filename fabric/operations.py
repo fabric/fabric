@@ -748,7 +748,7 @@ def _execute(channel, command, pty=True, combine_stderr=None,
         # parameters if on POSIX platform)
         if using_pty:
             pty_params = {}
-            pty_params['width'], pty_params['height'] = _pty_size()
+            pty_params['height'], pty_params['width'] = _pty_size()
             if env.term is not None:
                 pty_params['term'] = env.term
             channel.get_pty(**pty_params)
