@@ -706,6 +706,16 @@ executing command. For informational purposes only.
 
 .. seealso:: :doc:`execution`
 
+.. _term:
+
+``term``
+-------------
+
+**Default:** ``None``
+
+The ``term`` variables passed through to create a pty. If ``term`` is ``None``
+then no value will be passed in.
+
 .. _timeout:
 
 ``timeout``

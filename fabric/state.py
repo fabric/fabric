@@ -332,6 +332,7 @@ env = _AttributeDict({
     'sudo_prompt': 'sudo password:',
     'sudo_user': None,
     'tasks': [],
+    'term': None,
     'use_exceptions_for': {'network': False},
     'use_shell': True,
     'use_ssh_config': False,

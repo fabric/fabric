@@ -747,8 +747,11 @@ def _execute(channel, command, pty=True, combine_stderr=None,
         # Request pty with size params (default to 80x24, obtain real
         # parameters if on POSIX platform)
         if using_pty:
-            rows, cols = _pty_size()
-            channel.get_pty(width=cols, height=rows)
+            pty_params = {}
+            pty_params['width'], pty_params['height'] = _pty_size()
+            if env.term is not None:
+                pty_params['term'] = env.term
+            channel.get_pty(**pty_params)
 
         # Use SSH agent forwarding from 'ssh' if enabled by user
         config_agent = ssh_config().get('forwardagent', 'no').lower() == 'yes'
