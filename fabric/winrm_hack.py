@@ -64,16 +64,16 @@ def execute_winrm_command(host, command, combine_stderr=None, stdout=None,
         is_done = False
         while not is_done:
             _stdout, _stderr, status, is_done = winrm_command._raw_get_command_output()
-            for (buf, stream) in ((_stdout, stdout), (_stderr, stderr)):
+            for (buf, stream, prefix) in ((_stdout, stdout, "out"), (_stderr, stderr, "err")):
                 lines = buf.splitlines()
                 for line in lines[:-1]:
-                    stream.write("[{}] {}: {}\n".format(env.host_string, "out", line))
+                    stream.write("[{}] {}: {}\n".format(env.host_string, prefix, line))
                 if lines:
                     if buf.endswith("\n"):
                         suffix = "\n"
                     else:
                         suffix = ""
-                    stream.write("[{}] {}: {}{}".format(env.host_string, "out", lines[-1], suffix))
+                    stream.write("[{}] {}: {}{}".format(env.host_string, prefix, lines[-1], suffix))
 
         # Update stdout/stderr with captured values if applicable
         if not invoke_shell:
