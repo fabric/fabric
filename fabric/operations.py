@@ -529,7 +529,9 @@ def get(remote_path, local_path=None):
         if not os.path.isabs(remote_path):
             # Honor cwd if it's set (usually by with cd():)
             if env.get('cwd'):
-                remote_path = env.cwd.rstrip('/') + '/' + remote_path
+                remote_path_escaped = env.cwd.rstrip('/')
+                remote_path_escaped = remote_path_escaped.replace('\\ ', ' ')
+                remote_path = remote_path_escaped + '/' + remote_path
             # Otherwise, be relative to remote home directory (SFTP server's
             # '.')
             else:
@@ -1079,7 +1081,7 @@ def local(command, capture=False, shell=None):
     ``execute`` argument (which determines the local shell to use.)  As per the
     linked documentation, on Unix the default behavior is to use ``/bin/sh``,
     so this option is useful for setting that value to e.g.  ``/bin/bash``.
-    
+
     `local` is not currently capable of simultaneously printing and
     capturing output, as `~fabric.operations.run`/`~fabric.operations.sudo`
     do. The ``capture`` kwarg allows you to switch between printing and
@@ -1094,11 +1096,11 @@ def local(command, capture=False, shell=None):
     When ``capture=True``, you will not see any output from the subprocess in
     your terminal, but the return value will contain the captured
     stdout/stderr.
-    
+
     In either case, as with `~fabric.operations.run` and
     `~fabric.operations.sudo`, this return value exhibits the ``return_code``,
     ``stderr``, ``failed`` and ``succeeded`` attributes. See `run` for details.
-    
+
     `~fabric.operations.local` will honor the `~fabric.context_managers.lcd`
     context manager, allowing you to control its current working directory
     independently of the remote end (which honors
