@@ -442,7 +442,7 @@ class TestFileTransfers(FabricTest):
         """
         # from nose.tools import set_trace; set_trace()
         with hide('everything'):
-            with cd('/base'), cd('dir with spaces'):
+            with cd('/base/dir with spaces'):
                 eq_(get('file', self.path()), [self.path('file')])
 
     @server()
