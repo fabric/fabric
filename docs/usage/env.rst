@@ -102,7 +102,9 @@ via `~fabric.context_managers.settings` or via specific context managers such
 as `~fabric.context_managers.cd`.
 
 Note that many of these may be set via ``fab``'s command-line switches -- see
-:doc:`fab` for details. Cross-links will be provided where appropriate.
+:doc:`fab` for details. Cross-references are provided where appropriate.
+
+.. seealso:: :option:`--set`
 
 .. _abort-on-prompts:
 
@@ -230,7 +232,7 @@ If ``True``, the SSH layer will skip loading the user's known-hosts file.
 Useful for avoiding exceptions in situations where a "known host" changing its
 host key is actually valid (e.g. cloud servers such as EC2.)
 
-.. seealso:: :doc:`ssh`
+.. seealso:: :option:`--disable-known-hosts <-D>`, :doc:`ssh`
 
 .. _exclude-hosts:
 
@@ -255,7 +257,7 @@ To indicate a specific file, use the full path to the file. Obviously, it
 doesn't make sense to set this in a fabfile, but it may be specified in a
 ``.fabricrc`` file or on the command line.
 
-.. seealso:: :doc:`fab`
+.. seealso:: :doc:`fab`, :option:`--fabfile <-f>`
 
 
 .. _gateway:
@@ -301,7 +303,7 @@ If ``True``, enables forwarding of your local SSH agent to the remote end.
 
 .. versionadded:: 1.4
 
-.. seealso:: :option:`-A`
+.. seealso:: :option:`--forward-agent <-A>`
 
 
 ``host``
@@ -321,7 +323,7 @@ purposes only.
 
 The global host list used when composing per-task host lists.
 
-.. seealso:: :doc:`execution`
+.. seealso:: :doc:`execution`, :option:`--hosts <-H>`
 
 .. _keepalive:
 
@@ -388,6 +390,7 @@ If ``True``, will tell the SSH layer not to seek out running SSH agents when
 using key-based authentication.
 
 .. versionadded:: 0.9.1
+.. seealso:: :option:`--no_agent <-a>`
 
 .. _no_keys:
 
@@ -401,6 +404,7 @@ one's ``$HOME/.ssh/`` folder. (Key files explicitly loaded via ``fab -i`` will
 still be used, of course.)
 
 .. versionadded:: 0.9.1
+.. seealso:: :option:`-k`
 
 .. _env-parallel:
 
@@ -413,7 +417,7 @@ When ``True``, forces all tasks to run in parallel. Implies :ref:`env.linewise
 <env-linewise>`.
 
 .. versionadded:: 1.3
-.. seealso:: :doc:`parallel`
+.. seealso:: :doc:`parallel`, :option:`--parallel <-P>`
 
 .. _password:
 
@@ -468,7 +472,7 @@ for managing this value instead of setting it directly.
 Sets the number of concurrent processes to use when executing tasks in parallel.
 
 .. versionadded:: 1.3
-.. seealso:: :doc:`parallel`, :option:`-z`
+.. seealso:: :doc:`parallel`, :option:`--pool-size <-z>`
 
 .. _port:
 
@@ -501,7 +505,7 @@ far. For informational purposes only.
 
 Path used when loading Fabric's local settings file.
 
-.. seealso:: :doc:`fab`
+.. seealso:: :doc:`fab`, :option:`--config <-c>`
 
 .. _reject-unknown-hosts:
 
@@ -513,7 +517,7 @@ Path used when loading Fabric's local settings file.
 If ``True``, the SSH layer will raise an exception when connecting to hosts not
 listed in the user's known-hosts file.
 
-.. seealso:: :doc:`ssh`
+.. seealso:: :doc:`ssh`, :option:`--reject-unknown-hosts <-r>`
 
 ``roledefs``
 ------------
@@ -533,7 +537,7 @@ Dictionary defining role name to host list mappings.
 
 The global role list used when composing per-task host lists.
 
-.. seealso:: :doc:`execution`
+.. seealso:: :doc:`execution`, option:`--roles <-R>`
 
 .. _shell:
 
@@ -547,7 +551,8 @@ Value used as shell wrapper when executing commands with e.g.
 "<command goes here>"`` -- e.g. the default uses Bash's ``-c`` option which
 takes a command string as its value.
 
-.. seealso:: :ref:`FAQ on bash as default shell <faq-bash>`, :doc:`execution`
+.. seealso:: :ref:`FAQ on bash as default shell <faq-bash>`, :doc:`execution`,
+             :option:`--shell <-s>`
 
 .. _skip-bad-hosts:
 
@@ -702,7 +707,7 @@ As you can see, during execution on ``host2``, ``env.user`` was set to
     the informational aspect will likely be broken out into a separate env
     variable.
 
-.. seealso:: :doc:`execution`
+.. seealso:: :doc:`execution`, :option:`--user <-u>`
 
 ``version``
 -----------
@@ -711,6 +716,8 @@ As you can see, during execution on ``host2``, ``env.user`` was set to
 
 Mostly for informational purposes. Modification is not recommended, but
 probably won't break anything either.
+
+.. seealso:: :option:`--version <-V>`
 
 .. _warn_only:
 
@@ -723,4 +730,4 @@ Specifies whether or not to warn, instead of abort, when
 `~fabric.operations.run`/`~fabric.operations.sudo`/`~fabric.operations.local`
 encounter error conditions.
 
-.. seealso:: :doc:`execution`
+.. seealso:: :doc:`execution`, :option:`--warn-only <-w>`
