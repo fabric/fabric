@@ -144,9 +144,7 @@ informational purposes only.
 When set to ``False``, causes `~fabric.operations.run`/`~fabric.operations.sudo`
 to act as if they have been called with ``pty=False``.
 
-The command-line flag :option:`--no-pty`, if given, will set this env var to
-``False``.
-
+.. seealso:: :option:`--no-pty`
 .. versionadded:: 1.0
 
 .. _combine-stderr:
@@ -288,7 +286,7 @@ To indicate a specific file, use the full path to the file. Obviously, it
 doesn't make sense to set this in a fabfile, but it may be specified in a
 ``.fabricrc`` file or on the command line.
 
-.. seealso:: :doc:`fab`, :option:`--fabfile <-f>`
+.. seealso:: :option:`--fabfile <-f>`, :doc:`fab`
 
 
 .. _gateway:
@@ -354,7 +352,7 @@ purposes only.
 
 The global host list used when composing per-task host lists.
 
-.. seealso:: :doc:`execution`, :option:`--hosts <-H>`
+.. seealso:: :option:`--hosts <-H>`, :doc:`execution`
 
 .. _keepalive:
 
@@ -448,7 +446,7 @@ When ``True``, forces all tasks to run in parallel. Implies :ref:`env.linewise
 <env-linewise>`.
 
 .. versionadded:: 1.3
-.. seealso:: :doc:`parallel`, :option:`--parallel <-P>`
+.. seealso:: :option:`--parallel <-P>`, :doc:`parallel`
 
 .. _password:
 
@@ -460,7 +458,7 @@ When ``True``, forces all tasks to run in parallel. Implies :ref:`env.linewise
 The default password used by the SSH layer when connecting to remote hosts,
 **and/or** when answering `~fabric.operations.sudo` prompts.
 
-.. seealso:: :ref:`env.passwords <passwords>`, :ref:`password-management`, :option:`--initial-password-prompt <-I>`
+.. seealso:: :option:`--initial-password-prompt <-I>`, :ref:`env.passwords <passwords>`, :ref:`password-management`
 
 .. _passwords:
 
@@ -503,7 +501,7 @@ for managing this value instead of setting it directly.
 Sets the number of concurrent processes to use when executing tasks in parallel.
 
 .. versionadded:: 1.3
-.. seealso:: :doc:`parallel`, :option:`--pool-size <-z>`
+.. seealso:: :option:`--pool-size <-z>`, :doc:`parallel`
 
 .. _port:
 
@@ -557,7 +555,7 @@ as follows:
 
 Path used when loading Fabric's local settings file.
 
-.. seealso:: :doc:`fab`, :option:`--config <-c>`
+.. seealso:: :option:`--config <-c>`, :doc:`fab`
 
 .. _reject-unknown-hosts:
 
@@ -569,7 +567,7 @@ Path used when loading Fabric's local settings file.
 If ``True``, the SSH layer will raise an exception when connecting to hosts not
 listed in the user's known-hosts file.
 
-.. seealso:: :doc:`ssh`, :option:`--reject-unknown-hosts <-r>`
+.. seealso:: :option:`--reject-unknown-hosts <-r>`, :doc:`ssh`
 
 .. _system-known-hosts:
 
@@ -601,7 +599,7 @@ Dictionary defining role name to host list mappings.
 
 The global role list used when composing per-task host lists.
 
-.. seealso:: :doc:`execution`, option:`--roles <-R>`
+.. seealso:: :option:`--roles <-R>`, :doc:`execution`
 
 .. _shell:
 
@@ -615,8 +613,8 @@ Value used as shell wrapper when executing commands with e.g.
 "<command goes here>"`` -- e.g. the default uses Bash's ``-c`` option which
 takes a command string as its value.
 
-.. seealso:: :ref:`FAQ on bash as default shell <faq-bash>`, :doc:`execution`,
-             :option:`--shell <-s>`
+.. seealso:: :option:`--shell <-s>`,
+             :ref:`FAQ on bash as default shell <faq-bash>`, :doc:`execution`
 
 .. _skip-bad-hosts:
 
@@ -817,4 +815,4 @@ Specifies whether or not to warn, instead of abort, when
 `~fabric.operations.run`/`~fabric.operations.sudo`/`~fabric.operations.local`
 encounter error conditions.
 
-.. seealso:: :doc:`execution`, :option:`--warn-only <-w>`
+.. seealso:: :option:`--warn-only <-w>`, :doc:`execution`
