@@ -11,6 +11,7 @@ import os
 from StringIO import StringIO
 
 from fabric.api import *
+from fabric.utils import apply_lcwd
 
 
 def exists(path, use_sudo=False, verbose=False):
@@ -97,6 +98,7 @@ def upload_template(filename, destination, context=None, use_jinja=False,
     text = None
     if use_jinja:
         try:
+            template_dir = apply_lcwd(template_dir, env)
             from jinja2 import Environment, FileSystemLoader
             jenv = Environment(loader=FileSystemLoader(template_dir or '.'))
             text = jenv.get_template(filename).render(**context or {})
@@ -105,6 +107,7 @@ def upload_template(filename, destination, context=None, use_jinja=False,
             tb = traceback.format_exc()
             abort(tb + "\nUnable to import Jinja2 -- see above.")
     else:
+        filename = apply_lcwd(filename, env)
         with open(os.path.expanduser(filename)) as inputfile:
             text = inputfile.read()
         if context:
