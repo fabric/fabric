@@ -2,6 +2,7 @@
 Internal subroutines for e.g. aborting execution with an error message,
 or performing indenting on multiline output.
 """
+import os
 import sys
 import textwrap
 from traceback import format_exc
@@ -350,3 +351,10 @@ class RingBuffer(list):
             raise ValueError("Can't set a slice of a ring buffer!")
         else:
             return self._super.__setitem__(key, value)
+
+
+def apply_lcwd(path, env):
+    # Apply CWD if a relative path
+    if not os.path.isabs(path) and env.lcwd:
+        path = os.path.join(env.lcwd, path)
+    return path
