@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`328` `.lcd` was no longer being correctly applied to
+  `.upload_template`; this has been fixed. Thanks to Joseph Lawson for the
+  catch.
 * :bug:`870` Changes to shell env var escaping highlighted some extraneous and
   now damaging whitespace in `with path(): <.path>`. This has been removed and
   a regression test added.
