@@ -29,6 +29,7 @@ from fabric.utils import (
     indent,
     _pty_size,
     warn,
+    apply_lcwd
 )
 
 
@@ -358,12 +359,9 @@ def put(local_path=None, remote_path=None, use_sudo=False,
             remote_path = env.cwd.rstrip('/') + '/' + remote_path
 
         if local_is_path:
-            # Expand local paths
+            # Apply lcwd, expand tildes, etc
             local_path = os.path.expanduser(local_path)
-            # Honor lcd() where it makes sense
-            if not os.path.isabs(local_path) and env.lcwd:
-                local_path = os.path.join(env.lcwd, local_path)
-
+            local_path = apply_lcwd(local_path, env)
             if use_glob:
                 # Glob local path
                 names = glob(local_path)
@@ -523,8 +521,8 @@ def get(remote_path, local_path=None):
         and callable(local_path.write))
 
     # Honor lcd() where it makes sense
-    if local_is_path and not os.path.isabs(local_path) and env.lcwd:
-        local_path = os.path.join(env.lcwd, local_path)
+    if local_is_path:
+        local_path = apply_lcwd(local_path, env)
 
     ftp = SFTP(env.host_string)
 

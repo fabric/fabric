@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`328` `.lcd` was no longer being correctly applied to
+  `.upload_template`; this has been fixed. Thanks to Joseph Lawson for the
+  catch.
 * :feature:`812` Add ``use_glob`` option to `.put` so users trying to upload
   real filenames containing glob patterns (``*``, ``[`` etc) can disable the
   default globbing behavior. Thanks to Michael McHugh for the patch.
