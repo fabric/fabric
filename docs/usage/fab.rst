@@ -129,7 +129,7 @@ below.
 .. cmdoption:: -D, --disable-known-hosts
 
     Sets :ref:`env.disable_known_hosts <disable-known-hosts>` to ``True``,
-    preventing Fabric from loading the user's SSH known_hosts file.
+    preventing Fabric from loading the user's SSH :file:`known_hosts` file.
 
 .. cmdoption:: -f FABFILE, --fabfile=FABFILE
 
@@ -258,7 +258,7 @@ below.
 
     Sets :ref:`env.reject_unknown_hosts <reject-unknown-hosts>` to ``True``,
     causing Fabric to abort when connecting to hosts not found in the user's SSH
-    known_hosts file.
+    :file:`known_hosts` file.
 
 .. cmdoption:: -R ROLES, --roles=ROLES
 

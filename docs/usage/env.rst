@@ -3,7 +3,7 @@ The environment dictionary, ``env``
 ===================================
 
 A simple but integral aspect of Fabric is what is known as the "environment": a
-Python dictionary subclass which is used as a combination settings registry and
+Python dictionary subclass, which is used as a combination settings registry and
 shared inter-task data namespace.
 
 The environment dict is currently implemented as a global singleton,
@@ -13,8 +13,8 @@ in ``env`` are sometimes referred to as "env variables".
 Environment as configuration
 ============================
 
-Most of Fabric's behavior is controllable by modifying env variables, such as
-``env.hosts`` (as seen in :ref:`the tutorial <defining-connections>`). Other
+Most of Fabric's behavior is controllable by modifying ``env`` variables, such
+as ``env.hosts`` (as seen in :ref:`the tutorial <defining-connections>`). Other
 commonly-modified env vars include:
 
 * ``user``: Fabric defaults to your local username when making SSH connections,
@@ -80,8 +80,8 @@ of typing and makes the code more readable, so it's the recommended way to
 interact with ``env``.
 
 The fact that it's a dictionary can be useful in other ways, such as with
-Python's dict-based string interpolation, which is especially handy if you need
-to insert multiple env vars into a single string. Using "normal" string
+Python's ``dict``-based string interpolation, which is especially handy if you
+need to insert multiple env vars into a single string. Using "normal" string
 interpolation might look like this::
 
     print("Executing on %s as %s" % (env.host, env.user))
@@ -96,7 +96,7 @@ Full list of env vars
 =====================
 
 Below is a list of all predefined (or defined by Fabric itself during
-execution) environment variables. While any of them may be manipulated
+execution) environment variables. While many of them may be manipulated
 directly, it's often best to use `~fabric.context_managers`, either generally
 via `~fabric.context_managers.settings` or via specific context managers such
 as `~fabric.context_managers.cd`.
@@ -165,7 +165,7 @@ details on why this is needed and what its effects are.
 
 **Default:** ``None``
 
-Set by ``fab`` to the currently executing command name (e.g. when executed as
+Set by ``fab`` to the currently executing command name (e.g., when executed as
 ``$ fab task1 task2``, ``env.command`` will be set to ``"task1"`` while
 ``task1`` is executing, and then to ``"task2"``.) For informational purposes
 only.
@@ -359,7 +359,7 @@ set/appended to with :option:`-i`.
 
 Forces buffering by line instead of by character/byte, typically when running
 in parallel mode. May be activated via :option:`--linewise`. This option is
-implied by :ref:`env.parallel <env-parallel>` -- even if ``linewise`` is False,
+implied by :ref:`env.parallel <env-parallel>` --- even if ``linewise`` is False,
 if ``parallel`` is True then linewise behavior will occur.
 
 .. seealso:: :ref:`linewise-output`
