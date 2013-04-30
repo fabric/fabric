@@ -148,11 +148,23 @@ still prevent the calling shell from exiting until they stop running, and this
 in turn prevents Fabric from continuing on with its own execution.
 
 The key to fixing this is to ensure that your process' standard pipes are all
-disassociated from the calling shell, which may be done in a number of ways:
+disassociated from the calling shell, which may be done in a number of ways
+(listed in order of robustness):
 
 * Use a pre-existing daemonization technique if one exists for the program at
   hand -- for example, calling an init script instead of directly invoking a
   server binary.
+
+    * Or leverage a process manager such as ``supervisord``, ``upstart`` or
+      ``systemd`` - such tools let you define what it means to "run" one of
+      your background processes, then issue init-script-like
+      start/stop/restart/status commands. They offer many advantages over
+      classic init scripts as well.
+
+* Use ``tmux``, ``screen`` or ``dtach`` to fully detach the process from the
+  running shell; these tools have the benefit of allowing you to reattach to
+  the process later on if needed (though they are more ad-hoc than
+  ``supervisord``-like tools).
 * Run the program under ``nohup`` and redirect stdin, stdout and stderr to
   ``/dev/null`` (or to your file of choice, if you need the output later)::
 
@@ -162,9 +174,6 @@ disassociated from the calling shell, which may be done in a number of ways:
   forever; ``>&``, ``<`` and ``&`` are Bash syntax for pipe redirection and
   backgrounding, respectively -- see your shell's man page for details.)
 
-* Use ``tmux``, ``screen`` or ``dtach`` to fully detach the process from the
-  running shell; these tools have the benefit of allowing you to reattach to
-  the process later on if needed (among many other such benefits).
 
 .. _faq-bash:
 
