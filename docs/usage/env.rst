@@ -574,7 +574,7 @@ listed in the user's known-hosts file.
 
 **Default:** ``None``
 
-If set, should be the path to a known_hosts file.  The SSH layer will
+If set, should be the path to a :file:`known_hosts` file.  The SSH layer will
 read this file before reading the user's known-hosts file.
 
 .. seealso:: :doc:`ssh`
@@ -648,7 +648,7 @@ Return codes in this list are used to determine whether calls to
 `~fabric.operations.run`/`~fabric.operations.sudo`/`~fabric.operations.sudo`
 are considered successful.
 
-..versionadded:: 1.6
+.. versionadded:: 1.6
 
 .. _sudo_prefix:
 
