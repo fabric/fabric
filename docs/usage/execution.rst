@@ -551,7 +551,7 @@ being related to your application stack, you might call the above like this::
 
     $ fab deploy:app
 
-But wait! A data migration has gone awry on the DB servers. Let's fix up our
+But wait! A data migration has gone away on the DB servers. Let's fix up our
 migration code in our source repo, and deploy just the DB boxes again::
 
     $ fab deploy:db
