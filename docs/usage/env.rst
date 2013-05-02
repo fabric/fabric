@@ -3,7 +3,7 @@ The environment dictionary, ``env``
 ===================================
 
 A simple but integral aspect of Fabric is what is known as the "environment": a
-Python dictionary subclass which is used as a combination settings registry and
+Python dictionary subclass, which is used as a combination settings registry and
 shared inter-task data namespace.
 
 The environment dict is currently implemented as a global singleton,
@@ -13,8 +13,8 @@ in ``env`` are sometimes referred to as "env variables".
 Environment as configuration
 ============================
 
-Most of Fabric's behavior is controllable by modifying env variables, such as
-``env.hosts`` (as seen in :ref:`the tutorial <defining-connections>`). Other
+Most of Fabric's behavior is controllable by modifying ``env`` variables, such
+as ``env.hosts`` (as seen in :ref:`the tutorial <defining-connections>`). Other
 commonly-modified env vars include:
 
 * ``user``: Fabric defaults to your local username when making SSH connections,
@@ -80,8 +80,8 @@ of typing and makes the code more readable, so it's the recommended way to
 interact with ``env``.
 
 The fact that it's a dictionary can be useful in other ways, such as with
-Python's dict-based string interpolation, which is especially handy if you need
-to insert multiple env vars into a single string. Using "normal" string
+Python's ``dict``-based string interpolation, which is especially handy if you
+need to insert multiple env vars into a single string. Using "normal" string
 interpolation might look like this::
 
     print("Executing on %s as %s" % (env.host, env.user))
@@ -96,13 +96,15 @@ Full list of env vars
 =====================
 
 Below is a list of all predefined (or defined by Fabric itself during
-execution) environment variables. While any of them may be manipulated
+execution) environment variables. While many of them may be manipulated
 directly, it's often best to use `~fabric.context_managers`, either generally
 via `~fabric.context_managers.settings` or via specific context managers such
 as `~fabric.context_managers.cd`.
 
 Note that many of these may be set via ``fab``'s command-line switches -- see
-:doc:`fab` for details. Cross-links will be provided where appropriate.
+:doc:`fab` for details. Cross-references are provided where appropriate.
+
+.. seealso:: :option:`--set`
 
 .. _abort-on-prompts:
 
@@ -142,9 +144,7 @@ informational purposes only.
 When set to ``False``, causes `~fabric.operations.run`/`~fabric.operations.sudo`
 to act as if they have been called with ``pty=False``.
 
-The command-line flag :option:`--no-pty`, if given, will set this env var to
-``False``.
-
+.. seealso:: :option:`--no-pty`
 .. versionadded:: 1.0
 
 .. _combine-stderr:
@@ -165,7 +165,7 @@ details on why this is needed and what its effects are.
 
 **Default:** ``None``
 
-Set by ``fab`` to the currently executing command name (e.g. when executed as
+Set by ``fab`` to the currently executing command name (e.g., when executed as
 ``$ fab task1 task2``, ``env.command`` will be set to ``"task1"`` while
 ``task1`` is executing, and then to ``"task2"``.) For informational purposes
 only.
@@ -230,7 +230,7 @@ If ``True``, the SSH layer will skip loading the user's known-hosts file.
 Useful for avoiding exceptions in situations where a "known host" changing its
 host key is actually valid (e.g. cloud servers such as EC2.)
 
-.. seealso:: :doc:`ssh`
+.. seealso:: :option:`--disable-known-hosts <-D>`, :doc:`ssh`
 
 .. _exclude-hosts:
 
@@ -255,7 +255,7 @@ To indicate a specific file, use the full path to the file. Obviously, it
 doesn't make sense to set this in a fabfile, but it may be specified in a
 ``.fabricrc`` file or on the command line.
 
-.. seealso:: :doc:`fab`
+.. seealso:: :option:`--fabfile <-f>`, :doc:`fab`
 
 
 .. _gateway:
@@ -301,7 +301,7 @@ If ``True``, enables forwarding of your local SSH agent to the remote end.
 
 .. versionadded:: 1.4
 
-.. seealso:: :option:`-A`
+.. seealso:: :option:`--forward-agent <-A>`
 
 
 ``host``
@@ -321,7 +321,7 @@ purposes only.
 
 The global host list used when composing per-task host lists.
 
-.. seealso:: :doc:`execution`
+.. seealso:: :option:`--hosts <-H>`, :doc:`execution`
 
 .. _keepalive:
 
@@ -359,7 +359,7 @@ set/appended to with :option:`-i`.
 
 Forces buffering by line instead of by character/byte, typically when running
 in parallel mode. May be activated via :option:`--linewise`. This option is
-implied by :ref:`env.parallel <env-parallel>` -- even if ``linewise`` is False,
+implied by :ref:`env.parallel <env-parallel>` --- even if ``linewise`` is False,
 if ``parallel`` is True then linewise behavior will occur.
 
 .. seealso:: :ref:`linewise-output`
@@ -388,6 +388,7 @@ If ``True``, will tell the SSH layer not to seek out running SSH agents when
 using key-based authentication.
 
 .. versionadded:: 0.9.1
+.. seealso:: :option:`--no_agent <-a>`
 
 .. _no_keys:
 
@@ -401,6 +402,7 @@ one's ``$HOME/.ssh/`` folder. (Key files explicitly loaded via ``fab -i`` will
 still be used, of course.)
 
 .. versionadded:: 0.9.1
+.. seealso:: :option:`-k`
 
 .. _env-parallel:
 
@@ -413,7 +415,7 @@ When ``True``, forces all tasks to run in parallel. Implies :ref:`env.linewise
 <env-linewise>`.
 
 .. versionadded:: 1.3
-.. seealso:: :doc:`parallel`
+.. seealso:: :option:`--parallel <-P>`, :doc:`parallel`
 
 .. _password:
 
@@ -425,7 +427,7 @@ When ``True``, forces all tasks to run in parallel. Implies :ref:`env.linewise
 The default password used by the SSH layer when connecting to remote hosts,
 **and/or** when answering `~fabric.operations.sudo` prompts.
 
-.. seealso:: :ref:`env.passwords <passwords>`, :ref:`password-management`, :option:`--initial-password-prompt <-I>`
+.. seealso:: :option:`--initial-password-prompt <-I>`, :ref:`env.passwords <passwords>`, :ref:`password-management`
 
 .. _passwords:
 
@@ -468,7 +470,7 @@ for managing this value instead of setting it directly.
 Sets the number of concurrent processes to use when executing tasks in parallel.
 
 .. versionadded:: 1.3
-.. seealso:: :doc:`parallel`, :option:`-z`
+.. seealso:: :option:`--pool-size <-z>`, :doc:`parallel`
 
 .. _port:
 
@@ -501,7 +503,7 @@ far. For informational purposes only.
 
 Path used when loading Fabric's local settings file.
 
-.. seealso:: :doc:`fab`
+.. seealso:: :option:`--config <-c>`, :doc:`fab`
 
 .. _reject-unknown-hosts:
 
@@ -513,7 +515,7 @@ Path used when loading Fabric's local settings file.
 If ``True``, the SSH layer will raise an exception when connecting to hosts not
 listed in the user's known-hosts file.
 
-.. seealso:: :doc:`ssh`
+.. seealso:: :option:`--reject-unknown-hosts <-r>`, :doc:`ssh`
 
 ``roledefs``
 ------------
@@ -533,7 +535,7 @@ Dictionary defining role name to host list mappings.
 
 The global role list used when composing per-task host lists.
 
-.. seealso:: :doc:`execution`
+.. seealso:: :option:`--roles <-R>`, :doc:`execution`
 
 .. _shell:
 
@@ -547,7 +549,8 @@ Value used as shell wrapper when executing commands with e.g.
 "<command goes here>"`` -- e.g. the default uses Bash's ``-c`` option which
 takes a command string as its value.
 
-.. seealso:: :ref:`FAQ on bash as default shell <faq-bash>`, :doc:`execution`
+.. seealso:: :option:`--shell <-s>`,
+             :ref:`FAQ on bash as default shell <faq-bash>`, :doc:`execution`
 
 .. _skip-bad-hosts:
 
@@ -702,7 +705,7 @@ As you can see, during execution on ``host2``, ``env.user`` was set to
     the informational aspect will likely be broken out into a separate env
     variable.
 
-.. seealso:: :doc:`execution`
+.. seealso:: :doc:`execution`, :option:`--user <-u>`
 
 ``version``
 -----------
@@ -711,6 +714,8 @@ As you can see, during execution on ``host2``, ``env.user`` was set to
 
 Mostly for informational purposes. Modification is not recommended, but
 probably won't break anything either.
+
+.. seealso:: :option:`--version <-V>`
 
 .. _warn_only:
 
@@ -723,4 +728,4 @@ Specifies whether or not to warn, instead of abort, when
 `~fabric.operations.run`/`~fabric.operations.sudo`/`~fabric.operations.local`
 encounter error conditions.
 
-.. seealso:: :doc:`execution`
+.. seealso:: :option:`--warn-only <-w>`, :doc:`execution`
