@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`868` Substantial speedup of parallel tasks by removing an unnecessary
+  blocking timeout in the ``JobQueue`` loop. Thanks to Simo Kinnunen for the
+  patch.
 * :bug:`328` `.lcd` was no longer being correctly applied to
   `.upload_template`; this has been fixed. Thanks to Joseph Lawson for the
   catch.
