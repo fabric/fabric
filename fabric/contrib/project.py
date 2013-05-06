@@ -160,13 +160,14 @@ def upload_project(local_dir=None, remote_dir=""):
     local_dir = local_dir.rstrip(os.sep)
 
     local_path, local_name = os.path.split(local_dir)
-    tar_file = "%s.tar.gz" % local_name
+    tar_file = "tmp.tar.gz"
     target_tar = os.path.join(remote_dir, tar_file)
     tmp_folder = mkdtemp()
 
     try:
         tar_path = os.path.join(tmp_folder, tar_file)
-        local("tar -czf %s -C %s %s" % (tar_path, local_path, local_name))
+        local("cd %(local_path)s; tar -czf %(tar_path)s %(local_name)s" % locals())
+        run('mkdir -p %s' % os.path.dirname(target_tar))
         put(tar_path, target_tar)
         with cd(remote_dir):
             try:
