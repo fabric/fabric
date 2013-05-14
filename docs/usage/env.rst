@@ -359,7 +359,7 @@ set/appended to with :option:`-i`.
 
 Forces buffering by line instead of by character/byte, typically when running
 in parallel mode. May be activated via :option:`--linewise`. This option is
-implied by :ref:`env.parallel <env-parallel>` --- even if ``linewise`` is False,
+implied by :ref:`env.parallel <env-parallel>` -- even if ``linewise`` is False,
 if ``parallel`` is True then linewise behavior will occur.
 
 .. seealso:: :ref:`linewise-output`
