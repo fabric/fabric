@@ -25,6 +25,8 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`171` Added missing cross-references from ``env`` variables documentation
+  to corresponding command-line options.
 * :bug:`604` Fixed wrong treatment of backslashes in put operation when uploading
   directory tree on Windows. Thanks to Jason Coombs for the catch and
   `@diresys` & Oliver Janik for the patch.
