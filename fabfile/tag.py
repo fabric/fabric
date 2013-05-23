@@ -102,6 +102,7 @@ def tag(force='no', push='no'):
                 reload(fabric.version)
                 local("git add %s" % " ".join(changed))
                 local("git commit -m \"Cut %s\"" % _version('verbose'))
+                local("git push")
 
         # At this point, we've incremented the in-code version and just need to
         # tag it in Git.
