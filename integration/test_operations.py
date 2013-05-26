@@ -2,7 +2,7 @@ from __future__ import with_statement
 
 from StringIO import StringIO
 
-from fabric.api import run, path, put
+from fabric.api import run, path, put, sudo, abort, warn_only, env
 
 from util import Integration
 
@@ -14,13 +14,17 @@ def assert_mode(path, mode):
 class TestOperations(Integration):
     filepath = "/tmp/whocares"
     dirpath = "/tmp/whatever/bin"
+    not_owned = "/tmp/notmine"
 
     def setup(self):
         super(TestOperations, self).setup()
         # Nuke to prevent bleed
-        run("rm -rf %s %s" % (self.dirpath, self.filepath))
+        run("rm -rf %s" % " ".join([self.dirpath, self.filepath]))
+        sudo("rm -rf %s" % self.not_owned)
+        # Revert any chown crap from put sudo tests
+        sudo("chown %s ." % env.user)
         # Setup just for kicks
-        run("mkdir -p %s" % self.dirpath)
+        run("mkdir -p %s" % " ".join([self.dirpath, self.not_owned]))
 
     def test_no_trailing_space_in_shell_path_in_run(self):
         put(StringIO("#!/bin/bash\necho hi"), "%s/myapp" % self.dirpath, mode="0755")
@@ -34,3 +38,20 @@ class TestOperations(Integration):
     def test_int_put_mode_works_ok_too(self):
         put(StringIO("#!/bin/bash\necho hi"), self.filepath, mode=0755)
         assert_mode(self.filepath, "755")
+
+    def _chown(self, target):
+        sudo("chown root %s" % target)
+
+    def test_put_with_use_sudo(self):
+        self._chown(self.not_owned)
+        put(StringIO("whatever"), self.not_owned + '/', use_sudo=True)
+
+    def test_put_with_use_sudo_and_custom_temp_dir(self):
+        # TODO: allow dependency injection in sftp.put or w/e, test it in
+        # isolation instead.
+        # For now, just half-ass it by ensuring $HOME isn't writable
+        # temporarily.
+        self._chown(self.not_owned)
+        self._chown('.')
+        result = put(StringIO("whatever2"), self.not_owned + '/', use_sudo=True,
+            temp_dir="/tmp/")
