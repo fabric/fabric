@@ -58,6 +58,11 @@ class TestOperations(Integration):
     def test_put_with_use_sudo(self):
         self._put_via_sudo()
 
+    def test_put_with_dir_and_use_sudo(self):
+        # Test cwd should be root of fabric source tree. Use our own folder as
+        # the source, meh.
+        self._put_via_sudo(source='integration', target_suffix='')
+
     def test_put_with_use_sudo_and_custom_temp_dir(self):
         # TODO: allow dependency injection in sftp.put or w/e, test it in
         # isolation instead.
