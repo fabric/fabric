@@ -42,16 +42,26 @@ class TestOperations(Integration):
     def _chown(self, target):
         sudo("chown root %s" % target)
 
-    def test_put_with_use_sudo(self):
+    def _put_via_sudo(self, source=None, target_suffix='myfile', **kwargs):
+        # Ensure target dir prefix is not owned by our user (so we fail unless
+        # the sudo part of things is working)
         self._chown(self.not_owned)
-        put(StringIO("whatever"), self.not_owned + '/', use_sudo=True)
+        source = source if source else StringIO("whatever")
+        # Drop temp file into that dir, via use_sudo, + any kwargs
+        put(
+            source,
+            self.not_owned + '/' + target_suffix,
+            use_sudo=True,
+            **kwargs
+        )
+
+    def test_put_with_use_sudo(self):
+        self._put_via_sudo()
 
     def test_put_with_use_sudo_and_custom_temp_dir(self):
         # TODO: allow dependency injection in sftp.put or w/e, test it in
         # isolation instead.
         # For now, just half-ass it by ensuring $HOME isn't writable
         # temporarily.
-        self._chown(self.not_owned)
         self._chown('.')
-        result = put(StringIO("whatever2"), self.not_owned + '/', use_sudo=True,
-            temp_dir="/tmp/")
+        self._put_via_sudo(temp_dir='/tmp')
