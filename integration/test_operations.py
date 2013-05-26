@@ -70,3 +70,7 @@ class TestOperations(Integration):
         # temporarily.
         self._chown('.')
         self._put_via_sudo(temp_dir='/tmp')
+
+    def test_put_with_use_sudo_dir_and_custom_temp_dir(self):
+        self._chown('.')
+        self._put_via_sudo(source='integration', target_suffix='', temp_dir='/tmp')
