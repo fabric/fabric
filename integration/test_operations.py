@@ -18,13 +18,15 @@ class TestOperations(Integration):
 
     def setup(self):
         super(TestOperations, self).setup()
+        run("mkdir -p %s" % " ".join([self.dirpath, self.not_owned]))
+
+    def teardown(self):
+        super(TestOperations, self).teardown()
+        # Revert any chown crap from put sudo tests
+        sudo("chown %s ." % env.user)
         # Nuke to prevent bleed
         run("rm -rf %s" % " ".join([self.dirpath, self.filepath]))
         sudo("rm -rf %s" % self.not_owned)
-        # Revert any chown crap from put sudo tests
-        sudo("chown %s ." % env.user)
-        # Setup just for kicks
-        run("mkdir -p %s" % " ".join([self.dirpath, self.not_owned]))
 
     def test_no_trailing_space_in_shell_path_in_run(self):
         put(StringIO("#!/bin/bash\necho hi"), "%s/myapp" % self.dirpath, mode="0755")
