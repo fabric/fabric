@@ -252,7 +252,7 @@ def prompt(text, key=None, default='', validate=None):
 
 @needs_host
 def put(local_path=None, remote_path=None, use_sudo=False,
-    mirror_local_mode=False, mode=None, use_glob=True):
+    mirror_local_mode=False, mode=None, use_glob=True, temp_dir=None):
     """
     Upload one or more files to a remote host.
 
@@ -286,8 +286,9 @@ def put(local_path=None, remote_path=None, use_sudo=False,
     While the SFTP protocol (which `put` uses) has no direct ability to upload
     files to locations not owned by the connecting user, you may specify
     ``use_sudo=True`` to work around this. When set, this setting causes `put`
-    to upload the local files to a temporary location on the remote end, and
-    then use `sudo` to move them to ``remote_path``.
+    to upload the local files to a temporary location on the remote end
+    (defaults to remote user's ``$HOME``; this may be overridden via
+    ``temp_dir``), and then use `sudo` to move them to ``remote_path``.
 
     In some use cases, it is desirable to force a newly uploaded file to match
     the mode of its local counterpart (such as when uploading executable
