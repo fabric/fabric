@@ -181,6 +181,6 @@ def upload_project(local_dir=None, remote_dir="", use_sudo=False):
             try:
                 runner("tar -xzf %s" % tar_file)
             finally:
-                runner("rm -f %s" % tar_file
+                runner("rm -f %s" % tar_file)
     finally:
         local("rm -rf %s" % tmp_folder)
