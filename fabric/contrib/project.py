@@ -158,7 +158,7 @@ def upload_project(local_dir=None, remote_dir="", use_sudo=False):
     .. versionchanged:: 1.1
         Added the ``local_dir`` and ``remote_dir`` kwargs.
 
-    .. versionchanged:: 1.6
+    .. versionchanged:: 1.7
         Added the ``use_sudo`` kwarg.
     """
     runner = use_sudo and sudo or run
