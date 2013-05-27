@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`884` The password cache feature was not working correctly with
+  password-requiring SSH gateway connections. That's fixed now. Thanks to Marco
+  Nenciarini for the catch.
 * :bug:`882` Fix getting files when the remote CWD contains spaces
 * :release:`1.6.1 <2013-05-23>`
 * :bug:`868` Substantial speedup of parallel tasks by removing an unnecessary

@@ -9,7 +9,7 @@ from select import select
 from fabric.state import env, output, win32
 from fabric.auth import get_password, set_password
 import fabric.network
-from fabric.network import ssh
+from fabric.network import ssh, normalize
 from fabric.utils import RingBuffer
 from fabric.exceptions import CommandTimeout
 
@@ -163,7 +163,7 @@ class OutputLooper(object):
 
     def prompt(self):
         # Obtain cached password, if any
-        password = get_password()
+        password = get_password(*normalize(env.host_string))
         # Remove the prompt itself from the capture buffer. This is
         # backwards compatible with Fabric 0.9.x behavior; the user
         # will still see the prompt on their screen (no way to avoid
@@ -189,7 +189,8 @@ class OutputLooper(object):
             )
             self.chan.input_enabled = True
             # Update env.password, env.passwords if necessary
-            set_password(password)
+            user, host, port = normalize(env.host_string)
+            set_password(user, host, port, password)
             # Reset reprompt flag
             self.reprompt = False
         # Send current password down the pipe
