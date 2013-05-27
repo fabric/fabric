@@ -334,7 +334,7 @@ def connect(user, host, port, sock=None):
 
     # Initialize loop variables
     connected = False
-    password = get_password()
+    password = get_password(user, host, port)
     tries = 0
 
     # Loop until successful connect (keep prompting for new password)
@@ -418,7 +418,7 @@ def connect(user, host, port, sock=None):
                 text = prompt % env.host_string
             password = prompt_for_password(text)
             # Update env.password, env.passwords if empty
-            set_password(password)
+            set_password(user, host, port, password)
         # Ctrl-D / Ctrl-C for exit
         except (EOFError, TypeError):
             # Print a newline (in case user was sitting at prompt)

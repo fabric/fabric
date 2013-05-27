@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`884` The password cache feature was not working correctly with
+  password-requiring SSH gateway connections. That's fixed now. Thanks to Marco
+  Nenciarini for the catch.
 * :feature:`826` Enable sudo extraction of compressed archive via `use_sudo`
   kwarg in `.upload_project`. Thanks to ``@abec`` for the patch.
 * :bug:`694` Allow users to work around ownership issues in the default remote
