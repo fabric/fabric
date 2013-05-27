@@ -26,7 +26,8 @@ Changelog
 =========
 
 * :bug:`171` Added missing cross-references from ``env`` variables documentation
-  to corresponding command-line options.
+  to corresponding command-line options. Thanks to Daniel D. Beck for the
+  contribution.
 * :bug:`884` The password cache feature was not working correctly with
   password-requiring SSH gateway connections. That's fixed now. Thanks to Marco
   Nenciarini for the catch.
