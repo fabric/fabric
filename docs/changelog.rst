@@ -25,6 +25,8 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`171` Added missing cross-references from ``env`` variables documentation
+  to corresponding command-line options.
 * :release:`1.5.4 <2013-03-01>`
 * :bug:`844` Account for SSH config overhaul in Paramiko 1.10 by e.g. updating
   treatment of ``IdentityFile`` to handle multiple values. **This and related
