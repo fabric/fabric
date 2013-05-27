@@ -25,6 +25,11 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`694` Allow users to work around ownership issues in the default remote
+  login directory: add ``temp_dir`` kwarg for explicit specification of which
+  "bounce" folder to use when calling `.put` with ``use_sudo=True``. Thanks to
+  Devin Bayer for the report & Dieter Plaetinck / Jesse Myers for suggesting
+  the workaround.
 * :bug:`882` Fix getting files when the remote CWD contains spaces
 * :release:`1.6.1 <2013-05-23>`
 * :bug:`868` Substantial speedup of parallel tasks by removing an unnecessary
