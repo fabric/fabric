@@ -20,7 +20,7 @@ script:
   # Normal tests
   - fab test
   # Integration tests
-  - "fab -H localhost test:\"--tests\=integration\""
+  - fab -H localhost test:"--tests\=integration"
 notifications:
   irc:
     channels: "irc.freenode.org#fabric"
