@@ -26,7 +26,8 @@ Changelog
 =========
 
 * :bug:`171` Added missing cross-references from ``env`` variables documentation
-  to corresponding command-line options.
+  to corresponding command-line options. Thanks to Daniel D. Beck for the
+  contribution.
 * :release:`1.5.4 <2013-03-01>`
 * :bug:`844` Account for SSH config overhaul in Paramiko 1.10 by e.g. updating
   treatment of ``IdentityFile`` to handle multiple values. **This and related
