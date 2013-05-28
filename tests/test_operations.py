@@ -241,16 +241,16 @@ def test_shell_wrap():
     command = "command"
     for description, shell, sudo_prefix, result in (
         ("shell=True, sudo_prefix=None",
-            True, None, "%s \"%s\"" % (env.shell, command)),
+            True, None, '%s "%s"' % (env.shell, command)),
         ("shell=True, sudo_prefix=string",
-            True, prefix, prefix + " %s \"%s\"" % (env.shell, command)),
+            True, prefix, prefix + ' %s "%s"' % (env.shell, command)),
         ("shell=False, sudo_prefix=None",
             False, None, command),
         ("shell=False, sudo_prefix=string",
             False, prefix, prefix + " " + command),
     ):
         eq_.description = "_shell_wrap: %s" % description
-        yield eq_, _shell_wrap(command, shell, sudo_prefix), result
+        yield eq_, _shell_wrap(command, shell_escape=True, shell=shell, sudo_prefix=sudo_prefix), result
         del eq_.description
 
 
@@ -261,8 +261,20 @@ def test_shell_wrap_escapes_command_if_shell_is_true():
     """
     cmd = "cd \"Application Support\""
     eq_(
-        _shell_wrap(cmd, shell=True),
+        _shell_wrap(cmd, shell_escape=True, shell=True),
         '%s "%s"' % (env.shell, _shell_escape(cmd))
+    )
+
+
+@with_settings(use_shell=True)
+def test_shell_wrap_does_not_escape_command_if_shell_is_true_and_shell_escape_is_false():
+    """
+    _shell_wrap() does no escaping if shell=True and shell_escape=False
+    """
+    cmd = "cd \"Application Support\""
+    eq_(
+        _shell_wrap(cmd, shell_escape=False, shell=True),
+        '%s "%s"' % (env.shell, cmd)
     )
 
 
@@ -271,7 +283,7 @@ def test_shell_wrap_does_not_escape_command_if_shell_is_false():
     _shell_wrap() does no escaping if shell=False
     """
     cmd = "cd \"Application Support\""
-    eq_(_shell_wrap(cmd, shell=False), cmd)
+    eq_(_shell_wrap(cmd, shell_escape=True, shell=False), cmd)
 
 
 def test_shell_escape_escapes_doublequotes():
@@ -834,6 +846,34 @@ class TestFileTransfers(FabricTest):
             retval = put(f, '/nonexistent/directory/structure')
         eq_(["<StringIO>"], retval.failed)
         assert not retval.succeeded
+
+    @server()
+    def test_put_sends_all_files_with_glob(self):
+        """
+        put() should send all items that match a glob.
+        """
+        paths = ['foo1.txt', 'foo2.txt']
+        glob = 'foo*.txt'
+        remote_directory = '/'
+        for path in paths:
+            self.mkfile(path, 'foo!')
+
+        with hide('everything'):
+            retval = put(self.path(glob), remote_directory)
+        eq_(sorted(retval), sorted([remote_directory + path for path in paths]))
+
+    @server()
+    def test_put_sends_correct_file_with_globbing_off(self):
+        """
+        put() should send a file with a glob pattern in the path, when globbing disabled.
+        """
+        text = "globbed!"
+        local = self.mkfile('foo[bar].txt', text)
+        local2 = self.path('foo2.txt')
+        with hide('everything'):
+            put(local, '/', use_glob=False)
+            get('/foo[bar].txt', local2)
+        eq_contents(local2, text)
 
     #
     # Interactions with cd()
