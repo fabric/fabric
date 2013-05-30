@@ -15,6 +15,12 @@ How do I dynamically set host lists?
 See :ref:`dynamic-hosts`.
 
 
+How can I run something after my task is done on all hosts?
+===========================================================
+
+See :ref:`leveraging-execute-return-value`.
+
+
 .. _init-scripts-pty:
 
 Init scripts don't work!
