@@ -515,6 +515,41 @@ That's all there is to it; the `~fabric.decorators.roles` decorators will be hon
 .. seealso:: `~fabric.tasks.execute`, `~fabric.decorators.runs_once`
 
 
+.. _leveraging-execute-return-value:
+
+Leveraging ``execute`` to access multi-host results
+---------------------------------------------------
+
+In nontrivial Fabric runs, especially parallel ones, you may want to gather up
+a bunch of per-host result values at the end - e.g. to present a summary table,
+perform calculations, etc.
+
+It's not possible to do this in Fabric's default "naive" mode (one where you
+rely on Fabric looping over host lists on your behalf), but with `.execute`
+it's pretty easy. Simply switch from calling the actual work-bearing task, to
+calling a "meta" task which takes control of execution with `.execute`::
+
+    from fabric.api import task, execute, run, runs_once
+
+    @task
+    def workhorse():
+        return run("get my infos")
+
+    @task
+    @runs_once
+    def go():
+        results = execute(workhorse)
+        print results
+
+In the above, ``workhorse`` can do any Fabric stuff at all -- it's literally
+your old "naive" task -- except that it needs to return something useful.
+
+``go`` is your new entry point (to be invoked as ``fab go``, or whatnot) and
+its job is to take the ``results`` dictionary from the `.execute` call and do
+whatever you need with it. Check the API docs for details on the structure of
+that return value.
+
+
 .. _dynamic-hosts:
 
 Using ``execute`` with dynamically-set host lists
