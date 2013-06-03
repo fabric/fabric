@@ -176,6 +176,26 @@ def key_filenames():
     return map(os.path.expanduser, keys)
 
 
+def key_from_env():
+    """
+    Returns a paramiko-ready key from a text string of a private key
+    """
+    #import pdb; pdb.set_trace()
+    from fabric.state import env
+    import paramiko
+    import StringIO
+
+    if 'key' in env:
+        pkeyio = StringIO.StringIO(env.key)
+        if env.key.startswith('-----BEGIN RSA PRIVATE KEY-----'):
+            pkey = paramiko.RSAKey.from_private_key(pkeyio)
+            return pkey
+        elif env.key.startswith('-----BEGIN DSA PRIVATE KEY-----'):
+            pkey = paramiko.DSAKey.from_private_key(pkeyio)
+            return pkey
+    return None
+
+
 def parse_host_string(host_string):
     # Split host_string to user (optional) and host/port
     user_hostport = host_string.rsplit('@', 1)
@@ -347,6 +367,7 @@ def connect(user, host, port, sock=None):
                 port=int(port),
                 username=user,
                 password=password,
+                pkey=key_from_env(),
                 key_filename=key_filenames(),
                 timeout=env.timeout,
                 allow_agent=not env.no_agent,

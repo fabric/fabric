@@ -368,6 +368,19 @@ timing out due to meddlesome network hardware or what have you.
 .. seealso:: :option:`--keepalive`
 .. versionadded:: 1.1
 
+.. _key:
+
+``key``
+----------------
+
+**Default:** ``None``
+
+A string that contains an SSH key. This should only be used if the contents of
+an SSH key file is loaded in memory. The most common method for using SSH keys
+is to set ``env.key_filename``.
+
+.. versionadded:: 1.7
+
 .. _key-filename:
 
 ``key_filename``
