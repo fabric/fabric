@@ -185,14 +185,16 @@ def key_from_env():
     from fabric.state import env
 
     if 'key' in env:
+        error = None
         for pkey_class in (ssh.rsakey.RSAKey, ssh.dsskey.DSSKey):
             try:
                 pkey = pkey_class.from_private_key(StringIO(env.key))
                 return pkey
-            except:
-                # Silently ignore all SSH and file exceptions
-                pass
-    return None
+            except (UnicodeError, IOError), e:
+                error = e
+            except ssh.SSHException, e:
+                error = e
+        raise e
 
 
 def parse_host_string(host_string):
