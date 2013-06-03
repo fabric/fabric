@@ -11,6 +11,8 @@ import re
 import time
 import socket
 import sys
+from StringIO import StringIO
+
 
 from fabric.auth import get_password, set_password
 from fabric.utils import abort, handle_prompt_abort, warn
@@ -174,6 +176,25 @@ def key_filenames():
         # Assume a list here as we require Paramiko 1.10+
         keys.extend(conf['identityfile'])
     return map(os.path.expanduser, keys)
+
+
+def key_from_env():
+    """
+    Returns a paramiko-ready key from a text string of a private key
+    """
+    from fabric.state import env
+
+    if 'key' in env:
+        error = None
+        for pkey_class in (ssh.rsakey.RSAKey, ssh.dsskey.DSSKey):
+            try:
+                pkey = pkey_class.from_private_key(StringIO(env.key))
+                return pkey
+            except (UnicodeError, IOError), e:
+                error = e
+            except ssh.SSHException, e:
+                error = e
+        raise e
 
 
 def parse_host_string(host_string):
@@ -347,6 +368,7 @@ def connect(user, host, port, sock=None):
                 port=int(port),
                 username=user,
                 password=password,
+                pkey=key_from_env(),
                 key_filename=key_filenames(),
                 timeout=env.timeout,
                 allow_agent=not env.no_agent,

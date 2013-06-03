@@ -25,6 +25,8 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :feature:`908` Support loading SSH keys from memory. Thanks to Caleb Groom
+  for the patch.
 * :bug:`171` Added missing cross-references from ``env`` variables documentation
   to corresponding command-line options. Thanks to Daniel D. Beck for the
   contribution.
