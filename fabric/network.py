@@ -180,18 +180,16 @@ def key_from_env():
     """
     Returns a paramiko-ready key from a text string of a private key
     """
-    #import pdb; pdb.set_trace()
     from fabric.state import env
-    import paramiko
     import StringIO
 
     if 'key' in env:
         pkeyio = StringIO.StringIO(env.key)
         if env.key.startswith('-----BEGIN RSA PRIVATE KEY-----'):
-            pkey = paramiko.RSAKey.from_private_key(pkeyio)
+            pkey = ssh.RSAKey.from_private_key(pkeyio)
             return pkey
         elif env.key.startswith('-----BEGIN DSA PRIVATE KEY-----'):
-            pkey = paramiko.DSAKey.from_private_key(pkeyio)
+            pkey = ssh.DSAKey.from_private_key(pkeyio)
             return pkey
     return None
 

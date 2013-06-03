@@ -377,7 +377,7 @@ timing out due to meddlesome network hardware or what have you.
 
 A string that contains an SSH key. This should only be used if the contents of
 an SSH key file is loaded in memory. The most common method for using SSH keys
-is to set ``env.key_filename``.
+is to set :ref:`key-filename`.
 
 .. versionadded:: 1.7
 
