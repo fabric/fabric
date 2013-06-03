@@ -11,6 +11,8 @@ import re
 import time
 import socket
 import sys
+import StringIO
+
 
 from fabric.auth import get_password, set_password
 from fabric.utils import abort, handle_prompt_abort, warn
@@ -181,7 +183,6 @@ def key_from_env():
     Returns a paramiko-ready key from a text string of a private key
     """
     from fabric.state import env
-    import StringIO
 
     if 'key' in env:
         pkeyio = StringIO.StringIO(env.key)
