@@ -11,7 +11,7 @@ import re
 import time
 import socket
 import sys
-import StringIO
+from StringIO import StringIO
 
 
 from fabric.auth import get_password, set_password
@@ -185,13 +185,13 @@ def key_from_env():
     from fabric.state import env
 
     if 'key' in env:
-        pkeyio = StringIO.StringIO(env.key)
-        if env.key.startswith('-----BEGIN RSA PRIVATE KEY-----'):
-            pkey = ssh.RSAKey.from_private_key(pkeyio)
-            return pkey
-        elif env.key.startswith('-----BEGIN DSA PRIVATE KEY-----'):
-            pkey = ssh.DSAKey.from_private_key(pkeyio)
-            return pkey
+        for pkey_class in (ssh.rsakey.RSAKey, ssh.dsskey.DSSKey):
+            try:
+                pkey = pkey_class.from_private_key(StringIO(env.key))
+                return pkey
+            except:
+                # Silently ignore all SSH and file exceptions
+                pass
     return None
 
 
