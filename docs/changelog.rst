@@ -26,6 +26,8 @@ have also been included in the 1.2 line.
 Changelog
 =========
 
+* :feature: Added a keyword argument to rsync_project to configure the default
+  options.
 * :release:`1.7.0 <2013-07-26>`
 * :release:`1.6.2 <2013-07-26>`
 * :feature:`925` Added `contrib.files.is_link <.is_link>`. Thanks to `@jtangas`
