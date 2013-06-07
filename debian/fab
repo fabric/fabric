@@ -1,0 +1,36 @@
+# fab(1) completion
+#
+_fab()
+{
+    local cur prev
+
+    COMPREPLY=()
+    _get_comp_words_by_ref cur prev
+
+    case $prev in
+        -H)
+            _known_hosts_real -a "$cur"
+            return 0
+            ;;
+        -f)
+             _filedir
+            return 0
+            ;;
+    esac
+    if [[ "$cur" == * ]]; then
+        COMPREPLY=( $( compgen -W '-h -d -F -I -l --set --shortlist -V -a -A \
+            --abort-on-prompts -c -D -e -f -g --hide -H -i -k --keepalive --linewise \
+            -n --no-pty -p -P --port -r -R -s --show --skip-bad-hosts --ssh-config-path \
+            -t -u -w -x -z' -- "$cur" ) )
+    fi
+    return 0
+}
+complete -F _fab fab
+
+# Local variables:
+# mode: shell-script
+# sh-basic-offset: 4
+# sh-indent-comment: t
+# indent-tabs-mode: nil
+# End:
+# ex: ts=4 sw=4 et filetype=sh

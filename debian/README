@@ -1,0 +1,2 @@
+= Installation
+copy fab to /etc/bash_completion.d

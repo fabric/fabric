@@ -141,6 +141,8 @@ env_options = [
     ),
 
     make_option('-H', '--hosts',
+        action='append',
+        dest='hosts',
         default=[],
         help="comma-separated list of hosts to operate on"
     ),
