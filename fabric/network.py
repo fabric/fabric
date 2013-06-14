@@ -44,6 +44,13 @@ def direct_tcpip(client, host, port):
     )
 
 
+def is_key_load_error(e):
+    return (
+        e.__class__ is ssh.SSHException
+        and 'Unable to parse key file' in str(e)
+    )
+
+
 class HostConnectionCache(dict):
     """
     Dict subclass allowing for caching of host connections/clients.
@@ -178,23 +185,32 @@ def key_filenames():
     return map(os.path.expanduser, keys)
 
 
-def key_from_env():
+def key_from_env(passphrase=None):
     """
     Returns a paramiko-ready key from a text string of a private key
     """
-    from fabric.state import env
+    from fabric.state import env, output
 
     if 'key' in env:
-        error = None
+        if output.debug:
+            # NOTE: this may not be the most secure thing; OTOH anybody running
+            # the process must by definition have access to the key value,
+            # so only serious problem is if they're logging the output.
+            sys.stderr.write("Trying to honor in-memory key %r\n" % env.key)
         for pkey_class in (ssh.rsakey.RSAKey, ssh.dsskey.DSSKey):
+            if output.debug:
+                sys.stderr.write("Trying to load it as %s\n" % pkey_class)
             try:
-                pkey = pkey_class.from_private_key(StringIO(env.key))
-                return pkey
-            except (UnicodeError, IOError), e:
-                error = e
-            except ssh.SSHException, e:
-                error = e
-        raise e
+                return pkey_class.from_private_key(StringIO(env.key), passphrase)
+            except Exception, e:
+                # File is valid key, but is encrypted: raise it, this will
+                # cause cxn loop to prompt for passphrase & retry
+                if 'Private key file is encrypted' in e:
+                    raise
+                # Otherwise, it probably means it wasn't a valid key of this
+                # type, so try the next one.
+                else:
+                    pass
 
 
 def parse_host_string(host_string):
@@ -368,7 +384,7 @@ def connect(user, host, port, sock=None):
                 port=int(port),
                 username=user,
                 password=password,
-                pkey=key_from_env(),
+                pkey=key_from_env(password),
                 key_filename=key_filenames(),
                 timeout=env.timeout,
                 allow_agent=not env.no_agent,
@@ -398,14 +414,18 @@ def connect(user, host, port, sock=None):
             # results in an SSHException instead of an
             # AuthenticationException. Since it's difficult to do
             # otherwise, we must assume empty password + SSHException ==
-            # auth exception. Conversely: if we get SSHException and there
+            # auth exception.
+            #
+            # Conversely: if we get SSHException and there
             # *was* a password -- it is probably something non auth
-            # related, and should be sent upwards.
+            # related, and should be sent upwards. (This is not true if the
+            # exception message does indicate key parse problems.)
             #
             # This also holds true for rejected/unknown host keys: we have to
             # guess based on other heuristics.
             if e.__class__ is ssh.SSHException \
-                and (password or msg.startswith('Unknown server')):
+                and (password or msg.startswith('Unknown server')) \
+                and not is_key_load_error(e):
                 raise NetworkError(msg, e)
 
             # Otherwise, assume an auth exception, and prompt for new/better
@@ -431,7 +451,8 @@ def connect(user, host, port, sock=None):
             # * In this condition (trying a key file, password is None)
             # ssh raises PasswordRequiredException.
             text = None
-            if e.__class__ is ssh.PasswordRequiredException:
+            if e.__class__ is ssh.PasswordRequiredException \
+                or is_key_load_error(e):
                 # NOTE: we can't easily say WHICH key's passphrase is needed,
                 # because ssh doesn't provide us with that info, and
                 # env.key_filename may be a list of keys, so we can't know
