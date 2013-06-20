@@ -767,7 +767,8 @@ def _run_command_winrm(command, shell=False, combine_stderr=None,
     # TODO: wrap command
     wrapped_command = _prefix_commands(_prefix_env_vars_cmd(command), which)
 
-    host = env.host_string
+    host = env.host
+    port = env.port
 
     manager = _noop
     if warn_only:
@@ -782,7 +783,7 @@ def _run_command_winrm(command, shell=False, combine_stderr=None,
         elif output.running:
             print("[%s] %s: %s" % (host, which, command))
         result_stdout, result_stderr, status = execute_winrm_command(host,
-                wrapped_command, timeout=timeout)
+                wrapped_command, timeout=timeout, port=port)
 
         return _massage_execution_results(command, which, wrapped_command,
                 result_stdout, result_stderr, status)

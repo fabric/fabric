@@ -5,9 +5,9 @@ from fabric.state import env
 import winrm.winrm_service
 
 class WinRMWebServiceWrapper(object):
-    def __init__(self, host, username, password, timeout=None):
+    def __init__(self, host, username, password, timeout=None, port=5985):
         self.client = winrm.winrm_service.WinRMWebService(
-                endpoint="http://{0}:5985/wsman".format(host),
+                endpoint="http://{0}:{1}/wsman".format(host, port),
                 transport="plaintext",
                 username=username,
                 password=password)
@@ -45,7 +45,7 @@ class _WinRMCommandWrapper(object):
         self.cleanup()
 
 def execute_winrm_command(host, command, combine_stderr=None, stdout=None,
-        stderr=None, timeout=None):
+        stderr=None, timeout=None, port=5985):
     # stdout/stderr redirection
     stdout = stdout or sys.stdout
     stderr = stderr or sys.stderr
@@ -56,7 +56,7 @@ def execute_winrm_command(host, command, combine_stderr=None, stdout=None,
     invoke_shell = False
     remote_interrupt = False
 
-    winrm_service = WinRMWebServiceWrapper(host, env.user, env.password, timeout=timeout)
+    winrm_service = WinRMWebServiceWrapper(host, env.user, env.password, timeout=timeout, port=port)
 
     with winrm_service.exec_command(command=command) as winrm_command:
         stdout_buffer, stderr_buffer = [], []
