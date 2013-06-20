@@ -98,9 +98,10 @@ def upload_template(filename, destination, context=None, use_jinja=False,
     text = None
     if use_jinja:
         try:
+            template_dir = template_dir or os.getcwd()
             template_dir = apply_lcwd(template_dir, env)
             from jinja2 import Environment, FileSystemLoader
-            jenv = Environment(loader=FileSystemLoader(template_dir or '.'))
+            jenv = Environment(loader=FileSystemLoader(template_dir))
             text = jenv.get_template(filename).render(**context or {})
         except ImportError:
             import traceback
