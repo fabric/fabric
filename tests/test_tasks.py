@@ -8,8 +8,8 @@ import random
 import sys
 
 import fabric
-from fabric.tasks import WrappedCallableTask, execute, Task
-from fabric.api import run, env, settings, hosts, roles, hide, parallel
+from fabric.tasks import WrappedCallableTask, execute, Task, get_task_details
+from fabric.api import run, env, settings, hosts, roles, hide, parallel, task
 from fabric.network import from_dict
 from fabric.exceptions import NetworkError
 
@@ -452,3 +452,45 @@ class TestExecuteEnvInteractions(FabricTest):
             execute(mytask)
         eq_(env.foo, "bar")
         eq_(env.host_string, None)
+
+
+class TestTaskDetails(unittest.TestCase):
+    def test_old_style_task_with_default_args(self):
+        def task_old_style(arg1, arg2, arg3=None, arg4='yes'):
+            '''Docstring'''
+        details = get_task_details(task_old_style)
+        eq_("Docstring\n"
+            "Arguments: arg1, arg2, arg3=None, arg4='yes'",
+            details)
+
+    def test_old_style_task_without_default_args(self):
+        def task_old_style(arg1, arg2):
+            '''Docstring'''
+        details = get_task_details(task_old_style)
+        eq_("Docstring\n"
+            "Arguments: arg1, arg2",
+            details)
+
+    def test_old_style_task_without_args(self):
+        def task_old_style():
+            '''Docstring'''
+        details = get_task_details(task_old_style)
+        eq_("Docstring\n"
+            "Arguments: ",
+            details)
+
+    def test_decorated_task(self):
+        @task
+        def decorated_task(arg1):
+            '''Docstring'''
+        eq_("Docstring\n"
+            "Arguments: arg1",
+            decorated_task.__details__())
+
+    def test_subclassed_task(self):
+        class SpecificTask(Task):
+            def run(self, arg1, arg2, arg3):
+                '''Docstring'''
+        eq_("Docstring\n"
+            "Arguments: self, arg1, arg2, arg3",
+            SpecificTask().__details__())
