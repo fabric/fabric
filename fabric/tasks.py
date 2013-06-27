@@ -16,15 +16,17 @@ from fabric.exceptions import NetworkError
 def get_task_details(task):
     details = [task.__doc__ if task.__doc__ else 'No docstring provided']
     argspec = inspect.getargspec(task)
-    num_default_args = len(argspec.defaults)
-    args_without_defaults = argspec.args[:-1 * num_default_args]
+
+    default_args = [] if not argspec.defaults else argspec.defaults
+    num_default_args = len(default_args)
+    args_without_defaults = argspec.args[:len(argspec.args) - num_default_args]
     args_with_defaults = argspec.args[-1 * num_default_args:]
 
     details.append('Arguments: %s' % (
         ', '.join(
             args_without_defaults + [
                 '%s=%r' % (arg, default)
-                for arg, default in zip(args_with_defaults, argspec.defaults)
+                for arg, default in zip(args_with_defaults, default_args)
             ])
     ))
 
