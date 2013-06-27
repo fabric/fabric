@@ -21,7 +21,7 @@ from fabric.contrib import console, files, project
 
 from fabric.network import disconnect_all, ssh
 from fabric.state import env_options
-from fabric.tasks import Task, execute
+from fabric.tasks import Task, execute, get_task_details
 from fabric.task_utils import _Dict, crawl
 from fabric.utils import abort, indent, warn, _pty_size
 
@@ -473,10 +473,14 @@ def display_command(name):
         msg = "Task '%s' does not appear to exist. Valid task names:\n%s"
         abort(msg % (name, "\n".join(_normal_list(False))))
     # Print out nicely presented docstring if found
-    if command.__doc__:
+    if hasattr(command, '__details__'):
+        task_details = command.__details__()
+    else:
+        task_details = get_task_details(command)
+    if task_details:
         print("Displaying detailed information for task '%s':" % name)
         print('')
-        print(indent(command.__doc__, strip=True))
+        print(indent(task_details, strip=True))
         print('')
     # Or print notice if not
     else:

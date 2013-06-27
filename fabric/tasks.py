@@ -1,6 +1,7 @@
 from __future__ import with_statement
 
 from functools import wraps
+import inspect
 import sys
 
 from fabric import state
@@ -10,6 +11,24 @@ from fabric.context_managers import settings
 from fabric.job_queue import JobQueue
 from fabric.task_utils import crawl, merge, parse_kwargs
 from fabric.exceptions import NetworkError
+
+
+def get_task_details(task):
+    details = [task.__doc__ if task.__doc__ else 'No docstring provided']
+    argspec = inspect.getargspec(task)
+    num_default_args = len(argspec.defaults)
+    args_without_defaults = argspec.args[:-1 * num_default_args]
+    args_with_defaults = argspec.args[-1 * num_default_args:]
+
+    details.append('Arguments: %s' % (
+        ', '.join(
+            args_without_defaults + [
+                '%s=%r' % (arg, default)
+                for arg, default in zip(args_with_defaults, argspec.defaults)
+            ])
+    ))
+
+    return '\n'.join(details)
 
 
 def _get_list(env):
@@ -46,6 +65,9 @@ class Task(object):
         if name is not None:
             self.name = name
         self.is_default = default
+
+    def __details__(self):
+        return get_task_details(self.run)
 
     def run(self):
         raise NotImplementedError
@@ -124,6 +146,9 @@ class WrappedCallableTask(Task):
 
     def __getattr__(self, k):
         return getattr(self.wrapped, k)
+
+    def __details__(self):
+        return get_task_details(self.wrapped)
 
 
 def requires_parallel(task):
