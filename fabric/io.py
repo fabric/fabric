@@ -4,6 +4,7 @@ import sys
 import time
 import re
 import socket
+from multiprocessing import Lock
 from select import select
 
 from fabric.state import env, output, win32
@@ -30,6 +31,7 @@ def _has_newline(bytelist):
 def output_loop(*args, **kwargs):
     OutputLooper(*args, **kwargs).loop()
 
+outputLock = Lock()
 
 class OutputLooper(object):
     def __init__(self, chan, attr, stream, capture, timeout):
@@ -87,6 +89,8 @@ class OutputLooper(object):
             if bytelist == '':
                 # If linewise, ensure we flush any leftovers in the buffer.
                 if line:
+                    if self.linewise:
+                        outputLock.acquire()
                     self._flush(self.prefix)
                     initial_prefix_printed = True
                     self._flush("".join(line))
@@ -97,6 +101,8 @@ class OutputLooper(object):
                 # And since we know we're using a pty in this mode, just go
                 # straight to stdout.
                 self._flush(bytelist)
+                if self.linewise:
+                    outputLock.release()
             # Otherwise, we're in run/sudo and need to handle capturing and
             # prompts.
             else:
@@ -119,6 +125,8 @@ class OutputLooper(object):
                         printable_bytes = printable_bytes[cr.end(0):]
 
                         if not initial_prefix_printed:
+                            if self.linewise:
+                                outputLock.acquire()
                             self._flush(self.prefix)
                             initial_prefix_printed = True
 
@@ -131,6 +139,8 @@ class OutputLooper(object):
                         else:
                             self._flush(end_of_line + "\n")
                         initial_prefix_printed = False
+                        if self.linewise:
+                            outputLock.release()
 
                     if printable_bytes != '':
                         if self.linewise:
@@ -164,6 +174,7 @@ class OutputLooper(object):
         if initial_prefix_printed:
             if self.linewise:
                 self._flush('\n')
+                outputLock.release()
 
     def prompt(self):
         # Obtain cached password, if any
