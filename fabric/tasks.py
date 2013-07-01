@@ -231,6 +231,17 @@ def _execute(task, host, my_env, args, kwargs, jobs, queue, multiprocessing):
                 key = normalize_to_string(state.env.host_string)
                 state.connections.pop(key, "")
                 submit(task.run(*args, **kwargs))
+            except NetworkError, e:
+                # Backwards compat test re: whether to use an exception or
+                # abort
+                if not state.env.use_exceptions_for['network']:
+                    func = warn if state.env.skip_bad_hosts else abort
+                    from fabric.io import prefixed_output
+                    with prefixed_output("[%s]: " % state.env.host_string):
+                        error(e.message, func=func, exception=e.wrapped)
+                else:
+                    raise
+
             except BaseException, e: # We really do want to capture everything
                 # SystemExit implies use of abort(), which prints its own
                 # traceback, host info etc -- so we don't want to double up
