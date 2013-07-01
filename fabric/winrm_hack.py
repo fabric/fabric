@@ -77,8 +77,8 @@ def execute_winrm_command(host, command, combine_stderr=None, stdout=None,
 
         # Update stdout/stderr with captured values if applicable
         if not invoke_shell:
-            stdout_buf = ''.join(stdout_buffer).strip()
-            stderr_buf = ''.join(stderr_buffer).strip()
+            stdout_buf = ''.join(_stdout).strip()
+            stderr_buf = ''.join(_stderr).strip()
         else:
             raise NotImplementedError()
 
