@@ -394,21 +394,21 @@ def execute(task, *args, **kwargs):
 
         # If running in parallel, block until job queue is emptied
         if jobs:
-            err = "One or more hosts failed while executing task '%s'" % (
-                my_env['command']
-            )
             jobs.close()
             # Abort if any children did not exit cleanly (fail-fast).
             # This prevents Fabric from continuing on to any other tasks.
             # Otherwise, pull in results from the child run.
+            hosts_failed = {}
             ran_jobs = jobs.run()
             for name, d in ran_jobs.iteritems():
                 if d['exit_code'] != 0:
-                    if isinstance(d['results'], BaseException):
-                        error(err, exception=d['results'])
-                    else:
-                        error(err)
+                    hosts_failed [name] = d['exit_code']
                 results[name] = d['results']
+
+            if hosts_failed:
+                error("Some hosts failed while executing task '%s': %s" % (
+                    my_env['command'], " ".join(hosts_failed.keys())
+                ))
 
     # Or just run once for local-only
     else:
