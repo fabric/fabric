@@ -619,7 +619,7 @@ class TestSSHConfig(FabricTest):
         expect_call=True))
     def test_warns_with_bad_config_file_path(self):
         # use_ssh_config is already set in our env_setup()
-        with settings(ssh_config_path="nope_bad_lol"):
+        with settings(hide('everything'), ssh_config_path="nope_bad_lol"):
             normalize('foo')
 
     @server()

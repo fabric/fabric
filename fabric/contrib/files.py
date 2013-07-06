@@ -13,6 +13,21 @@ from StringIO import StringIO
 from fabric.api import *
 from fabric.utils import apply_lcwd
 
+def is_link(path, use_sudo=False, verbose=False):
+    """
+    Return True if the given path is a symlink on current remote host.
+
+    If ``use_sudo`` is True, will use `sudo` instead of `run`.
+
+    `is_link` will, by default, hide all output.
+    """
+    func = use_sudo and sudo or run
+    cmd = 'test -L "$(echo %s)"' % path
+    if verbose:
+        with settings(warn_only=True):
+            return not func(cmd).failed
+    with settings(hide('everything'), warn_only=True):
+        return not func(cmd).failed
 
 def exists(path, use_sudo=False, verbose=False):
     """

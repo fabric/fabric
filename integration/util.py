@@ -3,4 +3,9 @@ from fabric.api import env
 
 class Integration(object):
     def setup(self):
-        env.host_string = "127.0.0.1"
+        # Just so subclasses can super() us w/o fear. Meh.
+        pass
+
+    def teardown(self):
+        # Just so subclasses can super() us w/o fear. Meh.
+        pass

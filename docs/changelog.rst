@@ -35,6 +35,13 @@ Changelog
 * :bug:`884` The password cache feature was not working correctly with
   password-requiring SSH gateway connections. That's fixed now. Thanks to Marco
   Nenciarini for the catch.
+* :feature:`826` Enable sudo extraction of compressed archive via `use_sudo`
+  kwarg in `.upload_project`. Thanks to ``@abec`` for the patch.
+* :bug:`694` Allow users to work around ownership issues in the default remote
+  login directory: add ``temp_dir`` kwarg for explicit specification of which
+  "bounce" folder to use when calling `.put` with ``use_sudo=True``. Thanks to
+  Devin Bayer for the report & Dieter Plaetinck / Jesse Myers for suggesting
+  the workaround.
 * :bug:`882` Fix getting files when the remote CWD contains spaces
 * :release:`1.6.1 <2013-05-23>`
 * :bug:`868` Substantial speedup of parallel tasks by removing an unnecessary
@@ -43,6 +50,12 @@ Changelog
 * :bug:`328` `.lcd` was no longer being correctly applied to
   `.upload_template`; this has been fixed. Thanks to Joseph Lawson for the
   catch.
+* :feature:`812` Add ``use_glob`` option to `.put` so users trying to upload
+  real filenames containing glob patterns (``*``, ``[`` etc) can disable the
+  default globbing behavior. Thanks to Michael McHugh for the patch.
+* :bug:`844` Allow users to disable Fabric's auto-escaping in `.run`/`.sudo`.
+  Thanks to Christian Long and Michael McHugh for the patch.
+* :bug:`84` Fixed problem with missing -r flag in Mac OS X sed version.
 * :bug:`870` Changes to shell env var escaping highlighted some extraneous and
   now damaging whitespace in `with path(): <.path>`. This has been removed and
   a regression test added.
