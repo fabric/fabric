@@ -25,6 +25,10 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`593` Non-ASCII character sets in Jinja templates rendered within
+  `.upload_template` would cause ``UnicodeDecodeError`` when uploaded. This has
+  been addressed by encoding as ``utf-8`` prior to upload. Thanks to Sébastien
+  Fievet for the catch.
 * :feature:`908` Support loading SSH keys from memory. Thanks to Caleb Groom
   for the patch.
 * :bug:`171` Added missing cross-references from ``env`` variables documentation
