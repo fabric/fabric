@@ -171,14 +171,8 @@ disassociated from the calling shell, which may be done in a number of ways
   running shell; these tools have the benefit of allowing you to reattach to
   the process later on if needed (though they are more ad-hoc than
   ``supervisord``-like tools).
-* Run the program under ``nohup`` and redirect stdin, stdout and stderr to
-  ``/dev/null`` (or to your file of choice, if you need the output later)::
-
-    run("nohup yes >& /dev/null < /dev/null &")
-
-  (``yes`` is simply an example of a program that may run for a long time or
-  forever; ``>&``, ``<`` and ``&`` are Bash syntax for pipe redirection and
-  backgrounding, respectively -- see your shell's man page for details.)
+* Run the program under ``nohup`` or similar "in-shell" tools - note that this
+  approach has seen limited success for most users.
 
 
 .. _faq-bash:
