@@ -1,4 +1,5 @@
-[![Build Status](https://secure.travis-ci.org/fabric/fabric.png)](http://travis-ci.org/#!/fabric/fabric)
+.. image:: https://secure.travis-ci.org/fabric/fabric.png
+    :target: http://travis-ci.org/#!/fabric/fabric
 
 Fabric is a Python (2.5 or higher) library and command-line tool for
 streamlining the use of SSH for application deployment or systems
