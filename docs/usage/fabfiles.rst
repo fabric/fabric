@@ -12,7 +12,8 @@ Fabfile discovery
 
 Fabric is capable of loading Python modules (e.g. ``fabfile.py``) or packages
 (e.g. a ``fabfile/`` directory containing an ``__init__.py``). By default, it
-looks for something named either ``fabfile`` or ``fabfile.py``.
+looks for something named (to Python's import machinery) ``fabfile`` - so
+either ``fabfile/`` or ``fabfile.py``.
 
 The fabfile discovery algorithm searches in the invoking user's current working
 directory or any parent directories. Thus, it is oriented around "project" use,

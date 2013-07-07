@@ -98,10 +98,15 @@ def upload_template(filename, destination, context=None, use_jinja=False,
     text = None
     if use_jinja:
         try:
+            template_dir = template_dir or os.getcwd()
             template_dir = apply_lcwd(template_dir, env)
             from jinja2 import Environment, FileSystemLoader
-            jenv = Environment(loader=FileSystemLoader(template_dir or '.'))
+            jenv = Environment(loader=FileSystemLoader(template_dir))
             text = jenv.get_template(filename).render(**context or {})
+            # Force to a byte representation of Unicode, or str()ification
+            # within Paramiko's SFTP machinery may cause decode issues for
+            # truly non-ASCII characters.
+            text = text.encode('utf-8')
         except ImportError:
             import traceback
             tb = traceback.format_exc()
