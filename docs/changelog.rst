@@ -25,6 +25,10 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`912` Leaving ``template_dir`` un-specified when using
+  `.upload_template` in Jinja mode used to cause ``'NoneType' has no attribute
+  'startswith'`` errors. This has been fixed. Thanks to Erick Yellott for catch
+  & to Erick Yellott + Kevin Williams for patches.
 * :feature:`924` Add new env var option :ref:`colorize-errors` to enable coloring errors and
   warnings. Thanks to Aaron Meurer for the patch.
 * :bug:`593` Non-ASCII character sets in Jinja templates rendered within

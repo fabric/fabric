@@ -69,3 +69,15 @@ class TestContrib(FabricTest):
                 use_jinja=True, template_dir=template_dir)
             get(remote, local)
         eq_contents(local, first_name.encode('utf-8'))
+
+    @server()
+    def test_upload_template_jinja_and_no_template_dir(self):
+        # Crummy doesn't-die test
+        fname = "foo.tpl"
+        try:
+            with hide('everything'):
+                with open(fname, 'w+') as fd:
+                    fd.write('whatever')
+                upload_template(fname, '/configfile.txt', {}, use_jinja=True)
+        finally:
+            os.remove(fname)
