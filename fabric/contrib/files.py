@@ -44,13 +44,13 @@ def is_link(path, use_sudo=False, verbose=False):
 
     `.is_link` will, by default, hide all output. Give ``verbose=True`` to change this.
     """
-    func = use_sudo and sudo or run
+    func = sudo if use_sudo else run
     cmd = 'test -L "$(echo %s)"' % path
     if verbose:
         with settings(warn_only=True):
-            return not func(cmd).failed
+            return func(cmd).succeeded
     with settings(hide('everything'), warn_only=True):
-        return not func(cmd).failed
+        return func(cmd).succeeded
 
 
 def first(*args, **kwargs):
