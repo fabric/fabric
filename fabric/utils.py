@@ -7,8 +7,6 @@ import sys
 import textwrap
 from traceback import format_exc
 
-from colors import red, magenta
-
 def abort(msg):
     """
     Abort execution, print ``msg`` to stderr and exit with error status (1.)
@@ -20,7 +18,12 @@ def abort(msg):
     .. _sys.exit: http://docs.python.org/library/sys.html#sys.exit
     .. _SystemExit: http://docs.python.org/library/exceptions.html#exceptions.SystemExit
     """
-    from fabric.state import output
+    from fabric.state import output, env
+    if not env.colorize_errors:
+        red  = lambda x: x
+    else:
+        from colors import red
+
     if output.aborts:
         sys.stderr.write(red("\nFatal error: %s\n" % str(msg)))
         sys.stderr.write(red("\nAborting.\n"))
@@ -36,7 +39,13 @@ def warn(msg):
     provided that the ``warnings`` output level (which is active by default) is
     turned on.
     """
-    from fabric.state import output
+    from fabric.state import output, env
+
+    if not env.colorize_errors:
+        magenta = lambda x: x
+    else:
+        from colors import magenta
+
     if output.warnings:
         sys.stderr.write(magenta("\nWarning: %s\n\n" % msg))
 
