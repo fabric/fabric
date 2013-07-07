@@ -25,6 +25,10 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`912` Leaving ``template_dir`` un-specified when using
+  `.upload_template` in Jinja mode used to cause ``'NoneType' has no attribute
+  'startswith'`` errors. This has been fixed. Thanks to Erick Yellott for catch
+  & to Erick Yellott + Kevin Williams for patches.
 * :bug:`593` Non-ASCII character sets in Jinja templates rendered within
   `.upload_template` would cause ``UnicodeDecodeError`` when uploaded. This has
   been addressed by encoding as ``utf-8`` prior to upload. Thanks to Sébastien
