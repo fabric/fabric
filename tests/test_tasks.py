@@ -9,6 +9,7 @@ import sys
 
 import fabric
 from fabric.tasks import WrappedCallableTask, execute, Task, get_task_details
+from fabric.main import display_command
 from fabric.api import run, env, settings, hosts, roles, hide, parallel, task
 from fabric.network import from_dict
 from fabric.exceptions import NetworkError
@@ -494,3 +495,29 @@ class TestTaskDetails(unittest.TestCase):
         eq_("Docstring\n"
             "Arguments: self, arg1, arg2, arg3",
             SpecificTask().__details__())
+
+    @mock_streams('stdout')
+    def test_multiline_docstring_indented_correctly(self):
+        def mytask(arg1):
+            """
+            This is a multi line docstring.
+
+            For reals.
+            """
+        try:
+            with patched_context(fabric.state, 'commands', {'mytask': mytask}):
+                display_command('mytask')
+        except SystemExit: # ugh
+            pass
+        eq_(
+            sys.stdout.getvalue(),
+"""Displaying detailed information for task 'mytask':
+
+    This is a multi line docstring.
+
+    For reals.
+
+    Arguments: arg1
+
+"""
+        )
