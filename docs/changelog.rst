@@ -25,6 +25,8 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :feature:`924` Add new env var option :ref:`colorize-errors` to enable coloring errors and
+  warnings. Thanks to Aaron Meurer for the patch.
 * :bug:`593` Non-ASCII character sets in Jinja templates rendered within
   `.upload_template` would cause ``UnicodeDecodeError`` when uploaded. This has
   been addressed by encoding as ``utf-8`` prior to upload. Thanks to Sébastien
@@ -202,7 +204,7 @@ Changelog
   Arnold for the patch.
 * :feature:`699` Allow `name` attribute on file-like objects for get/put. Thanks
   to Peter Lyons for the pull request.
-* :bug:`711` `~fabric.sftp.get` would fail when filenames had % in their path.  
+* :bug:`711` `~fabric.sftp.get` would fail when filenames had % in their path.
   Thanks to John Begeman
 * :bug:`702` `~fabric.operations.require` failed to test for "empty" values in
   the env keys it checks (e.g.

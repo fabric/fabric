@@ -147,6 +147,18 @@ to act as if they have been called with ``pty=False``.
 .. seealso:: :option:`--no-pty`
 .. versionadded:: 1.0
 
+.. _colorize-errors:
+
+``colorize_errors``
+-------------------
+
+**Default** ``False``
+
+When set to ``True``, error output to the terminal is colored red and warnings
+are colored magenta to make them easier to see.
+
+.. versionadded:: 1.7
+
 .. _combine-stderr:
 
 ``combine_stderr``
