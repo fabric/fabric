@@ -46,10 +46,10 @@ def is_link(path, use_sudo=False, verbose=False):
     """
     func = sudo if use_sudo else run
     cmd = 'test -L "$(echo %s)"' % path
-    if verbose:
-        with settings(warn_only=True):
-            return func(cmd).succeeded
-    with settings(hide('everything'), warn_only=True):
+    args, kwargs = [], {'warn_only': True}
+    if not verbose:
+        opts = [hide('everything')]
+    with settings(*args, **kwargs):
         return func(cmd).succeeded
 
 
