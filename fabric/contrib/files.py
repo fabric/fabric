@@ -38,11 +38,11 @@ def exists(path, use_sudo=False, verbose=False):
 
 def is_link(path, use_sudo=False, verbose=False):
     """
-    Return True if the given path is a symlink on current remote host.
+    Return True if the given path is a symlink on the current remote host.
 
-    If ``use_sudo`` is True, will use `sudo` instead of `run`.
+    If ``use_sudo`` is True, will use `.sudo` instead of `.run`.
 
-    `is_link` will, by default, hide all output.
+    `.is_link` will, by default, hide all output. Give ``verbose=True`` to change this.
     """
     func = use_sudo and sudo or run
     cmd = 'test -L "$(echo %s)"' % path
