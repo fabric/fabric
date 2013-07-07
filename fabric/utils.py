@@ -7,6 +7,7 @@ import sys
 import textwrap
 from traceback import format_exc
 
+from colors import red, magenta
 
 def abort(msg):
     """
@@ -21,8 +22,8 @@ def abort(msg):
     """
     from fabric.state import output
     if output.aborts:
-        sys.stderr.write("\nFatal error: %s\n" % str(msg))
-        sys.stderr.write("\nAborting.\n")
+        sys.stderr.write(red("\nFatal error: %s\n" % str(msg)))
+        sys.stderr.write(red("\nAborting.\n"))
     sys.exit(1)
 
 
@@ -37,7 +38,7 @@ def warn(msg):
     """
     from fabric.state import output
     if output.warnings:
-        sys.stderr.write("\nWarning: %s\n\n" % msg)
+        sys.stderr.write(magenta("\nWarning: %s\n\n" % msg))
 
 
 def indent(text, spaces=4, strip=False):
