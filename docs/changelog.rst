@@ -25,16 +25,33 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :feature:`922` Task argument strings are now displayed when using
+  :cmdopt:`fab -d <-d>`. Thanks to Kevin Qiu for the patch.
+* :bug:`912` Leaving ``template_dir`` un-specified when using
+  `.upload_template` in Jinja mode used to cause ``'NoneType' has no attribute
+  'startswith'`` errors. This has been fixed. Thanks to Erick Yellott for catch
+  & to Erick Yellott + Kevin Williams for patches.
+* :feature:`924` Add new env var option :ref:`colorize-errors` to enable coloring errors and
+  warnings. Thanks to Aaron Meurer for the patch.
 * :bug:`593` Non-ASCII character sets in Jinja templates rendered within
   `.upload_template` would cause ``UnicodeDecodeError`` when uploaded. This has
   been addressed by encoding as ``utf-8`` prior to upload. Thanks to Sébastien
   Fievet for the catch.
+* :feature:`908` Support loading SSH keys from memory. Thanks to Caleb Groom
+  for the patch.
 * :bug:`171` Added missing cross-references from ``env`` variables documentation
   to corresponding command-line options. Thanks to Daniel D. Beck for the
   contribution.
 * :bug:`884` The password cache feature was not working correctly with
   password-requiring SSH gateway connections. That's fixed now. Thanks to Marco
   Nenciarini for the catch.
+* :feature:`826` Enable sudo extraction of compressed archive via `use_sudo`
+  kwarg in `.upload_project`. Thanks to ``@abec`` for the patch.
+* :bug:`694` Allow users to work around ownership issues in the default remote
+  login directory: add ``temp_dir`` kwarg for explicit specification of which
+  "bounce" folder to use when calling `.put` with ``use_sudo=True``. Thanks to
+  Devin Bayer for the report & Dieter Plaetinck / Jesse Myers for suggesting
+  the workaround.
 * :bug:`882` Fix getting files when the remote CWD contains spaces
 * :release:`1.6.1 <2013-05-23>`
 * :bug:`868` Substantial speedup of parallel tasks by removing an unnecessary
@@ -43,6 +60,12 @@ Changelog
 * :bug:`328` `.lcd` was no longer being correctly applied to
   `.upload_template`; this has been fixed. Thanks to Joseph Lawson for the
   catch.
+* :feature:`812` Add ``use_glob`` option to `.put` so users trying to upload
+  real filenames containing glob patterns (``*``, ``[`` etc) can disable the
+  default globbing behavior. Thanks to Michael McHugh for the patch.
+* :bug:`844` Allow users to disable Fabric's auto-escaping in `.run`/`.sudo`.
+  Thanks to Christian Long and Michael McHugh for the patch.
+* :bug:`84` Fixed problem with missing -r flag in Mac OS X sed version.
 * :bug:`870` Changes to shell env var escaping highlighted some extraneous and
   now damaging whitespace in `with path(): <.path>`. This has been removed and
   a regression test added.
@@ -187,7 +210,7 @@ Changelog
   Arnold for the patch.
 * :feature:`699` Allow `name` attribute on file-like objects for get/put. Thanks
   to Peter Lyons for the pull request.
-* :bug:`711` `~fabric.sftp.get` would fail when filenames had % in their path.  
+* :bug:`711` `~fabric.sftp.get` would fail when filenames had % in their path.
   Thanks to John Begeman
 * :bug:`702` `~fabric.operations.require` failed to test for "empty" values in
   the env keys it checks (e.g.

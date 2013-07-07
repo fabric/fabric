@@ -18,12 +18,11 @@ before_script:
   # Allow us to SSH passwordless to localhost
   - ssh-keygen -f ~/.ssh/id_rsa -N ""
   - cp ~/.ssh/{id_rsa.pub,authorized_keys}
-  - "netstat -tan | grep LISTEN"
 script:
   # Normal tests
   - fab test
   # Integration tests
-  - fab test:"--tests\=integration"
+  - fab -H localhost test:"--tests\=integration"
 notifications:
   irc:
     channels: "irc.freenode.org#fabric"

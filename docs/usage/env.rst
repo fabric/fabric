@@ -147,6 +147,18 @@ to act as if they have been called with ``pty=False``.
 .. seealso:: :option:`--no-pty`
 .. versionadded:: 1.0
 
+.. _colorize-errors:
+
+``colorize_errors``
+-------------------
+
+**Default** ``False``
+
+When set to ``True``, error output to the terminal is colored red and warnings
+are colored magenta to make them easier to see.
+
+.. versionadded:: 1.7
+
 .. _combine-stderr:
 
 ``combine_stderr``
@@ -367,6 +379,23 @@ timing out due to meddlesome network hardware or what have you.
 
 .. seealso:: :option:`--keepalive`
 .. versionadded:: 1.1
+
+
+.. _key:
+
+``key``
+----------------
+
+**Default:** ``None``
+
+A string, or file-like object, containing an SSH key; used during connection
+authentication.
+
+.. note::
+    The most common method for using SSH keys is to set :ref:`key-filename`.
+
+.. versionadded:: 1.7
+
 
 .. _key-filename:
 

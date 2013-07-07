@@ -1,3 +1,4 @@
+import os
 import types
 
 from fabric.api import run, local
@@ -21,6 +22,14 @@ def escape(path):
 
 
 class TestTildeExpansion(Integration):
+    def setup(self):
+        self.created = []
+
+    def teardown(self):
+        super(TestTildeExpansion, self).teardown()
+        for created in self.created:
+            os.unlink(created)
+
     def test_append(self):
         for target in ('~/append_test', '~/append_test with spaces'):
             files.append(target, ['line'])
@@ -44,5 +53,6 @@ class TestTildeExpansion(Integration):
         )):
             src = "source%s" % i
             local("touch %s" % src)
+            self.created.append(src)
             files.upload_template(src, target)
             expect(target)
