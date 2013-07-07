@@ -514,9 +514,9 @@ class TestTaskDetails(unittest.TestCase):
 """Displaying detailed information for task 'mytask':
 
     This is a multi line docstring.
-
+    
     For reals.
-
+    
     Arguments: arg1
 
 """
