@@ -3,6 +3,7 @@ from __future__ import with_statement
 from functools import wraps
 import inspect
 import sys
+import textwrap
 
 from fabric import state
 from fabric.utils import abort, warn, error
@@ -34,7 +35,10 @@ if sys.version_info[:2] == (2, 5):
 
 
 def get_task_details(task):
-    details = [task.__doc__ if task.__doc__ else 'No docstring provided']
+    details = [
+        textwrap.dedent(task.__doc__)
+        if task.__doc__
+        else 'No docstring provided']
     argspec = inspect.getargspec(task)
 
     default_args = [] if not argspec.defaults else argspec.defaults
