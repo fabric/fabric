@@ -56,3 +56,14 @@ class TestTildeExpansion(Integration):
             self.created.append(src)
             files.upload_template(src, target)
             expect(target)
+
+
+class TestIsLink(Integration):
+    # TODO: add more of these. meh.
+    def test_is_link_is_true_on_symlink(self):
+        run("ln -s /tmp/foo /tmp/bar")
+        assert files.is_link('/tmp/bar')
+
+    def test_is_link_is_false_on_non_link(self):
+        run("touch /tmp/biz")
+        assert not files.is_link('/tmp/biz')
