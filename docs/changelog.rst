@@ -25,8 +25,8 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
-* :feature:`924` Option ``colorize_errors`` to enable coloring errors and
-  warnings from Fabric (Aaron Meurer).
+* :feature:`924` Add new env var option :ref:`colorize-errors` to enable coloring errors and
+  warnings. Thanks to Aaron Meurer for the patch.
 * :bug:`593` Non-ASCII character sets in Jinja templates rendered within
   `.upload_template` would cause ``UnicodeDecodeError`` when uploaded. This has
   been addressed by encoding as ``utf-8`` prior to upload. Thanks to Sébastien
