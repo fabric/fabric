@@ -45,7 +45,7 @@ class _WinRMCommandWrapper(object):
         self.cleanup()
 
 def execute_winrm_command(host, command, combine_stderr=None, stdout=None,
-        stderr=None, timeout=None, port=5985):
+        stderr=None, timeout=None, user=None, password=None, port=5985):
     # stdout/stderr redirection
     stdout = stdout or sys.stdout
     stderr = stderr or sys.stderr
@@ -53,10 +53,15 @@ def execute_winrm_command(host, command, combine_stderr=None, stdout=None,
     if combine_stderr is None:
         combine_stderr = env.combine_stderr
 
+    if user is None:
+        user = env.user
+    if password is None:
+        password = env.password
+
     invoke_shell = False
     remote_interrupt = False
 
-    winrm_service = WinRMWebServiceWrapper(host, env.user, env.password, timeout=timeout, port=port)
+    winrm_service = WinRMWebServiceWrapper(host, user, password, timeout=timeout, port=port)
 
     with winrm_service.exec_command(command=command) as winrm_command:
         stdout_buffer, stderr_buffer = [], []
