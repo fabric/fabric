@@ -19,11 +19,15 @@ def abort(msg):
     .. _sys.exit: http://docs.python.org/library/sys.html#sys.exit
     .. _SystemExit: http://docs.python.org/library/exceptions.html#exceptions.SystemExit
     """
-    from fabric.state import output
+    from fabric.state import output, env
     if output.aborts:
         sys.stderr.write("\nFatal error: %s\n" % str(msg))
         sys.stderr.write("\nAborting.\n")
-    sys.exit(1)
+
+    if env.abort_exception:
+        raise env.abort_exception(msg)
+    else:
+        sys.exit(1)
 
 
 def warn(msg):

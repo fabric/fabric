@@ -5,7 +5,7 @@ from unittest import TestCase
 
 from fudge import Fake, patched_context, with_fakes
 from fudge.patcher import with_patched_object
-from nose.tools import eq_
+from nose.tools import eq_, raises
 
 from fabric.state import output, env
 from fabric.utils import warn, indent, abort, puts, fastprint, error, RingBuffer
@@ -57,6 +57,17 @@ def test_abort():
     abort() should raise SystemExit
     """
     abort("Test")
+
+class TestException(Exception):
+    pass
+
+@raises(TestException)
+def test_abort_with_exception():
+    """
+    abort() should raise a provided exception
+    """
+    with settings(abort_exception=TestException):
+        abort("Test")
 
 
 @mock_streams('stderr')

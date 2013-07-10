@@ -297,6 +297,7 @@ env_options = [
 # preserving DRY: anything in here is generally not settable via the command
 # line.
 env = _AttributeDict({
+    'abort_exception': None,
     'again_prompt': 'Sorry, try again.',
     'all_hosts': [],
     'combine_stderr': True,
