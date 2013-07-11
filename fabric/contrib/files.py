@@ -65,7 +65,7 @@ def first(*args, **kwargs):
 
 def upload_template(filename, destination, context=None, use_jinja=False,
     template_dir=None, use_sudo=False, backup=True, mirror_local_mode=False,
-    mode=None):
+    mode=None, temp_dir=''):
     """
     Render and upload a template text file to a remote host.
 
@@ -89,12 +89,14 @@ def upload_template(filename, destination, context=None, use_jinja=False,
     By default, the file will be copied to ``destination`` as the logged-in
     user; specify ``use_sudo=True`` to use `sudo` instead.
 
-    The ``mirror_local_mode`` and ``mode`` kwargs are passed directly to an
-    internal `~fabric.operations.put` call; please see its documentation for
-    details on these two options.
+    The ``mirror_local_mode``, ``mode``, and ``temp_dir`` kwargs are passed
+    directly to an internal `~fabric.operations.put` call; please see its
+    documentation for details on these two options.
 
     .. versionchanged:: 1.1
         Added the ``backup``, ``mirror_local_mode`` and ``mode`` kwargs.
+    .. versionchanged:: 1.7
+        Added the  ``temp_dir`` kwarg
     """
     func = use_sudo and sudo or run
     # Normalize destination to be an actual filename, due to using StringIO
@@ -145,7 +147,8 @@ def upload_template(filename, destination, context=None, use_jinja=False,
         remote_path=destination,
         use_sudo=use_sudo,
         mirror_local_mode=mirror_local_mode,
-        mode=mode
+        mode=mode,
+        temp_dir=temp_dir
     )
 
 
