@@ -106,6 +106,23 @@ Note that many of these may be set via ``fab``'s command-line switches -- see
 
 .. seealso:: :option:`--set`
 
+.. _abort-exception:
+
+``abort_exception``
+-------------------
+
+**Default:** ``None``
+
+When non-``None``, this value can be set to any callable that takes a
+string and returns an exception instance. When Fabric aborts for any
+reason, that exception will be raised.
+
+Conventional usage is to provide a simple exception class here, which
+will result in that exception being raised with the abort message.
+
+In its default state of ``None``, ``SystemExit(1)`` will be raised by
+``abort()``
+
 .. _abort-on-prompts:
 
 ``abort_on_prompts``
