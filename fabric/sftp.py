@@ -240,9 +240,9 @@ class SFTP(object):
                 rmode = (rmode & 07777)
             if lmode != rmode:
                 if use_sudo:
-		    # Temporarily nuke 'cwd' so sudo() doesn't "cd" its mv command.
-		    # (The target path has already been cwd-ified elsewhere.)
-		    with settings(hide('everything'), cwd=""):
+                    # Temporarily nuke 'cwd' so sudo() doesn't "cd" its mv command.
+                    # (The target path has already been cwd-ified elsewhere.)
+                    with settings(hide('everything'), cwd=""):
                         sudo('chmod %o \"%s\"' % (lmode, remote_path))
                 else:
                     self.ftp.chmod(remote_path, lmode)
