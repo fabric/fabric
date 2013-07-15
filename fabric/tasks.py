@@ -1,7 +1,9 @@
 from __future__ import with_statement
 
 from functools import wraps
+import inspect
 import sys
+import textwrap
 
 from fabric import state
 from fabric.utils import abort, warn, error
@@ -10,6 +12,49 @@ from fabric.context_managers import settings
 from fabric.job_queue import JobQueue
 from fabric.task_utils import crawl, merge, parse_kwargs
 from fabric.exceptions import NetworkError
+
+if sys.version_info[:2] == (2, 5):
+    # Python 2.5 inspect.getargspec returns a tuple
+    # instead of ArgSpec namedtuple.
+    class ArgSpec(object):
+        def __init__(self, args, varargs, keywords, defaults):
+            self.args = args
+            self.varargs = varargs
+            self.keywords = keywords
+            self.defaults = defaults
+            self._tuple = (args, varargs, keywords, defaults)
+
+        def __getitem__(self, idx):
+            return self._tuple[idx]
+
+    def patched_get_argspec(func):
+        return ArgSpec(*inspect._getargspec(func))
+
+    inspect._getargspec = inspect.getargspec
+    inspect.getargspec = patched_get_argspec
+
+
+def get_task_details(task):
+    details = [
+        textwrap.dedent(task.__doc__)
+        if task.__doc__
+        else 'No docstring provided']
+    argspec = inspect.getargspec(task)
+
+    default_args = [] if not argspec.defaults else argspec.defaults
+    num_default_args = len(default_args)
+    args_without_defaults = argspec.args[:len(argspec.args) - num_default_args]
+    args_with_defaults = argspec.args[-1 * num_default_args:]
+
+    details.append('Arguments: %s' % (
+        ', '.join(
+            args_without_defaults + [
+                '%s=%r' % (arg, default)
+                for arg, default in zip(args_with_defaults, default_args)
+            ])
+    ))
+
+    return '\n'.join(details)
 
 
 def _get_list(env):
@@ -46,6 +91,9 @@ class Task(object):
         if name is not None:
             self.name = name
         self.is_default = default
+
+    def __details__(self):
+        return get_task_details(self.run)
 
     def run(self):
         raise NotImplementedError
@@ -124,6 +172,9 @@ class WrappedCallableTask(Task):
 
     def __getattr__(self, k):
         return getattr(self.wrapped, k)
+
+    def __details__(self):
+        return get_task_details(self.wrapped)
 
 
 def requires_parallel(task):

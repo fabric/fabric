@@ -36,6 +36,23 @@ def exists(path, use_sudo=False, verbose=False):
         return not func(cmd).failed
 
 
+def is_link(path, use_sudo=False, verbose=False):
+    """
+    Return True if the given path is a symlink on the current remote host.
+
+    If ``use_sudo`` is True, will use `.sudo` instead of `.run`.
+
+    `.is_link` will, by default, hide all output. Give ``verbose=True`` to change this.
+    """
+    func = sudo if use_sudo else run
+    cmd = 'test -L "$(echo %s)"' % path
+    args, kwargs = [], {'warn_only': True}
+    if not verbose:
+        opts = [hide('everything')]
+    with settings(*args, **kwargs):
+        return func(cmd).succeeded
+
+
 def first(*args, **kwargs):
     """
     Given one or more file paths, returns first one found, or None if none
@@ -98,10 +115,15 @@ def upload_template(filename, destination, context=None, use_jinja=False,
     text = None
     if use_jinja:
         try:
+            template_dir = template_dir or os.getcwd()
             template_dir = apply_lcwd(template_dir, env)
             from jinja2 import Environment, FileSystemLoader
-            jenv = Environment(loader=FileSystemLoader(template_dir or '.'))
+            jenv = Environment(loader=FileSystemLoader(template_dir))
             text = jenv.get_template(filename).render(**context or {})
+            # Force to a byte representation of Unicode, or str()ification
+            # within Paramiko's SFTP machinery may cause decode issues for
+            # truly non-ASCII characters.
+            text = text.encode('utf-8')
         except ImportError:
             import traceback
             tb = traceback.format_exc()
