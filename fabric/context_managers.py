@@ -21,7 +21,8 @@ Context managers for use with the ``with`` statement.
             run('./manage.py syncdb')
             run('./manage.py loaddata myfixture')
 
-    Note that you need Python 2.6+ for this to work. On Python 2.5, you can do the following::
+    Note that you need Python 2.7+ for this to work. On Python 2.5 or 2.6, you
+    can do the following::
 
         from contextlib import nested
 
@@ -34,8 +35,11 @@ Context managers for use with the ``with`` statement.
 
 from contextlib import contextmanager, nested
 import sys
+import socket
+import select
 
-from fabric.state import output, win32
+from fabric.thread_handling import ThreadHandler
+from fabric.state import output, win32, connections, env
 from fabric import state
 
 if not win32:
@@ -60,7 +64,13 @@ def _set_output(groups, which):
         output.update(previous)
 
 
-@contextmanager
+def documented_contextmanager(func):
+    wrapper = contextmanager(func)
+    wrapper.undecorated = func
+    return wrapper
+
+
+@documented_contextmanager
 def show(*groups):
     """
     Context manager for setting the given output ``groups`` to True.
@@ -84,7 +94,7 @@ def show(*groups):
     return _set_output(groups, True)
 
 
-@contextmanager
+@documented_contextmanager
 def hide(*groups):
     """
     Context manager for setting the given output ``groups`` to False.
@@ -104,18 +114,25 @@ def hide(*groups):
     return _set_output(groups, False)
 
 
-@contextmanager
-def _setenv(**kwargs):
+@documented_contextmanager
+def _setenv(variables):
     """
     Context manager temporarily overriding ``env`` with given key/value pairs.
+
+    A callable that returns a dict can also be passed. This is necessary when
+    new values are being calculated from current values, in order to ensure that
+    the "current" value is current at the time that the context is entered, not
+    when the context manager is initialized. (See Issue #736.)
 
     This context manager is used internally by `settings` and is not intended
     to be used directly.
     """
-    clean_revert = kwargs.pop('clean_revert', False)
+    if callable(variables):
+        variables = variables()
+    clean_revert = variables.pop('clean_revert', False)
     previous = {}
     new = []
-    for key, value in kwargs.iteritems():
+    for key, value in variables.iteritems():
         if key in state.env:
             previous[key] = state.env[key]
         else:
@@ -125,11 +142,11 @@ def _setenv(**kwargs):
         yield
     finally:
         if clean_revert:
-            for key, value in kwargs.iteritems():
+            for key, value in variables.iteritems():
                 # If the current env value for this key still matches the
                 # value we set it to beforehand, we are OK to revert it to the
                 # pre-block value.
-                if value == state.env[key]:
+                if key in state.env and value == state.env[key]:
                     if key in previous:
                         state.env[key] = previous[key]
                     else:
@@ -149,9 +166,11 @@ def settings(*args, **kwargs):
     * Most usefully, it allows temporary overriding/updating of ``env`` with
       any provided keyword arguments, e.g. ``with settings(user='foo'):``.
       Original values, if any, will be restored once the ``with`` block closes.
+
         * The keyword argument ``clean_revert`` has special meaning for
           ``settings`` itself (see below) and will be stripped out before
           execution.
+
     * In addition, it will use `contextlib.nested`_ to nest any given
       non-keyword arguments, which should be other context managers, e.g.
       ``with settings(hide('stderr'), show('stdout')):``.
@@ -220,7 +239,7 @@ def settings(*args, **kwargs):
     """
     managers = list(args)
     if kwargs:
-        managers.append(_setenv(**kwargs))
+        managers.append(_setenv(kwargs))
     return nested(*managers)
 
 
@@ -314,7 +333,7 @@ def _change_cwd(which, path):
         new_cwd = state.env.get(which) + '/' + path
     else:
         new_cwd = path
-    return _setenv(**{which: new_cwd})
+    return _setenv({which: new_cwd})
 
 
 def path(path, behavior='append'):
@@ -345,7 +364,7 @@ def path(path, behavior='append'):
 
     .. versionadded:: 1.0
     """
-    return _setenv(path=path, path_behavior=behavior)
+    return _setenv({'path': path, 'path_behavior': behavior})
 
 
 def prefix(command):
@@ -400,10 +419,10 @@ def prefix(command):
 
     Contrived, but hopefully illustrative.
     """
-    return _setenv(command_prefixes=state.env.command_prefixes + [command])
+    return _setenv(lambda: {'command_prefixes': state.env.command_prefixes + [command]})
 
 
-@contextmanager
+@documented_contextmanager
 def char_buffered(pipe):
     """
     Force local terminal ``pipe`` be character, not line, buffered.
@@ -431,13 +450,118 @@ def shell_env(**kw):
         with shell_env(ZMQ_DIR='/home/user/local'):
             run('pip install pyzmq')
 
-    As with `~fabric.context_managers.prefix`, this effectively turns the ``run`` command into::
+    As with `~fabric.context_managers.prefix`, this effectively turns the
+    ``run`` command into::
 
         $ export ZMQ_DIR='/home/user/local' && pip install pyzmq
 
     Multiple key-value pairs may be given simultaneously.
+
+    .. note::
+        If used to affect the behavior of `~fabric.operations.local` when
+        running from a Windows localhost, ``SET`` commands will be used to
+        implement this feature.
     """
-    return _setenv(shell_env=kw)
+    return _setenv({'shell_env': kw})
+
+
+def _forwarder(chan, sock):
+    # Bidirectionally forward data between a socket and a Paramiko channel.
+    while True:
+        r, w, x = select.select([sock, chan], [], [])
+        if sock in r:
+            data = sock.recv(1024)
+            if len(data) == 0:
+                break
+            chan.send(data)
+        if chan in r:
+            data = chan.recv(1024)
+            if len(data) == 0:
+                break
+            sock.send(data)
+    chan.close()
+    sock.close()
+
+
+@documented_contextmanager
+def remote_tunnel(remote_port, local_port=None, local_host="localhost",
+    remote_bind_address="127.0.0.1"):
+    """
+    Create a tunnel forwarding a locally-visible port to the remote target.
+
+    For example, you can let the remote host access a database that is
+    installed on the client host::
+
+        # Map localhost:6379 on the server to localhost:6379 on the client,
+        # so that the remote 'redis-cli' program ends up speaking to the local
+        # redis-server.
+        with remote_tunnel(6379):
+            run("redis-cli -i")
+
+    The database might be installed on a client only reachable from the client
+    host (as opposed to *on* the client itself)::
+
+        # Map localhost:6379 on the server to redis.internal:6379 on the client
+        with remote_tunnel(6379, local_host="redis.internal")
+            run("redis-cli -i")
+
+    ``remote_tunnel`` accepts up to four arguments:
+
+    * ``remote_port`` (mandatory) is the remote port to listen to.
+    * ``local_port`` (optional) is the local port to connect to; the default is
+      the same port as the remote one.
+    * ``local_host`` (optional) is the locally-reachable computer (DNS name or
+      IP address) to connect to; the default is ``localhost`` (that is, the
+      same computer Fabric is running on).
+    * ``remote_bind_address`` (optional) is the remote IP address to bind to
+      for listening, on the current target. It should be an IP address assigned
+      to an interface on the target (or a DNS name that resolves to such IP).
+      You can use "0.0.0.0" to bind to all interfaces.
+
+    .. note::
+        By default, most SSH servers only allow remote tunnels to listen to the
+        localhost interface (127.0.0.1). In these cases, `remote_bind_address`
+        is ignored by the server, and the tunnel will listen only to 127.0.0.1.
+    """
+    if local_port is None:
+        local_port = remote_port
+
+    sockets = []
+    channels = []
+    threads = []
+
+    def accept(channel, (src_addr, src_port), (dest_addr, dest_port)):
+        channels.append(channel)
+        sock = socket.socket()
+        sockets.append(sock)
+
+        try:
+            sock.connect((local_host, local_port))
+        except Exception, e:
+            print "[%s] rtunnel: cannot connect to %s:%d (from local)" % (env.host_string, local_host, local_port)
+            chan.close()
+            return
+
+        print "[%s] rtunnel: opened reverse tunnel: %r -> %r -> %r"\
+              % (env.host_string, channel.origin_addr,
+                 channel.getpeername(), (local_host, local_port))
+
+        th = ThreadHandler('fwd', _forwarder, channel, sock)
+        threads.append(th)
+
+    transport = connections[env.host_string].get_transport()
+    transport.request_port_forward(remote_bind_address, remote_port, handler=accept)
+
+    try:
+        yield
+    finally:
+        for sock, chan, th in zip(sockets, channels, threads):
+            sock.close()
+            chan.close()
+            th.thread.join()
+            th.raise_if_needed()
+        transport.cancel_port_forward(remote_bind_address, remote_port)
+
 
 
 quiet = lambda: settings(hide('everything'), warn_only=True)
@@ -460,6 +584,8 @@ quiet.__doc__ = """
         :ref:`env.warn_only <warn_only>`,
         `~fabric.context_managers.settings`,
         `~fabric.context_managers.hide`
+
+    .. versionadded:: 1.5
 """
 
 

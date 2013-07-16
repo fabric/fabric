@@ -14,12 +14,10 @@ from StringIO import StringIO
 from functools import wraps
 from Python26SocketServer import BaseRequestHandler, ThreadingMixIn, TCPServer
 
-import ssh
-
 from fabric.operations import _sudo_prefix
 from fabric.api import env, hide
 from fabric.thread_handling import ThreadHandler
-from fabric.network import disconnect_all
+from fabric.network import disconnect_all, ssh
 
 from fake_filesystem import FakeFilesystem, FakeFile
 
@@ -60,7 +58,7 @@ tests""",
     "both_streams": [
         "stdout",
         "stderr"
-    ]
+    ],
 }
 FILES = FakeFilesystem({
     '/file.txt': 'contents',
@@ -409,6 +407,7 @@ def serve_responses(responses, files, passwords, home, pubkeys, port):
             result = responses[self.command]
             stderr = ""
             status = 0
+            sleep = 0
             if isinstance(result, types.StringTypes):
                 stdout = result
             else:
@@ -419,7 +418,10 @@ def serve_responses(responses, files, passwords, home, pubkeys, port):
                     stdout, stderr = result
                 elif size == 3:
                     stdout, stderr, status = result
+                elif size == 4:
+                    stdout, stderr, status, sleep = result
             stdout, stderr = _equalize((stdout, stderr))
+            time.sleep(sleep)
             return stdout, stderr, status
 
         def sudo_password(self):

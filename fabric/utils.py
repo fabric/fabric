@@ -2,10 +2,10 @@
 Internal subroutines for e.g. aborting execution with an error message,
 or performing indenting on multiline output.
 """
+import os
 import sys
 import textwrap
 from traceback import format_exc
-
 
 def abort(msg):
     """
@@ -18,10 +18,15 @@ def abort(msg):
     .. _sys.exit: http://docs.python.org/library/sys.html#sys.exit
     .. _SystemExit: http://docs.python.org/library/exceptions.html#exceptions.SystemExit
     """
-    from fabric.state import output
+    from fabric.state import output, env
+    if not env.colorize_errors:
+        red  = lambda x: x
+    else:
+        from colors import red
+
     if output.aborts:
-        sys.stderr.write("\nFatal error: %s\n" % str(msg))
-        sys.stderr.write("\nAborting.\n")
+        sys.stderr.write(red("\nFatal error: %s\n" % str(msg)))
+        sys.stderr.write(red("\nAborting.\n"))
     sys.exit(1)
 
 
@@ -34,9 +39,15 @@ def warn(msg):
     provided that the ``warnings`` output level (which is active by default) is
     turned on.
     """
-    from fabric.state import output
+    from fabric.state import output, env
+
+    if not env.colorize_errors:
+        magenta = lambda x: x
+    else:
+        from colors import magenta
+
     if output.warnings:
-        sys.stderr.write("\nWarning: %s\n\n" % msg)
+        sys.stderr.write(magenta("\nWarning: %s\n\n" % msg))
 
 
 def indent(text, spaces=4, strip=False):
@@ -128,7 +139,9 @@ def fastprint(text, show_prefix=False, end="", flush=True):
 
 def handle_prompt_abort(prompt_for):
     import fabric.state
-    reason = "Needed to prompt for %s, but %%s" % prompt_for
+    reason = "Needed to prompt for %s (host: %s), but %%s" % (
+        prompt_for, fabric.state.env.host_string
+    )
     # Explicit "don't prompt me bro"
     if fabric.state.env.abort_on_prompts:
         abort(reason % "abort-on-prompts was set to True")
@@ -312,3 +325,46 @@ def _format_error_output(header, body):
     return "\n\n%s %s %s\n\n%s\n\n%s" % (
         side, header, side, body, mark * term_width
     )
+
+
+# TODO: replace with collections.deque(maxlen=xxx) in Python 2.6
+class RingBuffer(list):
+    def __init__(self, value, maxlen):
+        # Heh.
+        self._super = super(RingBuffer, self)
+        self._maxlen = maxlen
+        return self._super.__init__(value)
+
+    def _free(self):
+        return self._maxlen - len(self)
+
+    def append(self, value):
+        if self._free() == 0:
+            del self[0]
+        return self._super.append(value)
+
+    def extend(self, values):
+        overage = len(values) - self._free()
+        if overage > 0:
+            del self[0:overage]
+        return self._super.extend(values)
+
+    # Paranoia from here on out.
+    def insert(self, index, value):
+        raise ValueError("Can't insert into the middle of a ring buffer!")
+
+    def __setslice__(self, i, j, sequence):
+        raise ValueError("Can't set a slice of a ring buffer!")
+
+    def __setitem__(self, key, value):
+        if isinstance(key, slice):
+            raise ValueError("Can't set a slice of a ring buffer!")
+        else:
+            return self._super.__setitem__(key, value)
+
+
+def apply_lcwd(path, env):
+    # Apply CWD if a relative path
+    if not os.path.isabs(path) and env.lcwd:
+        path = os.path.join(env.lcwd, path)
+    return path

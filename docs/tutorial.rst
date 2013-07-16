@@ -14,7 +14,7 @@ What is Fabric?
 
 As the ``README`` says:
 
-    .. include:: ../README
+    .. include:: ../README.rst
         :end-before: It provides
 
 More specifically, Fabric is:

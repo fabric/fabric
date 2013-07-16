@@ -300,6 +300,12 @@ def test_aborts_on_nonexistent_roles():
     """
     merge([], ['badrole'], [], {})
 
+def test_accepts_non_list_hosts():
+    """
+     Aborts if hosts is a string, not a list
+    """
+    assert merge('badhosts', [], [], {}) == ['badhosts']
+
 
 lazy_role = {'r1': lambda: ['a', 'b']}
 
@@ -443,6 +449,19 @@ class TestNamespaces(FabricTest):
             docs, funcs = load_fabfile(module)
             eq_(len(funcs), 1)
             ok_('foo' in funcs)
+
+    def test_class_based_tasks_are_found_with_variable_name(self):
+        """
+        A new-style tasks with undefined name attribute should use the instance
+        variable name.
+        """
+        module = fabfile('classbased_task_fabfile.py')
+        from fabric.state import env
+        with path_prefix(module):
+            docs, funcs = load_fabfile(module)
+            eq_(len(funcs), 1)
+            ok_('foo' in funcs)
+            eq_(funcs['foo'].name, 'foo')
 
     def test_recursion_steps_into_nontask_modules(self):
         """

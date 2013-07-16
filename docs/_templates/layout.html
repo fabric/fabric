@@ -24,7 +24,9 @@
 <h3>Project Versions</h3>
 <ul id="sidebar_versions">
     {% for tag in fabric_tags %}
+    {% if loop.index <= 10 %}
     <li><a href="/en/{{ tag }}/">{{ tag }}</a></li>
+    {% endif %}
     {% endfor %}
 </ul>
 {% endif %}

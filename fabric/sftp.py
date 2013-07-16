@@ -4,7 +4,6 @@ import hashlib
 import os
 import posixpath
 import stat
-import tempfile
 import re
 from fnmatch import filter as fnfilter
 
@@ -146,23 +145,16 @@ class SFTP(object):
         if local_is_path and os.path.exists(local_path):
             msg = "Local file %s already exists and is being overwritten."
             warn(msg % local_path)
-        # Have to bounce off FS if doing file-like objects
-        fd, real_local_path = None, local_path
+        # File-like objects: reset to file seek 0 (to ensure full overwrite)
+        # and then use Paramiko's getfo() directly
+        getter = self.ftp.get
         if not local_is_path:
-            fd, real_local_path = tempfile.mkstemp()
-        self.ftp.get(remote_path, real_local_path)
-        # Return file contents (if it needs stuffing into a file-like obj)
-        # or the final local file path (otherwise)
-        result = None
-        if not local_is_path:
-            file_obj = os.fdopen(fd)
-            result = file_obj.read()
-            # Clean up temporary file
-            file_obj.close()
-            os.remove(real_local_path)
-        else:
-            result = real_local_path
-        return result
+            local_path.seek(0)
+            getter = self.ftp.getfo
+        getter(remote_path, local_path)
+        # Return local_path object for posterity. (If mutated, caller will want
+        # to know.)
+        return local_path
 
     def get_dir(self, remote_path, local_path):
         # Decide what needs to be stripped from remote paths so they're all
@@ -204,7 +196,7 @@ class SFTP(object):
         return result
 
     def put(self, local_path, remote_path, use_sudo, mirror_local_mode, mode,
-        local_is_path):
+        local_is_path, temp_dir):
         from fabric.api import sudo, hide
         pre = self.ftp.getcwd()
         pre = pre if pre else ''
@@ -225,26 +217,27 @@ class SFTP(object):
             hasher = hashlib.sha1()
             hasher.update(env.host_string)
             hasher.update(target_path)
-            remote_path = hasher.hexdigest()
-        # Have to bounce off FS if doing file-like objects
-        fd, real_local_path = None, local_path
+            remote_path = posixpath.join(temp_dir, hasher.hexdigest())
+        # Read, ensuring we handle file-like objects correct re: seek pointer
+        putter = self.ftp.put
         if not local_is_path:
-            fd, real_local_path = tempfile.mkstemp()
             old_pointer = local_path.tell()
             local_path.seek(0)
-            file_obj = os.fdopen(fd, 'wb')
-            file_obj.write(local_path.read())
-            file_obj.close()
-            local_path.seek(old_pointer)
-        rattrs = self.ftp.put(real_local_path, remote_path)
-        # Clean up
+            putter = self.ftp.putfo
+        rattrs = putter(local_path, remote_path)
         if not local_is_path:
-            os.remove(real_local_path)
+            local_path.seek(old_pointer)
         # Handle modes if necessary
         if (local_is_path and mirror_local_mode) or (mode is not None):
             lmode = os.stat(local_path).st_mode if mirror_local_mode else mode
+            # Cast to octal integer in case of string
+            if isinstance(lmode, basestring):
+                lmode = int(lmode, 8)
             lmode = lmode & 07777
-            rmode = rattrs.st_mode & 07777
+            rmode = rattrs.st_mode
+            # Only bitshift if we actually got an rmode
+            if rmode is not None:
+                rmode = (rmode & 07777)
             if lmode != rmode:
                 if use_sudo:
                     with hide('everything'):
@@ -261,7 +254,7 @@ class SFTP(object):
         return remote_path
 
     def put_dir(self, local_path, remote_path, use_sudo, mirror_local_mode,
-        mode):
+        mode, temp_dir):
         if os.path.basename(local_path):
             strip = os.path.dirname(local_path)
         else:
@@ -271,6 +264,8 @@ class SFTP(object):
 
         for context, dirs, files in os.walk(local_path):
             rcontext = context.replace(strip, '', 1)
+            # normalize pathname separators with POSIX separator
+            rcontext = rcontext.replace(os.sep, '/')
             rcontext = rcontext.lstrip('/')
             rcontext = posixpath.join(remote_path, rcontext)
 
@@ -286,6 +281,6 @@ class SFTP(object):
                 local_path = os.path.join(context, f)
                 n = posixpath.join(rcontext, f)
                 p = self.put(local_path, n, use_sudo, mirror_local_mode, mode,
-                    True)
+                    True, temp_dir)
                 remote_paths.append(p)
         return remote_paths

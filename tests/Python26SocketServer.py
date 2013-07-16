@@ -329,7 +329,7 @@ class BaseServer:
 
         """
         print('-' * 40)
-        print('Exception happened during processing of request from %s' % client_address)
+        print('Exception happened during processing of request from %s' % (client_address,))
         import traceback
         traceback.print_exc()  # XXX But this goes to stderr!
         print('-' * 40)

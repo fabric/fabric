@@ -9,7 +9,6 @@ from fabric.version import get_version
 
 readme = open('README.rst').read()
 
-v = get_version('short')
 long_description = """
 To find out what's new in this version of Fabric, please see `the changelog
 <http://docs.fabfile.org/en/%s/changelog.html>`_.
@@ -25,7 +24,7 @@ pip, with `pip install fabric==dev`.
 ----
 
 For more information, please see the Fabric website or execute ``fab --help``.
-""" % (v, readme)
+""" % (get_version('branch'), readme)
 
 setup(
     name='Fabric',
@@ -38,7 +37,7 @@ setup(
     packages=find_packages(),
     test_suite='nose.collector',
     tests_require=['nose', 'fudge<1.0'],
-    install_requires=['ssh>=1.7.14'],
+    install_requires=['paramiko>=1.10.0'],
     entry_points={
         'console_scripts': [
             'fab = fabric.main:main',

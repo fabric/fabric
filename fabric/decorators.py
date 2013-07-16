@@ -3,7 +3,9 @@ Convenience decorators for use in fabfiles.
 """
 from __future__ import with_statement
 
+import types
 from functools import wraps
+
 from Crypto import Random
 
 from fabric import tasks
@@ -23,6 +25,10 @@ def task(*args, **kwargs):
     .. versionchanged:: 1.2
         Added the ``alias``, ``aliases``, ``task_class`` and ``default``
         keyword arguments. See :ref:`task-decorator-arguments` for details.
+    .. versionchanged:: 1.5
+        Added the ``name`` keyword argument.
+
+    .. seealso:: `~fabric.docs.unwrap_tasks`, `~fabric.tasks.WrappedCallableTask`
     """
     invoked = bool(not args or kwargs)
     task_class = kwargs.pop("task_class", tasks.WrappedCallableTask)
@@ -124,6 +130,8 @@ def runs_once(func):
     Any function wrapped with this decorator will silently fail to execute the
     2nd, 3rd, ..., Nth time it is called, and will return the value of the
     original run.
+    
+    .. note:: ``runs_once`` does not work with parallel task execution.
     """
     @wraps(func)
     def decorated(*args, **kwargs):
@@ -161,21 +169,23 @@ def parallel(pool_size=None):
 
     .. versionadded:: 1.3
     """
+    called_without_args = type(pool_size) == types.FunctionType
+
     def real_decorator(func):
         @wraps(func)
         def inner(*args, **kwargs):
             # Required for ssh/PyCrypto to be happy in multiprocessing
             # (as far as we can tell, this is needed even with the extra such
-            # calls in newer versions of the 'ssh' library.)
+            # calls in newer versions of paramiko.)
             Random.atfork()
             return func(*args, **kwargs)
         inner.parallel = True
         inner.serial = False
-        inner.pool_size = pool_size
+        inner.pool_size = None if called_without_args else pool_size
         return _wrap_as_new(func, inner)
 
     # Allow non-factory-style decorator use (@decorator vs @decorator())
-    if type(pool_size) == type(real_decorator):
+    if called_without_args:
         return real_decorator(pool_size)
 
     return real_decorator

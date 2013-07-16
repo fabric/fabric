@@ -44,6 +44,10 @@ def merge(hosts, roles, exclude, roledefs):
             indent(bad_roles)
         ))
 
+    # Coerce strings to one-item lists
+    if isinstance(hosts, basestring):
+        hosts = [hosts]
+
     # Look up roles, turn into flat list of hosts
     role_hosts = []
     for role in roles:

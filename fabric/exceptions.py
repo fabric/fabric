@@ -21,3 +21,7 @@ class NetworkError(Exception):
         return "%s(%s) => %r" % (
             self.__class__.__name__, self.message, self.wrapped
         )
+
+
+class CommandTimeout(Exception):
+    pass

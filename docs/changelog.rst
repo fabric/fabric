@@ -25,6 +25,183 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :feature:`925` Added `contrib.files.is_link <.is_link>`. Thanks to `@jtangas`
+  for the patch.
+* :feature:`922` Task argument strings are now displayed when using
+  :cmdopt:`fab -d <-d>`. Thanks to Kevin Qiu for the patch.
+* :bug:`912` Leaving ``template_dir`` un-specified when using
+  `.upload_template` in Jinja mode used to cause ``'NoneType' has no attribute
+  'startswith'`` errors. This has been fixed. Thanks to Erick Yellott for catch
+  & to Erick Yellott + Kevin Williams for patches.
+* :feature:`924` Add new env var option :ref:`colorize-errors` to enable coloring errors and
+  warnings. Thanks to Aaron Meurer for the patch.
+* :bug:`593` Non-ASCII character sets in Jinja templates rendered within
+  `.upload_template` would cause ``UnicodeDecodeError`` when uploaded. This has
+  been addressed by encoding as ``utf-8`` prior to upload. Thanks to Sébastien
+  Fievet for the catch.
+* :feature:`908` Support loading SSH keys from memory. Thanks to Caleb Groom
+  for the patch.
+* :bug:`171` Added missing cross-references from ``env`` variables documentation
+  to corresponding command-line options. Thanks to Daniel D. Beck for the
+  contribution.
+* :bug:`884` The password cache feature was not working correctly with
+  password-requiring SSH gateway connections. That's fixed now. Thanks to Marco
+  Nenciarini for the catch.
+* :feature:`826` Enable sudo extraction of compressed archive via `use_sudo`
+  kwarg in `.upload_project`. Thanks to ``@abec`` for the patch.
+* :bug:`694` Allow users to work around ownership issues in the default remote
+  login directory: add ``temp_dir`` kwarg for explicit specification of which
+  "bounce" folder to use when calling `.put` with ``use_sudo=True``. Thanks to
+  Devin Bayer for the report & Dieter Plaetinck / Jesse Myers for suggesting
+  the workaround.
+* :bug:`882` Fix getting files when the remote CWD contains spaces
+* :release:`1.6.1 <2013-05-23>`
+* :bug:`868` Substantial speedup of parallel tasks by removing an unnecessary
+  blocking timeout in the ``JobQueue`` loop. Thanks to Simo Kinnunen for the
+  patch.
+* :bug:`328` `.lcd` was no longer being correctly applied to
+  `.upload_template`; this has been fixed. Thanks to Joseph Lawson for the
+  catch.
+* :feature:`812` Add ``use_glob`` option to `.put` so users trying to upload
+  real filenames containing glob patterns (``*``, ``[`` etc) can disable the
+  default globbing behavior. Thanks to Michael McHugh for the patch.
+* :bug:`844` Allow users to disable Fabric's auto-escaping in `.run`/`.sudo`.
+  Thanks to Christian Long and Michael McHugh for the patch.
+* :bug:`84` Fixed problem with missing -r flag in Mac OS X sed version.
+* :bug:`870` Changes to shell env var escaping highlighted some extraneous and
+  now damaging whitespace in `with path(): <.path>`. This has been removed and
+  a regression test added.
+* :bug:`871` Use of string mode values in `put(local, remote, mode="NNNN")
+  <.put>` would sometimes cause ``Unsupported operand`` errors. This has been
+  fixed.
+* :bug:`84` Fixed problem with missing -r flag in Mac OS X sed version. Thanks
+  to Konrad Hałas for the patch.
+* :bug:`861` Gracefully handle situations where users give a single string
+  literal to ``env.hosts``. Thanks to Bill Tucker for catch & patch.
+* :bug:`367` Expand paths with tilde inside (``contrib.files``). Thanks to
+  Konrad Hałas for catch & patch.
+* :feature:`845` Downstream synchronization option implemented for
+  `~fabric.contrib.project.rsync_project`. Thanks to Antonio Barrero for the
+  patch.
+* :release:`1.6.0 <2013-03-01>`
+* :release:`1.5.4 <2013-03-01>`
+* :bug:`844` Account for SSH config overhaul in Paramiko 1.10 by e.g. updating
+  treatment of ``IdentityFile`` to handle multiple values. **This and related
+  SSH config parsing changes are backwards incompatible**; we are including
+  them in this release because they do fix incorrect, off-spec behavior.
+* :bug:`843` Ensure string ``pool_size`` values get run through ``int()``
+  before deriving final result (stdlib ``min()`` has odd behavior here...).
+  Thanks to Chris Kastorff for the catch.
+* :bug:`839` Fix bug in `~fabric.contrib.project.rsync_project` where IPv6
+  address were not always correctly detected. Thanks to Antonio Barrero for
+  catch & patch.
+* :bug:`587` Warn instead of aborting when :ref:`env.use_ssh_config
+  <use-ssh-config>` is True but the configured SSH conf file doesn't exist.
+  This allows multi-user fabfiles to enable SSH config without causing hard
+  stops for users lacking SSH configs. Thanks to Rodrigo Pimentel for the
+  report.
+* :feature:`821` Add `~fabric.context_managers.remote_tunnel` to allow reverse
+  SSH tunneling (exposing locally-visible network ports to the remote end).
+  Thanks to Giovanni Bajo for the patch.
+* :feature:`823` Add :ref:`env.remote_interrupt <remote-interrupt>` which
+  controls whether Ctrl-C is forwarded to the remote end or is captured locally
+  (previously, only the latter behavior was implemented). Thanks to Geert
+  Jansen for the patch.
+* :release:`1.5.3 <2013-01-28>`
+* :bug:`806` Force strings given to ``getpass`` during password prompts to be
+  ASCII, to prevent issues on some platforms when Unicode is encountered.
+  Thanks to Alex Louden for the patch.
+* :bug:`805` Update `~fabric.context_managers.shell_env` to play nice with
+  Windows (7, at least) systems and `~fabric.operations.local`. Thanks to
+  Fernando Macedo for the patch.
+* :bug:`654` Parallel runs whose sum total of returned data was large (e.g.
+  large return values from the task, or simply a large number of hosts in the
+  host list) were causing frustrating hangs. This has been fixed.
+* :feature:`402` Attempt to detect stale SSH sessions and reconnect when they
+  arise. Thanks to `@webengineer` for the patch.
+* :bug:`791` Cast `~fabric.operations.reboot`'s ``wait`` parameter to a numeric
+  type in case the caller submitted a string by mistake. Thanks to Thomas
+  Schreiber for the patch.
+* :bug:`703` Add a ``shell`` kwarg to many methods in `~fabric.contrib.files`
+  to help avoid conflicts with `~fabric.context_managers.cd` and similar.
+  Thanks to `@mikek` for the patch.
+* :feature:`730` Add :ref:`env.system_known_hosts/--system-known-hosts
+  <system-known-hosts>` to allow loading a user-specified system-level SSH
+  ``known_hosts`` file. Thanks to Roy Smith for the patch.
+* :release:`1.5.2 <2013-01-15>`
+* :feature:`818` Added :ref:`env.eagerly_disconnect <eagerly-disconnect>`
+  option to help prevent pile-up of many open connections.
+* :feature:`706` Added :ref:`env.tasks <env-tasks>`, returning list of tasks to
+  be executed by current ``fab`` command.
+* :bug:`766` Use the variable name of a new-style ``fabric.tasks.Task``
+  subclass object when the object name attribute is undefined.  Thanks to
+  `@todddeluca` for the patch.
+* :bug:`604` Fixed wrong treatment of backslashes in put operation when uploading
+  directory tree on Windows. Thanks to Jason Coombs for the catch and
+  `@diresys` & Oliver Janik for the patch.
+  for the patch.
+* :bug:`792` The newish `~fabric.context_managers.shell_env` context manager
+  was incorrectly omitted from the ``fabric.api`` import endpoint. This has
+  been remedied. Thanks to Vishal Rana for the catch.
+* :feature:`735` Add ``ok_ret_codes`` option to ``env`` to allow alternate
+  return codes to be treated os "ok". Thanks to Andy Kraut for the pull request.
+* :bug:`775` Shell escaping was incorrectly applied to the value of ``$PATH``
+  updates in our shell environment handling, causing (at the very least)
+  `~fabric.operations.local` binary paths to become inoperable in certain
+  situations.  This has been fixed.
+* :feature:`787` Utilize new Paramiko feature allowing us to skip the use of
+  temporary local files when using file-like objects in
+  `~fabric.operations.get`/`~fabric.operations.put`.
+* :feature:`249` Allow specification of remote command timeout value by
+  setting :ref:`env.command_timeout <command-timeout>`. Thanks to Paul
+  McMillan for suggestion & initial patch.
+* Added current host string to prompt abort error messages.
+* :release:`1.5.1 <2012-11-15>`
+* :bug:`776` Fixed serious-but-non-obvious bug in direct-tcpip driven
+  gatewaying (e.g. that triggered by ``-g`` or ``env.gateway``.) Should work
+  correctly now.
+* :bug:`771` Sphinx autodoc helper `~fabric.docs.unwrap_tasks` didn't play nice
+  with ``@task(name=xxx)`` in some situations. This has been fixed.
+* :release:`1.5.0 <2012-11-06>`
+* :release:`1.4.4 <2012-11-06>`
+* :feature:`38` (also :issue:`698`) Implement both SSH-level and
+  ``ProxyCommand``-based gatewaying for SSH traffic. (This is distinct from
+  tunneling non-SSH traffic over the SSH connection, which is :issue:`78` and
+  not implemented yet.)
+
+    * Thanks in no particular order to Erwin Bolwidt, Oskari Saarenmaa, Steven
+      Noonan, Vladimir Lazarenko, Lincoln de Sousa, Valentino Volonghi, Olle
+      Lundberg and Github user `@acrish` for providing the original patches to
+      both Fabric and Paramiko.
+
+* :feature:`684` (also :issue:`569`) Update how `~fabric.decorators.task` wraps
+  task functions to preserve additional metadata; this allows decorated
+  functions to play nice with Sphinx autodoc. Thanks to Jaka Hudoklin for catch
+  & patch.
+* :support:`103` (via :issue:`748`) Long standing Sphinx autodoc issue requiring
+  error-prone duplication of function signatures in our API docs has been
+  fixed. Thanks to Alex Morega for the patch.
+* :bug:`767` Fix (and add test for) regression re: having linewise output
+  automatically activate when parallelism is in effect. Thanks to Alexander
+  Fortin and Dustin McQuay for the bug reports.
+* :bug:`736` Ensure context managers that build env vars play nice with
+  ``contextlib.nested`` by deferring env var reference to entry time, not call
+  time. Thanks to Matthew Tretter for catch & patch.
+* :feature:`763` Add :option:`--initial-password-prompt <-I>` to allow
+  prefilling the password cache at the start of a run. Great for sudo-powered
+  parallel runs.
+* :feature:`665` (and #629) Update `~fabric.contrib.files.upload_template` to
+  have a more useful return value, namely that of its internal
+  `~fabric.operations.put` call. Thanks to Miquel Torres for the catch &
+  Rodrigue Alcazar for the patch.
+* :feature:`578` Add ``name`` argument to `~fabric.decorators.task` (:ref:`docs
+  <task-decorator-arguments>`) to allow overriding of the default "function
+  name is task name" behavior. Thanks to Daniel Simmons for catch & patch.
+* :feature:`761` Allow advanced users to parameterize ``fabric.main.main()`` to
+  force loading of specific fabfiles.
+* :bug:`749` Gracefully work around calls to ``fabric.version`` on systems
+  lacking ``/bin/sh`` (which causes an ``OSError`` in ``subprocess.Popen``
+  calls.)
 * :feature:`723` Add the ``group=`` argument to
   `~fabric.operations.sudo`. Thanks to Antti Kaihola for the pull request.
 * :feature:`725` Updated `~fabric.operations.local` to allow override
@@ -35,7 +212,7 @@ Changelog
   Arnold for the patch.
 * :feature:`699` Allow `name` attribute on file-like objects for get/put. Thanks
   to Peter Lyons for the pull request.
-* :bug:`711` `~fabric.sftp.get` would fail when filenames had % in their path.  
+* :bug:`711` `~fabric.sftp.get` would fail when filenames had % in their path.
   Thanks to John Begeman
 * :bug:`702` `~fabric.operations.require` failed to test for "empty" values in
   the env keys it checks (e.g.
@@ -75,7 +252,7 @@ Changelog
   Fabric correctly printed such exceptions, and returned them from
   `~fabric.tasks.execute`, but did not actually cause the child or parent
   processes to halt with a nonzero status. This has been fixed.
-  `~fabric.tasks.execute` now also honors :ref:`env.warn_only <warn-only>` so
+  `~fabric.tasks.execute` now also honors :ref:`env.warn_only <warn_only>` so
   users may still opt to call it by hand and inspect the returned exceptions,
   instead of encountering a hard stop. Thanks to Matt Robenolt for the catch.
 * :feature:`241` Add the command executed as a ``.command`` attribute to the

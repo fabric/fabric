@@ -15,13 +15,21 @@ typically called ``fabric`` or ``python-fabric``. E.g.::
     $ sudo apt-get install fabric
 
 Advanced users wanting to install a development version may use ``pip`` to grab
-the latest master branch::
+the latest master branch (as well as the dev version of the Paramiko
+dependency)::
 
+    $ pip install paramiko==dev
     $ pip install fabric==dev
 
 Or, to install an editable version for debugging/hacking, execute ``pip install
 -e .`` (or ``python setup.py install``) inside a :ref:`downloaded <downloads>`
 or :ref:`cloned <source-code-checkouts>` copy of the source code.
+
+.. warning::
+
+    Any development installs of Fabric (whether via ``==dev`` or ``install
+    -e``) require the development version of Paramiko to be installed
+    beforehand, or Fabric's installation may fail.
 
 
 Dependencies
@@ -31,8 +39,8 @@ In order for Fabric's installation to succeed, you will need four primary pieces
 
 * the Python programming language;
 * the ``setuptools`` packaging/installation library;
-* the Python ``ssh`` SSH2 library;
-* and ``ssh``'s dependency, the PyCrypto cryptography library.
+* the Python ``paramiko`` SSH2 library;
+* and ``paramiko``'s dependency, the PyCrypto cryptography library.
 
 and, if using the :doc:`parallel execution mode </usage/parallel>`:
 
@@ -161,7 +169,7 @@ packages:
 
 * `git <http://git-scm.com>`_ and `Mercurial`_, in order to obtain some of the
   other dependencies below;
-* `Nose <http://code.google.com/p/python-nose/>`_
+* `Nose <https://github.com/nose-devs/nose>`_
 * `Coverage <http://nedbatchelder.com/code/modules/coverage.html>`_
 * `PyLint <http://www.logilab.org/857>`_
 * `Fudge <http://farmdev.com/projects/fudge/index.html>`_
@@ -181,15 +189,9 @@ Downloads
 =========
 
 To obtain a tar.gz or zip archive of the Fabric source code, you may visit
-either of the following locations:
-
-* The official downloads are located on `our Github account's Downloads page
-  <https://github.com/fabric/fabric/downloads>`_. This is the spot you want to
-  download from for operating system packages, as the only changing part of the
-  URL will be the filename itself and the md5 hashes will be consistent.
-* `Fabric's PyPI page <http://pypi.python.org/pypi/Fabric>`_ offers manual
-  downloads in addition to being the entry point for ``pip`` and
-  ``easy-install``.
+`Fabric's PyPI page <http://pypi.python.org/pypi/Fabric>`_, which offers manual
+downloads in addition to being the entry point for ``pip`` and
+``easy-install``.
 
 
 .. _source-code-checkouts:
@@ -234,11 +236,11 @@ installation of Fabric via ``pypm``::
 
     C:\> pypm install fabric
     The following packages will be installed into "%APPDATA%\Python" (2.7):
-     ssh-1.7.8 pycrypto-2.4 fabric-1.3.0
+     paramiko-1.7.8 pycrypto-2.4 fabric-1.3.0
     Get: [pypm-free.activestate.com] fabric 1.3.0
-    Get: [pypm-free.activestate.com] ssh 1.7.8
+    Get: [pypm-free.activestate.com] paramiko 1.7.8
     Get: [pypm-free.activestate.com] pycrypto 2.4
-    Installing ssh-1.7.8
+    Installing paramiko-1.7.8
     Installing pycrypto-2.4
     Installing fabric-1.3.0
     Fixing script %APPDATA%\Python\Scripts\fab-script.py

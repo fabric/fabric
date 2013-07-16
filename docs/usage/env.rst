@@ -3,7 +3,7 @@ The environment dictionary, ``env``
 ===================================
 
 A simple but integral aspect of Fabric is what is known as the "environment": a
-Python dictionary subclass which is used as a combination settings registry and
+Python dictionary subclass, which is used as a combination settings registry and
 shared inter-task data namespace.
 
 The environment dict is currently implemented as a global singleton,
@@ -13,8 +13,8 @@ in ``env`` are sometimes referred to as "env variables".
 Environment as configuration
 ============================
 
-Most of Fabric's behavior is controllable by modifying env variables, such as
-``env.hosts`` (as seen in :ref:`the tutorial <defining-connections>`). Other
+Most of Fabric's behavior is controllable by modifying ``env`` variables, such
+as ``env.hosts`` (as seen in :ref:`the tutorial <defining-connections>`). Other
 commonly-modified env vars include:
 
 * ``user``: Fabric defaults to your local username when making SSH connections,
@@ -35,7 +35,7 @@ The `~fabric.context_managers.settings` context manager
 
 In many situations, it's useful to only temporarily modify ``env`` vars so that
 a given settings change only applies to a block of code. Fabric provides a
-`~fabric.context_managers.settings` context manager, which takes any numbr of
+`~fabric.context_managers.settings` context manager, which takes any number of
 key/value pairs and will use them to modify ``env`` within its wrapped block.
 
 For example, there are many situations where setting ``warn_only`` (see below)
@@ -80,8 +80,8 @@ of typing and makes the code more readable, so it's the recommended way to
 interact with ``env``.
 
 The fact that it's a dictionary can be useful in other ways, such as with
-Python's dict-based string interpolation, which is especially handy if you need
-to insert multiple env vars into a single string. Using "normal" string
+Python's ``dict``-based string interpolation, which is especially handy if you
+need to insert multiple env vars into a single string. Using "normal" string
 interpolation might look like this::
 
     print("Executing on %s as %s" % (env.host, env.user))
@@ -96,13 +96,15 @@ Full list of env vars
 =====================
 
 Below is a list of all predefined (or defined by Fabric itself during
-execution) environment variables. While any of them may be manipulated
+execution) environment variables. While many of them may be manipulated
 directly, it's often best to use `~fabric.context_managers`, either generally
 via `~fabric.context_managers.settings` or via specific context managers such
 as `~fabric.context_managers.cd`.
 
 Note that many of these may be set via ``fab``'s command-line switches -- see
-:doc:`fab` for details. Cross-links will be provided where appropriate.
+:doc:`fab` for details. Cross-references are provided where appropriate.
+
+.. seealso:: :option:`--set`
 
 .. _abort-on-prompts:
 
@@ -142,10 +144,20 @@ informational purposes only.
 When set to ``False``, causes `~fabric.operations.run`/`~fabric.operations.sudo`
 to act as if they have been called with ``pty=False``.
 
-The command-line flag :option:`--no-pty`, if given, will set this env var to
-``False``.
-
+.. seealso:: :option:`--no-pty`
 .. versionadded:: 1.0
+
+.. _colorize-errors:
+
+``colorize_errors``
+-------------------
+
+**Default** ``False``
+
+When set to ``True``, error output to the terminal is colored red and warnings
+are colored magenta to make them easier to see.
+
+.. versionadded:: 1.7
 
 .. _combine-stderr:
 
@@ -165,7 +177,7 @@ details on why this is needed and what its effects are.
 
 **Default:** ``None``
 
-Set by ``fab`` to the currently executing command name (e.g. when executed as
+Set by ``fab`` to the currently executing command name (e.g., when executed as
 ``$ fab task1 task2``, ``env.command`` will be set to ``"task1"`` while
 ``task1`` is executing, and then to ``"task2"``.) For informational purposes
 only.
@@ -181,6 +193,18 @@ Modified by `~fabric.context_managers.prefix`, and prepended to commands
 executed by `~fabric.operations.run`/`~fabric.operations.sudo`.
 
 .. versionadded:: 1.0
+
+.. _command-timeout:
+
+``command_timeout``
+-------------------
+
+**Default:** ``None``
+
+Remote command timeout, in seconds.
+
+.. versionadded:: 1.6
+.. seealso:: :option:`--command-timeout`
 
 .. _connection-attempts:
 
@@ -230,7 +254,26 @@ If ``True``, the SSH layer will skip loading the user's known-hosts file.
 Useful for avoiding exceptions in situations where a "known host" changing its
 host key is actually valid (e.g. cloud servers such as EC2.)
 
-.. seealso:: :doc:`ssh`
+.. seealso:: :option:`--disable-known-hosts <-D>`, :doc:`ssh`
+
+
+.. _eagerly-disconnect:
+
+``eagerly_disconnect``
+----------------------
+
+**Default:** ``False``
+
+If ``True``, causes ``fab`` to close connections after each individual task
+execution, instead of at the end of the run. This helps prevent a lot of
+typically-unused network sessions from piling up and causing problems with
+limits on per-process open files, or network hardware.
+
+.. note::
+    When active, this setting will result in the disconnect messages appearing
+    throughout your output, instead of at the end. This may be improved in
+    future releases.
+
 
 .. _exclude-hosts:
 
@@ -255,7 +298,25 @@ To indicate a specific file, use the full path to the file. Obviously, it
 doesn't make sense to set this in a fabfile, but it may be specified in a
 ``.fabricrc`` file or on the command line.
 
-.. seealso:: :doc:`fab`
+.. seealso:: :option:`--fabfile <-f>`, :doc:`fab`
+
+
+.. _gateway:
+
+``gateway``
+-----------
+
+**Default:** ``None``
+
+Enables SSH-driven gatewaying through the indicated host. The value should be a
+normal Fabric host string as used in e.g. :ref:`env.host_string <host_string>`.
+When this is set, newly created connections will be set to route their SSH
+traffic through the remote SSH daemon to the final destination.
+
+.. versionadded:: 1.5
+
+.. seealso:: :option:`--gateway <-g>`
+
 
 .. _host_string:
 
@@ -283,7 +344,7 @@ If ``True``, enables forwarding of your local SSH agent to the remote end.
 
 .. versionadded:: 1.4
 
-.. seealso:: :option:`-A`
+.. seealso:: :option:`--forward-agent <-A>`
 
 
 ``host``
@@ -303,7 +364,7 @@ purposes only.
 
 The global host list used when composing per-task host lists.
 
-.. seealso:: :doc:`execution`
+.. seealso:: :option:`--hosts <-H>`, :doc:`execution`
 
 .. _keepalive:
 
@@ -318,6 +379,23 @@ timing out due to meddlesome network hardware or what have you.
 
 .. seealso:: :option:`--keepalive`
 .. versionadded:: 1.1
+
+
+.. _key:
+
+``key``
+----------------
+
+**Default:** ``None``
+
+A string, or file-like object, containing an SSH key; used during connection
+authentication.
+
+.. note::
+    The most common method for using SSH keys is to set :ref:`key-filename`.
+
+.. versionadded:: 1.7
+
 
 .. _key-filename:
 
@@ -370,6 +448,7 @@ If ``True``, will tell the SSH layer not to seek out running SSH agents when
 using key-based authentication.
 
 .. versionadded:: 0.9.1
+.. seealso:: :option:`--no_agent <-a>`
 
 .. _no_keys:
 
@@ -383,6 +462,7 @@ one's ``$HOME/.ssh/`` folder. (Key files explicitly loaded via ``fab -i`` will
 still be used, of course.)
 
 .. versionadded:: 0.9.1
+.. seealso:: :option:`-k`
 
 .. _env-parallel:
 
@@ -395,7 +475,7 @@ When ``True``, forces all tasks to run in parallel. Implies :ref:`env.linewise
 <env-linewise>`.
 
 .. versionadded:: 1.3
-.. seealso:: :doc:`parallel`
+.. seealso:: :option:`--parallel <-P>`, :doc:`parallel`
 
 .. _password:
 
@@ -407,8 +487,7 @@ When ``True``, forces all tasks to run in parallel. Implies :ref:`env.linewise
 The default password used by the SSH layer when connecting to remote hosts,
 **and/or** when answering `~fabric.operations.sudo` prompts.
 
-.. seealso:: :ref:`passwords`
-.. seealso:: :ref:`password-management`
+.. seealso:: :option:`--initial-password-prompt <-I>`, :ref:`env.passwords <passwords>`, :ref:`password-management`
 
 .. _passwords:
 
@@ -451,7 +530,7 @@ for managing this value instead of setting it directly.
 Sets the number of concurrent processes to use when executing tasks in parallel.
 
 .. versionadded:: 1.3
-.. seealso:: :doc:`parallel`, :option:`-z`
+.. seealso:: :option:`--pool-size <-z>`, :doc:`parallel`
 
 .. _port:
 
@@ -475,6 +554,27 @@ far. For informational purposes only.
 
 .. seealso:: :doc:`fab`
 
+
+.. _remote-interrupt:
+
+``remote_interrupt``
+--------------------
+
+**Default:** ``None``
+
+Controls whether Ctrl-C triggers an interrupt remotely or is captured locally,
+as follows:
+
+* ``None`` (the default): only `~fabric.operations.open_shell` will exhibit
+  remote interrupt behavior, and
+  `~fabric.operations.run`/`~fabric.operations.sudo` will capture interrupts
+  locally.
+* ``False``: even `~fabric.operations.open_shell` captures locally.
+* ``True``: all functions will send the interrupt to the remote end.
+
+.. versionadded:: 1.6
+
+
 .. _rcfile:
 
 ``rcfile``
@@ -484,7 +584,7 @@ far. For informational purposes only.
 
 Path used when loading Fabric's local settings file.
 
-.. seealso:: :doc:`fab`
+.. seealso:: :option:`--config <-c>`, :doc:`fab`
 
 .. _reject-unknown-hosts:
 
@@ -495,6 +595,18 @@ Path used when loading Fabric's local settings file.
 
 If ``True``, the SSH layer will raise an exception when connecting to hosts not
 listed in the user's known-hosts file.
+
+.. seealso:: :option:`--reject-unknown-hosts <-r>`, :doc:`ssh`
+
+.. _system-known-hosts:
+
+``system_known_hosts``
+------------------------
+
+**Default:** ``None``
+
+If set, should be the path to a :file:`known_hosts` file.  The SSH layer will
+read this file before reading the user's known-hosts file.
 
 .. seealso:: :doc:`ssh`
 
@@ -516,7 +628,7 @@ Dictionary defining role name to host list mappings.
 
 The global role list used when composing per-task host lists.
 
-.. seealso:: :doc:`execution`
+.. seealso:: :option:`--roles <-R>`, :doc:`execution`
 
 .. _shell:
 
@@ -530,7 +642,8 @@ Value used as shell wrapper when executing commands with e.g.
 "<command goes here>"`` -- e.g. the default uses Bash's ``-c`` option which
 takes a command string as its value.
 
-.. seealso:: :ref:`FAQ on bash as default shell <faq-bash>`, :doc:`execution`
+.. seealso:: :option:`--shell <-s>`,
+             :ref:`FAQ on bash as default shell <faq-bash>`, :doc:`execution`
 
 .. _skip-bad-hosts:
 
@@ -557,6 +670,17 @@ Allows specification of an alternate SSH configuration file path.
 
 .. versionadded:: 1.4
 .. seealso:: :option:`--ssh-config-path`, :ref:`ssh-config`
+
+``ok_ret_codes``
+------------------------
+
+**Default:** ``[0]``
+
+Return codes in this list are used to determine whether calls to
+`~fabric.operations.run`/`~fabric.operations.sudo`/`~fabric.operations.sudo`
+are considered successful.
+
+.. versionadded:: 1.6
 
 .. _sudo_prefix:
 
@@ -601,6 +725,18 @@ Used as a fallback value for `~fabric.operations.sudo`'s ``user`` argument if
 none is given. Useful in combination with `~fabric.context_managers.settings`.
 
 .. seealso:: `~fabric.operations.sudo`
+
+.. _env-tasks:
+
+``tasks``
+-------------
+
+**Default:** ``[]``
+
+Set by ``fab`` to the full tasks list to be executed for the currently
+executing command. For informational purposes only.
+
+.. seealso:: :doc:`execution`
 
 .. _timeout:
 
@@ -685,7 +821,7 @@ As you can see, during execution on ``host2``, ``env.user`` was set to
     the informational aspect will likely be broken out into a separate env
     variable.
 
-.. seealso:: :doc:`execution`
+.. seealso:: :doc:`execution`, :option:`--user <-u>`
 
 ``version``
 -----------
@@ -694,6 +830,8 @@ As you can see, during execution on ``host2``, ``env.user`` was set to
 
 Mostly for informational purposes. Modification is not recommended, but
 probably won't break anything either.
+
+.. seealso:: :option:`--version <-V>`
 
 .. _warn_only:
 
@@ -706,4 +844,4 @@ Specifies whether or not to warn, instead of abort, when
 `~fabric.operations.run`/`~fabric.operations.sudo`/`~fabric.operations.local`
 encounter error conditions.
 
-.. seealso:: :doc:`execution`
+.. seealso:: :option:`--warn-only <-w>`, :doc:`execution`

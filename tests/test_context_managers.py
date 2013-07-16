@@ -1,13 +1,14 @@
 from __future__ import with_statement
 
+import os
 import sys
 
 from nose.tools import eq_, ok_
 
 from fabric.state import env, output
 from fabric.context_managers import (cd, settings, lcd, hide, shell_env, quiet,
-    warn_only)
-from fabric.operations import run
+    warn_only, prefix, path)
+from fabric.operations import run, local
 
 from utils import mock_streams, FabricTest
 from server import server
@@ -46,6 +47,21 @@ def test_cwd_with_absolute_paths():
             eq_(env.cwd, absolute)
         with cd(additional):
             eq_(env.cwd, existing + '/' + additional)
+
+
+#
+#  prefix
+#
+
+def test_nested_prefix():
+    """
+    prefix context managers can be created outside of the with block and nested
+    """
+    cm1 = prefix('1')
+    cm2 = prefix('2')
+    with cm1:
+        with cm2:
+            eq_(env.command_prefixes, ['1', '2'])
 
 
 #
@@ -197,3 +213,28 @@ class TestQuietAndWarnOnly(FabricTest):
         with warn_only():
             run("ls /simple")
             assert sys.stdout.getvalue().strip() != ""
+
+
+# path() (distinct from shell_env)
+
+class TestPathManager(FabricTest):
+    def setup(self):
+        super(TestPathManager, self).setup()
+        self.real = os.environ.get('PATH')
+
+    def via_local(self):
+        with hide('everything'):
+            return local("echo $PATH", capture=True)
+
+    def test_lack_of_path_has_default_local_path(self):
+        """
+        No use of 'with path' == default local $PATH
+        """
+        eq_(self.real, self.via_local())
+
+    def test_use_of_path_appends_by_default(self):
+        """
+        'with path' appends by default
+        """
+        with path('foo'):
+            eq_(self.via_local(), self.real + ":foo")

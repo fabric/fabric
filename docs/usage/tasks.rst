@@ -94,6 +94,9 @@ first argument (see :ref:`task-decorator-and-classes` for details.)
   take precedence.
 * ``default``: A boolean value determining whether the decorated task also
   stands in for its containing module as a task name. See :ref:`default-tasks`.
+* ``name``: A string setting the name this task appears as to the command-line
+  interface. Useful for task names that would otherwise shadow Python builtins
+  (which is technically legal but frowned upon and bug-prone.)
 
 .. _task-aliases:
 

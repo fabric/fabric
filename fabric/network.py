@@ -11,15 +11,17 @@ import re
 import time
 import socket
 import sys
+from StringIO import StringIO
+
 
 from fabric.auth import get_password, set_password
-from fabric.utils import abort, handle_prompt_abort
+from fabric.utils import abort, handle_prompt_abort, warn
 from fabric.exceptions import NetworkError
 
 try:
     import warnings
     warnings.simplefilter('ignore', DeprecationWarning)
-    import ssh
+    import paramiko as ssh
 except ImportError, e:
     import traceback
     traceback.print_exc()
@@ -34,13 +36,31 @@ Please make sure all dependencies are installed and importable.
 ipv6_regex = re.compile('^\[?(?P<host>[0-9A-Fa-f:]+)\]?(:(?P<port>\d+))?$')
 
 
+def direct_tcpip(client, host, port):
+    return client.get_transport().open_channel(
+        'direct-tcpip',
+        (host, int(port)),
+        ('', 0)
+    )
+
+
+def is_key_load_error(e):
+    return (
+        e.__class__ is ssh.SSHException
+        and 'Unable to parse key file' in str(e)
+    )
+
+
 class HostConnectionCache(dict):
     """
     Dict subclass allowing for caching of host connections/clients.
 
-    This subclass does not offer any extra methods, but will intelligently
-    create new client connections when keys are requested, or return previously
-    created connections instead.
+    This subclass will intelligently create new client connections when keys
+    are requested, or return previously created connections instead.
+
+    It also handles creating new socket-like objects when required to implement
+    gateway connections and `ProxyCommand`, and handing them to the inner
+    connection methods.
 
     Key values are the same as host specifiers throughout Fabric: optional
     username + ``@``, mandatory hostname, optional ``:`` + port number.
@@ -69,9 +89,25 @@ class HostConnectionCache(dict):
         """
         Force a new connection to ``key`` host string.
         """
+        from fabric.state import env, output
         user, host, port = normalize(key)
         key = normalize_to_string(key)
-        self[key] = connect(user, host, port)
+        sock = None
+        proxy_command = ssh_config().get('proxycommand', None)
+        if env.gateway:
+            gateway = normalize_to_string(env.gateway)
+            # Ensure initial gateway connection
+            if gateway not in self:
+                if output.debug:
+                    print "Creating new gateway connection to %r" % gateway
+                self[gateway] = connect(*normalize(gateway))
+            # Now we should have an open gw connection and can ask it for a
+            # direct-tcpip channel to the real target. (Bypass our own
+            # __getitem__ override to avoid hilarity.)
+            sock = direct_tcpip(dict.__getitem__(self, gateway), host, port)
+        elif proxy_command:
+            sock = ssh.ProxyCommand(proxy_command)
+        self[key] = connect(user, host, port, sock)
 
     def __getitem__(self, key):
         """
@@ -109,8 +145,9 @@ def ssh_config(host_string=None):
     May give an explicit host string as ``host_string``.
     """
     from fabric.state import env
+    dummy = {}
     if not env.use_ssh_config:
-        return {}
+        return dummy
     if '_ssh_config' not in env:
         try:
             conf = ssh.SSHConfig()
@@ -119,7 +156,8 @@ def ssh_config(host_string=None):
                 conf.parse(fd)
                 env._ssh_config = conf
         except IOError:
-            abort("Unable to load SSH config file '%s'" % path)
+            warn("Unable to load SSH config file '%s'" % path)
+            return dummy
     host = parse_host_string(host_string or env.host_string)['host']
     return env._ssh_config.lookup(host)
 
@@ -140,11 +178,39 @@ def key_filenames():
     # Strip out any empty strings (such as the default value...meh)
     keys = filter(bool, keys)
     # Honor SSH config
-    # TODO: fix ssh so it correctly treats IdentityFile as a list
     conf = ssh_config()
     if 'identityfile' in conf:
-        keys.append(conf['identityfile'])
+        # Assume a list here as we require Paramiko 1.10+
+        keys.extend(conf['identityfile'])
     return map(os.path.expanduser, keys)
+
+
+def key_from_env(passphrase=None):
+    """
+    Returns a paramiko-ready key from a text string of a private key
+    """
+    from fabric.state import env, output
+
+    if 'key' in env:
+        if output.debug:
+            # NOTE: this may not be the most secure thing; OTOH anybody running
+            # the process must by definition have access to the key value,
+            # so only serious problem is if they're logging the output.
+            sys.stderr.write("Trying to honor in-memory key %r\n" % env.key)
+        for pkey_class in (ssh.rsakey.RSAKey, ssh.dsskey.DSSKey):
+            if output.debug:
+                sys.stderr.write("Trying to load it as %s\n" % pkey_class)
+            try:
+                return pkey_class.from_private_key(StringIO(env.key), passphrase)
+            except Exception, e:
+                # File is valid key, but is encrypted: raise it, this will
+                # cause cxn loop to prompt for passphrase & retry
+                if 'Private key file is encrypted' in e:
+                    raise
+                # Otherwise, it probably means it wasn't a valid key of this
+                # type, so try the next one.
+                else:
+                    pass
 
 
 def parse_host_string(host_string):
@@ -271,9 +337,12 @@ def normalize_to_string(host_string):
     return join_host_strings(*normalize(host_string))
 
 
-def connect(user, host, port):
+def connect(user, host, port, sock=None):
     """
     Create and return a new SSHClient instance connected to given host.
+
+    If ``sock`` is given, it's passed into ``SSHClient.connect()`` directly.
+    Used for gateway connections by e.g. ``HostConnectionCache``.
     """
     from state import env, output
 
@@ -283,6 +352,11 @@ def connect(user, host, port):
 
     # Init client
     client = ssh.SSHClient()
+
+    # Load system hosts file (e.g. /etc/ssh/ssh_known_hosts)
+    known_hosts = env.get('system_known_hosts')
+    if known_hosts:
+        client.load_system_host_keys(known_hosts)
 
     # Load known host keys (e.g. ~/.ssh/known_hosts) unless user says not to.
     if not env.disable_known_hosts:
@@ -297,8 +371,7 @@ def connect(user, host, port):
 
     # Initialize loop variables
     connected = False
-    password = get_password()
-    passwords_grp = env.passwords_grp[:]
+    password = get_password(user, host, port)
     tries = 0
 
     # Loop until successful connect (keep prompting for new password)
@@ -311,10 +384,12 @@ def connect(user, host, port):
                 port=int(port),
                 username=user,
                 password=password,
+                pkey=key_from_env(password),
                 key_filename=key_filenames(),
                 timeout=env.timeout,
                 allow_agent=not env.no_agent,
-                look_for_keys=not env.no_keys
+                look_for_keys=not env.no_keys,
+                sock=sock
             )
             connected = True
 
@@ -339,20 +414,24 @@ def connect(user, host, port):
             # results in an SSHException instead of an
             # AuthenticationException. Since it's difficult to do
             # otherwise, we must assume empty password + SSHException ==
-            # auth exception. Conversely: if we get SSHException and there
+            # auth exception.
+            #
+            # Conversely: if we get SSHException and there
             # *was* a password -- it is probably something non auth
-            # related, and should be sent upwards.
+            # related, and should be sent upwards. (This is not true if the
+            # exception message does indicate key parse problems.)
             #
             # This also holds true for rejected/unknown host keys: we have to
             # guess based on other heuristics.
             if e.__class__ is ssh.SSHException \
-                and (password or msg.startswith('Unknown server')):
+                and (password or msg.startswith('Unknown server')) \
+                and not is_key_load_error(e):
                 raise NetworkError(msg, e)
 
             # Otherwise, assume an auth exception, and prompt for new/better
             # password.
 
-            # The 'ssh' library doesn't handle prompting for locked private
+            # Paramiko doesn't handle prompting for locked private
             # keys (i.e.  keys with a passphrase and not loaded into an agent)
             # so we have to detect this and tweak our prompt slightly.
             # (Otherwise, however, the logic flow is the same, because
@@ -372,7 +451,8 @@ def connect(user, host, port):
             # * In this condition (trying a key file, password is None)
             # ssh raises PasswordRequiredException.
             text = None
-            if e.__class__ is ssh.PasswordRequiredException:
+            if e.__class__ is ssh.PasswordRequiredException \
+                or is_key_load_error(e):
                 # NOTE: we can't easily say WHICH key's passphrase is needed,
                 # because ssh doesn't provide us with that info, and
                 # env.key_filename may be a list of keys, so we can't know
@@ -380,13 +460,13 @@ def connect(user, host, port):
                 prompt = "[%s] Passphrase for private key"
                 text = prompt % env.host_string
             # check passwords group
-            if passwords_grp:                                                   
-                password = passwords_grp.pop(0)                                 
-            else:                                                               
-                # Update env.password, env.passwords if empty                       
-                password = prompt_for_password(text)                            
+            if passwords_grp:
+                password = passwords_grp.pop(0)
+            else:
+                # Update env.password, env.passwords if empty
+                password = prompt_for_password(text)
             # Update env.password, env.passwords if empty
-            set_password(password)
+            set_password(user, host, port, password)
         # Ctrl-D / Ctrl-C for exit
         except (EOFError, TypeError):
             # Print a newline (in case user was sitting at prompt)
@@ -427,7 +507,17 @@ def connect(user, host, port):
             s = "s" if env.connection_attempts > 1 else ""
             msg += " (tried %s time%s)" % (env.connection_attempts, s)
             raise NetworkError(msg, e)
+        # Ensure that if we terminated without connecting and we were given an
+        # explicit socket, close it out.
+        finally:
+            if not connected and sock is not None:
+                sock.close()
 
+
+def _password_prompt(prompt, stream):
+    # NOTE: Using encode-to-ascii to prevent (Windows, at least) getpass from
+    # choking if given Unicode.
+    return getpass.getpass(prompt.encode('ascii', 'ignore'), stream)
 
 def prompt_for_password(prompt=None, no_colon=False, stream=None):
     """
@@ -455,12 +545,12 @@ def prompt_for_password(prompt=None, no_colon=False, stream=None):
     if not no_colon:
         password_prompt += ": "
     # Get new password value
-    new_password = getpass.getpass(password_prompt, stream)
+    new_password = _password_prompt(password_prompt, stream)
     # Otherwise, loop until user gives us a non-empty password (to prevent
     # returning the empty string, and to avoid unnecessary network overhead.)
     while not new_password:
         print("Sorry, you can't enter an empty password. Please try again.")
-        new_password = getpass.getpass(password_prompt, stream)
+        new_password = _password_prompt(password_prompt, stream)
     return new_password
 
 
@@ -491,6 +581,7 @@ def needs_host(func):
                                     " host string for connection: ")
             env.update(to_dict(host_string))
         return func(*args, **kwargs)
+    host_prompting_wrapper.undecorated = func
     return host_prompting_wrapper
 
 
@@ -511,4 +602,3 @@ def disconnect_all():
         connections[key].close()
         del connections[key]
         if output.status:
-            sys.stdout.write("done.\n")

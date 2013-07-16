@@ -11,6 +11,7 @@ import os
 from StringIO import StringIO
 
 from fabric.api import *
+from fabric.utils import apply_lcwd
 
 
 def exists(path, use_sudo=False, verbose=False):
@@ -25,7 +26,7 @@ def exists(path, use_sudo=False, verbose=False):
     behavior.
     """
     func = use_sudo and sudo or run
-    cmd = 'test -e "$(echo %s)"' % path
+    cmd = 'test -e %s' % _expand_path(path)
     # If verbose, run normally
     if verbose:
         with settings(warn_only=True):
@@ -33,6 +34,23 @@ def exists(path, use_sudo=False, verbose=False):
     # Otherwise, be quiet
     with settings(hide('everything'), warn_only=True):
         return not func(cmd).failed
+
+
+def is_link(path, use_sudo=False, verbose=False):
+    """
+    Return True if the given path is a symlink on the current remote host.
+
+    If ``use_sudo`` is True, will use `.sudo` instead of `.run`.
+
+    `.is_link` will, by default, hide all output. Give ``verbose=True`` to change this.
+    """
+    func = sudo if use_sudo else run
+    cmd = 'test -L "$(echo %s)"' % path
+    args, kwargs = [], {'warn_only': True}
+    if not verbose:
+        opts = [hide('everything')]
+    with settings(*args, **kwargs):
+        return func(cmd).succeeded
 
 
 def first(*args, **kwargs):
@@ -51,9 +69,12 @@ def upload_template(filename, destination, context=None, use_jinja=False,
     """
     Render and upload a template text file to a remote host.
 
+    Returns the result of the inner call to `~fabric.operations.put` -- see its
+    documentation for details.
+
     ``filename`` should be the path to a text file, which may contain `Python
     string interpolation formatting
-    <http://docs.python.org/release/2.5.4/lib/typesseq-strings.html>`_ and will
+    <http://docs.python.org/library/stdtypes.html#string-formatting>`_ and will
     be rendered with the given context dictionary ``context`` (if given.)
 
     Alternately, if ``use_jinja`` is set to True and you have the Jinja2
@@ -78,7 +99,7 @@ def upload_template(filename, destination, context=None, use_jinja=False,
     func = use_sudo and sudo or run
     # Normalize destination to be an actual filename, due to using StringIO
     with settings(hide('everything'), warn_only=True):
-        if func('test -d %s' % destination).succeeded:
+        if func('test -d %s' % _expand_path(destination)).succeeded:
             sep = "" if destination.endswith('/') else "/"
             destination += sep + os.path.basename(filename)
 
@@ -94,25 +115,32 @@ def upload_template(filename, destination, context=None, use_jinja=False,
     text = None
     if use_jinja:
         try:
+            template_dir = template_dir or os.getcwd()
+            template_dir = apply_lcwd(template_dir, env)
             from jinja2 import Environment, FileSystemLoader
-            jenv = Environment(loader=FileSystemLoader(template_dir or '.'))
+            jenv = Environment(loader=FileSystemLoader(template_dir))
             text = jenv.get_template(filename).render(**context or {})
+            # Force to a byte representation of Unicode, or str()ification
+            # within Paramiko's SFTP machinery may cause decode issues for
+            # truly non-ASCII characters.
+            text = text.encode('utf-8')
         except ImportError:
             import traceback
             tb = traceback.format_exc()
             abort(tb + "\nUnable to import Jinja2 -- see above.")
     else:
-        with open(filename) as inputfile:
+        filename = apply_lcwd(filename, env)
+        with open(os.path.expanduser(filename)) as inputfile:
             text = inputfile.read()
         if context:
             text = text % context
 
     # Back up original file
     if backup and exists(destination):
-        func("cp %s{,.bak}" % destination)
+        func("cp %s{,.bak}" % _expand_path(destination))
 
     # Upload the file.
-    put(
+    return put(
         local_path=StringIO(text),
         remote_path=destination,
         use_sudo=use_sudo,
@@ -122,12 +150,12 @@ def upload_template(filename, destination, context=None, use_jinja=False,
 
 
 def sed(filename, before, after, limit='', use_sudo=False, backup='.bak',
-    flags=''):
+    flags='', shell=False):
     """
     Run a search-and-replace on ``filename`` with given regex patterns.
 
-    Equivalent to ``sed -i<backup> -r -e "/<limit>/ s/<before>/<after>/<flags>g
-    <filename>"``. Setting ``backup`` to an empty string will, disable backup
+    Equivalent to ``sed -i<backup> -r -e "/<limit>/ s/<before>/<after>/<flags>g"
+    <filename>``. Setting ``backup`` to an empty string will, disable backup
     file creation.
 
     For convenience, ``before`` and ``after`` will automatically escape forward
@@ -137,8 +165,12 @@ def sed(filename, before, after, limit='', use_sudo=False, backup='.bak',
 
     If ``use_sudo`` is True, will use `sudo` instead of `run`.
 
-    `sed` will pass ``shell=False`` to `run`/`sudo`, in order to avoid problems
-    with many nested levels of quotes and backslashes.
+    The ``shell`` argument will be eventually passed to `run`/`sudo`. It
+    defaults to False in order to avoid problems with many nested levels of
+    quotes and backslashes. However, setting it to True may help when using
+    ``~fabric.operations.cd`` to wrap explicit or implicit ``sudo`` calls.
+    (``cd`` by it's nature is a shell built-in, not a standalone command, so it
+    should be called within a shell.)
 
     Other options may be specified with sed-compatible regex flags -- for
     example, to make the search and replace case insensitive, specify
@@ -147,6 +179,8 @@ def sed(filename, before, after, limit='', use_sudo=False, backup='.bak',
 
     .. versionadded:: 1.1
         The ``flags`` parameter.
+    .. versionadded:: 1.6
+        Added the ``shell`` keyword argument.
     """
     func = use_sudo and sudo or run
     # Characters to be escaped in both
@@ -159,6 +193,11 @@ def sed(filename, before, after, limit='', use_sudo=False, backup='.bak',
         after = after.replace(char, r'\%s' % char)
     if limit:
         limit = r'/%s/ ' % limit
+    context = {
+        'script': r"'%ss/%s/%s/%sg'" % (limit, before, after, flags),
+        'filename': _expand_path(filename),
+        'backup': backup
+    }
     # Test the OS because of differences between sed versions
 
     with hide('running', 'stdout'):
@@ -168,20 +207,21 @@ def sed(filename, before, after, limit='', use_sudo=False, backup='.bak',
         hasher = hashlib.sha1()
         hasher.update(env.host_string)
         hasher.update(filename)
-        tmp = "/tmp/%s" % hasher.hexdigest()
+        context['tmp'] = "/tmp/%s" % hasher.hexdigest()
         # Use temp file to work around lack of -i
         expr = r"""cp -p %(filename)s %(tmp)s \
-&& sed -r -e '%(limit)ss/%(before)s/%(after)s/%(flags)sg' %(filename)s > %(tmp)s \
+&& sed -r -e %(script)s %(filename)s > %(tmp)s \
 && cp -p %(filename)s %(filename)s%(backup)s \
 && mv %(tmp)s %(filename)s"""
-        command = expr % locals()
     else:
-        expr = r"sed -i%s -r -e '%ss/%s/%s/%sg' %s"
-        command = expr % (backup, limit, before, after, flags, filename)
-    return func(command, shell=False)
+        context['extended_regex'] = '-E' if platform == 'Darwin' else '-r'
+        expr = r"sed -i%(backup)s %(extended_regex)s -e %(script)s %(filename)s"
+    command = expr % context
+    return func(command, shell=shell)
 
 
-def uncomment(filename, regex, use_sudo=False, char='#', backup='.bak'):
+def uncomment(filename, regex, use_sudo=False, char='#', backup='.bak',
+    shell=False):
     """
     Attempt to uncomment all lines in ``filename`` matching ``regex``.
 
@@ -189,13 +229,16 @@ def uncomment(filename, regex, use_sudo=False, char='#', backup='.bak'):
     argument.
 
     This function uses the `sed` function, and will accept the same
-    ``use_sudo`` and ``backup`` keyword arguments that `sed` does.
+    ``use_sudo``, ``shell`` and ``backup`` keyword arguments that `sed` does.
 
     `uncomment` will remove a single whitespace character following the comment
     character, if it exists, but will preserve all preceding whitespace.  For
     example, ``# foo`` would become ``foo`` (the single space is stripped) but
     ``    # foo`` would become ``    foo`` (the single space is still stripped,
     but the preceding 4 spaces are not.)
+
+    .. versionchanged:: 1.6
+        Added the ``shell`` keyword argument.
     """
     return sed(
         filename,
@@ -203,11 +246,13 @@ def uncomment(filename, regex, use_sudo=False, char='#', backup='.bak'):
         after=r'\1',
         limit=regex,
         use_sudo=use_sudo,
-        backup=backup
+        backup=backup,
+        shell=shell
     )
 
 
-def comment(filename, regex, use_sudo=False, char='#', backup='.bak'):
+def comment(filename, regex, use_sudo=False, char='#', backup='.bak',
+    shell=False):
     """
     Attempt to comment out all lines in ``filename`` matching ``regex``.
 
@@ -215,7 +260,7 @@ def comment(filename, regex, use_sudo=False, char='#', backup='.bak'):
     ``char`` argument.
 
     This function uses the `sed` function, and will accept the same
-    ``use_sudo`` and ``backup`` keyword arguments that `sed` does.
+    ``use_sudo``, ``shell`` and ``backup`` keyword arguments that `sed` does.
 
     `comment` will prepend the comment character to the beginning of the line,
     so that lines end up looking like so::
@@ -237,6 +282,9 @@ def comment(filename, regex, use_sudo=False, char='#', backup='.bak'):
         ``comment(filename, r'^foo$')`` will result in a `sed` call with the
         "before" regex of ``r'^(foo)$'`` (and the "after" regex, naturally, of
         ``r'#\\1'``.)
+
+    .. versionadded:: 1.5
+        Added the ``shell`` keyword argument.
     """
     carot, dollar = '', ''
     if regex.startswith('^'):
@@ -251,11 +299,13 @@ def comment(filename, regex, use_sudo=False, char='#', backup='.bak'):
         before=regex,
         after=r'%s\1' % char,
         use_sudo=use_sudo,
-        backup=backup
+        backup=backup,
+        shell=shell
     )
 
 
-def contains(filename, text, exact=False, use_sudo=False, escape=True):
+def contains(filename, text, exact=False, use_sudo=False, escape=True,
+    shell=False):
     """
     Return True if ``filename`` contains ``text`` (which may be a regex.)
 
@@ -265,14 +315,17 @@ def contains(filename, text, exact=False, use_sudo=False, escape=True):
     results in a True return value.
 
     This function leverages ``egrep`` on the remote end (so it may not follow
-    Python regular expression syntax perfectly), and skips the usual outer
-    ``env.shell`` wrapper that most commands execute with.
+    Python regular expression syntax perfectly), and skips ``env.shell``
+    wrapper by default.
 
     If ``use_sudo`` is True, will use `sudo` instead of `run`.
 
     If ``escape`` is False, no extra regular expression related escaping is
     performed (this includes overriding ``exact`` so that no ``^``/``$`` is
     added.)
+
+    The ``shell`` argument will be eventually passed to ``run/sudo``. See
+    description of the same argumnet in ``~fabric.contrib.sed`` for details.
 
     .. versionchanged:: 1.0
         Swapped the order of the ``filename`` and ``text`` arguments to be
@@ -282,6 +335,8 @@ def contains(filename, text, exact=False, use_sudo=False, escape=True):
         various corner cases.
     .. versionchanged:: 1.4
         Added ``escape`` keyword argument.
+    .. versionadded:: 1.6
+        Added the ``shell`` keyword argument.
     """
     func = use_sudo and sudo or run
     if escape:
@@ -289,11 +344,12 @@ def contains(filename, text, exact=False, use_sudo=False, escape=True):
         if exact:
             text = "^%s$" % text
     with settings(hide('everything'), warn_only=True):
-        egrep_cmd = 'egrep "%s" "%s"' % (text, filename)
-        return func(egrep_cmd, shell=False).succeeded
+        egrep_cmd = 'egrep "%s" %s' % (text, _expand_path(filename))
+        return func(egrep_cmd, shell=shell).succeeded
 
 
-def append(filename, text, use_sudo=False, partial=False, escape=True):
+def append(filename, text, use_sudo=False, partial=False, escape=True,
+    shell=False):
     """
     Append string (or list of strings) ``text`` to ``filename``.
 
@@ -309,10 +365,13 @@ def append(filename, text, use_sudo=False, partial=False, escape=True):
     "append lines to a file" use case. You may override this and force partial
     searching (e.g. ``^<text>``) by specifying ``partial=True``.
 
-    Because ``text`` is single-quoted, single quotes will be transparently 
+    Because ``text`` is single-quoted, single quotes will be transparently
     backslash-escaped. This can be disabled with ``escape=False``.
 
     If ``use_sudo`` is True, will use `sudo` instead of `run`.
+
+    The ``shell`` argument will be eventually passed to ``run/sudo``. See
+    description of the same argumnet in ``~fabric.contrib.sed`` for details.
 
     .. versionchanged:: 0.9.1
         Added the ``partial`` keyword argument.
@@ -324,6 +383,8 @@ def append(filename, text, use_sudo=False, partial=False, escape=True):
     .. versionchanged:: 1.4
         Updated the regular expression related escaping to try and solve
         various corner cases.
+    .. versionadded:: 1.6
+        Added the ``shell`` keyword argument.
     """
     func = use_sudo and sudo or run
     # Normalize non-list input to be a list
@@ -332,10 +393,11 @@ def append(filename, text, use_sudo=False, partial=False, escape=True):
     for line in text:
         regex = '^' + _escape_for_regex(line)  + ('' if partial else '$')
         if (exists(filename, use_sudo=use_sudo) and line
-            and contains(filename, regex, use_sudo=use_sudo, escape=False)):
+            and contains(filename, regex, use_sudo=use_sudo, escape=False,
+                         shell=shell)):
             continue
         line = line.replace("'", r"'\\''") if escape else line
-        func("echo '%s' >> %s" % (line, filename))
+        func("echo '%s' >> %s" % (line, _expand_path(filename)))
 
 def _escape_for_regex(text):
     """Escape ``text`` to allow literal matching using egrep"""
@@ -347,3 +409,6 @@ def _escape_for_regex(text):
     # Whereas single quotes should not be escaped
     regex = regex.replace(r"\'", "'")
     return regex
+
+def _expand_path(path):
+    return '"$(echo %s)"' % path
