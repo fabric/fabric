@@ -322,7 +322,7 @@ env = _AttributeDict({
     'local_user': _get_system_username(),
     'output_prefix': True,
     'passwords': {},
-    'passwords_grp': [],
+    'password_group': [],
     'path': '',
     'path_behavior': 'append',
     'port': default_port,

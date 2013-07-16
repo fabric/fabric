@@ -504,6 +504,21 @@ per-host-string password cache. Keys are full :ref:`host strings
 
 .. versionadded:: 1.0
 
+.. _password_group:
+
+``password_group``
+-------------
+
+**Default:** ``[]``
+
+Used for set a list of potential passwords inside, if ssh key or env.password 
+not work, fabric will try each one of the password inside this
+list, then prompt your raw input until try out all of the passwords inside this
+list.
+
+.. seealso:: :ref:`password-management`
+
+.. versionadded:: 1.0
 
 .. _env-path:
 

@@ -372,6 +372,7 @@ def connect(user, host, port, sock=None):
     # Initialize loop variables
     connected = False
     password = get_password(user, host, port)
+    password_group = env.password_group[:]
     tries = 0
 
     # Loop until successful connect (keep prompting for new password)
@@ -459,9 +460,9 @@ def connect(user, host, port, sock=None):
                 # which one raised the exception. Best not to try.
                 prompt = "[%s] Passphrase for private key"
                 text = prompt % env.host_string
-            # check passwords group
-            if passwords_grp:
-                password = passwords_grp.pop(0)
+            # check password group
+            if password_group:
+                password = password_group.pop(0)
             else:
                 # Update env.password, env.passwords if empty
                 password = prompt_for_password(text)
@@ -602,3 +603,4 @@ def disconnect_all():
         connections[key].close()
         del connections[key]
         if output.status:
+            sys.stdout.write("done.\n")
