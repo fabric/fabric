@@ -467,21 +467,124 @@ def shell_env(**kw):
 
 def _forwarder(chan, sock):
     # Bidirectionally forward data between a socket and a Paramiko channel.
-    while True:
-        r, w, x = select.select([sock, chan], [], [])
-        if sock in r:
-            data = sock.recv(1024)
-            if len(data) == 0:
-                break
-            chan.send(data)
-        if chan in r:
-            data = chan.recv(1024)
-            if len(data) == 0:
-                break
-            sock.send(data)
-    chan.close()
-    sock.close()
+    try:
+        while True:
+            r, w, x = select.select([sock, chan], [], [], 1)
+            if sock in r:
+                data = sock.recv(1024)
+                if len(data) == 0:
+                    break
+                chan.send(data)
+            if chan in r:
+                data = chan.recv(1024)
+                if len(data) == 0:
+                    break
+                sock.send(data)
+    except socket.error as e:
+        #Sockets return bad file descriptor if closed.
+        #Maybe there is a cleaner way of doing this?
+        if e.errno != socket.EBADF:
+            raise        
+    
+    try:
+        chan.close()
+    except socket.error:
+        pass
+    
+    try:
+        sock.close()
+    except socket.error:
+        pass
 
+
+@documented_contextmanager
+def local_tunnel(remote_port, remote_host=None, bind_port=None, bind_host=None):
+    """
+    Forward a local port to a given host and port on the remote side.
+
+    For example, you can use this to run local commands which connect to a
+    database which is only bound to localhost on server:
+
+        # Map localhost:6379 on the client to localhost:6379 on the server,
+        # so that the local 'redis-cli' program ends up speaking to the remote
+        # redis-server.
+        with local_tunnel(6379):
+            local("redis-cli -i")
+
+    ``local_tunnel`` accepts up to three arguments:
+
+    * ``remote_port`` (mandatory) is the remote port to connect to.
+    * ``remote_host`` (optional) is the remote host to connect to; the
+    default is ``localhost``.
+    * ``bind_port`` (optional) is the local port to bind; the default
+    is ``remote_port``.
+    * ``bind_host`` (optional) is the local address (DNS name or
+      IP address) on which to bind; the default is ``localhost``.
+    """
+    
+    if remote_host is None:
+        remote_host = 'localhost'
+    if bind_port is None:
+        bind_port = remote_port
+    if bind_host is None:
+        bind_host = 'localhost'    
+
+    
+    def listener_thread_main(sock, callback, *a, **kw):
+        import select
+        try:
+            while True:
+                selsockets = select.select([sock], [], [], 1)
+                if sock in selsockets[0]:
+                    callback(sock, *a, **kw)
+        except socket.error as e:
+            #Sockets return bad file descriptor if closed.
+            #Maybe there is a cleaner way of doing this?
+            if e.errno != socket.EBADF:
+                raise
+    
+    listening_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    listening_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    listening_socket.bind((bind_host, bind_port))
+    listening_socket.listen(1)
+    
+    sockets = []
+    channels = []
+    threads = []
+    
+    def accept(listen_sock, transport, remote_addr):
+        sock, local_peer = listen_sock.accept()
+        channel = transport.open_channel('direct-tcpip',
+                                         remote_addr,
+                                         local_peer)
+        
+        if channel is None:
+            raise Exception('Incoming request to %s:%d was rejected by the SSH server.' %
+                    self.remote_addr)
+        
+        th = ThreadHandler('fwd', _forwarder, channel, sock)
+        
+        sockets.append(sock)
+        channels.append(channel)
+        threads.append(th)
+    
+    listening_thread = ThreadHandler('local_bind', listener_thread_main,
+                                     listening_socket, accept, 
+                                     connections[env.host_string].get_transport(),
+                                     (remote_host, remote_port))
+    
+    try:
+        yield
+    finally:
+        for sock, chan, th in zip(sockets, channels, threads):
+            sock.close()
+            chan.close()
+            th.thread.join()
+            th.raise_if_needed()
+        
+        listening_socket.close()
+        listening_thread.thread.join()
+        listening_thread.raise_if_needed()
 
 @documented_contextmanager
 def remote_tunnel(remote_port, local_port=None, local_host="localhost",
