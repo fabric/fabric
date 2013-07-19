@@ -480,7 +480,7 @@ def _forwarder(chan, sock):
                 if len(data) == 0:
                     break
                 sock.send(data)
-    except socket.error as e:
+    except socket.error, e:
         #Sockets return bad file descriptor if closed.
         #Maybe there is a cleaner way of doing this?
         if e.errno != socket.EBADF:
@@ -537,7 +537,7 @@ def local_tunnel(remote_port, remote_host=None, bind_port=None, bind_host=None):
                 selsockets = select.select([sock], [], [], 1)
                 if sock in selsockets[0]:
                     callback(sock, *a, **kw)
-        except socket.error as e:
+        except socket.error, e:
             #Sockets return bad file descriptor if closed.
             #Maybe there is a cleaner way of doing this?
             if e.errno != socket.EBADF:
