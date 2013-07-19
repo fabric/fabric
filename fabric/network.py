@@ -94,7 +94,7 @@ class HostConnectionCache(dict):
         key = normalize_to_string(key)
         sock = None
         proxy_command = ssh_config().get('proxycommand', None)
-        if proxy_command.lower() == 'none':
+        if proxy_command and proxy_command.lower() == 'none':
             proxy_command = None
         if env.gateway:
             gateway = normalize_to_string(env.gateway)
