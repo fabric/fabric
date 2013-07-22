@@ -15,6 +15,7 @@ from __future__ import with_statement
 import os
 import re
 import sys
+import types
 from datetime import datetime
 
 # Custom ReST roles.
@@ -280,16 +281,18 @@ latex_documents = [
 #latex_use_modindex = True
 
 
-# Restore decorated functions so that autodoc inspects the rigt arguments
+# Restore decorated functions so that autodoc inspects the right arguments
 def unwrap_decorated_functions():
-    from fabric import operations
-    for name in ['get', 'open_shell', 'put', 'reboot', 'run', 'sudo']:
-        func = getattr(operations, name)
-        setattr(operations, name, func.undecorated)
-
-    from fabric import context_managers
-    for name in ['show', 'hide']:
-        func = getattr(context_managers, name)
-        setattr(context_managers, name, func.undecorated)
+    from fabric import operations, context_managers
+    for module in [context_managers, operations]:
+        for name, obj in vars(module).iteritems():
+            if (
+                # Only function objects - just in case some real object showed
+                # up that had .undecorated
+                isinstance(obj, types.FunctionType)
+                # Has our .undecorated 'cache' of the real object
+                and hasattr(obj, 'undecorated')
+            ):
+                setattr(module, name, obj.undecorated)
 
 unwrap_decorated_functions()
