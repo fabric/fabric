@@ -196,7 +196,7 @@ class SFTP(object):
         return result
 
     def put(self, local_path, remote_path, use_sudo, mirror_local_mode, mode,
-        local_is_path, temp_dir):
+        local_is_path, temp_dir, callback=None):
         from fabric.api import sudo, hide
         pre = self.ftp.getcwd()
         pre = pre if pre else ''
@@ -224,7 +224,7 @@ class SFTP(object):
             old_pointer = local_path.tell()
             local_path.seek(0)
             putter = self.ftp.putfo
-        rattrs = putter(local_path, remote_path)
+        rattrs = putter(local_path, remote_path, callback)
         if not local_is_path:
             local_path.seek(old_pointer)
         # Handle modes if necessary
