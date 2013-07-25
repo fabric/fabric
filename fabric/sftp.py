@@ -110,7 +110,7 @@ class SFTP(object):
         else:
             self.ftp.mkdir(path)
 
-    def get(self, remote_path, local_path, local_is_path, rremote=None):
+    def get(self, remote_path, local_path, local_is_path, rremote=None, callback=None):
         # rremote => relative remote path, so get(/var/log) would result in
         # this function being called with
         # remote_path=/var/log/apache2/access.log and
@@ -151,7 +151,7 @@ class SFTP(object):
         if not local_is_path:
             local_path.seek(0)
             getter = self.ftp.getfo
-        getter(remote_path, local_path)
+        getter(remote_path, local_path, callback)
         # Return local_path object for posterity. (If mutated, caller will want
         # to know.)
         return local_path
