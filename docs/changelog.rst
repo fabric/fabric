@@ -30,7 +30,7 @@ Changelog
 * :feature:`925` Added `contrib.files.is_link <.is_link>`. Thanks to `@jtangas`
   for the patch.
 * :feature:`922` Task argument strings are now displayed when using
-  :cmdopt:`fab -d <-d>`. Thanks to Kevin Qiu for the patch.
+  :option:`fab -d <-d>`. Thanks to Kevin Qiu for the patch.
 * :bug:`912` Leaving ``template_dir`` un-specified when using
   `.upload_template` in Jinja mode used to cause ``'NoneType' has no attribute
   'startswith'`` errors. This has been fixed. Thanks to Erick Yellott for catch
