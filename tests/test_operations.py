@@ -807,6 +807,14 @@ class TestFileTransfers(FabricTest):
         eq_(pointer, fake_file.tell())
 
     @server()
+    def test_put_sudoing_with_mode(self):
+        """
+        put()'s sudo-ing with mode
+        """
+        with hide('everything'):
+            put(StringIO.StringIO(""), 'test.txt', use_sudo=True, mode=0600)
+
+    @server()
     @raises(ValueError)
     def test_put_should_raise_exception_for_nonexistent_local_path(self):
         """

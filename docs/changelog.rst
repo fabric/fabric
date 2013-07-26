@@ -25,6 +25,7 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`936` issue with sftp put while having use_sudo together with mode set.
 * :feature:`925` Added `contrib.files.is_link <.is_link>`. Thanks to `@jtangas`
   for the patch.
 * :feature:`922` Task argument strings are now displayed when using
