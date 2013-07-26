@@ -2,22 +2,29 @@ import sys
 from fabric.colors import *
 
 def show_progressbar(another_callback=None, progress_char='#', progress_color_function=green, show_percents=True, percents_color_function=yellow):
-    number_of_columns = _get_terminal_size()[0] - 2
+    number_of_columns = _get_terminal_size()[0] # for some reason the size of console is over by one
+    is_already_finished = [False]
     def show_progressbar_on_terminal(size_so_far, overall_size):
-        fraction_done = float(size_so_far)/overall_size
-        number_of_columns_to_show = int(fraction_done*number_of_columns)
-        print('\r' + progress_color_function(progress_char*number_of_columns_to_show)),
-        if show_percents:
-            percents_string = str(fraction_done*100) + '%'
-            percents_len = len(percents_string)
-            number_of_spaces_before_percents = number_of_columns - number_of_columns_to_show - percents_len - 1
-            if (number_of_spaces_before_percents > 0):
-                print(' '*number_of_spaces_before_percents),
-                print(percents_color_function(percents_string)),
-            
-        sys.stdout.flush()
+        if not is_already_finished[0]:
+            fraction_done = float(size_so_far)/overall_size
+            number_of_progress_chars_to_show = int(fraction_done*number_of_columns)
+            sys.stdout.write('\r' + progress_color_function(progress_char*number_of_progress_chars_to_show)),
 
-    def progressbar_callback(size_so_far, overall_size):
+            if show_percents:
+                percents_string = "%.2f%%" % (fraction_done*100)
+                percents_len = len(percents_string)
+                number_of_spaces_before_percents = number_of_columns - number_of_progress_chars_to_show - percents_len
+                if (number_of_spaces_before_percents > 0):
+                    sys.stdout.write(' '*number_of_spaces_before_percents),
+                    sys.stdout.write(percents_color_function(percents_string)),
+
+            if size_so_far == overall_size:
+                sys.stdout.write("\n")
+                is_already_finished[0] = True
+                
+            sys.stdout.flush()
+
+    def progressbar_callback(file_name, size_so_far, overall_size):
         show_progressbar_on_terminal(size_so_far, overall_size)
         if (another_callback != None):
             another_callback(size_so_far, overall_size)
