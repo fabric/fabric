@@ -37,7 +37,7 @@ def upload():
 @task
 def release(force='no'):
     """
-    Tag/push, build, upload new version and build/upload documentation.
+    Tag, push tag to Github, & upload new version to PyPI.
     """
     tag.tag(force=force, push='yes')
     upload()
