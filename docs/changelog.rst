@@ -25,6 +25,7 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :release:`1.6.2 <2013-07-26>`
 * :bug:`912` Leaving ``template_dir`` un-specified when using
   `.upload_template` in Jinja mode used to cause ``'NoneType' has no attribute
   'startswith'`` errors. This has been fixed. Thanks to Erick Yellott for catch
