@@ -25,6 +25,7 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :release:`1.6.2 <2013-07-26>`
 * :feature:`925` Added `contrib.files.is_link <.is_link>`. Thanks to `@jtangas`
   for the patch.
 * :feature:`922` Task argument strings are now displayed when using
