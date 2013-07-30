@@ -309,6 +309,12 @@ def put(local_path=None, remote_path=None, use_sudo=False,
     Use of `~fabric.context_managers.lcd` will affect ``local_path`` in the
     same manner.
 
+    The ``callback`` parameter is a function of a form::
+        
+        def callback(file_name, file_size, size_transferred)
+
+    the function is called by underlying layer every transferred data block.
+
     Examples::
 
         put('bin/project.zip', '/tmp/project.zip')
@@ -479,6 +485,13 @@ def get(remote_path, local_path=None, callback=None):
     ``local_path`` may alternately be a file-like object, such as the result of
     ``open('path', 'w')`` or a ``StringIO`` instance.
 
+    The ``callback`` parameter is a function of a form::
+        
+        def callback(file_name, file_size, size_transferred)
+
+    the function is called by underlying layer every transferred data block.
+
+ 
     .. note::
         Attempting to `get` a directory into a file-like object is not valid
         and will result in an error.
