@@ -2,6 +2,16 @@ import sys
 from fabric.colors import *
 
 def show_progressbar(another_callback=None, progress_char='#', progress_color_function=green, file_name_color_function=blue, show_percents=True, percents_color_function=yellow):
+    """
+    Function returns a progressbar callback that can be used 
+    as a 'callback' argument for get/put operation.
+
+    `another_callback` is an argument that makes possible the 
+    callback chaining.
+
+    `show_percents` makes the progressbar show the percent 
+    progress at the end of line.
+    """
     number_of_columns = _get_terminal_size()[0] # for some reason the size of console is over by one
     is_already_finished = [False]
     def show_progressbar_on_terminal(file_name, size_so_far, overall_size):
