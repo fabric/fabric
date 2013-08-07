@@ -687,17 +687,19 @@ def _prefix_env_vars(command, local=False):
     env_vars.update(env.shell_env)
 
     if env_vars:
-        set_cmd, exp_cmd = '', ''
+        set_cmd, exp_cmd, glue = '', '', ''
         if win32 and local:
             set_cmd = 'SET '
+            glue = ' && '
         else:
             exp_cmd = 'export '
 
         exports = ' '.join(
-            '%s%s="%s"' % (set_cmd, k, v if k == 'PATH' else _shell_escape(v))
+            '%s%s="%s"%s' % (set_cmd, k, v if k == 'PATH' else _shell_escape(v), glue)
             for k, v in env_vars.iteritems()
         )
-        shell_env_str = '%s%s && ' % (exp_cmd, exports)
+        print exports
+        shell_env_str = '%s%s%s' % (exp_cmd, exports, '' if glue else ' && ' )
     else:
         shell_env_str = ''
 
