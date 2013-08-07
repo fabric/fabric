@@ -698,7 +698,6 @@ def _prefix_env_vars(command, local=False):
             '%s%s="%s"%s' % (set_cmd, k, v if k == 'PATH' else _shell_escape(v), glue)
             for k, v in env_vars.iteritems()
         )
-        print exports
         shell_env_str = '%s%s%s' % (exp_cmd, exports, '' if glue else ' && ' )
     else:
         shell_env_str = ''
