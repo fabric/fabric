@@ -17,8 +17,8 @@ __all__ = ['rsync_project', 'upload_project']
 
 @needs_host
 def rsync_project(remote_dir, local_dir=None, exclude=(), delete=False,
-        default_opts='-pthrvz', extra_opts='', ssh_opts='', capture=False,
-        upload=True):
+        extra_opts='', ssh_opts='', capture=False, upload=True,
+        default_opts='-pthrvz'):
     """
     Synchronize a remote directory with the current project directory via rsync.
 
@@ -64,8 +64,6 @@ def rsync_project(remote_dir, local_dir=None, exclude=(), delete=False,
     * ``delete``: a boolean controlling whether ``rsync``'s ``--delete`` option
       is used. If True, instructs ``rsync`` to remove remote files that no
       longer exist locally. Defaults to False.
-    * ``default_opts``: the default rsync options ``-pthrvz``, override if
-      desired.
     * ``extra_opts``: an optional, arbitrary string which you may use to pass
       custom arguments or options to ``rsync``.
     * ``ssh_opts``: Like ``extra_opts`` but specifically for the SSH options
@@ -73,6 +71,8 @@ def rsync_project(remote_dir, local_dir=None, exclude=(), delete=False,
     * ``capture``: Sent directly into an inner `~fabric.operations.local` call.
     * ``upload``: a boolean controlling whether file synchronization is
       performed up or downstream. Upstream by default.
+    * ``default_opts``: the default rsync options ``-pthrvz``, override if
+      desired.
 
     Furthermore, this function transparently honors Fabric's port and SSH key
     settings. Calling this function when the current host string contains a
@@ -89,7 +89,7 @@ def rsync_project(remote_dir, local_dir=None, exclude=(), delete=False,
         The ``ssh_opts`` keyword argument.
     .. versionadded:: 1.4.1
         The ``capture`` keyword argument.
-    .. versionadded:: 1.6.2
+    .. versionadded:: 1.7.1
         The ``default_opts`` keyword argument.
 
     """
