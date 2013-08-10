@@ -25,6 +25,10 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`948` Handle connection failures due to server load and try connecting
+  to hosts a number of times specified in :ref:`env.connection_attempts
+  <connection-attempts>`.
+* :bug:`844` Account for SSH config overhaul in Paramiko 1.10 by e.g. updating
 * :release:`1.7.0 <2013-07-26>`
 * :release:`1.6.2 <2013-07-26>`
 * :feature:`925` Added `contrib.files.is_link <.is_link>`. Thanks to `@jtangas`
