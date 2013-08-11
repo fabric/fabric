@@ -481,7 +481,6 @@ def connect(user, host, port, sock=None):
             err = msg + " (attempt %s of %s)" % (tries, env.connection_attempts)
             if giving_up:
                 err += ", giving up"
-            err += ")"
             # Debuggin'
             if output.debug:
                 sys.stderr.write(err + '\n')
