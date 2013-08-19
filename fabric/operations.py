@@ -654,7 +654,7 @@ def _prefix_commands(command, which):
     if cwd:
         prefixes.insert(0, 'cd %s' % cwd)
     glue = " && "
-    prefix = (glue.join(prefixes) + glue) if prefixes else ""
+    prefix = (glue.join(prefixes) + glue) if any(prefixes) else ""
     return prefix + command
 
 
