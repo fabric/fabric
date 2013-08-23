@@ -51,6 +51,11 @@ def is_key_load_error(e):
     )
 
 
+def _tried_enough(tries):
+    from fabric.state import env
+    return tries >= env.connection_attempts
+
+
 class HostConnectionCache(dict):
     """
     Dict subclass allowing for caching of host connections/clients.
@@ -410,6 +415,15 @@ def connect(user, host, port, sock=None):
             ssh.SSHException
         ), e:
             msg = str(e)
+            # If we get SSHExceptionError and the exception message indicates
+            # SSH protocol banner read failures, assume it's caused by the
+            # server load and try again.
+            if e.__class__ is ssh.SSHException \
+                and msg == 'Error reading SSH protocol banner':
+                if _tried_enough(tries):
+                    raise NetworkError(msg, e)
+                continue
+
             # For whatever reason, empty password + no ssh key or agent
             # results in an SSHException instead of an
             # AuthenticationException. Since it's difficult to do
@@ -474,7 +488,7 @@ def connect(user, host, port, sock=None):
         # NOTE: In 2.6, socket.error subclasses IOError
         except socket.error, e:
             not_timeout = type(e) is not socket.timeout
-            giving_up = tries >= env.connection_attempts
+            giving_up = _tried_enough(tries)
             # Baseline error msg for when debug is off
             msg = "Timed out trying to connect to %s" % host
             # Expanded for debug on
