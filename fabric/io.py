@@ -50,7 +50,8 @@ class OutputLooper(object):
 
     def _flush(self, text):
         self.stream.write(text)
-        self.stream.flush()
+        if not self.linewise:
+            self.stream.flush()
         self.write_buffer.extend(text)
 
     def loop(self):
