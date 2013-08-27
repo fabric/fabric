@@ -80,7 +80,7 @@ def rsync_project(remote_dir, local_dir=None, exclude=(), delete=False,
     constructed by this function is the following::
 
         rsync [--delete] [--exclude exclude[0][, --exclude[1][, ...]]] \\
-            -pthrvz [extra_opts] <local_dir> <host_string>:<remote_dir>
+            -pthrz [extra_opts] <local_dir> <host_string>:<remote_dir>
 
     .. versionadded:: 1.4.0
         The ``ssh_opts`` keyword argument.
@@ -114,7 +114,7 @@ def rsync_project(remote_dir, local_dir=None, exclude=(), delete=False,
         'rsh': rsh_string,
         'extra': extra_opts
     }
-    options = "%(delete)s%(exclude)s -pthrvz %(extra)s %(rsh)s" % options_map
+    options = "%(delete)s%(exclude)s -pthrz %(extra)s %(rsh)s" % options_map
     # Get local directory
     if local_dir is None:
         local_dir = '../' + getcwd().split(sep)[-1]
