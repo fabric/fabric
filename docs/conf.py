@@ -21,6 +21,8 @@ from datetime import datetime
 # Custom ReST roles.
 from docutils.parsers.rst import roles
 from docutils import nodes, utils
+# Custom ReST nodes
+from fabric.changelog import issue, release as release_node
 
 issue_types = ('bug', 'feature', 'support')
 
@@ -36,7 +38,7 @@ def issues_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
     issue_no = utils.unescape(text)
     ref = "https://github.com/fabric/fabric/issues/" + issue_no
     link = nodes.reference(rawtext, '#' + issue_no, refuri=ref, **options)
-    ret = [link]
+    nodelist = [link]
     # Additional 'new-style changelog' stuff
     if name in issue_types:
         which = '[<span class="changelog-%s">%s</span>]' % (
@@ -48,7 +50,9 @@ def issues_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
             link,
             nodes.inline(text=":")
         ]
-    return ret, []
+    # Create temporary node w/ data & final nodes to publish
+    node = issue(number=issue_no, type_=name, nodelist=nodelist)
+    return [node], []
 
 for x in issue_types + ('issue',):
     roles.register_local_role(x, issues_role)
@@ -69,7 +73,7 @@ def release_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
         msg = inliner.reporter.error("Must specify release date!")
         return [inliner.problematic(rawtext, rawtext, msg)], [msg]
     number, date = match.group(1), match.group(2)
-    return [
+    nodelist = [
         nodes.strong(text=date),
         nodes.inline(text=": released "),
         nodes.reference(
@@ -77,7 +81,10 @@ def release_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
             refuri="https://github.com/fabric/fabric/tree/%s" % number,
             classes=['changelog-release']
         )
-    ], []
+    ]
+    # Return intermediate node
+    node = release_node(number=number, date=date, nodelist=nodelist)
+    return [node], []
 roles.register_local_role('release', release_role)
 
 
@@ -90,7 +97,7 @@ roles.register_local_role('release', release_role)
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc']
+extensions = ['sphinx.ext.autodoc', 'fabric.changelog']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

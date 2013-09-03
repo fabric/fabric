@@ -4,28 +4,6 @@
 Changelog
 =========
 
-How to read
-===========
-
-This changelog lists each bugfix, feature addition, etc in the order they were
-checked into Fabric's source code repository. Published releases are bolded,
-dated and inserted at the appropriate points in the timeline.
-
-To find out the changes included in a given release, look at the entries
-between that release and the previous one from the same release line. For
-example, 1.1.4 down through 1.1.3 would be the effective changelog for the
-1.1.4 release; 1.7.0 down through 1.6.0 would be the changelog for the 1.7.0
-release; etc.
-
-Bugfixes to older release lines are always forward-ported to newer releases,
-and this is reflected in the changelog. Thus, the changelog for e.g. 1.2.2
-might contain entries for the 1.1 and 1.0 lines, because those changes would
-have also been included in the 1.2 line.
-
-
-Changelog
-=========
-
 * :release:`1.7.0 <2013-07-26>`
 * :release:`1.6.2 <2013-07-26>`
 * :feature:`925` Added `contrib.files.is_link <.is_link>`. Thanks to `@jtangas`
