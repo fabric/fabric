@@ -52,11 +52,9 @@ def generate_changelog(app, doctree):
         # final data structure. They also inform new release-line 'buffers'.
         if isinstance(focus, release):
             line = get_line(focus)
-            print "RELEASE (%s line): %s" % (line, focus.number)
             # New release line/branch detected. Create it & dump unreleased into
             # this new release.
             if line not in lines:
-                print "\tNew line, allocating buffer & flushing %s from unreleased" % len(lines['unreleased'])
                 lines[line] = []
                 releases[focus.number] = {
                     'obj': focus,
@@ -65,7 +63,6 @@ def generate_changelog(app, doctree):
                 lines['unreleased'] = []
             # Existing line -> empty out its bucket into new release
             else:
-                print "\tFlushing %s from %s" % (len(lines[line]), line)
                 releases[focus.number] = {
                     'obj': focus,
                     'entries': lines[line]
@@ -79,13 +76,10 @@ def generate_changelog(app, doctree):
         # release lines as well, on the assumption that they were released to
         # all active branches.
         elif isinstance(focus, issue):
-            print "ISSUE: %s %s" % (focus.type, focus.number)
             lines['unreleased'].append(focus)
-            print "\tAdded to unreleased"
             if focus.type == 'bug' or focus.backported:
                 for line in lines:
                     lines[line].append(focus)
-                print "\tAdded to %s release lines" % len(lines)
 
     ipdb.set_trace()
 
