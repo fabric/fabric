@@ -48,7 +48,7 @@ def issues_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
         which = '[<span class="changelog-%s">%s</span>]' % (
             name, name.capitalize()
         )
-        ret = [
+        nodelist = [
             nodes.raw(text=which, format='html'),
             nodes.inline(text=" "),
             link,
@@ -61,6 +61,10 @@ def issues_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
         nodelist=nodelist,
         backported=bool(backported)
     )
+    # Return old style info for 'issue' for older changelog doc. Return the
+    # temporary node for newer stuff.
+    if name not in issue_types:
+        return nodelist, []
     return [node], []
 
 for x in issue_types + ('issue',):

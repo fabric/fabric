@@ -25,21 +25,7 @@ def get_line(obj):
     # 1.2.7 -> 1.2
     return '.'.join(obj.number.split('.')[:-1])
 
-def first_releases(entries):
-    ret = []
-    while not isinstance(entries[0], issue):
-        ret.append(entries.pop(0))
-    return ret, entries
-
-def generate_changelog(app, doctree):
-    # This seems to be the cleanest way to tell what a not-fully-parsed
-    # document's 'name' is. Also lol @ not fully implementing dict protocol.
-    source = doctree.children[0]
-    if 'changelog' not in source.get('names', []):
-        return
-    # Second item inside main document is the 'modern' changelog bullet-list
-    # object, whose children are the nodes we care about.
-    entries = source.children[1].children
+def construct_releases(entries):
     # Walk from back to front, consuming entries & copying them into
     # per-release buckets as releases are encountered.
     releases = {}
@@ -82,15 +68,30 @@ def generate_changelog(app, doctree):
                     lines[line].append(focus)
         # Entries not yet released get special 'release' entries (that lack an
         # actual release object).
-        for line, items in lines:
-            releases['.'.join(line, 'X')] = {
+        for line, items in lines.iteritems():
+            releases["%s.X" % line] = {
                 'entries': items
             }
+    return releases
 
-    ipdb.set_trace()
+def construct_nodes(releases):
+    return []
+
+def generate_changelog(app, doctree):
+    # This seems to be the cleanest way to tell what a not-fully-parsed
+    # document's 'name' is. Also lol @ not fully implementing dict protocol.
+    source = doctree.children[0]
+    if 'changelog' not in source.get('names', []):
+        return
+    # Second item inside main document is the 'modern' changelog bullet-list
+    # object, whose children are the nodes we care about.
+    changelog = source.children.pop(1)
+    # Walk + parse into release mapping
+    releases = construct_releases(changelog.children)
+    # Construct new set of nodes to replace the old, and we're done
+    source.children[1:1] = construct_nodes(releases)
 
 
 def setup(app):
-    app.add_node(issue)
     #app.connect('doctree-resolved', generate_changelog)
     app.connect('doctree-read', generate_changelog)
