@@ -80,6 +80,12 @@ def generate_changelog(app, doctree):
             if focus.type == 'bug' or focus.backported:
                 for line in lines:
                     lines[line].append(focus)
+        # Entries not yet released get special 'release' entries (that lack an
+        # actual release object).
+        for line, items in lines:
+            releases['.'.join(line, 'X')] = {
+                'entries': items
+            }
 
     ipdb.set_trace()
 
