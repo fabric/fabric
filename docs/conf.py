@@ -28,14 +28,18 @@ issue_types = ('bug', 'feature', 'support')
 
 def issues_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
     """
-    Use: :issue|bug|feature|support:`ticket number`
+    Use: :issue|bug|feature|support:`ticket_number`
 
     When invoked as :issue:, turns into just a "#NN" hyperlink to Github.
 
     When invoked otherwise, turns into "[Type] <#NN hyperlink>: ".
+
+    May give a 'ticket number' of '<number> backported' to indicate a
+    backported feature or support ticket. This extra info will be stripped out
+    prior to parsing.
     """
     # Old-style 'just the issue link' behavior
-    issue_no = utils.unescape(text)
+    issue_no, _, backported = utils.unescape(text).partition(' ')
     ref = "https://github.com/fabric/fabric/issues/" + issue_no
     link = nodes.reference(rawtext, '#' + issue_no, refuri=ref, **options)
     nodelist = [link]
@@ -51,7 +55,12 @@ def issues_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
             nodes.inline(text=":")
         ]
     # Create temporary node w/ data & final nodes to publish
-    node = issue(number=issue_no, type_=name, nodelist=nodelist)
+    node = issue(
+        number=issue_no,
+        type_=name,
+        nodelist=nodelist,
+        backported=bool(backported)
+    )
     return [node], []
 
 for x in issue_types + ('issue',):

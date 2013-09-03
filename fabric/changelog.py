@@ -3,7 +3,17 @@ import ipdb
 
 
 class issue(docutils.nodes.Element):
-    pass
+    @property
+    def type(self):
+        return self.attributes['type_']
+
+    @property
+    def backported(self):
+        return self.attributes['backported']
+
+    @property
+    def number(self):
+        return self.attributes['number']
 
 class release(docutils.nodes.Element):
     @property
@@ -33,7 +43,7 @@ def generate_changelog(app, doctree):
     # Walk from back to front, consuming entries & copying them into
     # per-release buckets as releases are encountered.
     releases = {}
-    lines = {'master': []}
+    lines = {'unreleased': []}
     for obj in reversed(entries):
         # The 'actual' intermediate object we want to focus on is wrapped first
         # in a LI, then a P.
@@ -43,16 +53,16 @@ def generate_changelog(app, doctree):
         if isinstance(focus, release):
             line = get_line(focus)
             print "RELEASE (%s line): %s" % (line, focus.number)
-            # New release line/branch detected. Create it & dump master into
+            # New release line/branch detected. Create it & dump unreleased into
             # this new release.
             if line not in lines:
-                print "\tNew line, allocating buffer & flushing %s from master" % len(lines['master'])
+                print "\tNew line, allocating buffer & flushing %s from unreleased" % len(lines['unreleased'])
                 lines[line] = []
                 releases[focus.number] = {
                     'obj': focus,
-                    'entries': lines['master']
+                    'entries': lines['unreleased']
                 }
-                lines['master'] = []
+                lines['unreleased'] = []
             # Existing line -> empty out its bucket into new release
             else:
                 print "\tFlushing %s from %s" % (len(lines[line]), line)
@@ -61,14 +71,21 @@ def generate_changelog(app, doctree):
                     'entries': lines[line]
                 }
                 lines[line] = []
-        # Entries get copied into all release lines' buckets.
-        # Unsupported release lines will 'waste' space but there's no way to
-        # determine actual support termination, so whatever.
+        # Entries get copied into release line buckets as follows:
+        # * Everything goes into 'unreleased' so it can be used in new lines.
+        # * Bugfixes (but not support or feature entries) go into all release
+        # lines, not just 'unreleased'.
+        # * However, support/feature entries marked as 'backport' go into all
+        # release lines as well, on the assumption that they were released to
+        # all active branches.
         elif isinstance(focus, issue):
-            print "ENTRY: %s" % focus
-            for line in lines:
-                lines[line].append(focus)
-            print "\tAdded to %s release lines" % len(lines)
+            print "ISSUE: %s %s" % (focus.type, focus.number)
+            lines['unreleased'].append(focus)
+            print "\tAdded to unreleased"
+            if focus.type == 'bug' or focus.backported:
+                for line in lines:
+                    lines[line].append(focus)
+                print "\tAdded to %s release lines" % len(lines)
 
     ipdb.set_trace()
 
