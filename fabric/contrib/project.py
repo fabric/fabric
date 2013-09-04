@@ -17,7 +17,8 @@ __all__ = ['rsync_project', 'upload_project']
 
 @needs_host
 def rsync_project(remote_dir, local_dir=None, exclude=(), delete=False,
-    extra_opts='', ssh_opts='', capture=False, upload=True):
+        extra_opts='', ssh_opts='', capture=False, upload=True,
+        default_opts='-pthrvz'):
     """
     Synchronize a remote directory with the current project directory via rsync.
 
@@ -70,6 +71,8 @@ def rsync_project(remote_dir, local_dir=None, exclude=(), delete=False,
     * ``capture``: Sent directly into an inner `~fabric.operations.local` call.
     * ``upload``: a boolean controlling whether file synchronization is
       performed up or downstream. Upstream by default.
+    * ``default_opts``: the default rsync options ``-pthrvz``, override if
+      desired.
 
     Furthermore, this function transparently honors Fabric's port and SSH key
     settings. Calling this function when the current host string contains a
@@ -80,12 +83,15 @@ def rsync_project(remote_dir, local_dir=None, exclude=(), delete=False,
     constructed by this function is the following::
 
         rsync [--delete] [--exclude exclude[0][, --exclude[1][, ...]]] \\
-            -pthrvz [extra_opts] <local_dir> <host_string>:<remote_dir>
+            [default_opts] [extra_opts] <local_dir> <host_string>:<remote_dir>
 
     .. versionadded:: 1.4.0
         The ``ssh_opts`` keyword argument.
     .. versionadded:: 1.4.1
         The ``capture`` keyword argument.
+    .. versionadded:: 1.7.1
+        The ``default_opts`` keyword argument.
+
     """
     # Turn single-string exclude into a one-item list for consistency
     if not hasattr(exclude, '__iter__'):
@@ -112,9 +118,11 @@ def rsync_project(remote_dir, local_dir=None, exclude=(), delete=False,
         'delete': '--delete' if delete else '',
         'exclude': exclude_opts % exclusions,
         'rsh': rsh_string,
-        'extra': extra_opts
+        'default': default_opts,
+        'extra': extra_opts,
     }
-    options = "%(delete)s%(exclude)s -pthrvz %(extra)s %(rsh)s" % options_map
+    options = \
+        "%(delete)s%(exclude)s %(default)s %(extra)s %(rsh)s" % options_map
     # Get local directory
     if local_dir is None:
         local_dir = '../' + getcwd().split(sep)[-1]
@@ -146,8 +154,8 @@ def upload_project(local_dir=None, remote_dir="", use_sudo=False):
     a copy of ``local_dir`` will appear as a subdirectory of ``remote_dir``)
     and defaults to the remote user's home directory.
 
-    ``use_sudo`` specifies which method should be used when executing commands 
-    remotely. ``sudo`` will be used if use_sudo is True, otherwise ``run`` will 
+    ``use_sudo`` specifies which method should be used when executing commands
+    remotely. ``sudo`` will be used if use_sudo is True, otherwise ``run`` will
     be used.
 
     This function makes use of the ``tar`` and ``gzip`` programs/libraries,
