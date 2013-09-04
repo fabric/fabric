@@ -73,22 +73,24 @@ def construct_releases(entries):
                     lines[line].append(focus)
     # Entries not yet released get special 'release' entries (that lack an
     # actual release object).
-    for line, items in lines.iteritems():
-        number = "%s.X" % line
-        if line == 'unreleased':
-            line = number = 'master'
-        nodelist = [
-            docutils.nodes.strong(text='Unreleased (%s)' % line),
-            docutils.nodes.reference(
-                text="Fabric %s" % number,
-                refuri="https://github.com/fabric/fabric/tree/%s" % line,
-                classes=['changelog-release']
-            )
-        ]
-        releases.append({
-            'obj': release(number=number, date=None, nodelist=nodelist),
-            'entries': items
-        })
+    # FIXME: this isn't actually feasible because, due to no ability to mark
+    # lines extinct, ALL lines get their own 'unreleased' release.
+    #for line, items in lines.iteritems():
+    #    number = "%s.X" % line
+    #    if line == 'unreleased':
+    #        line = number = 'master'
+    #    nodelist = [
+    #        docutils.nodes.strong(text='Unreleased (%s)' % line),
+    #        docutils.nodes.reference(
+    #            text="Fabric %s" % number,
+    #            refuri="https://github.com/fabric/fabric/tree/%s" % line,
+    #            classes=['changelog-release']
+    #        )
+    #    ]
+    #    releases.append({
+    #        'obj': release(number=number, date=None, nodelist=nodelist),
+    #        'entries': items
+    #    })
     return releases
 
 def construct_nodes(releases):
