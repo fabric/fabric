@@ -2,7 +2,7 @@ import os
 import types
 
 from fabric.api import run, local
-from fabric.contrib import files
+from fabric.contrib import files, project
 
 from util import Integration
 
@@ -67,3 +67,19 @@ class TestIsLink(Integration):
     def test_is_link_is_false_on_non_link(self):
         run("touch /tmp/biz")
         assert not files.is_link('/tmp/biz')
+
+
+class TestRsync(Integration):
+    def test_existing_default_args(self):
+        # Is verbose by default
+        # import mock_streams (sys.path shit I guess)
+        # rsync_project(some junk)
+        # assert stdout got file list
+        pass
+
+    def test_overriding_default_args(self):
+        # Lets you remove verbosity
+        # import mock_streams (sys.path shit I guess)
+        # rsync_project(some junk, default_opts=not-v)
+        # assert stdout did not get file list
+        pass
