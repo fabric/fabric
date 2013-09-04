@@ -106,7 +106,7 @@ def construct_nodes(releases):
         ]
         # Release header
         # TODO: create actual header node, durr
-        nodes.extend(release.attributes['nodelist'])
+        nodes.extend(docutils.nodes.paragraph('', release['nodelist']))
         # Entry list
         list_ = docutils.nodes.bullet_list('', *entries)
         nodes.append(list_)
@@ -125,7 +125,6 @@ def generate_changelog(app, doctree):
     releases = construct_releases(changelog.children)
     # Construct new set of nodes to replace the old, and we're done
     source.children[1:1] = construct_nodes(releases)
-    ipdb.set_trace()
 
 
 def setup(app):
