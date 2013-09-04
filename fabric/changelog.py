@@ -90,13 +90,20 @@ def construct_nodes(releases):
     nodes = []
     # Reverse the list again so the final display is newest on top
     for d in reversed(releases):
+        if not d['entries']:
+            continue
         release = d['obj']
-        entries = [docutils.nodes.list_item(x) for x in d['entries']]
+        entries = [
+            docutils.nodes.list_item('',
+                docutils.nodes.paragraph('', *x.attributes['nodelist'])
+            )
+            for x in d['entries']
+        ]
         # Release header
         # TODO: create actual header node, durr
         nodes.extend(release.attributes['nodelist'])
         # Entry list
-        list_ = docutils.nodes.bullet_list(*entries)
+        list_ = docutils.nodes.bullet_list('', *entries)
         nodes.append(list_)
     return nodes
 
@@ -113,7 +120,7 @@ def generate_changelog(app, doctree):
     releases = construct_releases(changelog.children)
     # Construct new set of nodes to replace the old, and we're done
     source.children[1:1] = construct_nodes(releases)
-    print source.children[:10]
+    ipdb.set_trace()
 
 
 def setup(app):
