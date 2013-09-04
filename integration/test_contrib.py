@@ -4,7 +4,7 @@ import types
 from fabric.api import run, local
 from fabric.contrib import files
 
-from util import Integration
+from utils import Integration
 
 
 def tildify(path):
