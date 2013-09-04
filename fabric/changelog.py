@@ -66,11 +66,14 @@ def construct_releases(entries):
             # always bugs.
             if not isinstance(focus, issue):
                 focus = issue(type_='bug', nodelist=[focus], backported=False)
-            # Add all to unreleased, add bugs to others too
-            lines['unreleased'].append(focus)
+            # Bugs go errywhere
             if focus.type == 'bug' or focus.backported:
                 for line in lines:
                     lines[line].append(focus)
+            # Non-bugs only go into unreleased (next release)
+            else:
+                lines['unreleased'].append(focus)
+
     # Entries not yet released get special 'release' entries (that lack an
     # actual release object).
     # FIXME: this isn't actually feasible because, due to no ability to mark
