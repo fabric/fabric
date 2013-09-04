@@ -13,7 +13,7 @@ class issue(docutils.nodes.Element):
 
     @property
     def number(self):
-        return self['number']
+        return self.get('number', None)
 
 class release(docutils.nodes.Element):
     @property
