@@ -80,7 +80,7 @@ def rsync_project(
     * ``upload``: a boolean controlling whether file synchronization is
       performed up or downstream. Upstream by default.
     * ``default_opts``: the default rsync options ``-pthrvz``, override if
-      desired.
+      desired (e.g. to remove verbosity, etc).
 
     Furthermore, this function transparently honors Fabric's port and SSH key
     settings. Calling this function when the current host string contains a
@@ -97,9 +97,8 @@ def rsync_project(
         The ``ssh_opts`` keyword argument.
     .. versionadded:: 1.4.1
         The ``capture`` keyword argument.
-    .. versionadded:: 1.7.1
+    .. versionadded:: 1.8.0
         The ``default_opts`` keyword argument.
-
     """
     # Turn single-string exclude into a one-item list for consistency
     if not hasattr(exclude, '__iter__'):
