@@ -1,10 +1,17 @@
 import os
 import types
+import sys
 
 from fabric.api import run, local
 from fabric.contrib import files, project
 
-from util import Integration
+from utils import Integration
+
+# Pull in regular tests' stream mocker.
+mod = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'tests'))
+sys.path.insert(0, mod)
+from mock_streams import mock_streams
+del sys.path[0]
 
 
 def tildify(path):
