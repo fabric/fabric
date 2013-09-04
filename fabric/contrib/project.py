@@ -16,9 +16,17 @@ from fabric.context_managers import cd
 __all__ = ['rsync_project', 'upload_project']
 
 @needs_host
-def rsync_project(remote_dir, local_dir=None, exclude=(), delete=False,
-        extra_opts='', ssh_opts='', capture=False, upload=True,
-        default_opts='-pthrvz'):
+def rsync_project(
+    remote_dir,
+    local_dir=None,
+    exclude=(),
+    delete=False,
+    extra_opts='',
+    ssh_opts='',
+    capture=False,
+    upload=True,
+    default_opts='-pthrvz'
+):
     """
     Synchronize a remote directory with the current project directory via rsync.
 
@@ -121,8 +129,7 @@ def rsync_project(remote_dir, local_dir=None, exclude=(), delete=False,
         'default': default_opts,
         'extra': extra_opts,
     }
-    options = \
-        "%(delete)s%(exclude)s %(default)s %(extra)s %(rsh)s" % options_map
+    options = "%(delete)s%(exclude)s %(default)s %(extra)s %(rsh)s" % options_map
     # Get local directory
     if local_dir is None:
         local_dir = '../' + getcwd().split(sep)[-1]
