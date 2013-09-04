@@ -49,7 +49,6 @@ Changelog
   default globbing behavior. Thanks to Michael McHugh for the patch.
 * :bug:`844` Allow users to disable Fabric's auto-escaping in `.run`/`.sudo`.
   Thanks to Christian Long and Michael McHugh for the patch.
-* :bug:`84` Fixed problem with missing -r flag in Mac OS X sed version.
 * :bug:`870` Changes to shell env var escaping highlighted some extraneous and
   now damaging whitespace in `with path(): <.path>`. This has been removed and
   a regression test added.
