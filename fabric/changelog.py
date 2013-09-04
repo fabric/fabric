@@ -34,13 +34,16 @@ def construct_releases(entries):
         # The 'actual' intermediate object we want to focus on is wrapped first
         # in a LI, then a P.
         focus = obj[0][0]
+        print focus
         # Releases 'eat' the entries in their line's list and get added to the
         # final data structure. They also inform new release-line 'buffers'.
         if isinstance(focus, release):
             line = get_line(focus)
+            print "Release in the %s line" % line
             # New release line/branch detected. Create it & dump unreleased into
             # this new release.
             if line not in lines:
+                print "New line!"
                 lines[line] = []
                 releases.append({
                     'obj': focus,
@@ -54,6 +57,7 @@ def construct_releases(entries):
                     'entries': lines[line]
                 })
                 lines[line] = []
+            print "Release saw %s entries" % len(releases[-1]['entries'])
         # Entries get copied into release line buckets as follows:
         # * Everything goes into 'unreleased' so it can be used in new lines.
         # * Bugfixes (but not support or feature entries) go into all release
@@ -66,9 +70,12 @@ def construct_releases(entries):
             # always bugs.
             if not isinstance(focus, issue):
                 focus = issue(type_='bug', nodelist=[focus], backported=False)
+            print "Changelog entry"
             # Bugs go errywhere
+            print "Added %s to unreleased" % focus.number
             if focus.type == 'bug' or focus.backported:
                 for line in lines:
+                    print "Added %s to %s" % (focus.number, line)
                     lines[line].append(focus)
             # Non-bugs only go into unreleased (next release)
             else:
@@ -109,6 +116,7 @@ def construct_nodes(releases):
             )
             for x in d['entries']
         ]
+        print "%s: %s" % (d['obj'].number, [x.number for x in d['entries']])
         # Release header
         # TODO: create actual header node, durr
         nodes.extend(docutils.nodes.paragraph('', release['nodelist']))
