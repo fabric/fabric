@@ -5,20 +5,20 @@ import ipdb
 class issue(docutils.nodes.Element):
     @property
     def type(self):
-        return self.attributes['type_']
+        return self['type_']
 
     @property
     def backported(self):
-        return self.attributes['backported']
+        return self['backported']
 
     @property
     def number(self):
-        return self.attributes['number']
+        return self['number']
 
 class release(docutils.nodes.Element):
     @property
     def number(self):
-        return self.attributes['number']
+        return self['number']
 
 
 def get_line(obj):
@@ -95,7 +95,7 @@ def construct_nodes(releases):
         release = d['obj']
         entries = [
             docutils.nodes.list_item('',
-                docutils.nodes.paragraph('', *x.attributes['nodelist'])
+                docutils.nodes.paragraph('', *x['nodelist'])
             )
             for x in d['entries']
         ]
