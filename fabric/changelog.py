@@ -27,8 +27,8 @@ def get_line(obj):
 
 def construct_releases(entries):
     # Walk from back to front, consuming entries & copying them into
-    # per-release buckets as releases are encountered.
-    releases = {}
+    # per-release buckets as releases are encountered. Store releases in order.
+    releases = []
     lines = {'unreleased': []}
     for obj in reversed(entries):
         # The 'actual' intermediate object we want to focus on is wrapped first
@@ -42,17 +42,17 @@ def construct_releases(entries):
             # this new release.
             if line not in lines:
                 lines[line] = []
-                releases[focus.number] = {
+                releases.append({
                     'obj': focus,
                     'entries': lines['unreleased']
-                }
+                })
                 lines['unreleased'] = []
             # Existing line -> empty out its bucket into new release
             else:
-                releases[focus.number] = {
+                releases.append({
                     'obj': focus,
                     'entries': lines[line]
-                }
+                })
                 lines[line] = []
         # Entries get copied into release line buckets as follows:
         # * Everything goes into 'unreleased' so it can be used in new lines.
@@ -69,13 +69,36 @@ def construct_releases(entries):
         # Entries not yet released get special 'release' entries (that lack an
         # actual release object).
         for line, items in lines.iteritems():
-            releases["%s.X" % line] = {
+            number = "%s.X" % line
+            if line == 'unreleased':
+                line = number = 'master'
+            nodelist = [
+                docutils.nodes.strong(text='Unreleased (%s)' % line),
+                docutils.nodes.reference(
+                    text="Fabric %s" % number,
+                    refuri="https://github.com/fabric/fabric/tree/%s" % line,
+                    classes=['changelog-release']
+                )
+            ]
+            releases.append({
+                'obj': release(number=number, date=None, nodelist=nodelist),
                 'entries': items
-            }
+            })
     return releases
 
 def construct_nodes(releases):
-    return []
+    nodes = []
+    # Reverse the list again so the final display is newest on top
+    for d in reversed(releases):
+        release = d['obj']
+        entries = [docutils.nodes.list_item(x) for x in d['entries']]
+        # Release header
+        # TODO: create actual header node, durr
+        nodes.extend(release.attributes['nodelist'])
+        # Entry list
+        list_ = docutils.nodes.bullet_list(*entries)
+        nodes.append(list_)
+    return nodes
 
 def generate_changelog(app, doctree):
     # This seems to be the cleanest way to tell what a not-fully-parsed
@@ -90,6 +113,7 @@ def generate_changelog(app, doctree):
     releases = construct_releases(changelog.children)
     # Construct new set of nodes to replace the old, and we're done
     source.children[1:1] = construct_nodes(releases)
+    print source.children[:10]
 
 
 def setup(app):
