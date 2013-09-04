@@ -61,7 +61,12 @@ def construct_releases(entries):
         # * However, support/feature entries marked as 'backport' go into all
         # release lines as well, on the assumption that they were released to
         # all active branches.
-        elif isinstance(focus, issue):
+        else:
+            # Handle rare-but-valid non-issue-attached line items, which are
+            # always bugs.
+            if not isinstance(focus, issue):
+                focus = issue(type_='bug', nodelist=[focus], backported=False)
+            # Add all to unreleased, add bugs to others too
             lines['unreleased'].append(focus)
             if focus.type == 'bug' or focus.backported:
                 for line in lines:
