@@ -1,17 +1,12 @@
 import os
 import types
+import re
 import sys
 
 from fabric.api import run, local
 from fabric.contrib import files, project
 
 from utils import Integration
-
-# Pull in regular tests' stream mocker.
-mod = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'tests'))
-sys.path.insert(0, mod)
-from mock_streams import mock_streams
-del sys.path[0]
 
 
 def tildify(path):
@@ -76,17 +71,30 @@ class TestIsLink(Integration):
         assert not files.is_link('/tmp/biz')
 
 
+rsync_sources = (
+    'integration/',
+    'integration/test_contrib.py',
+    'integration/test_operations.py',
+    'integration/utils.py'
+)
+
 class TestRsync(Integration):
     def test_existing_default_args(self):
-        # Is verbose by default
-        # import mock_streams (sys.path shit I guess)
-        # rsync_project(some junk)
-        # assert stdout got file list
-        pass
+        """
+        Rsync uses -v by default
+        """
+        r = project.rsync_project('/tmp/rsync-test-1/', 'integration', capture=True)
+        # Test for the core files independently; this avoids spurious errors
+        # due to extra stuff leaking in (pyc/o files, swap files when run by
+        # hand, etc)
+        for x in rsync_sources:
+            assert re.search(r'^%s$' % x, r.stdout, re.M), "'%s' was not found in '%s'" % (x, r.stdout)
 
     def test_overriding_default_args(self):
-        # Lets you remove verbosity
-        # import mock_streams (sys.path shit I guess)
-        # rsync_project(some junk, default_opts=not-v)
-        # assert stdout did not get file list
-        pass
+        """
+        Use of default_args kwarg can be used to nuke e.g. -v
+        """
+        r = project.rsync_project('/tmp/rsync-test-2/',
+            'integration', capture=True, default_opts='-pthrz')
+        for x in rsync_sources:
+            assert not re.search(r'^%s$' % x, r.stdout, re.M), "'%s' was found in '%s'" % (x, r.stdout)
