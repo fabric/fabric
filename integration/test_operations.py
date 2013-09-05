@@ -4,7 +4,7 @@ from StringIO import StringIO
 
 from fabric.api import run, path, put, sudo, abort, warn_only, env
 
-from util import Integration
+from utils import Integration
 
 
 def assert_mode(path, mode):
