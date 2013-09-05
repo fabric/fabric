@@ -26,6 +26,7 @@ have also been included in the 1.2 line.
 Changelog
 =========
 
+* Fabric can now be invoked with ``python -m fabric``.
 * :feature:`910` Added a keyword argument to rsync_project to configure the
   default options. Thanks to ``@moorepants`` for the patch.
 * :release:`1.7.0 <2013-07-26>`
