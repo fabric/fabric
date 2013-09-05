@@ -71,6 +71,12 @@ class TestIsLink(Integration):
         assert not files.is_link('/tmp/biz')
 
 
+rsync_sources = (
+    'integration/',
+    'integration/test_contrib.py',
+    'integration/test_operations.py',
+    'integration/utils.py'
+)
 
 class TestRsync(Integration):
     def rsync(self, id_, **kwargs):
