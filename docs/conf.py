@@ -36,10 +36,11 @@ def issues_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
 
     May give a 'ticket number' of '<number> backported' to indicate a
     backported feature or support ticket. This extra info will be stripped out
-    prior to parsing.
+    prior to parsing. May also give 'major' in the same vein, implying the bug
+    was a major bug released in a feature release.
     """
     # Old-style 'just the issue link' behavior
-    issue_no, _, backported = utils.unescape(text).partition(' ')
+    issue_no, _, ported = utils.unescape(text).partition(' ')
     ref = "https://github.com/fabric/fabric/issues/" + issue_no
     link = nodes.reference(rawtext, '#' + issue_no, refuri=ref, **options)
     nodelist = [link]
@@ -59,7 +60,8 @@ def issues_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
         number=issue_no,
         type_=name,
         nodelist=nodelist,
-        backported=bool(backported)
+        backported=(ported == 'backported'),
+        major=(ported == 'major'),
     )
     # Return old style info for 'issue' for older changelog doc. Return the
     # temporary node for newer stuff.

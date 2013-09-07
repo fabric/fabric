@@ -32,11 +32,11 @@ Changelog
   Nenciarini for the catch.
 * :feature:`826` Enable sudo extraction of compressed archive via `use_sudo`
   kwarg in `.upload_project`. Thanks to ``@abec`` for the patch.
-* :bug:`694` Allow users to work around ownership issues in the default remote
-  login directory: add ``temp_dir`` kwarg for explicit specification of which
-  "bounce" folder to use when calling `.put` with ``use_sudo=True``. Thanks to
-  Devin Bayer for the report & Dieter Plaetinck / Jesse Myers for suggesting
-  the workaround.
+* :bug:`694 major` Allow users to work around ownership issues in the default
+  remote login directory: add ``temp_dir`` kwarg for explicit specification of
+  which "bounce" folder to use when calling `.put` with ``use_sudo=True``.
+  Thanks to Devin Bayer for the report & Dieter Plaetinck / Jesse Myers for
+  suggesting the workaround.
 * :bug:`882` Fix a `.get` bug regarding spaces in remote working directory
   names. Thanks to Chris Rose for catch & patch.
 * :release:`1.6.1 <2013-05-23>`
