@@ -118,17 +118,30 @@ def construct_nodes(releases):
         if not d['entries']:
             continue
         release = d['obj']
-        # Use docutils.nodes.Node.deepcopy to deepcopy the description nodes.
-        # If this is not done, multiple references to the same object (e.g. a
-        # reference object in the description of #649, which is then copied
-        # into 2 different release lists) will end up in the doctree, which
-        # makes subsequent parse steps very angry (index() errors).
-        entries = [
-            docutils.nodes.list_item('',
-                docutils.nodes.paragraph('', *(x['nodelist'] + map(lambda x: x.deepcopy(), x['description'])))
+        entries = []
+        for entry in d['entries']:
+            # Use docutils.nodes.Node.deepcopy to deepcopy the description
+            # nodes.  If this is not done, multiple references to the same
+            # object (e.g. a reference object in the description of #649, which
+            # is then copied into 2 different release lists) will end up in the
+            # doctree, which makes subsequent parse steps very angry (index()
+            # errors).
+            desc = map(lambda x: x.deepcopy(), entry['description'])
+            # Additionally, expand any other issue roles found in the
+            # description paragraph - sometimes we refer to related issues
+            # inline. (They can't be left as issue() objects at render time
+            # since that's undefined.)
+            #for i, node in enumerate(desc):
+            #    if isinstance(node, issue):
+            #        desc[i:i] = node['nodelist']
+            # Tack on to end of this entry's own nodelist (which is the link +
+            # etc)
+            result = entry['nodelist'] + desc
+            entries.append(
+                docutils.nodes.list_item('',
+                    docutils.nodes.paragraph('', *result)
+                )
             )
-            for x in d['entries']
-        ]
         # Release header
         # TODO: create actual header node, durr
         nodes.extend(docutils.nodes.paragraph('', release['nodelist']))
