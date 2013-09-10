@@ -1,5 +1,4 @@
 import docutils
-import ipdb
 
 
 class issue(docutils.nodes.Element):
