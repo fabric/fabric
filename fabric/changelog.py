@@ -131,7 +131,7 @@ def construct_nodes(releases):
             # description paragraph - sometimes we refer to related issues
             # inline. (They can't be left as issue() objects at render time
             # since that's undefined.)
-            for node in desc[:]: # Copy to avoid self-mutation during loop
+            for i, node in enumerate(desc[:]): # Copy to avoid self-mutation during loop
                 if isinstance(node, issue):
                     desc[i:i+1] = node['nodelist']
             # Tack on to end of this entry's own nodelist (which is the link +
