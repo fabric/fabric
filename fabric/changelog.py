@@ -138,12 +138,12 @@ def construct_nodes(releases):
             result = entry['nodelist'] + desc
             entries.append(
                 docutils.nodes.list_item('',
-                    docutils.nodes.paragraph('', *result)
+                    docutils.nodes.paragraph('', '', *result)
                 )
             )
         # Release header
         # TODO: create actual header node, durr
-        nodes.extend(docutils.nodes.paragraph('', release['nodelist']))
+        nodes.extend(docutils.nodes.paragraph('', '', *release['nodelist']))
         # Entry list
         list_ = docutils.nodes.bullet_list('', *entries)
         nodes.append(list_)
