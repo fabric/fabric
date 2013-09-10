@@ -43,7 +43,6 @@ def issues_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
     issue_no, _, ported = utils.unescape(text).partition(' ')
     ref = "https://github.com/fabric/fabric/issues/" + issue_no
     link = nodes.reference(rawtext, '#' + issue_no, refuri=ref, **options)
-    nodelist = [link]
     # Additional 'new-style changelog' stuff
     if name in issue_types:
         which = '[<span class="changelog-%s">%s</span>]' % (
@@ -55,19 +54,18 @@ def issues_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
             link,
             nodes.inline(text=":")
         ]
-    # Create temporary node w/ data & final nodes to publish
-    node = issue(
-        number=issue_no,
-        type_=name,
-        nodelist=nodelist,
-        backported=(ported == 'backported'),
-        major=(ported == 'major'),
-    )
-    # Return old style info for 'issue' for older changelog doc. Return the
-    # temporary node for newer stuff.
-    if name not in issue_types:
-        return nodelist, []
-    return [node], []
+        # Create temporary node w/ data & final nodes to publish
+        node = issue(
+            number=issue_no,
+            type_=name,
+            nodelist=nodelist,
+            backported=(ported == 'backported'),
+            major=(ported == 'major'),
+        )
+        return [node], []
+    # Return old style info for 'issue' for older changelog entries
+    else:
+        return [link], []
 
 for x in issue_types + ('issue',):
     roles.register_local_role(x, issues_role)
