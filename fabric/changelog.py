@@ -141,12 +141,14 @@ def construct_nodes(releases):
                     docutils.nodes.paragraph('', '', *result)
                 )
             )
-        # Release header
-        # TODO: create actual header node, durr
-        nodes.extend(docutils.nodes.paragraph('', '', *release['nodelist']))
         # Entry list
         list_ = docutils.nodes.bullet_list('', *entries)
-        nodes.append(list_)
+        # Insert list into release nodelist (as it's a section)
+        #from ipdb import set_trace; set_trace()
+        release['nodelist'][0].children[0].extend(list_)
+        # Release header
+        header = docutils.nodes.paragraph('', '', *release['nodelist'])
+        nodes.extend(header)
     return nodes
 
 def generate_changelog(app, doctree):

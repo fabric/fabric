@@ -87,12 +87,22 @@ def release_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
         return [inliner.problematic(rawtext, rawtext, msg)], [msg]
     number, date = match.group(1), match.group(2)
     nodelist = [
-        nodes.strong(text=date),
-        nodes.inline(text=": released "),
-        nodes.reference(
-            text="Fabric %s" % number,
-            refuri="https://github.com/fabric/fabric/tree/%s" % number,
-            classes=['changelog-release']
+        # TODO: display as large-font <number> + smaller-font, on same line,
+        # release date, then (even smaller?) link to GH tree as text 'github'
+        # or 'source'?
+        nodes.section(
+            nodes.title('', text=number),
+            nodes.section('',
+                nodes.title('', '',
+                    nodes.reference(
+                        text="githubbes",
+                        refuri="https://github.com/fabric/fabric/tree/%s" % number,
+                        classes=['changelog-release']
+                    ),
+                ),
+                ids=['whatever']
+            ),
+            ids=[number]
         )
     ]
     # Return intermediate node
