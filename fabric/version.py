@@ -25,7 +25,7 @@ def git_sha():
     # OSError occurs on Unix-derived platforms lacking Popen's configured shell
     # default, /bin/sh. E.g. Android.
     except OSError:
-        return None
+        return ""
 
 
 def get_version(form='short'):
@@ -54,7 +54,7 @@ def get_version(form='short'):
     type_num = VERSION[4]
     firsts = "".join([x[0] for x in type_.split()])
     sha = git_sha()
-    sha1 = (" (%s)" % sha) if sha else ""
+    sha1 = (" (%s)" % sha)
 
     # Branch
     versions['branch'] = branch
