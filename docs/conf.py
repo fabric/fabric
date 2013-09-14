@@ -91,16 +91,12 @@ def release_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
         # release date, then (even smaller?) link to GH tree as text 'github'
         # or 'source'?
         nodes.section('',
-            nodes.title('', text=number),
-            nodes.section('',
-                nodes.title('', '',
-                    nodes.reference(
-                        text="githubbes",
-                        refuri="https://github.com/fabric/fabric/tree/%s" % number,
-                        classes=['changelog-release']
-                    ),
+            nodes.title('', '',
+                nodes.reference(
+                    text=number,
+                    refuri="https://github.com/fabric/fabric/tree/%s" % number,
+                    classes=['changelog-release']
                 ),
-                ids=['whatever']
             ),
             ids=[number]
         )
