@@ -49,8 +49,8 @@ Changelog
 * :feature:`812` Add ``use_glob`` option to `.put` so users trying to upload
   real filenames containing glob patterns (``*``, ``[`` etc) can disable the
   default globbing behavior. Thanks to Michael McHugh for the patch.
-* :bug:`844` Allow users to disable Fabric's auto-escaping in `.run`/`.sudo`.
-  Thanks to Christian Long and Michael McHugh for the patch.
+* :bug:`864 major` Allow users to disable Fabric's auto-escaping in
+  `.run`/`.sudo`.  Thanks to Christian Long and Michael McHugh for the patch.
 * :bug:`870` Changes to shell env var escaping highlighted some extraneous and
   now damaging whitespace in `with path(): <.path>`. This has been removed and
   a regression test added.
