@@ -90,7 +90,7 @@ def release_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
         # TODO: display as large-font <number> + smaller-font, on same line,
         # release date, then (even smaller?) link to GH tree as text 'github'
         # or 'source'?
-        nodes.section(
+        nodes.section('',
             nodes.title('', text=number),
             nodes.section('',
                 nodes.title('', '',
