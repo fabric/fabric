@@ -63,7 +63,7 @@ Changelog
   literal to ``env.hosts``. Thanks to Bill Tucker for catch & patch.
 * :bug:`367` Expand paths with tilde inside (``contrib.files``). Thanks to
   Konrad Hałas for catch & patch.
-* :feature:`845` Downstream synchronization option implemented for
+* :feature:`845 backported` Downstream synchronization option implemented for
   `~fabric.contrib.project.rsync_project`. Thanks to Antonio Barrero for the
   patch.
 * :release:`1.6.0 <2013-03-01>`
@@ -157,10 +157,10 @@ Changelog
       Lundberg and Github user `@acrish` for providing the original patches to
       both Fabric and Paramiko.
 
-* :feature:`684` (also :issue:`569`) Update how `~fabric.decorators.task` wraps
-  task functions to preserve additional metadata; this allows decorated
-  functions to play nice with Sphinx autodoc. Thanks to Jaka Hudoklin for catch
-  & patch.
+* :feature:`684 backported` (also :issue:`569`) Update how
+  `~fabric.decorators.task` wraps task functions to preserve additional
+  metadata; this allows decorated functions to play nice with Sphinx autodoc.
+  Thanks to Jaka Hudoklin for catch & patch.
 * :support:`103` (via :issue:`748`) Long standing Sphinx autodoc issue requiring
   error-prone duplication of function signatures in our API docs has been
   fixed. Thanks to Alex Morega for the patch.
@@ -208,10 +208,10 @@ Changelog
 * :bug:`693` Fixed edge case where ``abort`` driven failures within parallel
   tasks could result in a top level exception (a ``KeyError``) regarding error
   handling. Thanks to Marcin Kuźmiński for the report.
-* :support:`681` Fixed outdated docstring for `~fabric.decorators.runs_once`
-  which claimed it would get run multiple times in parallel mode. That behavior
-  was fixed in an earlier release but the docs were not updated. Thanks to
-  Jan Brauer for the catch.
+* :support:`681 backported` Fixed outdated docstring for
+  `~fabric.decorators.runs_once` which claimed it would get run multiple times
+  in parallel mode. That behavior was fixed in an earlier release but the docs
+  were not updated. Thanks to Jan Brauer for the catch.
 * :release:`1.4.3 <2012-07-06>`
 * :release:`1.3.8 <2012-07-06>`
 * :feature:`263` Shell environment variable support for
@@ -229,8 +229,8 @@ Changelog
   honors :ref:`env.path <env-path>`. Thanks to `@floledermann
   <https://github.com/floledermann>`_ for the catch.
 * :bug:`652` Show available commands when aborting on invalid command names.
-* :support:`651` Added note about nesting ``with`` statements on Python 2.6+.
-  Thanks to Jens Rantil for the patch.
+* :support:`651 backported` Added note about nesting ``with`` statements on
+  Python 2.6+.  Thanks to Jens Rantil for the patch.
 * :bug:`649` Don't swallow non-``abort``-driven exceptions in parallel mode.
   Fabric correctly printed such exceptions, and returned them from
   `~fabric.tasks.execute`, but did not actually cause the child or parent
@@ -245,12 +245,12 @@ Changelog
 * :feature:`646` Allow specification of which local streams to use when
   `~fabric.operations.run`/`~fabric.operations.sudo` print the remote
   stdout/stderr, via e.g. ``run("command", stderr=sys.stdout)``.
-* :support:`645` Update Sphinx docs to work well when run out of a source
-  tarball as opposed to a Git checkout. Thanks again to `@Arfrever` for the
-  catch.
-* :support:`640` (also :issue:`644`) Update packaging manifest so sdist
-  tarballs include all necessary test & doc files. Thanks to Mike Gilbert and
-  `@Arfrever` for catch & patch.
+* :support:`645 backported` Update Sphinx docs to work well when run out of a
+  source tarball as opposed to a Git checkout. Thanks again to `@Arfrever` for
+  the catch.
+* :support:`640 backported` (also :issue:`644`) Update packaging manifest so
+  sdist tarballs include all necessary test & doc files. Thanks to Mike Gilbert
+  and `@Arfrever` for catch & patch.
 * :feature:`627` Added convenient ``quiet`` and ``warn_only`` keyword arguments
   to `~fabric.operations.run`/`~fabric.operations.sudo` which are aliases for
   ``settings(hide('everything'), warn_only=True)`` and
@@ -261,18 +261,18 @@ Changelog
 * :feature:`633` Allow users to turn off host list deduping by setting
   :ref:`env.dedupe_hosts <dedupe_hosts>` to ``False``. This enables running the
   same task multiple times on a single host, which was previously not possible.
-* :support:`634` Clarified that `~fabric.context_managers.lcd` does no special
-  handling re: the user's current working directory, and thus relative paths
-  given to it will be relative to ``os.getcwd()``. Thanks to `@techtonik
-  <https://github.com/techtonik>`_ for the catch.
+* :support:`634 backported` Clarified that `~fabric.context_managers.lcd` does
+  no special handling re: the user's current working directory, and thus
+  relative paths given to it will be relative to ``os.getcwd()``. Thanks to
+  `@techtonik <https://github.com/techtonik>`_ for the catch.
 * :release:`1.4.2 <2012-05-07>`
 * :release:`1.3.7 <2012-05-07>`
 * :bug:`562` Agent forwarding would error out or freeze when multiple uses of
   the forwarded agent were used per remote invocation (e.g. a single
   `~fabric.operations.run` command resulting in multiple Git or SVN checkouts.)
   This has been fixed thanks to Steven McDonald and GitHub user `@lynxis`.
-* :support:`626` Clarity updates to the tutorial. Thanks to GitHub user `m4z`
-  for the patches.
+* :support:`626 backported` Clarity updates to the tutorial. Thanks to GitHub
+  user `m4z` for the patches.
 * :bug:`625` `~fabric.context_managers.hide`/`~fabric.context_managers.show`
   did not correctly restore prior display settings if an exception was raised
   inside the block. This has been fixed.
@@ -424,10 +424,10 @@ Changelog
 * :release:`1.3.2 <2011-11-07>`
 * :release:`1.2.4 <2011-11-07>`
 * :release:`1.1.6 <2011-11-07>`
-* :support:`459` Update our `setup.py` files to note that PyCrypto released
-  2.4.1, which fixes the setuptools problems.
-* :support:`467` (also :issue:`468`, :issue:`469`) Handful of documentation
-  clarification tweaks. Thanks to Paul Hoffman for the patches.
+* :support:`459 backported` Update our `setup.py` files to note that PyCrypto
+  released 2.4.1, which fixes the setuptools problems.
+* :support:`467 backported` (also :issue:`468`, :issue:`469`) Handful of
+  documentation clarification tweaks. Thanks to Paul Hoffman for the patches.
 * :release:`1.3.1 <2011-10-24>`
 * :bug:`457` Ensured that Fabric fast-fails parallel tasks if any child
   processes encountered errors. Previously, multi-task invocations would
@@ -469,8 +469,8 @@ Changelog
   ``env`` values for keys which did not exist outside the context manager
   block.  It now works as expected. Thanks to Will Maier for the catch and
   suggested solution.
-* :support:`393` Fixed a typo in an example code snippet in the task docs.
-  Thanks to Hugo Garza for the catch.
+* :support:`393 backported` Fixed a typo in an example code snippet in the task
+  docs.  Thanks to Hugo Garza for the catch.
 * :bug:`396` :option:`--shortlist` broke after the addition of
   :option:`--list-format <-F>` and no longer displayed the short list format
   correctly. This has been fixed.
@@ -484,7 +484,8 @@ Changelog
 * :bug:`417` :ref:`abort-on-prompts` would incorrectly abort when set to True,
   even if both password and host were defined. This has been fixed. Thanks to
   Valerie Ishida for the report.
-* :support:`416` Updated documentation to reflect move from Redmine to Github.
+* :support:`416 backported` Updated documentation to reflect move from Redmine
+  to Github.
 * :bug:`389` Fixed/improved error handling when Paramiko import fails. Thanks
   to Brian Luft for the catch.
 * :release:`1.2.0 <2011-07-12>`
