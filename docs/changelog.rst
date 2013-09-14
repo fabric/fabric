@@ -57,8 +57,8 @@ Changelog
 * :bug:`871` Use of string mode values in `put(local, remote, mode="NNNN")
   <.put>` would sometimes cause ``Unsupported operand`` errors. This has been
   fixed.
-* :bug:`84` Fixed problem with missing -r flag in Mac OS X sed version. Thanks
-  to Konrad Hałas for the patch.
+* :bug:`84 major` Fixed problem with missing -r flag in Mac OS X sed version.
+  Thanks to Konrad Hałas for the patch.
 * :bug:`861` Gracefully handle situations where users give a single string
   literal to ``env.hosts``. Thanks to Bill Tucker for catch & patch.
 * :bug:`367` Expand paths with tilde inside (``contrib.files``). Thanks to
@@ -105,9 +105,9 @@ Changelog
 * :bug:`791` Cast `~fabric.operations.reboot`'s ``wait`` parameter to a numeric
   type in case the caller submitted a string by mistake. Thanks to Thomas
   Schreiber for the patch.
-* :bug:`703` Add a ``shell`` kwarg to many methods in `~fabric.contrib.files`
-  to help avoid conflicts with `~fabric.context_managers.cd` and similar.
-  Thanks to `@mikek` for the patch.
+* :bug:`703 major` Add a ``shell`` kwarg to many methods in
+  `~fabric.contrib.files` to help avoid conflicts with
+  `~fabric.context_managers.cd` and similar.  Thanks to `@mikek` for the patch.
 * :feature:`730` Add :ref:`env.system_known_hosts/--system-known-hosts
   <system-known-hosts>` to allow loading a user-specified system-level SSH
   ``known_hosts`` file. Thanks to Roy Smith for the patch.
@@ -164,10 +164,10 @@ Changelog
 * :support:`103` (via :issue:`748`) Long standing Sphinx autodoc issue requiring
   error-prone duplication of function signatures in our API docs has been
   fixed. Thanks to Alex Morega for the patch.
-* :bug:`767` Fix (and add test for) regression re: having linewise output
+* :bug:`767 major` Fix (and add test for) regression re: having linewise output
   automatically activate when parallelism is in effect. Thanks to Alexander
   Fortin and Dustin McQuay for the bug reports.
-* :bug:`736` Ensure context managers that build env vars play nice with
+* :bug:`736 major` Ensure context managers that build env vars play nice with
   ``contextlib.nested`` by deferring env var reference to entry time, not call
   time. Thanks to Matthew Tretter for catch & patch.
 * :feature:`763` Add :option:`--initial-password-prompt <-I>` to allow
@@ -189,16 +189,16 @@ Changelog
   `~fabric.operations.sudo`. Thanks to Antti Kaihola for the pull request.
 * :feature:`725` Updated `~fabric.operations.local` to allow override
   of which local shell is used. Thanks to Mustafa Khattab.
-* :bug:`704` Fix up a bunch of Python 2.x style ``print`` statements to be
-  forwards compatible. Thanks to Francesco Del Degan for the patch.
+* :bug:`704 major` Fix up a bunch of Python 2.x style ``print`` statements to
+  be forwards compatible. Thanks to Francesco Del Degan for the patch.
 * :feature:`491` (also :feature:`385`) IPv6 host string support. Thanks to Max
   Arnold for the patch.
 * :feature:`699` Allow `name` attribute on file-like objects for get/put. Thanks
   to Peter Lyons for the pull request.
-* :bug:`711` `~fabric.sftp.get` would fail when filenames had % in their path.
-  Thanks to John Begeman
-* :bug:`702` `~fabric.operations.require` failed to test for "empty" values in
-  the env keys it checks (e.g.
+* :bug:`711 major` `~fabric.sftp.get` would fail when filenames had % in their
+  path.  Thanks to John Begeman
+* :bug:`702 major` `~fabric.operations.require` failed to test for "empty"
+  values in the env keys it checks (e.g.
   ``require('a-key-whose-value-is-an-empty-list')`` would register a successful
   result instead of alerting that the value was in fact empty. This has been
   fixed, thanks to Rich Schumacher.
@@ -356,7 +356,7 @@ Changelog
 * :feature:`474` `~fabric.tasks.execute` now allows you to access the executed
   task's return values, by itself returning a dictionary whose keys are the
   host strings executed against.
-* :bug:`487` Overhauled the regular expression escaping performed in
+* :bug:`487 major` Overhauled the regular expression escaping performed in
   `~fabric.contrib.files.append` and `~fabric.contrib.files.contains` to try
   and handle more corner cases. Thanks to Neilen Marais for the patch.
 * :support:`532` Reorganized and cleaned up the output of ``fab --help``.
