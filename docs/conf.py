@@ -97,6 +97,8 @@ def release_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
                     refuri="https://github.com/fabric/fabric/tree/%s" % number,
                     classes=['changelog-release']
                 ),
+                nodes.inline(text=' '),
+                nodes.raw(text='<span class="release-date">%s</span>' % date, format='html'),
             ),
             ids=[number]
         )
