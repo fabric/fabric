@@ -215,6 +215,7 @@ def sed(filename, before, after, limit='', use_sudo=False, backup='.bak',
 && mv %(tmp)s %(filename)s"""
     else:
         context['extended_regex'] = '-E' if platform == 'Darwin' else '-r'
+        backup = " ''" if platform == 'Darwin' and len(backup) == 0
         expr = r"sed -i%(backup)s %(extended_regex)s -e %(script)s %(filename)s"
     command = expr % context
     return func(command, shell=shell)
