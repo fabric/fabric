@@ -54,6 +54,9 @@ def issues_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
             link,
             nodes.inline(text=":")
         ]
+        # Sanity check
+        if ported not in ('backported', 'major', ''):
+            raise ValueError("Gave unknown issue metadata '%s' for issue no. %s" % (ported, issue_no))
         # Create temporary node w/ data & final nodes to publish
         node = issue(
             number=issue_no,
