@@ -32,9 +32,9 @@ def _get_system_username():
     """
     Obtain name of current system user, which will be default connection user.
     """
-    import getpass
     username = None
     try:
+        import getpass
         username = getpass.getuser()
     # getpass.getuser supported on both Unix and Windows systems.
     # getpass.getuser may call pwd.getpwuid which in turns may raise KeyError
@@ -46,10 +46,9 @@ def _get_system_username():
     except ImportError:
         if win32:
             import win32api
-            import win32security
-            import win32profile
             username = win32api.GetUserName()
     return username
+
 
 def _rc_path():
     """
