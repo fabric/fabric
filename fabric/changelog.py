@@ -90,24 +90,25 @@ def construct_releases(entries):
 
     # Entries not yet released get special 'release' entries (that lack an
     # actual release object).
-    # FIXME: this isn't actually feasible because, due to no ability to mark
-    # lines extinct, ALL lines get their own 'unreleased' release.
-    #for line, items in lines.iteritems():
-    #    number = "%s.X" % line
-    #    if line == 'unreleased':
-    #        line = number = 'master'
-    #    nodelist = [
-    #        docutils.nodes.strong(text='Unreleased (%s)' % line),
-    #        docutils.nodes.reference(
-    #            text="Fabric %s" % number,
-    #            refuri="https://github.com/fabric/fabric/tree/%s" % line,
-    #            classes=['changelog-release']
-    #        )
-    #    ]
-    #    releases.append({
-    #        'obj': release(number=number, date=None, nodelist=nodelist),
-    #        'entries': items
-    #    })
+    # FIXME: It'd be rad to show unreleased crap in stable branches, but that's
+    # unfeasible because technically ALL stable branches get every bugfix,
+    # which isn't really the case :(
+    nodelist = [
+        docutils.nodes.section('',
+            docutils.nodes.title('', '',
+                docutils.nodes.reference(
+                    text="Unreleased",
+                    refuri="https://github.com/fabric/fabric/tree/master",
+                    classes=['changelog-release']
+                ),
+            ),
+            ids=['unreleased']
+        )
+    ]
+    releases.append({
+        'obj': release(number='unreleased', date=None, nodelist=nodelist),
+        'entries': lines['unreleased']
+    })
     return releases
 
 def construct_nodes(releases):
