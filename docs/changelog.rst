@@ -4,28 +4,6 @@
 Changelog
 =========
 
-How to read
-===========
-
-This changelog lists each bugfix, feature addition, etc in the order they were
-checked into Fabric's source code repository. Published releases are bolded,
-dated and inserted at the appropriate points in the timeline.
-
-To find out the changes included in a given release, look at the entries
-between that release and the previous one from the same release line. For
-example, 1.1.4 down through 1.1.3 would be the effective changelog for the
-1.1.4 release; 1.7.0 down through 1.6.0 would be the changelog for the 1.7.0
-release; etc.
-
-Bugfixes to older release lines are always forward-ported to newer releases,
-and this is reflected in the changelog. Thus, the changelog for e.g. 1.2.2
-might contain entries for the 1.1 and 1.0 lines, because those changes would
-have also been included in the 1.2 line.
-
-
-Changelog
-=========
-
 * :release:`1.7.0 <2013-07-26>`
 * :release:`1.6.2 <2013-07-26>`
 * :feature:`925` Added `contrib.files.is_link <.is_link>`. Thanks to `@jtangas`
@@ -52,11 +30,11 @@ Changelog
   Nenciarini for the catch.
 * :feature:`826` Enable sudo extraction of compressed archive via `use_sudo`
   kwarg in `.upload_project`. Thanks to ``@abec`` for the patch.
-* :bug:`694` Allow users to work around ownership issues in the default remote
-  login directory: add ``temp_dir`` kwarg for explicit specification of which
-  "bounce" folder to use when calling `.put` with ``use_sudo=True``. Thanks to
-  Devin Bayer for the report & Dieter Plaetinck / Jesse Myers for suggesting
-  the workaround.
+* :bug:`694 major` Allow users to work around ownership issues in the default
+  remote login directory: add ``temp_dir`` kwarg for explicit specification of
+  which "bounce" folder to use when calling `.put` with ``use_sudo=True``.
+  Thanks to Devin Bayer for the report & Dieter Plaetinck / Jesse Myers for
+  suggesting the workaround.
 * :bug:`882` Fix a `.get` bug regarding spaces in remote working directory
   names. Thanks to Chris Rose for catch & patch.
 * :release:`1.6.1 <2013-05-23>`
@@ -69,22 +47,21 @@ Changelog
 * :feature:`812` Add ``use_glob`` option to `.put` so users trying to upload
   real filenames containing glob patterns (``*``, ``[`` etc) can disable the
   default globbing behavior. Thanks to Michael McHugh for the patch.
-* :bug:`844` Allow users to disable Fabric's auto-escaping in `.run`/`.sudo`.
-  Thanks to Christian Long and Michael McHugh for the patch.
-* :bug:`84` Fixed problem with missing -r flag in Mac OS X sed version.
+* :bug:`864 major` Allow users to disable Fabric's auto-escaping in
+  `.run`/`.sudo`.  Thanks to Christian Long and Michael McHugh for the patch.
 * :bug:`870` Changes to shell env var escaping highlighted some extraneous and
   now damaging whitespace in `with path(): <.path>`. This has been removed and
   a regression test added.
 * :bug:`871` Use of string mode values in `put(local, remote, mode="NNNN")
   <.put>` would sometimes cause ``Unsupported operand`` errors. This has been
   fixed.
-* :bug:`84` Fixed problem with missing -r flag in Mac OS X sed version. Thanks
-  to Konrad Hałas for the patch.
+* :bug:`84 major` Fixed problem with missing -r flag in Mac OS X sed version.
+  Thanks to Konrad Hałas for the patch.
 * :bug:`861` Gracefully handle situations where users give a single string
   literal to ``env.hosts``. Thanks to Bill Tucker for catch & patch.
 * :bug:`367` Expand paths with tilde inside (``contrib.files``). Thanks to
   Konrad Hałas for catch & patch.
-* :feature:`845` Downstream synchronization option implemented for
+* :feature:`845 backported` Downstream synchronization option implemented for
   `~fabric.contrib.project.rsync_project`. Thanks to Antonio Barrero for the
   patch.
 * :release:`1.6.0 <2013-03-01>`
@@ -126,9 +103,9 @@ Changelog
 * :bug:`791` Cast `~fabric.operations.reboot`'s ``wait`` parameter to a numeric
   type in case the caller submitted a string by mistake. Thanks to Thomas
   Schreiber for the patch.
-* :bug:`703` Add a ``shell`` kwarg to many methods in `~fabric.contrib.files`
-  to help avoid conflicts with `~fabric.context_managers.cd` and similar.
-  Thanks to `@mikek` for the patch.
+* :bug:`703 major` Add a ``shell`` kwarg to many methods in
+  `~fabric.contrib.files` to help avoid conflicts with
+  `~fabric.context_managers.cd` and similar.  Thanks to `@mikek` for the patch.
 * :feature:`730` Add :ref:`env.system_known_hosts/--system-known-hosts
   <system-known-hosts>` to allow loading a user-specified system-level SSH
   ``known_hosts`` file. Thanks to Roy Smith for the patch.
@@ -178,17 +155,17 @@ Changelog
       Lundberg and Github user `@acrish` for providing the original patches to
       both Fabric and Paramiko.
 
-* :feature:`684` (also :issue:`569`) Update how `~fabric.decorators.task` wraps
-  task functions to preserve additional metadata; this allows decorated
-  functions to play nice with Sphinx autodoc. Thanks to Jaka Hudoklin for catch
-  & patch.
+* :feature:`684 backported` (also :issue:`569`) Update how
+  `~fabric.decorators.task` wraps task functions to preserve additional
+  metadata; this allows decorated functions to play nice with Sphinx autodoc.
+  Thanks to Jaka Hudoklin for catch & patch.
 * :support:`103` (via :issue:`748`) Long standing Sphinx autodoc issue requiring
   error-prone duplication of function signatures in our API docs has been
   fixed. Thanks to Alex Morega for the patch.
-* :bug:`767` Fix (and add test for) regression re: having linewise output
+* :bug:`767 major` Fix (and add test for) regression re: having linewise output
   automatically activate when parallelism is in effect. Thanks to Alexander
   Fortin and Dustin McQuay for the bug reports.
-* :bug:`736` Ensure context managers that build env vars play nice with
+* :bug:`736 major` Ensure context managers that build env vars play nice with
   ``contextlib.nested`` by deferring env var reference to entry time, not call
   time. Thanks to Matthew Tretter for catch & patch.
 * :feature:`763` Add :option:`--initial-password-prompt <-I>` to allow
@@ -210,16 +187,16 @@ Changelog
   `~fabric.operations.sudo`. Thanks to Antti Kaihola for the pull request.
 * :feature:`725` Updated `~fabric.operations.local` to allow override
   of which local shell is used. Thanks to Mustafa Khattab.
-* :bug:`704` Fix up a bunch of Python 2.x style ``print`` statements to be
-  forwards compatible. Thanks to Francesco Del Degan for the patch.
+* :bug:`704 major` Fix up a bunch of Python 2.x style ``print`` statements to
+  be forwards compatible. Thanks to Francesco Del Degan for the patch.
 * :feature:`491` (also :feature:`385`) IPv6 host string support. Thanks to Max
   Arnold for the patch.
 * :feature:`699` Allow `name` attribute on file-like objects for get/put. Thanks
   to Peter Lyons for the pull request.
-* :bug:`711` `~fabric.sftp.get` would fail when filenames had % in their path.
-  Thanks to John Begeman
-* :bug:`702` `~fabric.operations.require` failed to test for "empty" values in
-  the env keys it checks (e.g.
+* :bug:`711 major` `~fabric.sftp.get` would fail when filenames had % in their
+  path.  Thanks to John Begeman
+* :bug:`702 major` `~fabric.operations.require` failed to test for "empty"
+  values in the env keys it checks (e.g.
   ``require('a-key-whose-value-is-an-empty-list')`` would register a successful
   result instead of alerting that the value was in fact empty. This has been
   fixed, thanks to Rich Schumacher.
@@ -229,10 +206,10 @@ Changelog
 * :bug:`693` Fixed edge case where ``abort`` driven failures within parallel
   tasks could result in a top level exception (a ``KeyError``) regarding error
   handling. Thanks to Marcin Kuźmiński for the report.
-* :support:`681` Fixed outdated docstring for `~fabric.decorators.runs_once`
-  which claimed it would get run multiple times in parallel mode. That behavior
-  was fixed in an earlier release but the docs were not updated. Thanks to
-  Jan Brauer for the catch.
+* :support:`681 backported` Fixed outdated docstring for
+  `~fabric.decorators.runs_once` which claimed it would get run multiple times
+  in parallel mode. That behavior was fixed in an earlier release but the docs
+  were not updated. Thanks to Jan Brauer for the catch.
 * :release:`1.4.3 <2012-07-06>`
 * :release:`1.3.8 <2012-07-06>`
 * :feature:`263` Shell environment variable support for
@@ -250,9 +227,9 @@ Changelog
   honors :ref:`env.path <env-path>`. Thanks to `@floledermann
   <https://github.com/floledermann>`_ for the catch.
 * :bug:`652` Show available commands when aborting on invalid command names.
-* :support:`651` Added note about nesting ``with`` statements on Python 2.6+.
-  Thanks to Jens Rantil for the patch.
-* :bug:`649` Don't swallow non-`abort`-driven exceptions in parallel mode.
+* :support:`651 backported` Added note about nesting ``with`` statements on
+  Python 2.6+.  Thanks to Jens Rantil for the patch.
+* :bug:`649` Don't swallow non-``abort``-driven exceptions in parallel mode.
   Fabric correctly printed such exceptions, and returned them from
   `~fabric.tasks.execute`, but did not actually cause the child or parent
   processes to halt with a nonzero status. This has been fixed.
@@ -266,12 +243,12 @@ Changelog
 * :feature:`646` Allow specification of which local streams to use when
   `~fabric.operations.run`/`~fabric.operations.sudo` print the remote
   stdout/stderr, via e.g. ``run("command", stderr=sys.stdout)``.
-* :support:`645` Update Sphinx docs to work well when run out of a source
-  tarball as opposed to a Git checkout. Thanks again to `@Arfrever` for the
-  catch.
-* :support:`640` (also :issue:`644`) Update packaging manifest so sdist
-  tarballs include all necessary test & doc files. Thanks to Mike Gilbert and
-  `@Arfrever` for catch & patch.
+* :support:`645 backported` Update Sphinx docs to work well when run out of a
+  source tarball as opposed to a Git checkout. Thanks again to `@Arfrever` for
+  the catch.
+* :support:`640 backported` (also :issue:`644`) Update packaging manifest so
+  sdist tarballs include all necessary test & doc files. Thanks to Mike Gilbert
+  and `@Arfrever` for catch & patch.
 * :feature:`627` Added convenient ``quiet`` and ``warn_only`` keyword arguments
   to `~fabric.operations.run`/`~fabric.operations.sudo` which are aliases for
   ``settings(hide('everything'), warn_only=True)`` and
@@ -282,18 +259,18 @@ Changelog
 * :feature:`633` Allow users to turn off host list deduping by setting
   :ref:`env.dedupe_hosts <dedupe_hosts>` to ``False``. This enables running the
   same task multiple times on a single host, which was previously not possible.
-* :support:`634` Clarified that `~fabric.context_managers.lcd` does no special
-  handling re: the user's current working directory, and thus relative paths
-  given to it will be relative to ``os.getcwd()``. Thanks to `@techtonik
-  <https://github.com/techtonik>`_ for the catch.
+* :support:`634 backported` Clarified that `~fabric.context_managers.lcd` does
+  no special handling re: the user's current working directory, and thus
+  relative paths given to it will be relative to ``os.getcwd()``. Thanks to
+  `@techtonik <https://github.com/techtonik>`_ for the catch.
 * :release:`1.4.2 <2012-05-07>`
 * :release:`1.3.7 <2012-05-07>`
 * :bug:`562` Agent forwarding would error out or freeze when multiple uses of
   the forwarded agent were used per remote invocation (e.g. a single
   `~fabric.operations.run` command resulting in multiple Git or SVN checkouts.)
   This has been fixed thanks to Steven McDonald and GitHub user `@lynxis`.
-* :support:`626` Clarity updates to the tutorial. Thanks to GitHub user `m4z`
-  for the patches.
+* :support:`626 backported` Clarity updates to the tutorial. Thanks to GitHub
+  user `m4z` for the patches.
 * :bug:`625` `~fabric.context_managers.hide`/`~fabric.context_managers.show`
   did not correctly restore prior display settings if an exception was raised
   inside the block. This has been fixed.
@@ -377,7 +354,7 @@ Changelog
 * :feature:`474` `~fabric.tasks.execute` now allows you to access the executed
   task's return values, by itself returning a dictionary whose keys are the
   host strings executed against.
-* :bug:`487` Overhauled the regular expression escaping performed in
+* :bug:`487 major` Overhauled the regular expression escaping performed in
   `~fabric.contrib.files.append` and `~fabric.contrib.files.contains` to try
   and handle more corner cases. Thanks to Neilen Marais for the patch.
 * :support:`532` Reorganized and cleaned up the output of ``fab --help``.
@@ -445,10 +422,10 @@ Changelog
 * :release:`1.3.2 <2011-11-07>`
 * :release:`1.2.4 <2011-11-07>`
 * :release:`1.1.6 <2011-11-07>`
-* :support:`459` Update our `setup.py` files to note that PyCrypto released
-  2.4.1, which fixes the setuptools problems.
-* :support:`467` (also :issue:`468`, :issue:`469`) Handful of documentation
-  clarification tweaks. Thanks to Paul Hoffman for the patches.
+* :support:`459 backported` Update our `setup.py` files to note that PyCrypto
+  released 2.4.1, which fixes the setuptools problems.
+* :support:`467 backported` (also :issue:`468`, :issue:`469`) Handful of
+  documentation clarification tweaks. Thanks to Paul Hoffman for the patches.
 * :release:`1.3.1 <2011-10-24>`
 * :bug:`457` Ensured that Fabric fast-fails parallel tasks if any child
   processes encountered errors. Previously, multi-task invocations would
@@ -490,8 +467,8 @@ Changelog
   ``env`` values for keys which did not exist outside the context manager
   block.  It now works as expected. Thanks to Will Maier for the catch and
   suggested solution.
-* :support:`393` Fixed a typo in an example code snippet in the task docs.
-  Thanks to Hugo Garza for the catch.
+* :support:`393 backported` Fixed a typo in an example code snippet in the task
+  docs.  Thanks to Hugo Garza for the catch.
 * :bug:`396` :option:`--shortlist` broke after the addition of
   :option:`--list-format <-F>` and no longer displayed the short list format
   correctly. This has been fixed.
@@ -505,7 +482,8 @@ Changelog
 * :bug:`417` :ref:`abort-on-prompts` would incorrectly abort when set to True,
   even if both password and host were defined. This has been fixed. Thanks to
   Valerie Ishida for the report.
-* :support:`416` Updated documentation to reflect move from Redmine to Github.
+* :support:`416 backported` Updated documentation to reflect move from Redmine
+  to Github.
 * :bug:`389` Fixed/improved error handling when Paramiko import fails. Thanks
   to Brian Luft for the catch.
 * :release:`1.2.0 <2011-07-12>`
