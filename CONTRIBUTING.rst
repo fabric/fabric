@@ -30,6 +30,17 @@ Patch submission guidelines
 * **Add a changelog entry** at the top of ``docs/changelog.rst`` following
   existing entries' styles. Don't forget to attribute yourself if you'd like
   credit!
+
+    * If your change is a feature or support ticket intended for backporting to
+      older release lines, give it the ``backported`` keyword, e.g.::
+
+          * :feature:`123 backported` This is my description...
+
+    * If it's a "major" bugfix that is getting put out in a feature release,
+      give it the ``major`` keyword::
+
+          * :bug:`123 major` Description here...
+
 * **Try writing some tests** if possible -- again, following existing tests is
   often easiest, and a good way to tell whether the feature you're modifying is
   easily testable.
