@@ -1,4 +1,4 @@
-import docutils
+import docutils.nodes
 
 
 class issue(docutils.nodes.Element):
