@@ -21,34 +21,54 @@ from datetime import datetime
 # Custom ReST roles.
 from docutils.parsers.rst import roles
 from docutils import nodes, utils
+# Custom ReST nodes
+from fabric.changelog import issue, release as release_node
 
 issue_types = ('bug', 'feature', 'support')
 
 def issues_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
     """
-    Use: :issue|bug|feature|support:`ticket number`
+    Use: :issue|bug|feature|support:`ticket_number`
 
     When invoked as :issue:, turns into just a "#NN" hyperlink to Github.
 
     When invoked otherwise, turns into "[Type] <#NN hyperlink>: ".
+
+    May give a 'ticket number' of '<number> backported' to indicate a
+    backported feature or support ticket. This extra info will be stripped out
+    prior to parsing. May also give 'major' in the same vein, implying the bug
+    was a major bug released in a feature release.
     """
     # Old-style 'just the issue link' behavior
-    issue_no = utils.unescape(text)
+    issue_no, _, ported = utils.unescape(text).partition(' ')
     ref = "https://github.com/fabric/fabric/issues/" + issue_no
     link = nodes.reference(rawtext, '#' + issue_no, refuri=ref, **options)
-    ret = [link]
     # Additional 'new-style changelog' stuff
     if name in issue_types:
         which = '[<span class="changelog-%s">%s</span>]' % (
             name, name.capitalize()
         )
-        ret = [
+        nodelist = [
             nodes.raw(text=which, format='html'),
             nodes.inline(text=" "),
             link,
             nodes.inline(text=":")
         ]
-    return ret, []
+        # Sanity check
+        if ported not in ('backported', 'major', ''):
+            raise ValueError("Gave unknown issue metadata '%s' for issue no. %s" % (ported, issue_no))
+        # Create temporary node w/ data & final nodes to publish
+        node = issue(
+            number=issue_no,
+            type_=name,
+            nodelist=nodelist,
+            backported=(ported == 'backported'),
+            major=(ported == 'major'),
+        )
+        return [node], []
+    # Return old style info for 'issue' for older changelog entries
+    else:
+        return [link], []
 
 for x in issue_types + ('issue',):
     roles.register_local_role(x, issues_role)
@@ -69,15 +89,26 @@ def release_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
         msg = inliner.reporter.error("Must specify release date!")
         return [inliner.problematic(rawtext, rawtext, msg)], [msg]
     number, date = match.group(1), match.group(2)
-    return [
-        nodes.strong(text=date),
-        nodes.inline(text=": released "),
-        nodes.reference(
-            text="Fabric %s" % number,
-            refuri="https://github.com/fabric/fabric/tree/%s" % number,
-            classes=['changelog-release']
+    nodelist = [
+        # TODO: display as large-font <number> + smaller-font, on same line,
+        # release date, then (even smaller?) link to GH tree as text 'github'
+        # or 'source'?
+        nodes.section('',
+            nodes.title('', '',
+                nodes.reference(
+                    text=number,
+                    refuri="https://github.com/fabric/fabric/tree/%s" % number,
+                    classes=['changelog-release']
+                ),
+                nodes.inline(text=' '),
+                nodes.raw(text='<span class="release-date">%s</span>' % date, format='html'),
+            ),
+            ids=[number]
         )
-    ], []
+    ]
+    # Return intermediate node
+    node = release_node(number=number, date=date, nodelist=nodelist)
+    return [node], []
 roles.register_local_role('release', release_role)
 
 
@@ -90,7 +121,7 @@ roles.register_local_role('release', release_role)
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc']
+extensions = ['sphinx.ext.autodoc', 'fabric.changelog']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
