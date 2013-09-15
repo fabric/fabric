@@ -32,6 +32,7 @@ def output_loop(*args, **kwargs):
 
 
 class OutputLooper(object):
+
     def __init__(self, chan, attr, stream, capture, timeout):
         self.chan = chan
         self.stream = stream
@@ -42,7 +43,8 @@ class OutputLooper(object):
             env.host_string,
             "out" if attr == 'recv' else "err"
         )
-        self.printing = getattr(output, 'stdout' if (attr == 'recv') else 'stderr')
+        self.printing = getattr(
+            output, 'stdout' if (attr == 'recv') else 'stderr')
         self.linewise = (env.linewise or env.parallel)
         self.reprompt = False
         self.read_size = 4096
@@ -55,7 +57,8 @@ class OutputLooper(object):
 
     def loop(self):
         """
-        Loop, reading from <chan>.<attr>(), writing to <stream> and buffering to <capture>.
+        Loop, reading from <chan>.<attr>(), writing to <stream> and buffering
+        to <capture>.
 
         Will raise `~fabric.exceptions.CommandTimeout` if network timeouts
         continue to be seen past the defined ``self.timeout`` threshold.
@@ -111,7 +114,8 @@ class OutputLooper(object):
                         printable_bytes = printable_bytes[1:]
                         seen_cr = False
 
-                    while _has_newline(printable_bytes) and printable_bytes != "":
+                    while _has_newline(printable_bytes) and \
+                            printable_bytes != "":
                         # at most 1 split !
                         cr = re.search("(\r\n|\r|\n)", printable_bytes)
                         if cr is None:
@@ -149,8 +153,11 @@ class OutputLooper(object):
                     _buffer += fragment
                     # Handle prompts
                     prompt = _endswith(self.capture, env.sudo_prompt)
-                    try_again = (_endswith(self.capture, env.again_prompt + '\n')
-                        or _endswith(self.capture, env.again_prompt + '\r\n'))
+                    try_again = (
+                        _endswith(self.capture,
+                                  env.again_prompt + '\n')
+                        or _endswith(self.capture,
+                                     env.again_prompt + '\r\n'))
                     if prompt:
                         self.prompt()
                     elif try_again:
@@ -195,7 +202,7 @@ class OutputLooper(object):
             self.reprompt = False
         # Send current password down the pipe
         self.chan.sendall(password + '\n')
- 
+
     def try_again(self):
         # Remove text from capture buffer
         self.capture = self.capture[:len(env.again_prompt)]

@@ -19,6 +19,8 @@ before_script:
   - ssh-keygen -f ~/.ssh/id_rsa -N ""
   - cp ~/.ssh/{id_rsa.pub,authorized_keys}
 script:
+  # PEP8 tests
+  - flake8 .
   # Normal tests
   - fab test
   # Integration tests

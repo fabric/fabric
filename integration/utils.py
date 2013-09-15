@@ -4,7 +4,7 @@ import sys
 # Pull in regular tests' utilities
 mod = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'tests'))
 sys.path.insert(0, mod)
-from mock_streams import mock_streams
+from mock_streams import mock_streams # flake8: noqa
 #from utils import FabricTest
 # Clean up
 del sys.path[0]

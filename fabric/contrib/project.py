@@ -5,7 +5,6 @@ from __future__ import with_statement
 
 from os import getcwd, sep
 import os.path
-from datetime import datetime
 from tempfile import mkdtemp
 
 from fabric.network import needs_host, key_filenames, normalize
@@ -14,6 +13,7 @@ from fabric.state import env, output
 from fabric.context_managers import cd
 
 __all__ = ['rsync_project', 'upload_project']
+
 
 @needs_host
 def rsync_project(
@@ -28,7 +28,8 @@ def rsync_project(
     default_opts='-pthrvz'
 ):
     """
-    Synchronize a remote directory with the current project directory via rsync.
+    Synchronize a remote directory with the current project directory via
+    rsync.
 
     Where ``upload_project()`` makes use of ``scp`` to copy one's entire
     project every time it is invoked, ``rsync_project()`` uses the ``rsync``
@@ -128,7 +129,8 @@ def rsync_project(
         'default': default_opts,
         'extra': extra_opts,
     }
-    options = "%(delete)s%(exclude)s %(default)s %(extra)s %(rsh)s" % options_map
+    options = "%(delete)s%(exclude)s %(default)s %(extra)s %(rsh)s"\
+        % options_map
     # Get local directory
     if local_dir is None:
         local_dir = '../' + getcwd().split(sep)[-1]
@@ -140,9 +142,11 @@ def rsync_project(
     else:
         remote_prefix = "%s@%s" % (user, host)
     if upload:
-        cmd = "rsync %s %s %s:%s" % (options, local_dir, remote_prefix, remote_dir)
+        cmd = "rsync %s %s %s:%s" % (
+            options, local_dir, remote_prefix, remote_dir)
     else:
-        cmd = "rsync %s %s:%s %s" % (options, remote_prefix, remote_dir, local_dir)
+        cmd = "rsync %s %s:%s %s" % (
+            options, remote_prefix, remote_dir, local_dir)
 
     if output.running:
         print("[%s] rsync_project: %s" % (env.host_string, cmd))

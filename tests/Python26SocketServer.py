@@ -148,6 +148,7 @@ if hasattr(socket, "AF_UNIX"):
 
 
 class BaseServer:
+
     """Base class for server classes.
 
     Methods for the caller:
@@ -329,7 +330,8 @@ class BaseServer:
 
         """
         print('-' * 40)
-        print('Exception happened during processing of request from %s' % (client_address,))
+        print('Exception happened during processing of request from %s' %
+              (client_address,))
         import traceback
         traceback.print_exc()  # XXX But this goes to stderr!
         print('-' * 40)
@@ -471,6 +473,7 @@ class UDPServer(TCPServer):
 
 
 class ForkingMixIn:
+
     """Mix-in class to handle each request in a new process."""
 
     timeout = 300
@@ -509,8 +512,8 @@ class ForkingMixIn:
             try:
                 self.active_children.remove(pid)
             except ValueError, e:
-                raise ValueError('%s. x=%d and list=%r' % \
-                                    (e.message, pid, self.active_children))
+                raise ValueError('%s. x=%d and list=%r' %
+                                (e.message, pid, self.active_children))
 
     def handle_timeout(self):
         """Wait for zombies after self.timeout seconds of inactivity.
@@ -544,6 +547,7 @@ class ForkingMixIn:
 
 
 class ThreadingMixIn:
+
     """Mix-in class to handle each request in a new thread."""
 
     # Decides how threads will act upon termination of the

@@ -16,7 +16,7 @@ from glob import glob
 from contextlib import closing, contextmanager
 
 from fabric.context_managers import (settings, char_buffered, hide,
-    quiet as quiet_manager, warn_only as warn_only_manager)
+     quiet as quiet_manager, warn_only as warn_only_manager)
 from fabric.io import output_loop, input_loop
 from fabric.network import needs_host, ssh, ssh_config
 from fabric.sftp import SFTP
@@ -50,6 +50,7 @@ def _shell_escape(string):
 
 
 class _AttributeString(str):
+
     """
     Simple string subclass to allow arbitrary attribute access.
     """
@@ -59,6 +60,7 @@ class _AttributeString(str):
 
 
 class _AttributeList(list):
+
     """
     Like _AttributeString, but for lists.
     """
@@ -96,8 +98,10 @@ def require(*keys, **kwargs):
         Allow iterable ``provided_by`` values instead of just single values.
     """
     # If all keys exist and are non-empty, we're good, so keep going.
-    missing_keys = filter(lambda x: x not in env or (x in env and
-        isinstance(env[x], (dict, list, tuple, set)) and not env[x]), keys)
+    missing_keys = filter(lambda x: x not in env or
+                             (x in env and isinstance(env[x],
+                                 (dict, list, tuple, set))
+                                  and not env[x]), keys)
     if not missing_keys:
         return
     # Pluralization
@@ -107,8 +111,8 @@ def require(*keys, **kwargs):
     else:
         variable = "variable was"
         used = "This variable is"
-    # Regardless of kwargs, print what was missing. (Be graceful if used outside
-    # of a command.)
+    # Regardless of kwargs, print what was missing. (Be graceful if used
+    # outside of a command.)
     if 'command' in env:
         prefix = "The command '%s' failed because the " % env.command
     else:
@@ -235,7 +239,9 @@ def prompt(text, key=None, default='', validate=None):
                     validate += r'$'
                 result = re.findall(validate, value)
                 if not result:
-                    print("Regular expression validation failed: '%s' does not match '%s'\n" % (value, validate))
+                    print(
+                        "Regular expression validation failed: '%s' does not match '%s'\n" % # flake8: noqa
+                        (value, validate))
                     # Reset value so we stay in the loop
                     value = None
     # At this point, value must be valid, so update env if necessary
@@ -252,7 +258,7 @@ def prompt(text, key=None, default='', validate=None):
 
 @needs_host
 def put(local_path=None, remote_path=None, use_sudo=False,
-    mirror_local_mode=False, mode=None, use_glob=True, temp_dir=""):
+        mirror_local_mode=False, mode=None, use_glob=True, temp_dir=""):
     """
     Upload one or more files to a remote host.
 
@@ -340,8 +346,8 @@ def put(local_path=None, remote_path=None, use_sudo=False,
     local_path = local_path or os.getcwd()
 
     # Test whether local_path is a path or a file-like object
-    local_is_path = not (hasattr(local_path, 'read') \
-        and callable(local_path.read))
+    local_is_path = not (hasattr(local_path, 'read')
+                         and callable(local_path.read))
 
     ftp = SFTP(env.host_string)
 
@@ -392,10 +398,11 @@ def put(local_path=None, remote_path=None, use_sudo=False,
             try:
                 if local_is_path and os.path.isdir(lpath):
                     p = ftp.put_dir(lpath, remote_path, use_sudo,
-                        mirror_local_mode, mode, temp_dir)
+                                    mirror_local_mode, mode, temp_dir)
                     remote_paths.extend(p)
                 else:
-                    p = ftp.put(lpath, remote_path, use_sudo, mirror_local_mode,
+                    p = ftp.put(
+                        lpath, remote_path, use_sudo, mirror_local_mode,
                         mode, local_is_path, temp_dir)
                     remote_paths.append(p)
             except Exception, e:
@@ -518,8 +525,8 @@ def get(remote_path, local_path=None):
     local_path = local_path or "%(host)s/%(path)s"
 
     # Test whether local_path is a path or a file-like object
-    local_is_path = not (hasattr(local_path, 'write') \
-        and callable(local_path.write))
+    local_is_path = not (hasattr(local_path, 'write')
+                         and callable(local_path.write))
 
     # Honor lcd() where it makes sense
     if local_is_path:
@@ -558,7 +565,9 @@ def get(remote_path, local_path=None):
             # Handle invalid local-file-object situations
             if not local_is_path:
                 if len(names) > 1 or ftp.isdir(names[0]):
-                    error("[%s] %s is a glob or directory, but local_path is a file object!" % (env.host_string, remote_path))
+                    error(
+                        "[%s] %s is a glob or directory, but local_path is a file object!" %
+                        (env.host_string, remote_path))
 
             for remote_path in names:
                 if ftp.isdir(remote_path):
@@ -569,7 +578,7 @@ def get(remote_path, local_path=None):
                     # add result (will be true final path value) to
                     # local_files. File-like objects are omitted.
                     result = ftp.get(remote_path, local_path, local_is_path,
-                        os.path.basename(remote_path))
+                                     os.path.basename(remote_path))
                     if local_is_path:
                         local_files.append(result)
 
@@ -705,7 +714,7 @@ def _prefix_env_vars(command, local=False):
 
 
 def _execute(channel, command, pty=True, combine_stderr=None,
-    invoke_shell=False, stdout=None, stderr=None, timeout=None):
+             invoke_shell=False, stdout=None, stderr=None, timeout=None):
     """
     Execute ``command`` over ``channel``.
 
@@ -773,9 +782,9 @@ def _execute(channel, command, pty=True, combine_stderr=None,
 
         workers = (
             ThreadHandler('out', output_loop, channel, "recv",
-                capture=stdout_buf, stream=stdout, timeout=timeout),
+                          capture=stdout_buf, stream=stdout, timeout=timeout),
             ThreadHandler('err', output_loop, channel, "recv_stderr",
-                capture=stderr_buf, stream=stderr, timeout=timeout),
+                          capture=stderr_buf, stream=stderr, timeout=timeout),
             ThreadHandler('in', input_loop, channel, using_pty)
         )
 
@@ -862,7 +871,7 @@ def open_shell(command=None):
     .. versionadded:: 1.0
     """
     _execute(channel=default_channel(), command=command, pty=True,
-        combine_stderr=True, invoke_shell=True)
+             combine_stderr=True, invoke_shell=True)
 
 
 @contextmanager
@@ -871,8 +880,8 @@ def _noop():
 
 
 def _run_command(command, shell=True, pty=True, combine_stderr=True,
-    sudo=False, user=None, quiet=False, warn_only=False, stdout=None,
-    stderr=None, group=None, timeout=None, shell_escape=None):
+                 sudo=False, user=None, quiet=False, warn_only=False, stdout=None,
+                 stderr=None, group=None, timeout=None, shell_escape=None):
     """
     Underpinnings of `run` and `sudo`. See their docstrings for more info.
     """
@@ -946,7 +955,7 @@ def _run_command(command, shell=True, pty=True, combine_stderr=True,
 
 @needs_host
 def run(command, shell=True, pty=True, combine_stderr=None, quiet=False,
-    warn_only=False, stdout=None, stderr=None, timeout=None, shell_escape=None):
+        warn_only=False, stdout=None, stderr=None, timeout=None, shell_escape=None):
     """
     Run a shell command on a remote host.
 
@@ -1038,14 +1047,14 @@ def run(command, shell=True, pty=True, combine_stderr=None, quiet=False,
         The ``shell_escape`` argument.
     """
     return _run_command(command, shell, pty, combine_stderr, quiet=quiet,
-        warn_only=warn_only, stdout=stdout, stderr=stderr, timeout=timeout,
-        shell_escape=shell_escape)
+                        warn_only=warn_only, stdout=stdout, stderr=stderr, timeout=timeout,
+                        shell_escape=shell_escape)
 
 
 @needs_host
 def sudo(command, shell=True, pty=True, combine_stderr=None, user=None,
-    quiet=False, warn_only=False, stdout=None, stderr=None, group=None,
-    timeout=None, shell_escape=None):
+         quiet=False, warn_only=False, stdout=None, stderr=None, group=None,
+         timeout=None, shell_escape=None):
     """
     Run a shell command on a remote host, with superuser privileges.
 
@@ -1180,7 +1189,8 @@ def local(command, capture=False, shell=None):
     out.stderr = err
     if p.returncode not in env.ok_ret_codes:
         out.failed = True
-        msg = "local() encountered an error (return code %s) while executing '%s'" % (p.returncode, command)
+        msg = "local() encountered an error (return code %s) while executing '%s'" % (
+            p.returncode, command)
         error(message=msg, stdout=out, stderr=err)
     out.succeeded = not out.failed
     # If we were capturing, this will be a string; otherwise it will be None.

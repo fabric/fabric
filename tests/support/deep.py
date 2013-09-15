@@ -1,1 +1,1 @@
-import submodule
+import submodule # flake8: noqa

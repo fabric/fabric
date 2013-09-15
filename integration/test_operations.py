@@ -2,7 +2,7 @@ from __future__ import with_statement
 
 from StringIO import StringIO
 
-from fabric.api import run, path, put, sudo, abort, warn_only, env
+from fabric.api import run, path, put, sudo, env
 
 from utils import Integration
 
@@ -29,7 +29,8 @@ class TestOperations(Integration):
         sudo("rm -rf %s" % self.not_owned)
 
     def test_no_trailing_space_in_shell_path_in_run(self):
-        put(StringIO("#!/bin/bash\necho hi"), "%s/myapp" % self.dirpath, mode="0755")
+        put(StringIO("#!/bin/bash\necho hi"), "%s/myapp" %
+            self.dirpath, mode="0755")
         with path(self.dirpath):
             assert run('myapp').stdout == 'hi'
 
@@ -75,4 +76,5 @@ class TestOperations(Integration):
 
     def test_put_with_use_sudo_dir_and_custom_temp_dir(self):
         self._chown('.')
-        self._put_via_sudo(source='integration', target_suffix='', temp_dir='/tmp')
+        self._put_via_sudo(
+            source='integration', target_suffix='', temp_dir='/tmp')

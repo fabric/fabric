@@ -1,6 +1,5 @@
 from __future__ import with_statement
 
-from functools import wraps
 import inspect
 import sys
 import textwrap
@@ -17,6 +16,7 @@ if sys.version_info[:2] == (2, 5):
     # Python 2.5 inspect.getargspec returns a tuple
     # instead of ArgSpec namedtuple.
     class ArgSpec(object):
+
         def __init__(self, args, varargs, keywords, defaults):
             self.args = args
             self.varargs = varargs
@@ -64,6 +64,7 @@ def _get_list(env):
 
 
 class Task(object):
+
     """
     Abstract base class for objects wishing to be picked up as Fabric tasks.
 
@@ -83,7 +84,7 @@ class Task(object):
 
     # TODO: make it so that this wraps other decorators as expected
     def __init__(self, alias=None, aliases=None, default=False, name=None,
-        *args, **kwargs):
+                 *args, **kwargs):
         if alias is not None:
             self.aliases = [alias, ]
         if aliases is not None:
@@ -140,6 +141,7 @@ class Task(object):
 
 
 class WrappedCallableTask(Task):
+
     """
     Wraps a given callable transparently, while marking it as a valid Task.
 
@@ -149,6 +151,7 @@ class WrappedCallableTask(Task):
 
     .. seealso:: `~fabric.docs.unwrap_tasks`, `~fabric.decorators.task`
     """
+
     def __init__(self, callable, *args, **kwargs):
         super(WrappedCallableTask, self).__init__(*args, **kwargs)
         self.wrapped = callable
@@ -214,7 +217,7 @@ def _execute(task, host, my_env, args, kwargs, jobs, queue, multiprocessing):
     if queue is not None:
         local_env.update({'parallel': True, 'linewise': True})
     # Handle parallel execution
-    if queue is not None: # Since queue is only set for parallel
+    if queue is not None:  # Since queue is only set for parallel
         name = local_env['host_string']
         # Wrap in another callable that:
         # * expands the env it's given to ensure parallel, linewise, etc are
@@ -223,22 +226,26 @@ def _execute(task, host, my_env, args, kwargs, jobs, queue, multiprocessing):
         # * nukes the connection cache to prevent shared-access problems
         # * knows how to send the tasks' return value back over a Queue
         # * captures exceptions raised by the task
+
         def inner(args, kwargs, queue, name, env):
             state.env.update(env)
+
             def submit(result):
                 queue.put({'name': name, 'result': result})
             try:
                 key = normalize_to_string(state.env.host_string)
                 state.connections.pop(key, "")
                 submit(task.run(*args, **kwargs))
-            except BaseException, e: # We really do want to capture everything
+            except BaseException, e:  # We really do want to capture everything
                 # SystemExit implies use of abort(), which prints its own
                 # traceback, host info etc -- so we don't want to double up
                 # on that. For everything else, though, we need to make
                 # clear what host encountered the exception that will
                 # print.
                 if e.__class__ is not SystemExit:
-                    sys.stderr.write("!!! Parallel execution exception under host %r:\n" % name)
+                    sys.stderr.write(
+                        "!!! Parallel execution exception under host %r:\n"
+                        % name)
                     submit(e)
                 # Here, anything -- unexpected exceptions, or abort()
                 # driven SystemExits -- will bubble up and terminate the
@@ -263,8 +270,10 @@ def _execute(task, host, my_env, args, kwargs, jobs, queue, multiprocessing):
         with settings(**local_env):
             return task.run(*args, **kwargs)
 
+
 def _is_task(task):
     return isinstance(task, Task)
+
 
 def execute(task, *args, **kwargs):
     """
@@ -331,7 +340,8 @@ def execute(task, *args, **kwargs):
     # Filter out hosts/roles kwargs
     new_kwargs, hosts, roles, exclude_hosts = parse_kwargs(kwargs)
     # Set up host list
-    my_env['all_hosts'] = task.get_hosts(hosts, roles, exclude_hosts, state.env)
+    my_env['all_hosts'] = task.get_hosts(
+        hosts, roles, exclude_hosts, state.env)
 
     parallel = requires_parallel(task)
     if parallel:

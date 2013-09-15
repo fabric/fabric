@@ -7,10 +7,13 @@ from server import server, RESPONSES, USER, HOST, PORT
 
 # TODO: move this into test_tasks? meh.
 
-class OhNoesException(Exception): pass
+
+class OhNoesException(Exception):
+    pass
 
 
 class TestParallel(FabricTest):
+
     @server()
     @parallel
     def test_parallel(self):
@@ -51,12 +54,12 @@ class TestParallel(FabricTest):
                 run("ls /")
                 if env.host_string == host2:
                     raise OhNoesException
-            
+
             execute(mytask, hosts=[host1, host2])
 
     @server(port=2200)
     @server(port=2201)
-    @mock_streams('stderr') # To hide the traceback for now
+    @mock_streams('stderr')  # To hide the traceback for now
     def test_parallel_failures_honor_warn_only(self):
         with hide('everything'):
             host1 = '127.0.0.1:2200'
@@ -72,7 +75,6 @@ class TestParallel(FabricTest):
                 result = execute(mytask, hosts=[host1, host2])
             eq_(result[host1], None)
             assert isinstance(result[host2], OhNoesException)
-
 
     @server(port=2200)
     @server(port=2201)

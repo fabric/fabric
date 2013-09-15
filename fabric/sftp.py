@@ -23,9 +23,11 @@ def _format_local(local_path, local_is_path):
 
 
 class SFTP(object):
+
     """
     SFTP helper class, which is also a facade for ssh.SFTPClient.
     """
+
     def __init__(self, host_string):
         self.ftp = connections[host_string].open_sftp()
 
@@ -126,7 +128,7 @@ class SFTP(object):
         if local_is_path:
             # Naive fix to issue #711
             escaped_path = re.sub(r'(%[^()]*\w)', r'%\1', local_path)
-            local_path = os.path.abspath(escaped_path % path_vars )
+            local_path = os.path.abspath(escaped_path % path_vars)
 
             # Ensure we give ssh.SFTPCLient a file by prepending and/or
             # creating local directories as appropriate.
@@ -185,7 +187,7 @@ class SFTP(object):
                 # If local_path isn't using a format string that expands to
                 # include its remote path, we need to add it here.
                 if "%(path)s" not in local_path \
-                    and "%(dirname)s" not in local_path:
+                        and "%(dirname)s" not in local_path:
                     lpath = os.path.join(lcontext, f)
                 # Otherwise, just passthrough local_path to self.get()
                 else:
@@ -196,7 +198,7 @@ class SFTP(object):
         return result
 
     def put(self, local_path, remote_path, use_sudo, mirror_local_mode, mode,
-        local_is_path, temp_dir):
+            local_is_path, temp_dir):
         from fabric.api import sudo, hide
         pre = self.ftp.getcwd()
         pre = pre if pre else ''
@@ -254,7 +256,7 @@ class SFTP(object):
         return remote_path
 
     def put_dir(self, local_path, remote_path, use_sudo, mirror_local_mode,
-        mode, temp_dir):
+                mode, temp_dir):
         if os.path.basename(local_path):
             strip = os.path.dirname(local_path)
         else:
@@ -281,6 +283,6 @@ class SFTP(object):
                 local_path = os.path.join(context, f)
                 n = posixpath.join(rcontext, f)
                 p = self.put(local_path, n, use_sudo, mirror_local_mode, mode,
-                    True, temp_dir)
+                             True, temp_dir)
                 remote_paths.append(p)
         return remote_paths

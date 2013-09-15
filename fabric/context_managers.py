@@ -34,7 +34,6 @@ Context managers for use with the ``with`` statement.
 """
 
 from contextlib import contextmanager, nested
-import sys
 import socket
 import select
 
@@ -120,9 +119,9 @@ def _setenv(variables):
     Context manager temporarily overriding ``env`` with given key/value pairs.
 
     A callable that returns a dict can also be passed. This is necessary when
-    new values are being calculated from current values, in order to ensure that
-    the "current" value is current at the time that the context is entered, not
-    when the context manager is initialized. (See Issue #736.)
+    new values are being calculated from current values, in order to ensure
+    that the "current" value is current at the time that the context is
+    entered, not when the context manager is initialized. (See Issue #736.)
 
     This context manager is used internally by `settings` and is not intended
     to be used directly.
@@ -175,7 +174,7 @@ def settings(*args, **kwargs):
       non-keyword arguments, which should be other context managers, e.g.
       ``with settings(hide('stderr'), show('stdout')):``.
 
-    .. _contextlib.nested: http://docs.python.org/library/contextlib.html#contextlib.nested
+    .. _contextlib.nested: http://docs.python.org/library/contextlib.html#contextlib.nested # flake8: noqa
 
     These behaviors may be specified at the same time if desired. An example
     will hopefully illustrate why this is considered useful::
@@ -419,7 +418,8 @@ def prefix(command):
 
     Contrived, but hopefully illustrative.
     """
-    return _setenv(lambda: {'command_prefixes': state.env.command_prefixes + [command]})
+    return _setenv(lambda: {'command_prefixes':
+                   state.env.command_prefixes + [command]})
 
 
 @documented_contextmanager
@@ -485,7 +485,7 @@ def _forwarder(chan, sock):
 
 @documented_contextmanager
 def remote_tunnel(remote_port, local_port=None, local_host="localhost",
-    remote_bind_address="127.0.0.1"):
+                  remote_bind_address="127.0.0.1"):
     """
     Create a tunnel forwarding a locally-visible port to the remote target.
 
@@ -539,8 +539,9 @@ def remote_tunnel(remote_port, local_port=None, local_host="localhost",
 
         try:
             sock.connect((local_host, local_port))
-        except Exception, e:
-            print "[%s] rtunnel: cannot connect to %s:%d (from local)" % (env.host_string, local_host, local_port)
+        except Exception:
+            print "[%s] rtunnel: cannot connect to %s:%d (from local)"\
+              % (env.host_string, local_host, local_port)
             chan.close()
             return
 
@@ -552,7 +553,8 @@ def remote_tunnel(remote_port, local_port=None, local_host="localhost",
         threads.append(th)
 
     transport = connections[env.host_string].get_transport()
-    transport.request_port_forward(remote_bind_address, remote_port, handler=accept)
+    transport.request_port_forward(
+        remote_bind_address, remote_port, handler=accept)
 
     try:
         yield
@@ -563,7 +565,6 @@ def remote_tunnel(remote_port, local_port=None, local_host="localhost",
             th.thread.join()
             th.raise_if_needed()
         transport.cancel_port_forward(remote_bind_address, remote_port)
-
 
 
 quiet = lambda: settings(hide('everything'), warn_only=True)

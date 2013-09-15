@@ -15,7 +15,7 @@ from StringIO import StringIO
 
 
 from fabric.auth import get_password, set_password
-from fabric.utils import abort, handle_prompt_abort, warn
+from fabric.utils import handle_prompt_abort, warn
 from fabric.exceptions import NetworkError
 
 try:
@@ -52,6 +52,7 @@ def is_key_load_error(e):
 
 
 class HostConnectionCache(dict):
+
     """
     Dict subclass allowing for caching of host connections/clients.
 
@@ -85,6 +86,7 @@ class HostConnectionCache(dict):
     two different connections to the same host being made. If no port is given,
     22 is assumed, so ``example.com`` is equivalent to ``example.com:22``.
     """
+
     def connect(self, key):
         """
         Force a new connection to ``key`` host string.
@@ -201,7 +203,8 @@ def key_from_env(passphrase=None):
             if output.debug:
                 sys.stderr.write("Trying to load it as %s\n" % pkey_class)
             try:
-                return pkey_class.from_private_key(StringIO(env.key), passphrase)
+                return pkey_class.from_private_key(StringIO(env.key),
+                                                   passphrase)
             except Exception, e:
                 # File is valid key, but is encrypted: raise it, this will
                 # cause cxn loop to prompt for passphrase & retry
@@ -402,7 +405,8 @@ def connect(user, host, port, sock=None):
         # command line results in the big banner error about man-in-the-middle
         # attacks.
         except ssh.BadHostKeyException, e:
-            raise NetworkError("Host key for %s did not match pre-existing key! Server's key was changed recently, or possible man-in-the-middle attack." % host, e)
+            raise NetworkError(
+                "Host key for %s did not match pre-existing key! Server's key was changed recently, or possible man-in-the-middle attack." % host, e) # flake8: noqa
         # Prompt for new password to try on auth failure
         except (
             ssh.AuthenticationException,
@@ -424,8 +428,8 @@ def connect(user, host, port, sock=None):
             # This also holds true for rejected/unknown host keys: we have to
             # guess based on other heuristics.
             if e.__class__ is ssh.SSHException \
-                and (password or msg.startswith('Unknown server')) \
-                and not is_key_load_error(e):
+                    and (password or msg.startswith('Unknown server')) \
+                    and not is_key_load_error(e):
                 raise NetworkError(msg, e)
 
             # Otherwise, assume an auth exception, and prompt for new/better
@@ -478,7 +482,8 @@ def connect(user, host, port, sock=None):
             # Baseline error msg for when debug is off
             msg = "Timed out trying to connect to %s" % host
             # Expanded for debug on
-            err = msg + " (attempt %s of %s)" % (tries, env.connection_attempts)
+            err = msg + \
+                " (attempt %s of %s)" % (tries, env.connection_attempts)
             if giving_up:
                 err += ", giving up"
             err += ")"
@@ -513,6 +518,7 @@ def _password_prompt(prompt, stream):
     # NOTE: Using encode-to-ascii to prevent (Windows, at least) getpass from
     # choking if given Unicode.
     return getpass.getpass(prompt.encode('ascii', 'ignore'), stream)
+
 
 def prompt_for_password(prompt=None, no_colon=False, stream=None):
     """
@@ -568,6 +574,7 @@ def needs_host(func):
     command (in the case where multiple commands have no hosts set, of course.)
     """
     from fabric.state import env
+
     @wraps(func)
     def host_prompting_wrapper(*args, **kwargs):
         while not env.get('host_string', False):

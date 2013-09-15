@@ -3,7 +3,7 @@ from __future__ import with_statement
 
 import os
 
-from fabric.api import hide, get, show
+from fabric.api import hide, get
 from fabric.contrib.files import upload_template, contains
 
 from utils import FabricTest, eq_contents
@@ -14,6 +14,7 @@ class TestContrib(FabricTest):
     # Make sure it knows / is a directory.
     # This is in lieu of starting down the "actual honest to god fake operating
     # system" road...:(
+
     @server(responses={'test -d "$(echo /)"': ""})
     def test_upload_template_uses_correct_remote_filename(self):
         """
@@ -43,15 +44,15 @@ class TestContrib(FabricTest):
             "sudo: unable to resolve host fabric",
             "",
             1
-        )}
-    )
+            )}
+            )
     def test_contains_checks_only_succeeded_flag(self):
         """
         contains() should return False on bad grep even if stdout isn't empty
         """
         with hide('everything'):
             result = contains('/file.txt', 'text', use_sudo=True)
-            assert result == False
+            assert result == False # flake8: noqa
 
     @server()
     def test_upload_template_handles_jinja_template(self):
@@ -66,7 +67,7 @@ class TestContrib(FabricTest):
         first_name = u'S\u00E9bastien'
         with hide('everything'):
             upload_template(template_name, remote, {'first_name': first_name},
-                use_jinja=True, template_dir=template_dir)
+                            use_jinja=True, template_dir=template_dir)
             get(remote, local)
         eq_contents(local, first_name.encode('utf-8'))
 

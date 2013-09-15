@@ -7,6 +7,7 @@ import sys
 import textwrap
 from traceback import format_exc
 
+
 def abort(msg):
     """
     Abort execution, print ``msg`` to stderr and exit with error status (1.)
@@ -16,11 +17,11 @@ def abort(msg):
     calls to `abort` by using ``except SystemExit`` or similar.
 
     .. _sys.exit: http://docs.python.org/library/sys.html#sys.exit
-    .. _SystemExit: http://docs.python.org/library/exceptions.html#exceptions.SystemExit
+    .. _SystemExit: http://docs.python.org/library/exceptions.html#exceptions.SystemExit # flake8: noqa
     """
     from fabric.state import output, env
     if not env.colorize_errors:
-        red  = lambda x: x
+        red = lambda x: x
     else:
         from colors import red
 
@@ -151,6 +152,7 @@ def handle_prompt_abort(prompt_for):
 
 
 class _AttributeDict(dict):
+
     """
     Dictionary subclass enabling attribute lookup/assignment of keys/values.
 
@@ -172,6 +174,7 @@ class _AttributeDict(dict):
         'bar'
 
     """
+
     def __getattr__(self, key):
         try:
             return self[key]
@@ -190,6 +193,7 @@ class _AttributeDict(dict):
 
 
 class _AliasDict(_AttributeDict):
+
     """
     `_AttributeDict` subclass that allows for "aliasing" of keys to other keys.
 
@@ -219,6 +223,7 @@ class _AliasDict(_AttributeDict):
     aliases expanded. This function will **not** dedupe, so any aliases which
     overlap will result in duplicate keys in the resulting list.
     """
+
     def __init__(self, arg=None, aliases=None):
         init = super(_AliasDict, self).__init__
         if arg is not None:
@@ -269,7 +274,7 @@ def _pty_size():
         # buffer
         try:
             result = fcntl.ioctl(sys.stdout.fileno(), termios.TIOCGWINSZ,
-                buffer)
+                                 buffer)
             # Unpack buffer back into Python data types
             rows, cols = struct.unpack(fmt, result)
         # Deal with e.g. sys.stdout being monkeypatched, such as in testing.
@@ -329,6 +334,7 @@ def _format_error_output(header, body):
 
 # TODO: replace with collections.deque(maxlen=xxx) in Python 2.6
 class RingBuffer(list):
+
     def __init__(self, value, maxlen):
         # Heh.
         self._super = super(RingBuffer, self)

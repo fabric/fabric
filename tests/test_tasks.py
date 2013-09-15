@@ -1,17 +1,15 @@
 from __future__ import with_statement
 
-from contextlib import contextmanager
 from fudge import Fake, patched_context, with_fakes
 import unittest
-from nose.tools import eq_, raises, ok_
+from nose.tools import raises, ok_
 import random
 import sys
 
 import fabric
 from fabric.tasks import WrappedCallableTask, execute, Task, get_task_details
 from fabric.main import display_command
-from fabric.api import run, env, settings, hosts, roles, hide, parallel, task
-from fabric.network import from_dict
+from fabric.api import run, env, settings, hosts, roles, hide, parallel
 from fabric.exceptions import NetworkError
 
 from utils import eq_, FabricTest, aborts, mock_streams
@@ -22,18 +20,22 @@ def test_base_task_provides_undefined_name():
     task = Task()
     eq_("undefined", task.name)
 
+
 @raises(NotImplementedError)
 def test_base_task_raises_exception_on_call_to_run():
     task = Task()
     task.run()
 
+
 class TestWrappedCallableTask(unittest.TestCase):
+
     def test_passes_unused_args_to_parent(self):
         args = [i for i in range(random.randint(1, 10))]
 
-        def foo(): pass
+        def foo():
+            pass
         try:
-            task = WrappedCallableTask(foo, *args)
+            WrappedCallableTask(foo, *args)
         except TypeError:
             msg = "__init__ raised a TypeError, meaning args weren't handled"
             self.fail(msg)
@@ -42,53 +44,65 @@ class TestWrappedCallableTask(unittest.TestCase):
         random_range = range(random.randint(1, 10))
         kwargs = dict([("key_%s" % i, i) for i in random_range])
 
-        def foo(): pass
+        def foo():
+            pass
         try:
-            task = WrappedCallableTask(foo, **kwargs)
+            WrappedCallableTask(foo, **kwargs)
         except TypeError:
             self.fail(
                 "__init__ raised a TypeError, meaning kwargs weren't handled")
 
     def test_allows_any_number_of_args(self):
         args = [i for i in range(random.randint(0, 10))]
-        def foo(): pass
-        task = WrappedCallableTask(foo, *args)
+
+        def foo():
+            pass
+        WrappedCallableTask(foo, *args)
 
     def test_allows_any_number_of_kwargs(self):
         kwargs = dict([("key%d" % i, i) for i in range(random.randint(0, 10))])
-        def foo(): pass
-        task = WrappedCallableTask(foo, **kwargs)
+
+        def foo():
+            pass
+        WrappedCallableTask(foo, **kwargs)
 
     def test_run_is_wrapped_callable(self):
-        def foo(): pass
+        def foo():
+            pass
         task = WrappedCallableTask(foo)
         eq_(task.wrapped, foo)
 
     def test_name_is_the_name_of_the_wrapped_callable(self):
-        def foo(): pass
+        def foo():
+            pass
         foo.__name__ = "random_name_%d" % random.randint(1000, 2000)
         task = WrappedCallableTask(foo)
         eq_(task.name, foo.__name__)
 
     def test_name_can_be_overridden(self):
-        def foo(): pass
+        def foo():
+            pass
         eq_(WrappedCallableTask(foo).name, 'foo')
         eq_(WrappedCallableTask(foo, name='notfoo').name, 'notfoo')
 
     def test_reads_double_under_doc_from_callable(self):
-        def foo(): pass
+        def foo():
+            pass
         foo.__doc__ = "Some random __doc__: %d" % random.randint(1000, 2000)
         task = WrappedCallableTask(foo)
         eq_(task.__doc__, foo.__doc__)
 
     def test_dispatches_to_wrapped_callable_on_run(self):
         random_value = "some random value %d" % random.randint(1000, 2000)
-        def foo(): return random_value
+
+        def foo():
+            return random_value
         task = WrappedCallableTask(foo)
         eq_(random_value, task())
 
     def test_passes_all_regular_args_to_run(self):
-        def foo(*args): return args
+        def foo(*args):
+            return args
         random_args = tuple(
             [random.randint(1000, 2000) for i in range(random.randint(1, 5))]
         )
@@ -96,7 +110,8 @@ class TestWrappedCallableTask(unittest.TestCase):
         eq_(random_args, task(*random_args))
 
     def test_passes_all_keyword_args_to_run(self):
-        def foo(**kwargs): return kwargs
+        def foo(**kwargs):
+            return kwargs
         random_kwargs = {}
         for i in range(random.randint(1, 5)):
             random_key = ("foo", "bar", "baz", "foobar", "barfoo")[i]
@@ -106,12 +121,15 @@ class TestWrappedCallableTask(unittest.TestCase):
 
     def test_calling_the_object_is_the_same_as_run(self):
         random_return = random.randint(1000, 2000)
-        def foo(): return random_return
+
+        def foo():
+            return random_return
         task = WrappedCallableTask(foo)
         eq_(task(), task.run())
 
 
 class TestTask(unittest.TestCase):
+
     def test_takes_an_alias_kwarg_and_wraps_it_in_aliases_list(self):
         random_alias = "alias_%d" % random.randint(100, 200)
         task = Task(alias=random_alias)
@@ -138,8 +156,10 @@ class TestTask(unittest.TestCase):
 # this simplifies testing :)
 
 def test_decorator_incompatibility_on_task():
-    from fabric.decorators import task, hosts, runs_once, roles
-    def foo(): return "foo"
+    from fabric.decorators import task, runs_once
+
+    def foo():
+        return "foo"
     foo = task(foo)
 
     # since we aren't setting foo to be the newly decorated thing, its cool
@@ -147,22 +167,22 @@ def test_decorator_incompatibility_on_task():
     runs_once(foo)
     roles('www')(foo)
 
+
 def test_decorator_closure_hiding():
     """
     @task should not accidentally destroy decorated attributes from @hosts/etc
     """
-    from fabric.decorators import task, hosts
+    from fabric.decorators import task
+
     def foo():
         print(env.host_string)
     foo = task(hosts("me@localhost")(foo))
     eq_(["me@localhost"], foo.hosts)
 
 
-
 #
 # execute()
 #
-
 def dict_contains(superset, subset):
     """
     Assert that all key/val pairs in dict 'subset' also exist in 'superset'
@@ -173,6 +193,7 @@ def dict_contains(superset, subset):
 
 
 class TestExecute(FabricTest):
+
     @with_fakes
     def test_calls_task_function_objects(self):
         """
@@ -196,6 +217,7 @@ class TestExecute(FabricTest):
         handle corner case of Task object referrred to by name
         """
         name = 'task2'
+
         class MyTask(Task):
             run = Fake(callable=True, expect_call=True)
         mytask = MyTask()
@@ -231,6 +253,7 @@ class TestExecute(FabricTest):
         hostlist = ['a', 'b', 'c']
         hosts = hostlist[:]
         # Side-effect which asserts the value of env.host_string when it runs
+
         def host_string():
             eq_(env.host_string, hostlist.pop(0))
         task = Fake(callable=True, expect_call=True).calls(host_string)
@@ -243,6 +266,7 @@ class TestExecute(FabricTest):
         """
         # Make two full copies of a host list
         hostlist = ['a', 'b', 'c']
+
         @hosts(*hostlist[:])
         def task():
             eq_(env.host_string, hostlist.pop(0))
@@ -256,6 +280,7 @@ class TestExecute(FabricTest):
         # Make two full copies of a host list
         roledefs = {'role1': ['a', 'b', 'c']}
         role_copy = roledefs['role1'][:]
+
         @roles('role1')
         def task():
             eq_(env.host_string, role_copy.pop(0))
@@ -268,6 +293,7 @@ class TestExecute(FabricTest):
         should set env.command to any string arg, if given
         """
         name = "foo"
+
         def command():
             eq_(env.command, name)
         task = Fake(callable=True, expect_call=True).calls(command)
@@ -280,6 +306,7 @@ class TestExecute(FabricTest):
         should set env.command to TaskSubclass.name if possible
         """
         name = "foo"
+
         def command():
             eq_(env.command, name)
         task = (
@@ -298,6 +325,7 @@ class TestExecute(FabricTest):
         roledefs = {'r1': ['c', 'd']}
         roles = ['r1']
         exclude_hosts = ['a']
+
         def command():
             eq_(set(env.all_hosts), set(['b', 'c', 'd']))
         task = Fake(callable=True, expect_call=True).calls(command)
@@ -325,7 +353,7 @@ class TestExecute(FabricTest):
         """
         def task():
             pass
-        with settings(hosts=[]): # protect against really odd test bleed :(
+        with settings(hosts=[]):  # protect against really odd test bleed :(
             execute(task)
         eq_(sys.stdout.getvalue(), "")
 
@@ -345,6 +373,7 @@ class TestExecute(FabricTest):
         """
         ports = [2200, 2201]
         hosts = map(lambda x: '127.0.0.1:%s' % x, ports)
+
         def task():
             run("ls /simple")
             return "foo"
@@ -352,7 +381,7 @@ class TestExecute(FabricTest):
             eq_(execute(task, hosts=hosts), {
                 '127.0.0.1:2200': 'foo',
                 '127.0.0.1:2201': 'foo'
-            })
+                })
 
     @server()
     def test_should_preserve_None_for_non_returning_tasks(self):
@@ -361,6 +390,7 @@ class TestExecute(FabricTest):
         """
         def local_task():
             pass
+
         def remote_task():
             with hide('everything'):
                 run("ls /simple")
@@ -410,6 +440,7 @@ class TestExecute(FabricTest):
 
 
 class TestExecuteEnvInteractions(FabricTest):
+
     def set_network(self):
         # Don't update env.host/host_string/etc
         pass
@@ -456,6 +487,7 @@ class TestExecuteEnvInteractions(FabricTest):
 
 
 class TestTaskDetails(unittest.TestCase):
+
     def test_old_style_task_with_default_args(self):
         def task_old_style(arg1, arg2, arg3=None, arg4='yes'):
             '''Docstring'''
@@ -481,6 +513,8 @@ class TestTaskDetails(unittest.TestCase):
             details)
 
     def test_decorated_task(self):
+        from fabric.decorators import task
+
         @task
         def decorated_task(arg1):
             '''Docstring'''
@@ -490,6 +524,7 @@ class TestTaskDetails(unittest.TestCase):
 
     def test_subclassed_task(self):
         class SpecificTask(Task):
+
             def run(self, arg1, arg2, arg3):
                 '''Docstring'''
         eq_("Docstring\n"
@@ -507,17 +542,14 @@ class TestTaskDetails(unittest.TestCase):
         try:
             with patched_context(fabric.state, 'commands', {'mytask': mytask}):
                 display_command('mytask')
-        except SystemExit: # ugh
+        except SystemExit:  # ugh
             pass
         eq_(
             sys.stdout.getvalue(),
-"""Displaying detailed information for task 'mytask':
+            """Displaying detailed information for task 'mytask':
 
     This is a multi line docstring.
-    
-    For reals.
-    
-    Arguments: arg1
+    \n    For reals.\n    \n    Arguments: arg1
 
 """
         )

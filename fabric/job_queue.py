@@ -9,15 +9,15 @@ from __future__ import with_statement
 import time
 import Queue
 
-from fabric.state import env
 from fabric.network import ssh
 from fabric.context_managers import settings
 
 
 class JobQueue(object):
+
     """
     The goal of this class is to make a queue of processes to run, and go
-    through them running X number at any given time. 
+    through them running X number at any given time.
 
     So if the bubble is 5 start with 5 running and move the bubble of running
     procs along the queue looking something like this:
@@ -30,8 +30,9 @@ class JobQueue(object):
         __________________[~~~~~]..
         ____________________[~~~~~]
         ___________________________
-                                End 
+                                End
     """
+
     def __init__(self, max_running, comms_queue):
         """
         Setup the class to resonable defaults.
@@ -117,7 +118,8 @@ class JobQueue(object):
             job = self._queued.pop()
             if self._debug:
                 print("Popping '%s' off the queue and starting it" % job.name)
-            with settings(clean_revert=True, host_string=job.name, host=job.name):
+            with settings(clean_revert=True, host_string=job.name,
+                          host=job.name):
                 job.start()
             self._running.append(job)
 
@@ -145,7 +147,7 @@ class JobQueue(object):
                     if not job.is_alive():
                         if self._debug:
                             print("Job queue found finished proc: %s." %
-                                    job.name)
+                                  job.name)
                         done = self._running.pop(id)
                         self._completed.append(done)
 
@@ -192,7 +194,7 @@ class JobQueue(object):
                 break
 
 
-#### Sample
+# Sample
 
 def try_using(parallel_type):
     """
@@ -222,7 +224,7 @@ def try_using(parallel_type):
             target=print_number,
             args=[x],
             kwargs={},
-            ))
+        ))
 
     # Close up the queue and then start it's execution
     jobs.close()

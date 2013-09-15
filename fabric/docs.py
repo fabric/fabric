@@ -29,7 +29,6 @@ def unwrap_tasks(module, hide_nontasks=False):
 
     ``hide_nontasks`` is thus useful when you have a fabfile mixing in
     subroutines with real tasks and want to document *just* the real tasks.
-    
     If you run this within an actual Fabric-code-using session (instead of
     within a Sphinx ``conf.py``), please seek immediate medical attention.
 

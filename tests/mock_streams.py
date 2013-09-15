@@ -7,6 +7,7 @@ from StringIO import StringIO  # No need for cStringIO at this time
 
 
 class CarbonCopy(StringIO):
+
     """
     A StringIO capable of multiplexing its writes to other buffer objects.
     """
@@ -71,7 +72,7 @@ def mock_streams(which):
             if stderr:
                 my_stderr, sys.stderr = sys.stderr, fake_stderr
             try:
-                ret = func(*args, **kwargs)
+                func(*args, **kwargs)
             finally:
                 if stdout:
                     sys.stdout = my_stdout
@@ -81,5 +82,3 @@ def mock_streams(which):
                     del sys.stdall
         return inner_wrapper
     return mocked_streams_decorator
-
-

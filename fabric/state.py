@@ -46,10 +46,9 @@ def _get_system_username():
     except ImportError:
         if win32:
             import win32api
-            import win32security
-            import win32profile
             username = win32api.GetUserName()
     return username
+
 
 def _rc_path():
     """
@@ -64,7 +63,7 @@ def _rc_path():
             expanded_rc_path = "%s/%s" % (
                 SHGetSpecialFolderPath(0, CSIDL_PROFILE),
                 rc_file
-                )
+            )
     return expanded_rc_path
 
 default_port = '22'  # hurr durr
@@ -87,207 +86,207 @@ default_ssh_config_path = '~/.ssh/config'
 env_options = [
 
     make_option('-a', '--no_agent',
-        action='store_true',
-        default=False,
-        help="don't use the running SSH agent"
-    ),
+                action='store_true',
+                default=False,
+                help="don't use the running SSH agent"
+                ),
 
     make_option('-A', '--forward-agent',
-        action='store_true',
-        default=False,
-        help="forward local agent to remote end"
-    ),
+                action='store_true',
+                default=False,
+                help="forward local agent to remote end"
+                ),
 
     make_option('--abort-on-prompts',
-        action='store_true',
-        default=False,
-        help="abort instead of prompting (for password, host, etc)"
-    ),
+                action='store_true',
+                default=False,
+                help="abort instead of prompting (for password, host, etc)"
+                ),
 
     make_option('-c', '--config',
-        dest='rcfile',
-        default=_rc_path(),
-        metavar='PATH',
-        help="specify location of config file to use"
-    ),
+                dest='rcfile',
+                default=_rc_path(),
+                metavar='PATH',
+                help="specify location of config file to use"
+                ),
 
     make_option('--colorize-errors',
-        action='store_true',
-        default=False,
-        help="Color error output",
-    ),
+                action='store_true',
+                default=False,
+                help="Color error output",
+                ),
 
     make_option('-D', '--disable-known-hosts',
-        action='store_true',
-        default=False,
-        help="do not load user known_hosts file"
-    ),
+                action='store_true',
+                default=False,
+                help="do not load user known_hosts file"
+                ),
 
     make_option('-e', '--eagerly-disconnect',
-        action='store_true',
-        default=False,
-        help="disconnect from hosts as soon as possible"
-    ),
+                action='store_true',
+                default=False,
+                help="disconnect from hosts as soon as possible"
+                ),
 
     make_option('-f', '--fabfile',
-        default='fabfile',
-        metavar='PATH',
-        help="python module file to import, e.g. '../other.py'"
-    ),
+                default='fabfile',
+                metavar='PATH',
+                help="python module file to import, e.g. '../other.py'"
+                ),
 
     make_option('-g', '--gateway',
-        default=None,
-        metavar='HOST',
-        help="gateway host to connect through"
-    ),
+                default=None,
+                metavar='HOST',
+                help="gateway host to connect through"
+                ),
 
     make_option('--hide',
-        metavar='LEVELS',
-        help="comma-separated list of output levels to hide"
-    ),
+                metavar='LEVELS',
+                help="comma-separated list of output levels to hide"
+                ),
 
     make_option('-H', '--hosts',
-        default=[],
-        help="comma-separated list of hosts to operate on"
-    ),
+                default=[],
+                help="comma-separated list of hosts to operate on"
+                ),
 
     make_option('-i',
-        action='append',
-        dest='key_filename',
-        metavar='PATH',
-        default=None,
-        help="path to SSH private key file. May be repeated."
-    ),
+                action='append',
+                dest='key_filename',
+                metavar='PATH',
+                default=None,
+                help="path to SSH private key file. May be repeated."
+                ),
 
     make_option('-k', '--no-keys',
-        action='store_true',
-        default=False,
-        help="don't load private key files from ~/.ssh/"
-    ),
+                action='store_true',
+                default=False,
+                help="don't load private key files from ~/.ssh/"
+                ),
 
     make_option('--keepalive',
-        dest='keepalive',
-        type=int,
-        default=0,
-        metavar="N",
-        help="enables a keepalive every N seconds"
-    ),
+                dest='keepalive',
+                type=int,
+                default=0,
+                metavar="N",
+                help="enables a keepalive every N seconds"
+                ),
 
     make_option('--linewise',
-        action='store_true',
-        default=False,
-        help="print line-by-line instead of byte-by-byte"
-    ),
+                action='store_true',
+                default=False,
+                help="print line-by-line instead of byte-by-byte"
+                ),
 
     make_option('-n', '--connection-attempts',
-        type='int',
-        metavar='M',
-        dest='connection_attempts',
-        default=1,
-        help="make M attempts to connect before giving up"
-    ),
+                type='int',
+                metavar='M',
+                dest='connection_attempts',
+                default=1,
+                help="make M attempts to connect before giving up"
+                ),
 
     make_option('--no-pty',
-        dest='always_use_pty',
-        action='store_false',
-        default=True,
-        help="do not use pseudo-terminal in run/sudo"
-    ),
+                dest='always_use_pty',
+                action='store_false',
+                default=True,
+                help="do not use pseudo-terminal in run/sudo"
+                ),
 
     make_option('-p', '--password',
-        default=None,
-        help="password for use with authentication and/or sudo"
-    ),
+                default=None,
+                help="password for use with authentication and/or sudo"
+                ),
 
     make_option('-P', '--parallel',
-        dest='parallel',
-        action='store_true',
-        default=False,
-        help="default to parallel execution method"
-    ),
+                dest='parallel',
+                action='store_true',
+                default=False,
+                help="default to parallel execution method"
+                ),
 
     make_option('--port',
-        default=default_port,
-        help="SSH connection port"
-    ),
+                default=default_port,
+                help="SSH connection port"
+                ),
 
     make_option('-r', '--reject-unknown-hosts',
-        action='store_true',
-        default=False,
-        help="reject unknown hosts"
-    ),
+                action='store_true',
+                default=False,
+                help="reject unknown hosts"
+                ),
 
     make_option('--system-known-hosts',
-        default=None,
-        help="load system known_hosts file before reading user known_hosts"
-    ),
+                default=None,
+                help="load system known_hosts file before reading user known_hosts" # flake8: noqa
+                ),
 
     make_option('-R', '--roles',
-        default=[],
-        help="comma-separated list of roles to operate on"
-    ),
+                default=[],
+                help="comma-separated list of roles to operate on"
+                ),
 
     make_option('-s', '--shell',
-        default='/bin/bash -l -c',
-        help="specify a new shell, defaults to '/bin/bash -l -c'"
-    ),
+                default='/bin/bash -l -c',
+                help="specify a new shell, defaults to '/bin/bash -l -c'"
+                ),
 
     make_option('--show',
-        metavar='LEVELS',
-        help="comma-separated list of output levels to show"
-    ),
+                metavar='LEVELS',
+                help="comma-separated list of output levels to show"
+                ),
 
     make_option('--skip-bad-hosts',
-        action="store_true",
-        default=False,
-        help="skip over hosts that can't be reached"
-    ),
+                action="store_true",
+                default=False,
+                help="skip over hosts that can't be reached"
+                ),
 
     make_option('--ssh-config-path',
-        default=default_ssh_config_path,
-        metavar='PATH',
-        help="Path to SSH config file"
-    ),
+                default=default_ssh_config_path,
+                metavar='PATH',
+                help="Path to SSH config file"
+                ),
 
     make_option('-t', '--timeout',
-        type='int',
-        default=10,
-        metavar="N",
-        help="set connection timeout to N seconds"
-    ),
+                type='int',
+                default=10,
+                metavar="N",
+                help="set connection timeout to N seconds"
+                ),
 
     make_option('-T', '--command-timeout',
-        dest='command_timeout',
-        type='int',
-        default=None,
-        metavar="N",
-        help="set remote command timeout to N seconds"
-    ),
+                dest='command_timeout',
+                type='int',
+                default=None,
+                metavar="N",
+                help="set remote command timeout to N seconds"
+                ),
 
     make_option('-u', '--user',
-        default=_get_system_username(),
-        help="username to use when connecting to remote hosts"
-    ),
+                default=_get_system_username(),
+                help="username to use when connecting to remote hosts"
+                ),
 
     make_option('-w', '--warn-only',
-        action='store_true',
-        default=False,
-        help="warn, instead of abort, when commands fail"
-    ),
+                action='store_true',
+                default=False,
+                help="warn, instead of abort, when commands fail"
+                ),
 
     make_option('-x', '--exclude-hosts',
-        default=[],
-        metavar='HOSTS',
-        help="comma-separated list of hosts to exclude"
-    ),
+                default=[],
+                metavar='HOSTS',
+                help="comma-separated list of hosts to exclude"
+                ),
 
     make_option('-z', '--pool-size',
-            dest='pool_size',
-            type='int',
-            metavar='INT',
-            default=0,
-            help="number of concurrent processes to use in parallel mode",
-    ),
+                dest='pool_size',
+                type='int',
+                metavar='INT',
+                default=0,
+                help="number of concurrent processes to use in parallel mode",
+                ),
 
 ]
 
@@ -352,7 +351,7 @@ exception_dict = {}
 for e in exceptions:
     exception_dict[e] = False
 env.use_exceptions_for = _AliasDict(exception_dict,
-    aliases={'everything': exceptions})
+                                    aliases={'everything': exceptions})
 
 
 # Add in option defaults

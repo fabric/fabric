@@ -1,28 +1,22 @@
 from __future__ import with_statement
 
-from datetime import datetime
-import copy
-import getpass
 import sys
 
-from nose.tools import with_setup, ok_, raises
-from fudge import (Fake, clear_calls, clear_expectations, patch_object, verify,
-    with_patched_object, patched_context, with_fakes)
+from nose.tools import ok_
+from fudge import (Fake, patch_object, with_patched_object, patched_context,
+                   with_fakes)
 
 from fabric.context_managers import settings, hide, show
 from fabric.network import (HostConnectionCache, join_host_strings, normalize,
-    denormalize, key_filenames, ssh)
-from fabric.io import output_loop
-import fabric.network  # So I can call patch_object correctly. Sigh.
+                            denormalize, key_filenames, ssh)
 from fabric.state import env, output, _get_system_username
 from fabric.operations import run, sudo, prompt
-from fabric.exceptions import NetworkError
 from fabric.tasks import execute
-from fabric import utils # for patching
+from fabric import utils  # for patching
 
-from utils import *
-from server import (server, PORT, RESPONSES, PASSWORDS, CLIENT_PRIVKEY, USER,
-    CLIENT_PRIVKEY_PASSPHRASE)
+from utils import * # flake8: noqa
+from server import (server, RESPONSES, PASSWORDS, CLIENT_PRIVKEY, USER,
+                    CLIENT_PRIVKEY_PASSPHRASE)
 
 
 #
@@ -31,6 +25,7 @@ from server import (server, PORT, RESPONSES, PASSWORDS, CLIENT_PRIVKEY, USER,
 
 
 class TestNetwork(FabricTest):
+
     def test_host_string_normalization(self):
         username = _get_system_username()
         for description, input, output_ in (
@@ -54,19 +49,21 @@ class TestNetwork(FabricTest):
         username = _get_system_username()
         for description, input, output_ in (
             ("Full IPv6 address",
-                '2001:DB8:0:0:0:0:0:1', (username, '2001:DB8:0:0:0:0:0:1', '22')),
+                '2001:DB8:0:0:0:0:0:1',
+                (username, '2001:DB8:0:0:0:0:0:1', '22')),
             ("IPv6 address in short form",
                 '2001:DB8::1', (username, '2001:DB8::1', '22')),
             ("IPv6 localhost",
                 '::1', (username, '::1', '22')),
-            ("Square brackets are required to separate non-standard port from IPv6 address",
+            ("Square brackets are required to separate non-standard port from IPv6 address", # flake8: noqa
                 '[2001:DB8::1]:1222', (username, '2001:DB8::1', '1222')),
             ("Username and IPv6 address",
                 'user@2001:DB8::1', ('user', '2001:DB8::1', '22')),
             ("Username and IPv6 address with non-standard port",
                 'user@[2001:DB8::1]:1222', ('user', '2001:DB8::1', '1222')),
         ):
-            eq_.description = "Host-string IPv6 normalization: %s" % description
+            eq_.description = "Host-string IPv6 normalization: %s"\
+                              % description
             yield eq_, normalize(input), output_
             del eq_.description
 
@@ -81,7 +78,8 @@ class TestNetwork(FabricTest):
 
     def test_ipv6_host_strings_join(self):
         """
-        join_host_strings() should use square brackets only for IPv6 and if port is given
+        join_host_strings() should use square brackets only for IPv6 and if
+        port is given
         """
         eq_(
             join_host_strings('user', '2001:DB8::1'),
@@ -107,7 +105,8 @@ class TestNetwork(FabricTest):
 
     def test_at_symbol_in_username(self):
         """
-        normalize() should allow '@' in usernames (i.e. last '@' is split char)
+        normalize() should allow '@' in usernames (i.e. last '@' is split
+        char)
         """
         parts = normalize('user@example.com@www.example.com')
         eq_(parts[0], 'user@example.com')
@@ -151,8 +150,9 @@ class TestNetwork(FabricTest):
         # Clear Fudge call stack
         # Patch connect() with Fake obj set to expect num_calls calls
         patched_connect = patch_object('fabric.network', 'connect',
-            Fake('connect', expect_call=True).times_called(num_calls)
-        )
+                                       Fake('connect', expect_call=True).times_called(
+                                           num_calls)
+                                       )
         try:
             # Make new cache object
             cache = HostConnectionCache()
@@ -186,7 +186,7 @@ class TestNetwork(FabricTest):
         fake = Fake('connect', callable=True)
         with patched_context('fabric.network', 'connect', fake):
             for host_string in ('hostname', 'user@hostname',
-                'user@hostname:222'):
+                                'user@hostname:222'):
                 # Prime
                 hcc[host_string]
                 # Test
@@ -195,7 +195,6 @@ class TestNetwork(FabricTest):
                 del hcc[host_string]
                 # Test
                 ok_(host_string not in hcc)
-
 
     #
     # Connection loop flow
@@ -213,7 +212,6 @@ class TestNetwork(FabricTest):
             cache = HostConnectionCache()
             cache[env.host_string]
 
-
     @aborts
     def test_aborts_on_prompt_with_abort_on_prompt(self):
         """
@@ -221,7 +219,6 @@ class TestNetwork(FabricTest):
         """
         env.abort_on_prompts = True
         prompt("This will abort")
-
 
     @server()
     @aborts
@@ -235,7 +232,6 @@ class TestNetwork(FabricTest):
             cache = HostConnectionCache()
             cache[env.host_string]
 
-
     @mock_streams('stdout')
     @server()
     def test_does_not_abort_with_password_and_host_with_abort_on_prompt(self):
@@ -246,7 +242,6 @@ class TestNetwork(FabricTest):
         env.password = PASSWORDS[env.user]
         # env.host_string is automatically filled in when using server()
         run("ls /simple")
-
 
     @mock_streams('stdout')
     @server()
@@ -324,7 +319,8 @@ class TestNetwork(FabricTest):
         output.everything = False
         with password_response(PASSWORDS[env.user], silent=False):
             run("ls /simple")
-        regex = r'^\[%s\] Login password for \'%s\': ' % (env.host_string, env.user)
+        regex = r'^\[%s\] Login password for \'%s\': ' % (
+            env.host_string, env.user)
         assert_contains(regex, sys.stderr.getvalue())
 
     @mock_streams('stderr')
@@ -339,7 +335,8 @@ class TestNetwork(FabricTest):
         output.everything = False
         with password_response(CLIENT_PRIVKEY_PASSPHRASE, silent=False):
             run("ls /simple")
-        regex = r'^\[%s\] Login password for \'%s\': ' % (env.host_string, env.user)
+        regex = r'^\[%s\] Login password for \'%s\': ' % (
+            env.host_string, env.user)
         assert_contains(regex, sys.stderr.getvalue())
 
     def test_sudo_prompt_display_passthrough(self):
@@ -384,9 +381,9 @@ class TestNetwork(FabricTest):
 [%(prefix)s] Login password for '%(user)s': 
 [%(prefix)s] out: Sorry, try again.
 [%(prefix)s] out: sudo password: """ % {
-    'prefix': env.host_string,
-    'user': env.user
-}
+                'prefix': env.host_string,
+                'user': env.user
+            }
         eq_(expected[1:], sys.stdall.getvalue())
 
     @mock_streams('both')
@@ -530,7 +527,9 @@ result2
 def subtask():
     run("This should never execute")
 
+
 class TestConnections(FabricTest):
+
     @aborts
     def test_should_abort_when_cannot_connect(self):
         """
@@ -548,6 +547,7 @@ class TestConnections(FabricTest):
 
 
 class TestSSHConfig(FabricTest):
+
     def env_setup(self):
         super(TestSSHConfig, self).env_setup()
         env.use_ssh_config = True
@@ -616,7 +616,7 @@ class TestSSHConfig(FabricTest):
         eq_(normalize("myalias")[1], "otherhost")
 
     @with_patched_object(utils, 'warn', Fake('warn', callable=True,
-        expect_call=True))
+                                             expect_call=True))
     def test_warns_with_bad_config_file_path(self):
         # use_ssh_config is already set in our env_setup()
         with settings(hide('everything'), ssh_config_path="nope_bad_lol"):
@@ -636,6 +636,7 @@ class TestSSHConfig(FabricTest):
 
 
 class TestKeyFilenames(FabricTest):
+
     def test_empty_everything(self):
         """
         No env.key_filename and no ssh_config = empty list
@@ -660,16 +661,19 @@ class TestKeyFilenames(FabricTest):
         """
         No env.key_filename + valid ssh_config = ssh value
         """
-        with settings(use_ssh_config=True, ssh_config_path=support("ssh_config")):
+        with settings(use_ssh_config=True,
+                      ssh_config_path=support("ssh_config")):
             for val in ["", []]:
                 with settings(key_filename=val):
                     eq_(key_filenames(), ["foobar.pub"])
 
     def test_both(self):
         """
-        Both env.key_filename + valid ssh_config = both show up w/ env var first
+        Both env.key_filename + valid ssh_config = both show up w/ env var
+        first
         """
-        with settings(use_ssh_config=True, ssh_config_path=support("ssh_config")):
+        with settings(use_ssh_config=True,
+                      ssh_config_path=support("ssh_config")):
             with settings(key_filename="bizbaz.pub"):
                 eq_(key_filenames(), ["bizbaz.pub", "foobar.pub"])
             with settings(key_filename=["bizbaz.pub", "whatever.pub"]):

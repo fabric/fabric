@@ -7,11 +7,11 @@ setup.py -- without triggering loads of most of the code. Which doesn't work so
 well when you're using setup.py to install e.g. ssh!
 """
 from fabric.context_managers import (cd, hide, settings, show, path, prefix,
-    lcd, quiet, warn_only, remote_tunnel, shell_env)
+    lcd, quiet, warn_only, remote_tunnel, shell_env) # flake8: noqa
 from fabric.decorators import (hosts, roles, runs_once, with_settings, task,
-        serial, parallel)
+        serial, parallel) # flake8: noqa
 from fabric.operations import (require, prompt, put, get, run, sudo, local,
-    reboot, open_shell)
-from fabric.state import env, output
-from fabric.utils import abort, warn, puts, fastprint
-from fabric.tasks import execute
+    reboot, open_shell) # flake8: noqa
+from fabric.state import env, output # flake8: noqa
+from fabric.utils import abort, warn, puts, fastprint # flake8: noqa
+from fabric.tasks import execute # flake8: noqa

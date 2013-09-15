@@ -1,1 +1,1 @@
-import flat_alias as nested
+import flat_alias as nested # flake8: noqa

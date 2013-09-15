@@ -3,16 +3,10 @@ from __future__ import with_statement
 import os
 import shutil
 import sys
-import types
 from contextlib import nested
 from StringIO import StringIO
 
-import unittest
-import random
-import types
-
 from nose.tools import raises, eq_, ok_
-from fudge import with_patched_object
 
 from fabric.state import env, output
 from fabric.operations import require, prompt, _sudo_prefix, _shell_wrap, \
@@ -22,9 +16,8 @@ from fabric.sftp import SFTP
 from fabric.exceptions import CommandTimeout
 
 from fabric.decorators import with_settings
-from utils import *
-from server import (server, PORT, RESPONSES, FILES, PASSWORDS, CLIENT_PRIVKEY,
-    USER, CLIENT_PRIVKEY_PASSPHRASE)
+from utils import * # flake8: noqa
+from server import server, FILES
 
 #
 # require()
@@ -250,7 +243,8 @@ def test_shell_wrap():
             False, prefix, prefix + " " + command),
     ):
         eq_.description = "_shell_wrap: %s" % description
-        yield eq_, _shell_wrap(command, shell_escape=True, shell=shell, sudo_prefix=sudo_prefix), result
+        yield eq_, _shell_wrap(command, shell_escape=True, shell=shell,
+                               sudo_prefix=sudo_prefix), result
         del eq_.description
 
 
@@ -267,7 +261,7 @@ def test_shell_wrap_escapes_command_if_shell_is_true():
 
 
 @with_settings(use_shell=True)
-def test_shell_wrap_does_not_escape_command_if_shell_is_true_and_shell_escape_is_false():
+def test_shell_wrap_does_not_escape_command_if_shell_is_true_and_shell_escape_is_false(): # flake8: noqa
     """
     _shell_wrap() does no escaping if shell=True and shell_escape=False
     """
@@ -311,6 +305,7 @@ def test_shell_escape_escapes_backticks():
 
 
 class TestCombineStderr(FabricTest):
+
     @server()
     def test_local_none_global_true(self):
         """
@@ -358,6 +353,7 @@ class TestCombineStderr(FabricTest):
 
 
 class TestQuietAndWarnKwargs(FabricTest):
+
     @server(responses={'wat': ["", "", 1]})
     def test_quiet_implies_warn_only(self):
         # Would raise an exception if warn_only was False
@@ -383,6 +379,7 @@ class TestQuietAndWarnKwargs(FabricTest):
 
 
 class TestMultipleOKReturnCodes(FabricTest):
+
     @server(responses={'no srsly its ok': ['', '', 1]})
     def test_expand_to_include_1(self):
         with settings(quiet(), ok_ret_codes=[0, 1]):
@@ -392,13 +389,15 @@ class TestMultipleOKReturnCodes(FabricTest):
 slow_server = server(responses={'slow': ['', '', 0, 3]})
 slow = lambda x: slow_server(raises(CommandTimeout)(x))
 
+
 class TestRun(FabricTest):
+
     """
     @server-using generic run()/sudo() tests
     """
     @slow
     def test_command_timeout_via_env_var(self):
-        env.command_timeout = 2 # timeout after 2 seconds
+        env.command_timeout = 2  # timeout after 2 seconds
         with hide('everything'):
             run("slow")
 
@@ -409,7 +408,7 @@ class TestRun(FabricTest):
 
     @slow
     def test_command_timeout_via_env_var_in_sudo(self):
-        env.command_timeout = 2 # timeout after 2 seconds
+        env.command_timeout = 2  # timeout after 2 seconds
         with hide('everything'):
             sudo("slow")
 
@@ -427,6 +426,7 @@ class TestFileTransfers(FabricTest):
     #
     # get()
     #
+
     @server(files={'/home/user/.bashrc': 'bash!'}, home='/home/user')
     def test_get_relative_remote_dir_uses_home(self):
         """
@@ -860,12 +860,14 @@ class TestFileTransfers(FabricTest):
 
         with hide('everything'):
             retval = put(self.path(glob), remote_directory)
-        eq_(sorted(retval), sorted([remote_directory + path for path in paths]))
+        eq_(sorted(retval),
+            sorted([remote_directory + path for path in paths]))
 
     @server()
     def test_put_sends_correct_file_with_globbing_off(self):
         """
-        put() should send a file with a glob pattern in the path, when globbing disabled.
+        put() should send a file with a glob pattern in the path, when
+        globbing disabled.
         """
         text = "globbed!"
         local = self.mkfile('foo[bar].txt', text)
@@ -961,7 +963,9 @@ class TestFileTransfers(FabricTest):
     @server()
     @mock_streams('stdout')
     def test_stringio_with_name(self):
-        """If a file object (StringIO) has a name attribute, use that in output"""
+        """If a file object (StringIO) has a name attribute, use that in
+        output
+        """
         file_obj = StringIO(u'test data')
         file_obj.name = 'Test StringIO Object'
         put(file_obj, '/')
@@ -999,6 +1003,7 @@ def test_local_output_and_capture():
 
 
 class TestRunSudoReturnValues(FabricTest):
+
     @server()
     def test_returns_command_given(self):
         """

@@ -1,7 +1,5 @@
 import os
-import types
 import re
-import sys
 
 from fabric.api import run, local
 from fabric.contrib import files, project
@@ -13,17 +11,21 @@ def tildify(path):
     home = run("echo ~", quiet=True).stdout.strip()
     return path.replace('~', home)
 
+
 def expect(path):
     assert files.exists(tildify(path))
 
+
 def expect_contains(path, value):
     assert files.contains(tildify(path), value)
+
 
 def escape(path):
     return path.replace(' ', r'\ ')
 
 
 class TestTildeExpansion(Integration):
+
     def setup(self):
         self.created = []
 
@@ -41,13 +43,13 @@ class TestTildeExpansion(Integration):
         for target in ('~/exists_test', '~/exists test with space'):
             run("touch %s" % escape(target))
             expect(target)
-     
+
     def test_sed(self):
         for target in ('~/sed_test', '~/sed test with space'):
             run("echo 'before' > %s" % escape(target))
             files.sed(target, 'before', 'after')
             expect_contains(target, 'after')
-     
+
     def test_upload_template(self):
         for i, target in enumerate((
             '~/upload_template_test',
@@ -62,6 +64,7 @@ class TestTildeExpansion(Integration):
 
 class TestIsLink(Integration):
     # TODO: add more of these. meh.
+
     def test_is_link_is_true_on_symlink(self):
         run("ln -s /tmp/foo /tmp/bar")
         assert files.is_link('/tmp/bar')
@@ -78,7 +81,9 @@ rsync_sources = (
     'integration/utils.py'
 )
 
+
 class TestRsync(Integration):
+
     def rsync(self, id_, **kwargs):
         return project.rsync_project(
             remote_dir='/tmp/rsync-test-%s/' % id_,
@@ -94,7 +99,9 @@ class TestRsync(Integration):
         """
         r = self.rsync(1)
         for x in rsync_sources:
-            assert re.search(r'^%s$' % x, r.stdout, re.M), "'%s' was not found in '%s'" % (x, r.stdout)
+            assert re.search(
+                r'^%s$' % x, r.stdout, re.M), \
+                "'%s' was not found in '%s'" % (x, r.stdout)
 
     def test_overriding_default_args(self):
         """
@@ -102,4 +109,6 @@ class TestRsync(Integration):
         """
         r = self.rsync(2, default_opts='-pthrz')
         for x in rsync_sources:
-            assert not re.search(r'^%s$' % x, r.stdout, re.M), "'%s' was found in '%s'" % (x, r.stdout)
+            assert not re.search(
+                r'^%s$' % x, r.stdout, re.M), \
+                "'%s' was found in '%s'" % (x, r.stdout)

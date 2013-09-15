@@ -5,12 +5,11 @@ Module providing easy API for working with remote files and folders.
 from __future__ import with_statement
 
 import hashlib
-import tempfile
 import re
 import os
 from StringIO import StringIO
 
-from fabric.api import *
+from fabric.api import * # flake8: noqa
 from fabric.utils import apply_lcwd
 
 
@@ -42,13 +41,15 @@ def is_link(path, use_sudo=False, verbose=False):
 
     If ``use_sudo`` is True, will use `.sudo` instead of `.run`.
 
-    `.is_link` will, by default, hide all output. Give ``verbose=True`` to change this.
+    `.is_link` will, by default, hide all output. Give ``verbose=True``
+
+    to change this.
     """
     func = sudo if use_sudo else run
     cmd = 'test -L "$(echo %s)"' % path
     args, kwargs = [], {'warn_only': True}
     if not verbose:
-        opts = [hide('everything')]
+        opts = [hide('everything')] # flake8: noqa
     with settings(*args, **kwargs):
         return func(cmd).succeeded
 
@@ -56,7 +57,8 @@ def is_link(path, use_sudo=False, verbose=False):
 def first(*args, **kwargs):
     """
     Given one or more file paths, returns first one found, or None if none
-    exist. May specify ``use_sudo`` and ``verbose`` which are passed to `exists`.
+    exist. May specify ``use_sudo`` and ``verbose`` which are passed to
+    `exists`.
     """
     for directory in args:
         if exists(directory, **kwargs):
@@ -64,18 +66,18 @@ def first(*args, **kwargs):
 
 
 def upload_template(filename, destination, context=None, use_jinja=False,
-    template_dir=None, use_sudo=False, backup=True, mirror_local_mode=False,
-    mode=None):
+                    template_dir=None, use_sudo=False, backup=True, mirror_local_mode=False,
+                    mode=None):
     """
     Render and upload a template text file to a remote host.
 
-    Returns the result of the inner call to `~fabric.operations.put` -- see its
-    documentation for details.
+    Returns the result of the inner call to `~fabric.operations.put` -- see
+    its documentation for details.
 
     ``filename`` should be the path to a text file, which may contain `Python
     string interpolation formatting
-    <http://docs.python.org/library/stdtypes.html#string-formatting>`_ and will
-    be rendered with the given context dictionary ``context`` (if given.)
+    <http://docs.python.org/library/stdtypes.html#string-formatting>`_ and
+    will be rendered with the given context dictionary ``context`` (if given.)
 
     Alternately, if ``use_jinja`` is set to True and you have the Jinja2
     templating library available, Jinja will be used to render the template
@@ -150,7 +152,7 @@ def upload_template(filename, destination, context=None, use_jinja=False,
 
 
 def sed(filename, before, after, limit='', use_sudo=False, backup='.bak',
-    flags='', shell=False):
+        flags='', shell=False):
     """
     Run a search-and-replace on ``filename`` with given regex patterns.
 
@@ -215,13 +217,13 @@ def sed(filename, before, after, limit='', use_sudo=False, backup='.bak',
 && mv %(tmp)s %(filename)s"""
     else:
         context['extended_regex'] = '-E' if platform == 'Darwin' else '-r'
-        expr = r"sed -i%(backup)s %(extended_regex)s -e %(script)s %(filename)s"
+        expr = r"sed -i%(backup)s %(extended_regex)s -e %(script)s %(filename)s" # flake8: noqa
     command = expr % context
     return func(command, shell=shell)
 
 
 def uncomment(filename, regex, use_sudo=False, char='#', backup='.bak',
-    shell=False):
+              shell=False):
     """
     Attempt to uncomment all lines in ``filename`` matching ``regex``.
 
@@ -252,7 +254,7 @@ def uncomment(filename, regex, use_sudo=False, char='#', backup='.bak',
 
 
 def comment(filename, regex, use_sudo=False, char='#', backup='.bak',
-    shell=False):
+            shell=False):
     """
     Attempt to comment out all lines in ``filename`` matching ``regex``.
 
@@ -305,7 +307,7 @@ def comment(filename, regex, use_sudo=False, char='#', backup='.bak',
 
 
 def contains(filename, text, exact=False, use_sudo=False, escape=True,
-    shell=False):
+             shell=False):
     """
     Return True if ``filename`` contains ``text`` (which may be a regex.)
 
@@ -349,7 +351,7 @@ def contains(filename, text, exact=False, use_sudo=False, escape=True,
 
 
 def append(filename, text, use_sudo=False, partial=False, escape=True,
-    shell=False):
+           shell=False):
     """
     Append string (or list of strings) ``text`` to ``filename``.
 
@@ -391,13 +393,14 @@ def append(filename, text, use_sudo=False, partial=False, escape=True,
     if isinstance(text, basestring):
         text = [text]
     for line in text:
-        regex = '^' + _escape_for_regex(line)  + ('' if partial else '$')
+        regex = '^' + _escape_for_regex(line) + ('' if partial else '$')
         if (exists(filename, use_sudo=use_sudo) and line
             and contains(filename, regex, use_sudo=use_sudo, escape=False,
                          shell=shell)):
             continue
         line = line.replace("'", r"'\\''") if escape else line
         func("echo '%s' >> %s" % (line, _expand_path(filename)))
+
 
 def _escape_for_regex(text):
     """Escape ``text`` to allow literal matching using egrep"""
@@ -409,6 +412,7 @@ def _escape_for_regex(text):
     # Whereas single quotes should not be escaped
     regex = regex.replace(r"\'", "'")
     return regex
+
 
 def _expand_path(path):
     return '"$(echo %s)"' % path

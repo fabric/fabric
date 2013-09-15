@@ -7,8 +7,9 @@ from fudge import Fake, patched_context, with_fakes
 from fudge.patcher import with_patched_object
 from nose.tools import eq_, raises
 
-from fabric.state import output, env
-from fabric.utils import warn, indent, abort, puts, fastprint, error, RingBuffer
+from fabric.state import output
+from fabric.utils import (warn, indent, abort, puts, fastprint, error,
+                          RingBuffer)
 from fabric import utils  # For patching
 from fabric.context_managers import settings, hide
 from fabric.colors import magenta, red
@@ -110,12 +111,13 @@ def test_puts_with_prefix():
 @mock_streams('stdout')
 def test_puts_without_prefix():
     """
-    puts() shouldn't prefix output with env.host_string if show_prefix is False
+    puts() shouldn't prefix output with env.host_string if show_prefix is
+    False
     """
     s = "my output"
-    h = "localhost"
     puts(s, show_prefix=False)
     eq_(sys.stdout.getvalue(), "%s" % (s + "\n"))
+
 
 @with_fakes
 def test_fastprint_calls_puts():
@@ -131,8 +133,9 @@ def test_fastprint_calls_puts():
 
 
 class TestErrorHandling(FabricTest):
+
     @with_patched_object(utils, 'warn', Fake('warn', callable=True,
-        expect_call=True))
+                                             expect_call=True))
     def test_error_warns_if_warn_only_True_and_func_None(self):
         """
         warn_only=True, error(func=None) => calls warn()
@@ -141,7 +144,7 @@ class TestErrorHandling(FabricTest):
             error('foo')
 
     @with_patched_object(utils, 'abort', Fake('abort', callable=True,
-        expect_call=True))
+                                              expect_call=True))
     def test_error_aborts_if_warn_only_False_and_func_None(self):
         """
         warn_only=False, error(func=None) => calls abort()
@@ -156,8 +159,9 @@ class TestErrorHandling(FabricTest):
         error('foo', func=Fake(callable=True, expect_call=True))
 
     @mock_streams('stdout')
-    @with_patched_object(utils, 'abort', Fake('abort', callable=True,
-        expect_call=True).calls(lambda x: sys.stdout.write(x + "\n")))
+    @with_patched_object(utils, 'abort',
+                         Fake('abort', callable=True, expect_call=True).calls(
+                             lambda x: sys.stdout.write(x + "\n")))
     def test_error_includes_stdout_if_given_and_hidden(self):
         """
         error() correctly prints stdout if it was previously hidden
@@ -169,8 +173,9 @@ class TestErrorHandling(FabricTest):
         assert_contains(stdout, sys.stdout.getvalue())
 
     @mock_streams('stderr')
-    @with_patched_object(utils, 'abort', Fake('abort', callable=True,
-        expect_call=True).calls(lambda x: sys.stderr.write(x + "\n")))
+    @with_patched_object(utils, 'abort',
+                         Fake('abort', callable=True, expect_call=True).calls(
+                             lambda x: sys.stderr.write(x + "\n")))
     def test_error_includes_stderr_if_given_and_hidden(self):
         """
         error() correctly prints stderr if it was previously hidden
@@ -198,6 +203,7 @@ class TestErrorHandling(FabricTest):
 
 
 class TestRingBuffer(TestCase):
+
     def setUp(self):
         self.b = RingBuffer([], maxlen=5)
 

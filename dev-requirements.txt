@@ -10,3 +10,5 @@ nose
 Fudge < 1.0
 # Documentation generation
 Sphinx >= 0.6
+# Flake8 to check pep8
+flake8==2.0

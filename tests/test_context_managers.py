@@ -7,7 +7,7 @@ from nose.tools import eq_, ok_
 
 from fabric.state import env, output
 from fabric.context_managers import (cd, settings, lcd, hide, shell_env, quiet,
-    warn_only, prefix, path)
+                                     warn_only, prefix, path)
 from fabric.operations import run, local
 
 from utils import mock_streams, FabricTest
@@ -107,6 +107,7 @@ def test_settings():
         eq_(env.testval, "inner value")
     eq_(env.testval, "outer value")
 
+
 def test_settings_with_multiple_kwargs():
     """
     settings() should temporarily override env dict with given key/value pairS
@@ -119,17 +120,19 @@ def test_settings_with_multiple_kwargs():
     eq_(env.testval1, "outer 1")
     eq_(env.testval2, "outer 2")
 
+
 def test_settings_with_other_context_managers():
     """
-    settings() should take other context managers, and use them with other overrided
-    key/value pairs.
+    settings() should take other context managers, and use them with other
+    overrided key/value pairs.
     """
     env.testval1 = "outer 1"
     prev_lcwd = env.lcwd
 
     with settings(lcd("here"), testval1="inner 1"):
         eq_(env.testval1, "inner 1")
-        ok_(env.lcwd.endswith("here")) # Should be the side-effect of adding cd to settings
+        # Should be the side-effect of adding cd to settings
+        ok_(env.lcwd.endswith("here"))
 
     ok_(env.testval1, "outer 1")
     eq_(env.lcwd, prev_lcwd)
@@ -168,7 +171,9 @@ def test_shell_env():
 
     eq_(env.shell_env, {})
 
+
 class TestQuietAndWarnOnly(FabricTest):
+
     @server()
     @mock_streams('both')
     def test_quiet_hides_all_output(self):
@@ -218,6 +223,7 @@ class TestQuietAndWarnOnly(FabricTest):
 # path() (distinct from shell_env)
 
 class TestPathManager(FabricTest):
+
     def setup(self):
         super(TestPathManager, self).setup()
         self.real = os.environ.get('PATH')

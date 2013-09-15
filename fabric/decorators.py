@@ -28,7 +28,7 @@ def task(*args, **kwargs):
     .. versionchanged:: 1.5
         Added the ``name`` keyword argument.
 
-    .. seealso:: `~fabric.docs.unwrap_tasks`, `~fabric.tasks.WrappedCallableTask`
+    .. seealso:: `~fabric.docs.unwrap_tasks`, `~fabric.tasks.WrappedCallableTask` # flake8: noqa
     """
     invoked = bool(not args or kwargs)
     task_class = kwargs.pop("task_class", tasks.WrappedCallableTask)
@@ -39,6 +39,7 @@ def task(*args, **kwargs):
         return task_class(func, *args, **kwargs)
 
     return wrapper if invoked else wrapper(func)
+
 
 def _wrap_as_new(original, new):
     if isinstance(original, tasks.Task):
@@ -147,7 +148,7 @@ def serial(func):
     """
     Forces the wrapped function to always run sequentially, never in parallel.
 
-    This decorator takes precedence over the global value of :ref:`env.parallel
+    This decorator takes precedence over the global value of :ref:`env.parallel # flake8: noqa
     <env-parallel>`. However, if a task is decorated with both
     `~fabric.decorators.serial` *and* `~fabric.decorators.parallel`,
     `~fabric.decorators.parallel` wins.
@@ -163,7 +164,7 @@ def parallel(pool_size=None):
     """
     Forces the wrapped function to run in parallel, instead of sequentially.
 
-    This decorator takes precedence over the global value of :ref:`env.parallel
+    This decorator takes precedence over the global value of :ref:`env.parallel # flake8: noqa
     <env-parallel>`. It also takes precedence over `~fabric.decorators.serial`
     if a task is decorated with both.
 

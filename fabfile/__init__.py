@@ -6,9 +6,9 @@ from __future__ import with_statement
 
 import nose
 
-from fabric.api import abort, local, task
+from fabric.api import abort, local, task # flake8: noqa
 
-import docs
+import docs # flake8: noqa
 import tag
 from utils import msg
 

@@ -1,16 +1,11 @@
 from __future__ import with_statement
 
-import copy
-import itertools
 import os
 import re
 import socket
-import stat
-import sys
 import threading
 import time
 import types
-from StringIO import StringIO
 from functools import wraps
 from Python26SocketServer import BaseRequestHandler, ThreadingMixIn, TCPServer
 
@@ -100,6 +95,7 @@ def _equalize(lists, fillval=None):
 
 
 class TestServer(ssh.ServerInterface):
+
     """
     Test server implementing the 'ssh' lib's server interface parent class.
 
@@ -109,6 +105,7 @@ class TestServer(ssh.ServerInterface):
     The bulk of the actual server side logic is handled in the
     ``serve_responses`` function and its ``SSHHandler`` class.
     """
+
     def __init__(self, passwords, home, pubkeys, files):
         self.event = threading.Event()
         self.passwords = passwords
@@ -148,9 +145,11 @@ class TestServer(ssh.ServerInterface):
 
 
 class SSHServer(ThreadingMixIn, TCPServer):
+
     """
     Threading TCPServer subclass.
     """
+
     def _socket_info(self, addr_tup):
         """
         Clone of the very top of Paramiko 1.7.6 SSHClient.connect().
@@ -161,7 +160,7 @@ class SSHServer(ThreadingMixIn, TCPServer):
         """
         hostname, port = addr_tup
         addr_info = socket.getaddrinfo(hostname, port, socket.AF_UNSPEC,
-            socket.SOCK_STREAM)
+                                       socket.SOCK_STREAM)
         for (family, socktype, proto, canonname, sockaddr) in addr_info:
             if socktype == socket.SOCK_STREAM:
                 af = family
@@ -170,8 +169,9 @@ class SSHServer(ThreadingMixIn, TCPServer):
         else:
             # some OS like AIX don't indicate SOCK_STREAM support, so just
             # guess. :(
-            af, _, _, _, addr = socket.getaddrinfo(hostname, port,
-                socket.AF_UNSPEC, socket.SOCK_STREAM)
+            af, _, _, _, addr = socket.getaddrinfo(
+                hostname, port, socket.AF_UNSPEC, socket.SOCK_STREAM
+                )
         return af, addr
 
     def __init__(
@@ -185,13 +185,15 @@ class SSHServer(ThreadingMixIn, TCPServer):
         family, addr = self._socket_info(server_address)
         self.address_family = family
         TCPServer.__init__(self, addr, RequestHandlerClass,
-            bind_and_activate)
+                           bind_and_activate)
 
 
 class FakeSFTPHandle(ssh.SFTPHandle):
+
     """
     Extremely basic way to get SFTPHandle working with our fake setup.
     """
+
     def chattr(self, attr):
         self.readfile.attributes = attr
         return ssh.SFTP_OK
@@ -201,6 +203,7 @@ class FakeSFTPHandle(ssh.SFTPHandle):
 
 
 class PrependList(list):
+
     def prepend(self, val):
         self.insert(0, val)
 
@@ -256,6 +259,7 @@ def canonicalize(path, home):
 
 
 class FakeSFTPServer(ssh.SFTPServerInterface):
+
     def __init__(self, server, *args, **kwargs):
         self.server = server
         files = self.server.files
@@ -345,6 +349,7 @@ def serve_responses(responses, files, passwords, home, pubkeys, port):
     """
     # Define handler class inline so it can access serve_responses' args
     class SSHHandler(BaseRequestHandler):
+
         def handle(self):
             try:
                 self.init_transport()
@@ -392,7 +397,7 @@ def serve_responses(responses, files, passwords, home, pubkeys, port):
             transport = ssh.Transport(self.request)
             transport.add_server_key(ssh.RSAKey(filename=SERVER_PRIVKEY))
             transport.set_subsystem_handler('sftp', ssh.SFTPServer,
-                sftp_si=FakeSFTPServer)
+                                            sftp_si=FakeSFTPServer)
             server = TestServer(passwords, home, pubkeys, files)
             transport.start_server(server=server)
             self.ssh_server = server
@@ -459,7 +464,7 @@ def server(
         home=HOME,
         pubkeys=False,
         port=PORT
-    ):
+):
     """
     Returns a decorator that runs an SSH server during function execution.
 
@@ -470,7 +475,7 @@ def server(
         def inner(*args, **kwargs):
             # Start server
             _server = serve_responses(responses, files, passwords, home,
-                pubkeys, port)
+                                      pubkeys, port)
             _server.all_done = threading.Event()
             worker = ThreadHandler('server', _server.serve_forever)
             # Execute function

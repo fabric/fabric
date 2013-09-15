@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-import sys
-
 from setuptools import setup, find_packages
 
 from fabric.version import get_version
@@ -29,7 +27,7 @@ For more information, please see the Fabric website or execute ``fab --help``.
 setup(
     name='Fabric',
     version=get_version('short'),
-    description='Fabric is a simple, Pythonic tool for remote execution and deployment.',
+    description='Fabric is a simple, Pythonic tool for remote execution and deployment.', # flake8: noqa
     long_description=long_description,
     author='Jeff Forcier',
     author_email='jeff@bitprophet.org',
@@ -44,23 +42,23 @@ setup(
         ]
     },
     classifiers=[
-          'Development Status :: 5 - Production/Stable',
-          'Environment :: Console',
-          'Intended Audience :: Developers',
-          'Intended Audience :: System Administrators',
-          'License :: OSI Approved :: BSD License',
-          'Operating System :: MacOS :: MacOS X',
-          'Operating System :: Unix',
-          'Operating System :: POSIX',
-          'Programming Language :: Python',
-          'Programming Language :: Python :: 2.5',
-          'Programming Language :: Python :: 2.6',
-          'Topic :: Software Development',
-          'Topic :: Software Development :: Build Tools',
-          'Topic :: Software Development :: Libraries',
-          'Topic :: Software Development :: Libraries :: Python Modules',
-          'Topic :: System :: Clustering',
-          'Topic :: System :: Software Distribution',
-          'Topic :: System :: Systems Administration',
+        'Development Status :: 5 - Production/Stable',
+        'Environment :: Console',
+        'Intended Audience :: Developers',
+        'Intended Audience :: System Administrators',
+        'License :: OSI Approved :: BSD License',
+        'Operating System :: MacOS :: MacOS X',
+        'Operating System :: Unix',
+        'Operating System :: POSIX',
+        'Programming Language :: Python',
+        'Programming Language :: Python :: 2.5',
+        'Programming Language :: Python :: 2.6',
+        'Topic :: Software Development',
+        'Topic :: Software Development :: Build Tools',
+        'Topic :: Software Development :: Libraries',
+        'Topic :: Software Development :: Libraries :: Python Modules',
+        'Topic :: System :: Clustering',
+        'Topic :: System :: Software Distribution',
+        'Topic :: System :: Systems Administration',
     ],
 )
