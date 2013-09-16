@@ -816,8 +816,8 @@ def _execute(channel, command, pty=True, combine_stderr=None,
 
         # Update stdout/stderr with captured values if applicable
         if not invoke_shell:
-            stdout_buf = ''.join(stdout_buf).strip()
-            stderr_buf = ''.join(stderr_buf).strip()
+            stdout_buf = ''.join(stdout_buf)
+            stderr_buf = ''.join(stderr_buf)
 
         # Tie off "loose" output by printing a newline. Helps to ensure any
         # following print()s aren't on the same line as a trailing line prefix

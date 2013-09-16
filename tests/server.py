@@ -55,6 +55,7 @@ fabric
 requirements.txt
 setup.py
 tests""",
+    "echo; echo Hello; echo; echo World; echo" : "\nHello\n\nWorld\n\n",
     "both_streams": [
         "stdout",
         "stderr"

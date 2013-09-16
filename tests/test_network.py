@@ -268,6 +268,28 @@ class TestNetwork(FabricTest):
             # Also test that the captured value matches, too.
             eq_(output_string, result)
 
+    @mock_streams('stdout')
+    @server()
+    def test_dont_strip_newlines(self):
+        """
+        Empty lines in output should not be dropped.
+        """
+        cmd = "echo; echo Hello; echo; echo World; echo"
+        output_string = RESPONSES[cmd]
+        expected_output = """[%(host)s] out: 
+[%(host)s] out: Hello
+[%(host)s] out: 
+[%(host)s] out: World
+[%(host)s] out: 
+""" % { "host" : env.host_string }
+        with settings(show('everything'), hide('running')):
+            result = run(cmd)
+            output = sys.stdout.getvalue()
+            # Test equivalence of expected, received output
+            eq_(expected_output, output)
+            # Also test that the captured value matches, too.
+            eq_(output_string, result)
+
     @server()
     def test_sudo_prompt_kills_capturing(self):
         """
