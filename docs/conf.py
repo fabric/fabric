@@ -28,6 +28,10 @@ from datetime import datetime
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = ['sphinx.ext.autodoc', 'releases']
 
+# 'releases' (changelog) settings
+releases_issue_uri = "https://github.com/fabric/fabric/issues/%s"
+releases_release_uri = "https://github.com/fabric/fabric/tree/%s"
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
