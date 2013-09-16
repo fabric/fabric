@@ -4,8 +4,9 @@
 Changelog
 =========
 
-* :support:`984` Make this changelog easier to read! Now with per-release
-  sections, generated automatically from the old timeline source format.
+* :support:`984 backported` Make this changelog easier to read! Now with
+  per-release sections, generated automatically from the old timeline source
+  format.
 * :release:`1.7.0 <2013-07-26>`
 * :release:`1.6.2 <2013-07-26>`
 * :feature:`925` Added `contrib.files.is_link <.is_link>`. Thanks to `@jtangas`
