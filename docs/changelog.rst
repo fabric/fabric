@@ -4,8 +4,9 @@
 Changelog
 =========
 
-* :support:`984 backported` Make this changelog suck less! Now with per-release
-  sections, generated automatically from the old timeline source format.
+* :support:`984 backported` Make this changelog easier to read! Now with
+  per-release sections, generated automatically from the old timeline source
+  format.
 * :feature:`910` Added a keyword argument to rsync_project to configure the
   default options. Thanks to ``@moorepants`` for the patch.
 * :release:`1.7.0 <2013-07-26>`

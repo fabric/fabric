@@ -1,7 +1,94 @@
-import docutils.nodes
+import re
+
+from docutils.parsers.rst import roles
+from docutils import nodes, utils
 
 
-class issue(docutils.nodes.Element):
+issue_types = ('bug', 'feature', 'support')
+
+def issues_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
+    """
+    Use: :issue|bug|feature|support:`ticket_number`
+
+    When invoked as :issue:, turns into just a "#NN" hyperlink to Github.
+
+    When invoked otherwise, turns into "[Type] <#NN hyperlink>: ".
+
+    May give a 'ticket number' of '<number> backported' to indicate a
+    backported feature or support ticket. This extra info will be stripped out
+    prior to parsing. May also give 'major' in the same vein, implying the bug
+    was a major bug released in a feature release.
+    """
+    # Old-style 'just the issue link' behavior
+    issue_no, _, ported = utils.unescape(text).partition(' ')
+    ref = "https://github.com/fabric/fabric/issues/" + issue_no
+    link = nodes.reference(rawtext, '#' + issue_no, refuri=ref, **options)
+    # Additional 'new-style changelog' stuff
+    if name in issue_types:
+        which = '[<span class="changelog-%s">%s</span>]' % (
+            name, name.capitalize()
+        )
+        nodelist = [
+            nodes.raw(text=which, format='html'),
+            nodes.inline(text=" "),
+            link,
+            nodes.inline(text=":")
+        ]
+        # Sanity check
+        if ported not in ('backported', 'major', ''):
+            raise ValueError("Gave unknown issue metadata '%s' for issue no. %s" % (ported, issue_no))
+        # Create temporary node w/ data & final nodes to publish
+        node = issue(
+            number=issue_no,
+            type_=name,
+            nodelist=nodelist,
+            backported=(ported == 'backported'),
+            major=(ported == 'major'),
+        )
+        return [node], []
+    # Return old style info for 'issue' for older changelog entries
+    else:
+        return [link], []
+
+
+year_arg_re = re.compile(r'^(.+?)\s*(?<!\x00)<(.*?)>$', re.DOTALL)
+
+def release_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
+    """
+    Invoked as :release:`N.N.N <YYYY-MM-DD>`.
+
+    Turns into: <b>YYYY-MM-DD</b>: released <b><a>Fabric N.N.N</a></b>, with
+    the link going to the Github source page for the tag.
+    """
+    # Make sure year has been specified
+    match = year_arg_re.match(text)
+    if not match:
+        msg = inliner.reporter.error("Must specify release date!")
+        return [inliner.problematic(rawtext, rawtext, msg)], [msg]
+    number, date = match.group(1), match.group(2)
+    nodelist = [
+        # TODO: display as large-font <number> + smaller-font, on same line,
+        # release date, then (even smaller?) link to GH tree as text 'github'
+        # or 'source'?
+        nodes.section('',
+            nodes.title('', '',
+                nodes.reference(
+                    text=number,
+                    refuri="https://github.com/fabric/fabric/tree/%s" % number,
+                    classes=['changelog-release']
+                ),
+                nodes.inline(text=' '),
+                nodes.raw(text='<span class="release-date">%s</span>' % date, format='html'),
+            ),
+            ids=[number]
+        )
+    ]
+    # Return intermediate node
+    node = release(number=number, date=date, nodelist=nodelist)
+    return [node], []
+
+
+class issue(nodes.Element):
     @property
     def type(self):
         return self['type_']
@@ -18,7 +105,7 @@ class issue(docutils.nodes.Element):
     def number(self):
         return self.get('number', None)
 
-class release(docutils.nodes.Element):
+class release(nodes.Element):
     @property
     def number(self):
         return self['number']
@@ -94,9 +181,9 @@ def construct_releases(entries):
     # unfeasible because technically ALL stable branches get every bugfix,
     # which isn't really the case :(
     nodelist = [
-        docutils.nodes.section('',
-            docutils.nodes.title('', '',
-                docutils.nodes.reference(
+        nodes.section('',
+            nodes.title('', '',
+                nodes.reference(
                     text="Unreleased",
                     refuri="https://github.com/fabric/fabric/tree/master",
                     classes=['changelog-release']
@@ -111,16 +198,17 @@ def construct_releases(entries):
     })
     return releases
 
+
 def construct_nodes(releases):
-    nodes = []
+    result = []
     # Reverse the list again so the final display is newest on top
     for d in reversed(releases):
         if not d['entries']:
             continue
-        release = d['obj']
+        obj = d['obj']
         entries = []
         for entry in d['entries']:
-            # Use docutils.nodes.Node.deepcopy to deepcopy the description
+            # Use nodes.Node.deepcopy to deepcopy the description
             # nodes.  If this is not done, multiple references to the same
             # object (e.g. a reference object in the description of #649, which
             # is then copied into 2 different release lists) will end up in the
@@ -136,21 +224,20 @@ def construct_nodes(releases):
                     desc[i:i+1] = node['nodelist']
             # Tack on to end of this entry's own nodelist (which is the link +
             # etc)
-            result = entry['nodelist'] + desc
             entries.append(
-                docutils.nodes.list_item('',
-                    docutils.nodes.paragraph('', '', *result)
+                nodes.list_item('',
+                    nodes.paragraph('', '', *entry['nodelist'] + desc)
                 )
             )
         # Entry list
-        list_ = docutils.nodes.bullet_list('', *entries)
+        list_ = nodes.bullet_list('', *entries)
         # Insert list into release nodelist (as it's a section)
-        #from ipdb import set_trace; set_trace()
-        release['nodelist'][0].extend(list_)
+        obj['nodelist'][0].extend(list_)
         # Release header
-        header = docutils.nodes.paragraph('', '', *release['nodelist'])
-        nodes.extend(header)
-    return nodes
+        header = nodes.paragraph('', '', *obj['nodelist'])
+        result.extend(header)
+    return result
+
 
 def generate_changelog(app, doctree):
     # This seems to be the cleanest way to tell what a not-fully-parsed
@@ -168,5 +255,9 @@ def generate_changelog(app, doctree):
 
 
 def setup(app):
-    #app.connect('doctree-resolved', generate_changelog)
+    # Register intermediate roles
+    for x in issue_types + ('issue',):
+        app.add_role(x, issues_role)
+    app.add_role('release', release_role)
+    # Hook in our changelog transmutation at appropriate step
     app.connect('doctree-read', generate_changelog)
