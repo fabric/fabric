@@ -13,7 +13,6 @@
 
 from __future__ import with_statement
 import os
-import re
 import sys
 import types
 from datetime import datetime
@@ -27,7 +26,7 @@ from datetime import datetime
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'fabric.changelog']
+extensions = ['sphinx.ext.autodoc', 'releases']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
