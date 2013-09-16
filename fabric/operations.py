@@ -17,7 +17,7 @@ from contextlib import closing, contextmanager
 
 from fabric.context_managers import (settings, char_buffered, hide,
     quiet as quiet_manager, warn_only as warn_only_manager)
-from fabric.io import output_loop, input_loop
+from fabric.io import output_loop, input_loop, prefixed_output, prefixed_file
 from fabric.network import needs_host, ssh, ssh_config
 from fabric.sftp import SFTP
 from fabric.state import env, connections, output, win32, default_channel
@@ -402,7 +402,8 @@ def put(local_path=None, remote_path=None, use_sudo=False,
                 msg = "put() encountered an exception while uploading '%s'"
                 failure = lpath if local_is_path else "<StringIO>"
                 failed_local_paths.append(failure)
-                error(message=msg % lpath, exception=e)
+                with prefixed_output("[local]: "):
+                    error(message=msg % lpath, exception=e)
 
         ret = _AttributeList(remote_paths)
         ret.failed = failed_local_paths
@@ -558,7 +559,8 @@ def get(remote_path, local_path=None):
             # Handle invalid local-file-object situations
             if not local_is_path:
                 if len(names) > 1 or ftp.isdir(names[0]):
-                    error("[%s] %s is a glob or directory, but local_path is a file object!" % (env.host_string, remote_path))
+                    with prefixed_output("[local]: "):
+                        error("[%s] %s is a glob or directory, but local_path is a file object!" % (env.host_string, remote_path))
 
             for remote_path in names:
                 if ftp.isdir(remote_path):
@@ -576,7 +578,8 @@ def get(remote_path, local_path=None):
         except Exception, e:
             failed_remote_files.append(remote_path)
             msg = "get() encountered an exception while downloading '%s'"
-            error(message=msg % remote_path, exception=e)
+            with prefixed_output("[local]: "):
+                error(message=msg % remote_path, exception=e)
 
         ret = _AttributeList(local_files if local_is_path else [])
         ret.failed = failed_remote_files
@@ -937,7 +940,8 @@ def _run_command(command, shell=True, pty=True, combine_stderr=True,
                 msg += "!\n\nRequested: %s\nExecuted: %s" % (
                     given_command, wrapped_command
                 )
-            error(message=msg, stdout=out, stderr=err)
+            with prefixed_output("[%s]: " % env.host_string):
+                error(message=msg, stdout=out, stderr=err)
 
         # Attach return code to output string so users who have set things to
         # warn only, can inspect the error code.
@@ -1189,7 +1193,8 @@ def local(command, capture=False, shell=None):
     if p.returncode not in env.ok_ret_codes:
         out.failed = True
         msg = "local() encountered an error (return code %s) while executing '%s'" % (p.returncode, command)
-        error(message=msg, stdout=out, stderr=err)
+        with prefixed_output("[local]: "):
+            error(message=msg, stdout=out, stderr=err)
     out.succeeded = not out.failed
     # If we were capturing, this will be a string; otherwise it will be None.
     return out

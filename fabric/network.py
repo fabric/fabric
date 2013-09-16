@@ -590,11 +590,13 @@ def disconnect_all():
     from fabric.state import connections, output
     # Explicitly disconnect from all servers
     for key in connections.keys():
-        if output.status:
-            # Here we can't use the py3k print(x, end=" ")
-            # because 2.5 backwards compatibility
-            sys.stdout.write("Disconnecting from %s...\n" % denormalize(key))
-        connections[key].close()
-        del connections[key]
-        if output.status:
-            sys.stdout.write("done.\n")
+        from fabric.io import prefixed_output
+        with prefixed_output("[%s]: " % denormalize(key)):
+            if output.status:
+                # Here we can't use the py3k print(x, end=" ")
+                # because 2.5 backwards compatibility
+                sys.stdout.write("Disconnecting...\n")
+            connections[key].close()
+            del connections[key]
+            if output.status:
+                sys.stdout.write("done.\n")

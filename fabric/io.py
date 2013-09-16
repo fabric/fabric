@@ -228,3 +228,62 @@ def input_loop(chan, using_pty):
                 sys.stdout.write(byte)
                 sys.stdout.flush()
         time.sleep(ssh.io_sleep)
+
+import contextlib
+class PrefixWriter:
+    def __init__(self, writer, prefix):
+        self.writer = writer
+        self.prefix = prefix
+        self.prefix_written = False
+        
+        #import multiprocessing
+        #import threading
+        #process_name = multiprocessing.current_process().name
+        #thread_name = threading.current_thread().name
+        #self.prefix = "%s:%s %s" % (process_name, thread_name, self.prefix)
+        
+        #import traceback
+        #traceback.print_stack()
+    
+    def __del__(self):
+        if self.prefix_written:
+            outputLock.release()
+    
+    def write(self, text):
+        lines = text.split("\n")
+        if lines:
+            if not self.prefix_written and lines[0]:
+                outputLock.acquire()
+                self.writer.write(self.prefix + lines[0])
+                self.prefix_written = True
+                
+            for line in lines[1:]:
+                if not self.prefix_written:
+                    outputLock.acquire()
+                    self.writer.write(self.prefix)
+                    self.prefix_written = True
+                self.writer.write("\n")
+                self.prefix_written = False
+                outputLock.release()
+                if line:
+                    outputLock.acquire()
+                    self.writer.write(self.prefix + line)
+                    self.prefix_written = True
+    
+    def __getattr__(self, name):
+        return self.writer.__getattr__(name)
+
+def prefixed_file(file_like, prefix):
+    return PrefixWriter(file_like, prefix)
+
+@contextlib.contextmanager
+def prefixed_output(prefix):
+    orig_stdout = sys.stdout
+    orig_stderr = sys.stderr
+    try:
+        sys.stdout = PrefixWriter(sys.stdout, prefix)
+        sys.stderr = PrefixWriter(sys.stderr, prefix)
+        yield
+    finally:
+        sys.stdout = orig_stdout
+        sys.stderr = orig_stderr
