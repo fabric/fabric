@@ -255,7 +255,7 @@ def generate_changelog(app, doctree):
 
 
 def setup(app):
-    # Register intermedia roles
+    # Register intermediate roles
     for x in issue_types + ('issue',):
         app.add_role(x, issues_role)
     app.add_role('release', release_role)
