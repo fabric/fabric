@@ -224,16 +224,14 @@ def construct_nodes(releases):
                     desc[i:i+1] = node['nodelist']
             # Tack on to end of this entry's own nodelist (which is the link +
             # etc)
-            result = entry['nodelist'] + desc
             entries.append(
                 nodes.list_item('',
-                    nodes.paragraph('', '', *result)
+                    nodes.paragraph('', '', *entry['nodelist'] + desc)
                 )
             )
         # Entry list
         list_ = nodes.bullet_list('', *entries)
         # Insert list into release nodelist (as it's a section)
-        #from ipdb import set_trace; set_trace()
         obj['nodelist'][0].extend(list_)
         # Release header
         header = nodes.paragraph('', '', *obj['nodelist'])
