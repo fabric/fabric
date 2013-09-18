@@ -67,6 +67,7 @@ class OutputLooper(object):
         initial_prefix_printed = False
         seen_cr = False
         line = []
+        dont_capture_next_cr = False
 
         # Allow prefix to be turned off.
         if not env.output_prefix:
@@ -143,16 +144,21 @@ class OutputLooper(object):
                 # Now we have handled printing, handle interactivity
                 read_lines = re.split(r"(\r|\n|\r\n)", bytelist)
                 for fragment in read_lines:
+                    # skip newlines after prompts
+                    if dont_capture_next_cr and fragment in ['\r','\n','\r\n']:
+                        dont_capture_next_cr = False
+                        continue
                     # Store in capture buffer
                     self.capture += fragment
                     # Handle prompts
                     prompt = _endswith(self.capture, env.sudo_prompt)
-                    try_again = (_endswith(self.capture, env.again_prompt + '\n')
-                        or _endswith(self.capture, env.again_prompt + '\r\n'))
+                    try_again = _endswith(self.capture, env.again_prompt)
                     if prompt:
                         self.prompt()
+                        dont_capture_next_cr = True
                     elif try_again:
                         self.try_again()
+                        dont_capture_next_cr = True
 
         # Print trailing new line in linewise mode
         if initial_prefix_printed:
@@ -195,8 +201,7 @@ class OutputLooper(object):
         self.chan.sendall(password + '\n')
  
     def try_again(self):
-        # Remove text from capture buffer
-        self.capture = self.capture[:len(env.again_prompt)]
+        del self.capture[-1 * len(env.again_prompt):]
         # Set state so we re-prompt the user at the next prompt.
         self.reprompt = True
 
