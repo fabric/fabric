@@ -899,10 +899,11 @@ def _run_command(command, shell=True, pty=True, combine_stderr=True,
         )
         # Execute info line
         which = 'sudo' if sudo else 'run'
-        if output.debug:
-            print("[%s] %s: %s" % (env.host_string, which, wrapped_command))
-        elif output.running:
-            print("[%s] %s: %s" % (env.host_string, which, given_command))
+        with prefixed_output("[%s] %s: " % (env.host_string, which)):
+            if output.debug:
+                print wrapped_command
+            elif output.running:
+                print given_command
 
         # Actual execution, stdin/stdout/stderr handling, and termination
         result_stdout, result_stderr, status = _execute(
