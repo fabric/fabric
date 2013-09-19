@@ -474,12 +474,12 @@ def _forwarder(chan, sock):
                 data = sock.recv(1024)
                 if len(data) == 0:
                     break
-                chan.send(data)
+                chan.sendall(data)
             if chan in r:
                 data = chan.recv(1024)
                 if len(data) == 0:
                     break
-                sock.send(data)
+                sock.sendall(data)
     except socket.error, e:
         #Sockets return bad file descriptor if closed.
         #Maybe there is a cleaner way of doing this?
