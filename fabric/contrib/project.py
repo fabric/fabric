@@ -15,6 +15,15 @@ from fabric.context_managers import cd
 
 __all__ = ['rsync_project', 'upload_project']
 
+def ssh_host_string(user, host):
+    if host.count(':') > 1:
+        # Square brackets are mandatory for IPv6 rsync address,
+        # even if port number is not specified
+        remote_prefix = "[%s@%s]" % (user, host)
+    else:
+        remote_prefix = "%s@%s" % (user, host)
+    return remote_prefix
+
 @needs_host
 def rsync_project(
     remote_dir,
@@ -118,6 +127,11 @@ def rsync_project(
     # RSH
     rsh_string = ""
     rsh_parts = [key_string, port_string, ssh_opts]
+    proxy_string = ""
+    if env.gateway:
+        proxy_params = [" ".join(rsh_parts), ssh_host_string(user,env.gateway), host]
+        proxy_string = '-o "ProxyCommand ssh {} {}@{} nc %h %p"'.format(proxy_params)
+    rsh_parts += [proxy_string]
     if any(rsh_parts):
         rsh_string = "--rsh='ssh %s'" % " ".join(rsh_parts)
     # Set up options part of string
@@ -133,12 +147,7 @@ def rsync_project(
     if local_dir is None:
         local_dir = '../' + getcwd().split(sep)[-1]
     # Create and run final command string
-    if host.count(':') > 1:
-        # Square brackets are mandatory for IPv6 rsync address,
-        # even if port number is not specified
-        remote_prefix = "[%s@%s]" % (user, host)
-    else:
-        remote_prefix = "%s@%s" % (user, host)
+    remote_prefix = ssh_host_string(user,host)
     if upload:
         cmd = "rsync %s %s %s:%s" % (options, local_dir, remote_prefix, remote_dir)
     else:
