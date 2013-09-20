@@ -34,16 +34,13 @@ def output_loop(*args, **kwargs):
 outputLock = Lock()
 
 class OutputLooper(object):
-    def __init__(self, chan, attr, stream, capture, timeout):
+    def __init__(self, chan, attr, stream, capture, timeout, prefix=""):
         self.chan = chan
         self.stream = stream
         self.capture = capture
         self.timeout = timeout
         self.read_func = getattr(chan, attr)
-        self.prefix = "[%s] %s: " % (
-            env.host_string,
-            "out" if attr == 'recv' else "err"
-        )
+        self.prefix = prefix
         self.printing = getattr(output, 'stdout' if (attr == 'recv') else 'stderr')
         self.linewise = (env.linewise or env.parallel)
         self.reprompt = False
@@ -70,10 +67,6 @@ class OutputLooper(object):
         seen_cr = False
         line = []
         dont_capture_next_cr = False
-
-        # Allow prefix to be turned off.
-        if not env.output_prefix:
-            self.prefix = ""
 
         start = time.time()
         while True:

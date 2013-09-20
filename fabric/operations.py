@@ -740,6 +740,12 @@ def _execute(channel, command, pty=True, combine_stderr=None,
             combine_stderr = env.combine_stderr
         channel.set_combine_stderr(combine_stderr)
 
+        # create output prefix
+        if not env.output_prefix:
+            prefix = lambda channel: ""
+        else:
+            prefix = lambda channel: "[%s] %s: " % (env.host_string, channel)
+
         # Assume pty use, and allow overriding of this either via kwarg or env
         # var.  (invoke_shell always wants a pty no matter what.)
         using_pty = True
@@ -749,6 +755,7 @@ def _execute(channel, command, pty=True, combine_stderr=None,
         # parameters if on POSIX platform)
         if using_pty:
             rows, cols = _pty_size()
+            cols -= len(prefix("abc"))
             channel.get_pty(width=cols, height=rows)
 
         # Use SSH agent forwarding from 'ssh' if enabled by user
@@ -773,9 +780,9 @@ def _execute(channel, command, pty=True, combine_stderr=None,
 
         workers = (
             ThreadHandler('out', output_loop, channel, "recv",
-                capture=stdout_buf, stream=stdout, timeout=timeout),
+                capture=stdout_buf, stream=stdout, timeout=timeout, prefix=prefix("out")),
             ThreadHandler('err', output_loop, channel, "recv_stderr",
-                capture=stderr_buf, stream=stderr, timeout=timeout),
+                capture=stderr_buf, stream=stderr, timeout=timeout, prefix=prefix("err")),
             ThreadHandler('in', input_loop, channel, using_pty)
         )
 
