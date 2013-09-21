@@ -4,6 +4,9 @@
 Changelog
 =========
 
+* :feature:`931` Allow overriding of `.abort` behavior via a custom
+  exception-returning callable set as :ref:`env.abort_exception
+  <abort-exception>`. Thanks to Chris Rose for the patch.
 * :support:`984 backported` Make this changelog easier to read! Now with
   per-release sections, generated automatically from the old timeline source
   format.
