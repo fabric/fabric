@@ -113,15 +113,17 @@ Note that many of these may be set via ``fab``'s command-line switches -- see
 
 **Default:** ``None``
 
-When non-``None``, this value can be set to any callable that takes a
-string and returns an exception instance. When Fabric aborts for any
-reason, that exception will be raised.
+Fabric normally handles aborting by printing an error message to stderr and
+calling ``sys.exit(1)``. This setting allows you to override that behavior
+(which is what happens when ``env.abort_exception`` is ``None``.)
 
-Conventional usage is to provide a simple exception class here, which
-will result in that exception being raised with the abort message.
+Give it a callable which takes a string (the error message that would have been
+printed) and returns an exception instance.  That exception object is then
+raised instead of ``SystemExit`` (which is what ``sys.exit`` does.)
 
-In its default state of ``None``, ``SystemExit(1)`` will be raised by
-``abort()``
+Much of the time you'll want to simply set this to an exception class, as those
+fit the above description perfectly (callable, take a string, return an
+exception instance.) E.g. ``env.abort_exception = MyExceptionClass``.
 
 .. _abort-on-prompts:
 
