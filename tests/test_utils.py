@@ -11,6 +11,7 @@ from fabric.state import output, env
 from fabric.utils import warn, indent, abort, puts, fastprint, error, RingBuffer
 from fabric import utils  # For patching
 from fabric.context_managers import settings, hide
+from fabric.colors import magenta, red
 from utils import mock_streams, aborts, FabricTest, assert_contains
 
 
@@ -190,6 +191,21 @@ class TestErrorHandling(FabricTest):
         with hide('stderr'):
             error("error message", func=utils.abort, stderr=stderr)
         assert_contains(stderr, sys.stderr.getvalue())
+
+    @mock_streams('stderr')
+    def test_warnings_print_magenta_if_colorize_on(self):
+        with settings(colorize_errors=True):
+            error("oh god", func=utils.warn, stderr="oops")
+        # can't use assert_contains as ANSI codes contain regex specialchars
+        eq_(magenta("\nWarning: oh god\n\n"), sys.stderr.getvalue())
+
+    @mock_streams('stderr')
+    @raises(SystemExit)
+    def test_errors_print_red_if_colorize_on(self):
+        with settings(colorize_errors=True):
+            error("oh god", func=utils.abort, stderr="oops")
+        # can't use assert_contains as ANSI codes contain regex specialchars
+        eq_(red("\Error: oh god\n\n"), sys.stderr.getvalue())
 
 
 class TestRingBuffer(TestCase):

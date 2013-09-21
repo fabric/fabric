@@ -1,3 +1,6 @@
+.. image:: https://secure.travis-ci.org/fabric/fabric.png?branch=master
+        :target: https://travis-ci.org/fabric/fabric
+
 Fabric is a Python (2.5 or higher) library and command-line tool for
 streamlining the use of SSH for application deployment or systems
 administration tasks.
@@ -30,4 +33,5 @@ Once a task is defined, it may be run on one or more servers, like so::
 
 In addition to use via the ``fab`` tool, Fabric's components may be imported
 into other Python code, providing a Pythonic interface to the SSH protocol
-suite at a higher level than that provided by e.g. the ``ssh`` library (which Fabric itself uses.)
+suite at a higher level than that provided by e.g. the ``Paramiko`` library
+(which Fabric itself uses.)

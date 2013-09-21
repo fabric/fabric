@@ -252,7 +252,7 @@ def prompt(text, key=None, default='', validate=None):
 
 @needs_host
 def put(local_path=None, remote_path=None, use_sudo=False,
-    mirror_local_mode=False, mode=None):
+    mirror_local_mode=False, mode=None, use_glob=True, temp_dir=""):
     """
     Upload one or more files to a remote host.
 
@@ -264,8 +264,8 @@ def put(local_path=None, remote_path=None, use_sudo=False,
 
     ``local_path`` may be a relative or absolute local file or directory path,
     and may contain shell-style wildcards, as understood by the Python ``glob``
-    module.  Tilde expansion (as implemented by ``os.path.expanduser``) is also
-    performed.
+    module (give ``use_glob=False`` to disable this behavior).  Tilde expansion
+    (as implemented by ``os.path.expanduser``) is also performed.
 
     ``local_path`` may alternately be a file-like object, such as the result of
     ``open('path')`` or a ``StringIO`` instance.
@@ -286,8 +286,9 @@ def put(local_path=None, remote_path=None, use_sudo=False,
     While the SFTP protocol (which `put` uses) has no direct ability to upload
     files to locations not owned by the connecting user, you may specify
     ``use_sudo=True`` to work around this. When set, this setting causes `put`
-    to upload the local files to a temporary location on the remote end, and
-    then use `sudo` to move them to ``remote_path``.
+    to upload the local files to a temporary location on the remote end
+    (defaults to remote user's ``$HOME``; this may be overridden via
+    ``temp_dir``), and then use `sudo` to move them to ``remote_path``.
 
     In some use cases, it is desirable to force a newly uploaded file to match
     the mode of its local counterpart (such as when uploading executable
@@ -332,6 +333,8 @@ def put(local_path=None, remote_path=None, use_sudo=False,
         also exhibits the ``.failed`` and ``.succeeded`` attributes.
     .. versionchanged:: 1.5
         Allow a ``name`` attribute on file-like objects for log output
+    .. versionchanged:: 1.7
+        Added ``use_glob`` option to allow disabling of globbing.
     """
     # Handle empty local path
     local_path = local_path or os.getcwd()
@@ -360,8 +363,15 @@ def put(local_path=None, remote_path=None, use_sudo=False,
             # Apply lcwd, expand tildes, etc
             local_path = os.path.expanduser(local_path)
             local_path = apply_lcwd(local_path, env)
-            # Glob local path
-            names = glob(local_path)
+            if use_glob:
+                # Glob local path
+                names = glob(local_path)
+            else:
+                # Check if file exists first so ValueError gets raised
+                if os.path.exists(local_path):
+                    names = [local_path]
+                else:
+                    names = []
         else:
             names = [local_path]
 
@@ -382,11 +392,11 @@ def put(local_path=None, remote_path=None, use_sudo=False,
             try:
                 if local_is_path and os.path.isdir(lpath):
                     p = ftp.put_dir(lpath, remote_path, use_sudo,
-                        mirror_local_mode, mode)
+                        mirror_local_mode, mode, temp_dir)
                     remote_paths.extend(p)
                 else:
                     p = ftp.put(lpath, remote_path, use_sudo, mirror_local_mode,
-                        mode, local_is_path)
+                        mode, local_is_path, temp_dir)
                     remote_paths.append(p)
             except Exception, e:
                 msg = "put() encountered an exception while uploading '%s'"
@@ -595,7 +605,7 @@ def _sudo_prefix(user, group=None):
     return prefix
 
 
-def _shell_wrap(command, shell=True, sudo_prefix=None):
+def _shell_wrap(command, shell_escape, shell=True, sudo_prefix=None):
     """
     Conditionally wrap given command in env.shell (while honoring sudo.)
     """
@@ -608,11 +618,13 @@ def _shell_wrap(command, shell=True, sudo_prefix=None):
         sudo_prefix = ""
     else:
         sudo_prefix += " "
-    # If we're shell wrapping, prefix shell and space, escape the command and
-    # then quote it. Otherwise, empty string.
+    # If we're shell wrapping, prefix shell and space. Next, escape the command
+    # if requested, and then quote it. Otherwise, empty string.
     if shell:
         shell = env.shell + " "
-        command = '"%s"' % _shell_escape(command)
+        if shell_escape:
+            command = _shell_escape(command)
+        command = '"%s"' % command
     else:
         shell = ""
     # Resulting string should now have correct formatting
@@ -860,7 +872,7 @@ def _noop():
 
 def _run_command(command, shell=True, pty=True, combine_stderr=True,
     sudo=False, user=None, quiet=False, warn_only=False, stdout=None,
-    stderr=None, group=None, timeout=None):
+    stderr=None, group=None, timeout=None, shell_escape=None):
     """
     Underpinnings of `run` and `sudo`. See their docstrings for more info.
     """
@@ -873,9 +885,15 @@ def _run_command(command, shell=True, pty=True, combine_stderr=True,
     with manager():
         # Set up new var so original argument can be displayed verbatim later.
         given_command = command
+
+        # Check if shell_escape has been overridden in env
+        if shell_escape is None:
+            shell_escape = env.get('shell_escape', True)
+
         # Handle context manager modifications, and shell wrapping
         wrapped_command = _shell_wrap(
             _prefix_commands(_prefix_env_vars(command), 'remote'),
+            shell_escape,
             shell,
             _sudo_prefix(user, group) if sudo else None
         )
@@ -928,7 +946,7 @@ def _run_command(command, shell=True, pty=True, combine_stderr=True,
 
 @needs_host
 def run(command, shell=True, pty=True, combine_stderr=None, quiet=False,
-    warn_only=False, stdout=None, stderr=None, timeout=None):
+    warn_only=False, stdout=None, stderr=None, timeout=None, shell_escape=None):
     """
     Run a shell command on a remote host.
 
@@ -985,6 +1003,9 @@ def run(command, shell=True, pty=True, combine_stderr=None, quiet=False,
     after which to time out. This will cause ``run`` to raise a
     `~fabric.exceptions.CommandTimeout` exception.
 
+    If you want to disable Fabric's automatic attempts at escaping quotes,
+    dollar signs etc., specify ``shell_escape=False``.
+
     Examples::
 
         run("ls /var/www/")
@@ -1012,15 +1033,19 @@ def run(command, shell=True, pty=True, combine_stderr=None, quiet=False,
 
     .. versionadded:: 1.6
         The ``timeout`` argument.
+
+    .. versionadded:: 1.7
+        The ``shell_escape`` argument.
     """
     return _run_command(command, shell, pty, combine_stderr, quiet=quiet,
-        warn_only=warn_only, stdout=stdout, stderr=stderr, timeout=timeout)
+        warn_only=warn_only, stdout=stdout, stderr=stderr, timeout=timeout,
+        shell_escape=shell_escape)
 
 
 @needs_host
 def sudo(command, shell=True, pty=True, combine_stderr=None, user=None,
     quiet=False, warn_only=False, stdout=None, stderr=None, group=None,
-    timeout=None):
+    timeout=None, shell_escape=None):
     """
     Run a shell command on a remote host, with superuser privileges.
 
@@ -1059,12 +1084,15 @@ def sudo(command, shell=True, pty=True, combine_stderr=None, user=None,
 
     .. versionadded:: 1.5
         The return value attributes ``.command`` and ``.real_command``.
+
+    .. versionadded:: 1.7
+        The ``shell_escape`` argument.
     """
     return _run_command(
         command, shell, pty, combine_stderr, sudo=True,
         user=user if user else env.sudo_user,
         group=group, quiet=quiet, warn_only=warn_only, stdout=stdout,
-        stderr=stderr, timeout=timeout
+        stderr=stderr, timeout=timeout, shell_escape=shell_escape,
     )
 
 

@@ -68,6 +68,7 @@ have already upgraded to Python 2.6/2.7:
     installation
     development
     faq
+    troubleshooting
     roadmap
 
 Tutorial
@@ -99,6 +100,12 @@ FAQ
 
 Some frequently encountered questions, coupled with answers/solutions/excuses,
 may be found on the :doc:`faq` page.
+
+Troubleshooting
+---------------
+
+Before asking for help or filing a bug, make sure you've read our
+:doc:`document on troubleshooting <troubleshooting>`.
 
 .. _api_docs:
 

@@ -1,9 +1,12 @@
+import os
 import types
+import re
+import sys
 
 from fabric.api import run, local
-from fabric.contrib import files
+from fabric.contrib import files, project
 
-from util import Integration
+from utils import Integration
 
 
 def tildify(path):
@@ -21,6 +24,14 @@ def escape(path):
 
 
 class TestTildeExpansion(Integration):
+    def setup(self):
+        self.created = []
+
+    def teardown(self):
+        super(TestTildeExpansion, self).teardown()
+        for created in self.created:
+            os.unlink(created)
+
     def test_append(self):
         for target in ('~/append_test', '~/append_test with spaces'):
             files.append(target, ['line'])
@@ -44,5 +55,51 @@ class TestTildeExpansion(Integration):
         )):
             src = "source%s" % i
             local("touch %s" % src)
+            self.created.append(src)
             files.upload_template(src, target)
             expect(target)
+
+
+class TestIsLink(Integration):
+    # TODO: add more of these. meh.
+    def test_is_link_is_true_on_symlink(self):
+        run("ln -s /tmp/foo /tmp/bar")
+        assert files.is_link('/tmp/bar')
+
+    def test_is_link_is_false_on_non_link(self):
+        run("touch /tmp/biz")
+        assert not files.is_link('/tmp/biz')
+
+
+rsync_sources = (
+    'integration/',
+    'integration/test_contrib.py',
+    'integration/test_operations.py',
+    'integration/utils.py'
+)
+
+class TestRsync(Integration):
+    def rsync(self, id_, **kwargs):
+        return project.rsync_project(
+            remote_dir='/tmp/rsync-test-%s/' % id_,
+            local_dir='integration',
+            ssh_opts='-o StrictHostKeyChecking=no',
+            capture=True,
+            **kwargs
+        )
+
+    def test_existing_default_args(self):
+        """
+        Rsync uses -v by default
+        """
+        r = self.rsync(1)
+        for x in rsync_sources:
+            assert re.search(r'^%s$' % x, r.stdout, re.M), "'%s' was not found in '%s'" % (x, r.stdout)
+
+    def test_overriding_default_args(self):
+        """
+        Use of default_args kwarg can be used to nuke e.g. -v
+        """
+        r = self.rsync(2, default_opts='-pthrz')
+        for x in rsync_sources:
+            assert not re.search(r'^%s$' % x, r.stdout, re.M), "'%s' was found in '%s'" % (x, r.stdout)

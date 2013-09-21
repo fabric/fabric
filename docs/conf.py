@@ -13,72 +13,9 @@
 
 from __future__ import with_statement
 import os
-import re
 import sys
+import types
 from datetime import datetime
-
-# Custom ReST roles.
-from docutils.parsers.rst import roles
-from docutils import nodes, utils
-
-issue_types = ('bug', 'feature', 'support')
-
-def issues_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
-    """
-    Use: :issue|bug|feature|support:`ticket number`
-
-    When invoked as :issue:, turns into just a "#NN" hyperlink to Github.
-
-    When invoked otherwise, turns into "[Type] <#NN hyperlink>: ".
-    """
-    # Old-style 'just the issue link' behavior
-    issue_no = utils.unescape(text)
-    ref = "https://github.com/fabric/fabric/issues/" + issue_no
-    link = nodes.reference(rawtext, '#' + issue_no, refuri=ref, **options)
-    ret = [link]
-    # Additional 'new-style changelog' stuff
-    if name in issue_types:
-        which = '[<span class="changelog-%s">%s</span>]' % (
-            name, name.capitalize()
-        )
-        ret = [
-            nodes.raw(text=which, format='html'),
-            nodes.inline(text=" "),
-            link,
-            nodes.inline(text=":")
-        ]
-    return ret, []
-
-for x in issue_types + ('issue',):
-    roles.register_local_role(x, issues_role)
-
-
-year_arg_re = re.compile(r'^(.+?)\s*(?<!\x00)<(.*?)>$', re.DOTALL)
-
-def release_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
-    """
-    Invoked as :release:`N.N.N <YYYY-MM-DD>`.
-
-    Turns into: <b>YYYY-MM-DD</b>: released <b><a>Fabric N.N.N</a></b>, with
-    the link going to the Github source page for the tag.
-    """
-    # Make sure year has been specified
-    match = year_arg_re.match(text)
-    if not match:
-        msg = inliner.reporter.error("Must specify release date!")
-        return [inliner.problematic(rawtext, rawtext, msg)], [msg]
-    number, date = match.group(1), match.group(2)
-    return [
-        nodes.strong(text=date),
-        nodes.inline(text=": released "),
-        nodes.reference(
-            text="Fabric %s" % number,
-            refuri="https://github.com/fabric/fabric/tree/%s" % number,
-            classes=['changelog-release']
-        )
-    ], []
-roles.register_local_role('release', release_role)
-
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -89,7 +26,11 @@ roles.register_local_role('release', release_role)
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc']
+extensions = ['sphinx.ext.autodoc', 'releases']
+
+# 'releases' (changelog) settings
+releases_issue_uri = "https://github.com/fabric/fabric/issues/%s"
+releases_release_uri = "https://github.com/fabric/fabric/tree/%s"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -280,16 +221,18 @@ latex_documents = [
 #latex_use_modindex = True
 
 
-# Restore decorated functions so that autodoc inspects the rigt arguments
+# Restore decorated functions so that autodoc inspects the right arguments
 def unwrap_decorated_functions():
-    from fabric import operations
-    for name in ['get', 'open_shell', 'put', 'reboot', 'run', 'sudo']:
-        func = getattr(operations, name)
-        setattr(operations, name, func.undecorated)
-
-    from fabric import context_managers
-    for name in ['show', 'hide']:
-        func = getattr(context_managers, name)
-        setattr(context_managers, name, func.undecorated)
+    from fabric import operations, context_managers
+    for module in [context_managers, operations]:
+        for name, obj in vars(module).iteritems():
+            if (
+                # Only function objects - just in case some real object showed
+                # up that had .undecorated
+                isinstance(obj, types.FunctionType)
+                # Has our .undecorated 'cache' of the real object
+                and hasattr(obj, 'undecorated')
+            ):
+                setattr(module, name, obj.undecorated)
 
 unwrap_decorated_functions()

@@ -7,7 +7,6 @@ import sys
 import textwrap
 from traceback import format_exc
 
-
 def abort(msg):
     """
     Abort execution, print ``msg`` to stderr and exit with error status (1.)
@@ -20,9 +19,14 @@ def abort(msg):
     .. _SystemExit: http://docs.python.org/library/exceptions.html#exceptions.SystemExit
     """
     from fabric.state import output, env
+    if not env.colorize_errors:
+        red  = lambda x: x
+    else:
+        from colors import red
+
     if output.aborts:
-        sys.stderr.write("\nFatal error: %s\n" % str(msg))
-        sys.stderr.write("\nAborting.\n")
+        sys.stderr.write(red("\nFatal error: %s\n" % str(msg)))
+        sys.stderr.write(red("\nAborting.\n"))
 
     if env.abort_exception:
         raise env.abort_exception(msg)
@@ -39,9 +43,15 @@ def warn(msg):
     provided that the ``warnings`` output level (which is active by default) is
     turned on.
     """
-    from fabric.state import output
+    from fabric.state import output, env
+
+    if not env.colorize_errors:
+        magenta = lambda x: x
+    else:
+        from colors import magenta
+
     if output.warnings:
-        sys.stderr.write("\nWarning: %s\n\n" % msg)
+        sys.stderr.write(magenta("\nWarning: %s\n\n" % msg))
 
 
 def indent(text, spaces=4, strip=False):
