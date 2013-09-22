@@ -37,6 +37,7 @@ from contextlib import contextmanager, nested
 import sys
 import socket
 import select
+import errno
 
 from fabric.thread_handling import ThreadHandler
 from fabric.state import output, win32, connections, env
@@ -483,8 +484,8 @@ def _forwarder(chan, sock):
     except socket.error, e:
         #Sockets return bad file descriptor if closed.
         #Maybe there is a cleaner way of doing this?
-        if e.errno != socket.EBADF:
-            raise        
+        if e.errno not in (socket.EBADF, errno.ECONNRESET):
+            raise
     
     try:
         chan.close()
