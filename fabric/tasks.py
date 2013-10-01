@@ -231,7 +231,8 @@ def _execute(task, host, my_env, args, kwargs, jobs, queue, multiprocessing):
                 key = normalize_to_string(state.env.host_string)
                 state.connections.pop(key, "")
                 submit(task.run(*args, **kwargs))
-            except BaseException, e: # We really do want to capture everything
+            except BaseException: # We really do want to capture everything
+                e = sys.exc_info()[1]
                 # SystemExit implies use of abort(), which prints its own
                 # traceback, host info etc -- so we don't want to double up
                 # on that. For everything else, though, we need to make
@@ -367,7 +368,8 @@ def execute(task, *args, **kwargs):
                     task, host, my_env, args, new_kwargs, jobs, queue,
                     multiprocessing
                 )
-            except NetworkError, e:
+            except NetworkError:
+                e = sys.exc_info()[1]
                 results[host] = e
                 # Backwards compat test re: whether to use an exception or
                 # abort

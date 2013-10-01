@@ -11,6 +11,7 @@ from fabric.state import output, connections, env
 from fabric.utils import warn
 from fabric.context_managers import settings
 
+o7777 = 4095  # 0o7777
 
 def _format_local(local_path, local_is_path):
     """Format a path for log output"""
@@ -79,7 +80,8 @@ class SFTP(object):
             # Note that listdir and error are globals in this module due to
             # earlier import-*.
             names = self.ftp.listdir(top)
-        except Exception, err:
+        except Exception:
+            err = sys.exc_info()[1]
             if onerror is not None:
                 onerror(err)
             return
@@ -233,11 +235,11 @@ class SFTP(object):
             # Cast to octal integer in case of string
             if isinstance(lmode, basestring):
                 lmode = int(lmode, 8)
-            lmode = lmode & 07777
+            lmode = lmode & o7777
             rmode = rattrs.st_mode
             # Only bitshift if we actually got an rmode
             if rmode is not None:
-                rmode = (rmode & 07777)
+                rmode = (rmode & o7777)
             if lmode != rmode:
                 if use_sudo:
                     with hide('everything'):
