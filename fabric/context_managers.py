@@ -33,7 +33,7 @@ Context managers for use with the ``with`` statement.
     ``nested`` itself -- see its API doc for details.
 """
 
-from contextlib import contextmanager, nested
+from contextlib import contextmanager
 import sys
 import socket
 import select
@@ -41,6 +41,7 @@ import select
 from fabric.thread_handling import ThreadHandler
 from fabric.state import output, win32, connections, env
 from fabric import state
+from fabric.compat import nested
 
 if not win32:
     import termios

@@ -1,7 +1,6 @@
 from __future__ import with_statement
 
-from contextlib import nested
-
+from fabric.compat import nested
 from fabric.api import abort, hide, local, settings, task
 
 # Need to import this as fabric.version for reload() purposes
