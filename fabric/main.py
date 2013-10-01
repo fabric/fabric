@@ -9,11 +9,17 @@ The other callables defined in this module are internal only. Anything useful
 to individuals leveraging Fabric as a library, should be kept elsewhere.
 """
 import getpass
-from operator import isMappingType
+import collections
 from optparse import OptionParser
 import os
 import sys
 import types
+
+try:
+    from functools import reduce
+except ImportError:
+    # Python 2.5 has it in builtins
+    pass
 
 # For checking callables against the API, & easy mocking
 from fabric import api, state, colors
@@ -25,6 +31,9 @@ from fabric.tasks import Task, execute, get_task_details
 from fabric.task_utils import _Dict, crawl
 from fabric.utils import abort, indent, warn, _pty_size
 
+
+def isMappingType(object):
+    return isinstance(object, collections.Mapping)
 
 # One-time calculation of "all internal callables" to avoid doing this on every
 # check of a given fabfile callable (in is_classic_task()).
