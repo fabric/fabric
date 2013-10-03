@@ -25,6 +25,10 @@ from fabric.tasks import Task, execute, get_task_details
 from fabric.task_utils import _Dict, crawl
 from fabric.utils import abort, indent, warn, _pty_size
 
+import logging
+logging.basicConfig()
+logging.getLogger('ssh.transport').setLevel(logging.INFO)
+
 
 # One-time calculation of "all internal callables" to avoid doing this on every
 # check of a given fabfile callable (in is_classic_task()).
