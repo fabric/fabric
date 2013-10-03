@@ -3,7 +3,7 @@
 =========
 Changelog
 =========
-
+* :bug:`673` Added logger for ssh.transport
 * :release:`1.8.0 <2013-09-20>`
 * :feature:`931` Allow overriding of `.abort` behavior via a custom
   exception-returning callable set as :ref:`env.abort_exception
