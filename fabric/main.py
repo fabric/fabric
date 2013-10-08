@@ -15,6 +15,10 @@ import os
 import sys
 import types
 
+# setup logging, needed for paramiko
+import logging
+logging.basicConfig()
+
 # For checking callables against the API, & easy mocking
 from fabric import api, state, colors
 from fabric.contrib import console, files, project
