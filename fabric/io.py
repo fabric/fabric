@@ -34,7 +34,7 @@ def output_loop(*args, **kwargs):
 outputLock = Lock()
 
 class OutputLooper(object):
-    def __init__(self, chan, attr, stream, capture, timeout, prefix=""):
+    def __init__(self, chan, attr, stream, capture, timeout, prefix="", linewise = False):
         self.chan = chan
         self.stream = stream
         self.capture = capture
@@ -42,7 +42,7 @@ class OutputLooper(object):
         self.read_func = getattr(chan, attr)
         self.prefix = prefix
         self.printing = getattr(output, 'stdout' if (attr == 'recv') else 'stderr')
-        self.linewise = (env.linewise or env.parallel)
+        self.linewise = linewise
         self.reprompt = False
         self.read_size = 4096
         self.write_buffer = RingBuffer([], maxlen=len(self.prefix))

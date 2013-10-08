@@ -781,11 +781,12 @@ def _execute(channel, command, pty=True, combine_stderr=None,
         if invoke_shell:
             stdout_buf = stderr_buf = None
 
+        linewise = (env.linewise or env.parallel)
         workers = (
             ThreadHandler('out', output_loop, channel, "recv",
-                capture=stdout_buf, stream=stdout, timeout=timeout, prefix=prefix("out")),
+                capture=stdout_buf, stream=stdout, timeout=timeout, prefix=prefix("out"), linewise=linewise),
             ThreadHandler('err', output_loop, channel, "recv_stderr",
-                capture=stderr_buf, stream=stderr, timeout=timeout, prefix=prefix("err")),
+                capture=stderr_buf, stream=stderr, timeout=timeout, prefix=prefix("err"), linewise=linewise),
             ThreadHandler('in', input_loop, channel, using_pty)
         )
 
@@ -833,7 +834,7 @@ def _execute(channel, command, pty=True, combine_stderr=None,
         # following print()s aren't on the same line as a trailing line prefix
         # or similar. However, don't add an extra newline if we've already
         # ended up with one, as that adds a entire blank line instead.
-        if output.running \
+        if output.running and not linewise \
             and (output.stdout and stdout_buf and not stdout_buf.endswith("\n")) \
             or (output.stderr and stderr_buf and not stderr_buf.endswith("\n")):
             print("")
