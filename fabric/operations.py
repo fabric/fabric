@@ -200,14 +200,12 @@ def prompt(text, key=None, default='', validate=None):
     # Store previous env value for later display, if necessary
     if key:
         previous_value = env.get(key)
-    # Set up default display
-    default_str = ""
-    if default != '':
-        default_str = " [%s] " % str(default).strip()
-    else:
-        default_str = " "
     # Construct full prompt string
-    prompt_str = text.strip() + default_str
+    prompt_str = text.strip()
+    if prompt_str != "":
+        prompt_str += " "
+    if default != "":
+        prompt_str += "[%s] " % str(default).strip()
     # Loop until we pass validation
     value = None
     while value is None:

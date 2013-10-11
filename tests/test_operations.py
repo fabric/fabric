@@ -184,6 +184,16 @@ def test_prompt_appends_space():
 
 @mock_streams('stdout')
 @with_patched_input(p)
+def test_prompt_with_empty_text():
+    """
+    prompt() doesn't append a space if text is empty
+    """
+    prompt("")
+    eq_(sys.stdout.getvalue(), "")
+
+
+@mock_streams('stdout')
+@with_patched_input(p)
 def test_prompt_with_default():
     """
     prompt() appends given default value plus one space on either side
