@@ -1,0 +1,218 @@
+* The expected host/host-collection-oriented API can probably be effected via
+  invoke.Context subclasses - since that's exactly what they are (contexts for
+  execution) and Context would provide an existing API for the same shit (like
+  .run; settings/configuration crap; etc).
+* sudo() and local() should probably be implemented as a 'via' kwarg on
+  ctx.run?
+    * How to handle the 'run locally or remotely, intelligently' feature
+      request? I think just by having the class itself be smart about it? I.e.
+      if you're "running on localhost" that implies the Context would be the
+      Invoke default, or some other obviously-not-ssh-related class
+      implementing a local runner.
+        * I guess ambiguity would still exist if you're not using the
+          context-based API - but that should probably not be allowed in Fab
+          itself because it just doesn't fly. You'd be explicitly using
+          invoke.run there? There would be no 'from fabric import run'.
+    * Does not solve the situation where one's 'host' is literally 'localhost'
+      (versus being unspecified/blank as in Fab 1 ) but I don't think that was
+      the common case - the common case was running a task function with no
+      host list.
+
+
+## Context managers
+
+General implementation: these methods on Context (or Connection, etc) spawn a
+new object which is basically a callback of sorts - it's given a link to the
+context, the argument(s) given to the method (e.g. the path to cd to; the
+settings to change; etc) and some way of altering that context on both
+__enter__ and __exit__.
+
+The "obvious" way of doing the latter is:
+
+* pass an attribute name + a mutator function to this new object
+* it then backs up, to itself, the current value at time of __enter__,
+  replacing it with the mutated value
+* in __exit__ it updates the parent with the older, preserved attribute value.
+
+Could alter this slightly by having the mutator functions (lamdas) implemented
+as other methods on Context and pass their name to the sub-object. However, the
+sub-object would still need the attribute info so it could perform backup; and
+restoration would then require setters which just feels silly.
+
+### cd, lcd
+
+As now, implemented with a list of paths that gets join'd on use.
+
+May want to rename cd() to rcd() - people continue to be confused by cd() and
+assume it applies locally.
+
+lcd() should be something implemented in Invoke (and stands to reason cd()
+would also - just w/ different target setting names so they remain distinct.)
+
+### hide, show
+
+Assuming hiding/showing is implemented similar to fab 1 (BIG assumption) - same
+as cd, just tickles context state.
+
+Should really be handled by Invoke, eh? And ideally log-based in some fashion.
+
+May want to split things up:
+
+* stdout/err, due to being stream based, are simply local defaults for run()'s
+  kwargs. So these might just become regular settings and not deserving of
+  their own contextmanager methods?
+* Everything else are local line-based output levels and would thus just fit
+  well into a real logging framework. So would need to implement that in a way
+  that fits w/ the logging setup. So that might also be slightly different and
+  live under a single, non-hide/show set of methods (tho possibly still context
+  manager?)
+
+tl;dr do we even want contextmanagers for this? They started out as the ONLY
+way to hide things, but now that the API can do it per-run(), it may not make a
+ton of sense.
+
+### path, prefix
+
+These should also be more generic and Invoke-ish since they can apply to
+command running in general. But probably remain lists under the hood.
+
+### remote_tunnel
+
+Spawns new channels & sockets to handle the port forwards, tracks those in apparently-global state within fabric.contextmanagers (i.e. just inside the function itself? not sure why that works, the body should rerun every time the context manager is used) and hands a ThreadHandler to Paramiko which actually spins it up to forward ports.
+
+So, probably needs a decently sized rewrite to be clean n such; only real Fab stuff it uses is the connection dict / env.host_string.
+
+### settings
+
+Likely replaced by whatever settings API is exposed in Context. Maybe try to get a sense of what settings folks frequently use it for now, besides nesting hide/show + warn_only + host_string. Suspect that would be bulk of it?
+
+Then again the ability to run with temporarily different context for arbitrary stuff is handy. Meh.
+
+### shell_env
+
+Tracks a dict in Context, same as lcd/cd would with their lists? Once again, can probably roll into regular settings-y things.
+
+### warn_only
+
+Same as hide/show re: stdout/err - might not _need_ to be contextmanager anymore, just given as per-run() kwarg or tickled in Context settings junk.
+
+
+## Decorators
+
+### hosts, roles
+
+Currently, tells execute() what the default host list should be if nothing is
+given. Almost entirely oriented around the CLI use case. Does it make any sense
+in the library case?
+
+Thought experiment: if we went the "Fab just a lib, use it with invoke"
+route...how would @hosts/@roles work? I think they'd just be hints to Invoke's
+Executor saying "please vectorize over this value when you call this task",
+right? (Would need to really be saying "vectorize over this value, turn it into
+Connection/Batch, then stuff in as first argument".)
+
+That puts them on the same footing as any other vectorization. Meaning - they
+can go away in favor of whatever easy-vectorization option is added to Invoke.
+How would THAT look?
+
+* yet moar args to @task?
+* a second decorator used in tandem with @task?
+* a function or class used to create another "task" that is a combo of a
+  regular task + the vectorization? (That's really not THAT different from a
+  new decorator, other than it not replacing the original task.)
+
+### runs_once, parallel, serial
+
+Should not be necessary? Guess it ties into "global host list" - if a given
+session can be given a default host list for vectorizing tasks, then we do need
+a way to indicate whether a task should be exempt from that. E.g. if we still
+allow this:
+
+    $ fab -H a,b,c runonce hostcrap morehostcrap
+
+then `runonce` does need a way to tell the CLI junk that it should not be run
+once each for the host list.
+
+If we assume all Fabric tasks are contextualized, "local" or "runs once" tasks
+still look no different from "normal" ones. So it's the execution mechanism
+that has to differentiate between "I run this N times for this vector of
+Connections" versus "I run this once with a single non-connection-oriented
+Context".
+
+Feels like cleanest solution is to do away with "global" host lists entirely
+and force ALL such invocations to be what in Fab 1 are "meta" tasks. I.e. if
+you had tasks 'foo' and 'bar' and wanted them to both run on the same host
+list, and task 'biz' that should run only once, you would need to write task
+'go' like so:
+
+    @task
+    def go(ctx, hosts):
+        b = Batch(ctx, hosts)
+        b.execute(foo)
+        b.execute(bar)
+        ctx.execute(biz)
+
+and invoke:
+
+    $ fab go --hosts a,b,c
+
+This removes the ability to arbitrarily change up which tasks you run on which
+hosts, all at the CLI level, so not 100% sure.
+
+Main problem with @runs_once (and the other decorators) is they make it hard to
+tell who should override who - normally CLI rules all, and @runs_once in Fab 1
+is one of the unusual things that inverts control. It's impossible to run a
+@runs_once task more than one time from the CLI.
+
+Perhaps we have Fabric contexts splice in common per-task options
+automatically, so you could do e.g.::
+
+    $ fab -H a,b,c foo bar biz --once
+
+Here, the Executor would automatically vectorize tasks over the core host list,
+but if it saw 'once=True', it would not do so. Or alternately, the part of
+Invoke that sets up the Executor would just select the default instead of the
+Fabric host-running one? That also works well for choosing serial, parallel etc
+on a per-task basis.
+
+So e.g.:
+
+    fab -H a,b,c --parallel foo bar biz --once
+
+or
+
+    fab -H a,b,c --parallel foo bar biz --serial baz --once
+
+Where the core options set the default executor and per-task flags override. 
+
+(--parallel etc would be sugar for --executor=parallel or maybe
+--strategy=parallel.)
+
+ANYWAY - so with the above strategy, this gives us complete CLI control over invocation, and we can have a per-task (kwarg-level probably) way of setting the default that task "wants" to be run as. So we'd still have @runs_once, but it's normalized now and on the same footing as parallel/serial.
+
+#### More thoughts on executing
+
+In Invoke, Executor currently is responsible for:
+
+* taking collection + context
+* looking up a task name in a collection
+* calling it with CLI flag-args and the context
+* calling its pre- and post- tasks before and/or after
+
+and it is created once and then used throughout the 'session' (i.e. each task/context becomes my_executor.execute(task, ...)).
+
+Idea was to subclass it to add more things like how to deal with pre/post, how to run in serial/parallel, etc.
+
+However this doesn't fly with switching up executor/strategy per-task, as above. Would want to instantiate the executor once per parser context, at least niavely. However we then lose ability to track how many times a given task has been called 'globally' which is almost definitely required for nontrivial pre/post/dependency shit.
+
+So perhaps we split things up a bit, with collection management (including call tracking) in one object, and actual invocation/execution in another. Main problem is this requires communication, so we need a way for the latter to inform the former that it just ran tasks foo, bar, biz and baz N times.
+
+
+
+### task
+
+Simply a subclass or wrapper for Invoke's. Would have contextualized=True always (perhaps not even letting you set it to False - a "Fabric" task is meaningless without its host context).
+
+May end up just being a straight reimport of Invoke's, if all functionality can be pushed therein (like strategy selection).
+
+### with_settings
