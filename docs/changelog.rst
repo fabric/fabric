@@ -4,6 +4,9 @@
 Changelog
 =========
 
+* :bug:`994` `~fabric.operations.run`/`~fabric.operations.sudo` ignore
+  `~fabric.context_managers.shell_env`/`~fabric.context_managers.cd`
+  instead of breaking.
 * :release:`1.8.0 <2013-09-20>`
 * :feature:`931` Allow overriding of `.abort` behavior via a custom
   exception-returning callable set as :ref:`env.abort_exception
