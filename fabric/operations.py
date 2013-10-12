@@ -891,8 +891,12 @@ def _run_command(command, shell=True, pty=True, combine_stderr=True,
             shell_escape = env.get('shell_escape', True)
 
         # Handle context manager modifications, and shell wrapping
+        if shell:
+            # Stuff like 'export X=Y && cd /foo && command' only works
+            # when we're using the shell.
+            command = _prefix_commands(_prefix_env_vars(command), 'remote')
         wrapped_command = _shell_wrap(
-            _prefix_commands(_prefix_env_vars(command), 'remote'),
+            command,
             shell_escape,
             shell,
             _sudo_prefix(user, group) if sudo else None
