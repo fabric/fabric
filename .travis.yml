@@ -28,6 +28,9 @@ script:
 notifications:
   irc:
     channels: "irc.freenode.org#fabric"
+    template:
+      - "%{repository}@%{branch}: %{message} (%{build_url})"
     on_success: change
     on_failure: change
+    use_notice: true
   email: false
