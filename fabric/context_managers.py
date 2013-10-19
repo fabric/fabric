@@ -522,6 +522,8 @@ def remote_tunnel(remote_port, local_port=None, local_host="localhost",
         By default, most SSH servers only allow remote tunnels to listen to the
         localhost interface (127.0.0.1). In these cases, `remote_bind_address`
         is ignored by the server, and the tunnel will listen only to 127.0.0.1.
+
+    .. versionadded: 1.6
     """
     if local_port is None:
         local_port = remote_port

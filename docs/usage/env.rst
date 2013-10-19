@@ -106,6 +106,25 @@ Note that many of these may be set via ``fab``'s command-line switches -- see
 
 .. seealso:: :option:`--set`
 
+.. _abort-exception:
+
+``abort_exception``
+-------------------
+
+**Default:** ``None``
+
+Fabric normally handles aborting by printing an error message to stderr and
+calling ``sys.exit(1)``. This setting allows you to override that behavior
+(which is what happens when ``env.abort_exception`` is ``None``.)
+
+Give it a callable which takes a string (the error message that would have been
+printed) and returns an exception instance.  That exception object is then
+raised instead of ``SystemExit`` (which is what ``sys.exit`` does.)
+
+Much of the time you'll want to simply set this to an exception class, as those
+fit the above description perfectly (callable, take a string, return an
+exception instance.) E.g. ``env.abort_exception = MyExceptionClass``.
+
 .. _abort-on-prompts:
 
 ``abort_on_prompts``

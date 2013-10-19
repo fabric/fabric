@@ -23,9 +23,14 @@ script:
   - fab test
   # Integration tests
   - fab -H localhost test:"--tests\=integration"
+  # Make sure the docs build
+  - fab docs
 notifications:
   irc:
     channels: "irc.freenode.org#fabric"
+    template:
+      - "%{repository}@%{branch}: %{message} (%{build_url})"
     on_success: change
     on_failure: change
+    use_notice: true
   email: false

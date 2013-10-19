@@ -27,7 +27,7 @@ def current_version_is_tagged():
 
 def current_version_is_changelogged(filename):
     return _seek_version(
-        'egrep "^\* :release:`%s " filename',
+        'egrep "^\* :release:\`%%s " %s' % filename,
         "Looking for changelog entry"
     )
 

@@ -336,7 +336,8 @@ below.
 
    .. seealso::
 	:ref:`env.command_timeout <command-timeout>`,
-    .. versionadded:: 1.6
+
+   .. versionadded:: 1.6
 
 .. cmdoption:: -u USER, --user=USER
 
