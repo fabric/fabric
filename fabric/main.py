@@ -21,7 +21,7 @@ logging.basicConfig()
 
 # For checking callables against the API, & easy mocking
 from fabric import api, state, colors
-from fabric.contrib import console, files, project
+from fabric.contrib import console, files, project, hostslist
 
 from fabric.network import disconnect_all, ssh
 from fabric.state import env_options
@@ -623,11 +623,28 @@ def main(fabfile_locations=None):
         for option in env_options:
             state.env[option.dest] = getattr(options, option.dest)
 
+        # Read Hosts from file
+        if "hosts_filename" in state.env and isinstance(state.env["hosts_filename"], basestring):
+            f = open(state.env["hosts_filename"])
+            selection = hostslist.select_hosts_from_file(f)
+            f.close()
+        else:
+            selection = hostslist.HostSelection()
+
         # Handle --hosts, --roles, --exclude-hosts (comma separated string =>
         # list)
         for key in ['hosts', 'roles', 'exclude_hosts']:
             if key in state.env and isinstance(state.env[key], basestring):
                 state.env[key] = state.env[key].split(',')
+
+        # Inject Hosts read from file
+        for host in state.env["hosts"]:
+            selection.parse_cmd(host)
+        for host in state.env["exclude_hosts"]:
+            selection.parse_cmd("!"+host)   
+        del state.env["exclude_hosts"]
+        state.env["hosts"]=selection.flatten()
+        print "Selected Hosts:",state.env["hosts"]
 
         # Feed the env.tasks : tasks that are asked to be executed.
         state.env['tasks'] = arguments

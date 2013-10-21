@@ -289,6 +289,11 @@ env_options = [
             help="number of concurrent processes to use in parallel mode",
     ),
 
+    make_option('--hosts-file',
+            dest='hosts_filename',
+            help="Load a Hosts File"
+    ),
+
 ]
 
 
