@@ -61,12 +61,21 @@ class TestTildeExpansion(Integration):
 
 
 class TestIsLink(Integration):
+    def setup(self):
+        self.created = []
+
+    def teardown(self):
+        super(TestIsLink, self).teardown()
+        for created in self.created:
+            os.unlink(created)
     # TODO: add more of these. meh.
     def test_is_link_is_true_on_symlink(self):
+        self.created.append("/tmp/bar")
         run("ln -s /tmp/foo /tmp/bar")
         assert files.is_link('/tmp/bar')
 
     def test_is_link_is_false_on_non_link(self):
+        self.created.append("/tmp/biz")
         run("touch /tmp/biz")
         assert not files.is_link('/tmp/biz')
 
