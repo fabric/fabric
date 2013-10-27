@@ -106,9 +106,9 @@ class SFTP(object):
         from fabric.api import sudo, hide
         if use_sudo:
             with hide('everything'):
-                sudo('mkdir %s' % path)
+                sudo('mkdir "%s"' % path)
         else:
-            self.ftp.mkdir(path)
+            self.ftp.mkdir("%s" % path)
 
     def get(self, remote_path, local_path, local_is_path, rremote=None):
         # rremote => relative remote path, so get(/var/log) would result in

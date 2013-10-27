@@ -25,6 +25,8 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`955` Fixed a bug where spaces cause failures when using put and use_sudo. 
+  Thanks to John Harris for catch & patch.
 * :release:`1.7.0 <2013-07-26>`
 * :release:`1.6.2 <2013-07-26>`
 * :feature:`925` Added `contrib.files.is_link <.is_link>`. Thanks to `@jtangas`
