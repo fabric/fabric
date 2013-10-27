@@ -25,6 +25,8 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`954` Fixed a bug where spaces are escaped incorrectly on win32 platform. 
+  Thanks to John Harris for catch & patch.
 * :bug:`955` Fixed a bug where spaces cause failures when using put and use_sudo. 
   Thanks to John Harris for catch & patch.
 * :release:`1.7.0 <2013-07-26>`

@@ -328,7 +328,9 @@ def lcd(path):
 
 
 def _change_cwd(which, path):
-    path = path.replace(' ', '\ ')
+    # escape the space only if using lcd on a non-Windows platform
+    if which == 'lcwd' and not win32:
+        path = path.replace(' ', '\ ')
     if state.env.get(which) and not path.startswith('/'):
         new_cwd = state.env.get(which) + '/' + path
     else:
