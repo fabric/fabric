@@ -8,7 +8,7 @@ from utils import Integration
 
 
 def assert_mode(path, mode):
-    assert run("stat -c \"%%a\" %s" % path).stdout == mode
+    assert run("stat -c \"%%a\" %s" % path).stdout.strip() == mode
 
 
 class TestOperations(Integration):
@@ -31,7 +31,7 @@ class TestOperations(Integration):
     def test_no_trailing_space_in_shell_path_in_run(self):
         put(StringIO("#!/bin/bash\necho hi"), "%s/myapp" % self.dirpath, mode="0755")
         with path(self.dirpath):
-            assert run('myapp').stdout == 'hi'
+            assert run('myapp').stdout.strip() == 'hi'
 
     def test_string_put_mode_arg_doesnt_error(self):
         put(StringIO("#!/bin/bash\necho hi"), self.filepath, mode="0755")

@@ -4,6 +4,7 @@ import sys
 import time
 import re
 import socket
+from multiprocessing import Lock
 from select import select
 
 from fabric.state import env, output, win32
@@ -30,20 +31,18 @@ def _has_newline(bytelist):
 def output_loop(*args, **kwargs):
     OutputLooper(*args, **kwargs).loop()
 
+outputLock = Lock()
 
 class OutputLooper(object):
-    def __init__(self, chan, attr, stream, capture, timeout):
+    def __init__(self, chan, attr, stream, capture, timeout, prefix="", linewise = False):
         self.chan = chan
         self.stream = stream
         self.capture = capture
         self.timeout = timeout
         self.read_func = getattr(chan, attr)
-        self.prefix = "[%s] %s: " % (
-            env.host_string,
-            "out" if attr == 'recv' else "err"
-        )
+        self.prefix = prefix
         self.printing = getattr(output, 'stdout' if (attr == 'recv') else 'stderr')
-        self.linewise = (env.linewise or env.parallel)
+        self.linewise = linewise
         self.reprompt = False
         self.read_size = 4096
         self.write_buffer = RingBuffer([], maxlen=len(self.prefix))
@@ -62,18 +61,12 @@ class OutputLooper(object):
         (Timeouts before then are considered part of normal short-timeout fast
         network reading; see Fabric issue #733 for background.)
         """
-        # Internal capture-buffer-like buffer, used solely for state keeping.
-        # Unlike 'capture', nothing is ever purged from this.
-        _buffer = []
 
         # Initialize loop variables
         initial_prefix_printed = False
         seen_cr = False
         line = []
-
-        # Allow prefix to be turned off.
-        if not env.output_prefix:
-            self.prefix = ""
+        dont_capture_next_cr = False
 
         start = time.time()
         while True:
@@ -88,8 +81,11 @@ class OutputLooper(object):
             # Empty byte == EOS
             if bytelist == '':
                 # If linewise, ensure we flush any leftovers in the buffer.
-                if self.linewise and line:
+                if line:
+                    if self.linewise:
+                        outputLock.acquire()
                     self._flush(self.prefix)
+                    initial_prefix_printed = True
                     self._flush("".join(line))
                 break
             # A None capture variable implies that we're in open_shell()
@@ -98,6 +94,8 @@ class OutputLooper(object):
                 # And since we know we're using a pty in this mode, just go
                 # straight to stdout.
                 self._flush(bytelist)
+                if self.linewise:
+                    outputLock.release()
             # Otherwise, we're in run/sudo and need to handle capturing and
             # prompts.
             else:
@@ -120,7 +118,10 @@ class OutputLooper(object):
                         printable_bytes = printable_bytes[cr.end(0):]
 
                         if not initial_prefix_printed:
+                            if self.linewise:
+                                outputLock.acquire()
                             self._flush(self.prefix)
+                            initial_prefix_printed = True
 
                         if _has_newline(end_of_line):
                             end_of_line = ''
@@ -131,35 +132,42 @@ class OutputLooper(object):
                         else:
                             self._flush(end_of_line + "\n")
                         initial_prefix_printed = False
+                        if self.linewise:
+                            outputLock.release()
 
-                    if self.linewise:
-                        line += [printable_bytes]
-                    else:
-                        if not initial_prefix_printed:
-                            self._flush(self.prefix)
-                            initial_prefix_printed = True
-                        self._flush(printable_bytes)
+                    if printable_bytes != '':
+                        if self.linewise:
+                            line += [printable_bytes]
+                        else:
+                            if not initial_prefix_printed:
+                                self._flush(self.prefix)
+                                initial_prefix_printed = True
+                            self._flush(printable_bytes)
 
                 # Now we have handled printing, handle interactivity
                 read_lines = re.split(r"(\r|\n|\r\n)", bytelist)
                 for fragment in read_lines:
+                    # skip newlines after prompts
+                    if dont_capture_next_cr and fragment in ['\r','\n','\r\n']:
+                        dont_capture_next_cr = False
+                        continue
                     # Store in capture buffer
                     self.capture += fragment
-                    # Store in internal buffer
-                    _buffer += fragment
                     # Handle prompts
                     prompt = _endswith(self.capture, env.sudo_prompt)
-                    try_again = (_endswith(self.capture, env.again_prompt + '\n')
-                        or _endswith(self.capture, env.again_prompt + '\r\n'))
+                    try_again = _endswith(self.capture, env.again_prompt)
                     if prompt:
                         self.prompt()
+                        dont_capture_next_cr = True
                     elif try_again:
                         self.try_again()
+                        dont_capture_next_cr = True
 
-        # Print trailing new line if the last thing we printed was our line
-        # prefix.
-        if self.prefix and "".join(self.write_buffer) == self.prefix:
-            self._flush('\n')
+        # Print trailing new line in linewise mode
+        if initial_prefix_printed:
+            if self.linewise:
+                self._flush('\n')
+                outputLock.release()
 
     def prompt(self):
         # Obtain cached password, if any
@@ -197,8 +205,7 @@ class OutputLooper(object):
         self.chan.sendall(password + '\n')
  
     def try_again(self):
-        # Remove text from capture buffer
-        self.capture = self.capture[:len(env.again_prompt)]
+        del self.capture[-1 * len(env.again_prompt):]
         # Set state so we re-prompt the user at the next prompt.
         self.reprompt = True
 
@@ -221,3 +228,62 @@ def input_loop(chan, using_pty):
                 sys.stdout.write(byte)
                 sys.stdout.flush()
         time.sleep(ssh.io_sleep)
+
+import contextlib
+class PrefixWriter:
+    def __init__(self, writer, prefix):
+        self.writer = writer
+        self.prefix = prefix
+        self.prefix_written = False
+        
+        #import multiprocessing
+        #import threading
+        #process_name = multiprocessing.current_process().name
+        #thread_name = threading.current_thread().name
+        #self.prefix = "%s:%s %s" % (process_name, thread_name, self.prefix)
+        
+        #import traceback
+        #traceback.print_stack()
+    
+    def __del__(self):
+        if self.prefix_written:
+            outputLock.release()
+    
+    def write(self, text):
+        lines = text.split("\n")
+        if lines:
+            if not self.prefix_written and lines[0]:
+                outputLock.acquire()
+                self.writer.write(self.prefix + lines[0])
+                self.prefix_written = True
+                
+            for line in lines[1:]:
+                if not self.prefix_written:
+                    outputLock.acquire()
+                    self.writer.write(self.prefix)
+                    self.prefix_written = True
+                self.writer.write("\n")
+                self.prefix_written = False
+                outputLock.release()
+                if line:
+                    outputLock.acquire()
+                    self.writer.write(self.prefix + line)
+                    self.prefix_written = True
+    
+    def __getattr__(self, name):
+        return self.writer.__getattr__(name)
+
+def prefixed_file(file_like, prefix):
+    return PrefixWriter(file_like, prefix)
+
+@contextlib.contextmanager
+def prefixed_output(prefix):
+    orig_stdout = sys.stdout
+    orig_stderr = sys.stderr
+    try:
+        sys.stdout = PrefixWriter(sys.stdout, prefix)
+        sys.stderr = PrefixWriter(sys.stderr, prefix)
+        yield
+    finally:
+        sys.stdout = orig_stdout
+        sys.stderr = orig_stderr

@@ -231,6 +231,17 @@ def _execute(task, host, my_env, args, kwargs, jobs, queue, multiprocessing):
                 key = normalize_to_string(state.env.host_string)
                 state.connections.pop(key, "")
                 submit(task.run(*args, **kwargs))
+            except NetworkError, e:
+                # Backwards compat test re: whether to use an exception or
+                # abort
+                if not state.env.use_exceptions_for['network']:
+                    func = warn if state.env.skip_bad_hosts else abort
+                    from fabric.io import prefixed_output
+                    with prefixed_output("[%s]: " % state.env.host_string):
+                        error(e.message, func=func, exception=e.wrapped)
+                else:
+                    raise
+
             except BaseException, e: # We really do want to capture everything
                 # SystemExit implies use of abort(), which prints its own
                 # traceback, host info etc -- so we don't want to double up
@@ -383,21 +394,21 @@ def execute(task, *args, **kwargs):
 
         # If running in parallel, block until job queue is emptied
         if jobs:
-            err = "One or more hosts failed while executing task '%s'" % (
-                my_env['command']
-            )
             jobs.close()
             # Abort if any children did not exit cleanly (fail-fast).
             # This prevents Fabric from continuing on to any other tasks.
             # Otherwise, pull in results from the child run.
+            hosts_failed = {}
             ran_jobs = jobs.run()
             for name, d in ran_jobs.iteritems():
                 if d['exit_code'] != 0:
-                    if isinstance(d['results'], BaseException):
-                        error(err, exception=d['results'])
-                    else:
-                        error(err)
+                    hosts_failed [name] = d['exit_code']
                 results[name] = d['results']
+
+            if hosts_failed:
+                error("Some hosts failed while executing task '%s': %s" % (
+                    my_env['command'], " ".join(hosts_failed.keys())
+                ))
 
     # Or just run once for local-only
     else:

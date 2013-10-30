@@ -268,13 +268,50 @@ class TestNetwork(FabricTest):
             # Also test that the captured value matches, too.
             eq_(output_string, result)
 
+    @mock_streams('stdout')
     @server()
-    def test_sudo_prompt_kills_capturing(self):
+    def test_dont_strip_newlines(self):
+        """
+        Empty lines in output should not be dropped.
+        """
+        cmd = "echo; echo Hello; echo; echo World; echo"
+        output_string = RESPONSES[cmd]
+        expected_output = """[%(host)s] out: 
+[%(host)s] out: Hello
+[%(host)s] out: 
+[%(host)s] out: World
+[%(host)s] out: 
+""" % { "host" : env.host_string }
+        with settings(show('everything'), hide('running')):
+            result = run(cmd)
+            output = sys.stdout.getvalue()
+            # Test equivalence of expected, received output
+            eq_(expected_output, output)
+            # Also test that the captured value matches, too.
+            eq_(output_string, result)
+
+    @server()
+    def test_sudo_prompt_does_not_kill_capturing(self):
         """
         Sudo prompts shouldn't screw up output capturing
         """
         cmd = "ls /simple"
         with hide('everything'):
+            eq_(sudo(cmd), RESPONSES[cmd])
+
+    @server(pubkeys=True)
+    def test_sudo_prompt_try_again_does_not_kill_capturing(self):
+        """
+        Sudo prompt try-again messages shouldn't screw up output capturing
+        """
+        cmd = "ls /simple"
+        with password_response(
+            (CLIENT_PRIVKEY_PASSPHRASE, PASSWORDS[env.user]),
+            silent=False
+        ):
+            env.password = None
+            env.no_agent = env.no_keys = True
+            env.key_filename = CLIENT_PRIVKEY
             eq_(sudo(cmd), RESPONSES[cmd])
 
     @server()
@@ -366,7 +403,7 @@ class TestNetwork(FabricTest):
             (CLIENT_PRIVKEY_PASSPHRASE, PASSWORDS[env.user]),
             silent=False
         ):
-            sudo('oneliner')
+            result = sudo('oneliner')
         if display_output:
             expected = """
 [%(prefix)s] sudo: oneliner
@@ -388,6 +425,7 @@ class TestNetwork(FabricTest):
     'user': env.user
 }
         eq_(expected[1:], sys.stdall.getvalue())
+        eq_("result", result)
 
     @mock_streams('both')
     @server(

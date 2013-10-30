@@ -17,7 +17,7 @@ from contextlib import closing, contextmanager
 
 from fabric.context_managers import (settings, char_buffered, hide,
     quiet as quiet_manager, warn_only as warn_only_manager)
-from fabric.io import output_loop, input_loop
+from fabric.io import output_loop, input_loop, prefixed_output, prefixed_file
 from fabric.network import needs_host, ssh, ssh_config
 from fabric.sftp import SFTP
 from fabric.state import env, connections, output, win32, default_channel
@@ -402,7 +402,8 @@ def put(local_path=None, remote_path=None, use_sudo=False,
                 msg = "put() encountered an exception while uploading '%s'"
                 failure = lpath if local_is_path else "<StringIO>"
                 failed_local_paths.append(failure)
-                error(message=msg % lpath, exception=e)
+                with prefixed_output("[local]: "):
+                    error(message=msg % lpath, exception=e)
 
         ret = _AttributeList(remote_paths)
         ret.failed = failed_local_paths
@@ -558,7 +559,8 @@ def get(remote_path, local_path=None):
             # Handle invalid local-file-object situations
             if not local_is_path:
                 if len(names) > 1 or ftp.isdir(names[0]):
-                    error("[%s] %s is a glob or directory, but local_path is a file object!" % (env.host_string, remote_path))
+                    with prefixed_output("[local]: "):
+                        error("[%s] %s is a glob or directory, but local_path is a file object!" % (env.host_string, remote_path))
 
             for remote_path in names:
                 if ftp.isdir(remote_path):
@@ -576,7 +578,8 @@ def get(remote_path, local_path=None):
         except Exception, e:
             failed_remote_files.append(remote_path)
             msg = "get() encountered an exception while downloading '%s'"
-            error(message=msg % remote_path, exception=e)
+            with prefixed_output("[local]: "):
+                error(message=msg % remote_path, exception=e)
 
         ret = _AttributeList(local_files if local_is_path else [])
         ret.failed = failed_remote_files
@@ -740,6 +743,12 @@ def _execute(channel, command, pty=True, combine_stderr=None,
             combine_stderr = env.combine_stderr
         channel.set_combine_stderr(combine_stderr)
 
+        # create output prefix
+        if not env.output_prefix:
+            prefix = lambda channel: ""
+        else:
+            prefix = lambda channel: "[%s] %s: " % (env.host_string, channel)
+
         # Assume pty use, and allow overriding of this either via kwarg or env
         # var.  (invoke_shell always wants a pty no matter what.)
         using_pty = True
@@ -749,6 +758,7 @@ def _execute(channel, command, pty=True, combine_stderr=None,
         # parameters if on POSIX platform)
         if using_pty:
             rows, cols = _pty_size()
+            cols -= len(prefix("abc"))
             channel.get_pty(width=cols, height=rows)
 
         # Use SSH agent forwarding from 'ssh' if enabled by user
@@ -771,11 +781,12 @@ def _execute(channel, command, pty=True, combine_stderr=None,
         if invoke_shell:
             stdout_buf = stderr_buf = None
 
+        linewise = (env.linewise or env.parallel)
         workers = (
             ThreadHandler('out', output_loop, channel, "recv",
-                capture=stdout_buf, stream=stdout, timeout=timeout),
+                capture=stdout_buf, stream=stdout, timeout=timeout, prefix=prefix("out"), linewise=linewise),
             ThreadHandler('err', output_loop, channel, "recv_stderr",
-                capture=stderr_buf, stream=stderr, timeout=timeout),
+                capture=stderr_buf, stream=stderr, timeout=timeout, prefix=prefix("err"), linewise=linewise),
             ThreadHandler('in', input_loop, channel, using_pty)
         )
 
@@ -816,14 +827,14 @@ def _execute(channel, command, pty=True, combine_stderr=None,
 
         # Update stdout/stderr with captured values if applicable
         if not invoke_shell:
-            stdout_buf = ''.join(stdout_buf).strip()
-            stderr_buf = ''.join(stderr_buf).strip()
+            stdout_buf = ''.join(stdout_buf)
+            stderr_buf = ''.join(stderr_buf)
 
         # Tie off "loose" output by printing a newline. Helps to ensure any
         # following print()s aren't on the same line as a trailing line prefix
         # or similar. However, don't add an extra newline if we've already
         # ended up with one, as that adds a entire blank line instead.
-        if output.running \
+        if output.running and not linewise \
             and (output.stdout and stdout_buf and not stdout_buf.endswith("\n")) \
             or (output.stderr and stderr_buf and not stderr_buf.endswith("\n")):
             print("")
@@ -899,10 +910,11 @@ def _run_command(command, shell=True, pty=True, combine_stderr=True,
         )
         # Execute info line
         which = 'sudo' if sudo else 'run'
-        if output.debug:
-            print("[%s] %s: %s" % (env.host_string, which, wrapped_command))
-        elif output.running:
-            print("[%s] %s: %s" % (env.host_string, which, given_command))
+        with prefixed_output("[%s] %s: " % (env.host_string, which)):
+            if output.debug:
+                print wrapped_command
+            elif output.running:
+                print given_command
 
         # Actual execution, stdin/stdout/stderr handling, and termination
         result_stdout, result_stderr, status = _execute(
@@ -929,7 +941,8 @@ def _run_command(command, shell=True, pty=True, combine_stderr=True,
                 msg += "!\n\nRequested: %s\nExecuted: %s" % (
                     given_command, wrapped_command
                 )
-            error(message=msg, stdout=out, stderr=err)
+            with prefixed_output("[%s]: " % env.host_string):
+                error(message=msg, stdout=out, stderr=err)
 
         # Attach return code to output string so users who have set things to
         # warn only, can inspect the error code.
@@ -1181,7 +1194,8 @@ def local(command, capture=False, shell=None):
     if p.returncode not in env.ok_ret_codes:
         out.failed = True
         msg = "local() encountered an error (return code %s) while executing '%s'" % (p.returncode, command)
-        error(message=msg, stdout=out, stderr=err)
+        with prefixed_output("[local]: "):
+            error(message=msg, stdout=out, stderr=err)
     out.succeeded = not out.failed
     # If we were capturing, this will be a string; otherwise it will be None.
     return out
