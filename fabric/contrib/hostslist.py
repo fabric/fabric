@@ -200,6 +200,9 @@ class HostSelection(object):
         for arg in args:
             if arg.startswith("!"):
                 sel = HostSelection.parseSelection(arg[1:])
+                print "hup",sel[0]
+                if not sel[0]:
+                    sel[0] = ["*"]
                 self.exclude(sel[0], sel[1])
             else:
                 sel = HostSelection.parseSelection(arg)

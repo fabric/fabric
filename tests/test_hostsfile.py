@@ -71,7 +71,6 @@ class TestHostFile(unittest.TestCase):
         The Data Model
         """
         for host in self.mockhosts:
-            print self.mockroot
             assert self.mockroot.has_host(host[1], host[0]), \
             "A Host is missing in the Data"
 
@@ -85,10 +84,8 @@ class TestHostFile(unittest.TestCase):
         """
         root = hostslist._parse(self.mockfile)
         for host in self.mockhosts:
-            print host
             assert root.has_host(host[1], host[0]), \
             "A Host is missing in the Data"
-        print root
         assert root.__str__() == self.mockroot.__str__()
 
     def test_explicit_single_select(self):
@@ -132,7 +129,6 @@ class TestHostFile(unittest.TestCase):
         host = self.mockhosts[3][1]
         sel.exclude(namespace, host)
         result = sel.flatten()
-        print len(self.mockhosts)
         print len(result), (len(self.mockhosts) - 1)
         assert len(result) == (len(self.mockhosts) - 1), \
         "The returned host differs in size from the expected"
@@ -200,11 +196,8 @@ class TestHostFile(unittest.TestCase):
             if len(host[0]) == 0:
                 pass
             elif host[0][0] == namespace[0] and host[0][1] == namespace[1]:
-                print host[0], host[1]
                 count += 1
-        print count
         result = sel.flatten()
-        print result
         print len(result), count
         assert len(result) == count, \
         "The returned host differs in size from the expected"
@@ -215,13 +208,11 @@ class TestHostFile(unittest.TestCase):
         """
         sel = hostslist.HostSelection(self.mockroot)
         namespace = ["*"]
-        print namespace
         host = "*"
         sel.select(namespace, host)
 
         count = len(self.mockhosts)
         result = sel.flatten()
-        print result
         print len(result), count
         assert len(result) == count, \
         "The returned host differs in size from the expected"
@@ -239,9 +230,7 @@ class TestHostFile(unittest.TestCase):
             if len(hst[0]) == 0:
                 count += 1
 
-        print count
         result = sel.flatten()
-        print result
         print len(result), count
         assert len(result) == count, \
         "The returned host differs in size from the expected"
@@ -259,9 +248,7 @@ class TestHostFile(unittest.TestCase):
             if len(hst[0]) == 0 and hst[1] == host:
                 count += 1
 
-        print count
         result = sel.flatten()
-        print result
         print len(result), count
         assert len(result) == count, \
         "The returned host differs in size from the expected"
@@ -304,14 +291,13 @@ class TestHostFile(unittest.TestCase):
             if len(host[0]) == 0:
                 pass
             elif host[0][0] == namespace[0] and host[0][1] == namespace[1]:
-                print host[0], host[1]
                 count -= 1
         result = sel.flatten()
-        print result
         print len(result), count
         assert len(result) == count, \
         "The returned host differs in size from the expected"
 
+        
     def test_wildcard_excl_fixed_host(self):
         """
         A list of namespaces is selected through wildcards
@@ -328,14 +314,11 @@ class TestHostFile(unittest.TestCase):
 
         count = len(self.mockhosts)
         for host in self.mockhosts:
-            print host
             if len(host[0]) == 0:
                 pass
             elif host[0][0] == namespace[0] and host[1] == hst:
-                print host[0], host[1]
                 count -= 1
         result = sel.flatten()
-        print result
         print len(result), count
         assert len(result) == count, \
         "The returned host differs in size from the expected"
@@ -388,6 +371,20 @@ class TestHostFile(unittest.TestCase):
         except hostslist.HostException:
             pass
 
+    def test_cmd_exclude(self):
+        """
+        A list of hosts with namespaces is selected but a single
+        host without a namespace is excluded
+        """
+        sel = hostslist.HostSelection(self.mockroot)
+        sel.select(["*"], "*")
+        sel.parse_cmd("!" + self.mockhosts[3][1])
+        count = len(self.mockhosts)
+        result = sel.flatten()
+        print len(result), count
+        assert len(result) == count - 1, \
+        "The returned host differs in size from the expected"
+
     def test_integration(self):
         """
         everything
@@ -402,7 +399,6 @@ class TestHostFile(unittest.TestCase):
         tmpfile.close()
         os.remove(tmpfilename)
 
-        print result
         print len(self.mockhosts), len(result)
         assert len(result) == (len(self.mockhosts) - 1), \
         "Wrong number of hosts"
