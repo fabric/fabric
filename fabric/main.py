@@ -762,6 +762,8 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
         # If we got here, no errors occurred, so print a final note.
         if state.output.status:
             print("\nDone.")
+    except hostslist.HostException, e:
+        sys.stderr.write("\n"+e.__str__()+"\n")
     except SystemExit:
         # a number of internal functions might raise this one.
         raise

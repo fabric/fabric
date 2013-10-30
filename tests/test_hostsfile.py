@@ -338,6 +338,7 @@ class TestHostFile(unittest.TestCase):
         Parse the String pattern into a namespace and host selection
         """
         self._comp_host("/A1/b/C:host", ["a1", "b", "c"], "host")
+        self._comp_host("/A-_1/b/C:host", ["a-_1", "b", "c"], "host")
         self._comp_host("/A/B/C", ["a", "b", "c"], "*")
         self._comp_host("/A/B/c:*", ["a", "b", "c"], "*")
         self._comp_host("/a/b/c:", ["a", "b", "c"], "*")

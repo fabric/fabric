@@ -1,4 +1,4 @@
-import string
+import string, re
 
 
 class _HostTreeNode(object):
@@ -200,7 +200,6 @@ class HostSelection(object):
         for arg in args:
             if arg.startswith("!"):
                 sel = HostSelection.parseSelection(arg[1:])
-                print "hup",sel[0]
                 if not sel[0]:
                     sel[0] = ["*"]
                 self.exclude(sel[0], sel[1])
@@ -272,21 +271,16 @@ class HostSelection(object):
 
         return list(selected_hosts)
 
-
 def _parsenamespace(nsp_string):
     namespace = nsp_string[1:].split(_HostTreeNode.PATHSEP)
     for nsp in namespace:
         if nsp == "":
             raise HostException("The Namespace " + nsp_string + \
-                                "contains an illegal empty node")
-        for char in nsp:
-            if char not in string.ascii_lowercase \
-                and char not in string.digits \
-                and char != "*":
-                raise HostException("The Namespace " + nsp_string + \
-                                    " contains an illegal character")
+                                " contains an illegal empty node")
+        if not re.match("^[A-Za-z0-9_*-]*$",nsp):
+            raise HostException("The Namespace " + nsp_string + \
+                                " contains an illegal character")
     return namespace
-
 
 def _parse(lines):
     root = _HostTreeNode()
@@ -305,7 +299,6 @@ def _parse(lines):
             continue
         root.add(namespace, line)
     return root
-
 
 def select_hosts_from_file(hostsfile, cmd=""):
     '''
