@@ -250,6 +250,18 @@ class _AliasDict(_AttributeDict):
         return ret
 
 
+def isatty(stream):
+    """Check if a stream is a tty.
+
+    Not all file like object implement `isatty` method.
+    """
+    fn = getattr(stream, 'isatty', None)
+    if fn is None:
+        return False
+
+    return fn()
+
+
 def _pty_size():
     """
     Obtain (rows, cols) tuple for sizing a pty on the remote end.
@@ -264,7 +276,7 @@ def _pty_size():
         import struct
 
     rows, cols = 24, 80
-    if not win32 and sys.stdout.isatty():
+    if not win32 and isatty(sys.stdout):
         # We want two short unsigned integers (rows, cols)
         fmt = 'HH'
         # Create an empty (zeroed) buffer for ioctl to map onto. Yay for C!
