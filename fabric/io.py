@@ -213,9 +213,9 @@ class OutputLooper(object):
         Iterate through the request prompts dict and return the response and
         original request if we find a match
         """
-        for request_prompt in env.prompt_responses.keys():
+        for request_prompt in env.prompts.keys():
             if _endswith(self.capture, request_prompt):
-                return (request_prompt, env.prompt_responses[request_prompt])
+                return (request_prompt, env.prompts[request_prompt])
 
 
 def input_loop(chan, using_pty):
