@@ -4,6 +4,10 @@
 Changelog
 =========
 
+* :feature:`741` Custom prompts: Controlling the prompt answer in a pexpect
+  like fashion. Until now it was not possible to reply automatically to an
+  interactive prompt.
+  Written by Nigel Owen and David Halter <davidhalter88@gmail.com>.
 * :release:`1.8.0 <2013-09-20>`
 * :feature:`931` Allow overriding of `.abort` behavior via a custom
   exception-returning callable set as :ref:`env.abort_exception
