@@ -149,7 +149,7 @@ class OutputLooper(object):
                     # Store in internal buffer
                     _buffer += fragment
                     # Handle prompts
-                    prompt_pair = self._get_prompt_response(env['prompt_responses'])
+                    prompt_pair = self._get_prompt_response()
                     if prompt_pair:
                         del self.capture[-1 * len(prompt_pair[0]):]
                         self.chan.sendall(str(prompt_pair[1]) + '\n')
@@ -208,14 +208,14 @@ class OutputLooper(object):
         # Set state so we re-prompt the user at the next prompt.
         self.reprompt = True
 
-    def _get_prompt_response(self, prompt_responses):
+    def _get_prompt_response(self):
         """
         Iterate through the request prompts dict and return the response and
         original request if we find a match
         """
-        for request_prompt in prompt_responses.keys():
+        for request_prompt in env.prompt_responses.keys():
             if _endswith(self.capture, request_prompt):
-                return (request_prompt, prompt_responses[request_prompt])
+                return (request_prompt, env.prompt_responses[request_prompt])
 
 
 def input_loop(chan, using_pty):
