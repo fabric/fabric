@@ -13,8 +13,8 @@ def test_request_prompts():
     def run(txt, prompts):
         with settings(prompts=prompts):
             # try to fulfil the OutputLooper interface, only want to test
-            # _get_prompt_response. (int has an attribute real)
-            ol = OutputLooper(int, 'real', None, list(txt), None)
+            # _get_prompt_response. (str has a method upper)
+            ol = OutputLooper(str, 'upper', None, list(txt), None)
             return ol._get_prompt_response()
 
     prompts = {"prompt2": "response2",
