@@ -13,6 +13,7 @@ from fabric.network import ssh, normalize
 from fabric.utils import RingBuffer
 from fabric.exceptions import CommandTimeout
 
+
 if win32:
     import msvcrt
 
@@ -148,13 +149,18 @@ class OutputLooper(object):
                     # Store in internal buffer
                     _buffer += fragment
                     # Handle prompts
-                    prompt = _endswith(self.capture, env.sudo_prompt)
-                    try_again = (_endswith(self.capture, env.again_prompt + '\n')
-                        or _endswith(self.capture, env.again_prompt + '\r\n'))
-                    if prompt:
-                        self.prompt()
-                    elif try_again:
-                        self.try_again()
+                    prompt_pair = self._get_prompt_response()
+                    if prompt_pair:
+                        del self.capture[-1 * len(prompt_pair[0]):]
+                        self.chan.sendall(str(prompt_pair[1]) + '\n')
+                    else:
+                        prompt = _endswith(self.capture, env.sudo_prompt)
+                        try_again = (_endswith(self.capture, env.again_prompt + '\n')
+                            or _endswith(self.capture, env.again_prompt + '\r\n'))
+                        if prompt:
+                            self.prompt()
+                        elif try_again:
+                            self.try_again()
 
         # Print trailing new line if the last thing we printed was our line
         # prefix.
@@ -195,12 +201,21 @@ class OutputLooper(object):
             self.reprompt = False
         # Send current password down the pipe
         self.chan.sendall(password + '\n')
- 
+
     def try_again(self):
         # Remove text from capture buffer
         self.capture = self.capture[:len(env.again_prompt)]
         # Set state so we re-prompt the user at the next prompt.
         self.reprompt = True
+
+    def _get_prompt_response(self):
+        """
+        Iterate through the request prompts dict and return the response and
+        original request if we find a match
+        """
+        for request_prompt in env.prompts.keys():
+            if _endswith(self.capture, request_prompt):
+                return (request_prompt, env.prompts[request_prompt])
 
 
 def input_loop(chan, using_pty):
