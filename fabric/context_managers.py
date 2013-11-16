@@ -41,6 +41,7 @@ import select
 from fabric.thread_handling import ThreadHandler
 from fabric.state import output, win32, connections, env
 from fabric import state
+from fabric.utils import isatty
 
 if not win32:
     import termios
@@ -429,7 +430,7 @@ def char_buffered(pipe):
 
     Only applies on Unix-based systems; on Windows this is a no-op.
     """
-    if win32 or not pipe.isatty():
+    if win32 or not isatty(pipe):
         yield
     else:
         old_settings = termios.tcgetattr(pipe)
