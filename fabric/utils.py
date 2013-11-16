@@ -7,6 +7,18 @@ import sys
 import textwrap
 from traceback import format_exc
 
+
+def isatty(stream):
+    """Check if a stream is a tty.
+
+    Not all file-like objects implement the `isatty` method.
+    """
+    fn = getattr(stream, 'isatty', None)
+    if fn is None:
+        return False
+    return fn()
+
+
 def abort(msg):
     """
     Abort execution, print ``msg`` to stderr and exit with error status (1.)
@@ -264,7 +276,7 @@ def _pty_size():
         import struct
 
     rows, cols = 24, 80
-    if not win32 and sys.stdout.isatty():
+    if not win32 and isatty(sys.stdout):
         # We want two short unsigned integers (rows, cols)
         fmt = 'HH'
         # Create an empty (zeroed) buffer for ioctl to map onto. Yay for C!
