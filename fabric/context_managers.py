@@ -34,6 +34,7 @@ Context managers for use with the ``with`` statement.
 """
 
 from contextlib import contextmanager, nested
+import os
 import sys
 import socket
 import select
@@ -329,7 +330,7 @@ def lcd(path):
 
 def _change_cwd(which, path):
     path = path.replace(' ', '\ ')
-    if state.env.get(which) and not path.startswith('/'):
+    if state.env.get(which) and not os.path.expanduser(path).startswith('/'):
         new_cwd = state.env.get(which) + '/' + path
     else:
         new_cwd = path
