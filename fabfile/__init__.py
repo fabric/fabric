@@ -4,9 +4,11 @@ Fabric's own fabfile.
 
 from __future__ import with_statement
 
+import platform
+
 import nose
 
-from fabric.api import abort, local, task
+from fabric.api import local, task
 
 import tag
 from utils import msg
@@ -21,8 +23,9 @@ def test(args=None):
     """
     # Default to explicitly targeting the 'tests' folder, but only if nothing
     # is being overridden.
-    tests = "" if args else " tests"
-    default_args = "-sv --with-doctest --nologcapture --with-color %s" % tests
+    default_args = "-sv --with-doctest --nologcapture"
+    if platform.system() != 'Darwin':
+        default_args += " --with-color"
     default_args += (" " + args) if args else ""
     nose.core.run_exit(argv=[''] + default_args.split())
 
