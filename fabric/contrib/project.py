@@ -177,10 +177,10 @@ def upload_project(local_dir=None, remote_dir="", use_sudo=False):
     """
     runner = use_sudo and sudo or run
 
-    local_dir = local_dir or os.getcwd()
+    local_dir = local_dir or getcwd()
 
     # Remove final '/' in local_dir so that basename() works
-    local_dir = local_dir.rstrip(os.sep)
+    local_dir = local_dir.rstrip(sep)
 
     local_path, local_name = os.path.split(local_dir)
     tar_file = "%s.tar.gz" % local_name
