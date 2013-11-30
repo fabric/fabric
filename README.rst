@@ -19,6 +19,7 @@ complete "fabfile" containing a single task::
     def host_type():
         run('uname -s')
 
+Save it as ``fabfile.py``.
 Once a task is defined, it may be run on one or more servers, like so::
 
     $ fab -H localhost,linuxbox host_type
