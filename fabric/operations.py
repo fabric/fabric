@@ -956,6 +956,9 @@ def run(command, shell=True, pty=True, combine_stderr=None, quiet=False,
     "<command>"``.) Any double-quote (``"``) or dollar-sign (``$``) characters
     in ``command`` will be automatically escaped when ``shell`` is True.
 
+    If ``shell`` is False, `run` will execute the given command string without
+    a shell interpreter prefix.
+    
     `run` will return the result of the remote program's stdout as a single
     (likely multiline) string. This string will exhibit ``failed`` and
     ``succeeded`` boolean attributes specifying whether the command failed or
