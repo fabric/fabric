@@ -15,6 +15,7 @@ from fabric.context_managers import cd
 
 __all__ = ['rsync_project', 'upload_project']
 
+
 @needs_host
 def rsync_project(
     remote_dir,
@@ -25,7 +26,8 @@ def rsync_project(
     ssh_opts='',
     capture=False,
     upload=True,
-    default_opts='-pthrvz'
+    default_opts='-pthrvz',
+    sshpass=False
 ):
     """
     Synchronize a remote directory with the current project directory via rsync.
@@ -81,6 +83,16 @@ def rsync_project(
       performed up or downstream. Upstream by default.
     * ``default_opts``: the default rsync options ``-pthrvz``, override if
       desired (e.g. to remove verbosity, etc).
+    * ``sshpass``: a boolean controlling whether use ``sshpass``, If True, you
+      can support ``env.password`` to ``rsync``, no need input password. But
+      you must install ``sshpass``.
+        * If you use ubuntu, Type the following command:
+             ``sudo apt-get install sshpass``
+        * Other platform, Go ``http://sourceforge.net/projects/sshpass/``
+          donwload the lastest verison, then type the following command:
+          ``tar zxvf sshpass-1.05.tar.gz && cd sshpass-1.05 && ./configure &&
+            make && sudo make install``
+
 
     Furthermore, this function transparently honors Fabric's port and SSH key
     settings. Calling this function when the current host string contains a
@@ -143,7 +155,8 @@ def rsync_project(
         cmd = "rsync %s %s %s:%s" % (options, local_dir, remote_prefix, remote_dir)
     else:
         cmd = "rsync %s %s:%s %s" % (options, remote_prefix, remote_dir, local_dir)
-
+    if sshpass:
+        cmd = "sshpass -p %s %s" % (env.password, cmd)
     if output.running:
         print("[%s] rsync_project: %s" % (env.host_string, cmd))
     return local(cmd, capture=capture)
