@@ -5,7 +5,6 @@ from __future__ import with_statement
 
 from os import getcwd, sep
 import os.path
-from datetime import datetime
 from tempfile import mkdtemp
 
 from fabric.network import needs_host, key_filenames, normalize
@@ -14,6 +13,7 @@ from fabric.state import env, output
 from fabric.context_managers import cd
 
 __all__ = ['rsync_project', 'upload_project']
+
 
 @needs_host
 def rsync_project(
@@ -118,6 +118,8 @@ def rsync_project(
     # RSH
     rsh_string = ""
     rsh_parts = [key_string, port_string, ssh_opts]
+    if env.disable_known_hosts:
+        rsh_parts.append('-o StrictHostKeyChecking=no')
     if any(rsh_parts):
         rsh_string = "--rsh='ssh %s'" % " ".join(rsh_parts)
     # Set up options part of string

@@ -1,9 +1,7 @@
 import os
-import types
 import re
-import sys
 
-from fabric.api import run, local
+from fabric.api import env, run, local
 from fabric.contrib import files, project
 
 from utils import Integration
@@ -95,7 +93,6 @@ class TestRsync(Integration):
         return project.rsync_project(
             remote_dir='/tmp/rsync-test-%s/' % id_,
             local_dir='integration',
-            ssh_opts='-o StrictHostKeyChecking=no',
             capture=True,
             **kwargs
         )
@@ -104,7 +101,7 @@ class TestRsync(Integration):
         """
         Rsync uses -v by default
         """
-        r = self.rsync(1)
+        r = self.rsync(1, ssh_opts='-o StrictHostKeyChecking=no')
         for x in rsync_sources:
             assert re.search(r'^%s$' % x, r.stdout, re.M), "'%s' was not found in '%s'" % (x, r.stdout)
 
@@ -112,6 +109,16 @@ class TestRsync(Integration):
         """
         Use of default_args kwarg can be used to nuke e.g. -v
         """
-        r = self.rsync(2, default_opts='-pthrz')
+        r = self.rsync(2, ssh_opts='-o StrictHostKeyChecking=no', default_opts='-pthrz')
         for x in rsync_sources:
             assert not re.search(r'^%s$' % x, r.stdout, re.M), "'%s' was found in '%s'" % (x, r.stdout)
+
+    def test_disable_known_hosts(self):
+        """
+        Use env.disable_known_hosts setting
+        """
+        env.disable_known_hosts = True
+        r = self.rsync(3)
+        env.disable_known_hosts = False
+        for x in rsync_sources:
+            assert re.search(r'^%s$' % x, r.stdout, re.M), "'%s' was found in '%s'" % (x, r.stdout)
