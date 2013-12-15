@@ -503,8 +503,8 @@ def eq_output(docstring, format_, expected):
     non_printable = re.compile('\\033\[[0-9]+m|\-+')
     whitespace = re.compile('\s+')    
     return eq_(
-        whitespace.sub(' ', non_printable.sub('', "\n".join(list_commands(docstring, format_)))),
-        whitespace.sub(' ', expected)
+        whitespace.sub(' ', non_printable.sub('', "\n".join(list_commands(docstring, format_)))).strip(),
+        whitespace.sub(' ', expected).strip()
     )
 
 def list_output(module, format_, expected):
