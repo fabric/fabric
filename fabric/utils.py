@@ -27,7 +27,11 @@ def abort(msg):
     if output.aborts:
         sys.stderr.write(red("\nFatal error: %s\n" % str(msg)))
         sys.stderr.write(red("\nAborting.\n"))
-    sys.exit(1)
+
+    if env.abort_exception:
+        raise env.abort_exception(msg)
+    else:
+        sys.exit(1)
 
 
 def warn(msg):
