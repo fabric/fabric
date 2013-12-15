@@ -388,7 +388,7 @@ def _task_names(mapping):
 def _print_docstring(docstrings, name):
     if not docstrings:
         return False
-    docstring = crawl(name, state.commands).__doc__ 
+    docstring = crawl(name, state.commands).__doc__
     if isinstance(docstring, basestring):
         return docstring
 
@@ -491,7 +491,6 @@ def list_commands(docstring, format_):
 
 
 def display_command(name):
-    from inspect import getdoc
     """
     Print command function's docstring, then exit. Invoked with -d/--display.
     """
