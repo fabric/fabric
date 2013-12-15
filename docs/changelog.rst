@@ -7,6 +7,9 @@ Changelog
 * :bug:`965 major` Tweak IO flushing behavior when in linewise (& thus
   parallel) mode so interwoven output is less frequent. Thanks to `@akidata`
   for catch & patch.
+* :bug:`948` Handle connection failures due to server load and try connecting
+  to hosts a number of times specified in :ref:`env.connection_attempts
+  <connection-attempts>`.
 * :release:`1.8.0 <2013-09-20>`
 * :feature:`931` Allow overriding of `.abort` behavior via a custom
   exception-returning callable set as :ref:`env.abort_exception
