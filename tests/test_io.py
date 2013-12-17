@@ -24,5 +24,5 @@ def test_request_prompts():
 
     eq_(run("this is a prompt for prompt1", prompts), ("prompt1", "response1"))
     eq_(run("this is a prompt for prompt2", prompts), ("prompt2", "response2"))
-    eq_(run("this is a prompt for promptx:", prompts), None)
-    eq_(run("prompt for promp", prompts), None)
+    eq_(run("this is a prompt for promptx:", prompts), (None, None))
+    eq_(run("prompt for promp", prompts), (None, None))
