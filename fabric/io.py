@@ -31,6 +31,9 @@ def output_loop(*args, **kwargs):
     OutputLooper(*args, **kwargs).loop()
 
 
+def get_prefix(stream_name):
+    return "[%s] %s: " % (env.host_string, stream_name)
+
 class OutputLooper(object):
     def __init__(self, chan, attr, stream, capture, timeout):
         self.chan = chan
@@ -38,10 +41,7 @@ class OutputLooper(object):
         self.capture = capture
         self.timeout = timeout
         self.read_func = getattr(chan, attr)
-        self.prefix = "[%s] %s: " % (
-            env.host_string,
-            "out" if attr == 'recv' else "err"
-        )
+        self.prefix = get_prefix("out" if attr == 'recv' else "err")
         self.printing = getattr(output, 'stdout' if (attr == 'recv') else 'stderr')
         self.linewise = (env.linewise or env.parallel)
         self.reprompt = False

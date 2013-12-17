@@ -17,7 +17,7 @@ from contextlib import closing, contextmanager
 
 from fabric.context_managers import (settings, char_buffered, hide,
     quiet as quiet_manager, warn_only as warn_only_manager)
-from fabric.io import output_loop, input_loop
+from fabric.io import output_loop, input_loop, get_prefix
 from fabric.network import needs_host, ssh, ssh_config
 from fabric.sftp import SFTP
 from fabric.state import env, connections, output, win32, default_channel
@@ -749,7 +749,8 @@ def _execute(channel, command, pty=True, combine_stderr=None,
         # parameters if on POSIX platform)
         if using_pty:
             rows, cols = _pty_size()
-            channel.get_pty(width=cols, height=rows)
+            prefix_length = len(get_prefix("out"))
+            channel.get_pty(width=cols-prefix_length, height=rows)
 
         # Use SSH agent forwarding from 'ssh' if enabled by user
         config_agent = ssh_config().get('forwardagent', 'no').lower() == 'yes'
