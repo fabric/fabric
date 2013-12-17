@@ -51,7 +51,11 @@ class OutputLooper(object):
 
     def _flush(self, text):
         self.stream.write(text)
-        self.stream.flush()
+        # Actually only flush if not in linewise mode.
+        # When linewise is set (e.g. in parallel mode) flushing makes
+        # doubling-up of line prefixes, and other mixed output, more likely.
+        if not env.linewise:
+            self.stream.flush()
         self.write_buffer.extend(text)
 
     def loop(self):
