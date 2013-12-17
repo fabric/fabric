@@ -4,10 +4,9 @@
 Changelog
 =========
 
-* :feature:`741` Custom prompts: Controlling the prompt answer in a pexpect
-  like fashion. Until now it was not possible to reply automatically to an
-  interactive prompt.
-  Written by Nigel Owen and David Halter <davidhalter88@gmail.com>.
+* :feature:`741` Add :ref:`env.prompts <prompts>` dictionary, allowing
+  users to set up custom prompt responses (similar to the built-in sudo prompt
+  auto-responder.) Thanks to Nigel Owens and David Halter for the patch.
 * :bug:`965 major` Tweak IO flushing behavior when in linewise (& thus
   parallel) mode so interwoven output is less frequent. Thanks to `@akidata`
   for catch & patch.
