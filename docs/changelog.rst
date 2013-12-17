@@ -5,7 +5,7 @@ Changelog
 =========
 
 * :bug:`1043` Remote processes designed to use the entire terminal width will
-  wrap becuase of the output prefix.
+  wrap because of the output prefix.
 * :bug:`965 major` Tweak IO flushing behavior when in linewise (& thus
   parallel) mode so interwoven output is less frequent. Thanks to `@akidata`
   for catch & patch.
