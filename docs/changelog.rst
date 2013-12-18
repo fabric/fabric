@@ -4,6 +4,9 @@
 Changelog
 =========
 
+* :bug:`957` Fix bug preventing use of :ref:`env.gateway <gateway>` with
+  targets requiring password authentication. Thanks to Daniel González,
+  `@Bengrunt` and `@adrianbn` for their bug reports.
 * :feature:`741` Add :ref:`env.prompts <prompts>` dictionary, allowing
   users to set up custom prompt responses (similar to the built-in sudo prompt
   auto-responder.) Thanks to Nigel Owens and David Halter for the patch.
