@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`957` Fix bug preventing use of :ref:`env.gateway <gateway>` with
+  targets requiring password authentication. Thanks to Daniel González,
+  `@Bengrunt` and `@adrianbn` for their bug reports.
 * :bug:`171` Added missing cross-references from ``env`` variables documentation
   to corresponding command-line options. Thanks to Daniel D. Beck for the
   contribution.
