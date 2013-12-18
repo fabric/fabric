@@ -4,6 +4,9 @@
 Changelog
 =========
 
+* :bug:`957` Fix bug preventing use of :ref:`env.gateway <gateway>` with
+  targets requiring password authentication. Thanks to Daniel González,
+  `@Bengrunt` and `@adrianbn` for their bug reports.
 * :bug:`948` Handle connection failures due to server load and try connecting
   to hosts a number of times specified in :ref:`env.connection_attempts
   <connection-attempts>`.
