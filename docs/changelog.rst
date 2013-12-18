@@ -4,6 +4,9 @@
 Changelog
 =========
 
+* :bug:`957` Fix bug preventing use of :ref:`env.gateway <gateway>` with
+  targets requiring password authentication. Thanks to Daniel González,
+  `@Bengrunt` and `@adrianbn` for their bug reports.
 * :support:`984 backported` Make this changelog easier to read! Now with
   per-release sections, generated automatically from the old timeline source
   format.
