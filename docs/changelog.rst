@@ -26,6 +26,9 @@ have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`957` Fix bug preventing use of :ref:`env.gateway <gateway>` with
+  targets requiring password authentication. Thanks to Daniel González,
+  `@Bengrunt` and `@adrianbn` for their bug reports.
 * :release:`1.6.2 <2013-07-26>`
 * :bug:`912` Leaving ``template_dir`` un-specified when using
   `.upload_template` in Jinja mode used to cause ``'NoneType' has no attribute
