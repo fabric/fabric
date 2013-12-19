@@ -520,9 +520,12 @@ def connect(user, host, port, cache, seek_gateway=True):
                 # which one raised the exception. Best not to try.
                 prompt = "[%s] Passphrase for private key"
                 text = prompt % env.host_string
-            password = prompt_for_password(text)
+            if env.reauth:
+                password = prompt_for_password(text)
             # Update env.password, env.passwords if empty
-            set_password(user, host, port, password)
+                set_password(user, host, port, password)
+            else:
+                raise NetworkError('Bad Password,abort!')
         # Ctrl-D / Ctrl-C for exit
         except (EOFError, TypeError):
             # Print a newline (in case user was sitting at prompt)
