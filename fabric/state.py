@@ -345,7 +345,8 @@ env = _AttributeDict({
     'use_shell': True,
     'use_ssh_config': False,
     'user': None,
-    'version': get_version('short')
+    'version': get_version('short'),
+    'reauth':True
 })
 
 # Fill in exceptions settings
