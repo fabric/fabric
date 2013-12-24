@@ -259,7 +259,8 @@ def _pty_size():
         import termios
         import struct
 
-    rows, cols = 24, 80
+    default_rows, default_cols = 24, 80
+    rows, cols = default_rows, default_cols
     if not win32 and sys.stdout.isatty():
         # We want two short unsigned integers (rows, cols)
         fmt = 'HH'
@@ -272,6 +273,11 @@ def _pty_size():
                 buffer)
             # Unpack buffer back into Python data types
             rows, cols = struct.unpack(fmt, result)
+            # Fall back to defaults if TIOCGWINSZ returns unreasonable values
+            if rows == 0:
+                rows = default_rows
+            if cols == 0:
+                cols = default_cols
         # Deal with e.g. sys.stdout being monkeypatched, such as in testing.
         # Or termios not having a TIOCGWINSZ.
         except AttributeError:
