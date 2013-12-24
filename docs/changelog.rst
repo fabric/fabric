@@ -26,6 +26,8 @@ have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`956` Fix pty size detection when running inside Emacs. Thanks to
+  `@akitada` for catch & patch.
 * :bug:`957` Fix bug preventing use of :ref:`env.gateway <gateway>` with
   targets requiring password authentication. Thanks to Daniel González,
   `@Bengrunt` and `@adrianbn` for their bug reports.
