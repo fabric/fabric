@@ -4,6 +4,7 @@
 Changelog
 =========
 
+* :release:`1.5.5 <2013-12-24>`
 * :bug:`956` Fix pty size detection when running inside Emacs. Thanks to
   `@akitada` for catch & patch.
 * :bug:`957` Fix bug preventing use of :ref:`env.gateway <gateway>` with
