@@ -5,8 +5,8 @@ Changelog
 =========
 
 * :release:`1.7.1 <2013-12-24>`
-* :release:`1.6.4 <2013-12-24>`
-* :release:`1.5.5 <2013-12-24>`
+* :release:`1.6.4 <2013-12-24>` 956, 957
+* :release:`1.5.5 <2013-12-24>` 956, 957
 * :bug:`956` Fix pty size detection when running inside Emacs. Thanks to
   `@akitada` for catch & patch.
 * :bug:`957` Fix bug preventing use of :ref:`env.gateway <gateway>` with
@@ -506,8 +506,8 @@ Changelog
   string-like. Thanks to Jiri Barton for catch & patch.
 * :support:`382` Experimental overhaul of changelog formatting & process to
   make supporting multiple lines of development less of a hassle.
-* :release:`1.1.2 <2011-07-07>` (see below for details)
-* :release:`1.0.2 <2011-06-24>` (see below for details)
+* :release:`1.1.2 <2011-07-07>`
+* :release:`1.0.2 <2011-06-24>`
 
 
 Prehistory
