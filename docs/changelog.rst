@@ -26,6 +26,7 @@ have also been included in the 1.2 line.
 Changelog
 =========
 
+* :release:`1.6.4 <2013-12-24>`
 * :release:`1.5.5 <2013-12-24>`
 * :bug:`956` Fix pty size detection when running inside Emacs. Thanks to
   `@akitada` for catch & patch.
