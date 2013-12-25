@@ -91,7 +91,7 @@ def get_gateway(host, port, cache, replace=False):
         # within that method.)
         sock = direct_tcpip(dict.__getitem__(cache, gateway), host, port)
     elif proxy_command:
-        sock = ssh.proxycommand(proxy_command)
+        sock = ssh.ProxyCommand(proxy_command)
     return sock
 
 
