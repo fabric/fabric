@@ -89,15 +89,13 @@ def test_file(path, op, use_sudo=False, verbose=False):
     op_pattern = r'^[bcdefgGhkLOprsStuwx]$'
     if not re.search(op_pattern, op):
         raise ValueError("'%s' is not a valid operator for the 'test' Unix command" % op)
-    func = use_sudo and sudo or run
+    func = sudo if use_sudo else run
     cmd = 'test -%s %s' % (op, _expand_path(path))
-    # If verbose, run normally
-    if verbose:
-        with settings(warn_only=True):
-            return not func(cmd).failed
-    # Otherwise, be quiet
-    with settings(hide('everything'), warn_only=True):
-        return not func(cmd).failed
+    args, kwargs = [], {'warn_only': True}
+    if not verbose:
+        opts = [hide('everything')]
+    with settings(*args, **kwargs):
+        return func(cmd).succeeded
 
 
 def is_link(path, use_sudo=False, verbose=False):
@@ -108,13 +106,7 @@ def is_link(path, use_sudo=False, verbose=False):
 
     `.is_link` will, by default, hide all output. Give ``verbose=True`` to change this.
     """
-    func = sudo if use_sudo else run
-    cmd = 'test -L "$(echo %s)"' % path
-    args, kwargs = [], {'warn_only': True}
-    if not verbose:
-        opts = [hide('everything')]
-    with settings(*args, **kwargs):
-        return func(cmd).succeeded
+    return test_file(path, 'L', use_sudo, verbose)
 
 
 def first(*args, **kwargs):
