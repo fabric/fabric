@@ -99,7 +99,8 @@ def test_file(path, op, use_sudo=False, verbose=False):
     # check that `op` is a valid unary operator for the `test` command
     op_pattern = r'^[bcdefgGhkLOprsStuwx]$'
     if not re.search(op_pattern, op):
-        raise ValueError("'%s' is not a valid operator for the 'test' Unix command" % op)
+        raise ValueError("'%s' is not a valid operator for the 'test' Unix command" % op +
+                        " (please refer to `man test`)")
     func = sudo if use_sudo else run
     cmd = 'test -%s %s' % (op, _expand_path(path))
     args, kwargs = [], {'warn_only': True}
