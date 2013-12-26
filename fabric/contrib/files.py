@@ -75,7 +75,7 @@ def is_executable(path, use_sudo=False, verbose=False):
 
 def test_file(path, op, use_sudo=False, verbose=False):
     """
-    Wrapper for the Unix command `test`, in the unary form.
+    Wrapper task for the `test` Unix command, in the unary form for testing files.
     Return True if the test against the file passes on the current remote host.
 
     If ``use_sudo`` is True, will use `sudo` instead of `run`.
@@ -85,9 +85,10 @@ def test_file(path, op, use_sudo=False, verbose=False):
     in order to avoid cluttering output. You may specify ``verbose=True``
     to change this behavior.
     """
+    # check that `op` is a valid unary operator for the `test` command
     op_pattern = r'^[bcdefgGhkLOprsStuwx]$'
     if not re.search(op_pattern, op):
-        raise ValueError("'%s' is not a valid operator for the `test` command" % op)
+        raise ValueError("'%s' is not a valid operator for the 'test' Unix command" % op)
     func = use_sudo and sudo or run
     cmd = 'test -%s %s' % (op, _expand_path(path))
     # If verbose, run normally
