@@ -93,7 +93,7 @@ def test_file(path, op, use_sudo=False, verbose=False):
     cmd = 'test -%s %s' % (op, _expand_path(path))
     args, kwargs = [], {'warn_only': True}
     if not verbose:
-        args = [hide('everything')]
+        args += [hide('everything')]
     with settings(*args, **kwargs):
         return func(cmd).succeeded
 
