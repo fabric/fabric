@@ -97,7 +97,7 @@ def test_file(path, op, use_sudo=False, verbose=False):
     to change this behavior.
     """
     # check that `op` is a valid unary operator for the `test` command
-    op_pattern = r'^[bcdefgGhkLOprsStuwx]$'
+    op_pattern = r'^[bcdefgGhkLOprsSuwx]$'
     if not re.search(op_pattern, op):
         raise ValueError("'%s' is not a valid operator for the 'test' Unix command" % op +
                         " (please refer to `man test`)")
