@@ -25,8 +25,71 @@ def exists(path, use_sudo=False, verbose=False):
     avoid cluttering output. You may specify ``verbose=True`` to change this
     behavior.
     """
+    return test_file(path, 'e', use_sudo, verbose)
+
+
+def is_readable(path, use_sudo=False, verbose=False):
+    """
+    Return True if given path exists and read permission is granted 
+    to the current user on the current remote host.
+
+    If ``use_sudo`` is True, will use `sudo` instead of `run`.
+
+    `is_readable` will, by default, hide all output (including the run line, stdout,
+    stderr and any warning resulting from the file not being readable) in order to
+    avoid cluttering output. You may specify ``verbose=True`` to change this
+    behavior.
+    """
+    return test_file(path, 'r', use_sudo, verbose)
+
+
+def is_writable(path, use_sudo=False, verbose=False):
+    """
+    Return True if given path exists and write permission is granted
+    to the current user on the current remote host.
+
+    If ``use_sudo`` is True, will use `sudo` instead of `run`.
+
+    `is_writable` will, by default, hide all output (including the run line, stdout,
+    stderr and any warning resulting from the file not being writable) in order to
+    avoid cluttering output. You may specify ``verbose=True`` to change this
+    behavior.
+    """
+    return test_file(path, 'w', use_sudo, verbose)
+
+
+def is_executable(path, use_sudo=False, verbose=False):
+    """
+    Return True if given path exists and execute (or search) permission is granted
+    to the current user on the current remote host.
+
+    If ``use_sudo`` is True, will use `sudo` instead of `run`.
+
+    `is_executable` will, by default, hide all output (including the run line, stdout,
+    stderr and any warning resulting from the file not being executable) in order to
+    avoid cluttering output. You may specify ``verbose=True`` to change this
+    behavior.
+    """
+    return test_file(path, 'x', use_sudo, verbose)
+
+
+def test_file(path, op, use_sudo=False, verbose=False):
+    """
+    Wrapper for the Unix command `test`, in the unary form.
+    Return True if the test against the file passes on the current remote host.
+
+    If ``use_sudo`` is True, will use `sudo` instead of `run`.
+
+    `test_file` will, by default, hide all output (including the run line, stdout,
+    stderr and any warning resulting from the file not passing the test)
+    in order to avoid cluttering output. You may specify ``verbose=True``
+    to change this behavior.
+    """
+    op_pattern = r'^[bcdefgGhkLOprsStuwx]$'
+    if not re.search(op_pattern, op):
+        raise ValueError("'%s' is not a valid operator for the `test` command" % op)
     func = use_sudo and sudo or run
-    cmd = 'test -e %s' % _expand_path(path)
+    cmd = 'test -%s %s' % (op, _expand_path(path))
     # If verbose, run normally
     if verbose:
         with settings(warn_only=True):
