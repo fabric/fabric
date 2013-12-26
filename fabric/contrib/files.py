@@ -73,6 +73,17 @@ def is_executable(path, use_sudo=False, verbose=False):
     return test_file(path, 'x', use_sudo, verbose)
 
 
+def is_link(path, use_sudo=False, verbose=False):
+    """
+    Return True if the given path is a symlink on the current remote host.
+
+    If ``use_sudo`` is True, will use `.sudo` instead of `.run`.
+
+    `.is_link` will, by default, hide all output. Give ``verbose=True`` to change this.
+    """
+    return test_file(path, 'L', use_sudo, verbose)
+
+
 def test_file(path, op, use_sudo=False, verbose=False):
     """
     Wrapper task for the `test` Unix command, in the unary form for testing files.
@@ -96,17 +107,6 @@ def test_file(path, op, use_sudo=False, verbose=False):
         args += [hide('everything')]
     with settings(*args, **kwargs):
         return func(cmd).succeeded
-
-
-def is_link(path, use_sudo=False, verbose=False):
-    """
-    Return True if the given path is a symlink on the current remote host.
-
-    If ``use_sudo`` is True, will use `.sudo` instead of `.run`.
-
-    `.is_link` will, by default, hide all output. Give ``verbose=True`` to change this.
-    """
-    return test_file(path, 'L', use_sudo, verbose)
 
 
 def first(*args, **kwargs):
