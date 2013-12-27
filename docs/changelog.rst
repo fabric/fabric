@@ -4,7 +4,7 @@
 Changelog
 =========
 
-* :feature:`?` Added `contrib.files.test_file <.test_file>` wrapping the `test`
+* :feature:`1047` Added `contrib.files.test_file <.test_file>` wrapping the `test`
   Unix command for testing files, and the more specific tasks
   `contrib.files.is_readable <.is_readable>`, `contrib.files.is_writable <.is_writable>`
   and `contrib.files.is_executable <.is_executable>`.
