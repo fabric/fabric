@@ -57,6 +57,28 @@ def is_executable(path, use_sudo=False, verbose=False):
     return test_file(path, 'x', use_sudo, verbose)
 
 
+def is_dir(path, use_sudo=False, verbose=False):
+    """
+    Return True if given path exists and is a directory on the current remote
+    host.
+
+    For an explanation of the arguments ``use_sudo`` and ``verbose``
+    please refer to `test_file`.
+    """
+    return test_file(path, 'd', use_sudo, verbose)
+
+
+def is_file(path, use_sudo=False, verbose=False):
+    """
+    Return True if given path exists and is a regular file on the current remote
+    host.
+
+    For an explanation of the arguments ``use_sudo`` and ``verbose``
+    please refer to `test_file`.
+    """
+    return test_file(path, 'f', use_sudo, verbose)
+
+
 def is_link(path, use_sudo=False, verbose=False):
     """
     Return True if the given path is a symlink on the current remote host.
