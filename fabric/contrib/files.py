@@ -18,12 +18,8 @@ def exists(path, use_sudo=False, verbose=False):
     """
     Return True if given path exists on the current remote host.
 
-    If ``use_sudo`` is True, will use `sudo` instead of `run`.
-
-    `exists` will, by default, hide all output (including the run line, stdout,
-    stderr and any warning resulting from the file not existing) in order to
-    avoid cluttering output. You may specify ``verbose=True`` to change this
-    behavior.
+    For an explanation of the arguments ``use_sudo`` and ``verbose``
+    please refer to `test_file`.
     """
     return test_file(path, 'e', use_sudo, verbose)
 
@@ -33,12 +29,8 @@ def is_readable(path, use_sudo=False, verbose=False):
     Return True if given path exists and read permission is granted 
     to the current user on the current remote host.
 
-    If ``use_sudo`` is True, will use `sudo` instead of `run`.
-
-    `is_readable` will, by default, hide all output (including the run line, stdout,
-    stderr and any warning resulting from the file not being readable) in order to
-    avoid cluttering output. You may specify ``verbose=True`` to change this
-    behavior.
+    For an explanation of the arguments ``use_sudo`` and ``verbose``
+    please refer to `test_file`.
     """
     return test_file(path, 'r', use_sudo, verbose)
 
@@ -48,12 +40,8 @@ def is_writable(path, use_sudo=False, verbose=False):
     Return True if given path exists and write permission is granted
     to the current user on the current remote host.
 
-    If ``use_sudo`` is True, will use `sudo` instead of `run`.
-
-    `is_writable` will, by default, hide all output (including the run line, stdout,
-    stderr and any warning resulting from the file not being writable) in order to
-    avoid cluttering output. You may specify ``verbose=True`` to change this
-    behavior.
+    For an explanation of the arguments ``use_sudo`` and ``verbose``
+    please refer to `test_file`.
     """
     return test_file(path, 'w', use_sudo, verbose)
 
@@ -63,12 +51,8 @@ def is_executable(path, use_sudo=False, verbose=False):
     Return True if given path exists and execute (or search) permission is granted
     to the current user on the current remote host.
 
-    If ``use_sudo`` is True, will use `sudo` instead of `run`.
-
-    `is_executable` will, by default, hide all output (including the run line, stdout,
-    stderr and any warning resulting from the file not being executable) in order to
-    avoid cluttering output. You may specify ``verbose=True`` to change this
-    behavior.
+    For an explanation of the arguments ``use_sudo`` and ``verbose``
+    please refer to `test_file`.
     """
     return test_file(path, 'x', use_sudo, verbose)
 
@@ -77,17 +61,21 @@ def is_link(path, use_sudo=False, verbose=False):
     """
     Return True if the given path is a symlink on the current remote host.
 
-    If ``use_sudo`` is True, will use `.sudo` instead of `.run`.
-
-    `.is_link` will, by default, hide all output. Give ``verbose=True`` to change this.
+    For an explanation of the arguments ``use_sudo`` and ``verbose``
+    please refer to `test_file`.
     """
     return test_file(path, 'L', use_sudo, verbose)
 
 
 def test_file(path, op, use_sudo=False, verbose=False):
     """
-    Wrapper task for the `test` Unix command, in the unary form for testing files.
+    Task wrapping the `test` Unix command, specifically used for testing files.
     Return True if the test against the file passes on the current remote host.
+
+    ``op`` is a unary operator for testing files, accepted by the `test` command.
+    The allowed values are `b`, `c`, `d`, `e`, `f`, `g`, `G`, `h`, `k`, `L`, `O`,
+    `p`, `r`, `s`, `S`, `u`, `w`, `x`.
+    Refer to `man test` for a detailed explanation.
 
     If ``use_sudo`` is True, will use `sudo` instead of `run`.
 
