@@ -87,8 +87,8 @@ class TestFile(Integration):
         l = '/tmp/foolink'
         run("rm -rf %s" % l)
         run("ln -s %s %s" % (f, l))
-        assert not files.is_file(f)
-        assert not files.test_file(f, 'f')
+        assert not files.is_file(l)
+        assert not files.test_file(l, 'f')
 
     def test_is_dir_is_true_on_dir(self):
         d = run("mktemp -d /tmp/foodir.XXXXXX", stdout=False)
