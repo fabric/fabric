@@ -82,13 +82,10 @@ class TestFile(Integration):
         assert files.is_file(f)
         assert files.test_file(f,'f')
 
-    def test_is_file_is_false_on_non_regular(self):
-        f = run("mktemp /tmp/foofile.XXXXXX", stdout=False)
-        l = '/tmp/foolink'
-        run("rm -rf %s" % l)
-        run("ln -s %s %s" % (f, l))
-        assert not files.is_file(l)
-        assert not files.test_file(l, 'f')
+    def test_is_file_is_false_on_dir(self):
+        d = run("mktemp -d /tmp/foodir.XXXXXX", stdout=False)
+        assert not files.is_file(d)
+        assert not files.test_file(d, 'f')
 
     def test_is_dir_is_true_on_dir(self):
         d = run("mktemp -d /tmp/foodir.XXXXXX", stdout=False)
