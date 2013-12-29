@@ -97,17 +97,41 @@ class TestFile(Integration):
         assert not files.is_dir(f)
         assert not files.test_file(f, 'd')
 
-    def test_is_writable_is_true_on_w(self):
+    def test_is_writable_is_true_on_chmod200(self):
         f = run("mktemp /tmp/foofile.XXXXXX", stdout=False)
-        run("chmod 777 %s" % f)
+        run("chmod 200 %s" % f)
         assert files.is_writable(f)
         assert files.test_file(f,'w')
 
-    def test_is_writable_is_false_on_ro(self):
+    def test_is_writable_is_false_on_chmod400(self):
         f = run("mktemp /tmp/foofile.XXXXXX", stdout=False)
         run("chmod 400 %s" % f)
         assert not files.is_writable(f)
         assert not files.test_file(f,'w')
+
+    def test_is_executable_is_true_on_chmod100(self):
+        f = run("mktemp /tmp/foofile.XXXXXX", stdout=False)
+        run("chmod 100 %s" % f)
+        assert files.is_executable(f)
+        assert files.test_file(f,'x')
+
+    def test_is_executable_is_false_on_chmod400(self):
+        f = run("mktemp /tmp/foofile.XXXXXX", stdout=False)
+        run("chmod 400 %s" % f)
+        assert not files.is_executable(f)
+        assert not files.test_file(f,'x')
+
+    def test_is_readable_is_true_on_chmod400(self):
+        f = run("mktemp /tmp/foofile.XXXXXX", stdout=False)
+        run("chmod 400 %s" % f)
+        assert files.is_readable(f)
+        assert files.test_file(f,'r')
+
+    def test_is_readable_is_false_on_chmod200(self):
+        f = run("mktemp /tmp/foofile.XXXXXX", stdout=False)
+        run("chmod 200 %s" % f)
+        assert not files.is_readable(f)
+        assert not files.test_file(f,'r')
 
 
 rsync_sources = (
