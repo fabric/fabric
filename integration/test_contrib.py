@@ -60,8 +60,7 @@ class TestTildeExpansion(Integration):
             expect(target)
 
 
-class TestIsLink(Integration):
-    # TODO: add more of these. meh.
+class TestFile(Integration):
     def test_is_link_is_true_on_symlink(self):
         f = run("mktemp /tmp/foofile.XXXXXX", stdout=False)
         l = '/tmp/foolink'
@@ -75,8 +74,6 @@ class TestIsLink(Integration):
         assert not files.is_link(f)
         assert not files.test_file(f,'L')
 
-
-class TestFile(Integration):
     def test_is_file_is_true_on_regular(self):
         f = run("mktemp /tmp/foofile.XXXXXX", stdout=False)
         assert files.is_file(f)
