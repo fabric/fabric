@@ -48,7 +48,7 @@ def is_link(path, use_sudo=False, verbose=False):
     cmd = 'test -L "$(echo %s)"' % path
     args, kwargs = [], {'warn_only': True}
     if not verbose:
-        opts = [hide('everything')]
+        args = [hide('everything')]
     with settings(*args, **kwargs):
         return func(cmd).succeeded
 
