@@ -37,3 +37,16 @@ report.
       The ``-t`` flag matches Fabric's default behavior of enabling a PTY
       remotely. This helps identify apps that behave poorly when run in a
       non-shell-spawned PTY.
+
+* **Enable Paramiko-level debug logging.** If your issue is in the lower level
+  Paramiko library, it can help us to see the debug output Paramiko prints. At
+  top level in your fabfile, add the following::
+
+      import logging
+      logging.basicConfig(level=logging.DEBUG)
+
+  This should start printing Paramiko's debug statements to your standard error
+  stream. (Feel free to add more logging kwargs to ``basicConfig()`` such as
+  ``filename='/path/to/a/file'`` if you like.)
+
+  Then submit this info to anybody helping you on IRC or in your bug report.
