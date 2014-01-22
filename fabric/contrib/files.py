@@ -202,14 +202,20 @@ def sed(filename, before, after, limit='', use_sudo=False, backup='.bak',
 
     with hide('running', 'stdout'):
         platform = run("uname")
-    if platform in ('NetBSD', 'OpenBSD', 'QNX'):
+    if platform in ('NetBSD', 'OpenBSD', 'QNX', 'SunOS'):
         # Attempt to protect against failures/collisions
         hasher = hashlib.sha1()
         hasher.update(env.host_string)
         hasher.update(filename)
         context['tmp'] = "/tmp/%s" % hasher.hexdigest()
         # Use temp file to work around lack of -i
-        expr = r"""cp -p %(filename)s %(tmp)s \
+        if platform in ('SunOS',):  # Solaris' sed doesn't support extended regular expressions
+            expr = r"""cp -p %(filename)s %(tmp)s\
+&& sed -e %(script)s %(filename)s > %(tmp)s \
+&& cp -p %(filename)s %(filename)s%(backup)s \
+&& mv %(tmp)s %(filename)s"""
+        else:
+            expr = r"""cp -p %(filename)s %(tmp)s \
 && sed -r -e %(script)s %(filename)s > %(tmp)s \
 && cp -p %(filename)s %(filename)s%(backup)s \
 && mv %(tmp)s %(filename)s"""
@@ -252,7 +258,7 @@ def uncomment(filename, regex, use_sudo=False, char='#', backup='.bak',
 
 
 def comment(filename, regex, use_sudo=False, char='#', backup='.bak',
-    shell=False):
+            shell=False):
     """
     Attempt to comment out all lines in ``filename`` matching ``regex``.
 
@@ -305,7 +311,7 @@ def comment(filename, regex, use_sudo=False, char='#', backup='.bak',
 
 
 def contains(filename, text, exact=False, use_sudo=False, escape=True,
-    shell=False):
+             shell=False):
     """
     Return True if ``filename`` contains ``text`` (which may be a regex.)
 
@@ -349,7 +355,7 @@ def contains(filename, text, exact=False, use_sudo=False, escape=True,
 
 
 def append(filename, text, use_sudo=False, partial=False, escape=True,
-    shell=False):
+           shell=False):
     """
     Append string (or list of strings) ``text`` to ``filename``.
 
@@ -391,13 +397,14 @@ def append(filename, text, use_sudo=False, partial=False, escape=True,
     if isinstance(text, basestring):
         text = [text]
     for line in text:
-        regex = '^' + _escape_for_regex(line)  + ('' if partial else '$')
+        regex = '^' + _escape_for_regex(line) + ('' if partial else '$')
         if (exists(filename, use_sudo=use_sudo) and line
             and contains(filename, regex, use_sudo=use_sudo, escape=False,
                          shell=shell)):
             continue
         line = line.replace("'", r"'\\''") if escape else line
         func("echo '%s' >> %s" % (line, _expand_path(filename)))
+
 
 def _escape_for_regex(text):
     """Escape ``text`` to allow literal matching using egrep"""
@@ -409,6 +416,7 @@ def _escape_for_regex(text):
     # Whereas single quotes should not be escaped
     regex = regex.replace(r"\'", "'")
     return regex
+
 
 def _expand_path(path):
     return '"$(echo %s)"' % path
