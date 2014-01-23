@@ -904,6 +904,38 @@ def _run_command(command, shell=True, pty=True, combine_stderr=True,
         elif output.running:
             print("[%s] %s: %s" % (env.host_string, which, given_command))
 
+        # Check if we can even sudo as the selected user, if not, try as root
+        if (env.user != user) and (sudo and user):
+            # We don't want output from checking to see if a user can sudo as
+            # someone else
+            dev_null = open(os.devnull, 'w')
+            out, err, st = _execute(channel=default_channel(), command="sudo -ll",
+                                    invoke_shell=False,  stdout=dev_null,
+                                    stderr=dev_null, timeout=timeout)
+            # If status comes back as something other than success then even
+            # the sudo command won't work, and it should fail accordingly.
+            if st == 0:
+                runas_line = [l for l in out.splitlines() if "RunAsUsers:" in l]
+                can_sudo = False
+                for line in runas_line:
+                    if "ALL" in line or (user is not None and user in line):
+                        can_sudo = True
+                        break
+                if not can_sudo:
+                    wrapped_command = "sudo su - root -c 'sudo -u %s %s'" % (user, command)
+                    sudo_cmd = "sudo su - root -c 'sudo"
+                    if user: sudo_cmd = "%s -u \"%s\"" % (sudo_cmd, user)
+                    if group: sudo_cmd = "%s -g \"%s\"" % (sudo_cmd, group)
+                    cmd = _shell_wrap(
+                        _prefix_commands(_prefix_env_vars(command), 'remote'),
+                        shell_escape, shell
+                    )
+                    if shell and "-l" in cmd:
+                        parts = cmd.split()
+                        parts.remove("-l")
+                        cmd = ' '.join(parts)
+                    wrapped_command = "%s %s'" % (sudo_cmd, cmd)
+
         # Actual execution, stdin/stdout/stderr handling, and termination
         result_stdout, result_stderr, status = _execute(
             channel=default_channel(), command=wrapped_command, pty=pty,
@@ -1058,6 +1090,10 @@ def sudo(command, shell=True, pty=True, combine_stderr=None, user=None,
     than root.  On most systems, the ``sudo`` program can take a string
     username/group or an integer userid/groupid (uid/gid); ``user`` and
     ``group`` may likewise be strings or integers.
+
+    If a user is unable to run as another user due to a lack of
+    permissions this will attempt to execute the command as the specified user
+    through root instead.
 
     You may set :ref:`env.sudo_user <sudo_user>` at module level or via
     `~fabric.context_managers.settings` if you want multiple ``sudo`` calls to

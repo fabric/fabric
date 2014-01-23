@@ -4,6 +4,8 @@
 Changelog
 =========
 
+* :bug:`60` If a user does not have sudo rights to execute as another user,
+  attempt the command through root as that other user.
 * :release:`1.8.1 <2013-12-24>`
 * :release:`1.7.1 <2013-12-24>`
 * :release:`1.6.4 <2013-12-24>` 956, 957
