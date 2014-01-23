@@ -905,7 +905,7 @@ def _run_command(command, shell=True, pty=True, combine_stderr=True,
             print("[%s] %s: %s" % (env.host_string, which, given_command))
 
         # Check if we can even sudo as the selected user, if not, try as root
-        if sudo and user:
+        if (env.user != user) and (sudo and user):
             # We don't want output from checking to see if a user can sudo as
             # someone else
             dev_null = open(os.devnull, 'w')
@@ -1090,6 +1090,10 @@ def sudo(command, shell=True, pty=True, combine_stderr=None, user=None,
     than root.  On most systems, the ``sudo`` program can take a string
     username/group or an integer userid/groupid (uid/gid); ``user`` and
     ``group`` may likewise be strings or integers.
+
+    If a user is unable to run as another user due to a lack of
+    permissions this will attempt to execute the command as the specified user
+    through root instead.
 
     You may set :ref:`env.sudo_user <sudo_user>` at module level or via
     `~fabric.context_managers.settings` if you want multiple ``sudo`` calls to
