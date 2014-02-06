@@ -60,15 +60,75 @@ class TestTildeExpansion(Integration):
             expect(target)
 
 
-class TestIsLink(Integration):
-    # TODO: add more of these. meh.
+class TestFile(Integration):
     def test_is_link_is_true_on_symlink(self):
-        run("ln -s /tmp/foo /tmp/bar")
-        assert files.is_link('/tmp/bar')
+        f = run("mktemp /tmp/foofile.XXXXXX", stdout=False)
+        l = '/tmp/foolink'
+        run("rm -rf %s" % l)
+        run("ln -s %s %s" % (f,l))
+        assert files.is_link(l)
+        assert files.test_file(l,'L')
 
     def test_is_link_is_false_on_non_link(self):
-        run("touch /tmp/biz")
-        assert not files.is_link('/tmp/biz')
+        f = run("mktemp /tmp/foofile.XXXXXX", stdout=False)
+        assert not files.is_link(f)
+        assert not files.test_file(f,'L')
+
+    def test_is_file_is_true_on_regular(self):
+        f = run("mktemp /tmp/foofile.XXXXXX", stdout=False)
+        assert files.is_file(f)
+        assert files.test_file(f,'f')
+
+    def test_is_file_is_false_on_dir(self):
+        d = run("mktemp -d /tmp/foodir.XXXXXX", stdout=False)
+        assert not files.is_file(d)
+        assert not files.test_file(d, 'f')
+
+    def test_is_dir_is_true_on_dir(self):
+        d = run("mktemp -d /tmp/foodir.XXXXXX", stdout=False)
+        assert files.is_dir(d)
+        assert files.test_file(d,'d')
+
+    def test_is_dir_is_false_on_non_dir(self):
+        f = run("mktemp /tmp/foofile.XXXXXX", stdout=False)
+        assert not files.is_dir(f)
+        assert not files.test_file(f, 'd')
+
+    def test_is_writable_is_true_on_chmod200(self):
+        f = run("mktemp /tmp/foofile.XXXXXX", stdout=False)
+        run("chmod 200 %s" % f)
+        assert files.is_writable(f)
+        assert files.test_file(f,'w')
+
+    def test_is_writable_is_false_on_chmod400(self):
+        f = run("mktemp /tmp/foofile.XXXXXX", stdout=False)
+        run("chmod 400 %s" % f)
+        assert not files.is_writable(f)
+        assert not files.test_file(f,'w')
+
+    def test_is_executable_is_true_on_chmod100(self):
+        f = run("mktemp /tmp/foofile.XXXXXX", stdout=False)
+        run("chmod 100 %s" % f)
+        assert files.is_executable(f)
+        assert files.test_file(f,'x')
+
+    def test_is_executable_is_false_on_chmod400(self):
+        f = run("mktemp /tmp/foofile.XXXXXX", stdout=False)
+        run("chmod 400 %s" % f)
+        assert not files.is_executable(f)
+        assert not files.test_file(f,'x')
+
+    def test_is_readable_is_true_on_chmod400(self):
+        f = run("mktemp /tmp/foofile.XXXXXX", stdout=False)
+        run("chmod 400 %s" % f)
+        assert files.is_readable(f)
+        assert files.test_file(f,'r')
+
+    def test_is_readable_is_false_on_chmod200(self):
+        f = run("mktemp /tmp/foofile.XXXXXX", stdout=False)
+        run("chmod 200 %s" % f)
+        assert not files.is_readable(f)
+        assert not files.test_file(f,'r')
 
 
 rsync_sources = (
