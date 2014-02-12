@@ -4,6 +4,8 @@
 Changelog
 =========
 
+* :bug:`1046` Fix typo preventing use of ProxyCommand in some situations.
+  Thanks to Keith Yang for catch & patch.
 * :release:`1.7.1 <2013-12-24>`
 * :release:`1.6.4 <2013-12-24>` 956, 957
 * :release:`1.5.5 <2013-12-24>` 956, 957
