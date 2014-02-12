@@ -218,9 +218,9 @@ class TestExecute(FabricTest):
         """
         task = (
             Fake(callable=True, expect_call=True)
-            .with_args('foo', biz='baz')
+            .with_args('foo', biz='baz', task='qux')
         )
-        execute(task, 'foo', biz='baz')
+        execute(task, 'foo', biz='baz', task='qux')
 
     @with_fakes
     def test_should_honor_hosts_kwarg(self):

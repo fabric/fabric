@@ -266,7 +266,7 @@ def _execute(task, host, my_env, args, kwargs, jobs, queue, multiprocessing):
 def _is_task(task):
     return isinstance(task, Task)
 
-def execute(task, *args, **kwargs):
+def execute(*args, **kwargs):
     """
     Execute ``task`` (callable or name), honoring host/role decorators, etc.
 
@@ -311,6 +311,7 @@ def execute(task, *args, **kwargs):
         Added the return value mapping; previously this function had no defined
         return value.
     """
+    task, execute_args = args[0], args[1:]
     my_env = {'clean_revert': True}
     results = {}
     # Obtain task
@@ -364,7 +365,7 @@ def execute(task, *args, **kwargs):
         for host in my_env['all_hosts']:
             try:
                 results[host] = _execute(
-                    task, host, my_env, args, new_kwargs, jobs, queue,
+                    task, host, my_env, execute_args, new_kwargs, jobs, queue,
                     multiprocessing
                 )
             except NetworkError, e:
@@ -402,7 +403,7 @@ def execute(task, *args, **kwargs):
     # Or just run once for local-only
     else:
         with settings(**my_env):
-            results['<local-only>'] = task.run(*args, **new_kwargs)
+            results['<local-only>'] = task.run(*execute_args, **new_kwargs)
     # Return what we can from the inner task executions
 
     return results
