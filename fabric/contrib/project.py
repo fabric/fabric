@@ -25,7 +25,8 @@ def rsync_project(
     ssh_opts='',
     capture=False,
     upload=True,
-    default_opts='-pthrvz'
+    default_opts='-pthrvz',
+    transport='ssh'
 ):
     """
     Synchronize a remote directory with the current project directory via rsync.
@@ -81,6 +82,8 @@ def rsync_project(
       performed up or downstream. Upstream by default.
     * ``default_opts``: the default rsync options ``-pthrvz``, override if
       desired (e.g. to remove verbosity, etc).
+    * ``transport``: the default transport is ``ssh``, set it to ``native`` if
+      you want to use ``rsync``'s native protocol
 
     Furthermore, this function transparently honors Fabric's port and SSH key
     settings. Calling this function when the current host string contains a
@@ -100,6 +103,9 @@ def rsync_project(
     .. versionadded:: 1.8.0
         The ``default_opts`` keyword argument.
     """
+    # Transport check
+    if not transport in ('ssh', 'native'):
+        raise ValueError('Unknown transport: \'%s\'' % transport)
     # Turn single-string exclude into a one-item list for consistency
     if not hasattr(exclude, '__iter__'):
         exclude = (exclude,)
@@ -115,11 +121,13 @@ def rsync_project(
     # Port
     user, host, port = normalize(env.host_string)
     port_string = "-p %s" % port
-    # RSH
-    rsh_string = ""
-    rsh_parts = [key_string, port_string, ssh_opts]
-    if any(rsh_parts):
-        rsh_string = "--rsh='ssh %s'" % " ".join(rsh_parts)
+    rsh_string = ''
+    # RSH if using ssh transport
+    if transport == 'ssh':
+        rsh_string = ""
+        rsh_parts = [key_string, port_string, ssh_opts]
+        if any(rsh_parts):
+            rsh_string = "--rsh='ssh %s'" % " ".join(rsh_parts)
     # Set up options part of string
     options_map = {
         'delete': '--delete' if delete else '',
@@ -139,10 +147,15 @@ def rsync_project(
         remote_prefix = "[%s@%s]" % (user, host)
     else:
         remote_prefix = "%s@%s" % (user, host)
+
+    # Honor named modules
+    if not remote_dir.startswith('::'):
+        remote_dir = ':' + remote_dir
+
     if upload:
-        cmd = "rsync %s %s %s:%s" % (options, local_dir, remote_prefix, remote_dir)
+        cmd = "rsync %s %s %s%s" % (options, local_dir, remote_prefix, remote_dir)
     else:
-        cmd = "rsync %s %s:%s %s" % (options, remote_prefix, remote_dir, local_dir)
+        cmd = "rsync %s %s%s %s" % (options, remote_prefix, remote_dir, local_dir)
 
     if output.running:
         print("[%s] rsync_project: %s" % (env.host_string, cmd))
