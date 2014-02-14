@@ -12,7 +12,8 @@ from util import Integration
 
 
 def assert_mode(path, mode):
-    assert run("stat -c \"%%a\" \"%s\"" % path).stdout == mode
+    remote_mode = run("stat -c \"%%a\" \"%s\"" % path).stdout
+    assert remote_mode == mode, "remote %r != expected %r" % (remote_mode, mode)
 
 
 class TestOperations(Integration):
