@@ -5,14 +5,15 @@ import os
 import posixpath
 import shutil
 
-from fabric.api import run, path, put, sudo, abort, warn_only, env, cd
+from fabric.api import run, path, put, sudo, abort, warn_only, env, cd, local
 from fabric.contrib.files import exists
 
 from utils import Integration
 
 
 def assert_mode(path, mode):
-    assert run("stat -c \"%%a\" \"%s\"" % path).stdout == mode
+    remote_mode = run("stat -c \"%%a\" \"%s\"" % path).stdout
+    assert remote_mode == mode, "remote %r != expected %r" % (remote_mode, mode)
 
 
 class TestOperations(Integration):
@@ -99,11 +100,19 @@ class TestOperations(Integration):
         assert_mode(target_file, '777')
 
     def test_put_file_to_dir_with_use_sudo_and_mirror_mode(self):
-        # Target for _put_via_sudo is a directory by default
-        uploaded = self._put_via_sudo(
-            source='integration/test_operations.py', mirror_local_mode=True
-        )
-        assert_mode(uploaded[0], '644')
+        # Ensure mode of local file, umask varies on eg travis vs various
+        # localhosts
+        source = 'whatever.txt'
+        try:
+            local("touch %s" % source)
+            local("chmod 644 %s" % source)
+            # Target for _put_via_sudo is a directory by default
+            uploaded = self._put_via_sudo(
+                source=source, mirror_local_mode=True
+            )
+            assert_mode(uploaded[0], '644')
+        finally:
+            local("rm -f %s" % source)
 
     def test_put_directory_use_sudo_and_spaces(self):
         localdir = 'I have spaces'
