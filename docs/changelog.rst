@@ -4,6 +4,9 @@
 Changelog
 =========
 
+* :bug:`917` Correct an issue with ``put(use_sudo=True, mode=xxx)`` where the 
+  ``chmod`` was trying to apply to the wrong location. Thanks to Remco
+  (``@nl5887``) for catch & patch.
 * :bug:`1046` Fix typo preventing use of ProxyCommand in some situations.
   Thanks to Keith Yang for catch & patch.
 * :release:`1.7.1 <2013-12-24>`
