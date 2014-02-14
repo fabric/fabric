@@ -3,14 +3,16 @@ from __future__ import with_statement
 from StringIO import StringIO
 import os
 import posixpath
+import shutil
 
 from fabric.api import run, path, put, sudo, abort, warn_only, env, cd
+from fabric.contrib.files import exists
 
 from util import Integration
 
 
 def assert_mode(path, mode):
-    assert run("stat -c \"%%a\" %s" % path).stdout == mode
+    assert run("stat -c \"%%a\" \"%s\"" % path).stdout == mode
 
 
 class TestOperations(Integration):
@@ -102,3 +104,17 @@ class TestOperations(Integration):
             source='integration/test_operations.py', mirror_local_mode=True
         )
         assert_mode(uploaded[0], '644')
+
+    def test_put_directory_use_sudo_and_spaces(self):
+        localdir = 'I have spaces'
+        localfile = os.path.join(localdir, 'file.txt')
+        os.mkdir(localdir)
+        with open(localfile, 'w') as fd:
+            fd.write('stuff\n')
+        try:
+            uploaded = self._put_via_sudo(localdir, target_suffix='')
+            # Kinda dumb, put() would've died if it couldn't do it, but.
+            assert exists(uploaded[0])
+            assert exists(posixpath.dirname(uploaded[0]))
+        finally:
+            shutil.rmtree(localdir)
