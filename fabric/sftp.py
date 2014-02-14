@@ -106,7 +106,7 @@ class SFTP(object):
         from fabric.api import sudo, hide
         if use_sudo:
             with hide('everything'):
-                sudo('mkdir %s' % path)
+                sudo('mkdir "%s"' % path)
         else:
             self.ftp.mkdir(path)
 
