@@ -106,7 +106,7 @@ class SFTP(object):
         from fabric.api import sudo, hide
         if use_sudo:
             with hide('everything'):
-                sudo('mkdir %s' % path)
+                sudo('mkdir "%s"' % path)
         else:
             self.ftp.mkdir(path)
 
@@ -240,7 +240,10 @@ class SFTP(object):
                 rmode = (rmode & 07777)
             if lmode != rmode:
                 if use_sudo:
-                    with hide('everything'):
+                    # Temporarily nuke 'cwd' so sudo() doesn't "cd" its mv
+                    # command. (The target path has already been cwd-ified
+                    # elsewhere.)
+                    with settings(hide('everything'), cwd=""):
                         sudo('chmod %o \"%s\"' % (lmode, remote_path))
                 else:
                     self.ftp.chmod(remote_path, lmode)
