@@ -4,6 +4,7 @@
 Changelog
 =========
 
+* :release:`1.7.2 <2014-02-14>`
 * :bug:`955` Quote directories created as part of ``put``'s recursive directory
   uploads when ``use_sudo=True`` so directories with shell meta-characters
   (such as spaces) work correctly. Thanks to John Harris for the catch.
