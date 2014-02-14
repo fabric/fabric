@@ -52,7 +52,7 @@ class TestOperations(Integration):
         self._chown(self.not_owned)
         source = source if source else StringIO("whatever")
         # Drop temp file into that dir, via use_sudo, + any kwargs
-        put(
+        return put(
             source,
             self.not_owned + '/' + target_suffix,
             use_sudo=True,
@@ -95,3 +95,10 @@ class TestOperations(Integration):
         with cd(target_dir):
             put(local_path, subdir, use_sudo=True, mode='777')
         assert_mode(target_file, '777')
+
+    def test_put_file_to_dir_with_use_sudo_and_mirror_mode(self):
+        # Target for _put_via_sudo is a directory by default
+        uploaded = self._put_via_sudo(
+            source='integration/test_operations.py', mirror_local_mode=True
+        )
+        assert_mode(uploaded[0], '644')
