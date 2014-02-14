@@ -1,8 +1,10 @@
 from __future__ import with_statement
 
 from StringIO import StringIO
+import os
+import posixpath
 
-from fabric.api import run, path, put, sudo, abort, warn_only, env
+from fabric.api import run, path, put, sudo, abort, warn_only, env, cd
 
 from util import Integration
 
@@ -25,7 +27,7 @@ class TestOperations(Integration):
         # Revert any chown crap from put sudo tests
         sudo("chown %s ." % env.user)
         # Nuke to prevent bleed
-        run("rm -rf %s" % " ".join([self.dirpath, self.filepath]))
+        sudo("rm -rf %s" % " ".join([self.dirpath, self.filepath]))
         sudo("rm -rf %s" % self.not_owned)
 
     def test_no_trailing_space_in_shell_path_in_run(self):
@@ -76,3 +78,20 @@ class TestOperations(Integration):
     def test_put_with_use_sudo_dir_and_custom_temp_dir(self):
         self._chown('.')
         self._put_via_sudo(source='integration', target_suffix='', temp_dir='/tmp')
+
+    def test_put_use_sudo_and_explicit_mode(self):
+        # Setup
+        target_dir = posixpath.join(self.filepath, 'blah')
+        subdir = "inner"
+        subdir_abs = posixpath.join(target_dir, subdir)
+        filename = "whatever.txt"
+        target_file = posixpath.join(subdir_abs, filename)
+        run("mkdir -p %s" % subdir_abs)
+        self._chown(subdir_abs)
+        local_path = os.path.join('/tmp', filename)
+        with open(local_path, 'w+') as fd:
+            fd.write('stuff\n')
+        # Upload + assert
+        with cd(target_dir):
+            put(local_path, subdir, use_sudo=True, mode='777')
+        assert_mode(target_file, '777')
