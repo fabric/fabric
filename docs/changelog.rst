@@ -4,6 +4,14 @@
 Changelog
 =========
 
+* :bug:`955` Quote directories created as part of ``put``'s recursive directory
+  uploads when ``use_sudo=True`` so directories with shell meta-characters
+  (such as spaces) work correctly. Thanks to John Harris for the catch.
+* :bug:`917` Correct an issue with ``put(use_sudo=True, mode=xxx)`` where the 
+  ``chmod`` was trying to apply to the wrong location. Thanks to Remco
+  (``@nl5887``) for catch & patch.
+* :bug:`1046` Fix typo preventing use of ProxyCommand in some situations.
+  Thanks to Keith Yang for catch & patch.
 * :release:`1.8.1 <2013-12-24>`
 * :release:`1.7.1 <2013-12-24>`
 * :release:`1.6.4 <2013-12-24>` 956, 957
