@@ -295,6 +295,14 @@ env_options = [
             help="number of concurrent processes to use in parallel mode",
     ),
 
+    make_option('-L', '--delay',
+            dest='delay',
+            type='int',
+            metavar='INT',
+            default=0,
+            help="seconds to wait before every execution in parallel mode",
+    ),
+
 ]
 
 

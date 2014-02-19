@@ -262,6 +262,19 @@ parallel, though it works fine serially too) to do so.
 
 .. versionadded:: 1.5
 
+.. _env-delay:
+
+``delay``
+---------
+
+**Default:** ``0``
+
+Specifies how many seconds to delay before starting parallel execution on each
+host.
+
+.. versionadded::
+.. seealso:: :option:`--delay <-L>`, :doc:`parallel`
+
 .. _disable-known-hosts:
 
 ``disable_known_hosts``

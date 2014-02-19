@@ -159,7 +159,7 @@ def serial(func):
     return _wrap_as_new(func, func)
 
 
-def parallel(pool_size=None):
+def parallel(pool_size=None, delay=None):
     """
     Forces the wrapped function to run in parallel, instead of sequentially.
 
@@ -182,6 +182,7 @@ def parallel(pool_size=None):
         inner.parallel = True
         inner.serial = False
         inner.pool_size = None if called_without_args else pool_size
+        inner.delay = None if called_without_args else delay
         return _wrap_as_new(func, inner)
 
     # Allow non-factory-style decorator use (@decorator vs @decorator())

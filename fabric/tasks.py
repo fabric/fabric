@@ -141,6 +141,13 @@ class Task(object):
             print("Parallel tasks now using pool size of %d" % pool_size)
         return pool_size
 
+    def get_delay(self, default):
+        from_task = getattr(self, 'delay', None)
+        delay = int(from_task or default)
+        if state.output.debug:
+            print("Parallel tasks execution delay step is %d" % delay)
+        return delay
+
 
 class WrappedCallableTask(Task):
     """
@@ -373,6 +380,7 @@ def execute(task, *args, **kwargs):
     pool_size = task.get_pool_size(my_env['all_hosts'], state.env.pool_size)
     # Set up job queue in case parallel is needed
     queue = multiprocessing.Queue() if parallel else None
+    delay = task.get_delay(state.env.delay)
     jobs = JobQueue(pool_size, queue)
     if state.output.debug:
         jobs._debug = True
@@ -409,7 +417,7 @@ def execute(task, *args, **kwargs):
             # Abort if any children did not exit cleanly (fail-fast).
             # This prevents Fabric from continuing on to any other tasks.
             # Otherwise, pull in results from the child run.
-            ran_jobs = jobs.run()
+            ran_jobs = jobs.run(delay)
             for name, d in ran_jobs.iteritems():
                 if d['exit_code'] != 0:
                     if isinstance(d['results'], NetworkError) and \

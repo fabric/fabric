@@ -230,6 +230,14 @@ below.
         Added docstring to output.
     .. seealso:: :option:`--shortlist`, :option:`--list-format <-F>`
 
+.. cmdoption:: -L, --delay
+
+    Sets :ref:`env.delay <delay>`, which specifies how many seconds
+    to wait before starting parallel task on each host.
+
+    .. versionadded::
+    .. seealso:: :doc:`/usage/parallel`
+
 .. cmdoption:: -p PASSWORD, --password=PASSWORD
 
     Sets :ref:`env.password <password>` to the given string; it will then be

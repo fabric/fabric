@@ -90,7 +90,7 @@ class JobQueue(object):
             if self._debug:
                 print("job queue appended %s." % process.name)
 
-    def run(self):
+    def run(self, delay=None):
         """
         This is the workhorse. It will take the intial jobs from the _queue,
         start them, add them to _running, and then go into the main running
@@ -135,6 +135,8 @@ class JobQueue(object):
 
         while len(self._running) < self._max:
             _advance_the_queue()
+            if delay:
+                time.sleep(delay)
 
         # Main loop!
         while not self._finished:

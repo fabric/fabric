@@ -146,6 +146,30 @@ Or skip the ``pool_size`` kwarg and instead::
 
     $ fab -P -z 5 heavy_task
 
+
+Delayed execution
+=================
+
+.. versionadded::
+
+The initial execution step can consist of SSH key exchange. With large host
+lists this can become CPU intensive operation and can impose a high load
+on the user's local machine. You may opt to use a step delay during parallel
+execution. Starting each parallel process will be delayed by specified amount
+of seconds.
+
+For example, to delay the parallel execution by 5 seconds::
+
+    from fabric.api import *
+
+    @parallel(delay=5)
+    def my_task():
+        # remote execution
+
+For global usage do::
+    $ fab -P -L 5 my_task
+
+
 .. _linewise-output:
 
 Linewise vs bytewise output
