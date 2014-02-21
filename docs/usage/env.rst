@@ -320,6 +320,20 @@ doesn't make sense to set this in a fabfile, but it may be specified in a
 .. seealso:: :option:`--fabfile <-f>`, :doc:`fab`
 
 
+.. _forward-agent:
+
+``forward_agent``
+--------------------
+
+**Default:** ``False``
+
+If ``True``, enables forwarding of your local SSH agent to the remote end.
+
+.. versionadded:: 1.4
+
+.. seealso:: :option:`--forward-agent <-A>`
+
+
 .. _gateway:
 
 ``gateway``
@@ -350,20 +364,6 @@ Defines the current user/host/port which Fabric will connect to when executing
 manually set when using Fabric as a library.
 
 .. seealso:: :doc:`execution`
-
-
-.. _forward-agent:
-
-``forward_agent``
---------------------
-
-**Default:** ``False``
-
-If ``True``, enables forwarding of your local SSH agent to the remote end.
-
-.. versionadded:: 1.4
-
-.. seealso:: :option:`--forward-agent <-A>`
 
 
 ``host``
