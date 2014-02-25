@@ -1175,6 +1175,7 @@ def local(command, capture=False, shell=None):
     # Handle error condition (deal with stdout being None, too)
     out = _AttributeString(stdout.strip() if stdout else "")
     err = _AttributeString(stderr.strip() if stderr else "")
+    out.command = given_command
     out.failed = False
     out.return_code = p.returncode
     out.stderr = err
