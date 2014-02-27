@@ -2,6 +2,8 @@
 Changelog
 =========
 
+* :feature:`1081` Add the ability to simulate initial login (-i) with the sudo()
+  function. Thanks to Phil Fenstermacher (``@pcfens``).
 * :bug:`1226` Update `~fabric.operations.get` to ensure that `env.user` has
   access to tempfiles before changing permissions. Also corrected permissions
   from 404 to 0400 to match comment. Patch by Curtis Mattoon; original report

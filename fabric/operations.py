@@ -598,12 +598,15 @@ def _sudo_prefix_argument(argument, value):
     return ' %s "%s"' % (argument, value)
 
 
-def _sudo_prefix(user, group=None):
+def _sudo_prefix(user=None, group=None, simulate_initial_login=False):
     """
-    Return ``env.sudo_prefix`` with ``user``/``group`` inserted if necessary.
+    Return ``env.sudo_prefix`` with ``user``/``group``/``-i`` inserted if necessary.
     """
     # Insert env.sudo_prompt into env.sudo_prefix
     prefix = env.sudo_prefix % env
+    if simulate_initial_login:
+        prefix += ' -i'
+
     if user is not None or group is not None:
         return "%s%s%s " % (prefix,
                             _sudo_prefix_argument('-u', user),
@@ -878,7 +881,7 @@ def _noop():
 
 def _run_command(command, shell=True, pty=True, combine_stderr=True,
     sudo=False, user=None, quiet=False, warn_only=False, stdout=None,
-    stderr=None, group=None, timeout=None, shell_escape=None):
+    stderr=None, group=None, timeout=None, shell_escape=None, simulate_initial_login=False):
     """
     Underpinnings of `run` and `sudo`. See their docstrings for more info.
     """
@@ -901,7 +904,7 @@ def _run_command(command, shell=True, pty=True, combine_stderr=True,
             _prefix_commands(_prefix_env_vars(command), 'remote'),
             shell_escape,
             shell,
-            _sudo_prefix(user, group) if sudo else None
+            _sudo_prefix(user, group, simulate_initial_login) if sudo else None
         )
         # Execute info line
         which = 'sudo' if sudo else 'run'
@@ -1051,7 +1054,7 @@ def run(command, shell=True, pty=True, combine_stderr=None, quiet=False,
 @needs_host
 def sudo(command, shell=True, pty=True, combine_stderr=None, user=None,
     quiet=False, warn_only=False, stdout=None, stderr=None, group=None,
-    timeout=None, shell_escape=None):
+    timeout=None, shell_escape=None, simulate_initial_login=False):
     """
     Run a shell command on a remote host, with superuser privileges.
 
@@ -1063,7 +1066,10 @@ def sudo(command, shell=True, pty=True, combine_stderr=None, user=None,
     passed to ``sudo`` and allow you to run as some user and/or group other
     than root.  On most systems, the ``sudo`` program can take a string
     username/group or an integer userid/groupid (uid/gid); ``user`` and
-    ``group`` may likewise be strings or integers.
+    ``group`` may likewise be strings or integers.  Additionally, you can set
+    the ``simulate_initial_login`` flag to true to simulate an initial login as part
+    of the sudo command.  Simulating the initial login is useful when certain
+    files need to be run (e.g. .profile, .login) prior to command execution.
 
     You may set :ref:`env.sudo_user <sudo_user>` at module level or via
     `~fabric.context_managers.settings` if you want multiple ``sudo`` calls to
@@ -1099,6 +1105,7 @@ def sudo(command, shell=True, pty=True, combine_stderr=None, user=None,
         user=user if user else env.sudo_user,
         group=group, quiet=quiet, warn_only=warn_only, stdout=stdout,
         stderr=stderr, timeout=timeout, shell_escape=shell_escape,
+        simulate_initial_login=simulate_initial_login,
     )
 
 

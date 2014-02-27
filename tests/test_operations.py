@@ -227,6 +227,23 @@ def test_sudo_prefix_with_user_and_group():
         "%s -u \"foo\" -g \"bar\" " % (env.sudo_prefix % env)
     )
 
+def test_sudo_prefix_with_simulate_initial_login():
+    """
+    _sudo_prefix() returns prefix plus -i for initial login
+    """
+    eq_(
+        _sudo_prefix(simulate_initial_login=True),
+        "%s -i" % (env.sudo_prefix % env)
+    )
+
+def test_sudo_prefix_with_simulate_initial_login_and_user_and_group():
+    """
+    _sudo_prefix() returns prefix plus -i, -u and -g for initial login, nonempty user, and group
+    """
+    eq_(
+        _sudo_prefix(user="foo", group="bar", simulate_initial_login=True),
+        "%s -i -u \"foo\" -g \"bar\" " % (env.sudo_prefix % env)
+    )
 
 @with_settings(use_shell=True)
 def test_shell_wrap():
