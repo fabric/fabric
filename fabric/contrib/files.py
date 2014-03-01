@@ -9,6 +9,7 @@ import tempfile
 import re
 import os
 from StringIO import StringIO
+from functools import partial
 
 from fabric.api import *
 from fabric.utils import apply_lcwd
@@ -65,7 +66,7 @@ def first(*args, **kwargs):
 
 def upload_template(filename, destination, context=None, use_jinja=False,
     template_dir=None, use_sudo=False, backup=True, mirror_local_mode=False,
-    mode=None):
+    mode=None, pty=None):
     """
     Render and upload a template text file to a remote host.
 
@@ -93,10 +94,18 @@ def upload_template(filename, destination, context=None, use_jinja=False,
     internal `~fabric.operations.put` call; please see its documentation for
     details on these two options.
 
+    The ``pty`` kwarg will be passed verbatim to any internal
+    `~fabric.operations.run`/`~fabric.operations.sudo` calls, such as those
+    used for testing directory-ness, making backups, etc.
+
     .. versionchanged:: 1.1
         Added the ``backup``, ``mirror_local_mode`` and ``mode`` kwargs.
+    .. versionchanged:: 1.9
+        Added the ``pty`` kwarg.
     """
     func = use_sudo and sudo or run
+    if pty is not None:
+        func = partial(func, pty=pty)
     # Normalize destination to be an actual filename, due to using StringIO
     with settings(hide('everything'), warn_only=True):
         if func('test -d %s' % _expand_path(destination)).succeeded:

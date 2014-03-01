@@ -4,6 +4,8 @@
 Changelog
 =========
 
+* :feature:`1082` Add ``pty`` passthrough kwarg to
+  `~fabric.contrib.files.upload_template`.
 * :release:`1.8.2 <2014-02-14>`
 * :release:`1.7.2 <2014-02-14>`
 * :bug:`955` Quote directories created as part of ``put``'s recursive directory
