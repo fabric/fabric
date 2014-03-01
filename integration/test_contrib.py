@@ -115,3 +115,15 @@ class TestRsync(Integration):
         r = self.rsync(2, default_opts='-pthrz')
         for x in rsync_sources:
             assert not re.search(r'^%s$' % x, r.stdout, re.M), "'%s' was found in '%s'" % (x, r.stdout)
+
+
+class TestUploadTemplate(FileCleaner):
+    def test_allows_pty_disable(self):
+        src = "source_file"
+        target = "remote_file"
+        local("touch %s" % src)
+        self.local.append(src)
+        self.remote.append(target)
+        # Just make sure it doesn't asplode. meh.
+        files.upload_template(src, target, pty=False)
+        expect(target)
