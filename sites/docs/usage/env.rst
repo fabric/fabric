@@ -734,6 +734,21 @@ Allows specification of an alternate SSH configuration file path.
 .. versionadded:: 1.4
 .. seealso:: :option:`--ssh-config-path`, :ref:`ssh-config`
 
+
+.. _states:
+
+``states``
+----------
+
+**Default:** ``{}``
+
+This dictionary specifies named env states. Allows switching entire env
+with api ``switch_env`` or via CLI argument :option:`--env <-E>`
+
+.. seealso::
+    :option:`--env <-E>`
+
+
 ``ok_ret_codes``
 ------------------------
 

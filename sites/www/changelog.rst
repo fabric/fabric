@@ -2,6 +2,8 @@
 Changelog
 =========
 
+* :feature:`1087` Add support for multiple env states.
+  Thanks to Jonas Lundberg, `@lundberg`
 * :release:`1.10.0 <2014-09-04>`
 * :bug:`1188 major` Update `~fabric.operations.local` to close non-pipe file
   descriptors in the child process so subsequent calls to

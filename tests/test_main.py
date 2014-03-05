@@ -681,3 +681,29 @@ def test_aliases_appear_in_fab_list():
     """
     list_output('nested_alias', 'short', """nested.foo
 nested.foo_aliased""")
+
+
+class TestStates(FabricTest):
+
+    def test_switch_env(self):
+        """
+        env state should be default after rollback from switched env state
+        """
+        from fabric.state import env, switch_env
+        env.colorize_errors = True
+        env.states['test'] = {
+            'colorize_errors': False,
+            'roledefs': {'foo': ['bar']},
+            'custom': 'value'
+        }
+        ok_('foo' not in env.roledefs)
+        ok_(env.colorize_errors)
+        ok_('custom' not in env)
+        switch_env('test')
+        ok_('foo' in env.roledefs)
+        ok_(not env.colorize_errors)
+        ok_(env.custom == 'value')
+        switch_env()
+        ok_('foo' not in env.roledefs)
+        ok_(env.colorize_errors)
+        ok_('custom' not in env)

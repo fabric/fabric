@@ -131,6 +131,12 @@ below.
     Sets :ref:`env.disable_known_hosts <disable-known-hosts>` to ``True``,
     preventing Fabric from loading the user's SSH :file:`known_hosts` file.
 
+.. cmdoption:: -E ENV, --env=ENV
+
+    Switch env to given state name, defined in :ref:`env.states <states>`.
+
+    .. seealso:: :ref:`env.states <states>`
+
 .. cmdoption:: -f FABFILE, --fabfile=FABFILE
 
     The fabfile name pattern to search for (defaults to ``fabfile.py``), or

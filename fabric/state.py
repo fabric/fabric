@@ -341,6 +341,7 @@ env = _AttributeDict({
     'skip_bad_hosts': False,
     'skip_unknown_tasks': False,
     'ssh_config_path': default_ssh_config_path,
+    'states': {},
     'ok_ret_codes': [0],     # a list of return codes that indicate success
     # -S so sudo accepts passwd via stdin, -p with our known-value prompt for
     # later detection (thus %s -- gets filled with env.sudo_prompt at runtime)
@@ -355,6 +356,31 @@ env = _AttributeDict({
     'user': None,
     'version': get_version('short')
 })
+
+
+def switch_env(name='default'):
+    """
+    Reset env to default state and apply named env state
+    """
+    rollback = (name == 'default')
+    # Validate state name
+    if not rollback and not name in env.states:
+        raise ValueError("The following specified environment "
+                         "state do not exist: %s" % name)
+
+    print("Switching to environment '%s'" % name)
+    default = env.states.get('default')
+    if default is None:
+        # Initialize default env state on first switch, for rollback
+        env.states['default'] = env.copy()
+    else:
+        # Rollback default env state
+        env.clear()
+        env.update(default)
+    if not rollback:
+        # Apply named env state
+        env.update(env.states[name])
+
 
 # Fill in exceptions settings
 exceptions = ['network']

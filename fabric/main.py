@@ -333,6 +333,13 @@ def parse_options():
         help="show program's version number and exit"
     )
 
+    # Switch env state
+    parser.add_option('-E', '--env',
+        dest='env',
+        default=None,
+        help="switch to configured Fab env ENV"
+    )
+
     #
     # Add in options which are also destined to show up as `env` vars.
     #
@@ -657,6 +664,13 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
         if fabfile:
             docstring, callables, default = load_fabfile(fabfile)
             state.commands.update(callables)
+
+        # Switch to given ENV argument
+        if options.env:
+            try:
+                state.switch_env(options.env)
+            except ValueError as e:
+                abort(e.message)
 
         # Handle case where we were called bare, i.e. just "fab", and print
         # a help message.
