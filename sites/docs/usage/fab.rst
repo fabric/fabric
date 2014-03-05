@@ -488,3 +488,13 @@ username, and you don't want to modify ``env.user`` in a project's fabfile
 Then, when running ``fab``, your fabfile would load up with ``env.user`` set to
 ``'ssh_user_name'``. Other users of that fabfile could do the same, allowing
 the fabfile itself to be cleanly agnostic regarding the default username.
+
+JSON / YAML
+-----------
+
+In excess of the user settings file, Fabric also looks for ``fabfile.json`` or
+``fabfile.yaml`` alongside with your ``fabfile.py``. If you're going for the
+yaml format, then you need to install the non-included dependency ``PyYAML``.
+
+These settings files will be used to update :doc:`env <env>` when ``fab`` runs,
+and is loaded prior to the loading of any fabfile and user settings.

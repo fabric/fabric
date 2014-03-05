@@ -2,6 +2,8 @@
 Changelog
 =========
 
+* :feature:`1091` Add support for json/yaml config file alongside with fabfile.
+  Thanks to Jonas Lundberg, `@lundberg`
 * :release:`1.10.0 <2014-09-04>`
 * :bug:`1188 major` Update `~fabric.operations.local` to close non-pipe file
   descriptors in the child process so subsequent calls to
