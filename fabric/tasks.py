@@ -330,7 +330,12 @@ def execute(task, *args, **kwargs):
         my_env['command'] = task
         task = crawl(task, state.commands)
         if task is None:
-            abort("%r is not callable or a valid task name" % (task,))
+            msg = "%r is not callable or a valid task name" % (my_env['command'],)
+            if state.env.get('skip_unknown_tasks', False):
+                warn(msg)
+                return
+            else:
+                abort(msg)
     # Set env.command if we were given a real function or callable task obj
     else:
         dunder_name = getattr(task, '__name__', None)

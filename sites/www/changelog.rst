@@ -2,6 +2,8 @@
 Changelog
 =========
 
+* :feature:`1090` Add option to skip unknown tasks.
+  Thanks to Jonas Lundberg, `@lundberg`
 * :release:`1.9.1 <2014-08-06>`
 * :release:`1.8.5 <2014-08-06>`
 * :release:`1.7.5 <2014-08-06>`

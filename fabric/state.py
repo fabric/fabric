@@ -243,6 +243,12 @@ env_options = [
         help="skip over hosts that can't be reached"
     ),
 
+    make_option('--skip-unknown-tasks',
+        action="store_true",
+        default=False,
+        help="skip over unknown tasks"
+    ),
+
     make_option('--ssh-config-path',
         default=default_ssh_config_path,
         metavar='PATH',
