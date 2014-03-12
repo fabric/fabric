@@ -25,7 +25,11 @@ def abort(msg):
         from colors import red
 
     if output.aborts:
-        sys.stderr.write(red("\nFatal error: %s\n" % str(msg)))
+        if isinstance(msg, unicode):
+            msg_changed = msg.encode(sys.stderr.encoding)
+        else:
+            msg_changed = str(msg)
+        sys.stderr.write(red("\nFatal error: %s\n" % msg_changed))
         sys.stderr.write(red("\nAborting.\n"))
 
     if env.abort_exception:
@@ -51,7 +55,11 @@ def warn(msg):
         from colors import magenta
 
     if output.warnings:
-        sys.stderr.write(magenta("\nWarning: %s\n\n" % msg))
+        if isinstance(msg, unicode):
+            msg_changed = msg.encode(sys.stderr.encoding)
+        else:
+            msg_changed = str(msg)
+        sys.stderr.write(magenta("\nWarning: %s\n\n" % msg_changed))
 
 
 def indent(text, spaces=4, strip=False):
@@ -110,7 +118,11 @@ def puts(text, show_prefix=None, end="\n", flush=False):
         prefix = ""
         if env.host_string and show_prefix:
             prefix = "[%s] " % env.host_string
-        sys.stdout.write(prefix + str(text) + end)
+        if isinstance(text, unicode):
+            text_changed = text.encode(sys.stdout.encoding)
+        else:
+            text_changed = str(text)
+        sys.stdout.write(prefix + text_changed + end)
         if flush:
             sys.stdout.flush()
 
