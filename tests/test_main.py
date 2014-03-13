@@ -685,7 +685,7 @@ nested.foo_aliased""")
 
 class TestStates(FabricTest):
 
-    def test_switch_env(self):
+    def test_switch_env_with_update(self):
         """
         env state should be default after rollback from switched env state
         """
@@ -705,5 +705,33 @@ class TestStates(FabricTest):
         ok_(env.custom == 'value')
         switch_env()
         ok_('foo' not in env.roledefs)
+        ok_(env.colorize_errors)
+        ok_('custom' not in env)
+
+    def test_switch_env_with_merge(self):
+        """
+        env state should be default after rollback from switched env state
+        """
+        from fabric.state import env, switch_env
+        env.colorize_errors = True
+        env.merge_states = True
+        env.roledefs['foo'] = ['bar']
+        env.states['test'] = {
+            'colorize_errors': False,
+            'roledefs': {'biz': ['baz']},
+            'custom': 'value'
+        }
+        ok_('foo' in env.roledefs)
+        ok_('biz' not in env.roledefs)
+        ok_(env.colorize_errors)
+        ok_('custom' not in env)
+        switch_env('test')
+        ok_('foo' in env.roledefs)
+        ok_('biz' in env.roledefs)
+        ok_(not env.colorize_errors)
+        ok_(env.custom == 'value')
+        switch_env()
+        ok_('foo' in env.roledefs)
+        ok_('biz' not in env.roledefs)
         ok_(env.colorize_errors)
         ok_('custom' not in env)

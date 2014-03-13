@@ -201,6 +201,16 @@ class _AttributeDict(dict):
             if value:
                 return value
 
+    def merge(self, other):
+        def _merge(dict1, dict2):
+            for key, value2 in dict2.iteritems():
+                if key in dict1 and isinstance(value2, dict):
+                    value1 = dict1[key] = dict1[key].copy()
+                    _merge(value1, value2)
+                else:
+                    dict1[key] = value2
+        _merge(self, other)
+
 
 class _AliasDict(_AttributeDict):
     """

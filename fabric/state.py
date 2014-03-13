@@ -342,6 +342,7 @@ env = _AttributeDict({
     'skip_unknown_tasks': False,
     'ssh_config_path': default_ssh_config_path,
     'states': {},
+    'merge_states': False,  # Switch env state with by merging instead of updating
     'ok_ret_codes': [0],     # a list of return codes that indicate success
     # -S so sudo accepts passwd via stdin, -p with our known-value prompt for
     # later detection (thus %s -- gets filled with env.sudo_prompt at runtime)
@@ -379,7 +380,10 @@ def switch_env(name='default'):
         env.update(default)
     if not rollback:
         # Apply named env state
-        env.update(env.states[name])
+        if env.merge_states:
+            env.merge(env.states[name])
+        else:
+            env.update(env.states[name])
 
 
 # Fill in exceptions settings
