@@ -271,6 +271,21 @@ def test_roles_stripped_env_hosts():
     eq_hosts(command, ['a', 'b'], env={'roledefs': spaced_roles})
 
 
+dict_roles = {
+    'r1': {'hosts': ['a', 'b']},
+    'r2': ['b', 'c'],
+}
+
+def test_hosts_in_role_dict():
+    """
+    Make sure hosts defined in env.roles are cleaned of extra spaces
+    """
+    @roles('r1')
+    def command():
+        pass
+    eq_hosts(command, ['a', 'b'], env={'roledefs': dict_roles})
+
+
 def test_hosts_decorator_expands_single_iterable():
     """
     @hosts(iterable) should behave like @hosts(*iterable)
