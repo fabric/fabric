@@ -15,6 +15,8 @@ import time
 from glob import glob
 from contextlib import closing, contextmanager
 
+import six
+
 from fabric.context_managers import (settings, char_buffered, hide,
     quiet as quiet_manager, warn_only as warn_only_manager)
 from fabric.io import output_loop, input_loop
@@ -138,7 +140,7 @@ def require(*keys, **kwargs):
 
 def prompt(text, key=None, default='', validate=None):
     """
-    Prompt user with ``text`` and return the input (like ``raw_input``).
+    Prompt user with ``text`` and return the input (like the stdlib ``input``).
 
     A single space character will be appended for convenience, but nothing
     else. Thus, you may want to end your prompt text with a question mark or a
@@ -212,7 +214,7 @@ def prompt(text, key=None, default='', validate=None):
     value = None
     while value is None:
         # Get input
-        value = raw_input(prompt_str) or default
+        value = six.moves.input(prompt_str) or default
         # Handle validation
         if validate:
             # Callable
@@ -221,11 +223,12 @@ def prompt(text, key=None, default='', validate=None):
                 # fails.
                 try:
                     value = validate(value)
-                except Exception, e:
+                except Exception:
+                    e = sys.exc_info()[1]
                     # Reset value so we stay in the loop
                     value = None
                     print("Validation failed for the following reason:")
-                    print(indent(e.message) + "\n")
+                    print(indent(str(e)) + "\n")
             # String / regex must match and will be empty if validation fails.
             else:
                 # Need to transform regex into full-matching one if it's not.
@@ -398,7 +401,8 @@ def put(local_path=None, remote_path=None, use_sudo=False,
                     p = ftp.put(lpath, remote_path, use_sudo, mirror_local_mode,
                         mode, local_is_path, temp_dir)
                     remote_paths.append(p)
-            except Exception, e:
+            except Exception:
+                e = sys.exc_info()[1]
                 msg = "put() encountered an exception while uploading '%s'"
                 failure = lpath if local_is_path else "<StringIO>"
                 failed_local_paths.append(failure)
@@ -573,7 +577,8 @@ def get(remote_path, local_path=None):
                     if local_is_path:
                         local_files.append(result)
 
-        except Exception, e:
+        except Exception:
+            e = sys.exc_info()[1]
             failed_remote_files.append(remote_path)
             msg = "get() encountered an exception while downloading '%s'"
             error(message=msg % remote_path, exception=e)

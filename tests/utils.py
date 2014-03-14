@@ -13,6 +13,7 @@ import shutil
 import sys
 import tempfile
 
+import six
 from fudge import Fake, patched_context, clear_expectations, with_patched_object
 from nose.tools import raises
 from nose import SkipTest
@@ -195,6 +196,6 @@ def aborts(func):
 
 
 def _patched_input(func, fake):
-    return func(sys.modules['__builtin__'], 'raw_input', fake)
+    return func(six.moves, 'input', fake)
 patched_input = partial(_patched_input, patched_context)
 with_patched_input = partial(_patched_input, with_patched_object)

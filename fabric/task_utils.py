@@ -1,6 +1,7 @@
 from fabric.utils import abort, indent
 from fabric import state
 
+import six
 
 # For attribute tomfoolery
 class _Dict(dict):
@@ -45,7 +46,7 @@ def merge(hosts, roles, exclude, roledefs):
         ))
 
     # Coerce strings to one-item lists
-    if isinstance(hosts, basestring):
+    if isinstance(hosts, six.string_types):
         hosts = [hosts]
 
     # Look up roles, turn into flat list of hosts

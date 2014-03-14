@@ -4,16 +4,17 @@ import os
 import shutil
 import sys
 import types
-from contextlib import nested
-from StringIO import StringIO
 
 import unittest
 import random
 import types
 
+from six import StringIO
+
 from nose.tools import raises, eq_, ok_
 from fudge import with_patched_object
 
+from fabric.compat import nested
 from fabric.state import env, output
 from fabric.operations import require, prompt, _sudo_prefix, _shell_wrap, \
     _shell_escape

@@ -137,6 +137,8 @@ try:
 except ImportError:
     import dummy_threading as threading
 
+import six
+
 __all__ = ["TCPServer", "UDPServer", "ForkingUDPServer", "ForkingTCPServer",
            "ThreadingUDPServer", "ThreadingTCPServer", "BaseRequestHandler",
            "StreamRequestHandler", "DatagramRequestHandler",
@@ -684,13 +686,9 @@ class DatagramRequestHandler(BaseRequestHandler):
     """Define self.rfile and self.wfile for datagram sockets."""
 
     def setup(self):
-        try:
-            from cStringIO import StringIO
-        except ImportError:
-            from StringIO import StringIO
         self.packet, self.socket = self.request
-        self.rfile = StringIO(self.packet)
-        self.wfile = StringIO()
+        self.rfile = six.StringIO(self.packet)
+        self.wfile = six.StringIO()
 
     def finish(self):
         self.socket.sendto(self.wfile.getvalue(), self.client_address)

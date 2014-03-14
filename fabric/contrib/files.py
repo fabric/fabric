@@ -8,8 +8,9 @@ import hashlib
 import tempfile
 import re
 import os
-from StringIO import StringIO
 from functools import partial
+
+import six
 
 from fabric.api import *
 from fabric.utils import apply_lcwd
@@ -150,7 +151,7 @@ def upload_template(filename, destination, context=None, use_jinja=False,
 
     # Upload the file.
     return put(
-        local_path=StringIO(text),
+        local_path=six.StringIO(text),
         remote_path=destination,
         use_sudo=use_sudo,
         mirror_local_mode=mirror_local_mode,
@@ -397,7 +398,7 @@ def append(filename, text, use_sudo=False, partial=False, escape=True,
     """
     func = use_sudo and sudo or run
     # Normalize non-list input to be a list
-    if isinstance(text, basestring):
+    if isinstance(text, six.string_types):
         text = [text]
     for line in text:
         regex = '^' + _escape_for_regex(line)  + ('' if partial else '$')

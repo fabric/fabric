@@ -7,7 +7,8 @@ items, though within Fabric itself only ``Process`` objects are used/supported.
 
 from __future__ import with_statement
 import time
-import Queue
+
+import six.moves.queue as queue
 
 from fabric.state import env
 from fabric.network import ssh
@@ -188,7 +189,7 @@ class JobQueue(object):
             try:
                 datum = self._comms_queue.get_nowait()
                 results[datum['name']]['results'] = datum['result']
-            except Queue.Empty:
+            except queue.Empty:
                 break
 
 
