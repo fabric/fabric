@@ -20,11 +20,6 @@ from fabric.exceptions import NetworkError
 import six
 
 try:
-    input = raw_input
-except NameError:
-    pass
-
-try:
     import warnings
     warnings.simplefilter('ignore', DeprecationWarning)
     import paramiko as ssh
@@ -644,7 +639,7 @@ def needs_host(func):
     def host_prompting_wrapper(*args, **kwargs):
         while not env.get('host_string', False):
             handle_prompt_abort("the target host connection string")
-            host_string = input("No hosts found. Please specify (single)"
+            host_string = six.moves.input("No hosts found. Please specify (single)"
                                     " host string for connection: ")
             env.update(to_dict(host_string))
         return func(*args, **kwargs)

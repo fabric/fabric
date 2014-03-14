@@ -15,6 +15,8 @@ import time
 from glob import glob
 from contextlib import closing, contextmanager
 
+import six
+
 from fabric.context_managers import (settings, char_buffered, hide,
     quiet as quiet_manager, warn_only as warn_only_manager)
 from fabric.io import output_loop, input_loop
@@ -138,7 +140,7 @@ def require(*keys, **kwargs):
 
 def prompt(text, key=None, default='', validate=None):
     """
-    Prompt user with ``text`` and return the input (like ``raw_input``).
+    Prompt user with ``text`` and return the input (like the stdlib ``input``).
 
     A single space character will be appended for convenience, but nothing
     else. Thus, you may want to end your prompt text with a question mark or a
@@ -212,7 +214,7 @@ def prompt(text, key=None, default='', validate=None):
     value = None
     while value is None:
         # Get input
-        value = raw_input(prompt_str) or default
+        value = six.moves.input(prompt_str) or default
         # Handle validation
         if validate:
             # Callable

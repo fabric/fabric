@@ -1,5 +1,7 @@
 from __future__ import with_statement
 
+import six
+
 from fabric.compat import nested
 from fabric.api import abort, hide, local, settings, task
 
@@ -38,7 +40,7 @@ def update_code(filename, force):
     Normally, if the version file has not been modified, we abort assuming the
     user quit without saving. Specify ``force=yes`` to override this.
     """
-    raw_input("Version update in %r required! Press Enter to load $EDITOR." % filename)
+    six.moves.input("Version update in %r required! Press Enter to load $EDITOR." % filename)
     with hide('running'):
         local("$EDITOR %s" % filename)
     # Try to detect whether user bailed out of the edit
