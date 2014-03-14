@@ -93,7 +93,7 @@ def get_gateway(host, port, cache, replace=False):
         # ensure initial gateway connection
         if replace or gateway not in cache:
             if output.debug:
-                print "Creating new gateway connection to %r" % gateway
+                print("Creating new gateway connection to %r" % gateway)
             cache[gateway] = connect(*normalize(gateway) + (cache, False))
         # now we should have an open gw connection and can ask it for a
         # direct-tcpip channel to the real target. (bypass cache's own
