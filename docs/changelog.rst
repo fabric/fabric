@@ -4,6 +4,9 @@
 Changelog
 =========
 
+* :release:`1.7.3 <2014-03-13>`
+* :support:`- backported` Modified packaging data to reflect that Fabric
+  requires Paramiko < 1.13 (which dropped Python 2.5 support.)
 * :release:`1.8.2 <2014-02-14>`
 * :release:`1.7.2 <2014-02-14>`
 * :bug:`955` Quote directories created as part of ``put``'s recursive directory
