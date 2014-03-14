@@ -11,7 +11,6 @@ import re
 import time
 import socket
 import sys
-from StringIO import StringIO
 
 
 from fabric.auth import get_password, set_password
@@ -241,7 +240,7 @@ def key_from_env(passphrase=None):
             if output.debug:
                 sys.stderr.write("Trying to load it as %s\n" % pkey_class)
             try:
-                return pkey_class.from_private_key(StringIO(env.key), passphrase)
+                return pkey_class.from_private_key(six.StringIO(env.key), passphrase)
             except Exception:
                 e = sys.exc_info()[1]
                 # File is valid key, but is encrypted: raise it, this will
