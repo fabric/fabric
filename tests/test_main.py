@@ -696,17 +696,19 @@ class TestStates(FabricTest):
             'roledefs': {'foo': ['bar']},
             'custom': 'value'
         }
-        ok_('foo' not in env.roledefs)
-        ok_(env.colorize_errors)
-        ok_('custom' not in env)
+        def ok_default():
+            ok_(env.state is None)
+            ok_('foo' not in env.roledefs)
+            ok_(env.colorize_errors)
+            ok_('custom' not in env)
+        ok_default()
         switch_env('test')
+        ok_(env.state == 'test')
         ok_('foo' in env.roledefs)
         ok_(not env.colorize_errors)
         ok_(env.custom == 'value')
         switch_env()
-        ok_('foo' not in env.roledefs)
-        ok_(env.colorize_errors)
-        ok_('custom' not in env)
+        ok_default()
 
     def test_switch_env_with_merge(self):
         """
@@ -721,17 +723,18 @@ class TestStates(FabricTest):
             'roledefs': {'biz': ['baz']},
             'custom': 'value'
         }
-        ok_('foo' in env.roledefs)
-        ok_('biz' not in env.roledefs)
-        ok_(env.colorize_errors)
-        ok_('custom' not in env)
+        def ok_default():
+            ok_(env.state is None)
+            ok_('foo' in env.roledefs)
+            ok_('biz' not in env.roledefs)
+            ok_(env.colorize_errors)
+            ok_('custom' not in env)
+        ok_default()
         switch_env('test')
+        ok_(env.state == 'test')
         ok_('foo' in env.roledefs)
         ok_('biz' in env.roledefs)
         ok_(not env.colorize_errors)
         ok_(env.custom == 'value')
         switch_env()
-        ok_('foo' in env.roledefs)
-        ok_('biz' not in env.roledefs)
-        ok_(env.colorize_errors)
-        ok_('custom' not in env)
+        ok_default()

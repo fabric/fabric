@@ -341,6 +341,7 @@ env = _AttributeDict({
     'skip_bad_hosts': False,
     'skip_unknown_tasks': False,
     'ssh_config_path': default_ssh_config_path,
+    'state': None,
     'states': {},
     'merge_states': False,  # Switch env state with by merging instead of updating
     'ok_ret_codes': [0],     # a list of return codes that indicate success
@@ -378,12 +379,15 @@ def switch_env(name='default'):
         # Rollback default env state
         env.clear()
         env.update(default)
-    if not rollback:
+    if rollback:
+        env.state = None
+    else:
         # Apply named env state
         if env.merge_states:
             env.merge(env.states[name])
         else:
             env.update(env.states[name])
+        env.state = name
 
 
 # Fill in exceptions settings
