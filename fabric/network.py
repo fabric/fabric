@@ -654,7 +654,7 @@ def disconnect_all():
         if output.status:
             # Here we can't use the py3k print(x, end=" ")
             # because 2.5 backwards compatibility
-            sys.stdout.write("Disconnecting from %s... " % denormalize(key))
+            sys.stdout.write("Disconnecting from %s ... " % denormalize(key))
         connections[key].close()
         del connections[key]
         if output.status:
