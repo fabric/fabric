@@ -135,7 +135,7 @@ below.
 
     Switch env to given state name, defined in :ref:`env.states <states>`.
 
-    .. seealso:: :ref:`env.states <states>`
+    .. seealso:: :ref:`env.states <states>`, :ref:`env.merge_states <merge-states>`
 
 .. cmdoption:: -f FABFILE, --fabfile=FABFILE
 
