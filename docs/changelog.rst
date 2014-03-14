@@ -4,6 +4,36 @@
 Changelog
 =========
 
+* :feature:`1082` Add ``pty`` passthrough kwarg to
+  `~fabric.contrib.files.upload_template`.
+* :release:`1.8.2 <2014-02-14>`
+* :release:`1.7.2 <2014-02-14>`
+* :bug:`955` Quote directories created as part of ``put``'s recursive directory
+  uploads when ``use_sudo=True`` so directories with shell meta-characters
+  (such as spaces) work correctly. Thanks to John Harris for the catch.
+* :bug:`917` Correct an issue with ``put(use_sudo=True, mode=xxx)`` where the 
+  ``chmod`` was trying to apply to the wrong location. Thanks to Remco
+  (``@nl5887``) for catch & patch.
+* :bug:`1046` Fix typo preventing use of ProxyCommand in some situations.
+  Thanks to Keith Yang.
+* :release:`1.8.1 <2013-12-24>`
+* :release:`1.7.1 <2013-12-24>`
+* :release:`1.6.4 <2013-12-24>` 956, 957
+* :release:`1.5.5 <2013-12-24>` 956, 957
+* :bug:`956` Fix pty size detection when running inside Emacs. Thanks to
+  `@akitada` for catch & patch.
+* :bug:`957` Fix bug preventing use of :ref:`env.gateway <gateway>` with
+  targets requiring password authentication. Thanks to Daniel González,
+  `@Bengrunt` and `@adrianbn` for their bug reports.
+* :feature:`741` Add :ref:`env.prompts <prompts>` dictionary, allowing
+  users to set up custom prompt responses (similar to the built-in sudo prompt
+  auto-responder.) Thanks to Nigel Owens and David Halter for the patch.
+* :bug:`965 major` Tweak IO flushing behavior when in linewise (& thus
+  parallel) mode so interwoven output is less frequent. Thanks to `@akidata`
+  for catch & patch.
+* :bug:`948` Handle connection failures due to server load and try connecting
+  to hosts a number of times specified in :ref:`env.connection_attempts
+  <connection-attempts>`.
 * :release:`1.8.0 <2013-09-20>`
 * :feature:`931` Allow overriding of `.abort` behavior via a custom
   exception-returning callable set as :ref:`env.abort_exception
@@ -23,8 +53,8 @@ Changelog
   `.upload_template` in Jinja mode used to cause ``'NoneType' has no attribute
   'startswith'`` errors. This has been fixed. Thanks to Erick Yellott for catch
   & to Erick Yellott + Kevin Williams for patches.
-* :feature:`924` Add new env var option :ref:`colorize-errors` to enable coloring errors and
-  warnings. Thanks to Aaron Meurer for the patch.
+* :feature:`924` Add new env var option :ref:`colorize-errors` to enable
+  coloring errors and warnings. Thanks to Aaron Meurer for the patch.
 * :bug:`593` Non-ASCII character sets in Jinja templates rendered within
   `.upload_template` would cause ``UnicodeDecodeError`` when uploaded. This has
   been addressed by encoding as ``utf-8`` prior to upload. Thanks to Sébastien
@@ -504,8 +534,8 @@ Changelog
   string-like. Thanks to Jiri Barton for catch & patch.
 * :support:`382` Experimental overhaul of changelog formatting & process to
   make supporting multiple lines of development less of a hassle.
-* :release:`1.1.2 <2011-07-07>` (see below for details)
-* :release:`1.0.2 <2011-06-24>` (see below for details)
+* :release:`1.1.2 <2011-07-07>`
+* :release:`1.0.2 <2011-06-24>`
 
 
 Prehistory

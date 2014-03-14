@@ -37,7 +37,7 @@ setup(
     packages=find_packages(),
     test_suite='nose.collector',
     tests_require=['nose', 'fudge<1.0'],
-    install_requires=['paramiko>=1.10.0'],
+    install_requires=['paramiko>=1.10,<1.13'],
     entry_points={
         'console_scripts': [
             'fab = fabric.main:main',
@@ -55,6 +55,7 @@ setup(
           'Programming Language :: Python',
           'Programming Language :: Python :: 2.5',
           'Programming Language :: Python :: 2.6',
+          'Programming Language :: Python :: 2.7',
           'Topic :: Software Development',
           'Topic :: Software Development :: Build Tools',
           'Topic :: Software Development :: Libraries',

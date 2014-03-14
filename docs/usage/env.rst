@@ -551,6 +551,19 @@ Sets the number of concurrent processes to use when executing tasks in parallel.
 .. versionadded:: 1.3
 .. seealso:: :option:`--pool-size <-z>`, :doc:`parallel`
 
+.. _prompts:
+
+``prompts``
+-------------
+
+**Default:** ``{}``
+
+The ``prompts`` dictionary allows users to control interactive prompts. If a
+key in the dictionary is found in a command's standard output stream, Fabric
+will automatically answer with the corresponding dictionary value.
+
+.. versionadded:: 1.9
+
 .. _port:
 
 ``port``
