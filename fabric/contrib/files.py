@@ -11,6 +11,8 @@ import os
 from StringIO import StringIO
 from functools import partial
 
+import six
+
 from fabric.api import *
 from fabric.utils import apply_lcwd
 
@@ -397,7 +399,7 @@ def append(filename, text, use_sudo=False, partial=False, escape=True,
     """
     func = use_sudo and sudo or run
     # Normalize non-list input to be a list
-    if isinstance(text, basestring):
+    if isinstance(text, six.string_types):
         text = [text]
     for line in text:
         regex = '^' + _escape_for_regex(line)  + ('' if partial else '$')
