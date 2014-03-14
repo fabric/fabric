@@ -15,13 +15,8 @@ import os
 import sys
 import types
 
-try:
-    from functools import reduce
-except ImportError:
-    # Python 2.5 has it in builtins
-    pass
-
 import six
+from six.moves import reduce
 
 # For checking callables against the API, & easy mocking
 from fabric import api, state, colors
