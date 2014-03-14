@@ -8,7 +8,6 @@ import hashlib
 import tempfile
 import re
 import os
-from StringIO import StringIO
 from functools import partial
 
 import six
@@ -152,7 +151,7 @@ def upload_template(filename, destination, context=None, use_jinja=False,
 
     # Upload the file.
     return put(
-        local_path=StringIO(text),
+        local_path=six.StringIO(text),
         remote_path=destination,
         use_sudo=use_sudo,
         mirror_local_mode=mirror_local_mode,

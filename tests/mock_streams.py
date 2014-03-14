@@ -3,7 +3,8 @@ Stand-alone stream mocking decorator for easier imports.
 """
 from functools import wraps
 import sys
-from StringIO import StringIO  # No need for cStringIO at this time
+
+from six import StringIO
 
 
 class CarbonCopy(StringIO):

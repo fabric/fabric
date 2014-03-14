@@ -1,15 +1,16 @@
 import os
 import stat
-from StringIO import StringIO
 from types import StringTypes
+
+import six
 
 from fabric.network import ssh
 
 
-class FakeFile(StringIO):
+class FakeFile(six.StringIO):
 
     def __init__(self, value=None, path=None):
-        init = lambda x: StringIO.__init__(self, x)
+        init = lambda x: six.StringIO.__init__(self, x)
         if value is None:
             init("")
             ftype = 'dir'
@@ -28,7 +29,7 @@ class FakeFile(StringIO):
         return self.getvalue()
 
     def write(self, value):
-        StringIO.write(self, value)
+        six.StringIO.write(self, value)
         self.attributes.st_size = len(self.getvalue())
 
     def close(self):

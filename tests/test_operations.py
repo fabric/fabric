@@ -4,11 +4,12 @@ import os
 import shutil
 import sys
 import types
-from StringIO import StringIO
 
 import unittest
 import random
 import types
+
+from six import StringIO
 
 from nose.tools import raises, eq_, ok_
 from fudge import with_patched_object

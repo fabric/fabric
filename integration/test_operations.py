@@ -1,9 +1,10 @@
 from __future__ import with_statement
 
-from StringIO import StringIO
 import os
 import posixpath
 import shutil
+
+import six
 
 from fabric.api import run, path, put, sudo, abort, warn_only, env, cd, local
 from fabric.contrib.files import exists
@@ -34,16 +35,16 @@ class TestOperations(Integration):
         sudo("rm -rf %s" % self.not_owned)
 
     def test_no_trailing_space_in_shell_path_in_run(self):
-        put(StringIO("#!/bin/bash\necho hi"), "%s/myapp" % self.dirpath, mode="0755")
+        put(six.StringIO("#!/bin/bash\necho hi"), "%s/myapp" % self.dirpath, mode="0755")
         with path(self.dirpath):
             assert run('myapp').stdout == 'hi'
 
     def test_string_put_mode_arg_doesnt_error(self):
-        put(StringIO("#!/bin/bash\necho hi"), self.filepath, mode="0755")
+        put(six.StringIO("#!/bin/bash\necho hi"), self.filepath, mode="0755")
         assert_mode(self.filepath, "755")
 
     def test_int_put_mode_works_ok_too(self):
-        put(StringIO("#!/bin/bash\necho hi"), self.filepath, mode=0755)
+        put(six.StringIO("#!/bin/bash\necho hi"), self.filepath, mode=0755)
         assert_mode(self.filepath, "755")
 
     def _chown(self, target):
@@ -53,7 +54,7 @@ class TestOperations(Integration):
         # Ensure target dir prefix is not owned by our user (so we fail unless
         # the sudo part of things is working)
         self._chown(self.not_owned)
-        source = source if source else StringIO("whatever")
+        source = source if source else six.StringIO("whatever")
         # Drop temp file into that dir, via use_sudo, + any kwargs
         return put(
             source,

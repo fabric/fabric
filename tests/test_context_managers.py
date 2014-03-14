@@ -12,7 +12,8 @@ from fabric.operations import run, local
 
 from utils import mock_streams, FabricTest
 from server import server
-from StringIO import StringIO
+
+from six import StringIO
 
 
 #
