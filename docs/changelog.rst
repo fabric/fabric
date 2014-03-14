@@ -4,6 +4,7 @@
 Changelog
 =========
 
+* :release:`1.8.3 <2014-03-13>`
 * :release:`1.7.3 <2014-03-13>`
 * :support:`- backported` Modified packaging data to reflect that Fabric
   requires Paramiko < 1.13 (which dropped Python 2.5 support.)
