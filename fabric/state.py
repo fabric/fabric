@@ -339,6 +339,7 @@ env = _AttributeDict({
     'roledefs': {},
     'shell_env': {},
     'skip_bad_hosts': False,
+    'skip_unknown_tasks': False,
     'ssh_config_path': default_ssh_config_path,
     'ok_ret_codes': [0],     # a list of return codes that indicate success
     # -S so sudo accepts passwd via stdin, -p with our known-value prompt for
