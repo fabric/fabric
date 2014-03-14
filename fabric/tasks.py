@@ -6,6 +6,7 @@ import sys
 import textwrap
 
 from fabric import state
+from fabric.operations import prompt
 from fabric.utils import abort, warn, error
 from fabric.network import to_dict, normalize_to_string, disconnect_all
 from fabric.context_managers import settings
@@ -371,6 +372,17 @@ def execute(task, *args, **kwargs):
 
     # Call on host list
     if my_env['all_hosts']:
+        # Prompt hosts if more than 1
+        if state.env.prompt_hosts and len(my_env['all_hosts']) > 1:
+            print("0. All")
+            for i, host in enumerate(my_env['all_hosts'], start=1):
+                print("{i}. {host}".format(i=i, host=host))
+            valid_indices = '[,0-%s]+' % len(my_env['all_hosts'])
+            host_choice = prompt('Select host(s)', default='0', validate=valid_indices)
+            indices = map(int, host_choice.split(','))
+            if len(indices) > 1 or indices[0] > 0:
+                my_env['all_hosts'] = [my_env['all_hosts'][i-1] for i in indices if i > 0]
+
         # Attempt to cycle on hosts, skipping if needed
         for host in my_env['all_hosts']:
             try:
