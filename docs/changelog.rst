@@ -4,12 +4,13 @@
 Changelog
 =========
 
+* :bug:`867` Escape single quotes in contrib.files.sed corectly
 * :release:`1.8.2 <2014-02-14>`
 * :release:`1.7.2 <2014-02-14>`
 * :bug:`955` Quote directories created as part of ``put``'s recursive directory
   uploads when ``use_sudo=True`` so directories with shell meta-characters
   (such as spaces) work correctly. Thanks to John Harris for the catch.
-* :bug:`917` Correct an issue with ``put(use_sudo=True, mode=xxx)`` where the 
+* :bug:`917` Correct an issue with ``put(use_sudo=True, mode=xxx)`` where the
   ``chmod`` was trying to apply to the wrong location. Thanks to Remco
   (``@nl5887``) for catch & patch.
 * :bug:`1046` Fix typo preventing use of ProxyCommand in some situations.
