@@ -26,6 +26,12 @@ pip, with `pip install fabric==dev`.
 For more information, please see the Fabric website or execute ``fab --help``.
 """ % (get_version('branch'), readme)
 
+if sys.version_info[:2] < (2, 6):
+    install_requires=['paramiko>=1.10,<1.13']
+else:
+    install_requires=['paramiko>=1.10']
+
+
 setup(
     name='Fabric',
     version=get_version('short'),
@@ -37,7 +43,7 @@ setup(
     packages=find_packages(),
     test_suite='nose.collector',
     tests_require=['nose', 'fudge<1.0'],
-    install_requires=['paramiko>=1.10,<1.13'],
+    install_requires=install_requires,
     entry_points={
         'console_scripts': [
             'fab = fabric.main:main',
