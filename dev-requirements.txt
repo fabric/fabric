@@ -10,4 +10,4 @@ nose
 Fudge < 1.0
 # Documentation generation
 Sphinx >= 0.6
-releases >= 0.5.3
+releases >= 0.6.1
