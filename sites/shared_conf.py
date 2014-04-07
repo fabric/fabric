@@ -19,6 +19,9 @@ html_theme_options = {
     'github_repo': 'fabric',
     'gittip_user': 'bitprophet',
     'analytics_id': 'UA-18486793-1',
+
+    'link': '#3782BE',
+    'link_hover': '#3782BE',
 }
 html_sidebars = {
     '**': [
