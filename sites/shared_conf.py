@@ -1,3 +1,4 @@
+from os.path import join
 from datetime import datetime
 
 import alabaster
@@ -7,7 +8,7 @@ import alabaster
 html_theme_path = [alabaster.get_path()]
 extensions = ['alabaster']
 # Paths relative to invoking conf.py - not this shared file
-html_static_path = ['../_shared_static']
+html_static_path = [join('..', '_shared_static')]
 html_theme = 'alabaster'
 html_theme_options = {
     'description': "Pythonic remote execution",
