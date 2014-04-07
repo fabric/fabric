@@ -11,6 +11,9 @@ extensions = ['alabaster']
 html_static_path = [join('..', '_shared_static')]
 html_theme = 'alabaster'
 html_theme_options = {
+    'logo': 'logo.png',
+    'logo_name': True,
+    'logo_text_align': 'center',
     'description': "Pythonic remote execution",
     'github_user': 'fabric',
     'github_repo': 'fabric',
