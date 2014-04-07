@@ -25,9 +25,10 @@ Patch submission guidelines
   which category your change falls in, just ask on IRC or the mailing list --
   it's often a judgement call.
 * **Make sure documentation is updated** -- at the very least, keep docstrings
-  current, and if necessary, update the ReST documentation in ``docs/``.  For
-  example, new ``env.*`` settings should be added to ``docs/usage/env.rst``.
-* **Add a changelog entry** at the top of ``docs/changelog.rst`` following
+  current, and if necessary, update the ReST documentation in ``sites/docs/``.
+  For example, new ``env.*`` settings should be added to
+  ``sites/docs/usage/env.rst``.
+* **Add a changelog entry** at the top of ``sites/www/changelog.rst`` following
   existing entries' styles. Don't forget to attribute yourself if you'd like
   credit!
 
