@@ -17,7 +17,8 @@ extensions.append('sphinx.ext.intersphinx')
 # under RTD.
 target = join(dirname(__file__), '..', 'docs', '_build')
 if os.environ.get('READTHEDOCS') == 'True':
-    target = 'http://docs.fabfile.org/en/latest/'
+    #target = 'http://docs.fabfile.org/en/latest/'
+    target = 'http://fabric-docs.readthedocs.org/en/latest/'
 intersphinx_mapping = {
     'docs': (target, None),
 }
