@@ -1,8 +1,8 @@
-============
-Installation
-============
+==========
+Installing
+==========
 
-Fabric is best installed via `pip <http://pip.openplans.org>`_ (highly
+Fabric is best installed via `pip <http://pip-installer.org>`_ (highly
 recommended) or `easy_install
 <http://wiki.python.org/moin/CheeseShopTutorial>`_ (older, but still works
 fine), e.g.::
@@ -21,9 +21,9 @@ dependency)::
     $ pip install paramiko==dev
     $ pip install fabric==dev
 
-Or, to install an editable version for debugging/hacking, execute ``pip install
--e .`` (or ``python setup.py install``) inside a :ref:`downloaded <downloads>`
-or :ref:`cloned <source-code-checkouts>` copy of the source code.
+Or, to install an editable version for debugging/hacking, execute ``pip
+install -e .`` (or ``python setup.py develop``) inside a :ref:`downloaded
+<downloads>` or :ref:`cloned <source-code-checkouts>` copy of the source code.
 
 .. warning::
 
@@ -39,8 +39,8 @@ In order for Fabric's installation to succeed, you will need four primary pieces
 
 * the Python programming language;
 * the ``setuptools`` packaging/installation library;
-* the Python ``paramiko`` SSH2 library;
-* and ``paramiko``'s dependency, the PyCrypto cryptography library.
+* the Python `Paramiko <http://paramiko.org>`_ SSH library;
+* and Paramiko's dependency, the PyCrypto cryptography library.
 
 and, if using the :doc:`parallel execution mode </usage/parallel>`:
 
@@ -80,67 +80,6 @@ setuptools dependency in the future, or include alternative support for the
 
 .. _setuptools: http://pypi.python.org/pypi/setuptools
 .. _Distribute: http://pypi.python.org/pypi/distribute
-
-PyCrypto
---------
-
-`PyCrypto <https://www.dlitz.net/software/pycrypto/>`_  provides the low-level
-(C-based) encryption algorithms used to run SSH, and is thus required by our
-SSH library. There are a couple gotchas associated with installing PyCrypto:
-its compatibility with Python's package tools, and the fact that it is a
-C-based extension.
-
-.. _pycrypto-and-pip:
-
-Package tools
-~~~~~~~~~~~~~
-
-We strongly recommend using ``pip`` to install Fabric as it is newer and
-generally better than ``easy_install``. However, a combination of bugs in
-specific versions of Python, ``pip`` and PyCrypto can prevent installation of
-PyCrypto. Specifically:
-
-* Python = 2.5.x
-* PyCrypto >= 2.1 (which is required to run Fabric >= 1.3)
-* ``pip`` < 0.8.1
-
-When all three criteria are met, you may encounter ``No such file or
-directory`` IOErrors when trying to ``pip install Fabric`` or ``pip install
-PyCrypto``.
-
-The fix is simply to make sure at least one of the above criteria is not met,
-by doing the following (in order of preference):
-
-* Upgrade to ``pip`` 0.8.1 or above, e.g. by running ``pip install -U pip``.
-* Upgrade to Python 2.6 or above.
-* Downgrade to Fabric 1.2.x, which does not require PyCrypto >= 2.1, and
-  install PyCrypto 2.0.1 (the oldest version on PyPI which works with Fabric
-  1.2.)
-
-
-C extension
-~~~~~~~~~~~
-
-Unless you are installing from a precompiled source such as a Debian apt
-repository or RedHat RPM, or using :ref:`pypm <pypm>`, you will also need the
-ability to build Python C-based modules from source in order to install
-PyCrypto. Users on **Unix-based platforms** such as Ubuntu or Mac OS X will
-need the traditional C build toolchain installed (e.g. Developer Tools / XCode
-Tools on the Mac, or the ``build-essential`` package on Ubuntu or Debian Linux
--- basically, anything with ``gcc``, ``make`` and so forth) as well as the
-Python development libraries, often named ``python-dev`` or similar.
-
-For **Windows** users we recommend using :ref:`pypm`, installing a C
-development environment such as `Cygwin <http://cygwin.com>`_ or obtaining a
-precompiled Win32 PyCrypto package from `voidspace's Python modules page
-<http://www.voidspace.org.uk/python/modules.shtml#pycrypto>`_.
-
-.. note::
-    Some Windows users whose Python is 64-bit have found that the PyCrypto
-    dependency ``winrandom`` may not install properly, leading to ImportErrors.
-    In this scenario, you'll probably need to compile ``winrandom`` yourself
-    via e.g. MS Visual Studio.  See :issue:`194` for info.
-
 
 ``multiprocessing``
 -------------------
