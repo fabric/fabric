@@ -2,8 +2,9 @@ include AUTHORS
 include INSTALL
 include LICENSE
 include README.rst
-recursive-include docs *
-recursive-exclude docs/_build *
+recursive-include sites *
+recursive-exclude sites/docs/_build *
+recursive-exclude sites/www/_build *
 include requirements.txt
 recursive-include tests *
 recursive-exclude tests *.pyc *.pyo

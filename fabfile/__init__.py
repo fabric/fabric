@@ -8,7 +8,6 @@ import nose
 
 from fabric.api import abort, local, task
 
-import docs
 import tag
 from utils import msg
 
