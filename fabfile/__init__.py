@@ -19,7 +19,7 @@ def test(args=None):
 
     Specify string argument ``args`` for additional args to ``nosetests``.
     """
-    default_args = "-sv --with-doctest --nologcapture --with-color"
+    default_args = "-sv --with-doctest --nologcapture --with-color tests"
     default_args += (" " + args) if args else ""
     nose.core.run_exit(argv=[''] + default_args.split())
 
