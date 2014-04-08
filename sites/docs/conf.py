@@ -15,8 +15,7 @@ autodoc_default_flags = ['members', 'special-members']
 # under RTD.
 target = join(dirname(__file__), '..', 'www', '_build')
 if os.environ.get('READTHEDOCS') == 'True':
-    #target = 'http://www.fabfile.org/'
-    target = 'http://fabric-www.readthedocs.org/'
+    target = 'http://www.fabfile.org/'
 # Intersphinx connection to stdlib + www site
 intersphinx_mapping = {
     'python': ('http://docs.python.org/2.6', None),
