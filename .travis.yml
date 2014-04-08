@@ -20,8 +20,12 @@ script:
   - fab test
   # Integration tests
   - fab -H localhost test:"--tests\=integration"
-  # Make sure the docs build
-  - fab docs
+  # Ensure documentation runs OK.
+  # Run 'docs' first since its objects.inv is referred to by 'www'.
+  # Also force warnings to be errors since most of them tend to be actual
+  # problems.
+  - invoke docs -o -W
+  - invoke www -o -W
 notifications:
   irc:
     channels: "irc.freenode.org#fabric"
