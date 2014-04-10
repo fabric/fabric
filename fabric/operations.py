@@ -705,7 +705,7 @@ def _prefix_env_vars(command, local=False):
 
 
 def _execute(channel, command, pty=True, combine_stderr=None,
-    invoke_shell=False, stdout=None, stderr=None, timeout=None):
+    invoke_shell=False, stdout=None, stderr=None, timeout=None, run_label=None):
     """
     Execute ``command`` over ``channel``.
 
@@ -773,9 +773,9 @@ def _execute(channel, command, pty=True, combine_stderr=None,
 
         workers = (
             ThreadHandler('out', output_loop, channel, "recv",
-                capture=stdout_buf, stream=stdout, timeout=timeout),
+                capture=stdout_buf, stream=stdout, timeout=timeout, run_label=run_label),
             ThreadHandler('err', output_loop, channel, "recv_stderr",
-                capture=stderr_buf, stream=stderr, timeout=timeout),
+                capture=stderr_buf, stream=stderr, timeout=timeout, run_label=run_label),
             ThreadHandler('in', input_loop, channel, using_pty)
         )
 
@@ -862,7 +862,7 @@ def open_shell(command=None):
     .. versionadded:: 1.0
     """
     _execute(channel=default_channel(), command=command, pty=True,
-        combine_stderr=True, invoke_shell=True)
+        combine_stderr=True, invoke_shell=True, run_label=None)
 
 
 @contextmanager
@@ -872,7 +872,7 @@ def _noop():
 
 def _run_command(command, shell=True, pty=True, combine_stderr=True,
     sudo=False, user=None, quiet=False, warn_only=False, stdout=None,
-    stderr=None, group=None, timeout=None, shell_escape=None):
+    stderr=None, group=None, timeout=None, shell_escape=None, run_label=None):
     """
     Underpinnings of `run` and `sudo`. See their docstrings for more info.
     """
@@ -899,16 +899,22 @@ def _run_command(command, shell=True, pty=True, combine_stderr=True,
         )
         # Execute info line
         which = 'sudo' if sudo else 'run'
-        if output.debug:
-            print("[%s] %s: %s" % (env.host_string, which, wrapped_command))
-        elif output.running:
-            print("[%s] %s: %s" % (env.host_string, which, given_command))
+        if run_label is None:
+            if output.debug:
+                print("[%s] %s: %s" % (env.host_string, which, wrapped_command))
+            elif output.running:
+                print("[%s] %s: %s" % (env.host_string, which, given_command))
+        else:
+            if output.debug:
+                print("[%s, %s] %s: %s" % (env.host_string, str(run_label), which, wrapped_command))
+            elif output.running:
+                print("[%s, %s] %s: %s" % (env.host_string, str(run_label), which, given_command))
 
         # Actual execution, stdin/stdout/stderr handling, and termination
         result_stdout, result_stderr, status = _execute(
             channel=default_channel(), command=wrapped_command, pty=pty,
             combine_stderr=combine_stderr, invoke_shell=False, stdout=stdout,
-            stderr=stderr, timeout=timeout)
+            stderr=stderr, timeout=timeout, run_label=run_label)
 
         # Assemble output string
         out = _AttributeString(result_stdout)
@@ -946,7 +952,7 @@ def _run_command(command, shell=True, pty=True, combine_stderr=True,
 
 @needs_host
 def run(command, shell=True, pty=True, combine_stderr=None, quiet=False,
-    warn_only=False, stdout=None, stderr=None, timeout=None, shell_escape=None):
+    warn_only=False, stdout=None, stderr=None, timeout=None, shell_escape=None, run_label=None):
     """
     Run a shell command on a remote host.
 
@@ -1039,13 +1045,13 @@ def run(command, shell=True, pty=True, combine_stderr=None, quiet=False,
     """
     return _run_command(command, shell, pty, combine_stderr, quiet=quiet,
         warn_only=warn_only, stdout=stdout, stderr=stderr, timeout=timeout,
-        shell_escape=shell_escape)
+        shell_escape=shell_escape, run_label=run_label)
 
 
 @needs_host
 def sudo(command, shell=True, pty=True, combine_stderr=None, user=None,
     quiet=False, warn_only=False, stdout=None, stderr=None, group=None,
-    timeout=None, shell_escape=None):
+    timeout=None, shell_escape=None, run_label=None):
     """
     Run a shell command on a remote host, with superuser privileges.
 
@@ -1092,7 +1098,7 @@ def sudo(command, shell=True, pty=True, combine_stderr=None, user=None,
         command, shell, pty, combine_stderr, sudo=True,
         user=user if user else env.sudo_user,
         group=group, quiet=quiet, warn_only=warn_only, stdout=stdout,
-        stderr=stderr, timeout=timeout, shell_escape=shell_escape,
+        stderr=stderr, timeout=timeout, shell_escape=shell_escape, run_label=run_label
     )
 
 
