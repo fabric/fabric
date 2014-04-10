@@ -486,7 +486,7 @@ Changelog
   `~fabric.decorators.hosts`/`~fabric.decorators.roles` decorators, and also
   supports passing in explicit host and/or role arguments.
 * :feature:`19` Tasks may now be optionally executed in parallel. Please see
-  the :doc:`parallel execution docs </usage/parallel>` for details. Major
+  the :ref:`parallel execution docs <parallel-execution>` for details. Major
   thanks to Morgan Goose for the initial implementation.
 * :bug:`182` During display of remote stdout/stderr, Fabric occasionally
   printed extraneous line prefixes (which in turn sometimes overwrote wrapped
