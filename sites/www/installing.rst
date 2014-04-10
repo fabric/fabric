@@ -42,7 +42,7 @@ In order for Fabric's installation to succeed, you will need four primary pieces
 * the Python `Paramiko <http://paramiko.org>`_ SSH library;
 * and Paramiko's dependency, the PyCrypto cryptography library.
 
-and, if using the :doc:`parallel execution mode </usage/parallel>`:
+and, if using the :ref:`parallel execution mode <parallel-execution>`:
 
 * the `multiprocessing`_ library.
 
@@ -86,7 +86,7 @@ setuptools dependency in the future, or include alternative support for the
 
 An optional dependency, the ``multiprocessing`` library is included in Python's
 standard library in version 2.6 and higher. If you're using Python 2.5 and want
-to make use of Fabric's :doc:`parallel execution features </usage/parallel>`
+to make use of Fabric's :ref:`parallel execution features <parallel-execution>`
 you'll need to install it manually; the recommended route, as usual, is via
 ``pip``.  Please see the `multiprocessing PyPI page
 <http://pypi.python.org/pypi/multiprocessing/>`_ for details.

@@ -17,6 +17,7 @@ html_theme_options = {
     'description': "Pythonic remote execution",
     'github_user': 'fabric',
     'github_repo': 'fabric',
+    'travis_button': True,
     'gittip_user': 'bitprophet',
     'analytics_id': 'UA-18486793-1',
 
