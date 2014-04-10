@@ -33,16 +33,23 @@ def output_loop(*args, **kwargs):
 
 
 class OutputLooper(object):
-    def __init__(self, chan, attr, stream, capture, timeout):
+    def __init__(self, chan, attr, stream, capture, timeout, run_label):
         self.chan = chan
         self.stream = stream
         self.capture = capture
         self.timeout = timeout
         self.read_func = getattr(chan, attr)
-        self.prefix = "[%s] %s: " % (
-            env.host_string,
-            "out" if attr == 'recv' else "err"
-        )
+        if run_label is None:
+            self.prefix = "[%s] %s: " % (
+                env.host_string,
+                "out" if attr == 'recv' else "err"
+            )
+        else:
+            self.prefix = "[%s, %s] %s: " % (
+                env.host_string,
+                run_label,
+                "out" if attr == 'recv' else "err"
+            )
         self.printing = getattr(output, 'stdout' if (attr == 'recv') else 'stderr')
         self.linewise = (env.linewise or env.parallel)
         self.reprompt = False
