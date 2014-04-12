@@ -8,7 +8,6 @@ import nose
 
 from fabric.api import abort, local, task
 
-import docs
 import tag
 from utils import msg
 
@@ -20,7 +19,10 @@ def test(args=None):
 
     Specify string argument ``args`` for additional args to ``nosetests``.
     """
-    default_args = "-sv --with-doctest --nologcapture --with-color"
+    # Default to explicitly targeting the 'tests' folder, but only if nothing
+    # is being overridden.
+    tests = "" if args else " tests"
+    default_args = "-sv --with-doctest --nologcapture --with-color %s" % tests
     default_args += (" " + args) if args else ""
     nose.core.run_exit(argv=[''] + default_args.split())
 
