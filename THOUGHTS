@@ -216,3 +216,24 @@ Simply a subclass or wrapper for Invoke's. Would have contextualized=True always
 May end up just being a straight reimport of Invoke's, if all functionality can be pushed therein (like strategy selection).
 
 ### with_settings
+
+TK
+
+Rest also TK
+
+
+## Connection junk
+
+Thinking of Connection (primary user facing class with run(), put() etc) but also Host (name, aliases, possibly also IP address and such) (and therefore also HostCollection?), User (name, but could expose remote user stuff such as group/uid/gid/etc) and maybe Port (number, not sure what else honestly.)
+
+Problem with Host and User in this context is that having them be independent objects - at least in the sense I was considering (pass them into Connection(), use string arg values as shorthands for convenience) - doesn't fly because if they were kept around independent of a given Connection, none of the Connection specific attributes/methods (eg User('jforcier') - there's no context implied there, it might have a different uid/gid depending on connection.)
+
+May just mean that the initial "take a rich object, allow string args" idea is dumb and it should just be "give me string args, I will figure out how to populate myself with specific-to-me instances of these useful objects", wherein instances of Host and User are explicitly tied to their Connection.
+
+Host is a snag here because one reason to make it objectlike is to have N names, aka aliases, so that we understand Connection('web1') should result in the same core host object as Connection('my-default-webhost') should the user configure things that way / have an SSH config implying such.
+
+Really means the model needs to be many-to-one, a given Host or User could be associated with N Connections. They differ though, Hosts can be singletons of sorts (besides the alias implication which is easily solved via a map in Context) but Users need to be namespaced by Host.
+
+So perhaps it should really be that a Connection references a Host (unless it stores only the string and we use an eg Lexicon mapping to handle aliasing, as we do in Invoke) and...also the string identifying the User, which is then delegated to Host to look up (so we get that host's instance of that user)?
+
+<!-- vim: set ft=markdown : -->
