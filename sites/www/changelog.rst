@@ -2,6 +2,8 @@
 Changelog
 =========
 
+* :feature:`1101` Reboot operation now supports custom command. Thanks to Jonas
+  Lejon.
 * :support:`1106` Fix a misleading/ambiguous example snippet in the ``fab``
   usage docs to be clearer. Thanks to ``@zed``.
 * :support:`1105 backported` Enhance ``setup.py`` to allow Paramiko 1.13+ under
