@@ -33,7 +33,7 @@ def output_loop(*args, **kwargs):
 
 
 class OutputLooper(object):
-    def __init__(self, chan, attr, stream, capture, timeout, run_label):
+    def __init__(self, chan, attr, stream, capture, timeout, run_label=None):
         self.chan = chan
         self.stream = stream
         self.capture = capture
