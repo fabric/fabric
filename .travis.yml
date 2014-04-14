@@ -20,8 +20,12 @@ script:
   - fab test
   # Integration tests
   - fab -H localhost test:"--tests\=integration"
-  # Make sure the docs build
-  - fab docs
+  # Build docs; www first without warnings so its intersphinx objects file
+  # generates. Then docs (with warnings->errors), then www again (also w/
+  # warnings on.) FUN TIMES WITH CIRCULAR DEPENDENCIES.
+  - invoke www
+  - invoke docs -o -W
+  - invoke www -c -o -W
 notifications:
   irc:
     channels: "irc.freenode.org#fabric"
