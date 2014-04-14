@@ -24,10 +24,13 @@ There are a number of ways to get involved with Fabric:
   currently use Fabric and how you want to use it. (Please do try to search the
   `ticket tracker`_ first, though,
   when submitting feature ideas.)
-* **Report bugs or submit feature requests.** We follow `contribution-guide.org
-  <http://contribution.org>`'s guidelines, so please check them out before
+* **Report bugs or submit feature requests.** We follow `contribution-guide.org`_'s guidelines, so please check them out before
   visiting the `ticket tracker`_.
+* **Fix bugs or implement features!** Again, follow `contribution-guide.org`_
+  for details on this process. Regarding the changelog step, our changelog is
+  stored in ``sites/www/changelog.rst``.
 
+.. _contribution-guide.org: http://contribution-guide.org
 .. _ticket tracker: https://github.com/fabric/fabric/issues
 
 While we may not always reply promptly, we do try to make time eventually to
