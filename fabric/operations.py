@@ -1188,7 +1188,7 @@ def local(command, capture=False, shell=None):
 
 
 @needs_host
-def reboot(wait=120, reboot_command = 'reboot'):
+def reboot(wait=120, command='reboot'):
     """
     Reboot the remote system.
 
@@ -1225,7 +1225,7 @@ def reboot(wait=120, reboot_command = 'reboot'):
         timeout=timeout,
         connection_attempts=attempts
     ):
-        sudo(reboot_command)
+        sudo(command)
         # Try to make sure we don't slip in before pre-reboot lockdown
         time.sleep(5)
         # This is actually an internal-ish API call, but users can simply drop
