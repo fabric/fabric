@@ -146,7 +146,7 @@ when unforeseen circumstances arise.
 ``all_hosts``
 -------------
 
-**Default:** ``None``
+**Default:** ``[]``
 
 Set by ``fab`` to the full host list for the currently executing command. For
 informational purposes only.
