@@ -59,7 +59,7 @@ def load_settings(path):
     """
     Take given file path and return dictionary of any key=value pairs found.
 
-    Usage docs are in docs/usage/fab.rst, in "Settings files."
+    Usage docs are in sites/docs/usage/fab.rst, in "Settings files."
     """
     if os.path.exists(path):
         comments = lambda s: s and not s.startswith("#")
@@ -84,7 +84,7 @@ def find_fabfile(names=None):
     """
     Attempt to locate a fabfile, either explicitly or by searching parent dirs.
 
-    Usage docs are in docs/usage/fabfiles.rst, in "Fabfile discovery."
+    Usage docs are in sites/docs/usage/fabfiles.rst, in "Fabfile discovery."
     """
     # Obtain env value if not given specifically
     if names is None:
@@ -519,7 +519,7 @@ def parse_arguments(arguments):
     """
     Parse string list into list of tuples: command, args, kwargs, hosts, roles.
 
-    See docs/usage/fab.rst, section on "per-task arguments" for details.
+    See sites/docs/usage/fab.rst, section on "per-task arguments" for details.
     """
     cmds = []
     for cmd in arguments:

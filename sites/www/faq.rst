@@ -171,8 +171,9 @@ disassociated from the calling shell, which may be done in a number of ways
   running shell; these tools have the benefit of allowing you to reattach to
   the process later on if needed (though they are more ad-hoc than
   ``supervisord``-like tools).
-* Run the program under ``nohup`` or similar "in-shell" tools - note that this
-  approach has seen limited success for most users.
+* You *may* be able to the program under ``nohup`` or similar "in-shell" tools
+  - however we strongly recommend the prior approaches because ``nohup`` has
+  only worked well for a minority of our users.
 
 
 .. _faq-bash:

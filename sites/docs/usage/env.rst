@@ -427,7 +427,7 @@ May be a string or list of strings, referencing file paths to SSH key files to
 try when connecting. Passed through directly to the SSH layer. May be
 set/appended to with :option:`-i`.
 
-.. seealso:: `Paramiko's documentation for SSHClient.connect() <http://www.lag.net/paramiko/docs/paramiko.SSHClient-class.html#connect>`_
+.. seealso:: `Paramiko's documentation for SSHClient.connect() <http://docs.paramiko.org/en/latest/api/client.html#paramiko.client.SSHClient.connect>`_
 
 .. _env-linewise:
 
@@ -787,7 +787,7 @@ Network connection timeout, in seconds.
 
 **Default:** ``True``
 
-Global setting which acts like the ``use_shell`` argument to
+Global setting which acts like the ``shell`` argument to
 `~fabric.operations.run`/`~fabric.operations.sudo`: if it is set to ``False``,
 operations will not wrap executed commands in ``env.shell``.
 
