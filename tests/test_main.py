@@ -97,8 +97,8 @@ def test_escaped_task_kwarg_split():
 def get_hosts(command, *args):
     return WrappedCallableTask(command).get_hosts(*args)
 
-def eq_hosts(command, host_list, env=None, func=set):
-    eq_(func(get_hosts(command, [], [], [], env)), func(host_list))
+def eq_hosts(command, expected_hosts, cli_hosts=None, excluded_hosts=None, env=None, func=set):
+    eq_(func(get_hosts(command, cli_hosts or [], [], excluded_hosts or [], env)), func(expected_hosts))
 
 true_eq_hosts = partial(eq_hosts, func=lambda x: x)
 
@@ -199,8 +199,7 @@ def test_hosts_decorator_overrides_env_hosts():
     @hosts('bar')
     def command():
         pass
-    eq_hosts(command, ['bar'])
-    assert 'foo' not in get_hosts(command, [], [], [], {'hosts': ['foo']})
+    eq_hosts(command, ['bar'], env={'hosts': ['foo']})
 
 def test_hosts_decorator_overrides_env_hosts_with_task_decorator_first():
     """
@@ -210,16 +209,14 @@ def test_hosts_decorator_overrides_env_hosts_with_task_decorator_first():
     @hosts('bar')
     def command():
         pass
-    eq_hosts(command, ['bar'])
-    assert 'foo' not in get_hosts(command, [], [], {'hosts': ['foo']})
+    eq_hosts(command, ['bar'], env={'hosts': ['foo']})
 
 def test_hosts_decorator_overrides_env_hosts_with_task_decorator_last():
     @hosts('bar')
     @task
     def command():
         pass
-    eq_hosts(command, ['bar'])
-    assert 'foo' not in get_hosts(command, [], [], {'hosts': ['foo']})
+    eq_hosts(command, ['bar'], env={'hosts': ['foo']})
 
 def test_hosts_stripped_env_hosts():
     """
@@ -228,7 +225,7 @@ def test_hosts_stripped_env_hosts():
     def command():
         pass
     myenv = {'hosts': [' foo ', 'bar '], 'roles': [], 'exclude_hosts': []}
-    eq_hosts(command, ['foo', 'bar'], myenv)
+    eq_hosts(command, ['foo', 'bar'], env=myenv)
 
 
 spaced_roles = {
@@ -243,7 +240,7 @@ def test_roles_stripped_env_hosts():
     @roles('r1')
     def command():
         pass
-    eq_hosts(command, ['a', 'b'], {'roledefs': spaced_roles})
+    eq_hosts(command, ['a', 'b'], env={'roledefs': spaced_roles})
 
 
 def test_hosts_decorator_expands_single_iterable():
@@ -278,14 +275,17 @@ def test_roles_decorator_expands_single_iterable():
 def dummy(): pass
 
 def test_get_hosts_excludes_cli_exclude_hosts_from_cli_hosts():
-    assert 'foo' not in get_hosts(dummy, ['foo', 'bar'], [], ['foo'])
+    eq_hosts(dummy, ['bar'], cli_hosts=['foo', 'bar'], excluded_hosts=['foo'])
 
 def test_get_hosts_excludes_cli_exclude_hosts_from_decorator_hosts():
-    assert 'foo' not in get_hosts(hosts('foo', 'bar')(dummy), [], [], ['foo'])
+    @hosts('foo', 'bar')
+    def command():
+        pass
+    eq_hosts(command, ['bar'], excluded_hosts=['foo'])
 
 def test_get_hosts_excludes_global_exclude_hosts_from_global_hosts():
     fake_env = {'hosts': ['foo', 'bar'], 'exclude_hosts': ['foo']}
-    assert 'foo' not in get_hosts(dummy, [], [], [], fake_env)
+    eq_hosts(dummy, ['bar'], env=fake_env)
 
 
 
@@ -302,7 +302,7 @@ def test_aborts_on_nonexistent_roles():
 
 def test_accepts_non_list_hosts():
     """
-     Aborts if hosts is a string, not a list
+    Coerces given host string to a one-item list
     """
     assert merge('badhosts', [], [], {}) == ['badhosts']
 
