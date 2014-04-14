@@ -4,7 +4,7 @@
 Changelog
 =========
 
-* :feature:`1101` Reboot operation now supports custom command
+* :feature:`1101` Reboot operation now supports custom command. Thanks to Jonas Lejon. 
 * :feature:`1082` Add ``pty`` passthrough kwarg to
   `~fabric.contrib.files.upload_template`.
 * :release:`1.8.2 <2014-02-14>`
