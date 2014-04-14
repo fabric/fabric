@@ -98,30 +98,33 @@ class Task(object):
     def run(self):
         raise NotImplementedError
 
-    def get_hosts(self, arg_hosts, arg_roles, arg_exclude_hosts, env=None):
+    def get_hosts_and_effective_roles(self, arg_hosts, arg_roles, arg_exclude_hosts, env=None):
         """
-        Return the host list the given task should be using.
+        Return a tuple containing the host list the given task should be using
+        and the roles being used.
 
         See :ref:`host-lists` for detailed documentation on how host lists are
         set.
+
+        .. versionchanged:: 1.9
         """
         env = env or {'hosts': [], 'roles': [], 'exclude_hosts': []}
         roledefs = env.get('roledefs', {})
         # Command line per-task takes precedence over anything else.
         if arg_hosts or arg_roles:
-            return merge(arg_hosts, arg_roles, arg_exclude_hosts, roledefs)
+            return merge(arg_hosts, arg_roles, arg_exclude_hosts, roledefs), arg_roles
         # Decorator-specific hosts/roles go next
         func_hosts = getattr(self, 'hosts', [])
         func_roles = getattr(self, 'roles', [])
         if func_hosts or func_roles:
-            return merge(func_hosts, func_roles, arg_exclude_hosts, roledefs)
+            return merge(func_hosts, func_roles, arg_exclude_hosts, roledefs), func_roles
         # Finally, the env is checked (which might contain globally set lists
         # from the CLI or from module-level code). This will be the empty list
         # if these have not been set -- which is fine, this method should
         # return an empty list if no hosts have been set anywhere.
         env_vars = map(_get_list(env), "hosts roles exclude_hosts".split())
         env_vars.append(roledefs)
-        return merge(*env_vars)
+        return merge(*env_vars), env.get('roles', [])
 
     def get_pool_size(self, hosts, default):
         # Default parallel pool size (calculate per-task in case variables
@@ -331,7 +334,8 @@ def execute(task, *args, **kwargs):
     # Filter out hosts/roles kwargs
     new_kwargs, hosts, roles, exclude_hosts = parse_kwargs(kwargs)
     # Set up host list
-    my_env['all_hosts'] = task.get_hosts(hosts, roles, exclude_hosts, state.env)
+    my_env['all_hosts'], my_env['effective_roles'] = task.get_hosts_and_effective_roles(hosts, roles,
+                                                                                        exclude_hosts, state.env)
 
     parallel = requires_parallel(task)
     if parallel:

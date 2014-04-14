@@ -94,11 +94,16 @@ def test_escaped_task_kwarg_split():
 #
 
 # Allow calling Task.get_hosts as function instead (meh.)
-def get_hosts(command, *args):
-    return WrappedCallableTask(command).get_hosts(*args)
+def get_hosts_and_effective_roles(command, *args):
+    return WrappedCallableTask(command).get_hosts_and_effective_roles(*args)
 
 def eq_hosts(command, expected_hosts, cli_hosts=None, excluded_hosts=None, env=None, func=set):
-    eq_(func(get_hosts(command, cli_hosts or [], [], excluded_hosts or [], env)), func(expected_hosts))
+    eq_(func(get_hosts_and_effective_roles(command, cli_hosts or [], [], excluded_hosts or [], env)[0]),
+        func(expected_hosts))
+
+def eq_effective_roles(command, expected_effective_roles, cli_roles=None, env=None, func=set):
+    eq_(func(get_hosts_and_effective_roles(command, [], cli_roles or [], [], env)[1]),
+        func(expected_effective_roles))
 
 true_eq_hosts = partial(eq_hosts, func=lambda x: x)
 
@@ -128,6 +133,27 @@ def test_roles_decorator_by_itself():
     def command():
         pass
     eq_hosts(command, ['a', 'b'], env={'roledefs': fake_roles})
+    eq_effective_roles(command, ['r1'], env={'roledefs': fake_roles})
+
+def test_roles_decorator_overrides_env_roles():
+    """
+    If @roles is used it replaces any env.roles value
+    """
+    @roles('r1')
+    def command():
+        pass
+    eq_effective_roles(command, ['r1'], env={'roledefs': fake_roles,
+                                             'roles': ['r2']})
+
+def test_cli_roles_override_decorator_roles():
+    """
+    If CLI roles are provided they replace roles defined in @roles.
+    """
+    @roles('r1')
+    def command():
+        pass
+    eq_effective_roles(command, ['r2'], cli_roles=['r2'], env={'roledefs': fake_roles})
+
 
 def test_hosts_and_roles_together():
     """
@@ -138,6 +164,7 @@ def test_hosts_and_roles_together():
     def command():
         pass
     eq_hosts(command, ['a', 'b', 'c', 'd'], env={'roledefs': fake_roles})
+    eq_effective_roles(command, ['r1', 'r2'], env={'roledefs': fake_roles})
 
 def test_host_role_merge_deduping():
     """
@@ -181,6 +208,7 @@ def test_roles_as_tuples():
     def command():
         pass
     eq_hosts(command, ['a', 'b'], env={'roledefs': tuple_roles})
+    eq_effective_roles(command, ['r1'], env={'roledefs': fake_roles})
 
 
 def test_hosts_as_tuples():
