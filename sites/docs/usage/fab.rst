@@ -389,7 +389,7 @@ For example, a "create a new user" task might be defined like so (omitting most
 of the actual logic for brevity)::
 
     def new_user(username, admin='no', comment="No comment provided"):
-        log_action("New User (%s): %s" % (username, comment))
+        print("New User (%s): %s" % (username, comment))
         pass
 
 You can specify just the username::
@@ -408,7 +408,7 @@ Or mix and match, just like in Python::
 
     $ fab new_user:myusername,admin=yes
 
-The ``log_action`` call above is useful for illustrating escaped commas, like
+The ``print`` call above is useful for illustrating escaped commas, like
 so::
 
     $ fab new_user:myusername,admin=no,comment='Gary\, new developer (starts Monday)'

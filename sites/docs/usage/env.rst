@@ -798,7 +798,7 @@ Network connection timeout, in seconds.
 
 **Default:** ``True``
 
-Global setting which acts like the ``use_shell`` argument to
+Global setting which acts like the ``shell`` argument to
 `~fabric.operations.run`/`~fabric.operations.sudo`: if it is set to ``False``,
 operations will not wrap executed commands in ``env.shell``.
 

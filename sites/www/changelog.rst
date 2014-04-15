@@ -5,6 +5,10 @@ Changelog
 * :feature:`938` Add an env var :ref:`env.effective_roles <effective_roles>`
   specifying roles used in the currently executing command. Thanks to
   Piotr Betkier for the patch.
+* :feature:`1101` Reboot operation now supports custom command. Thanks to Jonas
+  Lejon.
+* :support:`1106` Fix a misleading/ambiguous example snippet in the ``fab``
+  usage docs to be clearer. Thanks to ``@zed``.
 * :support:`1105 backported` Enhance ``setup.py`` to allow Paramiko 1.13+ under
   Python 2.6+. Thanks to to ``@Arfrever`` for catch & patch.
 * :release:`1.8.3 <2014-03-21>`
