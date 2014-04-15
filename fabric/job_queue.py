@@ -9,7 +9,6 @@ from __future__ import with_statement
 import time
 import Queue
 
-from fabric.state import env
 from fabric.network import ssh
 from fabric.context_managers import settings
 
@@ -190,45 +189,3 @@ class JobQueue(object):
                 results[datum['name']]['results'] = datum['result']
             except Queue.Empty:
                 break
-
-
-#### Sample
-
-def try_using(parallel_type):
-    """
-    This will run the queue through it's paces, and show a simple way of using
-    the job queue.
-    """
-
-    def print_number(number):
-        """
-        Simple function to give a simple task to execute.
-        """
-        print(number)
-
-    if parallel_type == "multiprocessing":
-        from multiprocessing import Process as Bucket
-
-    elif parallel_type == "threading":
-        from threading import Thread as Bucket
-
-    # Make a job_queue with a bubble of len 5, and have it print verbosely
-    jobs = JobQueue(5)
-    jobs._debug = True
-
-    # Add 20 procs onto the stack
-    for x in range(20):
-        jobs.append(Bucket(
-            target=print_number,
-            args=[x],
-            kwargs={},
-            ))
-
-    # Close up the queue and then start it's execution
-    jobs.close()
-    jobs.run()
-
-
-if __name__ == '__main__':
-    try_using("multiprocessing")
-    try_using("threading")
