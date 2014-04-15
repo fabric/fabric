@@ -1,9 +1,13 @@
 =========
 Changelog
 =========
+
 * :feature:`1078` Add ``.command`` and ``.real_command`` attributes to
   ``local`` return value.  Thanks to Alexander Teves (``@alexanderteves``) and
   Konrad Hałas (``@konradhalas``).
+* :feature:`938` Add an env var :ref:`env.effective_roles <effective_roles>`
+  specifying roles used in the currently executing command. Thanks to
+  Piotr Betkier for the patch.
 * :feature:`1101` Reboot operation now supports custom command. Thanks to Jonas
   Lejon.
 * :support:`1106` Fix a misleading/ambiguous example snippet in the ``fab``

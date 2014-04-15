@@ -293,6 +293,17 @@ limits on per-process open files, or network hardware.
     throughout your output, instead of at the end. This may be improved in
     future releases.
 
+.. _effective_roles:
+
+``effective_roles``
+-------------------
+
+**Default:** ``[]``
+
+Set by ``fab`` to the roles list of the currently executing command. For
+informational purposes only.
+
+.. seealso:: :doc:`execution`
 
 .. _exclude-hosts:
 

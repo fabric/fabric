@@ -315,6 +315,7 @@ env = _AttributeDict({
     'default_port': default_port,
     'eagerly_disconnect': False,
     'echo_stdin': True,
+    'effective_roles': [],
     'exclude_hosts': [],
     'gateway': None,
     'host': None,
