@@ -2,6 +2,9 @@
 Changelog
 =========
 
+* :bug:`898` Treat paths that begin with tilde "~" as absolute paths instead of
+  relative. Thanks to Alex Plugaru for the patch and Dan Craig for the
+  suggestion.
 * :feature:`1078` Add ``.command`` and ``.real_command`` attributes to
   ``local`` return value.  Thanks to Alexander Teves (``@alexanderteves``) and
   Konrad Hałas (``@konradhalas``).
