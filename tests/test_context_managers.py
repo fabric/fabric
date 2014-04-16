@@ -2,6 +2,7 @@ from __future__ import with_statement
 
 import os
 import sys
+from StringIO import StringIO
 
 from nose.tools import eq_, ok_
 
@@ -9,10 +10,8 @@ from fabric.state import env, output
 from fabric.context_managers import (cd, settings, lcd, hide, shell_env, quiet,
     warn_only, prefix, path)
 from fabric.operations import run, local
-
 from utils import mock_streams, FabricTest
 from server import server
-from StringIO import StringIO
 
 
 #
@@ -23,8 +22,10 @@ def test_error_handling():
     """
     cd cleans up after itself even in case of an exception
     """
+
     class TestException(Exception):
         pass
+
     try:
         with cd('somewhere'):
             raise TestException('Houston, we have a problem.')
@@ -47,6 +48,52 @@ def test_cwd_with_absolute_paths():
             eq_(env.cwd, absolute)
         with cd(additional):
             eq_(env.cwd, existing + '/' + additional)
+
+
+def test_cd_home_dir():
+    """
+    cd() should work with home directories
+    """
+    homepath = "~/somepath"
+    with cd(homepath):
+        eq_(env.cwd, homepath)
+
+
+def test_cd_nested_home_abs_dirs():
+    """
+    cd() should work with nested user homedir (starting with ~) paths.
+
+    It should always take the last path if the new path begins with `/` or `~`
+    """
+
+    home_path = "~/somepath"
+    abs_path = "/some/random/path"
+    relative_path = "some/random/path"
+
+    # 2 nested homedir paths
+    with cd(home_path):
+        eq_(env.cwd, home_path)
+        another_path = home_path + "/another/path"
+        with cd(another_path):
+            eq_(env.cwd, another_path)
+
+    # first absolute path, then a homedir path
+    with cd(abs_path):
+        eq_(env.cwd, abs_path)
+        with cd(home_path):
+            eq_(env.cwd, home_path)
+
+    # first relative path, then a homedir path
+    with cd(relative_path):
+        eq_(env.cwd, relative_path)
+        with cd(home_path):
+            eq_(env.cwd, home_path)
+
+    # first home path, then a a relative path
+    with cd(home_path):
+        eq_(env.cwd, home_path)
+        with cd(relative_path):
+            eq_(env.cwd, home_path + "/" + relative_path)
 
 
 #
@@ -107,6 +154,7 @@ def test_settings():
         eq_(env.testval, "inner value")
     eq_(env.testval, "outer value")
 
+
 def test_settings_with_multiple_kwargs():
     """
     settings() should temporarily override env dict with given key/value pairS
@@ -118,6 +166,7 @@ def test_settings_with_multiple_kwargs():
         eq_(env.testval2, "inner 2")
     eq_(env.testval1, "outer 1")
     eq_(env.testval2, "outer 2")
+
 
 def test_settings_with_other_context_managers():
     """
@@ -167,6 +216,7 @@ def test_shell_env():
         eq_(env.shell_env['KEY'], 'value')
 
     eq_(env.shell_env, {})
+
 
 class TestQuietAndWarnOnly(FabricTest):
     @server()
