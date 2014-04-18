@@ -234,8 +234,8 @@ Changelog
 * :feature:`578` Add ``name`` argument to `~fabric.decorators.task` (:ref:`docs
   <task-decorator-arguments>`) to allow overriding of the default "function
   name is task name" behavior. Thanks to Daniel Simmons for catch & patch.
-* :feature:`761` Allow advanced users to parameterize ``fabric.main.main()`` to
-  force loading of specific fabfiles.
+* :feature:`761` Allow advanced users to load specific fabfiles in
+  ``fabric.main.main()``  with `fabfile_locations` argument.
 * :bug:`749` Gracefully work around calls to ``fabric.version`` on systems
   lacking ``/bin/sh`` (which causes an ``OSError`` in ``subprocess.Popen``
   calls.)
