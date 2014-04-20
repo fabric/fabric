@@ -2,6 +2,9 @@
 Changelog
 =========
 
+* :support:`700` Added ``use_sudo`` and ``temp_dir`` params to ``operations.get()``. 
+  This allows downloading files normally not accessible to the user using ``sudo``.
+  Thanks to Alex Plugaru.
 * :bug:`898` Treat paths that begin with tilde "~" as absolute paths instead of relative.
   Thanks to Alex Plugaru for the patch and Dan Craig for the suggestion.
 * :support:`1105 backported` Enhance ``setup.py`` to allow Paramiko 1.13+ under
