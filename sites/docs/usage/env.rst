@@ -146,7 +146,7 @@ when unforeseen circumstances arise.
 ``all_hosts``
 -------------
 
-**Default:** ``None``
+**Default:** ``[]``
 
 Set by ``fab`` to the full host list for the currently executing command. For
 informational purposes only.
@@ -293,6 +293,17 @@ limits on per-process open files, or network hardware.
     throughout your output, instead of at the end. This may be improved in
     future releases.
 
+.. _effective_roles:
+
+``effective_roles``
+-------------------
+
+**Default:** ``[]``
+
+Set by ``fab`` to the roles list of the currently executing command. For
+informational purposes only.
+
+.. seealso:: :doc:`execution`
 
 .. _exclude-hosts:
 
@@ -787,7 +798,7 @@ Network connection timeout, in seconds.
 
 **Default:** ``True``
 
-Global setting which acts like the ``use_shell`` argument to
+Global setting which acts like the ``shell`` argument to
 `~fabric.operations.run`/`~fabric.operations.sudo`: if it is set to ``False``,
 operations will not wrap executed commands in ``env.shell``.
 

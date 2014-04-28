@@ -2,6 +2,19 @@
 Changelog
 =========
 
+* :bug:`898` Treat paths that begin with tilde "~" as absolute paths instead of
+  relative. Thanks to Alex Plugaru for the patch and Dan Craig for the
+  suggestion.
+* :feature:`1078` Add ``.command`` and ``.real_command`` attributes to
+  ``local`` return value.  Thanks to Alexander Teves (``@alexanderteves``) and
+  Konrad Hałas (``@konradhalas``).
+* :feature:`938` Add an env var :ref:`env.effective_roles <effective_roles>`
+  specifying roles used in the currently executing command. Thanks to
+  Piotr Betkier for the patch.
+* :feature:`1101` Reboot operation now supports custom command. Thanks to Jonas
+  Lejon.
+* :support:`1106` Fix a misleading/ambiguous example snippet in the ``fab``
+  usage docs to be clearer. Thanks to ``@zed``.
 * :support:`1105 backported` Enhance ``setup.py`` to allow Paramiko 1.13+ under
   Python 2.6+. Thanks to to ``@Arfrever`` for catch & patch.
 * :release:`1.8.3 <2014-03-21>`
@@ -15,7 +28,7 @@ Changelog
 * :bug:`955` Quote directories created as part of ``put``'s recursive directory
   uploads when ``use_sudo=True`` so directories with shell meta-characters
   (such as spaces) work correctly. Thanks to John Harris for the catch.
-* :bug:`917` Correct an issue with ``put(use_sudo=True, mode=xxx)`` where the 
+* :bug:`917` Correct an issue with ``put(use_sudo=True, mode=xxx)`` where the
   ``chmod`` was trying to apply to the wrong location. Thanks to Remco
   (``@nl5887``) for catch & patch.
 * :bug:`1046` Fix typo preventing use of ProxyCommand in some situations.
