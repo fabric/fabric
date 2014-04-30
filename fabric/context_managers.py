@@ -33,6 +33,8 @@ Context managers for use with the ``with`` statement.
     ``nested`` itself -- see its API doc for details.
 """
 
+from __future__ import print_function
+
 from contextlib import contextmanager, nested
 import sys
 import socket
@@ -532,21 +534,23 @@ def remote_tunnel(remote_port, local_port=None, local_host="localhost",
     channels = []
     threads = []
 
-    def accept(channel, (src_addr, src_port), (dest_addr, dest_port)):
+    def accept(channel, src, dest):
+        (src_addr, src_port) = src
+        (dest_addr, dest_port) = dest
         channels.append(channel)
         sock = socket.socket()
         sockets.append(sock)
 
         try:
             sock.connect((local_host, local_port))
-        except Exception, e:
-            print "[%s] rtunnel: cannot connect to %s:%d (from local)" % (env.host_string, local_host, local_port)
+        except Exception as e:
+            print("[%s] rtunnel: cannot connect to %s:%d (from local)" % (env.host_string, local_host, local_port))
             chan.close()
             return
 
-        print "[%s] rtunnel: opened reverse tunnel: %r -> %r -> %r"\
+        print("[%s] rtunnel: opened reverse tunnel: %r -> %r -> %r"\
               % (env.host_string, channel.origin_addr,
-                 channel.getpeername(), (local_host, local_port))
+                 channel.getpeername(), (local_host, local_port)))
 
         th = ThreadHandler('fwd', _forwarder, channel, sock)
         threads.append(th)
