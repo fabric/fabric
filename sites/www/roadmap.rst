@@ -4,7 +4,7 @@ Development roadmap
 
 This document outlines Fabric's intended development path. Please make sure
 you're reading `the latest version
-<http://docs.fabfile.org/en/latest/roadmap.html>`_ of this document! 
+<http://www.fabfile.org/roadmap.html>`_ of this document!
 
 .. warning::
     This information is subject to change without warning, and should not be
