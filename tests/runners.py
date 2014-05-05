@@ -4,11 +4,23 @@ from fabric.runners import Remote, RemoteSudo
 
 
 class Remote_(Spec):
-    # uses paramiko exec_command (mock)
-    # pty requests a pty (ditto)
-    # wrapper/preparation method wraps in bash, can be turned off
-    # all other run() tests from fab1...
-    pass
+    # TODO: all other run() tests from fab1...
+    def uses_paramiko_exec_command(self):
+        skip()
+
+    def run_pty_uses_paramiko_get_pty(self):
+        skip()
+
+    def wraps_command_in_bash_by_default(self):
+        # TODO: or should it?
+        skip()
+
+    def wrapper_subject_to_disabling(self):
+        # TODO: how? also implies top level run() wants to pass **kwargs to
+        # runner somehow, though that's dangerous; maybe allow runner to
+        # expose what it expects so run() can correctly determine things.
+        # TODO: oughtn't this be part of invoke proper?
+        skip()
 
 
 class RemoteSudo_(Spec):
