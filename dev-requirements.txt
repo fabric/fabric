@@ -2,7 +2,7 @@
 # Invocations for common project tasks
 invocations==0.5.0
 # Spec for test organization/etc
-spec==0.1.1
+spec==0.11.1
 nose==1.3.0
 six==1.6.1
 # Mock for test mocking
