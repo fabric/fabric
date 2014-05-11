@@ -31,6 +31,7 @@ setup(
     author_email='jeff@bitprophet.org',
     url='http://fabfile.org',
 
+    install_requires=['invoke>=0.7,<0.8'],
     packages=['fabric'],
     #entry_points={
     #    'console_scripts': [
