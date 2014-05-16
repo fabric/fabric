@@ -521,6 +521,13 @@ def connect(user, host, port, cache, seek_gateway=True):
                 prompt = "[%s] Passphrase for private key"
                 text = prompt % env.host_string
             password = prompt_for_password(text)
+            if not password:
+                msg = "[%s] Password not provided, login unsuccessful" % env.host_string
+                if env.warn_only:
+                    warn(msg)
+                    return None
+                else:
+                    raise NetworkError(msg)
             # Update env.password, env.passwords if empty
             set_password(user, host, port, password)
         # Ctrl-D / Ctrl-C for exit
@@ -602,11 +609,7 @@ def prompt_for_password(prompt=None, no_colon=False, stream=None):
         password_prompt += ": "
     # Get new password value
     new_password = _password_prompt(password_prompt, stream)
-    # Otherwise, loop until user gives us a non-empty password (to prevent
-    # returning the empty string, and to avoid unnecessary network overhead.)
-    while not new_password:
-        print("Sorry, you can't enter an empty password. Please try again.")
-        new_password = _password_prompt(password_prompt, stream)
+
     return new_password
 
 
