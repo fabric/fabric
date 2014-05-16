@@ -8,7 +8,7 @@ from optparse import make_option
 
 from fabric.network import HostConnectionCache, ssh
 from fabric.version import get_version
-from fabric.utils import _AliasDict, _AttributeDict
+from fabric.utils import _AliasDict, _AttributeDict, warn
 
 
 #
@@ -379,7 +379,15 @@ connections = HostConnectionCache()
 
 
 def _open_session():
-    return connections[env.host_string].get_transport().open_session()
+    try:
+        c = connections[env.host_string]
+        if c is not None:
+            return c.get_transport().open_session()
+    except Exception, ex:
+        if env.warn_only:
+            warn(ex)
+        else:
+            raise
 
 
 def default_channel():
@@ -388,6 +396,8 @@ def default_channel():
     """
     try:
         chan = _open_session()
+        if not chan:
+            return None
     except ssh.SSHException, err:
         if str(err) == 'SSH session not active':
             connections[env.host_string].close()

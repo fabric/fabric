@@ -861,7 +861,11 @@ def open_shell(command=None):
 
     .. versionadded:: 1.0
     """
-    _execute(channel=default_channel(), command=command, pty=True,
+
+    dc = default_channel()
+    if not dc and env.warn_only:
+        return
+    _execute(channel=dc, command=command, pty=True,
         combine_stderr=True, invoke_shell=True)
 
 
@@ -904,9 +908,13 @@ def _run_command(command, shell=True, pty=True, combine_stderr=True,
         elif output.running:
             print("[%s] %s: %s" % (env.host_string, which, given_command))
 
+        dc = default_channel()
+        if not dc and env.warn_only:
+            return
+
         # Actual execution, stdin/stdout/stderr handling, and termination
         result_stdout, result_stderr, status = _execute(
-            channel=default_channel(), command=wrapped_command, pty=pty,
+            channel=dc, command=wrapped_command, pty=pty,
             combine_stderr=combine_stderr, invoke_shell=False, stdout=stdout,
             stderr=stderr, timeout=timeout)
 
