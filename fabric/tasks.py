@@ -203,6 +203,10 @@ def _parallel_tasks(commands_to_run):
     ))
 
 
+def _is_network_error_ignored():
+    return not state.env.use_exceptions_for['network'] and state.env.skip_bad_hosts
+
+
 def _execute(task, host, my_env, args, kwargs, jobs, queue, multiprocessing):
     """
     Primary single-host work body of execute()
@@ -241,12 +245,16 @@ def _execute(task, host, my_env, args, kwargs, jobs, queue, multiprocessing):
                 # clear what host encountered the exception that will
                 # print.
                 if e.__class__ is not SystemExit:
-                    sys.stderr.write("!!! Parallel execution exception under host %r:\n" % name)
+                    if not (isinstance(e, NetworkError) and
+                            _is_network_error_ignored()):
+                        sys.stderr.write("!!! Parallel execution exception under host %r:\n" % name)
                     submit(e)
                 # Here, anything -- unexpected exceptions, or abort()
                 # driven SystemExits -- will bubble up and terminate the
                 # child process.
-                raise
+                if not (isinstance(e, NetworkError) and
+                        _is_network_error_ignored()):
+                    raise
 
         # Stuff into Process wrapper
         kwarg_dict = {
@@ -397,7 +405,10 @@ def execute(task, *args, **kwargs):
             ran_jobs = jobs.run()
             for name, d in ran_jobs.iteritems():
                 if d['exit_code'] != 0:
-                    if isinstance(d['results'], BaseException):
+                    if isinstance(d['results'], NetworkError) and \
+                            _is_network_error_ignored():
+                        error(d['results'].message, func=warn, exception=d['results'].wrapped)
+                    elif isinstance(d['results'], BaseException):
                         error(err, exception=d['results'])
                     else:
                         error(err)
