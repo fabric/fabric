@@ -47,8 +47,7 @@ tool, and plan to:
     * No (or optional & non-default) shared state.
     * Any other core overhauls difficult to do in a backwards compatible
       fashion.
-    * `Current issue list
-      <https://github.com/fabric/fabric/issues?labels=2.x>`_
+    * Test-driven development (Invoke does this as well.)
 
 * Spin off ``fabric.contrib.*`` into a standalone "super-Fabric" (as in, "above Fabric") library, `Patchwork <https://github.com/fabric/patchwork>`_.
 
