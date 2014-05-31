@@ -6,7 +6,7 @@ import sys
 import textwrap
 
 from fabric import state
-from fabric.utils import abort, warn, error
+from fabric.utils import abort, warn, error, print_command
 from fabric.network import to_dict, normalize_to_string, disconnect_all
 from fabric.context_managers import settings
 from fabric.job_queue import JobQueue
@@ -209,7 +209,7 @@ def _execute(task, host, my_env, args, kwargs, jobs, queue, multiprocessing):
     """
     # Log to stdout
     if state.output.running and not hasattr(task, 'return_value'):
-        print("[%s] Executing task '%s'" % (host, my_env['command']))
+        print_command(host, 'Executing task', my_env['command'])
     # Create per-run env with connection settings
     local_env = to_dict(host)
     local_env.update(my_env)
