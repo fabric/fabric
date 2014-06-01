@@ -11,11 +11,12 @@ from traceback import format_exc
 def print_command(host, which='', command=''):
     from fabric.state import env
     header = env.output_header if 'output_header' in env else '[{host}]'
-    body = env.output_body if 'output_body' in env else '{which}'
+    body = env.output_body if 'output_body' in env else '{which}:'
     cmd = env.output_cmd if 'output_body' in env else '{command}'
     output_format = ' '.join([header, body, cmd])
 
     print(output_format.format(**locals()))
+
 
 def abort(msg):
     """

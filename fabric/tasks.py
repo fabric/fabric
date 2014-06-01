@@ -209,7 +209,8 @@ def _execute(task, host, my_env, args, kwargs, jobs, queue, multiprocessing):
     """
     # Log to stdout
     if state.output.running and not hasattr(task, 'return_value'):
-        print_command(host, 'Executing task', my_env['command'])
+        print_command(
+            host, 'Executing task', '\'{cmd}\''.format(cmd=my_env['command']))
     # Create per-run env with connection settings
     local_env = to_dict(host)
     local_env.update(my_env)
