@@ -4,8 +4,9 @@ Changelog
 
 * :release:`1.8.4 <2014-06-08>`
 * :release:`1.7.4 <2014-06-08>`
-* :bug:`898` Treat paths that begin with tilde "~" as absolute paths instead of relative.
-  Thanks to Alex Plugaru for the patch and Dan Craig for the suggestion.
+* :bug:`898` Treat paths that begin with tilde "~" as absolute paths instead of
+  relative. Thanks to Alex Plugaru for the patch and Dan Craig for the
+  suggestion.
 * :support:`1105 backported` Enhance ``setup.py`` to allow Paramiko 1.13+ under
   Python 2.6+. Thanks to to ``@Arfrever`` for catch & patch.
 * :release:`1.8.3 <2014-03-21>`
