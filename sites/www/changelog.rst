@@ -2,6 +2,7 @@
 Changelog
 =========
 
+* :release:`1.9.0 <2014-06-08>`
 * :feature:`1078` Add ``.command`` and ``.real_command`` attributes to
   ``local`` return value.  Thanks to Alexander Teves (``@alexanderteves``) and
   Konrad Hałas (``@konradhalas``).
