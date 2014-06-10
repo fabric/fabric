@@ -25,7 +25,11 @@ def abort(msg):
         from colors import red
 
     if output.aborts:
-        sys.stderr.write(red("\nFatal error: %s\n" % str(msg)))
+        try:
+            msg = str(msg)
+        except UnicodeEncodeError:
+            pass
+        sys.stderr.write(red("\nFatal error: %s\n" % msg))
         sys.stderr.write(red("\nAborting.\n"))
 
     if env.abort_exception:
@@ -110,7 +114,11 @@ def puts(text, show_prefix=None, end="\n", flush=False):
         prefix = ""
         if env.host_string and show_prefix:
             prefix = "[%s] " % env.host_string
-        sys.stdout.write(prefix + str(text) + end)
+        try:
+            text = str(text)
+        except UnicodeEncodeError:
+            pass
+        sys.stdout.write(prefix + text + end)
         if flush:
             sys.stdout.flush()
 
