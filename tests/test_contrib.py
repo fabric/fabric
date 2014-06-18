@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import with_statement
-
+from fabric.operations import local
 import os
 
 from fabric.api import hide, get, show
 from fabric.contrib.files import upload_template, contains
+from fabric.context_managers import lcd
 
 from utils import FabricTest, eq_contents
 from server import server
@@ -81,3 +82,27 @@ class TestContrib(FabricTest):
                 upload_template(fname, '/configfile.txt', {}, use_jinja=True)
         finally:
             os.remove(fname)
+
+
+    def test_upload_template_obeys_lcd(self):
+        self.__do_test_upload_template_obeys_lcd(jinja=True, mirror=False)
+        self.__do_test_upload_template_obeys_lcd(jinja=True, mirror=True)
+        self.__do_test_upload_template_obeys_lcd(jinja=False, mirror=False)
+        self.__do_test_upload_template_obeys_lcd(jinja=False, mirror=True)
+
+    @server()
+    def __do_test_upload_template_obeys_lcd(self, jinja, mirror):
+        template_content = {True: '{{ varname }}s', False: '%(varname)s'}
+
+        template_dir = 'template_dir'
+        template_name = 'template.txt'
+        if not self.exists_locally(self.path(template_dir)):
+            os.mkdir(self.path(template_dir))
+
+        self.mkfile(os.path.join(template_dir, template_name), template_content[jinja])
+
+        remote = '/configfile.txt'
+        local('ls -la ' + self.path(template_dir))
+        var = 'foobar'
+        with lcd(self.path(template_dir)), hide('everything'):
+            upload_template(template_name, remote, {'varname': var}, mirror_local_mode=mirror)
