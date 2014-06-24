@@ -36,7 +36,7 @@ class SFTP(object):
 
     def isdir(self, path):
         try:
-            return stat.S_ISDIR(self.ftp.lstat(path).st_mode)
+            return stat.S_ISDIR(self.ftp.stat(path).st_mode)
         except IOError:
             return False
 
