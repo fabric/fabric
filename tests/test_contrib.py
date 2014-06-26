@@ -121,7 +121,7 @@ class TestContrib(FabricTest):
         self.mkfile(os.path.join(template_dir, template_name), template_content[jinja])
 
         remote = '/configfile.txt'
-        local('ls -la ' + self.path(template_dir))
         var = 'foobar'
-        with lcd(self.path(template_dir)), hide('everything'):
-            upload_template(template_name, remote, {'varname': var}, mirror_local_mode=mirror)
+        with hide('everything'):
+            with lcd(self.path(template_dir)):
+                upload_template(template_name, remote, {'varname': var}, mirror_local_mode=mirror)
