@@ -1193,7 +1193,7 @@ def local(command, capture=False, shell=None):
 
 
 @needs_host
-def reboot(wait=120, command='reboot'):
+def reboot(wait=120, command='reboot', use_sudo=True):
     """
     Reboot the remote system.
 
@@ -1217,6 +1217,9 @@ def reboot(wait=120, command='reboot'):
         Changed the ``wait`` kwarg to be optional, and refactored to leverage
         the new reconnection functionality; it may not actually have to wait
         for ``wait`` seconds before reconnecting.
+    .. versionchanged:: ?
+        Added ``use_sudo`` as a kwarg. Maintained old functionality by setting
+        the value to True.
     """
     # Shorter timeout for a more granular cycle than the default.
     timeout = 5
@@ -1230,7 +1233,10 @@ def reboot(wait=120, command='reboot'):
         timeout=timeout,
         connection_attempts=attempts
     ):
-        sudo(command)
+        if use_sudo is True:
+            sudo(command)
+        else:
+            run(command)
         # Try to make sure we don't slip in before pre-reboot lockdown
         time.sleep(5)
         # This is actually an internal-ish API call, but users can simply drop
