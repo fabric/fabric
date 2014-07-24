@@ -5,6 +5,9 @@ import time
 import re
 import socket
 # from select import select
+# Required for stanley patch
+import fcntl
+import os
 
 from fabric.state import env, output, win32
 from fabric.auth import get_password, set_password
@@ -223,6 +226,20 @@ class OutputLooper(object):
         return None, None
 
 
+# Required for stanley patch
+class nonblocking(object):
+    def __init__(self, stream):
+        self.stream = stream
+        self.fd = self.stream.fileno()
+
+    def __enter__(self):
+        self.orig_fl = fcntl.fcntl(self.fd, fcntl.F_GETFL)
+        fcntl.fcntl(self.fd, fcntl.F_SETFL, self.orig_fl | os.O_NONBLOCK)
+
+    def __exit__(self, *args):
+        fcntl.fcntl(self.fd, fcntl.F_SETFL, self.orig_fl)
+
+
 def input_loop(chan, using_pty):
     char_read = None
     while not chan.exit_status_ready():
@@ -230,7 +247,8 @@ def input_loop(chan, using_pty):
             have_char = msvcrt.kbhit()
         else:
             # r, w, x = select([sys.stdin], [], [], 0.0)
-            char_read = sys.stdin.read(1)
+            with nonblocking(sys.stdin):
+                char_read = sys.stdin.read(1)
             have_char = char_read is not None
         if have_char and chan.input_enabled:
             # Send all local stdin to remote end's stdin
