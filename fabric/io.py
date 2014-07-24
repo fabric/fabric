@@ -4,7 +4,7 @@ import sys
 import time
 import re
 import socket
-from select import select
+# from select import select
 
 from fabric.state import env, output, win32
 from fabric.auth import get_password, set_password
@@ -224,15 +224,17 @@ class OutputLooper(object):
 
 
 def input_loop(chan, using_pty):
+    char_read = None
     while not chan.exit_status_ready():
         if win32:
             have_char = msvcrt.kbhit()
         else:
-            r, w, x = select([sys.stdin], [], [], 0.0)
-            have_char = (r and r[0] == sys.stdin)
+            # r, w, x = select([sys.stdin], [], [], 0.0)
+            char_read = sys.stdin.read(1)
+            have_char = char_read is not None
         if have_char and chan.input_enabled:
             # Send all local stdin to remote end's stdin
-            byte = msvcrt.getch() if win32 else sys.stdin.read(1)
+            byte = msvcrt.getch() if win32 else char_read
             chan.sendall(byte)
             # Optionally echo locally, if needed.
             if not using_pty and env.echo_stdin:
