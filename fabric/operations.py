@@ -624,11 +624,12 @@ def _shell_wrap(command, shell_escape, shell=True, sudo_prefix=None):
         shell = env.shell + " "
         if shell_escape:
             command = _shell_escape(command)
-        command = '"%s"' % command
+        if "{cmd}" not in shell:
+            shell += '"{cmd}"'
     else:
-        shell = ""
+        shell = "{}"
     # Resulting string should now have correct formatting
-    return sudo_prefix + shell + command
+    return sudo_prefix + shell.format(cmd=command)
 
 
 def _prefix_commands(command, which):

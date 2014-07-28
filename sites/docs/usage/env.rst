@@ -688,6 +688,9 @@ takes a command string as its value.
 .. seealso:: :option:`--shell <-s>`,
              :ref:`FAQ on bash as default shell <faq-bash>`, :doc:`execution`
 
+.. note:: env.shell can also be a format-string using '{cmd}' for command
+          replacement
+
 .. _skip-bad-hosts:
 
 ``skip_bad_hosts``
