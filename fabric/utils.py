@@ -5,7 +5,7 @@ or performing indenting on multiline output.
 import os
 import sys
 import textwrap
-from traceback import format_exc
+from traceback import format_exc, extract_stack
 
 def abort(msg):
     """
@@ -305,6 +305,17 @@ def error(message, func=None, exception=None, stdout=None, stderr=None):
     import fabric.state
     if func is None:
         func = fabric.state.env.warn_only and warn or abort
+
+    stack = extract_stack()
+    for i, t in enumerate(extract_stack()):
+        if t[0].endswith('fabric/tasks.py') and t[2] == 'run':
+            message += "\n\nError at: %s:%s - %s" % (
+                stack[i + 1][0],
+                stack[i + 1][1],
+                stack[i + 1][3]
+            )
+            break
+
     # If debug printing is on, append a traceback to the message
     if fabric.state.output.debug:
         message += "\n\n" + format_exc()
