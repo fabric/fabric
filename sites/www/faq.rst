@@ -9,6 +9,45 @@ reading the rest of the documentation, especially the :ref:`usage docs
 answered here.
 
 
+On OS X Mavericks, Fabric installs but then doesn't run!
+========================================================
+
+On OS X Mavericks (10.9) the system Python has a too-old version of
+``setuptools`` which doesn't know how to hook up binary scripts with Python
+libraries using the newer ``wheel`` package format. This problem is not
+specific to Fabric and can affect any package that has ``wheel`` files uploaded
+to PyPI.
+
+The specific symptoms we've been able to recreate are:
+
+* OS X 10.9 using system Python
+* Pip obtained via e.g. ``sudo easy_install pip`` or ``sudo python get-pip.py``
+* ``pip install fabric``
+* ``fab [args]`` then results in the following traceback::
+
+    Traceback (most recent call last):
+      File "/usr/local/bin/fab", line 5, in <module>
+        from pkg_resources import load_entry_point
+      File "/System/Library/Frameworks/Python.framework/Versions/2.7/Extras/lib/python/pkg_resources.py", line 2603, in <module>
+        working_set.require(__requires__)
+      File "/System/Library/Frameworks/Python.framework/Versions/2.7/Extras/lib/python/pkg_resources.py", line 666, in require
+        needed = self.resolve(parse_requirements(requirements))
+      File "/System/Library/Frameworks/Python.framework/Versions/2.7/Extras/lib/python/pkg_resources.py", line 565, in resolve
+        raise DistributionNotFound(req)  # XXX put more info here
+    pkg_resources.DistributionNotFound: paramiko>=1.10
+
+The easiest solution is to obtain a newer ``setuptools`` (which fixes this bug
+among many others) like so::
+
+    $ sudo pip install -U setuptools
+
+Uninstalling, then reinstalling Fabric after doing so should fix the issue.
+
+You may also find success by using a different Python interpreter/ecosystem,
+such as that provided by `Homebrew <http://brew.sh>`_ (`specific Python doc
+page <https://github.com/Homebrew/homebrew/wiki/Homebrew-and-Python>`_).
+
+
 How do I dynamically set host lists?
 ====================================
 
