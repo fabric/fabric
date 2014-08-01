@@ -9,16 +9,16 @@ reading the rest of the documentation, especially the :ref:`usage docs
 answered here.
 
 
-On OS X Mavericks, Fabric installs but then doesn't run!
-========================================================
+Fabric installs but doesn't run!
+================================
 
-On OS X Mavericks (10.9) the system Python has a too-old version of
-``setuptools`` which doesn't know how to hook up binary scripts with Python
-libraries using the newer ``wheel`` package format. This problem is not
-specific to Fabric and can affect any package that has ``wheel`` files uploaded
-to PyPI.
+On systems with old versions of ``setuptools`` (notably OS X Mavericks [10.9]
+as well as older Linux distribution versions) users frequently have problems
+running Fabric's binary scripts; this is because these ``setuptools`` are too
+old to deal with the modern distribution formats Fabric and some of its
+dependencies may use.
 
-The specific symptoms we've been able to recreate are:
+One method we've used to recreate this error:
 
 * OS X 10.9 using system Python
 * Pip obtained via e.g. ``sudo easy_install pip`` or ``sudo python get-pip.py``
