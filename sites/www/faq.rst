@@ -36,16 +36,22 @@ One method we've used to recreate this error:
         raise DistributionNotFound(req)  # XXX put more info here
     pkg_resources.DistributionNotFound: paramiko>=1.10
 
-The easiest solution is to obtain a newer ``setuptools`` (which fixes this bug
+The best solution is to obtain a newer ``setuptools`` (which fixes this bug
 among many others) like so::
 
     $ sudo pip install -U setuptools
 
 Uninstalling, then reinstalling Fabric after doing so should fix the issue.
 
-You may also find success by using a different Python interpreter/ecosystem,
-such as that provided by `Homebrew <http://brew.sh>`_ (`specific Python doc
-page <https://github.com/Homebrew/homebrew/wiki/Homebrew-and-Python>`_).
+Another approach is to tell ``pip`` not to use the ``wheel`` format (make sure
+you've already uninstalled Fabric and Paramiko beforehand)::
+
+    $ sudo pip install fabric --no-use-wheel
+
+Finally, you may also find success by using a different Python
+interpreter/ecosystem, such as that provided by `Homebrew <http://brew.sh>`_
+(`specific Python doc page
+<https://github.com/Homebrew/homebrew/wiki/Homebrew-and-Python>`_).
 
 
 How do I dynamically set host lists?
