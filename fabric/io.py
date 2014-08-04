@@ -39,9 +39,10 @@ class OutputLooper(object):
         self.capture = capture
         self.timeout = timeout
         self.read_func = getattr(chan, attr)
-        self.prefix = "[%s] %s: " % (
-            env.host_string,
-            "out" if attr == 'recv' else "err"
+        header = env.output_header if 'output_header' in env else '[{host}]'
+        self.prefix = "{header} {body}: ".format(
+            header=header.format(host=env.host_string),
+            body="out" if attr == 'recv' else "err"
         )
         self.printing = getattr(output, 'stdout' if (attr == 'recv') else 'stderr')
         self.linewise = (env.linewise or env.parallel)

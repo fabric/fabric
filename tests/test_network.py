@@ -258,7 +258,7 @@ class TestNetwork(FabricTest):
         cmd = "ls /"
         output_string = RESPONSES[cmd]
         # TODO: fix below lines, duplicates inner workings of tested code
-        prefix = "[%s] out: " % env.host_string
+        prefix = "[{host}] out: ".format(host=env.host_string)
         expected = prefix + ('\n' + prefix).join(output_string.split('\n'))
         # Create, tie off thread
         with settings(show('everything'), hide('running')):
@@ -324,7 +324,7 @@ class TestNetwork(FabricTest):
         output.everything = False
         with password_response(PASSWORDS[env.user], silent=False):
             run("ls /simple")
-        regex = r'^\[%s\] Login password for \'%s\': ' % (env.host_string, env.user)
+        regex = r'^\[%s\] Login password for \'%s\':' % (env.host_string, env.user)
         assert_contains(regex, sys.stderr.getvalue())
 
     @mock_streams('stderr')
@@ -339,7 +339,7 @@ class TestNetwork(FabricTest):
         output.everything = False
         with password_response(CLIENT_PRIVKEY_PASSPHRASE, silent=False):
             run("ls /simple")
-        regex = r'^\[%s\] Login password for \'%s\': ' % (env.host_string, env.user)
+        regex = r'^\[%s\] Login password for \'%s\':' % (env.host_string, env.user)
         assert_contains(regex, sys.stderr.getvalue())
 
     def test_sudo_prompt_display_passthrough(self):

@@ -15,8 +15,9 @@ import time
 from glob import glob
 from contextlib import closing, contextmanager
 
-from fabric.context_managers import (settings, char_buffered, hide,
-    quiet as quiet_manager, warn_only as warn_only_manager)
+from fabric.context_managers import (
+    settings, char_buffered, hide, quiet as quiet_manager,
+    warn_only as warn_only_manager)
 from fabric.io import output_loop, input_loop
 from fabric.network import needs_host, ssh, ssh_config
 from fabric.sftp import SFTP
@@ -29,7 +30,8 @@ from fabric.utils import (
     indent,
     _pty_size,
     warn,
-    apply_lcwd
+    apply_lcwd,
+    print_command
 )
 
 
@@ -900,9 +902,9 @@ def _run_command(command, shell=True, pty=True, combine_stderr=True,
         # Execute info line
         which = 'sudo' if sudo else 'run'
         if output.debug:
-            print("[%s] %s: %s" % (env.host_string, which, wrapped_command))
+            print_command(env.host_string, which, given_command)
         elif output.running:
-            print("[%s] %s: %s" % (env.host_string, which, given_command))
+            print_command(env.host_string, which, given_command)
 
         # Actual execution, stdin/stdout/stderr handling, and termination
         result_stdout, result_stderr, status = _execute(
@@ -1148,10 +1150,13 @@ def local(command, capture=False, shell=None):
     # Apply cd(), path() etc
     with_env = _prefix_env_vars(command, local=True)
     wrapped_command = _prefix_commands(with_env, 'local')
+
     if output.debug:
-        print("[localhost] local: %s" % (wrapped_command))
+        command = wrapped_command
     elif output.running:
-        print("[localhost] local: " + given_command)
+        command = given_command
+
+    print_command('localhost', 'local', command)
     # Tie in to global output controls as best we can; our capture argument
     # takes precedence over the output settings.
     dev_null = None

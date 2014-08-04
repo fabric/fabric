@@ -314,8 +314,8 @@ class TestExecute(FabricTest):
         def task():
             pass
         execute(task, hosts=['host1', 'host2'])
-        eq_(sys.stdout.getvalue(), """[host1] Executing task 'task'
-[host2] Executing task 'task'
+        eq_(sys.stdout.getvalue(), """[host1] Executing task: 'task'
+[host2] Executing task: 'task'
 """)
 
     @mock_streams('stdout')
