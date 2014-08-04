@@ -303,6 +303,7 @@ limits on per-process open files, or network hardware.
 Set by ``fab`` to the roles list of the currently executing command. For
 informational purposes only.
 
+.. versionadded:: 1.9
 .. seealso:: :doc:`execution`
 
 .. _exclude-hosts:
