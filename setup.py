@@ -11,7 +11,7 @@ readme = open('README.rst').read()
 
 long_description = """
 To find out what's new in this version of Fabric, please see `the changelog
-<http://docs.fabfile.org/en/%s/changelog.html>`_.
+<http://fabfile.org/changelog.html>`_.
 
 You can also install the `in-development version
 <https://github.com/fabric/fabric/tarball/master#egg=fabric-dev>`_ using
