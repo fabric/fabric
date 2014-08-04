@@ -59,7 +59,8 @@ tool, and plan to:
       hurdles to overcome. See `Paramiko #16
       <https://github.com/paramiko/paramiko/issues/16>`_.
 
-* Spin off ``fabric.contrib.*`` into a standalone "super-Fabric" (as in, "above Fabric") library, `Patchwork <https://github.com/fabric/patchwork>`_.
+* Spin off ``fabric.contrib.*`` into a standalone "super-Fabric" (as in, "above
+  Fabric") library, `Patchwork <https://github.com/fabric/patchwork>`_.
 
     * This lets core "execute commands on hosts" functionality iterate
       separately from "commonly useful shortcuts using Fabric core".
