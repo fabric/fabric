@@ -4,13 +4,12 @@ python:
   - "2.7"
 install:
   # Build/test dependencies
-  - pip install -r requirements.txt --use-mirrors
+  - pip install -r requirements.txt
   # Get fab to test fab
   - pip install -e .
   # Deal with issue on Travis builders re: multiprocessing.Queue :(
   - "sudo rm -rf /dev/shm && sudo ln -s /run/shm /dev/shm"
-  # Jinja2 for some tests, in a version that isn't broken on 2.5 :(
-  - 'pip install "jinja2<2.7"'
+  - "pip install jinja2"
 before_script:
   # Allow us to SSH passwordless to localhost
   - ssh-keygen -f ~/.ssh/id_rsa -N ""
