@@ -2,6 +2,8 @@
 Changelog
 =========
 
+* :bug:`1167` Add Jinja to ``test_requires`` in ``setup.py`` for the couple of
+  newish tests that now require it. Thanks to Kubilay Kocak for the catch.
 * :release:`1.7.4 <2014-06-08>`
 * :bug:`898` Treat paths that begin with tilde "~" as absolute paths instead of
   relative. Thanks to Alex Plugaru for the patch and Dan Craig for the
