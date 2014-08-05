@@ -2,6 +2,8 @@
 Changelog
 =========
 
+* :bug:`1134` Skip bad hosts when the tasks are executed in parallel. Thanks to
+  Igor Maravić ``@i-maravic``.
 * :release:`1.9.0 <2014-06-08>`
 * :feature:`1078` Add ``.command`` and ``.real_command`` attributes to
   ``local`` return value.  Thanks to Alexander Teves (``@alexanderteves``) and
