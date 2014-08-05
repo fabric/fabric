@@ -2,6 +2,8 @@
 Changelog
 =========
 
+* :bug:`1167` Add Jinja to ``test_requires`` in ``setup.py`` for the couple of
+  newish tests that now require it. Thanks to Kubilay Kocak for the catch.
 * :release:`1.9.0 <2014-06-08>`
 * :feature:`1078` Add ``.command`` and ``.real_command`` attributes to
   ``local`` return value.  Thanks to Alexander Teves (``@alexanderteves``) and
