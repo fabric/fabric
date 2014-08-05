@@ -2,6 +2,8 @@
 Changelog
 =========
 
+* :bug:`1134` Skip bad hosts when the tasks are executed in parallel. Thanks to
+  Igor Maravić ``@i-maravic``.
 * :bug:`852` Fix to respect ``template_dir`` for non Jinja2 templates in
   `~fabric.contrib.files.upload_template`. Thanks to Adam Kowalski for the
   patch and Alex Plugaru for the initial test case.
