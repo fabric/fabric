@@ -24,7 +24,7 @@ pip, with `pip install fabric==dev`.
 ----
 
 For more information, please see the Fabric website or execute ``fab --help``.
-""" % (get_version('branch'), readme)
+""" % (readme)
 
 if sys.version_info[:2] < (2, 6):
     install_requires=['paramiko>=1.10,<1.13']
