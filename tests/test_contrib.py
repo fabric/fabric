@@ -104,13 +104,12 @@ class TestContrib(FabricTest):
 
 
     def test_upload_template_obeys_lcd(self):
-        self.__do_test_upload_template_obeys_lcd(jinja=True, mirror=False)
-        self.__do_test_upload_template_obeys_lcd(jinja=True, mirror=True)
-        self.__do_test_upload_template_obeys_lcd(jinja=False, mirror=False)
-        self.__do_test_upload_template_obeys_lcd(jinja=False, mirror=True)
+        for jinja in (True, False):
+            for mirror in (True, False):
+                self._upload_template_obeys_lcd(jinja=jinja, mirror=mirror)
 
     @server()
-    def __do_test_upload_template_obeys_lcd(self, jinja, mirror):
+    def _upload_template_obeys_lcd(self, jinja, mirror):
         template_content = {True: '{{ varname }}s', False: '%(varname)s'}
 
         template_dir = 'template_dir'
@@ -118,10 +117,15 @@ class TestContrib(FabricTest):
         if not self.exists_locally(self.path(template_dir)):
             os.mkdir(self.path(template_dir))
 
-        self.mkfile(os.path.join(template_dir, template_name), template_content[jinja])
+        self.mkfile(
+            os.path.join(template_dir, template_name), template_content[jinja]
+        )
 
         remote = '/configfile.txt'
         var = 'foobar'
         with hide('everything'):
             with lcd(self.path(template_dir)):
-                upload_template(template_name, remote, {'varname': var}, mirror_local_mode=mirror)
+                upload_template(
+                    template_name, remote, {'varname': var},
+                    mirror_local_mode=mirror
+                )
