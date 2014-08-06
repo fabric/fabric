@@ -18,6 +18,7 @@ from fabric.state import env, output, _get_system_username
 from fabric.operations import run, sudo, prompt
 from fabric.exceptions import NetworkError
 from fabric.tasks import execute
+from fabric.api import parallel
 from fabric import utils # for patching
 
 from utils import *
@@ -545,6 +546,27 @@ class TestConnections(FabricTest):
         """
         with settings(hide('everything'), skip_bad_hosts=True):
             execute(subtask, hosts=['nope.nonexistent.com'])
+
+
+@parallel
+def parallel_subtask():
+    run("This should never execute")
+
+class TestParallelConnections(FabricTest):
+    @aborts
+    def test_should_abort_when_cannot_connect(self):
+        """
+        By default, connecting to a nonexistent server should abort.
+        """
+        with hide('everything'):
+            execute(parallel_subtask, hosts=['nope.nonexistent.com'])
+
+    def test_should_warn_when_skip_bad_hosts_is_True(self):
+        """
+        env.skip_bad_hosts = True => execute() skips current host
+        """
+        with settings(hide('everything'), skip_bad_hosts=True):
+            execute(parallel_subtask, hosts=['nope.nonexistent.com'])
 
 
 class TestSSHConfig(FabricTest):
