@@ -38,6 +38,25 @@ class TestContrib(FabricTest):
             get(remote, local)
         eq_contents(local, var)
 
+    @server()
+    def test_upload_template_handles_template_dir(self):
+        """
+        upload_template() should work OK with template dir
+        """
+        template = self.mkfile('template.txt', '%(varname)s')
+        template_dir = os.path.dirname(template)
+        local = self.path('result.txt')
+        remote = '/configfile.txt'
+        var = 'foobar'
+        with hide('everything'):
+            upload_template(
+                'template.txt', remote, {'varname': var},
+                template_dir=template_dir
+            )
+            get(remote, local)
+        eq_contents(local, var)
+
+
     @server(responses={
         'egrep "text" "/file.txt"': (
             "sudo: unable to resolve host fabric",
