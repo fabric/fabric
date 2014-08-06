@@ -57,7 +57,8 @@ def is_link(path, use_sudo=False, verbose=False):
 def first(*args, **kwargs):
     """
     Given one or more file paths, returns first one found, or None if none
-    exist. May specify ``use_sudo`` and ``verbose`` which are passed to `exists`.
+    exist. May specify ``use_sudo`` and ``verbose`` which are passed to
+    `exists`.
     """
     for directory in args:
         if exists(directory, **kwargs):
