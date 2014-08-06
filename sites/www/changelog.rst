@@ -2,6 +2,10 @@
 Changelog
 =========
 
+* :bug:`600` Clear out connection caches in full when prepping
+  parallel-execution subprocesses. This avoids corner cases causing
+  hangs/freezes due to client/socket reuse. Thanks to Ruslan Lutsenko for the
+  initial report and Romain Chossart for the suggested fix.
 * :bug:`1167` Add Jinja to ``test_requires`` in ``setup.py`` for the couple of
   newish tests that now require it. Thanks to Kubilay Kocak for the catch.
 * :release:`1.7.4 <2014-06-08>`
