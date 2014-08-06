@@ -764,11 +764,12 @@ event that the host-specific cache (see below) has no entry for the current
 
 :ref:`env.passwords <passwords>` (plural!) serves as a per-user/per-host cache,
 storing the most recently entered password for every unique user/host/port
-combination.  Due to this cache, connections to multiple different users and/or
-hosts in the same session will only require a single password entry for each.
-(Previous versions of Fabric used only the single, default password cache and
-thus required password re-entry every time the previously entered password
-became invalid.)
+combination (**note** that you must include **all three values** if modifying
+the structure by hand - see the above link for details). Due to this cache,
+connections to multiple different users and/or hosts in the same session will
+only require a single password entry for each. (Previous versions of Fabric
+used only the single, default password cache and thus required password
+re-entry every time the previously entered password became invalid.)
 
 Depending on your configuration and the number of hosts your session will
 connect to, you may find setting either or both of these env vars to be useful.
