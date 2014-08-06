@@ -2,6 +2,9 @@
 Changelog
 =========
 
+* :bug:`1096` Encode Unicode text appropriately for its target stream object to
+  avoid issues on non-ASCII systems. Thanks to Toru Uetani for the original
+  patch.
 * :bug:`1059` Update IPv6 support to work with link-local address formats.
   Fix courtesy of ``@obormot``.
 * :bug:`1026` Fix a typo preventing quiet operation of
