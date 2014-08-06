@@ -7,6 +7,14 @@ import sys
 import textwrap
 from traceback import format_exc
 
+
+def _encode(msg, stream):
+    if isinstance(msg, unicode):
+        return msg.encode(stream.encoding)
+    else:
+        return str(msg)
+
+
 def abort(msg):
     """
     Abort execution, print ``msg`` to stderr and exit with error status (1.)
@@ -25,7 +33,7 @@ def abort(msg):
         from colors import red
 
     if output.aborts:
-        sys.stderr.write(red("\nFatal error: %s\n" % str(msg)))
+        sys.stderr.write(red("\nFatal error: %s\n" % _encode(msg, sys.stderr)))
         sys.stderr.write(red("\nAborting.\n"))
 
     if env.abort_exception:
@@ -51,6 +59,7 @@ def warn(msg):
         from colors import magenta
 
     if output.warnings:
+        msg = _encode(msg, sys.stderr)
         sys.stderr.write(magenta("\nWarning: %s\n\n" % msg))
 
 
@@ -110,7 +119,7 @@ def puts(text, show_prefix=None, end="\n", flush=False):
         prefix = ""
         if env.host_string and show_prefix:
             prefix = "[%s] " % env.host_string
-        sys.stdout.write(prefix + str(text) + end)
+        sys.stdout.write(prefix + _encode(text, sys.stdout) + end)
         if flush:
             sys.stdout.flush()
 

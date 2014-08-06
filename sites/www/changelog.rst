@@ -2,6 +2,20 @@
 Changelog
 =========
 
+* :bug:`852` Fix to respect ``template_dir`` for non Jinja2 templates in
+  `~fabric.contrib.files.upload_template`. Thanks to Adam Kowalski for the
+  patch and Alex Plugaru for the initial test case.
+* :bug:`1096` Encode Unicode text appropriately for its target stream object to
+  avoid issues on non-ASCII systems. Thanks to Toru Uetani for the original
+  patch.
+* :bug:`1059` Update IPv6 support to work with link-local address formats.
+  Fix courtesy of ``@obormot``.
+* :bug:`1026` Fix a typo preventing quiet operation of
+  `~fabric.contrib.files.is_link`. Caught by ``@dongweiming``.
+* :bug:`600` Clear out connection caches in full when prepping
+  parallel-execution subprocesses. This avoids corner cases causing
+  hangs/freezes due to client/socket reuse. Thanks to Ruslan Lutsenko for the
+  initial report and Romain Chossart for the suggested fix.
 * :bug:`1167` Add Jinja to ``test_requires`` in ``setup.py`` for the couple of
   newish tests that now require it. Thanks to Kubilay Kocak for the catch.
 * :release:`1.8.4 <2014-06-08>`

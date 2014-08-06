@@ -33,7 +33,8 @@ Please make sure all dependencies are installed and importable.
     sys.exit(1)
 
 
-ipv6_regex = re.compile('^\[?(?P<host>[0-9A-Fa-f:]+)\]?(:(?P<port>\d+))?$')
+ipv6_regex = re.compile(
+    '^\[?(?P<host>[0-9A-Fa-f:]+(?:%[a-z]+\d+)?)\]?(:(?P<port>\d+))?$')
 
 
 def direct_tcpip(client, host, port):
