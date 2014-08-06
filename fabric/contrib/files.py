@@ -117,7 +117,7 @@ def upload_template(filename, destination, context=None, use_jinja=False,
     # Use mode kwarg to implement mirror_local_mode, again due to using
     # StringIO
     if mirror_local_mode and mode is None:
-        mode = os.stat(filename).st_mode
+        mode = os.stat(apply_lcwd(filename, env)).st_mode
         # To prevent put() from trying to do this
         # logic itself
         mirror_local_mode = False
