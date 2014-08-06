@@ -531,6 +531,11 @@ This dictionary is largely for internal use, and is filled automatically as a
 per-host-string password cache. Keys are full :ref:`host strings
 <host-strings>` and values are passwords (strings).
 
+.. warning::
+    If you modify or generate this dict manually, **you must use fully
+    qualified host strings** with user and port values. See the link above for
+    details on the host string API.
+
 .. seealso:: :ref:`password-management`
 
 .. versionadded:: 1.0
