@@ -2,6 +2,9 @@
 Changelog
 =========
 
+* :bug:`852` Fix to respect ``template_dir`` for non Jinja2 templates in
+  `~fabric.contrib.files.upload_template`. Thanks to Adam Kowalski for the
+  patch and Alex Plugaru for the initial test case.
 * :bug:`1096` Encode Unicode text appropriately for its target stream object to
   avoid issues on non-ASCII systems. Thanks to Toru Uetani for the original
   patch.
