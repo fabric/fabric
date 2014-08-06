@@ -42,7 +42,8 @@ def is_link(path, use_sudo=False, verbose=False):
 
     If ``use_sudo`` is True, will use `.sudo` instead of `.run`.
 
-    `.is_link` will, by default, hide all output. Give ``verbose=True`` to change this.
+    `.is_link` will, by default, hide all output. Give ``verbose=True`` to
+    change this.
     """
     func = sudo if use_sudo else run
     cmd = 'test -L "$(echo %s)"' % path
