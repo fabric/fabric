@@ -231,8 +231,7 @@ def _execute(task, host, my_env, args, kwargs, jobs, queue, multiprocessing):
             def submit(result):
                 queue.put({'name': name, 'result': result})
             try:
-                key = normalize_to_string(state.env.host_string)
-                state.connections.pop(key, "")
+                state.connections.clear()
                 submit(task.run(*args, **kwargs))
             except BaseException, e: # We really do want to capture everything
                 # SystemExit implies use of abort(), which prints its own
