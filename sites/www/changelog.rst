@@ -2,6 +2,9 @@
 Changelog
 =========
 
+* :bug:`1146` Fix a big where `~fabric.contrib.files.upload_template` failed to
+  honor ``lcd`` when ``mirror_local_mode`` is ``True``. Thanks to Laszlo Marai
+  for catch & patch.
 * :bug:`1134` Skip bad hosts when the tasks are executed in parallel. Thanks to
   Igor Maravić ``@i-maravic``.
 * :bug:`852` Fix to respect ``template_dir`` for non Jinja2 templates in
