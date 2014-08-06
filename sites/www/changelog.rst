@@ -2,6 +2,8 @@
 Changelog
 =========
 
+* :bug:`1026` Fix a typo preventing quiet operation of
+  `~fabric.contrib.files.is_link`. Caught by ``@dongweiming``.
 * :bug:`600` Clear out connection caches in full when prepping
   parallel-execution subprocesses. This avoids corner cases causing
   hangs/freezes due to client/socket reuse. Thanks to Ruslan Lutsenko for the
