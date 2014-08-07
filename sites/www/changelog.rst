@@ -2,6 +2,7 @@
 Changelog
 =========
 
+* :release:`1.8.5 <2014-08-06>`
 * :release:`1.7.5 <2014-08-06>`
 * :bug:`1165` Prevent infinite loop condition when a gateway host is enabled &
   the same host is in the regular target host list. Thanks to ``@CzBiX`` for
