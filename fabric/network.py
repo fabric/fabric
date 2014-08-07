@@ -139,9 +139,16 @@ class HostConnectionCache(dict):
         """
         Force a new connection to ``key`` host string.
         """
+        from fabric.state import env
+        
         user, host, port = normalize(key)
         key = normalize_to_string(key)
-        self[key] = connect(user, host, port, cache=self)
+        seek_gateway = True
+        # break the loop when the host is gateway itself
+        if env.gateway:
+            seek_gateway = normalize_to_string(env.gateway) != key
+        self[key] = connect(
+            user, host, port, cache=self, seek_gateway=seek_gateway)
 
     def __getitem__(self, key):
         """

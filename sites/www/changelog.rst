@@ -2,7 +2,13 @@
 Changelog
 =========
 
-* :bug:`1146` Fix a big where `~fabric.contrib.files.upload_template` failed to
+* :bug:`1165` Prevent infinite loop condition when a gateway host is enabled &
+  the same host is in the regular target host list. Thanks to ``@CzBiX`` for
+  catch & patch.
+* :bug:`1147` Use ``stat`` instead of ``lstat`` when testing directory-ness in
+  the SFTP module. This allows recursive downloads to avoid recursing into
+  symlinks unexpectedly. Thanks to Igor Kalnitsky for the patch.
+* :bug:`1146` Fix a bug where `~fabric.contrib.files.upload_template` failed to
   honor ``lcd`` when ``mirror_local_mode`` is ``True``. Thanks to Laszlo Marai
   for catch & patch.
 * :bug:`1134` Skip bad hosts when the tasks are executed in parallel. Thanks to
