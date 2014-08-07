@@ -140,8 +140,10 @@ class HostConnectionCache(dict):
         key = normalize_to_string(key)
         seek_gateway = True
         # break the loop when the host is gateway itself
-        if env.gateway: seek_gateway = normalize_to_string(env.gateway) != key
-        self[key] = connect(user, host, port, cache=self, seek_gateway=seek_gateway)
+        if env.gateway:
+            seek_gateway = normalize_to_string(env.gateway) != key
+        self[key] = connect(
+            user, host, port, cache=self, seek_gateway=seek_gateway)
 
     def __getitem__(self, key):
         """
