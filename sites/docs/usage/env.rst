@@ -471,7 +471,7 @@ contain the same value.
 .. _merge-states:
 
 ``merge_states``
-------------
+----------------
 
 **Default:** ``False``
 
