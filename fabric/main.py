@@ -751,6 +751,8 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
     except KeyboardInterrupt:
         if state.output.status:
             sys.stderr.write("\nStopped.\n")
+        if state.env.abort_exception:
+            raise state.env.abort_exception('KeyboardInterrupt')
         sys.exit(1)
     except:
         sys.excepthook(*sys.exc_info())
