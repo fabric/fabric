@@ -2,6 +2,8 @@
 Parallel execution
 ==================
 
+.. _parallel-execution:
+
 .. versionadded:: 1.3
 
 By default, Fabric executes all specified tasks **serially** (see

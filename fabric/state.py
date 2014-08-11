@@ -83,7 +83,7 @@ default_ssh_config_path = '~/.ssh/config'
 # optparse.NO_DEFAULT (currently a two-tuple)! In general, None is a better
 # default than ''.
 #
-# User-facing documentation for these are kept in docs/env.rst.
+# User-facing documentation for these are kept in sites/docs/env.rst.
 env_options = [
 
     make_option('-a', '--no_agent',
@@ -303,6 +303,7 @@ env_options = [
 # preserving DRY: anything in here is generally not settable via the command
 # line.
 env = _AttributeDict({
+    'abort_exception': None,
     'again_prompt': 'Sorry, try again.',
     'all_hosts': [],
     'combine_stderr': True,
@@ -314,6 +315,7 @@ env = _AttributeDict({
     'default_port': default_port,
     'eagerly_disconnect': False,
     'echo_stdin': True,
+    'effective_roles': [],
     'exclude_hosts': [],
     'gateway': None,
     'host': None,
@@ -339,6 +341,7 @@ env = _AttributeDict({
     'sudo_prompt': 'sudo password:',
     'sudo_user': None,
     'tasks': [],
+    'prompts': {},
     'use_exceptions_for': {'network': False},
     'use_shell': True,
     'use_ssh_config': False,

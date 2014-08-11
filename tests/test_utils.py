@@ -59,6 +59,17 @@ def test_abort():
     """
     abort("Test")
 
+class TestException(Exception):
+    pass
+
+@raises(TestException)
+def test_abort_with_exception():
+    """
+    abort() should raise a provided exception
+    """
+    with settings(abort_exception=TestException):
+        abort("Test")
+
 
 @mock_streams('stderr')
 @with_patched_object(output, 'aborts', True)
