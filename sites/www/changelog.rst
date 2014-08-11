@@ -2,7 +2,7 @@
 Changelog
 =========
 
-* :feature:`1174 <2014-08-11>` Allow state.env.abort_exceptions to handle
+* :feature:`1174` Allow state.env.abort_exceptions to handle
   keyboard interrupt exceptions if set.
 * :release:`1.9.1 <2014-08-06>`
 * :release:`1.8.5 <2014-08-06>`
