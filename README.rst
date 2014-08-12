@@ -7,9 +7,9 @@ additional functionality, all in a single consistent namespace.
 The most basic use of Fabric is to execute shell commands on one or more remote
 servers. A single-server execution might look like this::
 
-    from fabric import Host
+    from fabric import Connection
 
-    result = Host('web1.example.com').run('uname -s')
+    result = Connection('web1.example.com').run('uname -s')
     print("web1 is {0}".format(result.stdout.strip()))
 
 which could result in::
@@ -18,9 +18,9 @@ which could result in::
 
 To check the ``uname`` of multiple servers, you might do this::
 
-    from fabric import HostCollection
+    from fabric import Pool
 
-    results = HostCollection('web1', 'web2').run('uname -s')
+    results = Pool('web1', 'web2').run('uname -s')
     for host, result in results.items(): # 'results' is a dict
         print("{0} is {1}".format(host.name, result.stdout.strip()))
 
