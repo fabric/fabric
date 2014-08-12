@@ -110,7 +110,7 @@ class SFTP(object):
         else:
             self.ftp.mkdir(path)
 
-    def get(self, remote_path, local_path, local_is_path, rremote=None):
+    def get(self, remote_path, local_path, local_is_path, rremote=None, callback=None):
         # rremote => relative remote path, so get(/var/log) would result in
         # this function being called with
         # remote_path=/var/log/apache2/access.log and
@@ -151,12 +151,12 @@ class SFTP(object):
         if not local_is_path:
             local_path.seek(0)
             getter = self.ftp.getfo
-        getter(remote_path, local_path)
+        getter(remote_path, local_path, self._create_paramiko_callback(str(remote_path), callback))
         # Return local_path object for posterity. (If mutated, caller will want
         # to know.)
         return local_path
 
-    def get_dir(self, remote_path, local_path):
+    def get_dir(self, remote_path, local_path, callback):
         # Decide what needs to be stripped from remote paths so they're all
         # relative to the given remote_path
         if os.path.basename(remote_path):
@@ -192,11 +192,11 @@ class SFTP(object):
                     lpath = local_path
                 # Now we can make a call to self.get() with specific file paths
                 # on both ends.
-                result.append(self.get(rpath, lpath, True, rremote))
+                result.append(self.get(rpath, lpath, True, rremote, callback))
         return result
 
     def put(self, local_path, remote_path, use_sudo, mirror_local_mode, mode,
-        local_is_path, temp_dir):
+        local_is_path, temp_dir, callback=None):
         from fabric.api import sudo, hide
         pre = self.ftp.getcwd()
         pre = pre if pre else ''
@@ -224,7 +224,7 @@ class SFTP(object):
             old_pointer = local_path.tell()
             local_path.seek(0)
             putter = self.ftp.putfo
-        rattrs = putter(local_path, remote_path)
+        rattrs = putter(local_path, remote_path, self._create_paramiko_callback(str(local_path), callback))
         if not local_is_path:
             local_path.seek(old_pointer)
         # Handle modes if necessary
@@ -257,7 +257,7 @@ class SFTP(object):
         return remote_path
 
     def put_dir(self, local_path, remote_path, use_sudo, mirror_local_mode,
-        mode, temp_dir):
+        mode, temp_dir, callback):
         if os.path.basename(local_path):
             strip = os.path.dirname(local_path)
         else:
@@ -284,6 +284,13 @@ class SFTP(object):
                 local_path = os.path.join(context, f)
                 n = posixpath.join(rcontext, f)
                 p = self.put(local_path, n, use_sudo, mirror_local_mode, mode,
-                    True, temp_dir)
+                    True, temp_dir, callback)
                 remote_paths.append(p)
         return remote_paths
+
+    def _create_paramiko_callback(self, file_path, callback):
+        def paramiko_callback(bytes_transferred, bytes_overall):
+            if (callback != None):
+                callback(file_path, bytes_transferred, bytes_overall)
+
+        return paramiko_callback

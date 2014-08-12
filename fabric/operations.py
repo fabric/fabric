@@ -252,7 +252,7 @@ def prompt(text, key=None, default='', validate=None):
 
 @needs_host
 def put(local_path=None, remote_path=None, use_sudo=False,
-    mirror_local_mode=False, mode=None, use_glob=True, temp_dir=""):
+    mirror_local_mode=False, mode=None, use_glob=True, temp_dir="", callback=None):
     """
     Upload one or more files to a remote host.
 
@@ -308,6 +308,12 @@ def put(local_path=None, remote_path=None, use_sudo=False,
 
     Use of `~fabric.context_managers.lcd` will affect ``local_path`` in the
     same manner.
+
+    The ``callback`` parameter is a function of a form::
+        
+        def callback(file_name, file_size, size_transferred)
+
+    the function is called by underlying layer every transferred data block.
 
     Examples::
 
@@ -392,11 +398,11 @@ def put(local_path=None, remote_path=None, use_sudo=False,
             try:
                 if local_is_path and os.path.isdir(lpath):
                     p = ftp.put_dir(lpath, remote_path, use_sudo,
-                        mirror_local_mode, mode, temp_dir)
+                        mirror_local_mode, mode, temp_dir, callback)
                     remote_paths.extend(p)
                 else:
                     p = ftp.put(lpath, remote_path, use_sudo, mirror_local_mode,
-                        mode, local_is_path, temp_dir)
+                        mode, local_is_path, temp_dir, callback)
                     remote_paths.append(p)
             except Exception, e:
                 msg = "put() encountered an exception while uploading '%s'"
@@ -411,7 +417,7 @@ def put(local_path=None, remote_path=None, use_sudo=False,
 
 
 @needs_host
-def get(remote_path, local_path=None):
+def get(remote_path, local_path=None, callback=None):
     """
     Download one or more files from a remote host.
 
@@ -479,6 +485,13 @@ def get(remote_path, local_path=None):
     ``local_path`` may alternately be a file-like object, such as the result of
     ``open('path', 'w')`` or a ``StringIO`` instance.
 
+    The ``callback`` parameter is a function of a form::
+        
+        def callback(file_name, file_size, size_transferred)
+
+    the function is called by underlying layer every transferred data block.
+
+ 
     .. note::
         Attempting to `get` a directory into a file-like object is not valid
         and will result in an error.
@@ -562,14 +575,14 @@ def get(remote_path, local_path=None):
 
             for remote_path in names:
                 if ftp.isdir(remote_path):
-                    result = ftp.get_dir(remote_path, local_path)
+                    result = ftp.get_dir(remote_path, local_path, callback)
                     local_files.extend(result)
                 else:
                     # Perform actual get. If getting to real local file path,
                     # add result (will be true final path value) to
                     # local_files. File-like objects are omitted.
                     result = ftp.get(remote_path, local_path, local_is_path,
-                        os.path.basename(remote_path))
+                        os.path.basename(remote_path), callback)
                     if local_is_path:
                         local_files.append(result)
 
