@@ -17,7 +17,8 @@ Table of contents
 
 .. toctree::
     :hidden:
-    :glob:
-    :maxdepth: 1
 
-    *
+    tutorial
+    concepts
+    api
+    upgrading
