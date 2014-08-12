@@ -6,7 +6,7 @@ Welcome to Fabric!
 
 This document is a whirlwind tour of Fabric's features and a quick guide to its
 use. Additional documentation (which is linked to throughout) can be found in
-the :ref:`usage documentation <usage-docs>` -- please make sure to check it out.
+the :ref:`conceptual documentation <concepts>` -- please make sure to check it out.
 
 
 What is Fabric?
