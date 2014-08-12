@@ -46,9 +46,7 @@ For example, you might define a task function like so::
 
 and execute it like this::
 
-    $ fab -H web1,web2 get_uname
-    Running 'get_uname' on ['web1', 'web2']...
+    $ fab -H web1,web2,web3 get_uname
     web1 is Linux
     web2 is Darwin
-
-    Done.
+    web3 is Linux
