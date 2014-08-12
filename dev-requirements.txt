@@ -7,3 +7,7 @@ nose==1.3.0
 six==1.6.1
 # Mock for test mocking
 mock==1.0.1
+# Documentation tools
+sphinx
+alabaster
+releases
