@@ -6,9 +6,9 @@
 *.egg
 .DS_Store
 .*.swp
-Fabric.egg-info
+*.egg-info
 .coverage
-docs/_build
+sites/*/_build
 dist
 build/
 tags
