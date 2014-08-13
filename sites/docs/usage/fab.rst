@@ -246,6 +246,14 @@ below.
     .. versionadded:: 1.3
     .. seealso:: :doc:`/usage/parallel`
 
+.. cmdoption:: --prompt-hosts
+
+    Sets :ref:`env.prompt_hosts <prompt-hosts>`, causing Fabric to
+    prompt host list before executing a task.
+
+    .. seealso::
+        :ref:`env.prompt_hosts <prompt-hosts>`
+
 .. cmdoption:: --no-pty
 
     Sets :ref:`env.always_use_pty <always-use-pty>` to ``False``, causing all

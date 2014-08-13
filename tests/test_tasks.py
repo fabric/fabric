@@ -14,7 +14,7 @@ from fabric.api import run, env, settings, hosts, roles, hide, parallel, task
 from fabric.network import from_dict
 from fabric.exceptions import NetworkError
 
-from utils import eq_, FabricTest, aborts, mock_streams
+from utils import eq_, FabricTest, aborts, mock_streams, patched_input
 from server import server
 
 
@@ -407,6 +407,37 @@ class TestExecute(FabricTest):
             run = Fake(callable=True, expect_call=True)
         mytask = MyTask()
         execute(mytask)
+
+    @server(port=2201)
+    @server(port=2202)
+    @server(port=2203)
+    def test_prompt_hosts(self):
+        """
+        Assert only selected hosts from prompt is used when enabling env.prompt_hosts
+        """
+        my_hosts = ['127.0.0.1:2201', '127.0.0.1:2202', '127.0.0.1:2203']
+        @hosts(*my_hosts)
+        def task():
+            run("ls /simple")
+            return env.host_string.split(':')[1]
+
+        with hide('everything'):
+            # Assert disabled prompt_hosts acts normal
+            env.prompt_hosts = False
+            retval = execute(task)
+            eq_(set(retval.values()), set(['2201', '2202', '2203']))
+
+            # Enable prompt_hosts and assert input selects correct hosts
+            env.prompt_hosts = True
+            with patched_input(lambda p: '0'):
+                retval = execute(task)
+                eq_(set(retval.values()), set(['2201', '2202', '2203']))
+            with patched_input(lambda p: '2'):
+                retval = execute(task)
+                eq_(set(retval.values()), set(['2202']))
+            with patched_input(lambda p: '1,3'):
+                retval = execute(task)
+                eq_(set(retval.values()), set(['2201', '2203']))
 
 
 class TestExecuteEnvInteractions(FabricTest):

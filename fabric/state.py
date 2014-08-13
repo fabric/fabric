@@ -211,6 +211,12 @@ env_options = [
         help="SSH connection port"
     ),
 
+    make_option('--prompt-hosts',
+        action="store_true",
+        default=False,
+        help="prompt host list when tasks targets more than one host"
+    ),
+
     make_option('-r', '--reject-unknown-hosts',
         action='store_true',
         default=False,
@@ -327,6 +333,7 @@ env = _AttributeDict({
     'path': '',
     'path_behavior': 'append',
     'port': default_port,
+    'prompt_hosts': False,
     'real_fabfile': None,
     'remote_interrupt': None,
     'roles': [],
