@@ -568,6 +568,20 @@ Sets the number of concurrent processes to use when executing tasks in parallel.
 .. versionadded:: 1.3
 .. seealso:: :option:`--pool-size <-z>`, :doc:`parallel`
 
+.. _prompt-hosts:
+
+``prompt_hosts``
+----------------
+
+**Default:** ``False``
+
+If ``True``, causes ``fab`` (or non-``fab`` use of `~fabric.tasks.execute`)
+to prompt current host list before execution a task.
+User can then select all, one or specific hosts for the task to target.
+
+.. seealso::
+    :option:`--prompt-hosts`
+
 .. _prompts:
 
 ``prompts``
