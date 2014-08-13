@@ -2,119 +2,170 @@
 Overview and Tutorial
 =====================
 
-Welcome to Fabric!
+Welcome! This document is a whirlwind tour of Fabric's features and a quick
+guide to its use. In-depth documentation (which is linked to throughout) can be
+found in the :doc:`conceptual documentation <concepts>` and the :doc:`API
+reference <api>`.
 
-This document is a whirlwind tour of Fabric's features and a quick guide to its
-use. In-depth documentation (which is linked to throughout) can be found in
-the :doc:`conceptual documentation <concepts>` and the :doc:`API reference
-<api>`.
+.. note::
+    If you're new to Python, we **strongly** recommend checking out `Python's
+    own tutorial <https://docs.python.org/2.6/tutorial/index.html>`_ first.
 
 
-Run a command on a server
-=========================
+Run commands
+============
 
 The most basic use of Fabric is to create an SSH connection to a server and
 execute a shell command, then (optionally, of course) interrogate the result::
 
     >>> from fabric import Connection
-    >>> result = Connection('web1.example.com').run('uname -s')
+    >>> result = Connection('web1').run('uname -s')
     >>> msg = "Ran {0.command!r} on {0.host}, got this stdout:\n{0.stdout}"
     >>> print msg.format(result)
-    Ran "uname -s" on web1.example.com, got this stdout:
+    Ran "uname -s" on web1, got this stdout:
     Linux
 
-    >>>
-
-Meet `.Connection`, which represents an SSH connection and provides the core of Fabric's API. `.Connection` objects need at least a hostname to be created successfully, and may be further parameterized by username and/or port number. You can give these parameters explicitly via args/kwargs::
+Meet `.Connection`, which represents an SSH connection and provides the core
+of Fabric's API. `.Connection` objects need at least a hostname to be created
+successfully, and may be further parameterized by username and/or port
+number. You can give these parameters explicitly via args/kwargs::
 
     Connection(host='web1', user='deploy', port=2202)
 
-Or you may hand them to the ``host`` argument (which is the first positional
-argument) in a format string similar to that used by various other network
-tools, ``[user@]host[:port]``::
+Or by stuffing a ``[user@]host[:port]`` format string into just the ``host`` argument::
 
     Connection('deploy@web1:2202')
 
-.. note::
-    If both shorthand and kwarg user/port are given, Fabric `refuses the
-    temptation to guess <http://legacy.python.org/dev/peps/pep-0020/>`_ and
-    instead raises an exception.
+`.Connection` objects' methods tend to return subclasses of `.Result`, such as
+`.CommandResult`, exposing all sorts of data about what action was taken, what
+happened during and after it ran, and so forth.
 
-.. seealso::
 
-    * `.Connection` - details on connection setup, including how Fabric
-      derives default values for user and port, honors SSH config files, and so
-      forth;
-    * `.Connection.run` - command invocation specifics, including how to use
-      alternate command runners like Invoke's local runner, or remote ``sudo``.
+Transfer files
+==============
 
-Run a command on multiple servers
-=================================
+Besides shell command execution, the other common use of SSH connections is
+file transfer; `.Connection.put` and `.Connection.get` behave about as you
+might expect. For example, say you had an archive file you wanted to upload::
 
-In nontrivial server environments, one frequently has multiple servers serving
-the same purpose, or finds a need to run an interrogative action on multiple
-servers of varying purposes. To serve this need, Fabric provides a `.Pool`
+    >>> from fabric import Connection
+    >>> result = Connection('web1').put('myfiles.tgz', '/opt/mydata/')
+    >>> print("Uploaded {0.local_path} to {0.remote_path}".format(result))
+    Uploaded /home/localuser/myproject/myfiles.tgz to /opt/mydata/myfiles.tgz
+
+As with most other file-copying tools (``cp``, ``sftp``, etc) these methods
+allow varying shorthands, such as how we omitted the filename part of the
+remote path.
+
+
+Multiple actions
+================
+
+The above one-liners are good examples but aren't realistic use cases - one
+typically needs multiple steps to do anything interesting. At the most basic
+level, you can make a `.Connection` and then call its methods as many times as
+needed::
+
+    from fabric import Connection
+    cxn = Connection('web1')
+    cxn.put('myfiles.tgz', '/opt/mydata')
+    cxn.run('tar -C /opt/mydata -xzvf /opt/mydata/myfiles.tgz')
+
+You could (but don't have to) turn such blocks of code into regular Python
+functions, parameterized with a `.Connection` object from the caller, to
+encourage reuse::
+
+    def upload_and_unpack(cxn):
+        cxn.put('myfiles.tgz', '/opt/mydata')
+        cxn.run('tar -C /opt/mydata -xzvf /opt/mydata/myfiles.tgz')
+        
+As you'll see below, such functions can be handed to other API methods to
+enable more complex use cases as well.
+
+
+Multiple servers
+================
+
+Many real use cases involve doing things on more than one server. The
+straightforward approach in that case is to iterate over a list or tuple of
+`.Connection` arguments (or `.Connection` objects themselves, perhaps via
+``map``)::
+
+    >>> from fabric import Connection
+    >>> for host in ('web1', 'web2', 'mac1'):
+    >>>     result = Connection(host).run('uname -s')
+    ...     print "{0}: {1}".format(host, result.stdout.strip())
+    ...
+    ...
+    web1: Linux
+    web2: Linux
+    mac1: Darwin
+    
+This approach is certainly doable, but as use cases get more complex it can be
+useful to think of a collection of hosts as a single object. Enter `.Pool`, a
 class wrapping one-or-more `.Connection` objects and offering a similar API.
 
-`.Pool` lets us extend the previous example to a three-server pool::
+The previous example, using `.Pool`, looks like this::
 
     >>> from fabric import Pool
-    >>> results = Pool('web1', 'web2', 'web3').run('uname -s')
+    >>> results = Pool('web1', 'web2', 'mac1').run('uname -s')
+    >>> print results
+    <ResultSet: {
+        <Connection 'web1'>: <CommandResult 'uname -s'>,
+        <Connection 'web2'>: <CommandResult 'uname -s'>,
+        <Connection 'mac1'>: <CommandResult 'uname -s'>
+    }>
     >>> for connection, result in results.items():
     ...     print "{0.hostname}: {1.stdout}".format(connection, result)
     ...
     ...
     web1: Linux
     web2: Linux
-    web3: Linux
+    mac1: Darwin
 
-    >>>
+Where `.Connection` methods return singular `.Result` objects (such as
+`.CommandResult`), `.Pool` methods return `ResultSets <.ResultSet>` -
+`dict`-like objects offering easy access to individual per-connection results
+as well as metadata about the entire run.
 
 
-Run multiple commands on a server
-=================================
+Bringing it all together
+========================
 
-::
-    cxn = Connection('web1')
-    cxn.run("uname -s")
-    cxn.run("whoami")
+Finally, we arrive at the most realistic use case: you've got a bundle of
+commands, file transfers, and other logic, and you want to apply it to multiple
+servers. You *could* use multiple `.Pool` method calls to do this::
 
-Run multiple commands on multiple servers
-=========================================
-
-...by command
--------------
-
-::
+    from fabric import Pool
     pool = Pool('web1', 'web2', 'web3')
-    pool.run("uname -s")
-    pool.run("whoami")
+    pool.put('myfiles.tgz', '/opt/mydata')
+    pool.run('tar -C /opt/mydata -xzvf /opt/mydata/myfiles.tgz')
 
-...by server
-------------
+That works for some cases, but most of the time, it's most sensible to perform
+a task on each server in turn. Using iterables of `.Connection` objects is
+perfectly doable, though it foregoes some of the benefits of using `Pools
+<.Pool>`::
 
-Or is there something here we can do with Pool that makes more sense?
+    from fabric import Connection
+    for host in ('web1', 'web2', 'web3'):
+        cxn = Connection(host)
+        cxn.put('myfiles.tgz', '/opt/mydata')
+        cxn.run('tar -C /opt/mydata -xzvf /opt/mydata/myfiles.tgz')
 
-::
-    for hostname in ('web1', 'web2', 'web3'):
-        cxn = Connection(hostname)
-        cxn.run("uname -s")
-        cxn.run("whoami")
+Alternately, remember how we used a function in that earlier example? You can
+hand such a function to `.Pool.execute` and get the best of both worlds::
 
-Creating discrete tasks
-=======================
+    from fabric import Pool
 
-Replace these last few examples with something that makes sense as a discrete
-unite, e.g. if/else
+    def upload_and_unpack(cxn):
+        cxn.put('myfiles.tgz', '/opt/mydata')
+        cxn.run('tar -C /opt/mydata -xzvf /opt/mydata/myfiles.tgz')
 
-::
-    @task
-    def mytask(cxn):
-        cxn.run("uname -s")
-        cxn.run("whoami")
+    Pool('web1', 'web2', 'web3').execute(upload_and_unpack)
 
-    mytask.execute() ???
-    Executor().execute(mytask) ???
+`.Pool.execute`, like its sibling methods, returns `.ResultSet` objects; its
+per-connection values are simply the return values of the function passed in.
+
 
 Calling tasks from the command line
 ===================================
@@ -122,6 +173,7 @@ Calling tasks from the command line
 Maybe extend the previous example w/ something that prints usefully?
 
 ::
+
     @task
     def mytask(cxn):
         cxn.run("uname -s")
@@ -130,6 +182,7 @@ Maybe extend the previous example w/ something that prints usefully?
 and then:
 
 ::
+
     $ fab mytask
 
 Wat
@@ -139,3 +192,19 @@ Deal with discrepancy between full control by default (zero extra printing),
 partial printing (print stdout/err only?) and full fab 1 style (print what
 you're doing, stdout/stderr, and when you're done - tho maybe never print when
 done because that's kinda silly?)
+
+Also
+====
+
+* how does parallel work by default? clearly the superuser answer is "do it
+  yourself using Connection objects" but what about the average user? is it a
+  kwarg to e.g. Pool.execute()? separate method(s)? function taking a pool arg?
+* the 'two types of serial' should probs be handled with: if you want one
+  command on all hosts, then another  command on all hosts, just use subsequent
+  calls to Pool.run(); if you want a set of commands on one host, then on
+  another host, use Pool.execute()?
+* how to handle the possibility of 'inner' execute's should that be a thing?
+  e.g. someone defines a task, it gets explicitly or implicitly execute()'d
+  against a pool, but inside it, it calls execute() on another pool? Tho this
+  is a problem we face now too and it'd be more explicit in a pool-method
+  scenario than it is in fab 1.x, at least.
