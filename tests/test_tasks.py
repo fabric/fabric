@@ -422,7 +422,7 @@ class TestExecute(FabricTest):
             return env.host_string.split(':')[1]
 
         with hide('everything'):
-            # Assert disabled prompt hosts acts normal
+            # Assert disabled prompt_hosts acts normal
             env.prompt_hosts = False
             retval = execute(task)
             eq_(set(retval.values()), set(['2201', '2202', '2203']))

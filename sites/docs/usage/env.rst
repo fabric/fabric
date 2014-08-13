@@ -576,7 +576,7 @@ Sets the number of concurrent processes to use when executing tasks in parallel.
 **Default:** ``False``
 
 If ``True``, causes ``fab`` (or non-``fab`` use of `~fabric.tasks.execute`)
-to prompt current host list before execution a task.
+to prompt current host list before executing a task.
 User can then select all, one or specific hosts for the task to target.
 
 .. seealso::
