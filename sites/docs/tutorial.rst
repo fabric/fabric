@@ -165,22 +165,3 @@ hand such a function to `.Pool.execute` and get the best of both worlds::
 
 `.Pool.execute`, like its sibling methods, returns `.ResultSet` objects; its
 per-connection values are simply the return values of the function passed in.
-
-
-Calling tasks from the command line
-===================================
-
-Maybe extend the previous example w/ something that prints usefully?
-
-::
-
-    @task
-    def mytask(cxn):
-        cxn.run("uname -s")
-        cxn.run("whoami")
-
-and then:
-
-::
-
-    $ fab mytask
