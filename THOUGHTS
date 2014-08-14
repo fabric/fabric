@@ -1,6 +1,12 @@
 ## Newer specific questions to answer
 
 * Is Pool worth having in the tutorial (or at all)?
+* What sort of construct do we want - if any - for the equivalent of 'roles'?
+  Anything in this space is going to ape, and almost definitely fall short of,
+  APIs like those found in clusto or CM systems.
+    * If we were to just say "do whatever" - people will still invent their own
+    similar but distinct way of organizing things, and/or are likely to ask "how
+    should I?"
 
 
 ## Non-specific recent thoughts
@@ -50,6 +56,26 @@ done because that's kinda silly?)
 
 
 ## Context managers
+
+NEWER THOUGHT: don't have them? We have literal contexts now, so we can do eg:
+
+    ctx.cd('foo')
+    ctx.run('ls') # is implicitly run('cd foo && ls')
+    ctx.cd('bar')
+    ctx.run('ls') # cd foo/bar && ls
+
+OTOH it might be nice to still have context managers for the "auto close"
+behavior, since in the above, getting back to "normal" requires e.g.
+`ctx.run('cd ../..')`. OTOOH, shell scripting does this too.
+
+Implementation-wise we could probably just have the context itself mutate
+instead of spawning a new object as I was discussing below earlier, i.e. `with
+ctx.cd():` instead of `with ctx.cd() as sub_ctx`.
+
+Maybe we implement a jump queue sort of thing? Is this even worth this much
+thought?
+
+---
 
 General implementation: these methods on Context (or Connection, etc) spawn a
 new object which is basically a callback of sorts - it's given a link to the
