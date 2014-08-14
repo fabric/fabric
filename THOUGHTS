@@ -1,3 +1,33 @@
+## Newer specific questions to answer
+
+* Is Pool worth having in the tutorial (or at all)?
+
+
+## Non-specific recent thoughts
+
+Deal with discrepancy between full control by default (zero extra printing),
+partial printing (print stdout/err only?) and full fab 1 style (print what
+you're doing, stdout/stderr, and when you're done - tho maybe never print when
+done because that's kinda silly?)
+
+----
+
+* how does parallel work by default? clearly the superuser answer is "do it
+  yourself using Connection objects" but what about the average user? is it a
+  kwarg to e.g. Pool.execute()? separate method(s)? function taking a pool arg?
+* the 'two types of serial' should probs be handled with: if you want one
+  command on all hosts, then another  command on all hosts, just use subsequent
+  calls to Pool.run(); if you want a set of commands on one host, then on
+  another host, use Pool.execute()?
+* how to handle the possibility of 'inner' execute's should that be a thing?
+  e.g. someone defines a task, it gets explicitly or implicitly execute()'d
+  against a pool, but inside it, it calls execute() on another pool? Tho this
+  is a problem we face now too and it'd be more explicit in a pool-method
+  scenario than it is in fab 1.x, at least.
+
+
+## Older but probably still valid thoughts
+
 * The expected host/host-collection-oriented API can probably be effected via
   invoke.Context subclasses - since that's exactly what they are (contexts for
   execution) and Context would provide an existing API for the same shit (like
