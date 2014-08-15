@@ -1,42 +1,27 @@
-from spec import Spec, skip, eq_
+from spec import Spec, skip, eq_, raises
+from mock import patch, Mock
 
-from fabric import Connection
+from fabric import Connection, Configuration
 
 
 class Connection_(Spec):
     class init:
         "__init__"
 
+        @raises(TypeError)
         def host_required(self):
-            skip()
+            Connection()
 
-        def user_defaults_to_local_user(self):
-            skip()
+        def user_defaults_to_configuration_local_user(self):
+            config = Configuration(local_user='nobody')
+            eq_(Connection('host', config=config).user, 'nobody')
 
         def user_may_be_given_explicitly(self):
-            skip()
+            eq_(Connection('host', user='somebody').user, 'somebody')
 
-        def port_defaults_to_22(self):
-            # TODO: default to a configured value
-            skip()
+        def port_defaults_to_configuration_default_port(self):
+            config = Configuration(default_port=2222)
+            eq_(Connection('host', config=config).port, 2222)
 
         def port_may_be_given_explicitly(self):
             skip()
-
-    class run:
-        def uses_runners_Remote_with_invoke_runner(self):
-            "uses invoke.runner.run(runner=fabric.runners.Remote)"
-            skip()
-
-    class sudo:
-        def uses_runners_Remote_with_invoke_runner(self):
-            "uses invoke.runner.run(runner=fabric.runners.RemoteSudo)"
-            skip()
-
-    class put:
-        # fabric1's put() copied?
-        pass
-
-    class get:
-        # fabric's get() copied?
-        pass
