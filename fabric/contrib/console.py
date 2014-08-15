@@ -36,3 +36,22 @@ def confirm(question, default=True):
             return False
         # Didn't get empty, yes or no, so complain and loop
         print("I didn't understand you. Please specify '(y)es' or '(n)o'.")
+
+
+def title(text):
+    """
+    Set the local console title using ANSI codes.
+    Only useful when executed before a command which runs for a noticeable
+    amount of time for the user to see it.
+
+    Example:
+
+        from fabric.contrib import console
+        import time
+        
+        console.title("Deploy: stage 1")
+        time.sleep(2)
+
+    .. versionadded: 1.9.2
+    """
+    print("\033]0;%s\007") % text
