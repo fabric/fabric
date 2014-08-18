@@ -95,6 +95,27 @@ def test_puts_with_user_output_on():
     puts(s, show_prefix=False)
     eq_(sys.stdout.getvalue(), s + "\n")
 
+@mock_streams('stdout')
+def test_puts_with_unicode_output():
+    """
+    puts() should print input to sys.stdout if "user" output level is on
+    """
+    s = u"string!"
+    output.user = True
+    puts(s, show_prefix=False)
+    eq_(sys.stdout.getvalue(), s + "\n")
+
+
+@mock_streams('stdout')
+def test_puts_with_encoding_type_none_output():
+    """
+    puts() should print input to sys.stdout if "user" output level is on
+    """
+    s = u"string!"
+    output.user = True
+    sys.stdout.encoding = None
+    puts(s, show_prefix=False)
+    eq_(sys.stdout.getvalue(), s + "\n")
 
 @mock_streams('stdout')
 def test_puts_with_user_output_off():
