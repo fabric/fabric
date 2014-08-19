@@ -98,7 +98,7 @@ def test_puts_with_user_output_on():
 @mock_streams('stdout')
 def test_puts_with_unicode_output():
     """
-    puts() should print input to sys.stdout if "user" output level is on
+    puts() should print unicode input
     """
     s = u"string!"
     output.user = True
@@ -109,7 +109,7 @@ def test_puts_with_unicode_output():
 @mock_streams('stdout')
 def test_puts_with_encoding_type_none_output():
     """
-    puts() should print input to sys.stdout if "user" output level is on
+    puts() should print unicode output without a stream encoding
     """
     s = u"string!"
     output.user = True
