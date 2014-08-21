@@ -2,6 +2,8 @@
 Changelog
 =========
 
+* :bug:`1180` Fix issue with unicode steam outputs crashing if stream encoding
+  type is None. Thanks to ``@joekiller`` for catch & patch.
 * :release:`1.9.1 <2014-08-06>`
 * :release:`1.8.5 <2014-08-06>`
 * :release:`1.7.5 <2014-08-06>`
