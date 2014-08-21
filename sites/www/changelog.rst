@@ -2,6 +2,8 @@
 Changelog
 =========
 
+* :bug:`1180` Fix issue with unicode steam outputs crashing if stream encoding
+  type is None. Thanks to ``@joekiller`` for catch & patch.
 * :support:`958 backported` Remove the Git SHA portion of our version string
   generation; it was rarely useful & occasionally caused issues for users with
   non-Git-based source checkouts.
