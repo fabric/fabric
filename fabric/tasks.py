@@ -262,8 +262,7 @@ class ParallelExecutor(object):
         def submit(result):
             queue.put({'name': name, 'result': result})
         try:
-            key = normalize_to_string(state.env.host_string)
-            state.connections.pop(key, "")
+            state.connections.clear()
             submit(self.task.run(*args, **kwargs))
         except BaseException, e: # We really do want to capture everything
             # SystemExit implies use of abort(), which prints its own
