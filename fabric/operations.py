@@ -1165,12 +1165,9 @@ def local(command, capture=False, shell=None):
         err_stream = None if output.stderr else dev_null
     try:
         cmd_arg = wrapped_command if win32 else [wrapped_command]
-        if shell is not None:
-            p = subprocess.Popen(cmd_arg, shell=True, stdout=out_stream,
-                                 stderr=err_stream, executable=shell)
-        else:
-            p = subprocess.Popen(cmd_arg, shell=True, stdout=out_stream,
-                                 stderr=err_stream)
+        p = subprocess.Popen(cmd_arg, shell=True, stdout=out_stream,
+                             stderr=err_stream, executable=shell,
+                             close_fds=(not win32))
         (stdout, stderr) = p.communicate()
     finally:
         if dev_null is not None:
