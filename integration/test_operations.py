@@ -8,7 +8,7 @@ import shutil
 from fabric.api import run, path, put, sudo, abort, warn_only, env, cd, local
 from fabric.contrib.files import exists
 
-from util import Integration
+from utils import Integration
 
 
 def assert_mode(path, mode):

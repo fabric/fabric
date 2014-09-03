@@ -133,11 +133,29 @@ loading other fabfiles which also modify it, of course)::
         'dns': ['ns1', 'ns2']
     }
 
-In addition to list/iterable object types, the values in ``env.roledefs`` may
-be callables, and will thus be called when looked up when tasks are run instead
-of at module load time. (For example, you could connect to remote servers
-to obtain role definitions, and not worry about causing delays at fabfile load
-time when calling e.g. ``fab --list``.)
+Role definitions are not necessary configuration of hosts only, but could hold
+other role specific settings of your choice. This is achieved by defining the
+roles as dicts and host strings under a ``hosts`` key::
+
+    from fabric.api import env
+
+    env.roledefs = {
+        'web': {
+            'hosts': ['www1', 'www2', 'www3'],
+            'foo': 'bar'
+        },
+        'dns': {
+            'hosts': ['ns1', 'ns2'],
+            'foo': 'baz'
+        }
+    }
+
+In addition to list/iterable object types, the values in ``env.roledefs``
+(or value of ``hosts`` key in dict style definition) may be callables, and will
+thus be called when looked up when tasks are run instead of at module load
+time. (For example, you could connect to remote servers to obtain role
+definitions, and not worry about causing delays at fabfile load time when
+calling e.g. ``fab --list``.)
 
 Use of roles is not required in any way -- it's simply a convenience in
 situations where you have common groupings of servers.
@@ -764,11 +782,12 @@ event that the host-specific cache (see below) has no entry for the current
 
 :ref:`env.passwords <passwords>` (plural!) serves as a per-user/per-host cache,
 storing the most recently entered password for every unique user/host/port
-combination.  Due to this cache, connections to multiple different users and/or
-hosts in the same session will only require a single password entry for each.
-(Previous versions of Fabric used only the single, default password cache and
-thus required password re-entry every time the previously entered password
-became invalid.)
+combination (**note** that you must include **all three values** if modifying
+the structure by hand - see the above link for details). Due to this cache,
+connections to multiple different users and/or hosts in the same session will
+only require a single password entry for each. (Previous versions of Fabric
+used only the single, default password cache and thus required password
+re-entry every time the previously entered password became invalid.)
 
 Depending on your configuration and the number of hosts your session will
 connect to, you may find setting either or both of these env vars to be useful.

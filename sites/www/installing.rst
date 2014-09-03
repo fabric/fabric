@@ -46,8 +46,12 @@ and, if using the :ref:`parallel execution mode <parallel-execution>`:
 
 * the `multiprocessing`_ library.
 
-Please read on for important details on each dependency -- there are a few
-gotchas.
+If you're using Paramiko 1.12 or above, you will also need an additional
+dependency for Paramiko:
+
+* the `ecdsa <https://pypi.python.org/pypi/ecdsa/>`_ library
+
+Please read on for important details on these -- there are a few gotchas.
 
 Python
 ------

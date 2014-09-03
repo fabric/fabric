@@ -106,6 +106,25 @@ Note that many of these may be set via ``fab``'s command-line switches -- see
 
 .. seealso:: :option:`--set`
 
+.. _abort-exception:
+
+``abort_exception``
+-------------------
+
+**Default:** ``None``
+
+Fabric normally handles aborting by printing an error message to stderr and
+calling ``sys.exit(1)``. This setting allows you to override that behavior
+(which is what happens when ``env.abort_exception`` is ``None``.)
+
+Give it a callable which takes a string (the error message that would have been
+printed) and returns an exception instance.  That exception object is then
+raised instead of ``SystemExit`` (which is what ``sys.exit`` does.)
+
+Much of the time you'll want to simply set this to an exception class, as those
+fit the above description perfectly (callable, take a string, return an
+exception instance.) E.g. ``env.abort_exception = MyExceptionClass``.
+
 .. _abort-on-prompts:
 
 ``abort_on_prompts``
@@ -127,7 +146,7 @@ when unforeseen circumstances arise.
 ``all_hosts``
 -------------
 
-**Default:** ``None``
+**Default:** ``[]``
 
 Set by ``fab`` to the full host list for the currently executing command. For
 informational purposes only.
@@ -274,6 +293,18 @@ limits on per-process open files, or network hardware.
     throughout your output, instead of at the end. This may be improved in
     future releases.
 
+.. _effective_roles:
+
+``effective_roles``
+-------------------
+
+**Default:** ``[]``
+
+Set by ``fab`` to the roles list of the currently executing command. For
+informational purposes only.
+
+.. versionadded:: 1.9
+.. seealso:: :doc:`execution`
 
 .. _exclude-hosts:
 
@@ -500,6 +531,11 @@ This dictionary is largely for internal use, and is filled automatically as a
 per-host-string password cache. Keys are full :ref:`host strings
 <host-strings>` and values are passwords (strings).
 
+.. warning::
+    If you modify or generate this dict manually, **you must use fully
+    qualified host strings** with user and port values. See the link above for
+    details on the host string API.
+
 .. seealso:: :ref:`password-management`
 
 .. versionadded:: 1.0
@@ -531,6 +567,19 @@ Sets the number of concurrent processes to use when executing tasks in parallel.
 
 .. versionadded:: 1.3
 .. seealso:: :option:`--pool-size <-z>`, :doc:`parallel`
+
+.. _prompts:
+
+``prompts``
+-------------
+
+**Default:** ``{}``
+
+The ``prompts`` dictionary allows users to control interactive prompts. If a
+key in the dictionary is found in a command's standard output stream, Fabric
+will automatically answer with the corresponding dictionary value.
+
+.. versionadded:: 1.9
 
 .. _port:
 
@@ -659,6 +708,20 @@ If ``True``, causes ``fab`` (or non-``fab`` use of `~fabric.tasks.execute`) to s
     :option:`--skip-bad-hosts`, :ref:`excluding-hosts`, :doc:`execution`
 
 
+.. _skip-unknown-tasks:
+
+``skip_unknown_tasks``
+----------------------
+
+**Default:** ``False``
+
+If ``True``, causes ``fab`` (or non-``fab`` use of `~fabric.tasks.execute`)
+to skip over tasks not found, without aborting.
+
+.. seealso::
+    :option:`--skip-unknown-tasks`
+
+
 .. _ssh-config-path:
 
 ``ssh_config_path``
@@ -755,7 +818,7 @@ Network connection timeout, in seconds.
 
 **Default:** ``True``
 
-Global setting which acts like the ``use_shell`` argument to
+Global setting which acts like the ``shell`` argument to
 `~fabric.operations.run`/`~fabric.operations.sudo`: if it is set to ``False``,
 operations will not wrap executed commands in ``env.shell``.
 

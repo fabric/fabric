@@ -1133,7 +1133,8 @@ def local(command, capture=False, shell=None):
 
     In either case, as with `~fabric.operations.run` and
     `~fabric.operations.sudo`, this return value exhibits the ``return_code``,
-    ``stderr``, ``failed`` and ``succeeded`` attributes. See `run` for details.
+    ``stderr``, ``failed``, ``succeeded``, ``command`` and ``real_command``
+    attributes. See `run` for details.
 
     `~fabric.operations.local` will honor the `~fabric.context_managers.lcd`
     context manager, allowing you to control its current working directory
@@ -1146,6 +1147,8 @@ def local(command, capture=False, shell=None):
         Now honors the `~fabric.context_managers.lcd` context manager.
     .. versionchanged:: 1.0
         Changed the default value of ``capture`` from ``True`` to ``False``.
+    .. versionadded:: 1.9
+        The return value attributes ``.command`` and ``.real_command``.
     """
     given_command = command
     # Apply cd(), path() etc
@@ -1181,6 +1184,8 @@ def local(command, capture=False, shell=None):
     # Handle error condition (deal with stdout being None, too)
     out = _AttributeString(stdout.strip() if stdout else "")
     err = _AttributeString(stderr.strip() if stderr else "")
+    out.command = given_command
+    out.real_command = wrapped_command
     out.failed = False
     out.return_code = p.returncode
     out.stderr = err
@@ -1194,7 +1199,7 @@ def local(command, capture=False, shell=None):
 
 
 @needs_host
-def reboot(wait=120):
+def reboot(wait=120, command='reboot'):
     """
     Reboot the remote system.
 
@@ -1231,7 +1236,7 @@ def reboot(wait=120):
         timeout=timeout,
         connection_attempts=attempts
     ):
-        sudo('reboot')
+        sudo(command)
         # Try to make sure we don't slip in before pre-reboot lockdown
         time.sleep(5)
         # This is actually an internal-ish API call, but users can simply drop

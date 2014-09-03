@@ -2,25 +2,83 @@
 Changelog
 =========
 
-* :support:`700` Added ``use_sudo`` and ``temp_dir`` params to ``operations.get()``. 
-  This allows downloading files normally not accessible to the user using ``sudo``.
-  Thanks to Alex Plugaru.
-* :bug:`898` Treat paths that begin with tilde "~" as absolute paths instead of relative.
-  Thanks to Alex Plugaru for the patch and Dan Craig for the suggestion.
+* :support:`700` Added ``use_sudo`` and ``temp_dir`` params to
+  ``operations.get()``. This allows downloading files normally not accessible
+  to the user using ``sudo``. Thanks to Alex Plugaru.
+* :feature:`1098` Add support for dict style roledefs. Thanks to Jonas
+  Lundberg.
+* :feature:`1090` Add option to skip unknown tasks. Credit goes to Jonas
+  Lundberg.
+* :feature:`975` Fabric can now be invoked via ``python -m fabric`` in addition
+  to the typical use of the ``fab`` entrypoint. Patch courtesy of Jason Coombs.
+
+  .. note:: This functionality is only available under Python 2.7.
+
+* :release:`1.9.1 <2014-08-06>`
+* :release:`1.8.5 <2014-08-06>`
+* :release:`1.7.5 <2014-08-06>`
+* :bug:`1165` Prevent infinite loop condition when a gateway host is enabled &
+  the same host is in the regular target host list. Thanks to ``@CzBiX`` for
+  catch & patch.
+* :bug:`1147` Use ``stat`` instead of ``lstat`` when testing directory-ness in
+  the SFTP module. This allows recursive downloads to avoid recursing into
+  symlinks unexpectedly. Thanks to Igor Kalnitsky for the patch.
+* :bug:`1146` Fix a bug where `~fabric.contrib.files.upload_template` failed to
+  honor ``lcd`` when ``mirror_local_mode`` is ``True``. Thanks to Laszlo Marai
+  for catch & patch.
+* :bug:`1134` Skip bad hosts when the tasks are executed in parallel. Thanks to
+  Igor Maravić ``@i-maravic``.
+* :bug:`852` Fix to respect ``template_dir`` for non Jinja2 templates in
+  `~fabric.contrib.files.upload_template`. Thanks to Adam Kowalski for the
+  patch and Alex Plugaru for the initial test case.
+* :bug:`1096` Encode Unicode text appropriately for its target stream object to
+  avoid issues on non-ASCII systems. Thanks to Toru Uetani for the original
+  patch.
+* :bug:`1059` Update IPv6 support to work with link-local address formats.
+  Fix courtesy of ``@obormot``.
+* :bug:`1026` Fix a typo preventing quiet operation of
+  `~fabric.contrib.files.is_link`. Caught by ``@dongweiming``.
+* :bug:`600` Clear out connection caches in full when prepping
+  parallel-execution subprocesses. This avoids corner cases causing
+  hangs/freezes due to client/socket reuse. Thanks to Ruslan Lutsenko for the
+  initial report and Romain Chossart for the suggested fix.
+* :bug:`1167` Add Jinja to ``test_requires`` in ``setup.py`` for the couple of
+  newish tests that now require it. Thanks to Kubilay Kocak for the catch.
+* :release:`1.9.0 <2014-06-08>`
+* :feature:`1078` Add ``.command`` and ``.real_command`` attributes to
+  ``local`` return value.  Thanks to Alexander Teves (``@alexanderteves``) and
+  Konrad Hałas (``@konradhalas``).
+* :feature:`938` Add an env var :ref:`env.effective_roles <effective_roles>`
+  specifying roles used in the currently executing command. Thanks to
+  Piotr Betkier for the patch.
+* :feature:`1101` Reboot operation now supports custom command. Thanks to Jonas
+  Lejon.
+* :support:`1106` Fix a misleading/ambiguous example snippet in the ``fab``
+  usage docs to be clearer. Thanks to ``@zed``.
+* :release:`1.8.4 <2014-06-08>`
+* :release:`1.7.4 <2014-06-08>`
+* :bug:`898` Treat paths that begin with tilde "~" as absolute paths instead of
+  relative. Thanks to Alex Plugaru for the patch and Dan Craig for the
+  suggestion.
 * :support:`1105 backported` Enhance ``setup.py`` to allow Paramiko 1.13+ under
   Python 2.6+. Thanks to to ``@Arfrever`` for catch & patch.
+* :release:`1.8.3 <2014-03-21>`
 * :release:`1.7.3 <2014-03-21>`
 * :support:`- backported` Modified packaging data to reflect that Fabric
   requires Paramiko < 1.13 (which dropped Python 2.5 support.)
+* :feature:`1082` Add ``pty`` passthrough kwarg to
+  `~fabric.contrib.files.upload_template`.
+* :release:`1.8.2 <2014-02-14>`
 * :release:`1.7.2 <2014-02-14>`
 * :bug:`955` Quote directories created as part of ``put``'s recursive directory
   uploads when ``use_sudo=True`` so directories with shell meta-characters
   (such as spaces) work correctly. Thanks to John Harris for the catch.
-* :bug:`917` Correct an issue with ``put(use_sudo=True, mode=xxx)`` where the 
+* :bug:`917` Correct an issue with ``put(use_sudo=True, mode=xxx)`` where the
   ``chmod`` was trying to apply to the wrong location. Thanks to Remco
   (``@nl5887``) for catch & patch.
 * :bug:`1046` Fix typo preventing use of ProxyCommand in some situations.
   Thanks to Keith Yang.
+* :release:`1.8.1 <2013-12-24>`
 * :release:`1.7.1 <2013-12-24>`
 * :release:`1.6.4 <2013-12-24>` 956, 957
 * :release:`1.5.5 <2013-12-24>` 956, 957
@@ -29,9 +87,24 @@ Changelog
 * :bug:`957` Fix bug preventing use of :ref:`env.gateway <gateway>` with
   targets requiring password authentication. Thanks to Daniel González,
   `@Bengrunt` and `@adrianbn` for their bug reports.
+* :feature:`741` Add :ref:`env.prompts <prompts>` dictionary, allowing
+  users to set up custom prompt responses (similar to the built-in sudo prompt
+  auto-responder.) Thanks to Nigel Owens and David Halter for the patch.
+* :bug:`965 major` Tweak IO flushing behavior when in linewise (& thus
+  parallel) mode so interwoven output is less frequent. Thanks to `@akidata`
+  for catch & patch.
+* :bug:`948` Handle connection failures due to server load and try connecting
+  to hosts a number of times specified in :ref:`env.connection_attempts
+  <connection-attempts>`.
+* :release:`1.8.0 <2013-09-20>`
+* :feature:`931` Allow overriding of `.abort` behavior via a custom
+  exception-returning callable set as :ref:`env.abort_exception
+  <abort-exception>`. Thanks to Chris Rose for the patch.
 * :support:`984 backported` Make this changelog easier to read! Now with
   per-release sections, generated automatically from the old timeline source
   format.
+* :feature:`910` Added a keyword argument to rsync_project to configure the
+  default options. Thanks to ``@moorepants`` for the patch.
 * :release:`1.7.0 <2013-07-26>`
 * :release:`1.6.2 <2013-07-26>`
 * :feature:`925` Added `contrib.files.is_link <.is_link>`. Thanks to `@jtangas`

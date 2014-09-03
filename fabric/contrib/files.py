@@ -9,6 +9,7 @@ import tempfile
 import re
 import os
 from StringIO import StringIO
+from functools import partial
 
 from fabric.api import *
 from fabric.utils import apply_lcwd
@@ -42,13 +43,14 @@ def is_link(path, use_sudo=False, verbose=False):
 
     If ``use_sudo`` is True, will use `.sudo` instead of `.run`.
 
-    `.is_link` will, by default, hide all output. Give ``verbose=True`` to change this.
+    `.is_link` will, by default, hide all output. Give ``verbose=True`` to
+    change this.
     """
     func = sudo if use_sudo else run
     cmd = 'test -L "$(echo %s)"' % path
     args, kwargs = [], {'warn_only': True}
     if not verbose:
-        opts = [hide('everything')]
+        args = [hide('everything')]
     with settings(*args, **kwargs):
         return func(cmd).succeeded
 
@@ -56,7 +58,8 @@ def is_link(path, use_sudo=False, verbose=False):
 def first(*args, **kwargs):
     """
     Given one or more file paths, returns first one found, or None if none
-    exist. May specify ``use_sudo`` and ``verbose`` which are passed to `exists`.
+    exist. May specify ``use_sudo`` and ``verbose`` which are passed to
+    `exists`.
     """
     for directory in args:
         if exists(directory, **kwargs):
@@ -65,7 +68,7 @@ def first(*args, **kwargs):
 
 def upload_template(filename, destination, context=None, use_jinja=False,
     template_dir=None, use_sudo=False, backup=True, mirror_local_mode=False,
-    mode=None):
+    mode=None, pty=None):
     """
     Render and upload a template text file to a remote host.
 
@@ -93,10 +96,18 @@ def upload_template(filename, destination, context=None, use_jinja=False,
     internal `~fabric.operations.put` call; please see its documentation for
     details on these two options.
 
+    The ``pty`` kwarg will be passed verbatim to any internal
+    `~fabric.operations.run`/`~fabric.operations.sudo` calls, such as those
+    used for testing directory-ness, making backups, etc.
+
     .. versionchanged:: 1.1
         Added the ``backup``, ``mirror_local_mode`` and ``mode`` kwargs.
+    .. versionchanged:: 1.9
+        Added the ``pty`` kwarg.
     """
     func = use_sudo and sudo or run
+    if pty is not None:
+        func = partial(func, pty=pty)
     # Normalize destination to be an actual filename, due to using StringIO
     with settings(hide('everything'), warn_only=True):
         if func('test -d %s' % _expand_path(destination)).succeeded:
@@ -106,7 +117,7 @@ def upload_template(filename, destination, context=None, use_jinja=False,
     # Use mode kwarg to implement mirror_local_mode, again due to using
     # StringIO
     if mirror_local_mode and mode is None:
-        mode = os.stat(filename).st_mode
+        mode = os.stat(apply_lcwd(filename, env)).st_mode
         # To prevent put() from trying to do this
         # logic itself
         mirror_local_mode = False
@@ -129,6 +140,8 @@ def upload_template(filename, destination, context=None, use_jinja=False,
             tb = traceback.format_exc()
             abort(tb + "\nUnable to import Jinja2 -- see above.")
     else:
+        if template_dir:
+            filename = os.path.join(template_dir, filename)
         filename = apply_lcwd(filename, env)
         with open(os.path.expanduser(filename)) as inputfile:
             text = inputfile.read()
