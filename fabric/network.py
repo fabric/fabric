@@ -33,7 +33,8 @@ Please make sure all dependencies are installed and importable.
     sys.exit(1)
 
 
-ipv6_regex = re.compile('^\[?(?P<host>[0-9A-Fa-f:]+)\]?(:(?P<port>\d+))?$')
+ipv6_regex = re.compile(
+    '^\[?(?P<host>[0-9A-Fa-f:]+(?:%[a-z]+\d+)?)\]?(:(?P<port>\d+))?$')
 
 
 def direct_tcpip(client, host, port):
@@ -49,6 +50,55 @@ def is_key_load_error(e):
         e.__class__ is ssh.SSHException
         and 'Unable to parse key file' in str(e)
     )
+
+
+def _tried_enough(tries):
+    from fabric.state import env
+    return tries >= env.connection_attempts
+
+
+def get_gateway(host, port, cache, replace=False):
+    """
+    Create and return a gateway socket, if one is needed.
+
+    This function checks ``env`` for gateway or proxy-command settings and
+    returns the necessary socket-like object for use by a final host
+    connection.
+
+    :param host:
+        Hostname of target server.
+
+    :param port:
+        Port to connect to on target server.
+
+    :param cache:
+        A ``HostConnectionCache`` object, in which gateway ``SSHClient``
+        objects are to be retrieved/cached.
+
+    :param replace:
+        Whether to forcibly replace a cached gateway client object.
+
+    :returns:
+        A ``socket.socket``-like object, or ``None`` if none was created.
+    """
+    from fabric.state import env, output
+    sock = None
+    proxy_command = ssh_config().get('proxycommand', None)
+    if env.gateway:
+        gateway = normalize_to_string(env.gateway)
+        # ensure initial gateway connection
+        if replace or gateway not in cache:
+            if output.debug:
+                print "Creating new gateway connection to %r" % gateway
+            cache[gateway] = connect(*normalize(gateway) + (cache, False))
+        # now we should have an open gw connection and can ask it for a
+        # direct-tcpip channel to the real target. (bypass cache's own
+        # __getitem__ override to avoid hilarity - this is usually called
+        # within that method.)
+        sock = direct_tcpip(dict.__getitem__(cache, gateway), host, port)
+    elif proxy_command:
+        sock = ssh.ProxyCommand(proxy_command)
+    return sock
 
 
 class HostConnectionCache(dict):
@@ -89,25 +139,16 @@ class HostConnectionCache(dict):
         """
         Force a new connection to ``key`` host string.
         """
-        from fabric.state import env, output
+        from fabric.state import env
+        
         user, host, port = normalize(key)
         key = normalize_to_string(key)
-        sock = None
-        proxy_command = ssh_config().get('proxycommand', None)
+        seek_gateway = True
+        # break the loop when the host is gateway itself
         if env.gateway:
-            gateway = normalize_to_string(env.gateway)
-            # Ensure initial gateway connection
-            if gateway not in self:
-                if output.debug:
-                    print "Creating new gateway connection to %r" % gateway
-                self[gateway] = connect(*normalize(gateway))
-            # Now we should have an open gw connection and can ask it for a
-            # direct-tcpip channel to the real target. (Bypass our own
-            # __getitem__ override to avoid hilarity.)
-            sock = direct_tcpip(dict.__getitem__(self, gateway), host, port)
-        elif proxy_command:
-            sock = ssh.ProxyCommand(proxy_command)
-        self[key] = connect(user, host, port, sock)
+            seek_gateway = normalize_to_string(env.gateway) != key
+        self[key] = connect(
+            user, host, port, cache=self, seek_gateway=seek_gateway)
 
     def __getitem__(self, key):
         """
@@ -337,12 +378,23 @@ def normalize_to_string(host_string):
     return join_host_strings(*normalize(host_string))
 
 
-def connect(user, host, port, sock=None):
+def connect(user, host, port, cache, seek_gateway=True):
     """
     Create and return a new SSHClient instance connected to given host.
 
-    If ``sock`` is given, it's passed into ``SSHClient.connect()`` directly.
-    Used for gateway connections by e.g. ``HostConnectionCache``.
+    :param user: Username to connect as.
+
+    :param host: Network hostname.
+
+    :param port: SSH daemon port.
+
+    :param cache:
+        A ``HostConnectionCache`` instance used to cache/store gateway hosts
+        when gatewaying is enabled.
+
+    :param seek_gateway:
+        Whether to try setting up a gateway socket for this connection. Used so
+        the actual gateway connection can prevent recursion.
     """
     from state import env, output
 
@@ -373,12 +425,20 @@ def connect(user, host, port, sock=None):
     connected = False
     password = get_password(user, host, port)
     tries = 0
+    sock = None
 
     # Loop until successful connect (keep prompting for new password)
     while not connected:
         # Attempt connection
         try:
             tries += 1
+
+            # (Re)connect gateway socket, if needed.
+            # Nuke cached client object if not on initial try.
+            if seek_gateway:
+                sock = get_gateway(host, port, cache, replace=tries > 0)
+
+            # Ready to connect
             client.connect(
                 hostname=host,
                 port=int(port),
@@ -410,6 +470,15 @@ def connect(user, host, port, sock=None):
             ssh.SSHException
         ), e:
             msg = str(e)
+            # If we get SSHExceptionError and the exception message indicates
+            # SSH protocol banner read failures, assume it's caused by the
+            # server load and try again.
+            if e.__class__ is ssh.SSHException \
+                and msg == 'Error reading SSH protocol banner':
+                if _tried_enough(tries):
+                    raise NetworkError(msg, e)
+                continue
+
             # For whatever reason, empty password + no ssh key or agent
             # results in an SSHException instead of an
             # AuthenticationException. Since it's difficult to do
@@ -474,7 +543,7 @@ def connect(user, host, port, sock=None):
         # NOTE: In 2.6, socket.error subclasses IOError
         except socket.error, e:
             not_timeout = type(e) is not socket.timeout
-            giving_up = tries >= env.connection_attempts
+            giving_up = _tried_enough(tries)
             # Baseline error msg for when debug is off
             msg = "Timed out trying to connect to %s" % host
             # Expanded for debug on

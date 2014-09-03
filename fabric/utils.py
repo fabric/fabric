@@ -7,6 +7,14 @@ import sys
 import textwrap
 from traceback import format_exc
 
+
+def _encode(msg, stream):
+    if isinstance(msg, unicode) and hasattr(stream, 'encoding'):
+        return msg.encode(stream.encoding)
+    else:
+        return str(msg)
+
+
 def abort(msg):
     """
     Abort execution, print ``msg`` to stderr and exit with error status (1.)
@@ -25,9 +33,13 @@ def abort(msg):
         from colors import red
 
     if output.aborts:
-        sys.stderr.write(red("\nFatal error: %s\n" % str(msg)))
+        sys.stderr.write(red("\nFatal error: %s\n" % _encode(msg, sys.stderr)))
         sys.stderr.write(red("\nAborting.\n"))
-    sys.exit(1)
+
+    if env.abort_exception:
+        raise env.abort_exception(msg)
+    else:
+        sys.exit(1)
 
 
 def warn(msg):
@@ -47,6 +59,7 @@ def warn(msg):
         from colors import magenta
 
     if output.warnings:
+        msg = _encode(msg, sys.stderr)
         sys.stderr.write(magenta("\nWarning: %s\n\n" % msg))
 
 
@@ -106,7 +119,7 @@ def puts(text, show_prefix=None, end="\n", flush=False):
         prefix = ""
         if env.host_string and show_prefix:
             prefix = "[%s] " % env.host_string
-        sys.stdout.write(prefix + str(text) + end)
+        sys.stdout.write(prefix + _encode(text, sys.stdout) + end)
         if flush:
             sys.stdout.flush()
 
@@ -259,7 +272,8 @@ def _pty_size():
         import termios
         import struct
 
-    rows, cols = 24, 80
+    default_rows, default_cols = 24, 80
+    rows, cols = default_rows, default_cols
     if not win32 and sys.stdout.isatty():
         # We want two short unsigned integers (rows, cols)
         fmt = 'HH'
@@ -272,6 +286,11 @@ def _pty_size():
                 buffer)
             # Unpack buffer back into Python data types
             rows, cols = struct.unpack(fmt, result)
+            # Fall back to defaults if TIOCGWINSZ returns unreasonable values
+            if rows == 0:
+                rows = default_rows
+            if cols == 0:
+                cols = default_cols
         # Deal with e.g. sys.stdout being monkeypatched, such as in testing.
         # Or termios not having a TIOCGWINSZ.
         except AttributeError:
