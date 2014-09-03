@@ -2,6 +2,8 @@
 Changelog
 =========
 
+* :feature:`975` Fabric can now be invoked via ``python -m fabric`` in addition
+  to the typical use of the ``fab`` entrypoint. Patch courtesy of Jason Coombs.
 * :release:`1.9.1 <2014-08-06>`
 * :release:`1.8.5 <2014-08-06>`
 * :release:`1.7.5 <2014-08-06>`
