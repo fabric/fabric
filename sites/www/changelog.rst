@@ -4,6 +4,13 @@ Changelog
 
 * :feature:`1098` Add support for dict style roledefs.
   Thanks to Jonas Lundberg, `@lundberg`
+* :feature:`1090` Add option to skip unknown tasks. Thanks to Jonas Lundberg,
+  `@lundberg`
+* :feature:`975` Fabric can now be invoked via ``python -m fabric`` in addition
+  to the typical use of the ``fab`` entrypoint. Patch courtesy of Jason Coombs.
+
+  .. note:: This functionality is only available under Python 2.7.
+
 * :release:`1.9.1 <2014-08-06>`
 * :release:`1.8.5 <2014-08-06>`
 * :release:`1.7.5 <2014-08-06>`
