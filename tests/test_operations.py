@@ -1,6 +1,7 @@
 from __future__ import with_statement
 
 from contextlib import nested
+from StringIO import StringIO
 
 from nose.tools import ok_
 from fudge import with_fakes, Fake
