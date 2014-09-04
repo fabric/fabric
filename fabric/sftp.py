@@ -162,7 +162,7 @@ class SFTP(object):
             # Temporarily nuke 'cwd' so sudo() doesn't "cd" its mv command.
             # (The target path has already been cwd-ified elsewhere.)
             with settings(hide('everything'), cwd=""):
-                sudo('cp "%s" "%s"' % (remote_path, target_path))
+                sudo('cp -p "%s" "%s"' % (remote_path, target_path))
                 # Only root and the user has the right to read the file
                 sudo('chmod %o "%s"' % (0404, target_path))
                 remote_path = target_path
