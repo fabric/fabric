@@ -731,7 +731,7 @@ class TestFileTransfers(FabricTest):
         """
         # the sha1 hash is the unique filename of the file being downloaded. sha1(<filename>)
         fake_run = Fake('_run_command', callable=True, expect_call=True).with_matching_args(
-            'cp "/etc/apache2/apache2.conf" "229a29e5693876645e39de0cb0532e43ad73311a"', True, True, None,
+            'cp -p "/etc/apache2/apache2.conf" "229a29e5693876645e39de0cb0532e43ad73311a"', True, True, None,
         ).next_call().with_matching_args(
             'chmod 404 "229a29e5693876645e39de0cb0532e43ad73311a"', True, True, None,
         ).next_call().with_matching_args(
@@ -755,7 +755,7 @@ class TestFileTransfers(FabricTest):
         """
         # the sha1 hash is the unique filename of the file being downloaded. sha1(<filename>)
         fake_run = Fake('_run_command', callable=True, expect_call=True).with_matching_args(
-            'cp "/etc/apache2/apache2.conf" "/tmp/229a29e5693876645e39de0cb0532e43ad73311a"', True, True, None,
+            'cp -p "/etc/apache2/apache2.conf" "/tmp/229a29e5693876645e39de0cb0532e43ad73311a"', True, True, None,
         ).next_call().with_matching_args(
             'chmod 404 "/tmp/229a29e5693876645e39de0cb0532e43ad73311a"', True, True, None,
         ).next_call().with_matching_args(
