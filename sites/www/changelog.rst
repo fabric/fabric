@@ -3,8 +3,9 @@ Changelog
 =========
 
 * :support:`700` Added ``use_sudo`` and ``temp_dir`` params to
-  ``operations.get()``. This allows downloading files normally not accessible
-  to the user using ``sudo``. Thanks to Alex Plugaru.
+  `~fabric.operations.get`. This allows downloading files normally not
+  accessible to the user using ``sudo``. Thanks to Jason Coombs for initial
+  report and to Alex Plugaru for the patch (:issue:`1121`).
 * :feature:`1098` Add support for dict style roledefs. Thanks to Jonas
   Lundberg.
 * :feature:`1090` Add option to skip unknown tasks. Credit goes to Jonas
