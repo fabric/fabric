@@ -2,6 +2,19 @@
 Changelog
 =========
 
+* :support:`700` Added ``use_sudo`` and ``temp_dir`` params to
+  `~fabric.operations.get`. This allows downloading files normally not
+  accessible to the user using ``sudo``. Thanks to Jason Coombs for initial
+  report and to Alex Plugaru for the patch (:issue:`1121`).
+* :feature:`1098` Add support for dict style roledefs. Thanks to Jonas
+  Lundberg.
+* :feature:`1090` Add option to skip unknown tasks. Credit goes to Jonas
+  Lundberg.
+* :feature:`975` Fabric can now be invoked via ``python -m fabric`` in addition
+  to the typical use of the ``fab`` entrypoint. Patch courtesy of Jason Coombs.
+
+  .. note:: This functionality is only available under Python 2.7.
+
 * :release:`1.9.1 <2014-08-06>`
 * :release:`1.8.5 <2014-08-06>`
 * :release:`1.7.5 <2014-08-06>`
