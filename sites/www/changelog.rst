@@ -2,6 +2,10 @@
 Changelog
 =========
 
+* :bug:`1188 major` Update `~fabric.operations.local` to close non-pipe file
+  descriptors in the child process so subsequent calls to
+  `~fabric.operations.local` aren't blocked on e.g. already-connected network
+  sockets. Thanks to Tolbkni Kao for catch & patch.
 * :support:`700` Added ``use_sudo`` and ``temp_dir`` params to
   `~fabric.operations.get`. This allows downloading files normally not
   accessible to the user using ``sudo``. Thanks to Jason Coombs for initial
