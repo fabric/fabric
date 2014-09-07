@@ -31,18 +31,19 @@ tool, and plan to:
   <https://github.com/pyinvoke/invoke>`_ (see also :issue:`565`), which is a
   revamped and standalone version of Fabric's task running components. 
 
-    * As of late 2013, Invoke is approaching maturity and already has a handful of
+    * As of mid 2014, Invoke is already reasonably mature and has a handful of
       features lacking in Fabric itself, including but not limited to:
       
         * a more explicit and powerful namespacing implementation
         * "regular" style CLI flags,
         * before/after hooks
-        * explicit context management
+        * explicit context management (no shared state)
 
     * Invoke is already Python 3 compatible, due to being a new codebase with
       few dependencies.
-    * As Fabric 2 is developed, Invoke will continue to grow & change to suit
-      Fabric's needs while remaining a high quality standalone task runner.
+    * As Fabric 2 is developed, Invoke will approach a 1.0 release, and will
+      continue to grow & change to suit Fabric's needs while remaining a high
+      quality standalone task runner.
 
 * Start putting together Fabric 2.0, a mostly-rewritten Fabric core:
 
