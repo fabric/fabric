@@ -12,6 +12,9 @@ from fabric.utils import warn
 from fabric.context_managers import settings
 
 
+# TODO: use self.sftp.listdir_iter on Paramiko 1.15+
+
+
 def _format_local(local_path, local_is_path):
     """Format a path for log output"""
     if local_is_path:
