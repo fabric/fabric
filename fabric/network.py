@@ -528,7 +528,9 @@ def connect(user, host, port, cache, seek_gateway=True):
                 # which one raised the exception. Best not to try.
                 prompt = "[%s] Passphrase for private key"
                 text = prompt % env.host_string
-            password = prompt_for_password(text)
+            #add retry if auth error in parallel mode
+            if env.parallel and _tried_enough(tries):
+                password = prompt_for_password(text)
             # Update env.password, env.passwords if empty
             set_password(user, host, port, password)
         # Ctrl-D / Ctrl-C for exit
