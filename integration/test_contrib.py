@@ -92,8 +92,11 @@ rsync_sources = (
 
 class TestRsync(Integration):
     def rsync(self, id_, **kwargs):
+        remote = '/tmp/rsync-test-%s/' % id_
+        if files.exists(remote):
+            run("rm -rf %s" % remote)
         return project.rsync_project(
-            remote_dir='/tmp/rsync-test-%s/' % id_,
+            remote_dir=remote,
             local_dir='integration',
             ssh_opts='-o StrictHostKeyChecking=no',
             capture=True,
