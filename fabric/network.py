@@ -529,7 +529,10 @@ def connect(user, host, port, cache, seek_gateway=True):
                 prompt = "[%s] Passphrase for private key"
                 text = prompt % env.host_string
             #add retry if auth error in parallel mode
-            if env.parallel and _tried_enough(tries):
+            if env.parallel:
+                if _tried_enough(tries):
+                    password = prompt_for_password(text)
+            else:
                 password = prompt_for_password(text)
             # Update env.password, env.passwords if empty
             set_password(user, host, port, password)
