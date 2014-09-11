@@ -165,3 +165,50 @@ hand such a function to `.Pool.execute` and get the best of both worlds::
 
 `.Pool.execute`, like its sibling methods, returns `.ResultSet` objects; its
 per-connection values are simply the return values of the function passed in.
+
+
+'Classic' Fabric: the ``fab`` runner
+====================================
+
+Earlier versions of Fabric (prior to 2.x) were strongly oriented around the
+concept of distributing files containing all your Fabric-using code, called
+*fabfiles* (think ``Makefile``) and invoking the tasks within using the ``fab``
+command-line tool.
+
+Modern Fabric is designed as a library first and foremost, but thankfully this
+doesn't preclude offering CLI-oriented functionality. Details for this
+operational mode can be found in :doc:`the concepts section
+</concepts/fabfiles>`, but here's a quick teaser.
+
+All prior examples have been purposefully generic - you could run them in a
+Python shell, run them from arbitrary Python code, etc. Here, we specifically
+make a file called ``fabfile.py`` and place a tweaked copy of the previous
+example into it::
+
+    from fabric import task
+
+    @task
+    def upload_and_unpack(cxn):
+        cxn.put('myfiles.tgz', '/opt/mydata')
+        cxn.run('tar -C /opt/mydata -xzvf /opt/mydata/myfiles.tgz')
+
+Note addition of the `~.task` decorator (required to mark the function for
+exposure to the CLI) and removal of the ``Pool(...).execute()`` line. At its
+heart, Fabric's CLI machinery just provides an easy way to perform runtime
+parameterization - in this case, "which host or pool to run against?".
+
+Which brings us to the invocation side::
+
+    $ fab -H web1,web2,web3 upload_and_unpack
+
+This would execute identically to the interactive snippet from the previous
+section. The big difference, of course, is the ability to change the list of
+hosts given to ``-H``::
+
+    $ fab -H web1 upload_and_unpack
+    $ fab -H web1,web3 upload_and_unpack
+
+In addition to creating ad-hoc pools via ``-H``, it's also possible to define
+collections of named pools - e.g. defining a ``web`` pool that evaluates to
+those same three ``webN`` hosts - and more besides. Again, see :doc:`the
+concepts section </concepts/fabfiles>` for details.
