@@ -532,6 +532,7 @@ def connect(user, host, port, cache, seek_gateway=True):
             if env.parallel:
                 if _tried_enough(tries):
                     password = prompt_for_password(text)
+                continue
             else:
                 password = prompt_for_password(text)
             # Update env.password, env.passwords if empty
