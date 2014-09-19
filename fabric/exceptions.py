@@ -15,7 +15,7 @@ class NetworkError(Exception):
         self.wrapped = wrapped
 
     def __str__(self):
-        return self.message
+        return self.message or ""
 
     def __repr__(self):
         return "%s(%s) => %r" % (
