@@ -5,7 +5,9 @@ import os
 import posixpath
 import shutil
 
-from fabric.api import run, path, put, sudo, abort, warn_only, env, cd, local
+from fabric.api import (
+    run, path, put, sudo, abort, warn_only, env, cd, local, settings
+)
 from fabric.contrib.files import exists
 
 from utils import Integration
@@ -127,3 +129,8 @@ class TestOperations(Integration):
             assert exists(posixpath.dirname(uploaded[0]))
         finally:
             shutil.rmtree(localdir)
+
+    def test_agent_forwarding_functions(self):
+        # When paramiko #399 is present this will hang indefinitely
+        with settings(forward_agent=True):
+            run('ssh-add -L')
