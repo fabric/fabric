@@ -14,7 +14,7 @@ from fabric.decorators import hosts, roles, task
 from fabric.context_managers import settings
 from fabric.main import (parse_arguments, _escape_split,
         load_fabfile as _load_fabfile, list_commands, _task_names,
-        COMMANDS_HEADER, NESTED_REMINDER)
+        COMMANDS_HEADER, NESTED_REMINDER, find_fabconf, load_fabconf)
 import fabric.state
 from fabric.state import _AttributeDict
 from fabric.tasks import Task, WrappedCallableTask
@@ -681,3 +681,16 @@ def test_aliases_appear_in_fab_list():
     """
     list_output('nested_alias', 'short', """nested.foo
 nested.foo_aliased""")
+
+
+class TestFabConfig(FabricTest):
+
+    def test_find_config(self):
+        from fabric.state import env
+        module = fabfile('decorated_fabfile.py')
+        env.real_fabfile = module
+        fabconf = find_fabconf()
+        ok_(fabconf, 'fabfile config found')
+        ok_(fabconf.endswith('.json'), 'fabfile config in correct format')
+        settings = load_fabconf(fabconf)
+        ok_((settings['foo'] == 'bar'), 'fabfile json config loaded')

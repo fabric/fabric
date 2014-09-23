@@ -70,6 +70,54 @@ def load_settings(path):
     return {}
 
 
+def find_fabconf(dirname=None, extensions=None):
+    """
+    Find fabfile.[json|yaml] settings file alongside with fabfile.py
+    """
+    name = 'fabfile'
+    # Use directory of fabfile.py as target if not given, fallback on ./
+    if not dirname:
+        if 'real_fabfile' in state.env:
+            dirname = os.path.dirname(state.env.real_fabfile)
+            name = os.path.basename(state.env.real_fabfile)
+            name, _ = os.path.splitext(name)
+        else:
+            dirname = os.path.abspath('.')
+    # Try json and yaml file formats
+    if not extensions:
+        extensions = ['json', 'yaml']
+    # Test existence
+    for ext in extensions:
+        filename = os.path.extsep.join((name, ext))
+        path = os.path.join(dirname, filename)
+        if os.path.exists(path):
+            return str(path)
+
+
+def load_fabconf(path):
+    """
+    Load fabfile settings and return env dictionary.
+    """
+    try:
+        # Try first with yaml loader, superset of json
+        from yaml import load
+    except ImportError:
+        if path.endswith('.yaml'):
+            raise
+        # Continue with json loader, if not yaml file
+        from json import load
+    else:
+        try:
+            # Try to speedup with C loader
+            from yaml import CLoader as Loader
+        except ImportError:
+            from yaml import Loader
+        from functools import partial
+        load = partial(load, Loader=Loader)
+
+    return load(file(path))
+
+
 def _is_package(path):
     """
     Is the given path a Python package?
@@ -637,9 +685,6 @@ def main(fabfile_locations=None):
             print("Paramiko %s" % ssh.__version__)
             sys.exit(0)
 
-        # Load settings from user settings file, into shared env dict.
-        state.env.update(load_settings(state.env.rcfile))
-
         # Find local fabfile path or abort
         fabfile = find_fabfile(fabfile_locations)
         if not fabfile and not remainder_arguments:
@@ -649,6 +694,14 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
 
         # Store absolute path to fabfile in case anyone needs it
         state.env.real_fabfile = fabfile
+
+        # Load settings from local fabfile config, into shared env dict.
+        fabconf = find_fabconf()
+        if fabconf:
+            state.env.update(load_fabconf(fabconf))
+
+        # Load settings from user settings file, into shared env dict.
+        state.env.update(load_settings(state.env.rcfile))
 
         # Load fabfile (which calls its module-level code, including
         # tweaks to env values) and put its commands in the shared commands
@@ -672,6 +725,8 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
 
         # Now that we're settled on a fabfile, inform user.
         if state.output.debug:
+            if fabconf:
+                print("Using config '%s'" % fabconf)
             if fabfile:
                 print("Using fabfile '%s'" % fabfile)
             else:
