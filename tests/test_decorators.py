@@ -2,6 +2,7 @@ from __future__ import with_statement
 
 import random
 import sys
+import inspect
 
 from nose.tools import eq_, ok_, assert_true, assert_false, assert_equal
 import fudge
@@ -256,7 +257,37 @@ def test_hosts():
     assert_true(hasattr(use_hosts, 'hosts'))
     assert_equal(use_hosts.hosts, ['test'])
 
+def test_hosts_decorator_should_preserve_signature():
+    @decorators.hosts('test')
+    def use_hosts_with_arguments(x, y=True, *args, **kwargs):
+        pass
+    argspec = inspect.getargspec(use_hosts_with_arguments)
+    default_args = [] if not argspec.defaults else argspec.defaults
+    num_default_args = len(default_args)
+    args_without_defaults = argspec.args[:len(argspec.args) - num_default_args]
+    args_with_defaults = argspec.args[-1 * num_default_args:]
+    assert_equal(args_without_defaults, ['x'])
+    assert_equal(zip(args_with_defaults, default_args), [('y', True)])
 
+def test_hosts_decorator_should_preserve_signature_even_func_is_task():
+    @decorators.hosts('test')
+    @decorators.task
+    def use_hosts_with_arguments_which_func_is_task(x, y=True, *args, **kwargs):
+        pass
+    argspec = inspect.getargspec(use_hosts_with_arguments_which_func_is_task.wrapped)
+    default_args = [] if not argspec.defaults else argspec.defaults
+    num_default_args = len(default_args)
+    args_without_defaults = argspec.args[:len(argspec.args) - num_default_args]
+    args_with_defaults = argspec.args[-1 * num_default_args:]
+    assert_equal(args_without_defaults, ['x'])
+    assert_equal(zip(args_with_defaults, default_args), [('y', True)])
+
+def test_hosts_decorator_should_not_change_func_itself():
+    def original_func():
+        pass
+    decorated_func = decorators.hosts('test')(original_func)
+    assert_false(hasattr(original_func, 'hosts'))
+    assert_true(hasattr(decorated_func, 'hosts'))
 
 #
 # @with_settings
