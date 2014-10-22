@@ -39,7 +39,7 @@ def abort(msg):
     if env.abort_exception:
         raise env.abort_exception(msg)
     else:
-        sys.exit(1)
+        sys.exit(msg)
 
 
 def warn(msg):
