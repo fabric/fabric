@@ -2,6 +2,10 @@
 Changelog
 =========
 
+* :release:`next release <???>`
+* :bug:`1180` Fix issue with unicode steam outputs crashing if stream encoding
+  type is None. Thanks to ``@joekiller`` for catch & patch.
+
 * :release:`1.10.0 <2014-09-04>`
 * :bug:`1188 major` Update `~fabric.operations.local` to close non-pipe file
   descriptors in the child process so subsequent calls to
