@@ -211,6 +211,15 @@ class TestExecute(FabricTest):
         """
         execute('thisisnotavalidtaskname')
 
+    def test_should_not_abort_if_task_name_not_found_with_skip(self):
+        """
+        should not abort if given an invalid task name
+        and skip_unknown_tasks in env
+        """
+        env.skip_unknown_tasks = True
+        execute('thisisnotavalidtaskname')
+        del env['skip_unknown_tasks']
+
     @with_fakes
     def test_should_pass_through_args_kwargs(self):
         """
