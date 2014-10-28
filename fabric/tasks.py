@@ -83,7 +83,7 @@ class Task(object):
 
     # TODO: make it so that this wraps other decorators as expected
     def __init__(self, alias=None, aliases=None, default=False, name=None,
-        *args, **kwargs):
+                 parallel=False, serial=False):
         if alias is not None:
             self.aliases = [alias, ]
         if aliases is not None:
@@ -91,6 +91,8 @@ class Task(object):
         if name is not None:
             self.name = name
         self.is_default = default
+        self.parallel = parallel
+        self.serial = serial
 
     def __details__(self):
         return get_task_details(self.run)
