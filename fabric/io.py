@@ -4,8 +4,7 @@ import sys
 import time
 import re
 import socket
-# from select import select
-# Required for stanley patch
+from select import select
 import fcntl
 import os
 
@@ -226,33 +225,17 @@ class OutputLooper(object):
         return None, None
 
 
-# Required for stanley patch
-class nonblocking(object):
-    def __init__(self, stream):
-        self.stream = stream
-        self.fd = self.stream.fileno()
-
-    def __enter__(self):
-        self.orig_fl = fcntl.fcntl(self.fd, fcntl.F_GETFL)
-        fcntl.fcntl(self.fd, fcntl.F_SETFL, self.orig_fl | os.O_NONBLOCK)
-
-    def __exit__(self, *args):
-        fcntl.fcntl(self.fd, fcntl.F_SETFL, self.orig_fl)
-
-
 def input_loop(chan, using_pty):
     char_read = None
     while not chan.exit_status_ready():
         if win32:
             have_char = msvcrt.kbhit()
         else:
-            # r, w, x = select([sys.stdin], [], [], 0.0)
-            with nonblocking(sys.stdin):
-                char_read = sys.stdin.read(1)
-            have_char = char_read is not None
+            r, w, x = select([sys.stdin], [], [], 0.0)
+            have_char = (r and r[0] == sys.stdin)
         if have_char and chan.input_enabled:
             # Send all local stdin to remote end's stdin
-            byte = msvcrt.getch() if win32 else char_read
+            byte = msvcrt.getch() if win32 else sys.stdin.read(1)
             chan.sendall(byte)
             # Optionally echo locally, if needed.
             if not using_pty and env.echo_stdin:
