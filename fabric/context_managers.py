@@ -515,11 +515,11 @@ def local_tunnel(remote_port, remote_host=None, bind_port=None, bind_host=None):
 
     * ``remote_port`` (mandatory) is the remote port to connect to.
     * ``remote_host`` (optional) is the remote host to connect to; the
-    default is ``localhost``.
+      default is ``localhost``.
     * ``bind_port`` (optional) is the local port to bind; the default
-    is ``remote_port``.
+      is ``remote_port``.
     * ``bind_host`` (optional) is the local address (DNS name or
-    IP address) on which to bind; the default is ``localhost``.
+      IP address) on which to bind; the default is ``localhost``.
     """
 
     if remote_host is None:
