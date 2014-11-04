@@ -503,7 +503,7 @@ def local_tunnel(remote_port, remote_host=None, bind_port=None, bind_host=None):
     Forward a local port to a given host and port on the remote side.
 
     For example, you can use this to run local commands which connect to a
-    database which is only bound to localhost on server:
+    database which is only bound to localhost on server::
 
         # Map localhost:6379 on the client to localhost:6379 on the server,
         # so that the local 'redis-cli' program ends up speaking to the remote
