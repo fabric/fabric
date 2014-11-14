@@ -18,7 +18,11 @@ if os.environ.get('READTHEDOCS') == 'True':
     target = 'http://www.fabfile.org/'
 www = (target, None)
 # Ditto Invoke
-target = join(dirname(__file__), '..', '..', '..', 'invoke', 'docs', '_build')
+target = join(
+    dirname(__file__),
+    '..', '..', '..',
+    'invoke', 'sites', 'docs', '_build'
+)
 if os.environ.get('READTHEDOCS') == 'True':
     target = 'http://docs.pyinvoke.org/'
 invoke = (target, None)
