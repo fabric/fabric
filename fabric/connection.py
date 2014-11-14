@@ -30,8 +30,11 @@ class Connection(object):
 
         :raises ValueError:
             if user or port values are given via both ``host`` shorthand *and*
-            their own arguments. (We `refuse the temptation to guess
-            <http://legacy.python.org/dev/peps/pep-0020/>`_.)
+            their own arguments. (We `refuse the temptation to guess`_.)
+
+        .. _refuse the temptation to guess:
+            http://zen-of-python.info/
+            in-the-face-of-ambiguity-refuse-the-temptation-to-guess.html#12
         """
         self.config = config or Configuration()
         self.user = user or self.config['local_user']
