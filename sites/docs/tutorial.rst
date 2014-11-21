@@ -21,7 +21,7 @@ execute a shell command, then (optionally, of course) interrogate the result::
     >>> from fabric import Connection
     >>> result = Connection('web1').run('uname -s')
     >>> msg = "Ran {0.command!r} on {0.host}, got this stdout:\n{0.stdout}"
-    >>> print msg.format(result)
+    >>> print(msg.format(result))
     Ran "uname -s" on web1, got this stdout:
     Linux
 
@@ -94,7 +94,7 @@ straightforward approach in that case is to iterate over a list or tuple of
     >>> from fabric import Connection
     >>> for host in ('web1', 'web2', 'mac1'):
     >>>     result = Connection(host).run('uname -s')
-    ...     print "{0}: {1}".format(host, result.stdout.strip())
+    ...     print("{0}: {1}".format(host, result.stdout.strip()))
     ...
     ...
     web1: Linux
@@ -109,14 +109,14 @@ The previous example, using `.Pool`, looks like this::
 
     >>> from fabric import Pool
     >>> results = Pool('web1', 'web2', 'mac1').run('uname -s')
-    >>> print results
+    >>> print(results)
     <ResultSet: {
         <Connection 'web1'>: <CommandResult 'uname -s'>,
         <Connection 'web2'>: <CommandResult 'uname -s'>,
         <Connection 'mac1'>: <CommandResult 'uname -s'>
     }>
     >>> for connection, result in results.items():
-    ...     print "{0.hostname}: {1.stdout}".format(connection, result)
+    ...     print("{0.hostname}: {1.stdout}".format(connection, result))
     ...
     ...
     web1: Linux
