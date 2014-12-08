@@ -88,7 +88,7 @@ class OutputLooper(object):
             except socket.timeout:
                 elapsed = time.time() - start
                 if self.timeout is not None and elapsed > self.timeout:
-                    raise CommandTimeout
+                    raise CommandTimeout(timeout=self.timeout)
                 continue
             # Empty byte == EOS
             if bytelist == '':
