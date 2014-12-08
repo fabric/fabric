@@ -377,6 +377,7 @@ If ``True``, enables forwarding of your local SSH agent to the remote end.
 
 .. seealso:: :option:`--forward-agent <-A>`
 
+.. _host:
 
 ``host``
 --------
@@ -658,6 +659,8 @@ If set, should be the path to a :file:`known_hosts` file.  The SSH layer will
 read this file before reading the user's known-hosts file.
 
 .. seealso:: :doc:`ssh`
+
+.. _roledefs:
 
 ``roledefs``
 ------------
