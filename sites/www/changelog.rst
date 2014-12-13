@@ -2,6 +2,9 @@
 Changelog
 =========
 
+* :bug:`1226` Update `~fabric.sftp.get` to ensure that `env.user` has access
+  to tempfiles before changing permissions. Also corrected permissions from
+  404 to 0400 to match comment. Patch by Curtis Mattoon.
 * :release:`1.10.0 <2014-09-04>`
 * :bug:`1188 major` Update `~fabric.operations.local` to close non-pipe file
   descriptors in the child process so subsequent calls to
