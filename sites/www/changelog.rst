@@ -1,7 +1,8 @@
 =========
 Changelog
 =========
-
+* :bug:`1226` Update `~fabric.sftp` to ensure ``env.user`` has access to 
+  files before calling ``chmod 0404`` on the file. Patch by Curtis Mattoon.
 * :release:`1.10.0 <2014-09-04>`
 * :bug:`1188 major` Update `~fabric.operations.local` to close non-pipe file
   descriptors in the child process so subsequent calls to

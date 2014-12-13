@@ -166,6 +166,7 @@ class SFTP(object):
             # (The target path has already been cwd-ified elsewhere.)
             with settings(hide('everything'), cwd=""):
                 sudo('cp -p "%s" "%s"' % (remote_path, target_path))
+                sudo('chown %s:%s "%s"' % (env.user, env.user, target_path))
                 # Only root and the user has the right to read the file
                 sudo('chmod %o "%s"' % (0404, target_path))
                 remote_path = target_path
