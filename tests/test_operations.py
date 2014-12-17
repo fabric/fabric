@@ -730,15 +730,16 @@ class TestFileTransfers(FabricTest):
         get(use_sudo=True) works by copying to a temporary path, downloading it and then removing it at the end
         """
         # the sha1 hash is the unique filename of the file being downloaded. sha1(<filename>)
+        name = "229a29e5693876645e39de0cb0532e43ad73311a"
         fake_run = Fake('_run_command', callable=True, expect_call=True).with_matching_args(
-            'cp -p "/etc/apache2/apache2.conf" "229a29e5693876645e39de0cb0532e43ad73311a"', True, True, None,
+            'cp -p "/etc/apache2/apache2.conf" "%s"' % name, True, True, None,
         ).next_call().with_matching_args(
-            'chmod 404 "229a29e5693876645e39de0cb0532e43ad73311a"', True, True, None,
+            'chmod 404 "%s"' % name, True, True, None,
         ).next_call().with_matching_args(
-            'rm -f "229a29e5693876645e39de0cb0532e43ad73311a"', True, True, None,
+            'rm -f "%s"' % name, True, True, None,
         )
-        fake_get = Fake('get', callable=True, expect_call=True).with_args('229a29e5693876645e39de0cb0532e43ad73311a',
-                                                                          fudge_arg.any_value())
+        fake_get = Fake('get', callable=True, expect_call=True).with_args(
+            name, fudge_arg.any_value())
 
         with hide('everything'):
             with patched_context('fabric.operations', '_run_command', fake_run):
@@ -754,15 +755,16 @@ class TestFileTransfers(FabricTest):
         get(use_sudo=True, temp_dir="/tmp") works by copying to a /tmp/sha1_hash, downloading it and then removing it at the end
         """
         # the sha1 hash is the unique filename of the file being downloaded. sha1(<filename>)
+        name = "229a29e5693876645e39de0cb0532e43ad73311a"
         fake_run = Fake('_run_command', callable=True, expect_call=True).with_matching_args(
-            'cp -p "/etc/apache2/apache2.conf" "/tmp/229a29e5693876645e39de0cb0532e43ad73311a"', True, True, None,
+            'cp -p "/etc/apache2/apache2.conf" "/tmp/%s"' % name, True, True, None,
         ).next_call().with_matching_args(
-            'chmod 404 "/tmp/229a29e5693876645e39de0cb0532e43ad73311a"', True, True, None,
+            'chmod 404 "/tmp/%s"' % name, True, True, None,
         ).next_call().with_matching_args(
-            'rm -f "/tmp/229a29e5693876645e39de0cb0532e43ad73311a"', True, True, None,
+            'rm -f "/tmp/%s"' % name, True, True, None,
         )
-        fake_get = Fake('get', callable=True, expect_call=True).with_args('/tmp/229a29e5693876645e39de0cb0532e43ad73311a',
-                                                                          fudge_arg.any_value())
+        fake_get = Fake('get', callable=True, expect_call=True).with_args(
+            '/tmp/%s' % name, fudge_arg.any_value())
 
         with hide('everything'):
             with patched_context('fabric.operations', '_run_command', fake_run):
