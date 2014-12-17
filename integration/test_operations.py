@@ -154,7 +154,8 @@ class TestOperations(Integration):
         target = self.filepath
         sudo("echo 'nope' > %s" % target)
         # Same group as connected user
-        sudo("chown root:`id -g`%s" % target)
+        gid = run("id -g")
+        sudo("chown root:%s %s" % (gid, target))
         # Same perms as bug use case (only really need group read)
         sudo("chmod 0640 %s" % target)
         # Do eet
