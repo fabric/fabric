@@ -5,7 +5,9 @@ import os
 import posixpath
 import shutil
 
-from fabric.api import run, path, put, sudo, abort, warn_only, env, cd, local
+from fabric.api import (
+    run, path, put, sudo, abort, warn_only, env, cd, local, get
+)
 from fabric.contrib.files import exists
 
 from utils import Integration
@@ -127,3 +129,18 @@ class TestOperations(Integration):
             assert exists(posixpath.dirname(uploaded[0]))
         finally:
             shutil.rmtree(localdir)
+
+    def test_get_with_use_sudo_unowned_file(self):
+        # Ensure target is not normally readable by us
+        target = "/tmp/nope.txt"
+        sudo("echo 'nope' > %s" % target)
+        sudo("chown root:root %s" % target)
+        sudo("chmod 0440 %s" % target)
+        # Pull down with use_sudo, confirm contents
+        local_ = StringIO()
+        result = get(
+            local_path=local_,
+            remote_path=target,
+            use_sudo=True,
+        )
+        assert local_.getvalue() == "nope\n"
