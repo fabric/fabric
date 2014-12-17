@@ -734,7 +734,9 @@ class TestFileTransfers(FabricTest):
         fake_run = Fake('_run_command', callable=True, expect_call=True).with_matching_args(
             'cp -p "/etc/apache2/apache2.conf" "%s"' % name, True, True, None,
         ).next_call().with_matching_args(
-            'chmod 404 "%s"' % name, True, True, None,
+            'chown username "%s"' % name, True, True, None,
+        ).next_call().with_matching_args(
+            'chmod 400 "%s"' % name, True, True, None,
         ).next_call().with_matching_args(
             'rm -f "%s"' % name, True, True, None,
         )
@@ -759,7 +761,9 @@ class TestFileTransfers(FabricTest):
         fake_run = Fake('_run_command', callable=True, expect_call=True).with_matching_args(
             'cp -p "/etc/apache2/apache2.conf" "/tmp/%s"' % name, True, True, None,
         ).next_call().with_matching_args(
-            'chmod 404 "/tmp/%s"' % name, True, True, None,
+            'chown username "/tmp/%s"' % name, True, True, None,
+        ).next_call().with_matching_args(
+            'chmod 400 "/tmp/%s"' % name, True, True, None,
         ).next_call().with_matching_args(
             'rm -f "/tmp/%s"' % name, True, True, None,
         )
