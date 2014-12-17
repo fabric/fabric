@@ -144,3 +144,24 @@ class TestOperations(Integration):
             use_sudo=True,
         )
         assert local_.getvalue() == "nope\n"
+
+    def test_get_with_use_sudo_groupowned_file(self):
+        # Issue #1226: file gotten w/ use_sudo, file normally readable via
+        # group perms (yes - so use_sudo not required - full use case involves
+        # full-directory get() where use_sudo *is* required). Prior to fix,
+        # temp file is chmod 404 which seems to cause perm denied due to group
+        # membership (despite 'other' readability).
+        target = self.filepath
+        sudo("echo 'nope' > %s" % target)
+        # Same group as connected user
+        sudo("chown root:`id -g`%s" % target)
+        # Same perms as bug use case (only really need group read)
+        sudo("chmod 0640 %s" % target)
+        # Do eet
+        local_ = StringIO()
+        result = get(
+            local_path=local_,
+            remote_path=target,
+            use_sudo=True,
+        )
+        assert local_.getvalue() == "nope\n"
