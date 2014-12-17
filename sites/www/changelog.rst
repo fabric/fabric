@@ -2,6 +2,11 @@
 Changelog
 =========
 
+* :bug:`1226` Address Unix permissions corner case by running ``chown`` on
+  temporary files used by `~fabric.operations.get` when ``use_sudo=True``.
+  (Also fix the pre-existing ``chmod`` call to align with original intent /
+  avoid a minor security hole.) Thanks to Daniel Watkins for the report &
+  Curtis Mattoon for the patches.
 * :release:`1.10.0 <2014-09-04>`
 * :bug:`1188 major` Update `~fabric.operations.local` to close non-pipe file
   descriptors in the child process so subsequent calls to
