@@ -132,7 +132,7 @@ class TestOperations(Integration):
 
     def test_get_with_use_sudo_unowned_file(self):
         # Ensure target is not normally readable by us
-        target = "/tmp/nope.txt"
+        target = self.filepath
         sudo("echo 'nope' > %s" % target)
         sudo("chown root:root %s" % target)
         sudo("chmod 0440 %s" % target)
