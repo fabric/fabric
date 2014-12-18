@@ -28,7 +28,7 @@ def abort(msg):
     """
     from fabric.state import output, env
     if not env.colorize_errors:
-        red  = lambda x: x
+        red = lambda x: x
     else:
         from colors import red
 
@@ -274,7 +274,9 @@ def _pty_size():
 
     default_rows, default_cols = 24, 80
     rows, cols = default_rows, default_cols
-    if not win32 and sys.stdout.isatty():
+    if not win32 and sys.stdout.isatty() and \
+            callable(getattr(sys.stdout, 'isatty')) and \
+            sys.stdout.isatty():
         # We want two short unsigned integers (rows, cols)
         fmt = 'HH'
         # Create an empty (zeroed) buffer for ioctl to map onto. Yay for C!
@@ -283,7 +285,7 @@ def _pty_size():
         # buffer
         try:
             result = fcntl.ioctl(sys.stdout.fileno(), termios.TIOCGWINSZ,
-                buffer)
+                                 buffer)
             # Unpack buffer back into Python data types
             rows, cols = struct.unpack(fmt, result)
             # Fall back to defaults if TIOCGWINSZ returns unreasonable values
