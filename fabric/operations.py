@@ -552,8 +552,11 @@ def get(remote_path, local_path=None):
         failed_remote_files = []
 
         try:
-            # Glob remote path
-            names = ftp.glob(remote_path)
+            # Glob remote path if it's a directory; otherwise use as-is
+            if ftp.isdir(remote_path):
+                names = ftp.glob(remote_path)
+            else:
+                names = [remote_path]
 
             # Handle invalid local-file-object situations
             if not local_is_path:
