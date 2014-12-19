@@ -2,6 +2,9 @@
 Changelog
 =========
 
+* :bug:`1228` Update the ``CommandTimeout`` class so it has a useful ``str``
+  instead of appearing blank when caught by Fabric's top level exception
+  handling. Catch & patch from Tomaz Muraus.
 * :bug:`1180` Fix issue with unicode steam outputs crashing if stream encoding
   type is None. Thanks to ``@joekiller`` for catch & patch.
 * :support:`958 backported` Remove the Git SHA portion of our version string
