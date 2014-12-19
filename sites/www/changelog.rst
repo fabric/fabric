@@ -2,6 +2,10 @@
 Changelog
 =========
 
+* :bug:`1201` Don't naively glob all `~fabric.operations.get` targets - only
+  glob actual directories. This avoids incorrectly yielding permission errors
+  in edge cases where a requested file is within a directory lacking the read
+  permission bit. Thanks to Sassa Nf for the original report.
 * :bug:`1019` (also :issue:`1022`, :issue:`1186`) Fix "is a tty" tests in
   environments where streams (eg ``sys.stdout``) have been replaced with
   objects lacking a ``.isatty()`` method. Thanks to Miki Tebeka for the
