@@ -2,8 +2,11 @@
 Changelog
 =========
 
-* :support:`1229` Add some missing API doc hyperlink references. Thanks to Tony
-  Narlock.
+* :support:`958 backported` Remove the Git SHA portion of our version string
+  generation; it was rarely useful & occasionally caused issues for users with
+  non-Git-based source checkouts.
+* :support:`1229 backported` Add some missing API doc hyperlink references.
+  Thanks to Tony Narlock.
 * :release:`1.9.1 <2014-08-06>`
 * :release:`1.8.5 <2014-08-06>`
 * :release:`1.7.5 <2014-08-06>`
