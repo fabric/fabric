@@ -5,7 +5,9 @@ import os
 import posixpath
 import shutil
 
-from fabric.api import run, path, put, sudo, abort, warn_only, env, cd, local
+from fabric.api import (
+    run, path, put, sudo, abort, warn_only, env, cd, local, get
+)
 from fabric.contrib.files import exists
 
 from utils import Integration
@@ -127,3 +129,16 @@ class TestOperations(Integration):
             assert exists(posixpath.dirname(uploaded[0]))
         finally:
             shutil.rmtree(localdir)
+
+    def test_get_from_unreadable_dir(self):
+        # Put file in dir as normal user
+        remotepath = "%s/myfile.txt" % self.dirpath
+        run("echo 'foo' > %s" % remotepath)
+        # Make dir unreadable (but still executable - impossible to obtain
+        # file if dir is both unreadable and unexecutable)
+        sudo("chown root:root %s" % self.dirpath)
+        sudo("chmod 711 %s" % self.dirpath)
+        # Try gettin' it
+        local_ = StringIO()
+        get(local_path=local_, remote_path=remotepath)
+        assert local_.getvalue() == 'foo\n'
