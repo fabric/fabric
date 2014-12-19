@@ -553,7 +553,10 @@ def get(remote_path, local_path=None):
 
         try:
             # Glob remote path if it's a directory; otherwise use as-is
-            if ftp.isdir(remote_path):
+            if (
+                ftp.isdir(remote_path)
+                or '*' in remote_path or '?' in remote_path
+            ):
                 names = ftp.glob(remote_path)
             else:
                 names = [remote_path]
