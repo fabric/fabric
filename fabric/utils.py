@@ -283,14 +283,9 @@ def _pty_size():
         import termios
         import struct
 
-<<<<<<< HEAD
     default_rows, default_cols = 24, 80
     rows, cols = default_rows, default_cols
-    if not win32 and sys.stdout.isatty():
-=======
-    rows, cols = 24, 80
     if not win32 and isatty(sys.stdout):
->>>>>>> 8d7ac9e... Account for the fact that some file-like objects may not have a isatty() method.
         # We want two short unsigned integers (rows, cols)
         fmt = 'HH'
         # Create an empty (zeroed) buffer for ioctl to map onto. Yay for C!
