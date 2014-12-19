@@ -2,6 +2,10 @@
 Changelog
 =========
 
+* :support:`1213 backported` Add useful exception message to the implicit
+  ``SystemExit`` raised by Fabric's use of ``sys.exit`` inside the
+  `~fabric.api.abort` function. This allows client code catching ``SystemExit``
+  to have better introspection into the error. Thanks to Ioannis Panousis.
 * :bug:`1228` Update the ``CommandTimeout`` class so it has a useful ``str``
   instead of appearing blank when caught by Fabric's top level exception
   handling. Catch & patch from Tomaz Muraus.
