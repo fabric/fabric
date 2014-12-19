@@ -2,6 +2,7 @@
 Changelog
 =========
 
+* :release:`1.9.2 <2014-12-19>`
 * :bug:`1201` Don't naively glob all `~fabric.operations.get` targets - only
   glob actual directories. This avoids incorrectly yielding permission errors
   in edge cases where a requested file is within a directory lacking the read
