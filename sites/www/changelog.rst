@@ -2,6 +2,11 @@
 Changelog
 =========
 
+* :bug:`1019` (also :issue:`1022`, :issue:`1186`) Fix "is a tty" tests in
+  environments where streams (eg ``sys.stdout``) have been replaced with
+  objects lacking a ``.isatty()`` method. Thanks to Miki Tebeka for the
+  original report, Lele Long for a subsequent patch, and Julien Phalip
+  for the final/merged patch.
 * :support:`1213 backported` Add useful exception message to the implicit
   ``SystemExit`` raised by Fabric's use of ``sys.exit`` inside the
   `~fabric.api.abort` function. This allows client code catching ``SystemExit``
