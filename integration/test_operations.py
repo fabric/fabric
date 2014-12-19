@@ -166,3 +166,16 @@ class TestOperations(Integration):
             use_sudo=True,
         )
         assert local_.getvalue() == "nope\n"
+
+    def test_get_from_unreadable_dir(self):
+        # Put file in dir as normal user
+        remotepath = "%s/myfile.txt" % self.dirpath
+        run("echo 'foo' > %s" % remotepath)
+        # Make dir unreadable (but still executable - impossible to obtain
+        # file if dir is both unreadable and unexecutable)
+        sudo("chown root:root %s" % self.dirpath)
+        sudo("chmod 711 %s" % self.dirpath)
+        # Try gettin' it
+        local_ = StringIO()
+        get(local_path=local_, remote_path=remotepath)
+        assert local_.getvalue() == 'foo\n'
