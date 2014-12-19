@@ -2,6 +2,13 @@
 Changelog
 =========
 
+* :bug:`1180` Fix issue with unicode steam outputs crashing if stream encoding
+  type is None. Thanks to ``@joekiller`` for catch & patch.
+* :support:`958 backported` Remove the Git SHA portion of our version string
+  generation; it was rarely useful & occasionally caused issues for users with
+  non-Git-based source checkouts.
+* :support:`1229 backported` Add some missing API doc hyperlink references.
+  Thanks to Tony Narlock.
 * :bug:`1226` Update `~fabric.operations.get` to ensure that `env.user` has
   access to tempfiles before changing permissions. Also corrected permissions
   from 404 to 0400 to match comment. Patch by Curtis Mattoon; original report
