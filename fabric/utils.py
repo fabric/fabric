@@ -15,6 +15,17 @@ def _encode(msg, stream):
         return str(msg)
 
 
+def isatty(stream):
+    """Check if a stream is a tty.
+
+    Not all file-like objects implement the `isatty` method.
+    """
+    fn = getattr(stream, 'isatty', None)
+    if fn is None:
+        return False
+    return fn()
+
+
 def abort(msg):
     """
     Abort execution, print ``msg`` to stderr and exit with error status (1.)
@@ -39,7 +50,7 @@ def abort(msg):
     if env.abort_exception:
         raise env.abort_exception(msg)
     else:
-        sys.exit(1)
+        sys.exit(msg)
 
 
 def warn(msg):
@@ -272,9 +283,14 @@ def _pty_size():
         import termios
         import struct
 
+<<<<<<< HEAD
     default_rows, default_cols = 24, 80
     rows, cols = default_rows, default_cols
     if not win32 and sys.stdout.isatty():
+=======
+    rows, cols = 24, 80
+    if not win32 and isatty(sys.stdout):
+>>>>>>> 8d7ac9e... Account for the fact that some file-like objects may not have a isatty() method.
         # We want two short unsigned integers (rows, cols)
         fmt = 'HH'
         # Create an empty (zeroed) buffer for ioctl to map onto. Yay for C!
