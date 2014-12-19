@@ -2,6 +2,8 @@
 Changelog
 =========
 
+* :support:`1229` Add some missing API doc hyperlink references. Thanks to Tony
+  Narlock.
 * :release:`1.9.1 <2014-08-06>`
 * :release:`1.8.5 <2014-08-06>`
 * :release:`1.7.5 <2014-08-06>`
