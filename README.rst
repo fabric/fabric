@@ -9,7 +9,9 @@ aborting execution.
  
 Typical use involves creating a Python module containing one or more functions,
 then executing them via the ``fab`` command-line tool. Below is a small but
-complete "fabfile" containing a single task::
+complete "fabfile" containing a single task:
+
+.. code-block:: python
 
     from fabric.api import run
 
