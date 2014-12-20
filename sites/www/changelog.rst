@@ -2,6 +2,9 @@
 Changelog
 =========
 
+* :support:`1239` Update README to work better under raw docutils so the
+  example code block is highlighted as Python on PyPI (and not just on our
+  Sphinx-driven website). Thanks to Marc Abramowitz.
 * :release:`1.10.1 <2014-12-19>`
 * :release:`1.9.2 <2014-12-19>`
 * :bug:`1201` Don't naively glob all `~fabric.operations.get` targets - only
