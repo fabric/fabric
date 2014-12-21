@@ -1,7 +1,8 @@
 =========
 Changelog
 =========
-
+* :feature:`1203` Add ``case_sensitive`` keyword argument to allow passing
+  ``-i`` flag to ``egrep``. Report by ``@xoul``, patch by ``@cmattoon``.
 * :support:`1239` Update README to work better under raw docutils so the
   example code block is highlighted as Python on PyPI (and not just on our
   Sphinx-driven website). Thanks to Marc Abramowitz.

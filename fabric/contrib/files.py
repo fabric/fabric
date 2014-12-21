@@ -318,7 +318,7 @@ def comment(filename, regex, use_sudo=False, char='#', backup='.bak',
 
 
 def contains(filename, text, exact=False, use_sudo=False, escape=True,
-    shell=False):
+    shell=False, case_sensitive=True):
     """
     Return True if ``filename`` contains ``text`` (which may be a regex.)
 
@@ -340,6 +340,8 @@ def contains(filename, text, exact=False, use_sudo=False, escape=True,
     The ``shell`` argument will be eventually passed to ``run/sudo``. See
     description of the same argumnet in ``~fabric.contrib.sed`` for details.
 
+    If ``case_sensitive`` is False, the `-i` flag will be passed to ``egrep``.
+
     .. versionchanged:: 1.0
         Swapped the order of the ``filename`` and ``text`` arguments to be
         consistent with other functions in this module.
@@ -350,6 +352,8 @@ def contains(filename, text, exact=False, use_sudo=False, escape=True,
         Added ``escape`` keyword argument.
     .. versionadded:: 1.6
         Added the ``shell`` keyword argument.
+    .. versionadded:: 1.10
+        Added the ``case_sensitive`` keyword argument.
     """
     func = use_sudo and sudo or run
     if escape:
@@ -358,6 +362,8 @@ def contains(filename, text, exact=False, use_sudo=False, escape=True,
             text = "^%s$" % text
     with settings(hide('everything'), warn_only=True):
         egrep_cmd = 'egrep "%s" %s' % (text, _expand_path(filename))
+        if case_sensitive is False:
+            egrep_cmd = egrep_cmd.replace('egrep', 'egrep -i', 1)
         return func(egrep_cmd, shell=shell).succeeded
 
 

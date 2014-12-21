@@ -73,6 +73,32 @@ class TestContrib(FabricTest):
             result = contains('/file.txt', 'text', use_sudo=True)
             assert result == False
 
+    @server(responses={
+        'egrep "Include\\ other\\.conf" "$(echo /etc/apache2/apache2.conf)"': "Include other.conf"
+    })
+    def test_contains_performs_case_sensitive_search(self):
+        """
+        contains() should perform a case-sensitive search by default.
+        """
+        with hide('everything'):
+            result = contains('/etc/apache2/apache2.conf', 'Include other.conf', 
+                              use_sudo=True)
+            assert result == True
+
+    @server(responses={
+        'egrep -i "include\ Other\.CONF" "$(echo /etc/apache2/apache2.conf)"': "Include other.conf"
+    })
+    def test_contains_performs_case_insensitive_search(self):
+        """
+        contains() should perform a case-insensitive search when passed `case_sensitive=False`
+        """
+        with hide('everything'):
+            result = contains('/etc/apache2/apache2.conf', 
+                              'include Other.CONF', 
+                              use_sudo=True,
+                              case_sensitive=False)
+            assert result == True
+
     @server()
     def test_upload_template_handles_jinja_template(self):
         """
