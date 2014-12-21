@@ -904,7 +904,7 @@ def _run_command(command, shell=True, pty=True, combine_stderr=True,
 
         # Handle context manager modifications, and shell wrapping
         wrapped_command = _shell_wrap(
-            _prefix_commands(_prefix_env_vars(command), 'remote'),
+            _prefix_env_vars(_prefix_commands(command, 'remote')),
             shell_escape,
             shell,
             _sudo_prefix(user, group) if sudo else None

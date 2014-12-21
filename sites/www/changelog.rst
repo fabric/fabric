@@ -1,7 +1,9 @@
 =========
 Changelog
 =========
-
+* :bug:`1135` Modified order of operations in ``_run_command()`` to apply
+  environment vars before prefixing commands. Report by ``@warsamebashir``,
+  patch by ``@cmattoon``.
 * :support:`1239` Update README to work better under raw docutils so the
   example code block is highlighted as Python on PyPI (and not just on our
   Sphinx-driven website). Thanks to Marc Abramowitz.
