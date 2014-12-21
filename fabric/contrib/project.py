@@ -114,7 +114,9 @@ def rsync_project(
         key_string = "-i " + " -i ".join(keys)
     # Port
     user, host, port = normalize(env.host_string)
-    port_string = "-p %s" % port
+    port_string = ""
+    if port != env.default_port:
+        port_string = "-p %s" % port
     # RSH
     rsh_string = ""
     rsh_parts = [key_string, port_string, ssh_opts]
