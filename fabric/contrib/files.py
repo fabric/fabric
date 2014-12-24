@@ -110,7 +110,7 @@ def upload_template(filename, destination, context=None, use_jinja=False,
         func = partial(func, pty=pty)
     # Normalize destination to be an actual filename, due to using StringIO
     with settings(hide('everything'), warn_only=True):
-        if func('test -d %s' % _expand_path(destination)).succeeded:
+        if func('test -d %s' % destination).succeeded:
             sep = "" if destination.endswith('/') else "/"
             destination += sep + os.path.basename(filename)
 
