@@ -604,12 +604,14 @@ def _sudo_prefix_argument(argument, value):
     return ' %s "%s"' % (argument, value)
 
 
-def _sudo_prefix(user, group=None):
+def _sudo_prefix(user, group=None, login_shell=False):
     """
     Return ``env.sudo_prefix`` with ``user``/``group`` inserted if necessary.
     """
     # Insert env.sudo_prompt into env.sudo_prefix
     prefix = env.sudo_prefix % env
+    if login_shell:
+        prefix = "%s%s " % (prefix, _sudo_prefix_argument('-i', '')
     if user is not None or group is not None:
         return "%s%s%s " % (prefix,
                             _sudo_prefix_argument('-u', user),
@@ -884,7 +886,7 @@ def _noop():
 
 def _run_command(command, shell=True, pty=True, combine_stderr=True,
     sudo=False, user=None, quiet=False, warn_only=False, stdout=None,
-    stderr=None, group=None, timeout=None, shell_escape=None):
+    stderr=None, group=None, login_shell=False, timeout=None, shell_escape=None):
     """
     Underpinnings of `run` and `sudo`. See their docstrings for more info.
     """
@@ -907,7 +909,7 @@ def _run_command(command, shell=True, pty=True, combine_stderr=True,
             _prefix_commands(_prefix_env_vars(command), 'remote'),
             shell_escape,
             shell,
-            _sudo_prefix(user, group) if sudo else None
+            _sudo_prefix(user, group, login_shell) if sudo else None
         )
         # Execute info line
         which = 'sudo' if sudo else 'run'
@@ -1057,7 +1059,7 @@ def run(command, shell=True, pty=True, combine_stderr=None, quiet=False,
 @needs_host
 def sudo(command, shell=True, pty=True, combine_stderr=None, user=None,
     quiet=False, warn_only=False, stdout=None, stderr=None, group=None,
-    timeout=None, shell_escape=None):
+    login_shell=False, timeout=None, shell_escape=None):
     """
     Run a shell command on a remote host, with superuser privileges.
 
@@ -1103,8 +1105,8 @@ def sudo(command, shell=True, pty=True, combine_stderr=None, user=None,
     return _run_command(
         command, shell, pty, combine_stderr, sudo=True,
         user=user if user else env.sudo_user,
-        group=group, quiet=quiet, warn_only=warn_only, stdout=stdout,
-        stderr=stderr, timeout=timeout, shell_escape=shell_escape,
+        group=group, login_shell=login_shell, quiet=quiet, warn_only=warn_only,
+        stdout=stdout, stderr=stderr, timeout=timeout, shell_escape=shell_escape,
     )
 
 
