@@ -611,7 +611,7 @@ def _sudo_prefix(user, group=None, login_shell=False):
     # Insert env.sudo_prompt into env.sudo_prefix
     prefix = env.sudo_prefix % env
     if login_shell:
-        prefix = "%s%s " % (prefix, _sudo_prefix_argument('-i', '')
+        prefix = "%s%s " % (prefix, _sudo_prefix_argument('-i', ''))
     if user is not None or group is not None:
         return "%s%s%s " % (prefix,
                             _sudo_prefix_argument('-u', user),
