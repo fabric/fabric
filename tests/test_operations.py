@@ -1017,6 +1017,37 @@ class TestFileTransfers(FabricTest):
             get('/test.txt', local)
         assert os.path.exists(local)
 
+    @server(files={'/home/test/tmp/': None})
+    def test_cd_should_expand_tilde_put(self):
+        """
+        put() should honor env.cwd for remote paths with tildes
+        """
+        home = '/home/test'
+        fake_normalize = Fake('normalize', callable=True,
+                              expect_call=True).returns(home)
+        with patched_context(SFTPClient, 'normalize', fake_normalize):
+            f = 'test.txt'
+            d = '~/tmp'
+            local = self.path(f)
+            with open(local, 'w') as fd:
+                fd.write('test')
+            with nested(cd(d), hide('everything')):
+                put(local, f)
+            assert self.exists_remotely('%s/tmp/%s' % (home, f))
+
+    @server(files={'/home/test/tmp/test.txt': 'test'})
+    def test_cd_should_expand_tilde_get(self):
+        """
+        get() should honor env.cwd for relative remote paths
+        """
+        fake_normalize = Fake('normalize', callable=True,
+                              expect_call=True).returns('/home/test')
+        with patched_context(SFTPClient, 'normalize', fake_normalize):
+            local = self.path('test.txt')
+            with nested(cd('~/tmp'), hide('everything')):
+                get('test.txt', local)
+            assert os.path.exists(local)
+
     @server()
     def test_lcd_should_apply_to_put(self):
         """

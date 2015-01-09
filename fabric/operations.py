@@ -351,13 +351,13 @@ def put(local_path=None, remote_path=None, use_sudo=False,
         # Empty remote path implies cwd
         remote_path = remote_path or home
 
-        # Expand tildes
-        if remote_path.startswith('~'):
-            remote_path = remote_path.replace('~', home, 1)
-
         # Honor cd() (assumes Unix style file paths on remote end)
         if not os.path.isabs(remote_path) and env.get('cwd'):
             remote_path = env.cwd.rstrip('/') + '/' + remote_path
+
+        # Expand tildes
+        if remote_path.startswith('~'):
+            remote_path = remote_path.replace('~', home, 1)
 
         if local_is_path:
             # Apply lcwd, expand tildes, etc
@@ -536,11 +536,6 @@ def get(remote_path, local_path=None, use_sudo=False, temp_dir=""):
 
     with closing(ftp) as ftp:
         home = ftp.normalize('.')
-        # Expand home directory markers (tildes, etc)
-        if remote_path.startswith('~'):
-            remote_path = remote_path.replace('~', home, 1)
-        if local_is_path:
-            local_path = os.path.expanduser(local_path)
 
         # Honor cd() (assumes Unix style file paths on remote end)
         if not os.path.isabs(remote_path):
@@ -553,6 +548,12 @@ def get(remote_path, local_path=None, use_sudo=False, temp_dir=""):
             # '.')
             else:
                 remote_path = posixpath.join(home, remote_path)
+
+        # Expand home directory markers (tildes, etc)
+        if local_is_path:
+            local_path = os.path.expanduser(local_path)
+        if remote_path.startswith('~'):
+            remote_path = remote_path.replace('~', home, 1)
 
         # Track final local destination files so we can return a list
         local_files = []
