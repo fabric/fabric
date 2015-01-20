@@ -204,6 +204,7 @@ class TestErrorHandling(FabricTest):
             error("error message", func=utils.abort, stdout=stdout)
         assert_contains(stdout, sys.stdout.getvalue())
 
+    @mock_streams('stdout')
     @with_patched_object(utils, 'abort', Fake('abort', callable=True,
         expect_call=True).calls(lambda x: sys.stdout.write(x + "\n")))
     @with_patched_object(output, 'exceptions', True)
@@ -216,6 +217,7 @@ class TestErrorHandling(FabricTest):
         error("error message", func=utils.abort, stdout=error)
         assert_contains(self.dummy_string, sys.stdout.getvalue())
 
+    @mock_streams('stdout')
     @with_patched_object(utils, 'abort', Fake('abort', callable=True,
         expect_call=True).calls(lambda x: sys.stdout.write(x + "\n")))
     @with_patched_object(output, 'exceptions', True)
