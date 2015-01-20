@@ -325,9 +325,11 @@ def error(message, func=None, exception=None, stdout=None, stderr=None):
     import fabric.state
     if func is None:
         func = fabric.state.env.warn_only and warn or abort
-    # If debug printing is on, append a traceback to the message
-    if fabric.state.output.debug:
-        message += "\n\n" + format_exc()
+    # If exception printing is on, append a traceback to the message
+    if fabric.state.output.exceptions:
+        exception_message = format_exc()
+        if exception_message:
+            message += "\n\n" + exception_message
     # Otherwise, if we were given an exception, append its contents.
     elif exception is not None:
         # Figure out how to get a string out of the exception; EnvironmentError

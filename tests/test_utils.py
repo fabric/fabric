@@ -1,6 +1,7 @@
 from __future__ import with_statement
 
 import sys
+import traceback
 from unittest import TestCase
 
 from fudge import Fake, patched_context, with_fakes
@@ -12,7 +13,8 @@ from fabric.utils import warn, indent, abort, puts, fastprint, error, RingBuffer
 from fabric import utils  # For patching
 from fabric.context_managers import settings, hide
 from fabric.colors import magenta, red
-from utils import mock_streams, aborts, FabricTest, assert_contains
+from utils import mock_streams, aborts, FabricTest, assert_contains, \
+    assert_not_contains
 
 
 @mock_streams('stderr')
@@ -163,6 +165,8 @@ def test_fastprint_calls_puts():
 
 
 class TestErrorHandling(FabricTest):
+    dummy_string = 'test1234!'
+
     @with_patched_object(utils, 'warn', Fake('warn', callable=True,
         expect_call=True))
     def test_error_warns_if_warn_only_True_and_func_None(self):
@@ -199,6 +203,30 @@ class TestErrorHandling(FabricTest):
         with hide('stdout'):
             error("error message", func=utils.abort, stdout=stdout)
         assert_contains(stdout, sys.stdout.getvalue())
+
+    @with_patched_object(utils, 'abort', Fake('abort', callable=True,
+        expect_call=True).calls(lambda x: sys.stdout.write(x + "\n")))
+    @with_patched_object(output, 'exceptions', True)
+    @with_patched_object(utils, 'format_exc', Fake('format_exc', callable=True,
+        expect_call=True).returns(dummy_string))
+    def test_includes_traceback_if_exceptions_logging_is_on(self):
+        """
+        error() includes traceback in message if exceptions logging is on
+        """
+        error("error message", func=utils.abort, stdout=error)
+        assert_contains(self.dummy_string, sys.stdout.getvalue())
+
+    @with_patched_object(utils, 'abort', Fake('abort', callable=True,
+        expect_call=True).calls(lambda x: sys.stdout.write(x + "\n")))
+    @with_patched_object(output, 'exceptions', True)
+    @with_patched_object(utils, 'format_exc', Fake('format_exc', callable=True,
+        expect_call=True).returns(None))
+    def test_doesnt_print_None_when_no_traceback_present(self):
+        """
+        error() doesn't include None in message if there is no traceback
+        """
+        error("error message", func=utils.abort, stdout=error)
+        assert_not_contains('None', sys.stdout.getvalue())
 
     @mock_streams('stderr')
     @with_patched_object(utils, 'abort', Fake('abort', callable=True,
