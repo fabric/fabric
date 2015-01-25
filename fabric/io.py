@@ -93,7 +93,7 @@ class OutputLooper(object):
             # Empty byte == EOS
             if bytelist == '':
                 # If linewise, ensure we flush any leftovers in the buffer.
-                if self.linewise and line:
+                if self.linewise and line and len("".join(line)) > 0:
                     self._flush(self.prefix)
                     self._flush("".join(line))
                 break
