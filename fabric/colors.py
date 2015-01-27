@@ -22,13 +22,26 @@ Because these functions simply return modified strings, you can nest them::
 If ``bold`` is set to ``True``, the ANSI flag for bolding will be flipped on
 for that particular invocation, which usually shows up as a bold or brighter
 version of the original color on most terminals.
+
+It is now possible to disable color printing completely by setting the environment
+variable FABRIC_DISABLE_COLORS.  The value doesn't matter as long as it exists.
 """
 
+import os
 
 def _wrap_with(code):
 
     def inner(text, bold=False):
         c = code
+
+        try:
+            os.environ.get("FABRIC_DISABLE_COLORS")
+        except NameError:
+            os.environ["FABRIC_DISABLE_COLORS"] = None
+
+        if os.environ.get("FABRIC_DISABLE_COLORS") is not None:
+            return text
+
         if bold:
             c = "1;%s" % c
         return "\033[%sm%s\033[0m" % (c, text)
