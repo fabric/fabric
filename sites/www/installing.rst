@@ -52,7 +52,7 @@ gotchas.
 Python
 ------
 
-Fabric requires `Python <http://python.org>`_ version 2.5 or 2.6. Some caveats
+Fabric requires `Python <http://python.org>`_ version 2.5, 2.6 or 2.7. Some caveats
 and notes about other Python versions:
 
 * We are not planning on supporting **Python 2.4** given its age and the number
