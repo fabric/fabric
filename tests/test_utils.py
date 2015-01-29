@@ -220,6 +220,19 @@ class TestErrorHandling(FabricTest):
     @mock_streams('stdout')
     @with_patched_object(utils, 'abort', Fake('abort', callable=True,
         expect_call=True).calls(lambda x: sys.stdout.write(x + "\n")))
+    @with_patched_object(output, 'debug', True)
+    @with_patched_object(utils, 'format_exc', Fake('format_exc', callable=True,
+        expect_call=True).returns(dummy_string))
+    def test_includes_traceback_if_debug_logging_is_on(self):
+        """
+        error() includes traceback in message if debug logging is on (backwardis compatibility)
+        """
+        error("error message", func=utils.abort, stdout=error)
+        assert_contains(self.dummy_string, sys.stdout.getvalue())
+
+    @mock_streams('stdout')
+    @with_patched_object(utils, 'abort', Fake('abort', callable=True,
+        expect_call=True).calls(lambda x: sys.stdout.write(x + "\n")))
     @with_patched_object(output, 'exceptions', True)
     @with_patched_object(utils, 'format_exc', Fake('format_exc', callable=True,
         expect_call=True).returns(None))
