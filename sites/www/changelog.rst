@@ -2,6 +2,8 @@
 Changelog
 =========
 
+* :feature:`1200` Introduced ``exceptions`` output level, so users don't have to
+  deal with the debug output just to see tracebacks.
 * :support:`1239` Update README to work better under raw docutils so the
   example code block is highlighted as Python on PyPI (and not just on our
   Sphinx-driven website). Thanks to Marc Abramowitz.
