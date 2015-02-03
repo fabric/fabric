@@ -19,7 +19,7 @@ user.
 
 .. note::
 
-    All levels, save for ``debug``, are on by default.
+    All levels, save for ``debug`` and ``exceptions``, are on by default.
 
 Standard output levels
 ----------------------
@@ -52,6 +52,8 @@ The standard, atomic output levels/groups are as follows:
 
 * **user**: User-generated output, i.e. local output printed by fabfile code
   via use of the `~fabric.utils.fastprint` or `~fabric.utils.puts` functions.
+  
+* **exceptions**: Includes full Python tracebacks during aborts.
 
 .. versionchanged:: 0.9.2
     Added "Executing task" lines to the ``running`` output level.
@@ -82,7 +84,7 @@ differently from the rest:
       [hostname] run: /bin/bash -l -c "ls \"/home/username/Folder Name With Spaces\""
 
   Enabling ``debug`` output will also display full Python tracebacks during
-  aborts.
+  aborts (as if ``exceptions`` output was enabled).
   
   .. note::
   
