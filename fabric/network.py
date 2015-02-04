@@ -532,6 +532,8 @@ def connect(user, host, port, cache, seek_gateway=True):
             # Update env.password, env.passwords if empty
             set_password(user, host, port, password)
         # Ctrl-D / Ctrl-C for exit
+        # TODO: this may no longer actually serve its original purpose and may
+        # also hide TypeErrors from paramiko. Double check in v2.
         except (EOFError, TypeError):
             # Print a newline (in case user was sitting at prompt)
             print('')
