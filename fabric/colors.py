@@ -24,7 +24,8 @@ for that particular invocation, which usually shows up as a bold or brighter
 version of the original color on most terminals.
 
 It is now possible to disable color printing completely by setting the environment
-variable FABRIC_DISABLE_COLORS=True.
+
+variable FABRIC_DISABLE_COLORS.  The value doesn't matter as long as it exists.
 """
 
 import os
