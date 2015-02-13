@@ -118,6 +118,7 @@ BaseServer:
   entry is processed by a RequestHandlerClass.
 
 """
+# This file copyright © 2001-2015 Python Software Foundation; All Rights Reserved
 
 # Author of the BaseServer patch: Luke Kenneth Casson Leighton
 
