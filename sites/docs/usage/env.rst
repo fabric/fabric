@@ -406,7 +406,7 @@ The global host list used when composing per-task host lists.
 **Default:** ``0`` (i.e. no keepalive)
 
 An integer specifying an SSH keepalive interval to use; basically maps to the
-SSH config option ``ClientAliveInterval``. Useful if you find connections are
+SSH config option ``ServerAliveInterval``. Useful if you find connections are
 timing out due to meddlesome network hardware or what have you.
 
 .. seealso:: :option:`--keepalive`
