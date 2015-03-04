@@ -490,31 +490,34 @@ class TestTaskDetails(unittest.TestCase):
             details)
 
     def test_decorated_task(self):
+        expected = "\n".join([
+            "Docstring",
+            "Arguments: arg1",
+            ])
+
         @task
         def decorated_task(arg1):
             '''Docstring'''
-        eq_("Docstring\n"
-            "Arguments: arg1",
-            decorated_task.__details__())
 
-    def test_weirdo_decorated_task(self):
+        actual = decorated_task.__details__()
+        eq_(expected, actual)
+
         @runs_once
         @task
-        def decorated_task(arg1):
+        def decorated_task1(arg1):
             '''Docstring'''
-        eq_("Docstring\n"
-            "Arguments: arg1",
-            decorated_task.__details__())
 
-    def test_double_weirdo_decorated_task(self):
+        actual = decorated_task1.__details__()
+        eq_(expected, actual)
+
         @runs_once
         @serial
         @task
-        def decorated_task(arg1):
+        def decorated_task2(arg1):
             '''Docstring'''
-        eq_("Docstring\n"
-            "Arguments: arg1",
-            decorated_task.__details__())
+
+        actual = decorated_task2.__details__()
+        eq_(expected, actual)
 
     def test_subclassed_task(self):
         class SpecificTask(Task):
