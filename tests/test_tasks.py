@@ -457,6 +457,9 @@ class TestExecuteEnvInteractions(FabricTest):
 
 class TestTaskDetails(unittest.TestCase):
     def test_old_style_task_with_default_args(self):
+        """
+        __details__() should print docstr for old style task methods with default args
+        """
         def task_old_style(arg1, arg2, arg3=None, arg4='yes'):
             '''Docstring'''
         details = get_task_details(task_old_style)
@@ -465,6 +468,10 @@ class TestTaskDetails(unittest.TestCase):
             details)
 
     def test_old_style_task_without_default_args(self):
+        """
+        __details__() should print docstr for old style task methods without default args
+        """
+
         def task_old_style(arg1, arg2):
             '''Docstring'''
         details = get_task_details(task_old_style)
@@ -473,6 +480,10 @@ class TestTaskDetails(unittest.TestCase):
             details)
 
     def test_old_style_task_without_args(self):
+        """
+        __details__() should print docstr for old style task methods without args
+        """
+
         def task_old_style():
             '''Docstring'''
         details = get_task_details(task_old_style)
@@ -481,6 +492,9 @@ class TestTaskDetails(unittest.TestCase):
             details)
 
     def test_decorated_task(self):
+        """
+        __details__() should print docstr for method with any number and order of decorations
+        """
         expected = "\n".join([
             "Docstring",
             "Arguments: arg1",
@@ -511,6 +525,10 @@ class TestTaskDetails(unittest.TestCase):
         eq_(expected, actual)
 
     def test_subclassed_task(self):
+        """
+        __details__() should print docstr for subclassed task methods with args
+        """
+
         class SpecificTask(Task):
             def run(self, arg1, arg2, arg3):
                 '''Docstring'''
@@ -520,6 +538,10 @@ class TestTaskDetails(unittest.TestCase):
 
     @mock_streams('stdout')
     def test_multiline_docstring_indented_correctly(self):
+        """
+        display_command() should properly indent docstr for old style task methods
+        """
+
         def mytask(arg1):
             """
             This is a multi line docstring.
