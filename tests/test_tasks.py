@@ -10,7 +10,7 @@ import sys
 import fabric
 from fabric.tasks import WrappedCallableTask, execute, Task, get_task_details
 from fabric.main import display_command
-from fabric.api import run, env, settings, hosts, roles, hide, parallel, task
+from fabric.api import run, env, settings, hosts, roles, hide, parallel, task, runs_once, serial
 from fabric.network import from_dict
 from fabric.exceptions import NetworkError
 
@@ -481,6 +481,25 @@ class TestTaskDetails(unittest.TestCase):
             details)
 
     def test_decorated_task(self):
+        @task
+        def decorated_task(arg1):
+            '''Docstring'''
+        eq_("Docstring\n"
+            "Arguments: arg1",
+            decorated_task.__details__())
+
+    def test_weirdo_decorated_task(self):
+        @runs_once
+        @task
+        def decorated_task(arg1):
+            '''Docstring'''
+        eq_("Docstring\n"
+            "Arguments: arg1",
+            decorated_task.__details__())
+
+    def test_double_weirdo_decorated_task(self):
+        @runs_once
+        @serial
         @task
         def decorated_task(arg1):
             '''Docstring'''
