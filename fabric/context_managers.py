@@ -52,9 +52,9 @@ def _set_output(groups, which):
     """
     Refactored subroutine used by ``hide`` and ``show``.
     """
+    previous = {}
     try:
         # Preserve original values, pull in new given value to use
-        previous = {}
         for group in output.expand_aliases(groups):
             previous[group] = output[group]
             output[group] = which
@@ -542,7 +542,7 @@ def remote_tunnel(remote_port, local_port=None, local_host="localhost",
             sock.connect((local_host, local_port))
         except Exception, e:
             print "[%s] rtunnel: cannot connect to %s:%d (from local)" % (env.host_string, local_host, local_port)
-            chan.close()
+            channel.close()
             return
 
         print "[%s] rtunnel: opened reverse tunnel: %r -> %r -> %r"\
