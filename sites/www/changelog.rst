@@ -2,7 +2,8 @@
 Changelog
 =========
 
-* :bug:`1273` Fix issue with ssh/config not having a cross-platform default path. Thanks to ``@SamuelMarks`` for catch & patch.
+* :bug:`1273` Fix issue with ssh/config not having a cross-platform default
+  path. Thanks to ``@SamuelMarks`` for catch & patch.
 * :support:`1239` Update README to work better under raw docutils so the
   example code block is highlighted as Python on PyPI (and not just on our
   Sphinx-driven website). Thanks to Marc Abramowitz.
