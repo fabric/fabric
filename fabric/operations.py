@@ -35,7 +35,7 @@ from fabric.utils import (
 
 def _shell_escape(string):
     """
-    Escape double quotes, backticks and dollar signs in given ``string``.
+    Escape slashes, double quotes, backticks and dollar signs in ``string``.
 
     For example::
 
