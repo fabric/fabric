@@ -9,10 +9,21 @@ from traceback import format_exc
 
 
 def _encode(msg, stream):
-    if isinstance(msg, unicode) and hasattr(stream, 'encoding'):
+    if isinstance(msg, unicode) and hasattr(stream, 'encoding') and not stream.encoding is None:
         return msg.encode(stream.encoding)
     else:
         return str(msg)
+
+
+def isatty(stream):
+    """Check if a stream is a tty.
+
+    Not all file-like objects implement the `isatty` method.
+    """
+    fn = getattr(stream, 'isatty', None)
+    if fn is None:
+        return False
+    return fn()
 
 
 def abort(msg):
@@ -39,7 +50,7 @@ def abort(msg):
     if env.abort_exception:
         raise env.abort_exception(msg)
     else:
-        sys.exit(1)
+        sys.exit(msg)
 
 
 def warn(msg):
@@ -274,7 +285,7 @@ def _pty_size():
 
     default_rows, default_cols = 24, 80
     rows, cols = default_rows, default_cols
-    if not win32 and sys.stdout.isatty():
+    if not win32 and isatty(sys.stdout):
         # We want two short unsigned integers (rows, cols)
         fmt = 'HH'
         # Create an empty (zeroed) buffer for ioctl to map onto. Yay for C!

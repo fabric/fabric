@@ -2,6 +2,29 @@
 Changelog
 =========
 
+* :bug:`1273` Fix issue with ssh/config not having a cross-platform default path. Thanks to ``@SamuelMarks`` for catch & patch.
+* :support:`1239` Update README to work better under raw docutils so the
+  example code block is highlighted as Python on PyPI (and not just on our
+  Sphinx-driven website). Thanks to Marc Abramowitz.
+* :release:`1.9.2 <2014-12-19>`
+* :bug:`1201` Don't naively glob all `~fabric.operations.get` targets - only
+  glob actual directories. This avoids incorrectly yielding permission errors
+  in edge cases where a requested file is within a directory lacking the read
+  permission bit. Thanks to Sassa Nf for the original report.
+* :bug:`1019` (also :issue:`1022`, :issue:`1186`) Fix "is a tty" tests in
+  environments where streams (eg ``sys.stdout``) have been replaced with
+  objects lacking a ``.isatty()`` method. Thanks to Miki Tebeka for the
+  original report, Lele Long for a subsequent patch, and Julien Phalip
+  for the final/merged patch.
+* :support:`1213 backported` Add useful exception message to the implicit
+  ``SystemExit`` raised by Fabric's use of ``sys.exit`` inside the
+  `~fabric.api.abort` function. This allows client code catching ``SystemExit``
+  to have better introspection into the error. Thanks to Ioannis Panousis.
+* :bug:`1228` Update the ``CommandTimeout`` class so it has a useful ``str``
+  instead of appearing blank when caught by Fabric's top level exception
+  handling. Catch & patch from Tomaz Muraus.
+* :bug:`1180` Fix issue with unicode steam outputs crashing if stream encoding
+  type is None. Thanks to ``@joekiller`` for catch & patch.
 * :support:`958 backported` Remove the Git SHA portion of our version string
   generation; it was rarely useful & occasionally caused issues for users with
   non-Git-based source checkouts.
