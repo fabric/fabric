@@ -44,7 +44,7 @@ def _shell_escape(string):
         >>> _shell_escape('"')
         '\\\\"'
     """
-    for char in ('"', '$', '`'):
+    for char in ('\\', '"', '$', '`'):
         string = string.replace(char, '\%s' % char)
     return string
 
