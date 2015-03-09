@@ -303,6 +303,14 @@ def test_shell_escape_escapes_backticks():
     eq_(_shell_escape(cmd), "touch test.pid && kill \`cat test.pid\`")
 
 
+def test_shell_escape_nested_doublequotes():
+    """
+    _shell_escape() escapes nested double-quotes
+    """
+    cmd = "cd \"\\\"Application\\\" Support\""
+    eq_(_shell_escape(cmd), 'cd \\"\\\\\"Application\\\\\" Support\\"')
+
+
 class TestCombineStderr(FabricTest):
     @server()
     def test_local_none_global_true(self):
