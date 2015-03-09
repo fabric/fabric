@@ -2,7 +2,12 @@
 Changelog
 =========
 
-* :bug:`1273` Fix issue with ssh/config not having a cross-platform default path. Thanks to ``@SamuelMarks`` for catch & patch.
+* :bug:`1286` (also :issue:`971`, :issue:`1032`) Recursively unwrap decorators
+  instead of only unwrapping a single decorator level, when obtaining task
+  docstrings. Thanks to Avishai Ish-Shalom for the original report & Max Kovgan
+  for the patch.
+* :bug:`1273` Fix issue with ssh/config not having a cross-platform default
+  path. Thanks to ``@SamuelMarks`` for catch & patch.
 * :feature:`1200` Introduced ``exceptions`` output level, so users don't have to
   deal with the debug output just to see tracebacks.
 * :support:`1239` Update README to work better under raw docutils so the
