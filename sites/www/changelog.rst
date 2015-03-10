@@ -2,6 +2,7 @@
 Changelog
 =========
 
+* :bug:`1289` Fix "NameError: free variable referenced before assignment in enclosing scope". Thanks to ``@SamuelMarks`` for catch & patch.
 * :release:`1.9.1 <2014-08-06>`
 * :release:`1.8.5 <2014-08-06>`
 * :release:`1.7.5 <2014-08-06>`
