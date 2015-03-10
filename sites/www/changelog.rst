@@ -2,6 +2,7 @@
 Changelog
 =========
 
+* :bug:`1289` Fix "NameError: free variable referenced before assignment in enclosing scope". Thanks to ``@SamuelMarks`` for catch & patch.
 * :bug:`1286` (also :issue:`971`, :issue:`1032`) Recursively unwrap decorators
   instead of only unwrapping a single decorator level, when obtaining task
   docstrings. Thanks to Avishai Ish-Shalom for the original report & Max Kovgan
