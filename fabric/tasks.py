@@ -240,7 +240,7 @@ def _execute(task, host, my_env, args, kwargs, jobs, queue, multiprocessing):
             try:
                 state.connections.clear()
                 submit(task.run(*args, **kwargs))
-            except BaseException, e: # We really do want to capture everything
+            except BaseException as e: # We really do want to capture everything
                 # SystemExit implies use of abort(), which prints its own
                 # traceback, host info etc -- so we don't want to double up
                 # on that. For everything else, though, we need to make
