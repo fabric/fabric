@@ -395,7 +395,7 @@ def default_channel():
     """
     try:
         chan = _open_session()
-    except ssh.SSHException, err:
+    except ssh.SSHException as err:
         if str(err) == 'SSH session not active':
             connections[env.host_string].close()
             del connections[env.host_string]
