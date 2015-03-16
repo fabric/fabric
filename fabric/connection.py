@@ -8,9 +8,6 @@ from .utils import get_local_user
 # username into the docs).
 default_config = Config({
     'port': 22,
-    # TODO: make this default to None and fill in later, so it doesn't appear
-    # in the docs as <whoever built the docs>? Or just modify it after
-    # declaration, heh?
     'user': get_local_user(),
 })
 
