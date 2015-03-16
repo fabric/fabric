@@ -20,16 +20,19 @@ class Connection_(Spec):
                 # Tautology-tastic!
                 eq_(Connection('host').user, get_local_user())
 
-            def accepts_config_default_user_option(self):
-                config = Config({'default_user': 'nobody'})
+            def accepts_config_user_option(self):
+                config = Config({'user': 'nobody'})
                 eq_(Connection('host', config=config).user, 'nobody')
 
             def may_be_given_as_kwarg(self):
                 eq_(Connection('host', user='somebody').user, 'somebody')
 
         class port:
-            def defaults_to_configuration_default_port(self):
-                config = Config({'default_port': 2222})
+            def defaults_to_22_because_yup(self):
+                eq_(Connection('host').port, 22)
+
+            def defaults_to_configuration_port(self):
+                config = Config({'port': 2222})
                 eq_(Connection('host', config=config).port, 2222)
 
             def may_be_given_as_kwarg(self):
