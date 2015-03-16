@@ -133,24 +133,28 @@ Bringing it all together
 ========================
 
 Finally, we arrive at the most realistic use case: you've got a bundle of
-commands, file transfers, and other logic, and you want to apply it to multiple
-servers. You *could* use multiple `.Pool` method calls to do this::
+commands and/or file transfers and you want to apply it to multiple servers.
+You *could* use multiple `.Pool` method calls to do this::
 
     from fabric import Pool
     pool = Pool('web1', 'web2', 'web3')
     pool.put('myfiles.tgz', '/opt/mydata')
     pool.run('tar -C /opt/mydata -xzvf /opt/mydata/myfiles.tgz')
 
-That works for some cases, but most of the time, it's most sensible to perform
-a task on each server in turn. Using iterables of `.Connection` objects is
-perfectly doable, though it foregoes some of the benefits of using `Pools
-<.Pool>`::
+This quickly falls down once logic enters the picture, such as if the
+copy-and-untar action above only needs to happen if ``/opt/mydata`` is
+presently empty. Performing that sort of check requires execution on a
+per-server basis.
+
+You could fill that need by using iterables of `.Connection` objects (though
+this foregoes some of the benefits of using `Pools <.Pool>`)::
 
     from fabric import Connection
     for host in ('web1', 'web2', 'web3'):
         cxn = Connection(host)
-        cxn.put('myfiles.tgz', '/opt/mydata')
-        cxn.run('tar -C /opt/mydata -xzvf /opt/mydata/myfiles.tgz')
+        if cxn.run('test -f /opt/mydata/myfile', warn=True).failed:
+            cxn.put('myfiles.tgz', '/opt/mydata')
+            cxn.run('tar -C /opt/mydata -xzvf /opt/mydata/myfiles.tgz')
 
 Alternately, remember how we used a function in that earlier example? You can
 hand such a function to `.Pool.execute` and get the best of both worlds::
@@ -158,8 +162,9 @@ hand such a function to `.Pool.execute` and get the best of both worlds::
     from fabric import Pool
 
     def upload_and_unpack(cxn):
-        cxn.put('myfiles.tgz', '/opt/mydata')
-        cxn.run('tar -C /opt/mydata -xzvf /opt/mydata/myfiles.tgz')
+        if cxn.run('test -f /opt/mydata/myfile', warn=True).failed:
+            cxn.put('myfiles.tgz', '/opt/mydata')
+            cxn.run('tar -C /opt/mydata -xzvf /opt/mydata/myfiles.tgz')
 
     Pool('web1', 'web2', 'web3').execute(upload_and_unpack)
 
