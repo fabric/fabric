@@ -14,6 +14,7 @@ Table of contents
 * :doc:`concepts`: High level conceptual documentation that picks up where the
   tutorial leaves off.
 * :doc:`api`: The full API documentation reference.
+* :doc:`upgrading`: Instructions for upgrading from Fabric 1.x.
 
 .. toctree::
     :hidden:
