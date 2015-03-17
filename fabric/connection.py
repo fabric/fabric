@@ -17,8 +17,6 @@ class Connection(object):
     """
     A connection to an SSH daemon, with methods for commands and file transfer.
     """
-    # TODO: attribute comments
-
     def __init__(self, host, user=None, port=None, config=None):
         """
         Set up a new object representing a server connection.
