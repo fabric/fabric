@@ -137,13 +137,14 @@ class OutputLooper(object):
                             self._flush(end_of_line + "\n")
                         initial_prefix_printed = False
 
-                    if self.linewise:
-                        line += [printable_bytes]
-                    else:
-                        if not initial_prefix_printed:
-                            self._flush(self.prefix)
-                            initial_prefix_printed = True
-                        self._flush(printable_bytes)
+                    if printable_bytes != "":
+                        if self.linewise:
+                            line += [printable_bytes + '\n']
+                        else:
+                            if not initial_prefix_printed:
+                                self._flush(self.prefix)
+                                initial_prefix_printed = True
+                            self._flush(printable_bytes + '\n')
 
                 # Now we have handled printing, handle interactivity
                 read_lines = re.split(r"(\r|\n|\r\n)", bytelist)
