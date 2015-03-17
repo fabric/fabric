@@ -1,6 +1,6 @@
 from spec import Spec, skip
 
-from fabric.runners import Remote, RemoteSudo
+from fabric.runner import Remote, RemoteSudo
 
 
 class Remote_(Spec):
