@@ -8,11 +8,10 @@ relies on an Invoke component, namely `invoke.config.Config`. In core Invoke,
 the CLI module, and given to `~invoke.context.Context` objects, which
 host the primary API.
 
-Fabric's use is similar: it starts both the library and CLI use cases with a
-config containing defaults settings such as port number and username. This is
-merged with data loaded from similar file locations as in Invoke (e.g.
-``/etc/fabric.yml``, ``~/.fabric.yml``), and SSH config files (e.g.
-``~/.ssh/config``).
+Fabric's use is similar: it starts both the library and CLI use cases with
+default settings such as port number and username. This is merged with data
+loaded from similar file locations as in Invoke (e.g. ``/etc/fabric.yml``,
+``~/.fabric.yml``), and SSH config files (e.g. ``~/.ssh/config``).
 
 This merged `~.invoke.config.Config` is then given to Fabric's `.Connection`
 objects, making it available to internal connection machinery and user-facing
