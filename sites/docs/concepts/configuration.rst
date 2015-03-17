@@ -19,10 +19,6 @@ objects, making it available to internal connection machinery and user-facing
 code.
 
 
-
-
-
-
 ----
 
 TODO: EXPANDME
