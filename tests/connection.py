@@ -16,7 +16,7 @@ class Connection_(Spec):
             Connection()
 
         class user:
-            def defaults_to_system_user_with_no_config(self):
+            def defaults_to_local_user_with_no_config(self):
                 # Tautology-tastic!
                 eq_(Connection('host').user, get_local_user())
 
