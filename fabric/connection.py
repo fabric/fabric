@@ -6,7 +6,7 @@ from .utils import get_local_user
 # NOTE: docs for this member are kept in sites/docs/api/connection.rst for
 # tighter control over value display (avoids baking docs-building user's
 # username into the docs).
-default_config = {
+global_defaults = {
     'port': 22,
     'user': get_local_user(),
 }
@@ -36,7 +36,7 @@ class Connection(object):
         :param invoke.config.Config config:
             configuration settings to use when executing methods on this
             `.Connection` (e.g. default SSH port and so forth). Is merged into
-            (and overrides) a copy of `.default_config`.
+            (and overrides) a copy of `.global_defaults`.
 
         :raises ValueError:
             if user or port values are given via both ``host`` shorthand *and*
@@ -49,7 +49,7 @@ class Connection(object):
         # TODO: how does this config mesh with the one from us being an Invoke
         # context? Do we namespace all our stuff or just overlay it? Do we
         # merge our settings into .defaults / .overrides?
-        self.config = Config(defaults=default_config, overrides=config)
+        self.config = Config(defaults=global_defaults, overrides=config)
         # TODO: when/how to run load_files, merge, load_shell_env, etc?
         # TODO: i.e. what is the lib use case here (and honestly in invoke too)?
         self.user = user or self.config.user
