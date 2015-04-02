@@ -436,7 +436,7 @@ def connect(user, host, port, cache, seek_gateway=True):
             # (Re)connect gateway socket, if needed.
             # Nuke cached client object if not on initial try.
             if seek_gateway:
-                sock = get_gateway(host, port, cache, replace=tries > 0)
+                sock = get_gateway(host, port, cache, replace=tries > 1)
 
             # Ready to connect
             client.connect(
