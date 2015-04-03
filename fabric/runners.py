@@ -3,7 +3,14 @@ from invoke.runners import Runner
 
 class Remote(Runner):
     """
-    Run a command over SSH.
+    Run a shell command over an SSH connection.
+
+    This class subclasses `invoke.runners.Runner`; please see its documentation
+    for most public API details.
+
+    .. note::
+        `.Remote`'s ``__init__`` method expects a `.Connection` (or subclass)
+        instance for its ``context`` argument.
     """
     # TODO: Needs to fully implement run_direct() and run_pty(), no shared code
     # (the factored outer bits are in invoke.runner.run())
