@@ -13,9 +13,6 @@ class Remote_(Spec):
         #   * client = SSHClient()
         #   * client.connect(host, etc etc) -> client now connected
         #   * channel = client.get_transport().open_session()
-        #   TODO: can we make that API better in Paramiko? Ideally we only want
-        #   to interact with Client for almost everything we do?
-        #   TODO: are there PRs for Paramiko to this effect?
         #   * channel.exec_command(command, etc)
         #   * BELOW IS MOCKED?
         #   * Thread on channel.recv, thread on channel.recv_stderr

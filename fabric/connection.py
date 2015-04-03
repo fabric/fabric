@@ -28,7 +28,8 @@ class Connection(object):
     """
     # TODO: push some of this into paramiko.client.Client? e.g. expand what
     # Client.exec_command does, it already allows configuring a subset of what
-    # we do / will eventually do / did in 1.x
+    # we do / will eventually do / did in 1.x.
+    # It's silly to have to do .get_transport().open_session().
     def __init__(self, host, user=None, port=None, config=None):
         """
         Set up a new object representing a server connection.
