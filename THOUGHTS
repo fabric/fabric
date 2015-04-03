@@ -11,9 +11,10 @@
 
 ## Non-specific recent thoughts
 
-Deal with discrepancy between full control by default (zero extra printing),
-partial printing (print stdout/err only?) and full fab 1 style (print what
-you're doing, stdout/stderr, and when you're done - tho maybe never print when
+Deal with discrepancy between full control by default (zero extra printing /
+just hook up the streams, i.e. what Local does), partial printing (print
+stdout/err, with host prefixes) and full fab 1 style (print what you're doing,
+stdout/stderr w/ prefixes, and when you're done - tho maybe never print when
 done because that's kinda silly?)
 
 ----
