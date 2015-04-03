@@ -1,4 +1,4 @@
-from invoke.runner import Runner
+from invoke.runners import Runner
 
 
 class Remote(Runner):
