@@ -17,6 +17,9 @@ class Connection(object):
     """
     A connection to an SSH daemon, with methods for commands and file transfer.
     """
+    # TODO: push some of this into paramiko.client.Client? e.g. expand what
+    # Client.exec_command does, it already allows configuring a subset of what
+    # we do / will eventually do / did in 1.x
     def __init__(self, host, user=None, port=None, config=None):
         """
         Set up a new object representing a server connection.

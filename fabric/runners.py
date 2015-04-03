@@ -5,9 +5,9 @@ class Remote(Runner):
     """
     Run a command over SSH.
     """
-    # Needs to fully implement run() and run_pty(), no shared code (the
-    # factored outer bits are in invoke.runner.run())
-    pass
+    # TODO: Needs to fully implement run_direct() and run_pty(), no shared code
+    # (the factored outer bits are in invoke.runner.run())
+
 
 
 class RemoteSudo(Remote):

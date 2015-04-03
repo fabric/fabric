@@ -10,9 +10,28 @@ class Remote_(Spec):
 
     def uses_paramiko_exec_command(self):
         # * Patch Client.exec_command, right?
+        #   * client = SSHClient()
+        #   * client.connect(host, etc etc) -> client now connected
+        #   * channel = client.get_transport().open_session()
+        #   TODO: can we make that API better in Paramiko? Ideally we only want
+        #   to interact with Client for almost everything we do?
+        #   TODO: are there PRs for Paramiko to this effect?
+        #   * channel.exec_command(command, etc)
+        #   * BELOW IS MOCKED?
+        #   * Thread on channel.recv, thread on channel.recv_stderr
+        #       * TODO: how to mate this with existing logic in Local?
+        #   * Capture, print, etc, join on exit_status_ready
         # * Run eg Remote(context=Connection('host')).run('command')
         # * Assert exec_command called with 'command'
-        # * TODO: how does this truly tie in with run_direct/run_pty?
+        # TODO: how much of the API should be in Remote/Runner, vs Connection
+        # itself? E.g. connect, disconnect, status, etc? Most of it in
+        # Connection yea?
+        c = Connection('host')
+        r = Remote(context=c)
+        # TODO: how to patch exec_command here? Perhaps Connection method
+        # returning the paramiko.Channel object, which we can then stub out to
+        # return a mock Channel?
+
 
     def run_pty_uses_paramiko_get_pty(self):
         skip()
