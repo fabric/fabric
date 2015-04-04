@@ -58,7 +58,8 @@ class Connection_(Spec):
                 eq_(config['custom'], 'option')
 
             def inserts_missing_default_keys(self):
-                skip()
+                c = Connection('host', config=Config())
+                eq_(c.config['port'], 22)
 
             def defaults_to_merger_of_global_defaults(self):
                 c = Connection('host')
