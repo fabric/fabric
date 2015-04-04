@@ -17,9 +17,10 @@ class Connection(object):
     """
     A connection to an SSH daemon, with methods for commands and file transfer.
 
-    This class encapsulates a Paramiko `.Client` instance, performing useful
-    high level operations with that `.Client` and `.Channel` instances
-    generated from it.
+    This class inherits from Invoke's `.Context`, as it is a context within
+    which commands, tasks etc can operate. It also encapsulates a Paramiko
+    `.Client` instance, performing useful high level operations with that
+    `.Client` and `.Channel` instances generated from it.
 
     Like `.Client`, `.Connection` has a basic "`create <__init__>`,
     `connect/open <open>`, `do work <run>`, `disconnect/close <close>`"

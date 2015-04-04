@@ -19,6 +19,16 @@ class Connection_(Spec):
         def host_required(self):
             Connection()
 
+        def accepts_config(self):
+            c = Config()
+            eq_(Connection('host', config=c).config, c)
+
+        def allows_config_access_like_regular_Contexts(self):
+            c = Config(defaults={'foo': 'bar'})
+            cxn = Connection('host', config=c)
+            eq_(cxn.foo, 'bar')
+            self.assert_raises(AttributeError, lambda: cxn.nope)
+
         class user:
             def defaults_to_local_user_with_no_config(self):
                 # Tautology-tastic!
