@@ -1,9 +1,12 @@
-from spec import Spec, skip, eq_, raises
+import copy
+
+from spec import Spec, skip, eq_, raises, assert_raises
 from mock import patch, Mock
 
 from invoke.config import Config
+from invoke import config # For mocking/tweaking
 
-from fabric import Connection, global_defaults
+from fabric.connection import Connection
 from fabric.utils import get_local_user
 
 
@@ -26,7 +29,7 @@ class Connection_(Spec):
                 eq_(Connection('host').user, get_local_user())
 
             def accepts_config_user_option(self):
-                config = Config({'user': 'nobody'})
+                config = Config({'user': 'nobody', 'port': 22})
                 eq_(Connection('host', config=config).user, 'nobody')
 
             def may_be_given_as_kwarg(self):
@@ -37,7 +40,7 @@ class Connection_(Spec):
                 eq_(Connection('host').port, 22)
 
             def defaults_to_configuration_port(self):
-                config = Config({'port': 2222})
+                config = Config({'port': 2222, 'user': 'lol'})
                 eq_(Connection('host', config=config).port, 2222)
 
             def may_be_given_as_kwarg(self):
@@ -47,33 +50,29 @@ class Connection_(Spec):
             def is_not_required(self):
                 eq_(Connection('host').config.__class__, Config)
 
+            def can_be_specified(self):
+                c = Config({'user': 'me', 'port': 22, 'run': {}, 'tasks': {}})
+                eq_(Connection('host', config=c).config, c)
+
+            def gets_mad_if_missing_keys(self):
+                skip()
+
             def defaults_to_merger_of_global_defaults(self):
                 c = Connection('host')
                 # From invoke's global_defaults
-                eq_(c.run.warn, False)
+                eq_(c.config.run.warn, False)
                 # From ours
-                eq_(c.port, 22)
+                eq_(c.config.port, 22)
 
             def our_defaults_override_invokes(self):
                 "our defaults override invoke's"
-                backup = copy.deepcopy(global_defaults)
+                backup = copy.deepcopy(config.global_defaults)
                 try:
                     # Override an invoke setting
-                    global_defaults['run']['warn'] = "nope lol"
-                    eq_(Connection('host').run.warn, "nope lol")
+                    config.global_defaults['run']['warn'] = "nope lol"
+                    eq_(Connection('host').config.run.warn, "nope lol")
                 finally:
-                    global_defaults = backup
-
-            def can_be_specified(self):
-                c = Config()
-                eq_(Connection('host', config=c).config, c)
-
-            def accessible_like_invoke_Contexts(self):
-                c = Config(defaults={'foo': 'bar'})
-                cxn = Connection('host', config=c)
-                eq_(cxn.foo, 'bar')
-                eq_(cxn['foo'], 'bar')
-                self.assert_raises(AttributeError, lambda: cxn.nope)
+                    config.global_defaults = backup
 
     class open:
         def has_no_required_args_and_returns_None(self):

@@ -64,9 +64,14 @@ class Connection(object):
             in-the-face-of-ambiguity-refuse-the-temptation-to-guess.html#12
         """
         # TODO: how does this config mesh with the one from us being an Invoke
-        # context? Do we namespace all our stuff or just overlay it? Do we
-        # merge our settings into .defaults / .overrides?
-        self.config = Config(defaults=global_defaults, overrides=config)
+        # context, for keys not part of the defaults? Do we namespace all our
+        # stuff or just overlay it? Starting with overlay, but...
+        if config is None:
+            config = invoke.config.Config(
+                defaults=invoke.config.global_defaults,
+                overrides=global_defaults
+            )
+        self.config = config
         # TODO: when/how to run load_files, merge, load_shell_env, etc?
         # TODO: i.e. what is the lib use case here (and honestly in invoke too)?
         self.user = user or self.config.user
