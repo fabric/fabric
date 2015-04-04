@@ -55,6 +55,11 @@ class Connection(object):
             is `invoke.config.global_defaults` and whose ``overrides`` level is
             `fabric.connection.global_defaults`.
 
+            .. note::
+                If you provide your own `.Config` instance, it **must** contain
+                values for the keys found in the abovementioned
+                ``global_defaults`` data structures.
+
         :raises ValueError:
             if user or port values are given via both ``host`` shorthand *and*
             their own arguments. (We `refuse the temptation to guess`_).
@@ -66,6 +71,12 @@ class Connection(object):
         # TODO: how does this config mesh with the one from us being an Invoke
         # context, for keys not part of the defaults? Do we namespace all our
         # stuff or just overlay it? Starting with overlay, but...
+        # TODO: also needs to be easier to obtain the defaults w/ only a subset
+        # of things replaced; e.g. see our tests where we have to put in stupid
+        # dummy values for 'user' when testing that replacing 'port' works OK.
+        # Either needs to be extra Config 'levels' (bluh) or we explicitly
+        # perform dict_merge() type stuff against user-supplied Config
+        # instances (instead of bitching about what is missing).
         if config is None:
             config = invoke.config.Config(
                 defaults=invoke.config.global_defaults,

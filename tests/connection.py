@@ -29,7 +29,7 @@ class Connection_(Spec):
                 eq_(Connection('host').user, get_local_user())
 
             def accepts_config_user_option(self):
-                config = Config({'user': 'nobody', 'port': 22})
+                config = Config({'user': 'nobody'})
                 eq_(Connection('host', config=config).user, 'nobody')
 
             def may_be_given_as_kwarg(self):
@@ -39,8 +39,8 @@ class Connection_(Spec):
             def defaults_to_22_because_yup(self):
                 eq_(Connection('host').port, 22)
 
-            def defaults_to_configuration_port(self):
-                config = Config({'port': 2222, 'user': 'lol'})
+            def accepts_configuration_port(self):
+                config = Config({'port': 2222})
                 eq_(Connection('host', config=config).port, 2222)
 
             def may_be_given_as_kwarg(self):
@@ -51,10 +51,13 @@ class Connection_(Spec):
                 eq_(Connection('host').config.__class__, Config)
 
             def can_be_specified(self):
-                c = Config({'user': 'me', 'port': 22, 'run': {}, 'tasks': {}})
-                eq_(Connection('host', config=c).config, c)
+                c = Config({'user': 'me', 'custom': 'option'})
+                config = Connection('host', config=c).config
+                ok_(c is config)
+                eq_(config['user'], 'me')
+                eq_(config['custom'], 'option')
 
-            def gets_mad_if_missing_keys(self):
+            def inserts_missing_default_keys(self):
                 skip()
 
             def defaults_to_merger_of_global_defaults(self):
