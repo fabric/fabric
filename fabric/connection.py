@@ -1,4 +1,4 @@
-from invoke.config import Config, merge_dicts
+import invoke
 
 from .utils import get_local_user
 
@@ -49,8 +49,11 @@ class Connection(object):
 
         :param invoke.config.Config config:
             configuration settings to use when executing methods on this
-            `.Connection` (e.g. default SSH port and so forth). Is merged into
-            (and overrides) a copy of `.global_defaults`.
+            `.Connection` (e.g. default SSH port and so forth).
+
+            Default is an anonymous `.Config` object whose ``defaults`` level
+            is `invoke.config.global_defaults` and whose ``overrides`` level is
+            `fabric.connection.global_defaults`.
 
         :raises ValueError:
             if user or port values are given via both ``host`` shorthand *and*

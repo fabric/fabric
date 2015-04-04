@@ -3,7 +3,7 @@ from mock import patch, Mock
 
 from invoke.config import Config
 
-from fabric import Connection
+from fabric import Connection, global_defaults
 from fabric.utils import get_local_user
 
 
@@ -15,19 +15,10 @@ class Connection_(Spec):
     class init:
         "__init__"
 
-        @raises(TypeError)
-        def host_required(self):
-            Connection()
-
-        def accepts_config(self):
-            c = Config()
-            eq_(Connection('host', config=c).config, c)
-
-        def allows_config_access_like_regular_Contexts(self):
-            c = Config(defaults={'foo': 'bar'})
-            cxn = Connection('host', config=c)
-            eq_(cxn.foo, 'bar')
-            self.assert_raises(AttributeError, lambda: cxn.nope)
+        class host:
+            @raises(TypeError)
+            def is_required(self):
+                Connection()
 
         class user:
             def defaults_to_local_user_with_no_config(self):
@@ -51,6 +42,38 @@ class Connection_(Spec):
 
             def may_be_given_as_kwarg(self):
                 eq_(Connection('host', port=2202).port, 2202)
+
+        class config:
+            def is_not_required(self):
+                eq_(Connection('host').config.__class__, Config)
+
+            def defaults_to_merger_of_global_defaults(self):
+                c = Connection('host')
+                # From invoke's global_defaults
+                eq_(c.run.warn, False)
+                # From ours
+                eq_(c.port, 22)
+
+            def our_defaults_override_invokes(self):
+                "our defaults override invoke's"
+                backup = copy.deepcopy(global_defaults)
+                try:
+                    # Override an invoke setting
+                    global_defaults['run']['warn'] = "nope lol"
+                    eq_(Connection('host').run.warn, "nope lol")
+                finally:
+                    global_defaults = backup
+
+            def can_be_specified(self):
+                c = Config()
+                eq_(Connection('host', config=c).config, c)
+
+            def accessible_like_invoke_Contexts(self):
+                c = Config(defaults={'foo': 'bar'})
+                cxn = Connection('host', config=c)
+                eq_(cxn.foo, 'bar')
+                eq_(cxn['foo'], 'bar')
+                self.assert_raises(AttributeError, lambda: cxn.nope)
 
     class open:
         def has_no_required_args_and_returns_None(self):
