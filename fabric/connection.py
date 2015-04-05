@@ -87,10 +87,16 @@ class Connection(object):
         # Either needs to be extra Config 'levels' (bluh) or we explicitly
         # perform dict_merge() type stuff against user-supplied Config
         # instances (instead of bitching about what is missing).
+
+        #: The .Config object referenced when handling default values (for e.g.
+        #: user or port, when not explicitly given) or deciding how to behave.
         self.config = config if config is not None else Config()
         # TODO: when/how to run load_files, merge, load_shell_env, etc?
         # TODO: i.e. what is the lib use case here (and honestly in invoke too)?
+
+        #: The username this connection will use to connect to the remote end.
         self.user = user or self.config.user
+        #: The network port to connect on.
         self.port = port or self.config.port
 
     def run(self, command):
