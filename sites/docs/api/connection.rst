@@ -4,14 +4,13 @@
 
 .. automodule:: fabric.connection
 
-.. py:data:: fabric.connection.default_config
+.. py:method:: fabric.connection.Config.global_defaults
 
-    Default configuration object (an `invoke.config.Config`) storing root
-    values and behavior toggles.
+    Default configuration values and behavior toggles.
 
     .. warning::
         Modifying this object will result in a severe lack of support from the
-        maintainers! Use CLI flags or custom Config objects if you need to
+        maintainers! Use CLI flags or custom Config instances if you need to
         change these values globally.
 
     Specific default values:

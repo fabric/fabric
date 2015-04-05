@@ -1,15 +1,32 @@
-import invoke
+from invoke.config import Config as InvokeConfig, merge_dicts
 
 from .utils import get_local_user
 
 
-# NOTE: docs for this member are kept in sites/docs/api/connection.rst for
-# tighter control over value display (avoids baking docs-building user's
-# username into the docs).
-global_defaults = {
-    'port': 22,
-    'user': get_local_user(),
-}
+class Config(InvokeConfig):
+    """
+    `invoke.config.Config` subclass with extra Fabric-related global defaults.
+
+    This class behaves like `invoke.config.Config` in every way, save for that
+    its `global_defaults` staticmethod has been extended to add Fabric-specific
+    settings such as user and port number.
+
+    Intended for use with `.Connection`, as using vanilla
+    `invoke.config.Config` objects would require you to manually define
+    ``port``, ``user`` and so forth .
+    """
+    # NOTE: docs for these are kept in sites/docs/api/connection.rst for
+    # tighter control over value display (avoids baking docs-building user's
+    # username into the docs).
+    @staticmethod
+    def global_defaults():
+        defaults = InvokeConfig.global_defaults()
+        ours = {
+            'port': 22,
+            'user': get_local_user(),
+        }
+        merge_dicts(defaults, ours)
+        return defaults
 
 
 # TODO: inherit from, or proxy to, invoke.context.Context
@@ -51,9 +68,7 @@ class Connection(object):
             configuration settings to use when executing methods on this
             `.Connection` (e.g. default SSH port and so forth).
 
-            Default is an anonymous `.Config` object whose ``defaults`` level
-            is `invoke.config.global_defaults` and whose ``overrides`` level is
-            `fabric.connection.global_defaults`.
+            Default is an anonymous `.Config` object.
 
             .. note::
                 If you provide your own `.Config` instance, it **must** contain
@@ -77,12 +92,7 @@ class Connection(object):
         # Either needs to be extra Config 'levels' (bluh) or we explicitly
         # perform dict_merge() type stuff against user-supplied Config
         # instances (instead of bitching about what is missing).
-        if config is None:
-            config = invoke.config.Config(
-                defaults=invoke.config.global_defaults,
-                overrides=global_defaults
-            )
-        self.config = config
+        self.config = config if config is not None else Config()
         # TODO: when/how to run load_files, merge, load_shell_env, etc?
         # TODO: i.e. what is the lib use case here (and honestly in invoke too)?
         self.user = user or self.config.user

@@ -1,12 +1,9 @@
 import copy
 
-from spec import Spec, skip, eq_, raises, assert_raises
+from spec import Spec, skip, eq_, raises, assert_raises, ok_
 from mock import patch, Mock
 
-from invoke.config import Config
-from invoke import config # For mocking/tweaking
-
-from fabric.connection import Connection
+from fabric.connection import Connection, Config
 from fabric.utils import get_local_user
 
 
@@ -29,7 +26,7 @@ class Connection_(Spec):
                 eq_(Connection('host').user, get_local_user())
 
             def accepts_config_user_option(self):
-                config = Config({'user': 'nobody'})
+                config = Config(overrides={'user': 'nobody'})
                 eq_(Connection('host', config=config).user, 'nobody')
 
             def may_be_given_as_kwarg(self):
@@ -40,7 +37,7 @@ class Connection_(Spec):
                 eq_(Connection('host').port, 22)
 
             def accepts_configuration_port(self):
-                config = Config({'port': 2222})
+                config = Config(overrides={'port': 2222})
                 eq_(Connection('host', config=config).port, 2222)
 
             def may_be_given_as_kwarg(self):
@@ -51,7 +48,7 @@ class Connection_(Spec):
                 eq_(Connection('host').config.__class__, Config)
 
             def can_be_specified(self):
-                c = Config({'user': 'me', 'custom': 'option'})
+                c = Config(overrides={'user': 'me', 'custom': 'option'})
                 config = Connection('host', config=c).config
                 ok_(c is config)
                 eq_(config['user'], 'me')
@@ -70,13 +67,18 @@ class Connection_(Spec):
 
             def our_defaults_override_invokes(self):
                 "our defaults override invoke's"
-                backup = copy.deepcopy(config.global_defaults)
-                try:
-                    # Override an invoke setting
-                    config.global_defaults['run']['warn'] = "nope lol"
+                with patch.object(
+                    Config,
+                    'global_defaults',
+                    return_value={
+                        'run': {'warn': "nope lol"},
+                        'user': 'me',
+                        'port': 22,
+                    }
+                ):
+                    # If our global_defaults didn't win, this would still
+                    # resolve to False.
                     eq_(Connection('host').config.run.warn, "nope lol")
-                finally:
-                    config.global_defaults = backup
 
     class open:
         def has_no_required_args_and_returns_None(self):
