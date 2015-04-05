@@ -99,6 +99,10 @@ class Connection(object):
         #: The network port to connect on.
         self.port = port or self.config.port
 
+        #: Whether or not this connection is actually open or not.
+        self.is_connected = False
+
+
     def run(self, command):
         """
         Execute a shell command on the remote end of this connection.

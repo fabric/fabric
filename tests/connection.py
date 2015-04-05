@@ -10,7 +10,7 @@ from fabric.utils import get_local_user
 class Connection_(Spec):
     class basic_attributes:
         def is_connected_defaults_to_False(self):
-            skip()
+            eq_(Connection('host').is_connected, False)
 
     class init:
         "__init__"
