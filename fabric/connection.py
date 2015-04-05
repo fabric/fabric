@@ -64,16 +64,11 @@ class Connection(object):
         :param int port:
             the remote port. Defaults to ``config.port``.
 
-        :param invoke.config.Config config:
+        :param fabric.connection.Config config:
             configuration settings to use when executing methods on this
             `.Connection` (e.g. default SSH port and so forth).
 
             Default is an anonymous `.Config` object.
-
-            .. note::
-                If you provide your own `.Config` instance, it **must** contain
-                values for the keys found in the abovementioned
-                ``global_defaults`` data structures.
 
         :raises ValueError:
             if user or port values are given via both ``host`` shorthand *and*
