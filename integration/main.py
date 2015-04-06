@@ -47,9 +47,8 @@ class Main(Spec):
     def switch_command_between_local_and_remote(self):
         """
         Run command truly locally, and over SSH via "localhost"
-
-        Only really makes sense at the task level though...
         """
+        # TODO: Only really makes sense at the task level though...
         skip()
         # Basic/raw
         run('hostname') # Or Context().run('hostname')
