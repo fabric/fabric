@@ -2,6 +2,7 @@ import copy
 
 from spec import Spec, skip, eq_, raises, assert_raises, ok_
 from mock import patch, Mock
+from paramiko.client import SSHClient
 
 from fabric.connection import Connection, Config
 from fabric.utils import get_local_user
@@ -11,6 +12,11 @@ class Connection_(Spec):
     class basic_attributes:
         def is_connected_defaults_to_False(self):
             eq_(Connection('host').is_connected, False)
+
+        def client_defaults_to_a_new_SSHClient(self):
+            c = Connection('host').client
+            ok_(isinstance(c, SSHClient))
+            eq_(c.get_transport(), None)
 
     class init:
         "__init__"

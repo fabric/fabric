@@ -105,11 +105,14 @@ class Connection(object):
         #: Whether or not this connection is actually open or not.
         self.is_connected = False
 
+        #: The `paramiko.client.SSHClient` instance this connection wraps.
+        self.client = SSHClient()
+
     def open(self):
         """
         Initiate an SSH connection to the host/port this object is bound to.
         """
-        SSHClient().connect(hostname=self.host, port=self.port)
+        self.client.connect(hostname=self.host, port=self.port)
 
     def run(self, command):
         """
