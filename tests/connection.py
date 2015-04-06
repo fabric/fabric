@@ -100,10 +100,11 @@ class Connection_(Spec):
             eq_(Connection('host').open(), None)
 
         @patch('fabric.connection.SSHClient')
-        def calls_SSHClient_connect(self, client):
+        def calls_SSHClient_connect(self, Client):
             "calls paramiko.SSHClient.connect() with correct args"
             Connection('host').open()
-            client.return_value.connect.assert_called_with(
+            client = Client.return_value
+            client.connect.assert_called_with(
                 hostname='host',
                 port=22,
             )
