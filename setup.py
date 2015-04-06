@@ -32,8 +32,9 @@ setup(
     url='http://fabfile.org',
 
     install_requires=[
-        'invoke>=0.7,<0.8',
-        'lexicon',
+        # TODO: pinning
+        'invoke',
+        'paramiko',
     ],
     packages=['fabric'],
     #entry_points={
