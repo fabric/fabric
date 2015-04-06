@@ -1,4 +1,4 @@
-from spec import skip, Spec, ok_
+from spec import skip, Spec, ok_, eq_
 
 from fabric.connection import Connection
 
@@ -8,6 +8,7 @@ class Main(Spec):
         c = Connection('localhost')
         c.open()
         ok_(c.client.get_transport().active)
+        eq_(c.is_connected, True)
 
     def simple_command_on_host(self):
         """

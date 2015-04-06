@@ -109,11 +109,14 @@ class Connection_(Spec):
                 port=22,
             )
 
-        def sets_is_connected_flag_when_successful(self):
-            # c = Connection(host)
-            # c.open()
-            # eq_(c.is_connected, True)
-            skip()
+        @patch('fabric.connection.SSHClient')
+        def sets_is_connected_flag_when_successful(self, Client):
+            # Ensure the parts of Paramiko we test act like things are cool
+            client = Client.return_value
+            client.get_transport.return_value = Mock(active=True)
+            c = Connection('host')
+            c.open()
+            eq_(c.is_connected, True)
 
         def has_no_effect_if_already_connected(self):
             skip()
@@ -123,6 +126,11 @@ class Connection_(Spec):
 
         def raises_some_sort_of_error_when_shit_explodes_idk(self):
             # ???
+            skip()
+
+        def is_connected_is_False_even_if_failure_doesnt_raise_exception(self):
+            # i.e. client.connect() didn't die BUT somehow its transport is
+            # none, or its transport says it's inactive
             skip()
 
         # TODO: all the various connect-time options such as agent forwarding,

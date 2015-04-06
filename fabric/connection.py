@@ -102,13 +102,22 @@ class Connection(object):
         #: The network port to connect on.
         self.port = port or self.config.port
 
-        #: Whether or not this connection is actually open or not.
-        self.is_connected = False
-
         #: The `paramiko.client.SSHClient` instance this connection wraps.
         client = SSHClient()
         client.set_missing_host_key_policy(AutoAddPolicy())
         self.client = client
+
+    @property
+    def is_connected(self):
+        """
+        Whether or not this connection is actually open.
+        """
+        if self.client:
+            transport = self.client.get_transport()
+            if transport:
+                return transport.active
+        return False
+
 
     def open(self):
         """
