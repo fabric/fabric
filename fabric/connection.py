@@ -1,5 +1,5 @@
 from invoke.config import Config as InvokeConfig, merge_dicts
-from paramiko.client import SSHClient
+from paramiko.client import SSHClient, AutoAddPolicy
 
 from .utils import get_local_user
 
@@ -106,7 +106,9 @@ class Connection(object):
         self.is_connected = False
 
         #: The `paramiko.client.SSHClient` instance this connection wraps.
-        self.client = SSHClient()
+        client = SSHClient()
+        client.set_missing_host_key_policy(AutoAddPolicy())
+        self.client = client
 
     def open(self):
         """

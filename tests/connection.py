@@ -2,7 +2,7 @@ import copy
 
 from spec import Spec, skip, eq_, raises, assert_raises, ok_
 from mock import patch, Mock
-from paramiko.client import SSHClient
+from paramiko.client import SSHClient, AutoAddPolicy
 
 from fabric.connection import Connection, Config
 from fabric.utils import get_local_user
@@ -17,6 +17,11 @@ class Connection_(Spec):
             c = Connection('host').client
             ok_(isinstance(c, SSHClient))
             eq_(c.get_transport(), None)
+
+    class known_hosts_behavior:
+        def defaults_to_auto_add(self):
+            # TODO: change Paramiko API so this isn't a private access
+            ok_(isinstance(Connection('host').client._policy, AutoAddPolicy))
 
     class init:
         "__init__"
@@ -125,6 +130,9 @@ class Connection_(Spec):
         # of a Connection object, should it ever disconnect/reconnect.
         # TODO: though some/all of those things might want to be set to
         # defaults at initialization time...
+
+        def honors_config_option_for_known_hosts(self):
+            skip()
 
     class close:
         def calls_Client_close(self):

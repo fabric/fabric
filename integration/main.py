@@ -1,7 +1,14 @@
-from spec import skip, Spec
+from spec import skip, Spec, ok_
+
+from fabric.connection import Connection
 
 
 class Main(Spec):
+    def connection_open_generates_real_connection(self):
+        c = Connection('localhost')
+        c.open()
+        ok_(c.client.get_transport().active)
+
     def simple_command_on_host(self):
         """
         Run command on host "localhost"
