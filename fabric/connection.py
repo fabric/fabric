@@ -1,4 +1,5 @@
 from invoke.config import Config as InvokeConfig, merge_dicts
+from paramiko.client import SSHClient
 
 from .utils import get_local_user
 
@@ -94,6 +95,8 @@ class Connection(object):
         # TODO: when/how to run load_files, merge, load_shell_env, etc?
         # TODO: i.e. what is the lib use case here (and honestly in invoke too)?
 
+        #: The hostname of the target server.
+        self.host = host
         #: The username this connection will use to connect to the remote end.
         self.user = user or self.config.user
         #: The network port to connect on.
@@ -102,6 +105,11 @@ class Connection(object):
         #: Whether or not this connection is actually open or not.
         self.is_connected = False
 
+    def open(self):
+        """
+        Initiate an SSH connection to the host/port this object is bound to.
+        """
+        SSHClient().connect(hostname=self.host)
 
     def run(self, command):
         """

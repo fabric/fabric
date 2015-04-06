@@ -20,6 +20,9 @@ class Connection_(Spec):
             def is_required(self):
                 Connection()
 
+            def is_exposed_as_attribute(self):
+                eq_(Connection('host').host, 'host') # buffalo buffalo
+
         class user:
             def defaults_to_local_user_with_no_config(self):
                 # Tautology-tastic!
@@ -81,19 +84,23 @@ class Connection_(Spec):
                     eq_(Connection('host').config.run.warn, "nope lol")
 
     class open:
-        def has_no_required_args_and_returns_None(self):
-            # Connection(host).open()
-            skip()
+        @patch('fabric.connection.SSHClient')
+        def has_no_required_args_and_returns_None(self, client):
+            eq_(Connection('host').open(), None)
 
-        def calls_Client_connect(self):
-            "calls paramiko.Client.connect()"
-            # Mock Client somehow
-            skip()
+        @patch('fabric.connection.SSHClient')
+        def calls_SSHClient_connect(self, client):
+            "calls paramiko.SSHClient.connect()"
+            Connection('host').open()
+            client.return_value.connect.assert_called_with(hostname='host')
 
         def sets_is_connected_flag_when_successful(self):
             # c = Connection(host)
             # c.open()
             # eq_(c.is_connected, True)
+            skip()
+
+        def has_no_effect_if_already_connected(self):
             skip()
 
         def is_connected_still_False_when_connect_fails(self):
