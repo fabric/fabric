@@ -78,5 +78,15 @@ def watch(c):
         observer.stop()
     observer.join()
 
+# TODO: merge w/ invoke's own such task, using invocations or ?
+@ctask(help=test.help)
+def integration(c, module=None, runner=None, opts=None):
+    """
+    Run the integration test suite. May be slow!
+    """
+    opts = opts or ""
+    opts += " --tests=integration/"
+    test(c, module, runner, opts)
 
-ns = Collection(watch, docs=docs, www=www, test=test)
+
+ns = Collection(watch, docs=docs, www=www, test=test, integration=integration)
