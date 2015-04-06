@@ -26,7 +26,7 @@ def get_local_user():
     except ImportError:
         if win32:
             import win32api
-            import win32security
-            import win32profile
+            import win32security # noqa
+            import win32profile # noqa
             username = win32api.GetUserName()
     return username

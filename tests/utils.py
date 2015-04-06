@@ -3,7 +3,7 @@ Tests testing the fabric.utils module, not utils for the tests!
 """
 
 from mock import patch
-from spec import Spec, eq_, skip
+from spec import Spec, eq_
 
 from fabric.utils import get_local_user
 

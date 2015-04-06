@@ -1,5 +1,6 @@
-from spec import Spec, skip
+from spec import Spec, skip, ok_
 
+from fabric.connection import Connection
 from fabric.runner import Remote, RemoteSudo
 
 

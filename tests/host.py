@@ -1,4 +1,4 @@
-from spec import Spec, skip, eq_
+from spec import Spec, eq_
 
 from fabric import Host
 

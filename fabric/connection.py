@@ -87,7 +87,7 @@ class Connection(object):
         #: user or port, when not explicitly given) or deciding how to behave.
         self.config = config if config is not None else Config()
         # TODO: when/how to run load_files, merge, load_shell_env, etc?
-        # TODO: i.e. what is the lib use case here (and honestly in invoke too)?
+        # TODO: i.e. what is the lib use case here (and honestly in invoke too)
 
         #: The hostname of the target server.
         self.host = host

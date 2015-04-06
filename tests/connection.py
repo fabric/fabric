@@ -1,6 +1,4 @@
-import copy
-
-from spec import Spec, skip, eq_, raises, assert_raises, ok_
+from spec import Spec, skip, eq_, raises, ok_
 from mock import patch, Mock
 from paramiko.client import SSHClient, AutoAddPolicy
 
