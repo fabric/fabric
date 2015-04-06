@@ -82,12 +82,6 @@ class Connection(object):
         # TODO: how does this config mesh with the one from us being an Invoke
         # context, for keys not part of the defaults? Do we namespace all our
         # stuff or just overlay it? Starting with overlay, but...
-        # TODO: also needs to be easier to obtain the defaults w/ only a subset
-        # of things replaced; e.g. see our tests where we have to put in stupid
-        # dummy values for 'user' when testing that replacing 'port' works OK.
-        # Either needs to be extra Config 'levels' (bluh) or we explicitly
-        # perform dict_merge() type stuff against user-supplied Config
-        # instances (instead of bitching about what is missing).
 
         #: The .Config object referenced when handling default values (for e.g.
         #: user or port, when not explicitly given) or deciding how to behave.
