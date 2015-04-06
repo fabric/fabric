@@ -109,7 +109,7 @@ class Connection(object):
         """
         Initiate an SSH connection to the host/port this object is bound to.
         """
-        SSHClient().connect(hostname=self.host)
+        SSHClient().connect(hostname=self.host, port=self.port)
 
     def run(self, command):
         """
