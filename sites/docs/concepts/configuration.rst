@@ -68,7 +68,7 @@ user-facing code.
     * Best is probably to just bridge it with our own stuff instead of slapping
       the entire thing in some subset of our config?
 
-        * E.g. top level `Port` and `User` override our values
+        * E.g. top level ``Port`` and ``User`` override our values
         * Host configs should generate new semi-implicit host configs in the
           Fabric level (however we do that...?) when none exist elsewhere in
           the places we source from; and merge otherwise.

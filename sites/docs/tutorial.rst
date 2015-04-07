@@ -36,7 +36,7 @@ Or by stuffing a ``[user@]host[:port]`` format string into just the ``host`` arg
 
     Connection('deploy@web1:2202')
 
-`.Connection` objects' methods tend to return subclasses of `.Result`, such as
+`.Connection` objects' methods tend to return subclasses of `invoke.runners.Result`, such as
 `.CommandResult`, exposing all sorts of data about what action was taken, what
 happened during and after it ran, and so forth.
 

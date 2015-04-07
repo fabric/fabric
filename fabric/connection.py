@@ -6,11 +6,11 @@ from .utils import get_local_user
 
 class Config(InvokeConfig):
     """
-    `invoke.config.Config` subclass with extra Fabric-related global defaults.
+    An `invoke.config.Config` subclass with extra Fabric-related defaults.
 
     This class behaves like `invoke.config.Config` in every way, save for that
-    its `global_defaults` staticmethod has been extended to add Fabric-specific
-    settings such as user and port number.
+    its `~invoke.config.Config.global_defaults` staticmethod has been extended
+    to add Fabric-specific settings such as user and port number.
 
     Intended for use with `.Connection`, as using vanilla
     `invoke.config.Config` objects would require you to manually define
@@ -35,15 +35,17 @@ class Connection(object):
     """
     A connection to an SSH daemon, with methods for commands and file transfer.
 
-    This class inherits from Invoke's `.Context`, as it is a context within
-    which commands, tasks etc can operate. It also encapsulates a Paramiko
-    `.Client` instance, performing useful high level operations with that
-    `.Client` and `.Channel` instances generated from it.
+    This class inherits from Invoke's `~invoke.context.Context`, as it is a
+    context within which commands, tasks etc can operate. It also encapsulates
+    a Paramiko `~paramiko.client.SSHClient` instance, performing useful high
+    level operations with that `~paramiko.client.SSHClient` and
+    `~paramiko.channel.Channel` instances generated from it.
 
-    Like `.Client`, `.Connection` has a basic "`create <__init__>`,
-    `connect/open <open>`, `do work <run>`, `disconnect/close <close>`"
-    lifecycle, though this is handled transparently: most users simply need to
-    instantiate and call the interesting methods like `run` and `put`.
+    Like `~paramiko.client.SSHClient`, `.Connection` has a basic "`create
+    <__init__>`, `connect/open <open>`, `do work <run>`, `disconnect/close
+    <close>`" lifecycle, though this is handled transparently: most users
+    simply need to instantiate and call the interesting methods like `run` and
+    `put`.
     """
     # TODO: push some of this into paramiko.client.Client? e.g. expand what
     # Client.exec_command does, it already allows configuring a subset of what
@@ -71,7 +73,7 @@ class Connection(object):
 
             Default is an anonymous `.Config` object.
 
-        :raises ValueError:
+        :raises exceptions.ValueError:
             if user or port values are given via both ``host`` shorthand *and*
             their own arguments. (We `refuse the temptation to guess`_).
 
@@ -112,12 +114,18 @@ class Connection(object):
                 return transport.active
         return False
 
-
     def open(self):
         """
         Initiate an SSH connection to the host/port this object is bound to.
         """
         self.client.connect(hostname=self.host, port=self.port)
+
+    def close(self):
+        """
+        Terminate the network connection to the remote end, if open.
+
+        If no connection is open, this method does nothing.
+        """
 
     def run(self, command):
         """
@@ -129,7 +137,12 @@ class Connection(object):
             semantics (pipes, redirects etc) may be used freely.
 
         :returns:
-            A `~invoke.runner.Result` object containing the command's exit
+            A `~invoke.runners.Result` object containing the command's exit
             status, stdout/err, etc.
         """
         pass
+
+    def put(self):
+        """
+        Upload a local file or file-like object to the remote end.
+        """
