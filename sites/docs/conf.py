@@ -27,10 +27,9 @@ if os.environ.get('READTHEDOCS') == 'True':
     target = 'http://docs.pyinvoke.org/'
 invoke = (target, None)
 # Intersphinx connection to stdlib + www site
-intersphinx_mapping = {
+intersphinx_mapping.update({
     'www': www,
-    'invoke': invoke,
-}
+})
 
 # Sister-site links to WWW
 html_theme_options['extra_nav_links'] = {

@@ -18,9 +18,9 @@ extensions.append('sphinx.ext.intersphinx')
 target = join(dirname(__file__), '..', 'docs', '_build')
 if os.environ.get('READTHEDOCS') == 'True':
     target = 'http://docs.fabfile.org/en/latest/'
-intersphinx_mapping = {
+intersphinx_mapping.update({
     'docs': (target, None),
-}
+})
 
 # Sister-site links to API docs
 html_theme_options['extra_nav_links'] = {

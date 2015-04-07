@@ -1,4 +1,5 @@
-from os.path import join
+import os
+from os.path import join, dirname
 from datetime import datetime
 
 import alabaster
@@ -31,6 +32,26 @@ html_sidebars = {
         'searchbox.html',
         'donate.html',
     ]
+}
+
+# Everything intersphinx's to Python, and to (local-or-remote) Invoke &
+# Paramiko
+inv_target = join(
+    dirname(__file__),
+    '..', '..', 'invoke', 'sites', 'docs', '_build'
+)
+if os.environ.get('READTHEDOCS') == 'True':
+    inv_target = 'http://docs.pyinvoke.org/en/latest/'
+para_target = join(
+    dirname(__file__),
+    '..', '..', 'paramiko', 'sites', 'docs', '_build'
+)
+if os.environ.get('READTHEDOCS') == 'True':
+    para_target = 'http://docs.paramiko.org/en/latest/'
+intersphinx_mapping = {
+    'python': ('http://docs.python.org/2.6', None),
+    'invoke': (inv_target, None),
+    'paramiko': (para_target, None),
 }
 
 # Regular settings
