@@ -28,7 +28,6 @@ if os.environ.get('READTHEDOCS') == 'True':
 invoke = (target, None)
 # Intersphinx connection to stdlib + www site
 intersphinx_mapping = {
-    'python': ('http://docs.python.org/2.6', None),
     'www': www,
     'invoke': invoke,
 }
