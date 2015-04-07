@@ -8,6 +8,11 @@
 
     Default configuration values and behavior toggles.
 
+    .. note::
+        Fabric's default configuration objects include Invoke's
+        `~invoke.config.Config.global_defaults` values as well, such as the
+        ``tasks`` and ``run`` trees.
+
     .. warning::
         Modifying this object will result in a severe lack of support from the
         maintainers! Use CLI flags or custom Config instances if you need to
