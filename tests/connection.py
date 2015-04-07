@@ -94,7 +94,7 @@ class Connection_(Spec):
 
     class open:
         @patch('fabric.connection.SSHClient')
-        def has_no_required_args_and_returns_None(self, client):
+        def has_no_required_args_and_returns_None(self, Client):
             eq_(Connection('host').open(), None)
 
         @patch('fabric.connection.SSHClient')
