@@ -7,7 +7,7 @@ class Main(Spec):
     def connection_open_generates_real_connection(self):
         c = Connection('localhost')
         c.open()
-        ok_(c.client.get_transport().active)
+        eq_(c.client.get_transport().active, True)
         eq_(c.is_connected, True)
 
     def simple_command_on_host(self):
