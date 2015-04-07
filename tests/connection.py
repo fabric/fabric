@@ -108,7 +108,7 @@ class Connection_(Spec):
             )
 
         @patch('fabric.connection.SSHClient')
-        def sets_is_connected_flag_when_successful(self, Client):
+        def is_connected_True_when_successful(self, Client):
             # Ensure the parts of Paramiko we test act like things are cool
             client = Client.return_value
             client.get_transport.return_value = Mock(active=True)
@@ -126,7 +126,7 @@ class Connection_(Spec):
             # ???
             skip()
 
-        def is_connected_is_False_even_if_failure_doesnt_raise_exception(self):
+        def is_connected_False_even_if_failure_doesnt_raise_exception(self):
             # i.e. client.connect() didn't die BUT somehow its transport is
             # none, or its transport says it's inactive
             skip()
@@ -142,12 +142,32 @@ class Connection_(Spec):
             skip()
 
     class close:
-        def calls_Client_close(self):
-            "calls paramiko.Client.close()"
+        @patch('fabric.connection.SSHClient')
+        def has_no_required_args_and_returns_None(self, Client):
+            c = Connection('host')
+            c.open()
+            eq_(c.close(), None)
+
+        @patch('fabric.connection.SSHClient')
+        def calls_SSHClient_connect(self, Client):
+            "calls paramiko.SSHClient.close()"
+            c = Connection('host')
+            c.open()
+            c.close()
+            client = Client.return_value
+            client.close.assert_called_with()
+
+        def has_no_effect_if_already_closed(self):
             skip()
 
-        def sets_is_connected_to_False(self):
-            skip()
+        @patch('fabric.connection.SSHClient')
+        def is_connected_becomes_False(self, Client):
+            client = Client.return_value
+            client.get_transport.return_value = Mock(active=False)
+            c = Connection('host')
+            c.open()
+            c.close()
+            eq_(c.is_connected, False)
 
-        def sets_is_connected_to_False_even_on_error(self):
+        def is_connected_becomes_False_even_on_error(self):
             skip()
