@@ -171,3 +171,16 @@ class Connection_(Spec):
 
         def is_connected_becomes_False_even_on_error(self):
             skip()
+
+    class run:
+        # NOTE: most actual run related tests live in the runners module's
+        # tests. Here we are just testing the outer interface a bit.
+        def accepts_command_string(self):
+            skip()
+
+        def calls_Remote_run(self):
+            "calls Remote.run()"
+            skip()
+
+        def returns_Result(self):
+            skip()

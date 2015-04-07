@@ -21,9 +21,10 @@ class Main(Spec):
         """
         Run command on host "localhost"
         """
-        skip()
-        Connection('localhost').run('echo foo')
-        # => Result
+        result = Connection('localhost').run('echo foo')
+        eq_(result.stdout, "foo\n")
+        eq_(result.exited, 0)
+        eq_(result.ok, True)
 
     def simple_command_on_multiple_hosts(self):
         """
