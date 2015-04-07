@@ -9,6 +9,13 @@ class Main(Spec):
         c.open()
         eq_(c.client.get_transport().active, True)
         eq_(c.is_connected, True)
+        return c
+
+    def connection_close_closes_connection(self):
+        c = self.connection_open_generates_real_connection()
+        c.close()
+        eq_(c.client.get_transport().active, False)
+        eq_(c.is_connected, False)
 
     def simple_command_on_host(self):
         """
