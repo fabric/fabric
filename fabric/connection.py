@@ -126,6 +126,7 @@ class Connection(object):
 
         If no connection is open, this method does nothing.
         """
+        self.client.close()
 
     def run(self, command):
         """

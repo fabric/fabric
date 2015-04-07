@@ -163,7 +163,7 @@ class Connection_(Spec):
         @patch('fabric.connection.SSHClient')
         def is_connected_becomes_False(self, Client):
             client = Client.return_value
-            client.get_transport.return_value = Mock(active=False)
+            client.get_transport.return_value = None
             c = Connection('host')
             c.open()
             c.close()
