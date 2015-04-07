@@ -1,3 +1,55 @@
+## Thoughts about config (mostly-answered)
+
+* Re: below, right now invoke.Config auto-loads on __init__, and thus so do
+  Connection() objects, as they have a default Config() instance if none is
+  given.
+    * So unless we change this, we (re)load conf files into a new
+      Config on every host in the lib use case, and probably only once in the
+      CLI use case (since we'd do what Invoke does and create a single Config
+      at the start, handing copies of it into each task invoke).
+    * Still seems like this is "correct" anyways, the users being surprised by
+      having to manually load (or those who know about it and are just
+      inconvenienced by having to do it all the damn time, and then being
+      confused when they forget) will have bad feels, and if advanced users
+      complain, we can add an opt-out somehow (such as a Connection subclass
+      which creates that default Config with a 'load=False' flag set or w/e)
+* do we load (ssh, other) config files in the lib case by default, or no?
+    * Cleaner to let the user control when/how this occurs; arguably we can't
+      even do it by "default" in lib situation because we dunno what they're
+      doing, unless we do it in eg Context/Connection.___init__
+    * But if we do it by default in CLI use case, now CLI and lib differ in a
+      possibly surprising way.
+    * And if we don't do it by default anywhere, that is itself surprising as
+      it is to users of Fab 1 who expect at least SSH config to be loaded.
+* Think of a few use cases re: the ssh_config, inv/fab configs, host-specific
+  configs, loading, and how they would work / merge / where they would live:
+    * Lib base case of "literally just Host(foo).run(bar)": probably n/a?
+        * To get conf file loads, Host(foo,
+          context=Context(load=True)).run(bar) or whatever? Implies we want
+          Context or similar able to generate Host objects so we can do
+          Context().get_host(foo).run(bar)?
+        * Or, as above, does Host(foo) implicitly load ssh_config et al? Such
+          that Host(my_foo_alias) connects to foo?
+    * CLI base case of "fab -H foo -- bar" - same as above? or, as per Q, does
+      it implicitly load after all?
+    * CLI semi-base case of having single task def + "fab -H foo mytask" -
+      ditto
+    * CLI slightly less base case of referencing a role or other pool within
+      task?
+    * Lib case of same - do we do eg Pool(name) to load some pool config?
+        * Should Pool be the same as eg clusto pool or Fab 1 role?
+        * Our tutorial implies it's a manual hostname list but that's probably
+          silly / not common. Almost all the time you'd want to reference your
+          own array/list, or some data structure resulting in same.
+        * Do we have some structure above Pool which yields Pools? Context
+          again? Something mapping to a truth db? What does it look like in the
+          semi base "I just have a fabfile and an ssh_config" case?
+    * Clusto-driven use case specifically: what would I love to replace servo's
+      innards with, which pulls from Clusto mostly, but honors CLI overrides
+      and some smaller local in-code overrides (which we don't actually do
+      anymore but used to, eg host exclude list)
+
+
 ## Newer specific questions to answer
 
 * Is Pool worth having in the tutorial (or at all)?
