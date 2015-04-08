@@ -10,7 +10,7 @@ class Remote_(Spec):
         ok_(Remote(context=c).context is c)
 
     class run:
-        def uses_paramiko_exec_command(self):
+        def calls_paramiko_exec_command(self):
             # * Patch Client.exec_command, right?
             #   * client = SSHClient()
             #   * client.connect(host, etc etc) -> client now connected

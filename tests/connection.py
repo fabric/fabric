@@ -181,7 +181,7 @@ class Connection_(Spec):
             c = Connection('host')
             c.open = Mock()
             c.run("command")
-            ok_(c.called)
+            ok_(c.open.called)
 
         @patch('fabric.connection.SSHClient') # to block open()/close()/etc
         @patch('fabric.runners.Remote')
