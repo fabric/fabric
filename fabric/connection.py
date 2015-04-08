@@ -132,14 +132,10 @@ class Connection(object):
         """
         Execute a shell command on the remote end of this connection.
 
-        :param str command:
-            The command to execute. Standard SSH daemons execute these
-            commands within the connecting user's login shell, so shell
-            semantics (pipes, redirects etc) may be used freely.
-
-        :returns:
-            A `~invoke.runners.Result` object containing the command's exit
-            status, stdout/err, etc.
+        This method largely just wraps a call to a `.Remote` instance's
+        `.Remote.run` method (e.g. ``Remote(connection=self).run(...)``), and
+        as such has an identical signature/call semantics, an identical return
+        value type, and so forth.
         """
         pass
 
