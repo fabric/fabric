@@ -1,5 +1,5 @@
 from spec import Spec, skip, eq_, raises, ok_
-from mock import patch, Mock
+from mock import patch, Mock, call
 from paramiko.client import SSHClient, AutoAddPolicy
 
 from fabric.connection import Connection, Config
@@ -175,12 +175,27 @@ class Connection_(Spec):
     class run:
         # NOTE: most actual run related tests live in the runners module's
         # tests. Here we are just testing the outer interface a bit.
-        def accepts_command_string(self):
-            skip()
 
-        def calls_Remote_run(self):
-            "calls Remote.run()"
-            skip()
+        @patch('fabric.connection.SSHClient')
+        def calls_open_for_you(self, Client):
+            c = Connection('host')
+            c.open = Mock()
+            c.run("command")
+            ok_(c.called)
 
-        def returns_Result(self):
-            skip()
+        @patch('fabric.connection.SSHClient') # to block open()/close()/etc
+        @patch('fabric.runners.Remote')
+        def calls_Runner_run_with_command_and_kwargs_and_returns_its_result(
+            self, Remote, Client
+        ):
+            remote = Remote.return_value
+            sentinel = object()
+            remote.run.return_value = sentinel
+            r1 = Connection('host').run("command")
+            r2 = Connection('host').run("command", warn=True, hide='stderr')
+            remote.run.assert_has_calls([
+                call("command"),
+                call("command", warn=True, hide='stderr'),
+            ])
+            for r in (r1, r2):
+                ok_(r is sentinel)
