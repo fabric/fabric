@@ -177,22 +177,25 @@ class Connection_(Spec):
         # tests. Here we are just testing the outer interface a bit.
 
         @patch('fabric.connection.SSHClient')
-        def calls_open_for_you(self, Client):
+        @patch('fabric.connection.Remote')
+        def calls_open_for_you(self, Remote, Client):
             c = Connection('host')
             c.open = Mock()
             c.run("command")
             ok_(c.open.called)
 
         @patch('fabric.connection.SSHClient') # to block open()/close()/etc
-        @patch('fabric.runners.Remote')
+        @patch('fabric.connection.Remote')
         def calls_Runner_run_with_command_and_kwargs_and_returns_its_result(
             self, Remote, Client
         ):
             remote = Remote.return_value
             sentinel = object()
             remote.run.return_value = sentinel
-            r1 = Connection('host').run("command")
-            r2 = Connection('host').run("command", warn=True, hide='stderr')
+            c = Connection('host')
+            r1 = c.run("command")
+            r2 = c.run("command", warn=True, hide='stderr')
+            Remote.assert_called_with(context=c)
             remote.run.assert_has_calls([
                 call("command"),
                 call("command", warn=True, hide='stderr'),

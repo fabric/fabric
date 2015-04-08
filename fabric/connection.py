@@ -138,6 +138,7 @@ class Connection(object):
         as such has an identical signature/call semantics, an identical return
         value type, and so forth.
         """
+        self.open()
         return Remote(context=self).run(command, **kwargs)
 
     def put(self):
