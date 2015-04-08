@@ -184,7 +184,7 @@ class Connection_(Spec):
             c.run("command")
             ok_(c.open.called)
 
-        @patch('fabric.connection.SSHClient') # to block open()/close()/etc
+        @patch('fabric.connection.SSHClient')
         @patch('fabric.connection.Remote')
         def calls_Runner_run_with_command_and_kwargs_and_returns_its_result(
             self, Remote, Client

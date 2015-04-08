@@ -129,6 +129,11 @@ class Connection(object):
         """
         self.client.close()
 
+    def _create_session(self):
+        pass
+        #self.open()
+        #return self.client.get_transport().open_session()
+
     def run(self, command, **kwargs):
         """
         Execute a shell command on the remote end of this connection.

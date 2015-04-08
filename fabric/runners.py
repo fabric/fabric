@@ -14,7 +14,9 @@ class Remote(Runner):
     """
     # TODO: Needs to fully implement run_direct() and run_pty(), no shared code
     # (the factored outer bits are in invoke.runner.run())
-
+    
+    def run_direct(self, command, warn, hide, encoding):
+        return ("", "", 0, None)
 
 
 class RemoteSudo(Remote):

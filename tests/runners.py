@@ -1,7 +1,8 @@
 from spec import Spec, skip, ok_
+from mock import Mock, patch
 
 from fabric.connection import Connection
-from fabric.runner import Remote, RemoteSudo
+from fabric.runners import Remote, RemoteSudo
 
 
 class Remote_(Spec):
@@ -10,10 +11,9 @@ class Remote_(Spec):
         ok_(Remote(context=c).context is c)
 
     class run:
-        def calls_paramiko_exec_command(self):
+        @patch('fabric.connection.SSHClient')
+        def calls_paramiko_exec_command(self, Client):
             # * Patch Client.exec_command, right?
-            #   * client = SSHClient()
-            #   * client.connect(host, etc etc) -> client now connected
             #   * channel = client.get_transport().open_session()
             #   * channel.exec_command(command, etc)
             #   * BELOW IS MOCKED?
@@ -23,11 +23,10 @@ class Remote_(Spec):
             # * Run eg Remote(context=Connection('host')).run('command')
             # * Assert exec_command called with 'command'
             c = Connection('host')
+            c._create_session = Mock()
             r = Remote(context=c)
-            # TODO: how to patch exec_command here? Perhaps Connection method
-            # returning the paramiko.Channel object, which we can then stub out
-            # to return a mock Channel?
-
+            r.run("command")
+            c._create_session.return_value.exec_command.assert_called_with("command")
 
         def run_pty_uses_paramiko_get_pty(self):
             skip()
