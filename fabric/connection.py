@@ -1,6 +1,7 @@
 from invoke.config import Config as InvokeConfig, merge_dicts
 from paramiko.client import SSHClient, AutoAddPolicy
 
+from .runners import Remote
 from .utils import get_local_user
 
 
@@ -128,16 +129,16 @@ class Connection(object):
         """
         self.client.close()
 
-    def run(self, command):
+    def run(self, command, **kwargs):
         """
         Execute a shell command on the remote end of this connection.
 
         This method largely just wraps a call to a `.Remote` instance's
-        `.Remote.run` method (e.g. ``Remote(connection=self).run(...)``), and
+        `.Remote.run` method (e.g. ``Remote(context=self).run(...)``), and
         as such has an identical signature/call semantics, an identical return
         value type, and so forth.
         """
-        pass
+        return Remote(context=self).run(command, **kwargs)
 
     def put(self):
         """
