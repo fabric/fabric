@@ -337,8 +337,9 @@ Order of precedence
 We've been pointing out which methods of setting host lists trump the others,
 as we've gone along. However, to make things clearer, here's a quick breakdown:
 
-* Per-task, command-line host lists (``fab mytask:host=host1``) override
-  absolutely everything else.
+* The global setting of ``env.always_exclude_hosts`` is applied no matter what.
+* Per-task, command-line host lists (``fab mytask:host=host1``) have the highest
+  priority (except that they are subject to ``env.always_exclude_hosts``).
 * Per-task, decorator-specified host lists (``@hosts('host1')``) override the
   ``env`` variables.
 * Globally specified host lists set in the fabfile (``env.hosts = ['host1']``)
@@ -449,6 +450,12 @@ taskname:exclude_hosts=host2`` will only run on ``host1``.
 As with the host list merging, this functionality is currently limited (partly
 to keep the implementation simple) and may be expanded in future releases.
 
+Permanently excluding a host
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+After the host list has been constructed for a task, the host list is filtered
+to exclude any hosts that also appear in ``env.always_exclude_hosts``. No task
+is ever run on a host whose name appears in ``env.always_exclude_hosts``.
 
 .. _execute:
 

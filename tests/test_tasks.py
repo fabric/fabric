@@ -303,17 +303,27 @@ class TestExecute(FabricTest):
         """
         should set env.all_hosts to its derived host list
         """
-        hosts = ['a', 'b']
         roledefs = {'r1': ['c', 'd']}
-        roles = ['r1']
-        exclude_hosts = ['a']
         def command():
             eq_(set(env.all_hosts), set(['b', 'c', 'd']))
         task = Fake(callable=True, expect_call=True).calls(command)
         with settings(hide('everything'), roledefs=roledefs):
             execute(
-                task, hosts=hosts, roles=roles, exclude_hosts=exclude_hosts
+                task, hosts=['a', 'b'], roles=['r1'], exclude_hosts=['a']
             )
+            execute(
+                task, hosts=['b', 'c', 'd']
+            )
+            # the environment's exclude_hosts is not respected by execute()
+            with settings(exclude_hosts=['b']):
+                execute(
+                    task, hosts=['b', 'c', 'd']
+                )
+            # the environment's always_exclude_hosts IS respected by execute()
+            with settings(always_exclude_hosts=['a']):
+                execute(
+                    task, hosts=['a', 'b', 'c', 'd']
+                )
 
     @mock_streams('stdout')
     def test_should_print_executing_line_per_host(self):

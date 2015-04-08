@@ -351,6 +351,8 @@ def execute(task, *args, **kwargs):
     # Set up host list
     my_env['all_hosts'], my_env['effective_roles'] = task.get_hosts_and_effective_roles(hosts, roles,
                                                                                         exclude_hosts, state.env)
+    # Exclude hosts that have been globally excluded
+    my_env['all_hosts'] = [h for h in my_env['all_hosts'] if h not in state.env.always_exclude_hosts]
 
     parallel = requires_parallel(task)
     if parallel:

@@ -104,6 +104,12 @@ env_options = [
         help="abort instead of prompting (for password, host, etc)"
     ),
 
+    make_option('--always-exclude-hosts',
+        default=[],
+        metavar='HOSTS',
+        help="comma-separated list of hosts to exclude (nested tasks do not reset this)"
+    ),
+
     make_option('-c', '--config',
         dest='rcfile',
         default=_rc_path(),
@@ -284,7 +290,7 @@ env_options = [
     make_option('-x', '--exclude-hosts',
         default=[],
         metavar='HOSTS',
-        help="comma-separated list of hosts to exclude"
+        help="comma-separated list of hosts to exclude (nested tasks reset this)"
     ),
 
     make_option('-z', '--pool-size',
@@ -312,6 +318,7 @@ env = _AttributeDict({
     'abort_exception': None,
     'again_prompt': 'Sorry, try again.',
     'all_hosts': [],
+    'always_exclude_hosts': [],
     'combine_stderr': True,
     'colorize_errors': False,
     'command': None,

@@ -153,6 +153,25 @@ informational purposes only.
 
 .. seealso:: :doc:`execution`
 
+.. _always-exclude-hosts:
+
+``always_exclude_hosts``
+-----------------
+
+**Default:** ``[]``
+
+Specifies a list of host strings to be :ref:`skipped over <exclude-hosts>`
+during ``fab`` execution, even inside subtasks run via ``execute``. This
+allows you to specify that a Fabric session should never make connections
+to a particular host, not even via a subtask that wants to run on a role
+containing that host.
+
+This differs from `--exclude-hosts` in that `--exclude-hosts` applies only
+to the top-level task execution, not to any subtasks invoked via ``execute``.
+
+.. versionadded:: 1.11
+.. seealso:: :doc:`execution`
+
 .. _always-use-pty:
 
 ``always_use_pty``
