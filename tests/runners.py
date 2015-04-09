@@ -12,22 +12,19 @@ class Remote_(Spec):
 
     class run:
         @patch('fabric.connection.SSHClient')
-        def calls_paramiko_exec_command(self, Client):
-            # * Patch Client.exec_command, right?
-            #   * channel = client.get_transport().open_session()
-            #   * channel.exec_command(command, etc)
-            #   * BELOW IS MOCKED?
-            #   * Thread on channel.recv, thread on channel.recv_stderr
-            #       * TODO: how to mate this with existing logic in Local?
-            #   * Capture, print, etc, join on exit_status_ready
-            #   * Close channel
-            # * Run eg Remote(context=Connection('host')).run('command')
-            # * Assert exec_command called with 'command'
+        def calls_expected_paramiko_bits(self, Client):
+            # Mock
+            client = Client.return_value
+            channel = Mock()
+            client.get_transport.return_value.open_session.return_value = channel
+            # Run
             c = Connection('host')
-            c._create_session = Mock()
             r = Remote(context=c)
             r.run("command")
-            c._create_session.return_value.exec_command.assert_called_with("command")
+            # Test
+            client.get_transport.assert_called_with()
+            client.get_transport.return_value.open_session.assert_called_with()
+            channel.exec_command.assert_called_with("command")
 
         def pty_True_uses_paramiko_get_pty(self):
             skip()

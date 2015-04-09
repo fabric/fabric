@@ -130,14 +130,13 @@ class Connection(object):
         self.client.close()
 
     def _create_session(self):
-        pass
         # TODO: make this a contextmanager perhaps? 'with cxn.session() as
         # channel: channel.exec_command(blah)' - tho still unsure if it should
         # be public API right away.
         # TODO: implies we may want to do the same for Connection itself
         # (though that might not be the primary API for it)
-        #self.open()
-        #return self.client.get_transport().open_session()
+        self.open()
+        return self.client.get_transport().open_session()
 
     def run(self, command, **kwargs):
         """
