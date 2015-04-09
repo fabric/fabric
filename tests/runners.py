@@ -20,6 +20,7 @@ class Remote_(Spec):
             #   * Thread on channel.recv, thread on channel.recv_stderr
             #       * TODO: how to mate this with existing logic in Local?
             #   * Capture, print, etc, join on exit_status_ready
+            #   * Close channel
             # * Run eg Remote(context=Connection('host')).run('command')
             # * Assert exec_command called with 'command'
             c = Connection('host')
@@ -28,8 +29,24 @@ class Remote_(Spec):
             r.run("command")
             c._create_session.return_value.exec_command.assert_called_with("command")
 
-        def run_pty_uses_paramiko_get_pty(self):
+        def pty_True_uses_paramiko_get_pty(self):
             skip()
+
+        # TODO: how much of Invoke's tests re: the upper level run() (re:
+        # things like returning Result, behavior of Result, etc) to
+        # duplicate here? Ideally none or very few core ones.
+
+        # TODO: do we need custom extensions to Result (which our tutorial
+        # actually claims we have - check if there are actually any differences
+        # from the core one at this point, because there might not be?)
+
+        # TODO: only test guts of our stuff, Invoke's Runner tests should
+        # handle all the normal shit like stdout/err print and capture.
+        # Implies we want a way to import & run those tests ourselves, though,
+        # with the Runner instead being a Remote. Or do we just replicate the
+        # basics?
+        
+        # TODO: perhaps make the session channel creation a contextmanager
 
         def may_wrap_command_with_things_like_bash_dash_c(self):
             "may wrap command with things like bash -c"

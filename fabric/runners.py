@@ -16,6 +16,8 @@ class Remote(Runner):
     # (the factored outer bits are in invoke.runner.run())
     
     def run_direct(self, command, warn, hide, encoding):
+        channel = self.context._create_session()
+        channel.exec_command(command)
         return ("", "", 0, None)
 
 

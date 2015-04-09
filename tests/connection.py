@@ -186,7 +186,7 @@ class Connection_(Spec):
 
         @patch('fabric.connection.SSHClient')
         @patch('fabric.connection.Remote')
-        def calls_Runner_run_with_command_and_kwargs_and_returns_its_result(
+        def calls_Remote_run_with_command_and_kwargs_and_returns_its_result(
             self, Remote, Client
         ):
             remote = Remote.return_value
@@ -202,3 +202,13 @@ class Connection_(Spec):
             ])
             for r in (r1, r2):
                 ok_(r is sentinel)
+
+    class local:
+        def calls_invoke_Runner_run(self):
+            skip()
+
+        # TODO: replicate any invoke tests for sanity check?
+
+    class sudo:
+        def calls_Remote_with_sudo_call_and_response_configuration(self):
+            skip()
