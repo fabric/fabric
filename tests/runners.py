@@ -26,6 +26,20 @@ class Remote_(Spec):
             client.get_transport.return_value.open_session.assert_called_with()
             channel.exec_command.assert_called_with("command")
 
+        def writes_remote_streams_to_local_streams(self):
+            # E.g. hand in custom stream objs, assert they've been written to
+            skip()
+
+        def captures_remote_streams_to_variables(self):
+            # TODO: this is one test that could get merged into Invoke/Runner
+            # Just test return value while faking output from channel.recv
+            skip()
+
+        def captures_remote_exit_code(self):
+            # TODO: also potentially fodder for factoring
+            # Test return value while faking channel.recv_exit_status
+            skip()
+
         def pty_True_uses_paramiko_get_pty(self):
             skip()
 

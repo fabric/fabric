@@ -18,6 +18,18 @@ class Remote(Runner):
     def run_direct(self, command, warn, hide, encoding):
         channel = self.context._create_session()
         channel.exec_command(command)
+
+        # obtain pipes for stdin/out/err (TODO: arbitrary args for these)
+        # create objects to hold streams
+        # define thread target appending to objects & printing to streams
+        #   (TODO: host prefixes depending on configuration)
+        # create thread objects, add to list, start them
+        # wait on remote proc (may require loop+sleep)
+        # join threads
+        # tie up captured stderr/out into single string objs
+        # return those + exit code (+ exception? does that make sense here as
+        #    well as wherever it was originally intended in Local?)
+
         return ("", "", 0, None)
 
 
