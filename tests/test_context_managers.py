@@ -124,6 +124,22 @@ def test_cd_prefix():
         command_out = _prefix_commands('foo', "remote")
         eq_(command_out, 'cd %s >/dev/null && foo' % some_path)
 
+
+# def test_cd_prefix_on_win32():
+#     """
+#     cd prefix should NOT direct output to /dev/null on win32
+#     """
+#     some_path = "~/somepath"
+
+#     import fabric
+#     try:
+#         fabric.state.win32 = True
+#         with cd(some_path):
+#             command_out = _prefix_commands('foo', "remote")
+#             eq_(command_out, 'cd %s && foo' % some_path)
+#     finally:
+#         fabric.state.win32 = False
+
 #
 # hide/show
 #

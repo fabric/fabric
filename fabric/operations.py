@@ -657,8 +657,9 @@ def _prefix_commands(command, which):
     # Also place it at the front of the list, in case user is expecting another
     # prefixed command to be "in" the current working directory.
     cwd = env.cwd if which == 'remote' else env.lcwd
+    redirect = " >/dev/null" if not win32 else ''
     if cwd:
-        prefixes.insert(0, 'cd %s >/dev/null' % cwd)
+        prefixes.insert(0, 'cd %s%s' % (cwd, redirect))
     glue = " && "
     prefix = (glue.join(prefixes) + glue) if prefixes else ""
     return prefix + command
