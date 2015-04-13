@@ -243,6 +243,12 @@ env_options = [
         help="skip over hosts that can't be reached"
     ),
 
+    make_option('--skip-unknown-tasks',
+        action="store_true",
+        default=False,
+        help="skip over unknown tasks"
+    ),
+
     make_option('--ssh-config-path',
         default=default_ssh_config_path,
         metavar='PATH',
@@ -333,6 +339,7 @@ env = _AttributeDict({
     'roledefs': {},
     'shell_env': {},
     'skip_bad_hosts': False,
+    'skip_unknown_tasks': False,
     'ssh_config_path': default_ssh_config_path,
     'ok_ret_codes': [0],     # a list of return codes that indicate success
     # -S so sudo accepts passwd via stdin, -p with our known-value prompt for
@@ -419,10 +426,11 @@ output = _AliasDict({
     'running': True,
     'stdout': True,
     'stderr': True,
+    'exceptions': False,
     'debug': False,
     'user': True
 }, aliases={
-    'everything': ['warnings', 'running', 'user', 'output'],
+    'everything': ['warnings', 'running', 'user', 'output', 'exceptions'],
     'output': ['stdout', 'stderr'],
     'commands': ['stdout', 'running']
 })

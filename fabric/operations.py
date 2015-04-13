@@ -411,7 +411,7 @@ def put(local_path=None, remote_path=None, use_sudo=False,
 
 
 @needs_host
-def get(remote_path, local_path=None):
+def get(remote_path, local_path=None, use_sudo=False, temp_dir=""):
     """
     Download one or more files from a remote host.
 
@@ -444,6 +444,13 @@ def get(remote_path, local_path=None):
     * ``basename``: The filename part of the remote file path, e.g. the
       ``utils.py`` in ``src/projectname/utils.py``
     * ``path``: The full remote path, e.g. ``src/projectname/utils.py``.
+
+    While the SFTP protocol (which `get` uses) has no direct ability to download
+    files from locations not owned by the connecting user, you may specify
+    ``use_sudo=True`` to work around this. When set, this setting allows `get`
+    to copy (using sudo) the remote files to a temporary location on the remote end
+    (defaults to remote user's ``$HOME``; this may be overridden via ``temp_dir``),
+    and then download them to ``local_path``.
 
     .. note::
         When ``remote_path`` is an absolute directory path, only the inner
@@ -568,14 +575,13 @@ def get(remote_path, local_path=None):
 
             for remote_path in names:
                 if ftp.isdir(remote_path):
-                    result = ftp.get_dir(remote_path, local_path)
+                    result = ftp.get_dir(remote_path, local_path, use_sudo, temp_dir)
                     local_files.extend(result)
                 else:
                     # Perform actual get. If getting to real local file path,
                     # add result (will be true final path value) to
                     # local_files. File-like objects are omitted.
-                    result = ftp.get(remote_path, local_path, local_is_path,
-                        os.path.basename(remote_path))
+                    result = ftp.get(remote_path, local_path, use_sudo, local_is_path, os.path.basename(remote_path), temp_dir)
                     if local_is_path:
                         local_files.append(result)
 
@@ -1172,12 +1178,9 @@ def local(command, capture=False, shell=None):
         err_stream = None if output.stderr else dev_null
     try:
         cmd_arg = wrapped_command if win32 else [wrapped_command]
-        if shell is not None:
-            p = subprocess.Popen(cmd_arg, shell=True, stdout=out_stream,
-                                 stderr=err_stream, executable=shell)
-        else:
-            p = subprocess.Popen(cmd_arg, shell=True, stdout=out_stream,
-                                 stderr=err_stream)
+        p = subprocess.Popen(cmd_arg, shell=True, stdout=out_stream,
+                             stderr=err_stream, executable=shell,
+                             close_fds=(not win32))
         (stdout, stderr) = p.communicate()
     finally:
         if dev_null is not None:

@@ -19,7 +19,7 @@ user.
 
 .. note::
 
-    All levels, save for ``debug``, are on by default.
+    All levels, save for ``debug`` and ``exceptions``, are on by default.
 
 Standard output levels
 ----------------------
@@ -52,7 +52,7 @@ The standard, atomic output levels/groups are as follows:
 
 * **user**: User-generated output, i.e. local output printed by fabfile code
   via use of the `~fabric.utils.fastprint` or `~fabric.utils.puts` functions.
-
+  
 .. versionchanged:: 0.9.2
     Added "Executing task" lines to the ``running`` output level.
 
@@ -62,8 +62,10 @@ The standard, atomic output levels/groups are as follows:
 Debug output
 ------------
 
-There is a final atomic output level, ``debug``, which behaves slightly
-differently from the rest:
+There are two more atomic output levels for use when troubleshooting:
+``debug``, which behaves slightly differently from the rest, and
+``exceptions``, whose behavior is included in ``debug`` but may be enabled
+separately.
 
 * **debug**: Turn on debugging (which is off by default.) Currently, this is
   largely used to view the "full" commands being run; take for example this
@@ -82,7 +84,7 @@ differently from the rest:
       [hostname] run: /bin/bash -l -c "ls \"/home/username/Folder Name With Spaces\""
 
   Enabling ``debug`` output will also display full Python tracebacks during
-  aborts.
+  aborts (as if ``exceptions`` output was enabled).
   
   .. note::
   
@@ -92,8 +94,15 @@ differently from the rest:
       ``running`` is False but ``debug`` is True, you will still be shown the
       'running' line in its debugging form.
 
+* **exceptions**: Enables display of tracebacks when exceptions occur; intended
+  for use when ``debug`` is set to ``False`` but one is still interested in
+  detailed error info.
+
 .. versionchanged:: 1.0
     Debug output now includes full Python tracebacks during aborts.
+
+.. versionchanged:: 1.11
+    Added the ``exceptions`` output level.
 
 .. _output-aliases:
 

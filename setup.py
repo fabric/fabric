@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from __future__ import with_statement
+
 import sys
 
 from setuptools import setup, find_packages
@@ -7,7 +9,8 @@ from setuptools import setup, find_packages
 from fabric.version import get_version
 
 
-readme = open('README.rst').read()
+with open('README.rst') as f:
+    readme = f.read()
 
 long_description = """
 To find out what's new in this version of Fabric, please see `the changelog

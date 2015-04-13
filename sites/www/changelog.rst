@@ -10,9 +10,12 @@ Changelog
   for the patch.
 * :bug:`1273` Fix issue with ssh/config not having a cross-platform default
   path. Thanks to ``@SamuelMarks`` for catch & patch.
+* :feature:`1200` Introduced ``exceptions`` output level, so users don't have to
+  deal with the debug output just to see tracebacks.
 * :support:`1239` Update README to work better under raw docutils so the
   example code block is highlighted as Python on PyPI (and not just on our
   Sphinx-driven website). Thanks to Marc Abramowitz.
+* :release:`1.10.1 <2014-12-19>`
 * :release:`1.9.2 <2014-12-19>`
 * :bug:`1201` Don't naively glob all `~fabric.operations.get` targets - only
   glob actual directories. This avoids incorrectly yielding permission errors
@@ -37,6 +40,28 @@ Changelog
   non-Git-based source checkouts.
 * :support:`1229 backported` Add some missing API doc hyperlink references.
   Thanks to Tony Narlock.
+* :bug:`1226` Update `~fabric.operations.get` to ensure that `env.user` has
+  access to tempfiles before changing permissions. Also corrected permissions
+  from 404 to 0400 to match comment. Patch by Curtis Mattoon; original report
+  from Daniel Watkins.
+* :release:`1.10.0 <2014-09-04>`
+* :bug:`1188 major` Update `~fabric.operations.local` to close non-pipe file
+  descriptors in the child process so subsequent calls to
+  `~fabric.operations.local` aren't blocked on e.g. already-connected network
+  sockets. Thanks to Tolbkni Kao for catch & patch.
+* :feature:`700` Added ``use_sudo`` and ``temp_dir`` params to
+  `~fabric.operations.get`. This allows downloading files normally not
+  accessible to the user using ``sudo``. Thanks to Jason Coombs for initial
+  report and to Alex Plugaru for the patch (:issue:`1121`).
+* :feature:`1098` Add support for dict style roledefs. Thanks to Jonas
+  Lundberg.
+* :feature:`1090` Add option to skip unknown tasks. Credit goes to Jonas
+  Lundberg.
+* :feature:`975` Fabric can now be invoked via ``python -m fabric`` in addition
+  to the typical use of the ``fab`` entrypoint. Patch courtesy of Jason Coombs.
+
+  .. note:: This functionality is only available under Python 2.7.
+
 * :release:`1.9.1 <2014-08-06>`
 * :release:`1.8.5 <2014-08-06>`
 * :release:`1.7.5 <2014-08-06>`
