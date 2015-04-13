@@ -8,6 +8,7 @@ items, though within Fabric itself only ``Process`` objects are used/supported.
 from __future__ import with_statement
 import time
 import Queue
+from multiprocessing import Process
 
 from fabric.state import env
 from fabric.network import ssh
@@ -175,7 +176,8 @@ class JobQueue(object):
 
         # Attach exit codes now that we're all done & have joined all jobs
         for job in self._completed:
-            results[job.name]['exit_code'] = job.exitcode
+            if isinstance(job, Process):
+                results[job.name]['exit_code'] = job.exitcode
 
         return results
 
