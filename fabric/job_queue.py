@@ -213,7 +213,8 @@ def try_using(parallel_type):
         from threading import Thread as Bucket
 
     # Make a job_queue with a bubble of len 5, and have it print verbosely
-    jobs = JobQueue(5)
+    queue = Queue.Queue()
+    jobs = JobQueue(5, queue)
     jobs._debug = True
 
     # Add 20 procs onto the stack
