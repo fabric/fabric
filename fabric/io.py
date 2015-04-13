@@ -159,12 +159,17 @@ class OutputLooper(object):
                         self.chan.sendall(str(response) + '\n')
                     else:
                         prompt = _endswith(self.capture, env.sudo_prompt)
-                        try_again = (_endswith(self.capture, env.again_prompt + '\n')
-                            or _endswith(self.capture, env.again_prompt + '\r\n'))
+                        carriaged_again = env.again_prompt + '\r\n'
+                        newlined_again = env.again_prompt + '\n'
+                        again_prompt = ''
+                        if _endswith(self.capture, carriaged_again):
+                            again_prompt = carriaged_again
+                        elif _endswith(self.capture, newlined_again):
+                            again_prompt = newlined_again
                         if prompt:
                             self.prompt()
-                        elif try_again:
-                            self.try_again()
+                        elif again_prompt:
+                            self.try_again(again_prompt)
 
         # Print trailing new line if the last thing we printed was our line
         # prefix.
@@ -206,9 +211,9 @@ class OutputLooper(object):
         # Send current password down the pipe
         self.chan.sendall(password + '\n')
 
-    def try_again(self):
+    def try_again(self, again_prompt):
         # Remove text from capture buffer
-        self.capture = self.capture[:len(env.again_prompt)]
+        self.capture = self.capture[:len(again_prompt)]
         # Set state so we re-prompt the user at the next prompt.
         self.reprompt = True
 
