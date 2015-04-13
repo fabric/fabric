@@ -1,7 +1,8 @@
 =========
 Changelog
 =========
-
+* :bug:`1294` Fix regex escaping to allow pipes in text. Reported by
+  ``@ecksun``, patch by ``@cmattoon``.
 * :bug:`1305` (also :issue:`1313`) Fix a couple minor issues with the operation
   of & demo code for the ``JobQueue`` class. Thanks to ``@dioh`` and Horst
   Gutmann for the report & Cameron Lane for the patch.
