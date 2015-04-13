@@ -412,8 +412,22 @@ def append(filename, text, use_sudo=False, partial=False, escape=True,
         line = line.replace("'", r"'\\''") if escape else line
         func("echo '%s' >> %s" % (line, _expand_path(filename)))
 
+
 def _escape_for_regex(text):
     """Escape ``text`` to allow literal matching using egrep"""
+    literals = {
+        ' < ': 'FabricRedirectInputChar',
+        ' > ': 'FabricRedirectOutputChar',
+        ' >& ': 'FabricRedirectAmpersandChar',
+        ' >> ': 'FabricRedirectOutput2xChar',
+        ' | ': 'FabricPipeChar' 
+        }
+
+    fwd = literals.iteritems()
+    bak = zip(literals.values(), literals.keys())
+    # Pipes shouldn't be escaped, else content gets duplicated
+    text = reduce(lambda st,kv: st.replace(*kv), fwd, text)
+
     regex = re.escape(text)
     # Seems like double escaping is needed for \
     regex = regex.replace('\\\\', '\\\\\\')
@@ -421,6 +435,9 @@ def _escape_for_regex(text):
     regex = regex.replace(r'\$', r'\\\$')
     # Whereas single quotes should not be escaped
     regex = regex.replace(r"\'", "'")
+
+    # Restore pipes into the regex.
+    regex = reduce(lambda rx,kv: rx.replace(*kv), bak, regex)
     return regex
 
 def _expand_path(path):

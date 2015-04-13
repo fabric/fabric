@@ -4,7 +4,7 @@ from fabric.operations import local
 import os
 
 from fabric.api import hide, get, show
-from fabric.contrib.files import upload_template, contains
+from fabric.contrib.files import upload_template, contains, _escape_for_regex
 from fabric.context_managers import lcd
 
 from utils import FabricTest, eq_contents
@@ -129,3 +129,23 @@ class TestContrib(FabricTest):
                     template_name, remote, {'varname': var},
                     mirror_local_mode=mirror
                 )
+
+    def test_escape_for_regex_allows_pipes(self):
+        valid = {
+            r"cat file1 > file2": r'cat\ file1 > file2',
+            r"cat file2 >> file3": r'cat\ file2 >> file3',
+            r"ls > dirlist 2>&1": r'ls > dirlist\ 2\>\&1',
+            r"<html><head></head><body>":r'\<html\>\<head\>\<\/head\>\<body\>',
+            r"Mailto: <cmattoon@cmattoon.com>": r'Mailto\:\ \<cmattoon\@cmattoon\.com\>',
+            r"cat file3 | more": r'cat\ file3 | more'
+            }
+
+        for (text, expected) in valid.iteritems():
+            assert expected == _escape_for_regex(text)
+        
+
+
+
+
+
+        

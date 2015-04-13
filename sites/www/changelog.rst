@@ -1,7 +1,8 @@
 =========
 Changelog
 =========
-
+* :bug:`1294` Fix regex escaping to allow pipes in text. Reported by
+  ``@ecksun``, patch by ``@cmattoon``.
 * :bug:`1289` Fix "NameError: free variable referenced before assignment in
   enclosing scope". Thanks to ``@SamuelMarks`` for catch & patch.
 * :bug:`1286` (also :issue:`971`, :issue:`1032`) Recursively unwrap decorators
