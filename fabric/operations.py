@@ -658,7 +658,7 @@ def _prefix_commands(command, which):
     # prefixed command to be "in" the current working directory.
     cwd = env.cwd if which == 'remote' else env.lcwd
     if cwd:
-        prefixes.insert(0, 'cd %s' % cwd)
+        prefixes.insert(0, 'cd %s >/dev/null' % cwd)
     glue = " && "
     prefix = (glue.join(prefixes) + glue) if prefixes else ""
     return prefix + command

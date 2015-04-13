@@ -9,7 +9,7 @@ from nose.tools import eq_, ok_
 from fabric.state import env, output
 from fabric.context_managers import (cd, settings, lcd, hide, shell_env, quiet,
     warn_only, prefix, path)
-from fabric.operations import run, local
+from fabric.operations import run, local, _prefix_commands
 from utils import mock_streams, FabricTest
 from server import server
 
@@ -110,6 +110,19 @@ def test_nested_prefix():
         with cm2:
             eq_(env.command_prefixes, ['1', '2'])
 
+#
+# cd prefix with dev/null
+#
+
+def test_cd_prefix():
+    """
+    cd prefix should direct output to /dev/null in case of CDPATH
+    """
+    some_path = "~/somepath"
+
+    with cd(some_path):
+        command_out = _prefix_commands('foo', "remote")
+        eq_(command_out, 'cd %s >/dev/null && foo' % some_path)
 
 #
 # hide/show
