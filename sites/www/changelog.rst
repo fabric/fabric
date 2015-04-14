@@ -2,6 +2,9 @@
 Changelog
 =========
 
+* :bug:`1305` (also :issue:`1313`) Fix a couple minor issues with the operation
+  of & demo code for the ``JobQueue`` class. Thanks to ``@dioh`` and Horst
+  Gutmann for the report & Cameron Lane for the patch.
 * :bug:`980` (also :issue:`1312`) Redirect output of ``cd`` to ``/dev/null`` so
   users enabling bash's ``CDPATH`` (or similar features in other shells) don't
   have polluted output captures. Thanks to Alex North-Keys for the original
