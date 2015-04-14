@@ -52,7 +52,7 @@ def rsync_project(
 
         * If ``local_dir`` ends with a trailing slash, the files will be
           dropped inside of ``remote_dir``. E.g.
-          ``rsync_project("/home/username/project", "foldername/")`` will drop
+          ``rsync_project("/home/username/project/", "foldername/")`` will drop
           the contents of ``foldername`` inside of ``/home/username/project``.
         * If ``local_dir`` does **not** end with a trailing slash (and this
           includes the default scenario, when ``local_dir`` is not specified),

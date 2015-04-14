@@ -320,6 +320,14 @@ below.
 
     .. versionadded:: 1.4
 
+.. cmdoption:: --skip-unknown-tasks
+
+    Sets :ref:`env.skip_unknown_tasks <skip-unknown-tasks>`, causing Fabric to skip
+    unknown tasks.
+
+    .. seealso::
+        :ref:`env.skip_unknown_tasks <skip-unknown-tasks>`
+
 .. cmdoption:: --timeout=N, -t N
 
     Set connection timeout in seconds. Sets :ref:`env.timeout <timeout>`.

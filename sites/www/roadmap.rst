@@ -13,8 +13,8 @@ document!
 Fabric 1.x
 ==========
 
-Fabric 1.x, while not end-of-life'd, has reached a tipping point regarding
-internal tech debt & ability to make significant improvements without harming
+Fabric 1.x, while not quite yet end-of-life'd, has reached a tipping point
+regarding internal tech debt & ability to make improvements without harming
 backwards compatibility.
 
 As such, future 1.x releases (**1.6** onwards) will emphasize small-to-medium
@@ -31,32 +31,35 @@ tool, and plan to:
   <https://github.com/pyinvoke/invoke>`_ (see also :issue:`565`), which is a
   revamped and standalone version of Fabric's task running components. 
 
-    * As of late 2013, Invoke is approaching maturity and already has a handful of
+    * As of early 2015, Invoke is already reasonably mature and has a handful of
       features lacking in Fabric itself, including but not limited to:
       
         * a more explicit and powerful namespacing implementation
-        * "regular" style CLI flags,
+        * "regular" style CLI flags, including powerful tab completion
         * before/after hooks
-        * explicit context management
+        * explicit context management (no shared state)
+        * significantly more powerful configuration mechanisms
 
     * Invoke is already Python 3 compatible, due to being a new codebase with
       few dependencies.
-    * As Fabric 2 is developed, Invoke will continue to grow & change to suit
-      Fabric's needs while remaining a high quality standalone task runner.
+    * As Fabric 2 is developed, Invoke will approach a 1.0 release, and will
+      continue to grow & change to suit Fabric's needs while remaining a high
+      quality standalone task runner.
 
-* Start putting together Fabric 2.0, a mostly-rewritten Fabric core:
+* Release Fabric 2.0, a mostly-rewritten Fabric core:
 
     * Leverage Invoke for task running, leaving Fabric itself much more library
       oriented.
     * Implement object-oriented hosts/host lists and all the fun stuff that
-      provides (e.g. no more hacky host string and unintuitive env var
+      provides (no more hacky host string and unintuitive env var
       manipulation.)
     * No more shared state by default (thanks to Invoke's context design.)
     * Any other core overhauls difficult to do in a backwards compatible
       fashion.
     * Test-driven development (Invoke does this as well.)
 
-* Spin off ``fabric.contrib.*`` into a standalone "super-Fabric" (as in, "above Fabric") library, `Patchwork <https://github.com/fabric/patchwork>`_.
+* Spin off ``fabric.contrib.*`` into a standalone "super-Fabric" (as in, "above
+  Fabric") library, `Patchwork <https://github.com/fabric/patchwork>`_.
 
     * This lets core "execute commands on hosts" functionality iterate
       separately from "commonly useful shortcuts using Fabric core".

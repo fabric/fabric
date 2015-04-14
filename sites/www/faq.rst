@@ -9,6 +9,51 @@ reading the rest of the documentation, especially the :ref:`usage docs
 answered here.
 
 
+Fabric installs but doesn't run!
+================================
+
+On systems with old versions of ``setuptools`` (notably OS X Mavericks [10.9]
+as well as older Linux distribution versions) users frequently have problems
+running Fabric's binary scripts; this is because these ``setuptools`` are too
+old to deal with the modern distribution formats Fabric and some of its
+dependencies may use.
+
+One method we've used to recreate this error:
+
+* OS X 10.9 using system Python
+* Pip obtained via e.g. ``sudo easy_install pip`` or ``sudo python get-pip.py``
+* ``pip install fabric``
+* ``fab [args]`` then results in the following traceback::
+
+    Traceback (most recent call last):
+      File "/usr/local/bin/fab", line 5, in <module>
+        from pkg_resources import load_entry_point
+      File "/System/Library/Frameworks/Python.framework/Versions/2.7/Extras/lib/python/pkg_resources.py", line 2603, in <module>
+        working_set.require(__requires__)
+      File "/System/Library/Frameworks/Python.framework/Versions/2.7/Extras/lib/python/pkg_resources.py", line 666, in require
+        needed = self.resolve(parse_requirements(requirements))
+      File "/System/Library/Frameworks/Python.framework/Versions/2.7/Extras/lib/python/pkg_resources.py", line 565, in resolve
+        raise DistributionNotFound(req)  # XXX put more info here
+    pkg_resources.DistributionNotFound: paramiko>=1.10
+
+The best solution is to obtain a newer ``setuptools`` (which fixes this bug
+among many others) like so::
+
+    $ sudo pip install -U setuptools
+
+Uninstalling, then reinstalling Fabric after doing so should fix the issue.
+
+Another approach is to tell ``pip`` not to use the ``wheel`` format (make sure
+you've already uninstalled Fabric and Paramiko beforehand)::
+
+    $ sudo pip install fabric --no-use-wheel
+
+Finally, you may also find success by using a different Python
+interpreter/ecosystem, such as that provided by `Homebrew <http://brew.sh>`_
+(`specific Python doc page
+<https://github.com/Homebrew/homebrew/wiki/Homebrew-and-Python>`_).
+
+
 How do I dynamically set host lists?
 ====================================
 
