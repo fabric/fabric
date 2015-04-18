@@ -30,7 +30,7 @@ def task(*args, **kwargs):
 
     .. seealso:: `~fabric.docs.unwrap_tasks`, `~fabric.tasks.WrappedCallableTask`
     """
-    invoked = bool(not args or kwargs)
+    invoked = bool(args or kwargs)
     task_class = kwargs.pop("task_class", tasks.WrappedCallableTask)
     if not invoked:
         func, args = args[0], ()
