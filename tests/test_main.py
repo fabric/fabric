@@ -10,17 +10,17 @@ from contextlib import contextmanager
 from fudge import Fake, patched_context, with_fakes
 from nose.tools import ok_, eq_
 
-from fabric.decorators import hosts, roles, task
-from fabric.context_managers import settings
-from fabric.main import (parse_arguments, _escape_split,
+from swatch.decorators import hosts, roles, task
+from swatch.context_managers import settings
+from swatch.main import (parse_arguments, _escape_split,
         load_fabfile as _load_fabfile, list_commands, _task_names,
         COMMANDS_HEADER, NESTED_REMINDER)
-import fabric.state
-from fabric.state import _AttributeDict
-from fabric.tasks import Task, WrappedCallableTask
-from fabric.task_utils import _crawl, crawl, merge
+import swatch.state
+from swatch.state import _AttributeDict
+from swatch.tasks import Task, WrappedCallableTask
+from swatch.task_utils import _crawl, crawl, merge
 
-from utils import mock_streams, eq_, FabricTest, fabfile, path_prefix, aborts
+from utils import mock_streams, eq_, swatchTest, fabfile, path_prefix, aborts
 
 
 # Stupid load_fabfile wrapper to hide newly added return value.
@@ -402,7 +402,7 @@ def test_load_fabfile_should_not_remove_real_path_elements():
 # Namespacing and new-style tasks
 #
 
-class TestTaskAliases(FabricTest):
+class TestTaskAliases(swatchTest):
     def test_flat_alias(self):
         f = fabfile("flat_alias.py")
         with path_prefix(f):
@@ -440,15 +440,15 @@ class TestTaskAliases(FabricTest):
             ok_("foo_aliased_two" in funcs["nested"])
 
 
-class TestNamespaces(FabricTest):
+class TestNamespaces(swatchTest):
     def setup(self):
         # Parent class preserves current env
         super(TestNamespaces, self).setup()
         # Reset new-style-tests flag so running tests via Fab itself doesn't
         # muck with it.
-        import fabric.state
-        if 'new_style_tasks' in fabric.state.env:
-            del fabric.state.env['new_style_tasks']
+        import swatch.state
+        if 'new_style_tasks' in swatch.state.env:
+            del swatch.state.env['new_style_tasks']
 
     def test_implicit_discovery(self):
         """
@@ -487,7 +487,7 @@ class TestNamespaces(FabricTest):
         Wrapped new-style tasks should preserve their function names
         """
         module = fabfile('decorated_fabfile_with_classbased_task.py')
-        from fabric.state import env
+        from swatch.state import env
         with path_prefix(module):
             docs, funcs = load_fabfile(module)
             eq_(len(funcs), 1)
@@ -499,7 +499,7 @@ class TestNamespaces(FabricTest):
         variable name.
         """
         module = fabfile('classbased_task_fabfile.py')
-        from fabric.state import env
+        from swatch.state import env
         with path_prefix(module):
             docs, funcs = load_fabfile(module)
             eq_(len(funcs), 1)
@@ -551,7 +551,7 @@ def list_output(module, format_, expected):
     module = fabfile(module)
     with path_prefix(module):
         docstring, tasks = load_fabfile(module)
-        with patched_context(fabric.state, 'commands', tasks):
+        with patched_context(swatch.state, 'commands', tasks):
             eq_output(docstring, format_, expected)
 
 def test_list_output():

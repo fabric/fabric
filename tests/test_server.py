@@ -2,15 +2,15 @@
 Tests for the test server itself.
 
 Not intended to be run by the greater test suite, only by specifically
-targeting it on the command-line. Rationale: not really testing Fabric itself,
+targeting it on the command-line. Rationale: not really testing swatch itself,
 no need to pollute Fab's own test suite. (Yes, if these tests fail, it's likely
-that the Fabric tests using the test server may also have issues, but still.)
+that the swatch tests using the test server may also have issues, but still.)
 """
 __test__ = False
 
 from nose.tools import eq_, ok_
 
-from fabric.network import ssh
+from swatch.network import ssh
 
 from server import FakeSFTPServer
 

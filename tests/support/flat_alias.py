@@ -1,4 +1,4 @@
-from fabric.api import task
+from swatch.api import task
 
 @task(alias="foo_aliased")
 def foo():

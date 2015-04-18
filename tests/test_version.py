@@ -1,14 +1,14 @@
 """
-Tests covering Fabric's version number pretty-print functionality.
+Tests covering swatch's version number pretty-print functionality.
 """
 
 from nose.tools import eq_
 
-import fabric.version
+import swatch.version
 
 
 def test_get_version():
-    get_version = fabric.version.get_version
+    get_version = swatch.version.get_version
     for tup, short, normal, verbose in [
         ((0, 9, 0, 'final', 0), '0.9.0', '0.9', '0.9 final'),
         ((0, 9, 1, 'final', 0), '0.9.1', '0.9.1', '0.9.1 final'),
@@ -18,7 +18,7 @@ def test_get_version():
             '0.9rc1', '0.9 release candidate 1', '0.9 release candidate 1'),
         ((1, 0, 0, 'alpha', 0), '1.0a', '1.0 pre-alpha', '1.0 pre-alpha'),
     ]:
-        fabric.version.VERSION = tup
+        swatch.version.VERSION = tup
         yield eq_, get_version('short'), short
         yield eq_, get_version('normal'), normal
         yield eq_, get_version('verbose'), verbose

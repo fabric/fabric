@@ -1,8 +1,8 @@
 from __future__ import with_statement
 
-from fabric.api import run, parallel, env, hide, execute, settings
+from swatch.api import run, parallel, env, hide, execute, settings
 
-from utils import FabricTest, eq_, aborts, mock_streams
+from utils import swatchTest, eq_, aborts, mock_streams
 from server import server, RESPONSES, USER, HOST, PORT
 
 # TODO: move this into test_tasks? meh.
@@ -10,7 +10,7 @@ from server import server, RESPONSES, USER, HOST, PORT
 class OhNoesException(Exception): pass
 
 
-class TestParallel(FabricTest):
+class TestParallel(swatchTest):
     @server()
     @parallel
     def test_parallel(self):

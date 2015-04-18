@@ -1,4 +1,4 @@
-from fabric.decorators import task
+from swatch.decorators import task
 import module_fabtasks as tasks
 
 @task

@@ -1,12 +1,12 @@
 """
 Internal shared-state variables such as config settings and host lists.
 """
+from __future__ import absolute_import
 import sys
 
 from swatch.utils import AliasDict, AttributeDict
 
 win32 = (sys.platform == 'win32')
-
 """
 Options/settings which exist both as environment keys and which can be set on
 the command line, are defined here. When used via `fab` they will be added to
@@ -95,7 +95,6 @@ env.use_exceptions_for = AliasDict(exception_dict,
 # Keys are the command/function names, values are the callables themselves.
 # This is filled in when main() runs.
 commands = {}
-
 """
 Output controls
 
@@ -108,20 +107,18 @@ By default, everything except 'debug' is printed, as this is what the average
 user, and new users, are most likely to expect.
 
 See docs/usage.rst for details on what these levels mean."""
-output = AliasDict(
-    {
-        'status': True,
-        'aborts': True,
-        'warnings': True,
-        'running': True,
-        'stdout': True,
-        'stderr': True,
-        'debug': False,
-        'user': True
-    },
-    aliases={
-        'everything': ['warnings', 'running', 'user', 'output'],
-        'output': ['stdout', 'stderr'],
-        'commands': ['stdout', 'running']
-    }
-)
+output = AliasDict({
+    'status': True,
+    'aborts': True,
+    'warnings': True,
+    'running': True,
+    'stdout': True,
+    'stderr': True,
+    'debug': False,
+    'user': True
+},
+                   aliases={
+                       'everything': ['warnings', 'running', 'user', 'output'],
+                       'output': ['stdout', 'stderr'],
+                       'commands': ['stdout', 'running']
+                   })

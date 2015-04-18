@@ -7,14 +7,14 @@ from nose.tools import eq_, raises, ok_
 import random
 import sys
 
-import fabric
-from fabric.tasks import WrappedCallableTask, execute, Task, get_task_details
-from fabric.main import display_command
-from fabric.api import run, env, settings, hosts, roles, hide, parallel, task, runs_once, serial
-from fabric.network import from_dict
-from fabric.exceptions import NetworkError
+import swatch
+from swatch.tasks import WrappedCallableTask, execute, Task, get_task_details
+from swatch.main import display_command
+from swatch.api import run, env, settings, hosts, roles, hide, parallel, task, runs_once, serial
+from swatch.network import from_dict
+from swatch.exceptions import NetworkError
 
-from utils import eq_, FabricTest, aborts, mock_streams
+from utils import eq_, swatchTest, aborts, mock_streams
 from server import server
 
 
@@ -138,7 +138,7 @@ class TestTask(unittest.TestCase):
 # this simplifies testing :)
 
 def test_decorator_incompatibility_on_task():
-    from fabric.decorators import task, hosts, runs_once, roles
+    from swatch.decorators import task, hosts, runs_once, roles
     def foo(): return "foo"
     foo = task(foo)
 
@@ -151,7 +151,7 @@ def test_decorator_closure_hiding():
     """
     @task should not accidentally destroy decorated attributes from @hosts/etc
     """
-    from fabric.decorators import task, hosts
+    from swatch.decorators import task, hosts
     def foo():
         print(env.host_string)
     foo = task(hosts("me@localhost")(foo))
@@ -172,7 +172,7 @@ def dict_contains(superset, subset):
         eq_(superset[key], value)
 
 
-class TestExecute(FabricTest):
+class TestExecute(swatchTest):
     @with_fakes
     def test_calls_task_function_objects(self):
         """
@@ -187,7 +187,7 @@ class TestExecute(FabricTest):
         """
         name = 'task1'
         commands = {name: Fake(callable=True, expect_call=True)}
-        with patched_context(fabric.state, 'commands', commands):
+        with patched_context(swatch.state, 'commands', commands):
             execute(name)
 
     @with_fakes
@@ -201,7 +201,7 @@ class TestExecute(FabricTest):
         mytask = MyTask()
         mytask.name = name
         commands = {name: mytask}
-        with patched_context(fabric.state, 'commands', commands):
+        with patched_context(swatch.state, 'commands', commands):
             execute(name)
 
     @aborts
@@ -280,7 +280,7 @@ class TestExecute(FabricTest):
         def command():
             eq_(env.command, name)
         task = Fake(callable=True, expect_call=True).calls(command)
-        with patched_context(fabric.state, 'commands', {name: task}):
+        with patched_context(swatch.state, 'commands', {name: task}):
             execute(name)
 
     @with_fakes
@@ -418,7 +418,7 @@ class TestExecute(FabricTest):
         execute(mytask)
 
 
-class TestExecuteEnvInteractions(FabricTest):
+class TestExecuteEnvInteractions(swatchTest):
     def set_network(self):
         # Don't update env.host/host_string/etc
         pass
@@ -558,7 +558,7 @@ class TestTaskDetails(unittest.TestCase):
             For reals.
             """
         try:
-            with patched_context(fabric.state, 'commands', {'mytask': mytask}):
+            with patched_context(swatch.state, 'commands', {'mytask': mytask}):
                 display_command('mytask')
         except SystemExit: # ugh
             pass

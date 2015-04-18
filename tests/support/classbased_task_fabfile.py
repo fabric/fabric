@@ -1,4 +1,4 @@
-from fabric import tasks
+from swatch import tasks
 
 class ClassBasedTask(tasks.Task):
     def run(self, *args, **kwargs):

@@ -17,17 +17,17 @@ from fudge import Fake, patched_context, clear_expectations, with_patched_object
 from nose.tools import raises
 from nose import SkipTest
 
-from fabric.context_managers import settings
-from fabric.state import env, output
-from fabric.sftp import SFTP
-import fabric.network
-from fabric.network import normalize, to_dict
+from swatch.context_managers import settings
+from swatch.state import env, output
+from swatch.sftp import SFTP
+import swatch.network
+from swatch.network import normalize, to_dict
 
 from server import PORT, PASSWORDS, USER, HOST
 from mock_streams import mock_streams
 
 
-class FabricTest(object):
+class swatchTest(object):
     """
     Nose-oriented test runner which wipes state.env and provides file helpers.
     """

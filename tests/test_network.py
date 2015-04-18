@@ -9,16 +9,16 @@ from nose.tools import with_setup, ok_, raises
 from fudge import (Fake, clear_calls, clear_expectations, patch_object, verify,
     with_patched_object, patched_context, with_fakes)
 
-from fabric.context_managers import settings, hide, show
-from fabric.network import (HostConnectionCache, join_host_strings, normalize,
+from swatch.context_managers import settings, hide, show
+from swatch.network import (HostConnectionCache, join_host_strings, normalize,
     denormalize, key_filenames, ssh)
-from fabric.io import output_loop
-import fabric.network  # So I can call patch_object correctly. Sigh.
-from fabric.state import env, output, _get_system_username
-from fabric.operations import run, sudo, prompt
-from fabric.tasks import execute
-from fabric.api import parallel
-from fabric import utils # for patching
+from swatch.io import output_loop
+import swatch.network  # So I can call patch_object correctly. Sigh.
+from swatch.state import env, output, _get_system_username
+from swatch.operations import run, sudo, prompt
+from swatch.tasks import execute
+from swatch.api import parallel
+from swatch import utils # for patching
 
 from utils import *
 from server import (server, PORT, RESPONSES, PASSWORDS, CLIENT_PRIVKEY, USER,
@@ -30,7 +30,7 @@ from server import (server, PORT, RESPONSES, PASSWORDS, CLIENT_PRIVKEY, USER,
 #
 
 
-class TestNetwork(FabricTest):
+class TestNetwork(swatchTest):
     def test_host_string_normalization(self):
         username = _get_system_username()
         for description, input, output_ in (
@@ -150,7 +150,7 @@ class TestNetwork(FabricTest):
     def check_connection_calls(host_strings, num_calls):
         # Clear Fudge call stack
         # Patch connect() with Fake obj set to expect num_calls calls
-        patched_connect = patch_object('fabric.network', 'connect',
+        patched_connect = patch_object('swatch.network', 'connect',
             Fake('connect', expect_call=True).times_called(num_calls)
         )
         try:
@@ -184,7 +184,7 @@ class TestNetwork(FabricTest):
         """
         hcc = HostConnectionCache()
         fake = Fake('connect', callable=True)
-        with patched_context('fabric.network', 'connect', fake):
+        with patched_context('swatch.network', 'connect', fake):
             for host_string in ('hostname', 'user@hostname',
                 'user@hostname:222'):
                 # Prime
@@ -530,7 +530,7 @@ result2
 def subtask():
     run("This should never execute")
 
-class TestConnections(FabricTest):
+class TestConnections(swatchTest):
     @aborts
     def test_should_abort_when_cannot_connect(self):
         """
@@ -551,7 +551,7 @@ class TestConnections(FabricTest):
 def parallel_subtask():
     run("This should never execute")
 
-class TestParallelConnections(FabricTest):
+class TestParallelConnections(swatchTest):
     @aborts
     def test_should_abort_when_cannot_connect(self):
         """
@@ -568,12 +568,12 @@ class TestParallelConnections(FabricTest):
             execute(parallel_subtask, hosts=['nope.nonexistent.com'])
 
 
-class TestSSHConfig(FabricTest):
+class TestSSHConfig(swatchTest):
     def env_setup(self):
         super(TestSSHConfig, self).env_setup()
         env.use_ssh_config = True
         env.ssh_config_path = support("ssh_config")
-        # Undo the changes FabricTest makes to env for server support
+        # Undo the changes swatchTest makes to env for server support
         env.user = env.local_user
         env.port = env.default_port
 
@@ -656,7 +656,7 @@ class TestSSHConfig(FabricTest):
             ok_(run("ls /simple").succeeded)
 
 
-class TestKeyFilenames(FabricTest):
+class TestKeyFilenames(swatchTest):
     def test_empty_everything(self):
         """
         No env.key_filename and no ssh_config = empty list

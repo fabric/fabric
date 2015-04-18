@@ -4,11 +4,11 @@ import os
 import fudge
 from fudge.inspector import arg
 
-from fabric.contrib import project
+from swatch.contrib import project
 
 
 class UploadProjectTestCase(unittest.TestCase):
-    """Test case for :func: `fabric.contrib.project.upload_project`."""
+    """Test case for :func: `swatch.contrib.project.upload_project`."""
 
     fake_tmp = "testtempfolder"
 

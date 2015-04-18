@@ -1,4 +1,4 @@
-from fabric.api import task, hosts, roles
+from swatch.api import task, hosts, roles
 
 
 @hosts('whatever')

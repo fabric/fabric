@@ -1,13 +1,14 @@
 """
-Current Fabric version constant plus version pretty-print method.
+Current swatch version constant plus version pretty-print method.
 
 This functionality is contained in its own module to prevent circular import
 problems with ``__init__.py`` (which is loaded by setup.py during installation,
 which in turn needs access to this version information.)
 """
+from __future__ import absolute_import
+from __future__ import print_function
 from subprocess import Popen, PIPE
 from os.path import abspath, dirname
-
 
 VERSION = (1, 11, 0, 'final', 0)
 
@@ -15,12 +16,10 @@ VERSION = (1, 11, 0, 'final', 0)
 def git_sha():
     loc = abspath(dirname(__file__))
     try:
-        p = Popen(
-            "cd \"%s\" && git log -1 --format=format:%%h" % loc,
-            shell=True,
-            stdout=PIPE,
-            stderr=PIPE
-        )
+        p = Popen("cd \"%s\" && git log -1 --format=format:%%h" % loc,
+                  shell=True,
+                  stdout=PIPE,
+                  stderr=PIPE)
         return p.communicate()[0]
     # OSError occurs on Unix-derived platforms lacking Popen's configured shell
     # default, /bin/sh. E.g. Android.
@@ -98,7 +97,8 @@ def get_version(form='short'):
             return versions
         raise TypeError('"%s" is not a valid form specifier.' % form)
 
+
 __version__ = get_version('short')
 
 if __name__ == "__main__":
-    print(get_version('all'))
+    print((get_version('all')))

@@ -1,76 +1,49 @@
 #!/usr/bin/env python
 
 from __future__ import with_statement
-
-import sys
-
 from setuptools import setup, find_packages
 
-from fabric.version import get_version
-
-
 with open('README.rst') as f:
-    readme = f.read()
-
-long_description = """
-To find out what's new in this version of Fabric, please see `the changelog
-<http://fabfile.org/changelog.html>`_.
-
-You can also install the `in-development version
-<https://github.com/fabric/fabric/tarball/master#egg=fabric-dev>`_ using
-pip, with `pip install fabric==dev`.
-
-----
-
-%s
-
-----
-
-For more information, please see the Fabric website or execute ``fab --help``.
-""" % (readme)
-
-if sys.version_info[:2] < (2, 6):
-    install_requires=['paramiko>=1.10,<1.13']
-else:
-    install_requires=['paramiko>=1.10']
-
+    README = f.read()
 
 setup(
-    name='Fabric',
-    version=get_version('short'),
-    description='Fabric is a simple, Pythonic tool for remote execution and deployment.',
-    long_description=long_description,
-    author='Jeff Forcier',
-    author_email='jeff@bitprophet.org',
-    url='http://fabfile.org',
-    packages=find_packages(),
+    name='fabric_swatch',
+    version='0.1.0',
+    description='Fabric-Swatch is a fork of swatch with the remote functionality and dependencies stripped out and added support for python3',
+    long_description=README,
+    author='Ryan Luckie',
+    author_email='rtluckie@gmail.com',
+    url='http://github.com/rtluckie/fabric-swatch',
+    packages=find_packages('.', exclude=('tests*', 'integration*')),
     test_suite='nose.collector',
     tests_require=['nose', 'fudge<1.0', 'jinja2'],
-    install_requires=install_requires,
-    entry_points={
-        'console_scripts': [
-            'fab = fabric.main:main',
-        ]
-    },
+    install_requires=['six'],
     classifiers=[
-          'Development Status :: 5 - Production/Stable',
-          'Environment :: Console',
-          'Intended Audience :: Developers',
-          'Intended Audience :: System Administrators',
-          'License :: OSI Approved :: BSD License',
-          'Operating System :: MacOS :: MacOS X',
-          'Operating System :: Unix',
-          'Operating System :: POSIX',
-          'Programming Language :: Python',
-          'Programming Language :: Python :: 2.5',
-          'Programming Language :: Python :: 2.6',
-          'Programming Language :: Python :: 2.7',
-          'Topic :: Software Development',
-          'Topic :: Software Development :: Build Tools',
-          'Topic :: Software Development :: Libraries',
-          'Topic :: Software Development :: Libraries :: Python Modules',
-          'Topic :: System :: Clustering',
-          'Topic :: System :: Software Distribution',
-          'Topic :: System :: Systems Administration',
+        'Development Status :: 3 - Alpha',
+        'Environment :: Console',
+        'Intended Audience :: Developers',
+        'Intended Audience :: System Administrators',
+        'License :: OSI Approved :: BSD License',
+        'Operating System :: MacOS :: MacOS X',
+        'Operating System :: Unix',
+        'Operating System :: POSIX',
+        'Programming Language :: Python',
+        'Programming Language :: Python :: 2.5',
+        'Programming Language :: Python :: 2.6',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.1',
+        'Programming Language :: Python :: 3.2',
+        'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: Implementation :: CPython',
+        'Programming Language :: Python :: Implementation :: PyPy',
+        'Topic :: Utilities',
+        'Topic :: Software Development',
+        'Topic :: Software Development :: Build Tools',
+        'Topic :: Software Development :: Libraries',
+        'Topic :: Software Development :: Libraries :: Python Modules',
+        'Topic :: System :: Software Distribution',
+        'Topic :: System :: Systems Administration',
     ],
 )

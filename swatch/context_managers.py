@@ -32,11 +32,15 @@ Context managers for use with the ``with`` statement.
     Finally, note that `~swatch.context_managers.settings` implements
     ``nested`` itself -- see its API doc for details.
 """
+from __future__ import absolute_import
 
-from contextlib import contextmanager, nested
+from contextlib import contextmanager
 
+from swatch.compat import ExitStack
 from swatch.state import output
 from swatch import state
+import six
+
 
 def _set_output(groups, which):
     """
@@ -123,7 +127,7 @@ def _setenv(variables):
     clean_revert = variables.pop('clean_revert', False)
     previous = {}
     new = []
-    for key, value in variables.iteritems():
+    for key, value in six.iteritems(variables):
         if key in state.env:
             previous[key] = state.env[key]
         else:
@@ -133,7 +137,7 @@ def _setenv(variables):
         yield
     finally:
         if clean_revert:
-            for key, value in variables.iteritems():
+            for key, value in six.iteritems(variables):
                 # If the current env value for this key still matches the
                 # value we set it to beforehand, we are OK to revert it to the
                 # pre-block value.
@@ -231,7 +235,11 @@ def settings(*args, **kwargs):
     managers = list(args)
     if kwargs:
         managers.append(_setenv(kwargs))
-    return nested(*managers)
+    # return nested(*managers)
+    with ExitStack() as managers_stack:
+        managers = [managers_stack.enter_context(manager)
+                    for manager in managers]
+        return managers
 
 
 def cd(path):

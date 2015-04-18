@@ -4,6 +4,8 @@ Functions to be used in fabfiles and other non-core code, such as run()/sudo().
 """
 
 from __future__ import with_statement
+from __future__ import absolute_import
+from __future__ import print_function
 
 import os
 import os.path
@@ -12,44 +14,14 @@ import subprocess
 from contextlib import contextmanager
 
 from swatch.context_managers import (quiet as quiet_manager, warn_only as
-                                  warn_only_manager)
+                                     warn_only_manager)
+
 from swatch.state import output
-from swatch.utils import (abort, error, handle_prompt_abort, indent, warn)
+from swatch.utils import (abort, error, handle_prompt_abort, indent, warn,
+                          shell_escape)
 from swatch.state import env, win32
 from swatch.utils import AttributeString
-
-
-def _shell_escape(string):
-    """
-    Escape double quotes, backticks and dollar signs in given ``string``.
-
-    For example::
-
-        >>> _shell_escape('abc$')
-        'abc\\\\$'
-        >>> _shell_escape('"')
-        '\\\\"'
-    """
-    for char in ('"', '$', '`'):
-        string = string.replace(char, '\%s' % char)
-    return string
-
-
-class _AttributeString(str):
-    """
-    Simple string subclass to allow arbitrary attribute access.
-    """
-
-    @property
-    def stdout(self):
-        return str(self)
-
-
-class _AttributeList(list):
-    """
-    Like _AttributeString, but for lists.
-    """
-    pass
+from six.moves import input
 
 
 # Can't wait till Python versions supporting 'def func(*args, foo=bar)' become
@@ -83,10 +55,9 @@ def require(*keys, **kwargs):
         Allow iterable ``provided_by`` values instead of just single values.
     """
     # If all keys exist and are non-empty, we're good, so keep going.
-    missing_keys = filter(lambda x: x not in env or (
-        x in env and isinstance(env[x],
-                                (dict, list, tuple, set)) and not env[x]),
-                          keys)
+    missing_keys = [x for x in keys
+                    if x not in env or (x in env and isinstance(
+                        env[x], (dict, list, tuple, set)) and not env[x])]
     if not missing_keys:
         return
     # Pluralization
@@ -201,7 +172,7 @@ def prompt(text, key=None, default='', validate=None):
     value = None
     while value is None:
         # Get input
-        value = raw_input(prompt_str) or default
+        value = eval(input(prompt_str)) or default
         # Handle validation
         if validate:
             # Callable
@@ -210,11 +181,11 @@ def prompt(text, key=None, default='', validate=None):
                 # fails.
                 try:
                     value = validate(value)
-                except Exception, e:
+                except Exception as e:
                     # Reset value so we stay in the loop
                     value = None
                     print("Validation failed for the following reason:")
-                    print(indent(e.message) + "\n")
+                    print((indent(e.message) + "\n"))
             # String / regex must match and will be empty if validation fails.
             else:
                 # Need to transform regex into full-matching one if it's not.
@@ -224,8 +195,9 @@ def prompt(text, key=None, default='', validate=None):
                     validate += r'$'
                 result = re.findall(validate, value)
                 if not result:
-                    print("Regular expression validation failed: '%s' does not match '%s'\n"
-                          % (value, validate))
+                    print((
+                        "Regular expression validation failed: '%s' does not match '%s'\n"
+                        % (value, validate)))
                     # Reset value so we stay in the loop
                     value = None
     # At this point, value must be valid, so update env if necessary
@@ -238,7 +210,6 @@ def prompt(text, key=None, default='', validate=None):
             % (key, previous_value, value))
     # And return the value, too, just in case someone finds that useful.
     return value
-
 
 
 def _sudo_prefix_argument(argument, value):
@@ -279,7 +250,7 @@ def _shell_wrap(command, shell_escape, shell=True, sudo_prefix=None):
     if shell:
         shell = env.shell + " "
         if shell_escape:
-            command = _shell_escape(command)
+            command = shell_escape(command)
         command = '"%s"' % command
     else:
         shell = ""
@@ -349,105 +320,14 @@ def _prefix_env_vars(command, local=False):
         else:
             exp_cmd = 'export '
 
-        exports = ' '.join('%s%s="%s"' % (set_cmd, k, v
-                                          if k == 'PATH' else _shell_escape(v))
-                           for k, v in env_vars.iteritems())
+        exports = ' '.join('%s%s="%s"' % (set_cmd, k, v if k == 'PATH' else
+                                          shell_escape(v))
+                           for k, v in six.iteritems(env_vars))
         shell_env_str = '%s%s && ' % (exp_cmd, exports)
     else:
         shell_env_str = ''
 
     return shell_env_str + command
-
-
-
-@contextmanager
-def _noop():
-    yield
-
-
-def _run_command(command,
-                 shell=True,
-                 pty=True,
-                 combine_stderr=True,
-                 sudo=False,
-                 user=None,
-                 quiet=False,
-                 warn_only=False,
-                 stdout=None,
-                 stderr=None,
-                 group=None,
-                 timeout=None,
-                 shell_escape=None):
-    """
-    Underpinnings of `run` and `sudo`. See their docstrings for more info.
-    """
-    manager = _noop
-    if warn_only:
-        manager = warn_only_manager
-    # Quiet's behavior is a superset of warn_only's, so it wins.
-    if quiet:
-        manager = quiet_manager
-    with manager():
-        # Set up new var so original argument can be displayed verbatim later.
-        given_command = command
-
-        # Check if shell_escape has been overridden in env
-        if shell_escape is None:
-            shell_escape = env.get('shell_escape', True)
-
-        # Handle context manager modifications, and shell wrapping
-        wrapped_command = _shell_wrap(
-            _prefix_commands(_prefix_env_vars(command), 'remote'),
-            shell_escape, shell, _sudo_prefix(user, group) if sudo else None)
-        # Execute info line
-        which = 'sudo' if sudo else 'run'
-        if output.debug:
-            print("[%s] %s: %s" % (env.host_string, which, wrapped_command))
-        elif output.running:
-            print("[%s] %s: %s" % (env.host_string, which, given_command))
-
-        # Actual execution, stdin/stdout/stderr handling, and termination
-        result_stdout, result_stderr, status = _execute(
-            channel=default_channel(),
-            command=wrapped_command,
-            pty=pty,
-            combine_stderr=combine_stderr,
-            invoke_shell=False,
-            stdout=stdout,
-            stderr=stderr,
-            timeout=timeout)
-
-        # Assemble output string
-        out = _AttributeString(result_stdout)
-        err = _AttributeString(result_stderr)
-
-        # Error handling
-        out.failed = False
-        out.command = given_command
-        out.real_command = wrapped_command
-        if status not in env.ok_ret_codes:
-            out.failed = True
-            msg = "%s() received nonzero return code %s while executing" % (
-                which, status
-            )
-            if env.warn_only:
-                msg += " '%s'!" % given_command
-            else:
-                msg += "!\n\nRequested: %s\nExecuted: %s" % (given_command,
-                                                             wrapped_command)
-            error(message=msg, stdout=out, stderr=err)
-
-        # Attach return code to output string so users who have set things to
-        # warn only, can inspect the error code.
-        out.return_code = status
-
-        # Convenience mirror of .failed
-        out.succeeded = not out.failed
-
-        # Attach stderr for anyone interested in that.
-        out.stderr = err
-
-        return out
 
 
 def local(command, capture=False, shell=None):
@@ -503,9 +383,9 @@ def local(command, capture=False, shell=None):
     with_env = _prefix_env_vars(command, local=True)
     wrapped_command = _prefix_commands(with_env, 'local')
     if output.debug:
-        print("[localhost] local: %s" % (wrapped_command))
+        print(("[localhost] local: %s" % (wrapped_command)))
     elif output.running:
-        print("[localhost] local: " + given_command)
+        print(("[localhost] local: " + given_command))
     # Tie in to global output controls as best we can; our capture argument
     # takes precedence over the output settings.
     dev_null = None
@@ -524,7 +404,8 @@ def local(command, capture=False, shell=None):
                              stdout=out_stream,
                              stderr=err_stream,
                              executable=shell,
-                             close_fds=(not win32))
+                             close_fds=(not win32),
+                             universal_newlines=True)
         (stdout, stderr) = p.communicate()
     finally:
         if dev_null is not None:
@@ -533,7 +414,7 @@ def local(command, capture=False, shell=None):
     out = AttributeString(stdout.strip() if stdout else "")
     err = AttributeString(stderr.strip() if stderr else "")
 
-    #good
+    # good
     out.command = given_command
     out.real_command = wrapped_command
     out.failed = False
@@ -542,7 +423,8 @@ def local(command, capture=False, shell=None):
     if p.returncode not in env.ok_ret_codes:
         out.failed = True
         msg = "local() encountered an error (return code %s) while executing '%s'" % (
-            p.returncode, command)
+            p.returncode, command
+        )
         error(message=msg, stdout=out, stderr=err)
     out.succeeded = not out.failed
     # If we were capturing, this will be a string; otherwise it will be None.

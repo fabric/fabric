@@ -2,8 +2,8 @@ from __future__ import with_statement
 
 from nose.tools import eq_
 
-from fabric.io import OutputLooper
-from fabric.context_managers import settings
+from swatch.io import OutputLooper
+from swatch.context_managers import settings
 
 
 def test_request_prompts():

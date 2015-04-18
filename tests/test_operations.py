@@ -1,5 +1,5 @@
 from __future__ import with_statement
-
+import six
 from contextlib import nested
 from StringIO import StringIO
 
@@ -8,13 +8,13 @@ from fudge import with_fakes, Fake
 from fudge.inspector import arg as fudge_arg
 from paramiko.sftp_client import SFTPClient  # for patching
 
-from fabric.state import env, output
-from fabric.operations import require, prompt, _sudo_prefix, _shell_wrap, \
+from swatch.state import env, output
+from swatch.operations import require, prompt, _sudo_prefix, _shell_wrap, \
     _shell_escape
-from fabric.api import get, put, hide, show, cd, lcd, local, run, sudo, quiet
-from fabric.exceptions import CommandTimeout
+from swatch.api import get, put, hide, show, cd, lcd, local, run, sudo, quiet
+from swatch.exceptions import CommandTimeout
 
-from fabric.decorators import with_settings
+from swatch.decorators import with_settings
 from utils import *
 from server import (server, PORT, RESPONSES, FILES, PASSWORDS, CLIENT_PRIVKEY,
     USER, CLIENT_PRIVKEY_PASSPHRASE)
@@ -303,7 +303,7 @@ def test_shell_escape_escapes_backticks():
     eq_(_shell_escape(cmd), "touch test.pid && kill \`cat test.pid\`")
 
 
-class TestCombineStderr(FabricTest):
+class TestCombineStderr(swatchTest):
     @server()
     def test_local_none_global_true(self):
         """
@@ -350,7 +350,7 @@ class TestCombineStderr(FabricTest):
         eq_("stderr", r.stderr)
 
 
-class TestQuietAndWarnKwargs(FabricTest):
+class TestQuietAndWarnKwargs(swatchTest):
     @server(responses={'wat': ["", "", 1]})
     def test_quiet_implies_warn_only(self):
         # Would raise an exception if warn_only was False
@@ -375,7 +375,7 @@ class TestQuietAndWarnKwargs(FabricTest):
         assert sys.stdout.getvalue() != ""
 
 
-class TestMultipleOKReturnCodes(FabricTest):
+class TestMultipleOKReturnCodes(swatchTest):
     @server(responses={'no srsly its ok': ['', '', 1]})
     def test_expand_to_include_1(self):
         with settings(quiet(), ok_ret_codes=[0, 1]):
@@ -385,7 +385,7 @@ class TestMultipleOKReturnCodes(FabricTest):
 slow_server = server(responses={'slow': ['', '', 0, 3]})
 slow = lambda x: slow_server(raises(CommandTimeout)(x))
 
-class TestRun(FabricTest):
+class TestRun(swatchTest):
     """
     @server-using generic run()/sudo() tests
     """
@@ -416,7 +416,7 @@ class TestRun(FabricTest):
 # get() and put()
 #
 
-class TestFileTransfers(FabricTest):
+class TestFileTransfers(swatchTest):
     #
     # get()
     #
@@ -744,7 +744,7 @@ class TestFileTransfers(FabricTest):
             name, fudge_arg.any_value())
 
         with hide('everything'):
-            with patched_context('fabric.operations', '_run_command', fake_run):
+            with patched_context('swatch.operations', '_run_command', fake_run):
                 with patched_context(SFTPClient, 'get', fake_get):
                     retval = get('/etc/apache2/apache2.conf', self.path(), use_sudo=True)
                     # check that the downloaded file has the same name as the one requested
@@ -771,7 +771,7 @@ class TestFileTransfers(FabricTest):
             '/tmp/%s' % name, fudge_arg.any_value())
 
         with hide('everything'):
-            with patched_context('fabric.operations', '_run_command', fake_run):
+            with patched_context('swatch.operations', '_run_command', fake_run):
                 with patched_context(SFTPClient, 'get', fake_get):
                     retval = get('/etc/apache2/apache2.conf', self.path(), use_sudo=True, temp_dir="/tmp")
                     # check that the downloaded file has the same name as the one requested
@@ -938,7 +938,7 @@ class TestFileTransfers(FabricTest):
 
         local_path = self.mkfile('foobar.txt', "baz")
         with hide('everything'):
-            with patched_context('fabric.operations', '_run_command', fake_run):
+            with patched_context('swatch.operations', '_run_command', fake_run):
                 with patched_context(SFTPClient, 'put', fake_put):
                     retval = put(local_path, "/", use_sudo=True)
                     # check that the downloaded file has the same name as the one requested
@@ -959,7 +959,7 @@ class TestFileTransfers(FabricTest):
 
         local_path = self.mkfile('foobar.txt', "baz")
         with hide('everything'):
-            with patched_context('fabric.operations', '_run_command', fake_run):
+            with patched_context('swatch.operations', '_run_command', fake_run):
                 with patched_context(SFTPClient, 'put', fake_put):
                     retval = put(local_path, "/", use_sudo=True, temp_dir='/tmp/')
                     # check that the downloaded file has the same name as the one requested
@@ -1090,7 +1090,7 @@ def test_local_output_and_capture():
                     del local.description
 
 
-class TestRunSudoReturnValues(FabricTest):
+class TestRunSudoReturnValues(swatchTest):
     @server()
     def test_returns_command_given(self):
         """

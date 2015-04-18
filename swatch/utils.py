@@ -1,3 +1,7 @@
+from __future__ import absolute_import
+import six
+
+
 class AttributeString(str):
     """
     Simple string subclass to allow arbitrary attribute access.
@@ -124,7 +128,7 @@ from traceback import format_exc
 
 
 def _encode(msg, stream):
-    if isinstance(msg, unicode) and hasattr(
+    if isinstance(msg, six.text_type) and hasattr(
         stream, 'encoding') and not stream.encoding is None:
         return msg.encode(stream.encoding)
     else:
@@ -375,3 +379,19 @@ def apply_lcwd(path, env):
     if not os.path.isabs(path) and env.lcwd:
         path = os.path.join(env.lcwd, path)
     return path
+
+
+def shell_escape(string):
+    """
+    Escape double quotes, backticks and dollar signs in given ``string``.
+
+    For example::
+
+        >>> shell_escape('abc$')
+        'abc\\\\$'
+        >>> shell_escape('"')
+        '\\\\"'
+    """
+    for char in ('"', '$', '`'):
+        string = string.replace(char, '\%s' % char)
+    return string

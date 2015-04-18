@@ -1,4 +1,5 @@
 from __future__ import with_statement
+from __future__ import absolute_import
 
 import sys
 import time
@@ -9,6 +10,7 @@ from select import select
 from swatch.state import env, output, win32
 from swatch.utils import RingBuffer
 from swatch.exceptions import CommandTimeout
+import six
 
 if win32:
     import msvcrt
@@ -37,8 +39,8 @@ class OutputLooper(object):
         self.read_func = getattr(chan, attr)
         self.prefix = "[%s] %s: " % (env.host_string, "out" if attr == 'recv'
                                      else "err")
-        self.printing = getattr(output, 'stdout' if
-                                (attr == 'recv') else 'stderr')
+        self.printing = getattr(output, 'stdout' if (attr == 'recv') else
+                                'stderr')
         self.linewise = (env.linewise or env.parallel)
         self.reprompt = False
         self.read_size = 4096
@@ -178,7 +180,7 @@ class OutputLooper(object):
         Iterate through the request prompts dict and return the response and
         original request if we find a match
         """
-        for tup in env.prompts.iteritems():
+        for tup in six.iteritems(env.prompts):
             if _endswith(self.capture, tup[0]):
                 return tup
         return None, None
