@@ -1,5 +1,5 @@
 """
-Custom Fabric exception classes.
+Custom swatch exception classes.
 
 Most are simply distinct Exception subclasses for purposes of message-passing
 (though typically still in actual error situations.)
@@ -18,9 +18,8 @@ class NetworkError(Exception):
         return self.message or ""
 
     def __repr__(self):
-        return "%s(%s) => %r" % (
-            self.__class__.__name__, self.message, self.wrapped
-        )
+        return "%s(%s) => %r" % (self.__class__.__name__, self.message,
+                                 self.wrapped)
 
 
 class CommandTimeout(Exception):

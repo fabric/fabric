@@ -1,3 +1,3 @@
 """
-See `fabric.api` for the publically importable API.
+See `swatch.api` for the publically importable API.
 """

@@ -6,13 +6,9 @@ import re
 import socket
 from select import select
 
-from fabric.state import env, output, win32
-from fabric.auth import get_password, set_password
-import fabric.network
-from fabric.network import ssh, normalize
-from fabric.utils import RingBuffer
-from fabric.exceptions import CommandTimeout
-
+from swatch.state import env, output, win32
+from swatch.utils import RingBuffer
+from swatch.exceptions import CommandTimeout
 
 if win32:
     import msvcrt
@@ -39,11 +35,10 @@ class OutputLooper(object):
         self.capture = capture
         self.timeout = timeout
         self.read_func = getattr(chan, attr)
-        self.prefix = "[%s] %s: " % (
-            env.host_string,
-            "out" if attr == 'recv' else "err"
-        )
-        self.printing = getattr(output, 'stdout' if (attr == 'recv') else 'stderr')
+        self.prefix = "[%s] %s: " % (env.host_string, "out" if attr == 'recv'
+                                     else "err")
+        self.printing = getattr(output, 'stdout' if
+                                (attr == 'recv') else 'stderr')
         self.linewise = (env.linewise or env.parallel)
         self.reprompt = False
         self.read_size = 4096
@@ -62,10 +57,10 @@ class OutputLooper(object):
         """
         Loop, reading from <chan>.<attr>(), writing to <stream> and buffering to <capture>.
 
-        Will raise `~fabric.exceptions.CommandTimeout` if network timeouts
+        Will raise `~swatch.exceptions.CommandTimeout` if network timeouts
         continue to be seen past the defined ``self.timeout`` threshold.
         (Timeouts before then are considered part of normal short-timeout fast
-        network reading; see Fabric issue #733 for background.)
+        network reading; see swatch issue #733 for background.)
         """
         # Internal capture-buffer-like buffer, used solely for state keeping.
         # Unlike 'capture', nothing is ever purged from this.
@@ -159,8 +154,9 @@ class OutputLooper(object):
                         self.chan.sendall(str(response) + '\n')
                     else:
                         prompt = _endswith(self.capture, env.sudo_prompt)
-                        try_again = (_endswith(self.capture, env.again_prompt + '\n')
-                            or _endswith(self.capture, env.again_prompt + '\r\n'))
+                        try_again = (
+                            _endswith(self.capture, env.again_prompt + '\n') or
+                            _endswith(self.capture, env.again_prompt + '\r\n'))
                         if prompt:
                             self.prompt()
                         elif try_again:
@@ -170,41 +166,6 @@ class OutputLooper(object):
         # prefix.
         if self.prefix and "".join(self.write_buffer) == self.prefix:
             self._flush('\n')
-
-    def prompt(self):
-        # Obtain cached password, if any
-        password = get_password(*normalize(env.host_string))
-        # Remove the prompt itself from the capture buffer. This is
-        # backwards compatible with Fabric 0.9.x behavior; the user
-        # will still see the prompt on their screen (no way to avoid
-        # this) but at least it won't clutter up the captured text.
-        del self.capture[-1 * len(env.sudo_prompt):]
-        # If the password we just tried was bad, prompt the user again.
-        if (not password) or self.reprompt:
-            # Print the prompt and/or the "try again" notice if
-            # output is being hidden. In other words, since we need
-            # the user's input, they need to see why we're
-            # prompting them.
-            if not self.printing:
-                self._flush(self.prefix)
-                if self.reprompt:
-                    self._flush(env.again_prompt + '\n' + self.prefix)
-                self._flush(env.sudo_prompt)
-            # Prompt for, and store, password. Give empty prompt so the
-            # initial display "hides" just after the actually-displayed
-            # prompt from the remote end.
-            self.chan.input_enabled = False
-            password = fabric.network.prompt_for_password(
-                prompt=" ", no_colon=True, stream=self.stream
-            )
-            self.chan.input_enabled = True
-            # Update env.password, env.passwords if necessary
-            user, host, port = normalize(env.host_string)
-            set_password(user, host, port, password)
-            # Reset reprompt flag
-            self.reprompt = False
-        # Send current password down the pipe
-        self.chan.sendall(password + '\n')
 
     def try_again(self):
         # Remove text from capture buffer
@@ -240,4 +201,3 @@ def input_loop(chan, using_pty):
                 # output level, don't want it to be accidentally hidden
                 sys.stdout.write(byte)
                 sys.stdout.flush()
-        time.sleep(ssh.io_sleep)

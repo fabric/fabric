@@ -1,3 +1,118 @@
+class AttributeString(str):
+    """
+    Simple string subclass to allow arbitrary attribute access.
+    """
+
+    @property
+    def stdout(self):
+        return str(self)
+
+
+class AttributeList(list):
+    """
+    Like _AttributeString, but for lists.
+    """
+    pass
+
+
+class AttributeDict(dict):
+    """
+    Dictionary subclass enabling attribute lookup/assignment of keys/values.
+
+    For example::
+
+        >>> m = _AttributeDict({'foo': 'bar'})
+        >>> m.foo
+        'bar'
+        >>> m.foo = 'not bar'
+        >>> m['foo']
+        'not bar'
+
+    ``_AttributeDict`` objects also provide ``.first()`` which acts like
+    ``.get()`` but accepts multiple keys as arguments, and returns the value of
+    the first hit, e.g.::
+
+        >>> m = _AttributeDict({'foo': 'bar', 'biz': 'baz'})
+        >>> m.first('wrong', 'incorrect', 'foo', 'biz')
+        'bar'
+
+    """
+
+    def __getattr__(self, key):
+        try:
+            return self[key]
+        except KeyError:
+            # to conform with __getattr__ spec
+            raise AttributeError(key)
+
+    def __setattr__(self, key, value):
+        self[key] = value
+
+    def first(self, *names):
+        for name in names:
+            value = self.get(name)
+            if value:
+                return value
+
+
+class AliasDict(AttributeDict):
+    """
+    `_AttributeDict` subclass that allows for "aliasing" of keys to other keys.
+
+    Upon creation, takes an ``aliases`` mapping, which should map alias names
+    to lists of key names. Aliases do not store their own value, but instead
+    set (override) all mapped keys' values. For example, in the following
+    `_AliasDict`, calling ``mydict['foo'] = True`` will set the values of
+    ``mydict['bar']``, ``mydict['biz']`` and ``mydict['baz']`` all to True::
+
+        mydict = _AliasDict(
+            {'biz': True, 'baz': False},
+            aliases={'foo': ['bar', 'biz', 'baz']}
+        )
+
+    Because it is possible for the aliased values to be in a heterogenous
+    state, reading aliases is not supported -- only writing to them is allowed.
+    This also means they will not show up in e.g. ``dict.keys()``.
+
+    ..note::
+
+        Aliases are recursive, so you may refer to an alias within the key list
+        of another alias. Naturally, this means that you can end up with
+        infinite loops if you're not careful.
+
+    `_AliasDict` provides a special function, `expand_aliases`, which will take
+    a list of keys as an argument and will return that list of keys with any
+    aliases expanded. This function will **not** dedupe, so any aliases which
+    overlap will result in duplicate keys in the resulting list.
+    """
+
+    def __init__(self, arg=None, aliases=None):
+        init = super(AliasDict, self).__init__
+        if arg is not None:
+            init(arg)
+        else:
+            init()
+        # Can't use super() here because of _AttributeDict's setattr override
+        dict.__setattr__(self, 'aliases', aliases)
+
+    def __setitem__(self, key, value):
+        # Attr test required to not blow up when deepcopy'd
+        if hasattr(self, 'aliases') and key in self.aliases:
+            for aliased in self.aliases[key]:
+                self[aliased] = value
+        else:
+            return super(AliasDict, self).__setitem__(key, value)
+
+    def expand_aliases(self, keys):
+        ret = []
+        for key in keys:
+            if key in self.aliases:
+                ret.extend(self.expand_aliases(self.aliases[key]))
+            else:
+                ret.append(key)
+        return ret
+
+
 """
 Internal subroutines for e.g. aborting execution with an error message,
 or performing indenting on multiline output.
@@ -9,7 +124,8 @@ from traceback import format_exc
 
 
 def _encode(msg, stream):
-    if isinstance(msg, unicode) and hasattr(stream, 'encoding') and not stream.encoding is None:
+    if isinstance(msg, unicode) and hasattr(
+        stream, 'encoding') and not stream.encoding is None:
         return msg.encode(stream.encoding)
     else:
         return str(msg)
@@ -37,9 +153,10 @@ def abort(msg):
     .. _sys.exit: http://docs.python.org/library/sys.html#sys.exit
     .. _SystemExit: http://docs.python.org/library/exceptions.html#exceptions.SystemExit
     """
-    from fabric.state import output, env
+    from swatch.state import output, env
+
     if not env.colorize_errors:
-        red  = lambda x: x
+        red = lambda x: x
     else:
         from colors import red
 
@@ -57,12 +174,12 @@ def warn(msg):
     """
     Print warning message, but do not abort execution.
 
-    This function honors Fabric's :doc:`output controls
+    This function honors swatch's :doc:`output controls
     <../../usage/output_controls>` and will print the given ``msg`` to stderr,
     provided that the ``warnings`` output level (which is active by default) is
     turned on.
     """
-    from fabric.state import output, env
+    from swatch.state import output, env
 
     if not env.colorize_errors:
         magenta = lambda x: x
@@ -104,7 +221,7 @@ def indent(text, spaces=4, strip=False):
 
 def puts(text, show_prefix=None, end="\n", flush=False):
     """
-    An alias for ``print`` whose output is managed by Fabric's output controls.
+    An alias for ``print`` whose output is managed by swatch's output controls.
 
     In other words, this function simply prints to ``sys.stdout``, but will
     hide its output if the ``user`` :doc:`output level
@@ -121,9 +238,10 @@ def puts(text, show_prefix=None, end="\n", flush=False):
     ``flush=True``.
 
     .. versionadded:: 0.9.2
-    .. seealso:: `~fabric.utils.fastprint`
+    .. seealso:: `~swatch.utils.fastprint`
     """
-    from fabric.state import output, env
+    from swatch.state import output, env
+
     if show_prefix is None:
         show_prefix = env.output_prefix
     if output.user:
@@ -139,7 +257,7 @@ def fastprint(text, show_prefix=False, end="", flush=True):
     """
     Print ``text`` immediately, without any prefix or line ending.
 
-    This function is simply an alias of `~fabric.utils.puts` with different
+    This function is simply an alias of `~swatch.utils.puts` with different
     default argument values, such that the ``text`` is printed without any
     embellishment and immediately flushed.
 
@@ -151,162 +269,28 @@ def fastprint(text, show_prefix=False, end="", flush=True):
 
     .. note::
 
-        Since `~fabric.utils.fastprint` calls `~fabric.utils.puts`, it is
+        Since `~swatch.utils.fastprint` calls `~swatch.utils.puts`, it is
         likewise subject to the ``user`` :doc:`output level
         </usage/output_controls>`.
 
     .. versionadded:: 0.9.2
-    .. seealso:: `~fabric.utils.puts`
+    .. seealso:: `~swatch.utils.puts`
     """
     return puts(text=text, show_prefix=show_prefix, end=end, flush=flush)
 
 
 def handle_prompt_abort(prompt_for):
-    import fabric.state
+    import swatch.state
+
     reason = "Needed to prompt for %s (host: %s), but %%s" % (
-        prompt_for, fabric.state.env.host_string
+        prompt_for, swatch.state.env.host_string
     )
     # Explicit "don't prompt me bro"
-    if fabric.state.env.abort_on_prompts:
+    if swatch.state.env.abort_on_prompts:
         abort(reason % "abort-on-prompts was set to True")
     # Implicit "parallel == stdin/prompts have ambiguous target"
-    if fabric.state.env.parallel:
+    if swatch.state.env.parallel:
         abort(reason % "input would be ambiguous in parallel mode")
-
-
-class _AttributeDict(dict):
-    """
-    Dictionary subclass enabling attribute lookup/assignment of keys/values.
-
-    For example::
-
-        >>> m = _AttributeDict({'foo': 'bar'})
-        >>> m.foo
-        'bar'
-        >>> m.foo = 'not bar'
-        >>> m['foo']
-        'not bar'
-
-    ``_AttributeDict`` objects also provide ``.first()`` which acts like
-    ``.get()`` but accepts multiple keys as arguments, and returns the value of
-    the first hit, e.g.::
-
-        >>> m = _AttributeDict({'foo': 'bar', 'biz': 'baz'})
-        >>> m.first('wrong', 'incorrect', 'foo', 'biz')
-        'bar'
-
-    """
-    def __getattr__(self, key):
-        try:
-            return self[key]
-        except KeyError:
-            # to conform with __getattr__ spec
-            raise AttributeError(key)
-
-    def __setattr__(self, key, value):
-        self[key] = value
-
-    def first(self, *names):
-        for name in names:
-            value = self.get(name)
-            if value:
-                return value
-
-
-class _AliasDict(_AttributeDict):
-    """
-    `_AttributeDict` subclass that allows for "aliasing" of keys to other keys.
-
-    Upon creation, takes an ``aliases`` mapping, which should map alias names
-    to lists of key names. Aliases do not store their own value, but instead
-    set (override) all mapped keys' values. For example, in the following
-    `_AliasDict`, calling ``mydict['foo'] = True`` will set the values of
-    ``mydict['bar']``, ``mydict['biz']`` and ``mydict['baz']`` all to True::
-
-        mydict = _AliasDict(
-            {'biz': True, 'baz': False},
-            aliases={'foo': ['bar', 'biz', 'baz']}
-        )
-
-    Because it is possible for the aliased values to be in a heterogenous
-    state, reading aliases is not supported -- only writing to them is allowed.
-    This also means they will not show up in e.g. ``dict.keys()``.
-
-    ..note::
-
-        Aliases are recursive, so you may refer to an alias within the key list
-        of another alias. Naturally, this means that you can end up with
-        infinite loops if you're not careful.
-
-    `_AliasDict` provides a special function, `expand_aliases`, which will take
-    a list of keys as an argument and will return that list of keys with any
-    aliases expanded. This function will **not** dedupe, so any aliases which
-    overlap will result in duplicate keys in the resulting list.
-    """
-    def __init__(self, arg=None, aliases=None):
-        init = super(_AliasDict, self).__init__
-        if arg is not None:
-            init(arg)
-        else:
-            init()
-        # Can't use super() here because of _AttributeDict's setattr override
-        dict.__setattr__(self, 'aliases', aliases)
-
-    def __setitem__(self, key, value):
-        # Attr test required to not blow up when deepcopy'd
-        if hasattr(self, 'aliases') and key in self.aliases:
-            for aliased in self.aliases[key]:
-                self[aliased] = value
-        else:
-            return super(_AliasDict, self).__setitem__(key, value)
-
-    def expand_aliases(self, keys):
-        ret = []
-        for key in keys:
-            if key in self.aliases:
-                ret.extend(self.expand_aliases(self.aliases[key]))
-            else:
-                ret.append(key)
-        return ret
-
-
-def _pty_size():
-    """
-    Obtain (rows, cols) tuple for sizing a pty on the remote end.
-
-    Defaults to 80x24 (which is also the 'ssh' lib's default) but will detect
-    local (stdout-based) terminal window size on non-Windows platforms.
-    """
-    from fabric.state import win32
-    if not win32:
-        import fcntl
-        import termios
-        import struct
-
-    default_rows, default_cols = 24, 80
-    rows, cols = default_rows, default_cols
-    if not win32 and isatty(sys.stdout):
-        # We want two short unsigned integers (rows, cols)
-        fmt = 'HH'
-        # Create an empty (zeroed) buffer for ioctl to map onto. Yay for C!
-        buffer = struct.pack(fmt, 0, 0)
-        # Call TIOCGWINSZ to get window size of stdout, returns our filled
-        # buffer
-        try:
-            result = fcntl.ioctl(sys.stdout.fileno(), termios.TIOCGWINSZ,
-                buffer)
-            # Unpack buffer back into Python data types
-            rows, cols = struct.unpack(fmt, result)
-            # Fall back to defaults if TIOCGWINSZ returns unreasonable values
-            if rows == 0:
-                rows = default_rows
-            if cols == 0:
-                cols = default_cols
-        # Deal with e.g. sys.stdout being monkeypatched, such as in testing.
-        # Or termios not having a TIOCGWINSZ.
-        except AttributeError:
-            pass
-    return rows, cols
 
 
 def error(message, func=None, exception=None, stdout=None, stderr=None):
@@ -322,11 +306,12 @@ def error(message, func=None, exception=None, stdout=None, stderr=None):
     If ``stdout`` and/or ``stderr`` are given, they are assumed to be strings
     to be printed.
     """
-    import fabric.state
+    import swatch.state
+
     if func is None:
-        func = fabric.state.env.warn_only and warn or abort
+        func = swatch.state.env.warn_only and warn or abort
     # If exception printing is on, append a traceback to the message
-    if fabric.state.output.exceptions or fabric.state.output.debug:
+    if swatch.state.output.exceptions or swatch.state.output.debug:
         exception_message = format_exc()
         if exception_message:
             message += "\n\n" + exception_message
@@ -342,21 +327,11 @@ def error(message, func=None, exception=None, stdout=None, stderr=None):
             underlying = exception
         message += "\n\nUnderlying exception:\n" + indent(str(underlying))
     if func is abort:
-        if stdout and not fabric.state.output.stdout:
+        if stdout and not swatch.state.output.stdout:
             message += _format_error_output("Standard output", stdout)
-        if stderr and not fabric.state.output.stderr:
+        if stderr and not swatch.state.output.stderr:
             message += _format_error_output("Standard error", stderr)
     return func(message)
-
-
-def _format_error_output(header, body):
-    term_width = _pty_size()[1]
-    header_side_length = (term_width - (len(header) + 2)) / 2
-    mark = "="
-    side = mark * header_side_length
-    return "\n\n%s %s %s\n\n%s\n\n%s" % (
-        side, header, side, body, mark * term_width
-    )
 
 
 # TODO: replace with collections.deque(maxlen=xxx) in Python 2.6

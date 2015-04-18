@@ -29,23 +29,14 @@ Context managers for use with the ``with`` statement.
         with nested(cd('/path/to/app'), prefix('workon myvenv')):
             ...
 
-    Finally, note that `~fabric.context_managers.settings` implements
+    Finally, note that `~swatch.context_managers.settings` implements
     ``nested`` itself -- see its API doc for details.
 """
 
 from contextlib import contextmanager, nested
-import socket
-import select
 
-from fabric.thread_handling import ThreadHandler
-from fabric.state import output, win32, connections, env
-from fabric import state
-from fabric.utils import isatty
-
-if not win32:
-    import termios
-    import tty
-
+from swatch.state import output
+from swatch import state
 
 def _set_output(groups, which):
     """
@@ -76,7 +67,7 @@ def show(*groups):
     Context manager for setting the given output ``groups`` to True.
 
     ``groups`` must be one or more strings naming the output groups defined in
-    `~fabric.state.output`. The given groups will be set to True for the
+    `~swatch.state.output`. The given groups will be set to True for the
     duration of the enclosed block, and restored to their previous value
     afterwards.
 
@@ -100,7 +91,7 @@ def hide(*groups):
     Context manager for setting the given output ``groups`` to False.
 
     ``groups`` must be one or more strings naming the output groups defined in
-    `~fabric.state.output`. The given groups will be set to False for the
+    `~swatch.state.output`. The given groups will be set to False for the
     duration of the enclosed block, and restored to their previous value
     afterwards.
 
@@ -199,7 +190,7 @@ def settings(*args, **kwargs):
 
     Thus, `settings` may be used to set any combination of environment
     variables in tandem with hiding (or showing) specific levels of output, or
-    in tandem with any other piece of Fabric functionality implemented as a
+    in tandem with any other piece of swatch functionality implemented as a
     context manager.
 
     If ``clean_revert`` is set to ``True``, ``settings`` will **not** revert
@@ -253,7 +244,7 @@ def cd(path):
 
     .. note::
         `cd` only affects *remote* paths -- to modify *local* paths, use
-        `~fabric.context_managers.lcd`.
+        `~swatch.context_managers.lcd`.
 
     Because use of `cd` affects all such invocations, any code making use of
     those operations, such as much of the ``contrib`` section, will also be
@@ -301,7 +292,7 @@ def cd(path):
         Applies to `get` and `put` in addition to the command-running
         operations.
 
-    .. seealso:: `~fabric.context_managers.lcd`
+    .. seealso:: `~swatch.context_managers.lcd`
     """
     return _change_cwd('cwd', path)
 
@@ -310,13 +301,13 @@ def lcd(path):
     """
     Context manager for updating local current working directory.
 
-    This context manager is identical to `~fabric.context_managers.cd`, except
+    This context manager is identical to `~swatch.context_managers.cd`, except
     that it changes a different env var (`lcwd`, instead of `cwd`) and thus
-    only affects the invocation of `~fabric.operations.local` and the local
-    arguments to `~fabric.operations.get`/`~fabric.operations.put`.
+    only affects the invocation of `~swatch.operations.local` and the local
+    arguments to `~swatch.operations.get`/`~swatch.operations.put`.
 
     Relative path arguments are relative to the local user's current working
-    directory, which will vary depending on where Fabric (or Fabric-using code)
+    directory, which will vary depending on where swatch (or swatch-using code)
     was invoked. You can check what this is with `os.getcwd
     <http://docs.python.org/release/2.6/library/os.html#os.getcwd>`_. It may be
     useful to pin things relative to the location of the fabfile in use, which
@@ -329,7 +320,8 @@ def lcd(path):
 
 def _change_cwd(which, path):
     path = path.replace(' ', '\ ')
-    if state.env.get(which) and not path.startswith('/') and not path.startswith('~'):
+    if state.env.get(which) and not path.startswith(
+        '/') and not path.startswith('~'):
         new_cwd = state.env.get(which) + '/' + path
     else:
         new_cwd = path
@@ -371,7 +363,7 @@ def prefix(command):
     """
     Prefix all wrapped `run`/`sudo` commands with given command plus ``&&``.
 
-    This is nearly identical to `~fabric.operations.cd`, except that nested
+    This is nearly identical to `~swatch.operations.cd`, except that nested
     invocations append to a list of command strings instead of modifying a
     single string.
 
@@ -390,7 +382,7 @@ def prefix(command):
 
         $ workon myvenv && ./manage.py syncdb
 
-    This context manager is compatible with `~fabric.context_managers.cd`, so
+    This context manager is compatible with `~swatch.context_managers.cd`, so
     if your virtualenv doesn't ``cd`` in its ``postactivate`` script, you could
     do the following::
 
@@ -405,7 +397,7 @@ def prefix(command):
         $ cd /path/to/app && workon myvenv && ./manage.py loaddata myfixture
 
     Finally, as alluded to near the beginning,
-    `~fabric.context_managers.prefix` may be nested if desired, e.g.::
+    `~swatch.context_managers.prefix` may be nested if desired, e.g.::
 
         with prefix('workon myenv'):
             run('ls')
@@ -419,25 +411,8 @@ def prefix(command):
 
     Contrived, but hopefully illustrative.
     """
-    return _setenv(lambda: {'command_prefixes': state.env.command_prefixes + [command]})
-
-
-@documented_contextmanager
-def char_buffered(pipe):
-    """
-    Force local terminal ``pipe`` be character, not line, buffered.
-
-    Only applies on Unix-based systems; on Windows this is a no-op.
-    """
-    if win32 or not isatty(pipe):
-        yield
-    else:
-        old_settings = termios.tcgetattr(pipe)
-        tty.setcbreak(pipe)
-        try:
-            yield
-        finally:
-            termios.tcsetattr(pipe, termios.TCSADRAIN, old_settings)
+    return _setenv(
+        lambda: {'command_prefixes': state.env.command_prefixes + [command]})
 
 
 def shell_env(**kw):
@@ -450,7 +425,7 @@ def shell_env(**kw):
         with shell_env(ZMQ_DIR='/home/user/local'):
             run('pip install pyzmq')
 
-    As with `~fabric.context_managers.prefix`, this effectively turns the
+    As with `~swatch.context_managers.prefix`, this effectively turns the
     ``run`` command into::
 
         $ export ZMQ_DIR='/home/user/local' && pip install pyzmq
@@ -458,111 +433,11 @@ def shell_env(**kw):
     Multiple key-value pairs may be given simultaneously.
 
     .. note::
-        If used to affect the behavior of `~fabric.operations.local` when
+        If used to affect the behavior of `~swatch.operations.local` when
         running from a Windows localhost, ``SET`` commands will be used to
         implement this feature.
     """
     return _setenv({'shell_env': kw})
-
-
-def _forwarder(chan, sock):
-    # Bidirectionally forward data between a socket and a Paramiko channel.
-    while True:
-        r, w, x = select.select([sock, chan], [], [])
-        if sock in r:
-            data = sock.recv(1024)
-            if len(data) == 0:
-                break
-            chan.send(data)
-        if chan in r:
-            data = chan.recv(1024)
-            if len(data) == 0:
-                break
-            sock.send(data)
-    chan.close()
-    sock.close()
-
-
-@documented_contextmanager
-def remote_tunnel(remote_port, local_port=None, local_host="localhost",
-    remote_bind_address="127.0.0.1"):
-    """
-    Create a tunnel forwarding a locally-visible port to the remote target.
-
-    For example, you can let the remote host access a database that is
-    installed on the client host::
-
-        # Map localhost:6379 on the server to localhost:6379 on the client,
-        # so that the remote 'redis-cli' program ends up speaking to the local
-        # redis-server.
-        with remote_tunnel(6379):
-            run("redis-cli -i")
-
-    The database might be installed on a client only reachable from the client
-    host (as opposed to *on* the client itself)::
-
-        # Map localhost:6379 on the server to redis.internal:6379 on the client
-        with remote_tunnel(6379, local_host="redis.internal")
-            run("redis-cli -i")
-
-    ``remote_tunnel`` accepts up to four arguments:
-
-    * ``remote_port`` (mandatory) is the remote port to listen to.
-    * ``local_port`` (optional) is the local port to connect to; the default is
-      the same port as the remote one.
-    * ``local_host`` (optional) is the locally-reachable computer (DNS name or
-      IP address) to connect to; the default is ``localhost`` (that is, the
-      same computer Fabric is running on).
-    * ``remote_bind_address`` (optional) is the remote IP address to bind to
-      for listening, on the current target. It should be an IP address assigned
-      to an interface on the target (or a DNS name that resolves to such IP).
-      You can use "0.0.0.0" to bind to all interfaces.
-
-    .. note::
-        By default, most SSH servers only allow remote tunnels to listen to the
-        localhost interface (127.0.0.1). In these cases, `remote_bind_address`
-        is ignored by the server, and the tunnel will listen only to 127.0.0.1.
-
-    .. versionadded: 1.6
-    """
-    if local_port is None:
-        local_port = remote_port
-
-    sockets = []
-    channels = []
-    threads = []
-
-    def accept(channel, (src_addr, src_port), (dest_addr, dest_port)):
-        channels.append(channel)
-        sock = socket.socket()
-        sockets.append(sock)
-
-        try:
-            sock.connect((local_host, local_port))
-        except Exception, e:
-            print "[%s] rtunnel: cannot connect to %s:%d (from local)" % (env.host_string, local_host, local_port)
-            channel.close()
-            return
-
-        print "[%s] rtunnel: opened reverse tunnel: %r -> %r -> %r"\
-              % (env.host_string, channel.origin_addr,
-                 channel.getpeername(), (local_host, local_port))
-
-        th = ThreadHandler('fwd', _forwarder, channel, sock)
-        threads.append(th)
-
-    transport = connections[env.host_string].get_transport()
-    transport.request_port_forward(remote_bind_address, remote_port, handler=accept)
-
-    try:
-        yield
-    finally:
-        for sock, chan, th in zip(sockets, channels, threads):
-            sock.close()
-            chan.close()
-            th.thread.join()
-            th.raise_if_needed()
-        transport.cancel_port_forward(remote_bind_address, remote_port)
 
 
 quiet = lambda: settings(hide('everything'), warn_only=True)
@@ -583,12 +458,11 @@ quiet.__doc__ = """
 
     .. seealso::
         :ref:`env.warn_only <warn_only>`,
-        `~fabric.context_managers.settings`,
-        `~fabric.context_managers.hide`
+        `~swatch.context_managers.settings`,
+        `~swatch.context_managers.hide`
 
     .. versionadded:: 1.5
 """
-
 
 warn_only = lambda: settings(warn_only=True)
 warn_only.__doc__ = """
@@ -596,6 +470,6 @@ warn_only.__doc__ = """
 
     .. seealso::
         :ref:`env.warn_only <warn_only>`,
-        `~fabric.context_managers.settings`,
-        `~fabric.context_managers.quiet`
+        `~swatch.context_managers.settings`,
+        `~swatch.context_managers.quiet`
 """

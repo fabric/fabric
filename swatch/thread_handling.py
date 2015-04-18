@@ -12,6 +12,7 @@ class ThreadHandler(object):
                 callable(*args, **kwargs)
             except BaseException:
                 self.exception = sys.exc_info()
+
         # Kick off thread
         thread = threading.Thread(None, wrapper, name, args, kwargs)
         thread.setDaemon(True)
