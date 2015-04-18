@@ -8,12 +8,12 @@ from fudge import Fake, patched_context, with_fakes
 from fudge.patcher import with_patched_object
 from nose.tools import eq_, raises
 
-from fabric.state import output, env
-from fabric.utils import warn, indent, abort, puts, fastprint, error, RingBuffer
-from fabric import utils  # For patching
-from fabric.context_managers import settings, hide
-from fabric.colors import magenta, red
-from utils import mock_streams, aborts, FabricTest, assert_contains, \
+from swatch.state import output, env
+from swatch.utils import warn, indent, abort, puts, fastprint, error, RingBuffer
+from swatch import utils  # For patching
+from swatch.context_managers import settings, hide
+from swatch.colors import magenta, red
+from utils import mock_streams, aborts, swatchTest, assert_contains, \
     assert_not_contains
 
 
@@ -164,7 +164,7 @@ def test_fastprint_calls_puts():
         fastprint(text)
 
 
-class TestErrorHandling(FabricTest):
+class TestErrorHandling(swatchTest):
     dummy_string = 'test1234!'
 
     @with_patched_object(utils, 'warn', Fake('warn', callable=True,

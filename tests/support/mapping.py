@@ -1,4 +1,4 @@
-from fabric.tasks import Task
+from swatch.tasks import Task
 
 class MappingTask(dict, Task):
     def run(self):

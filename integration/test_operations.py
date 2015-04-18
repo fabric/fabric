@@ -5,10 +5,10 @@ import os
 import posixpath
 import shutil
 
-from fabric.api import (
+from swatch.api import (
     run, path, put, sudo, abort, warn_only, env, cd, local, settings, get
 )
-from fabric.contrib.files import exists
+from swatch.contrib.files import exists
 
 from utils import Integration
 
@@ -68,7 +68,7 @@ class TestOperations(Integration):
         self._put_via_sudo()
 
     def test_put_with_dir_and_use_sudo(self):
-        # Test cwd should be root of fabric source tree. Use our own folder as
+        # Test cwd should be root of swatch source tree. Use our own folder as
         # the source, meh.
         self._put_via_sudo(source='integration', target_suffix='')
 

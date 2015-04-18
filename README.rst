@@ -1,36 +1,31 @@
-Fabric is a Python (2.5-2.7) library and command-line tool for
-streamlining the use of SSH for application deployment or systems
-administration tasks.
+Swatch: A piece of fabric
+=========================
+.. image:: https://img.shields.io/pypi/v/fabric_swatch.svg
+    :target: https://pypi.python.org/pypi/fabric_swatch
 
-It provides a basic suite of operations for executing local or remote shell
-commands (normally or via ``sudo``) and uploading/downloading files, as well as
-auxiliary functionality such as prompting the running user for input, or
-aborting execution.
- 
-Typical use involves creating a Python module containing one or more functions,
-then executing them via the ``fab`` command-line tool. Below is a small but
-complete "fabfile" containing a single task:
+.. image:: https://img.shields.io/pypi/dm/fabric_swatch.svg
+        :target: https://pypi.python.org/pypi/fabric_swatch
 
-.. code-block:: python
+.. image:: https://travis-ci.org/rtluckie/fabric_swatch.svg?branch=master
+    :target: https://travis-ci.org/rtluckie/fabric_swatch
 
-    from fabric.api import run
 
-    def host_type():
-        run('uname -s')
 
-Once a task is defined, it may be run on one or more servers, like so::
+I really love fabric's api for the subprocess module for executing local commands, but there are times when
+I don't need the remote execution.  I also, really wanted to use fabric with python3.
+This fork is an attempt to achieve that.
 
-    $ fab -H localhost,linuxbox host_type
-    [localhost] run: uname -s
-    [localhost] out: Darwin
-    [linuxbox] run: uname -s
-    [linuxbox] out: Linux
 
-    Done.
-    Disconnecting from localhost... done.
-    Disconnecting from linuxbox... done.
 
-In addition to use via the ``fab`` tool, Fabric's components may be imported
-into other Python code, providing a Pythonic interface to the SSH protocol
-suite at a higher level than that provided by e.g. the ``Paramiko`` library
-(which Fabric itself uses.)
+Installation
+------------
+
+.. code-block:: bash
+
+    pip install fabric-swatch
+
+
+TODO
+----
+Clean up tests
+

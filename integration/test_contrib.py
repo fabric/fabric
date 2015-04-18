@@ -3,8 +3,8 @@ import types
 import re
 import sys
 
-from fabric.api import run, local
-from fabric.contrib import files, project
+from swatch.api import run, local
+from swatch.contrib import files, project
 
 from utils import Integration
 

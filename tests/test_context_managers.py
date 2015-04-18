@@ -6,11 +6,11 @@ from StringIO import StringIO
 
 from nose.tools import eq_, ok_
 
-from fabric.state import env, output
-from fabric.context_managers import (cd, settings, lcd, hide, shell_env, quiet,
+from swatch.state import env, output
+from swatch.context_managers import (cd, settings, lcd, hide, shell_env, quiet,
     warn_only, prefix, path)
-from fabric.operations import run, local, _prefix_commands
-from utils import mock_streams, FabricTest
+from swatch.operations import run, local, _prefix_commands
+from utils import mock_streams, swatchTest
 from server import server
 
 
@@ -131,14 +131,14 @@ def test_cd_prefix():
 #     """
 #     some_path = "~/somepath"
 
-#     import fabric
+#     import swatch
 #     try:
-#         fabric.state.win32 = True
+#         swatch.state.win32 = True
 #         with cd(some_path):
 #             command_out = _prefix_commands('foo', "remote")
 #             eq_(command_out, 'cd %s && foo' % some_path)
 #     finally:
-#         fabric.state.win32 = False
+#         swatch.state.win32 = False
 
 #
 # hide/show
@@ -247,7 +247,7 @@ def test_shell_env():
     eq_(env.shell_env, {})
 
 
-class TestQuietAndWarnOnly(FabricTest):
+class TestQuietAndWarnOnly(swatchTest):
     @server()
     @mock_streams('both')
     def test_quiet_hides_all_output(self):
@@ -296,7 +296,7 @@ class TestQuietAndWarnOnly(FabricTest):
 
 # path() (distinct from shell_env)
 
-class TestPathManager(FabricTest):
+class TestPathManager(swatchTest):
     def setup(self):
         super(TestPathManager, self).setup()
         self.real = os.environ.get('PATH')

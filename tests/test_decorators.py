@@ -7,11 +7,11 @@ from nose.tools import eq_, ok_, assert_true, assert_false, assert_equal
 import fudge
 from fudge import Fake, with_fakes, patched_context
 
-from fabric import decorators, tasks
-from fabric.state import env
-import fabric # for patching fabric.state.xxx
-from fabric.tasks import _parallel_tasks, requires_parallel, execute
-from fabric.context_managers import lcd, settings, hide
+from swatch import decorators, tasks
+from swatch.state import env
+import swatch # for patching swatch.state.xxx
+from swatch.tasks import _parallel_tasks, requires_parallel, execute
+from swatch.context_managers import lcd, settings, hide
 
 from utils import mock_streams
 
@@ -190,7 +190,7 @@ fake_tasks = {
 
 def parallel_task_helper(actual_tasks, expected):
     commands_to_run = map(lambda x: [x], actual_tasks)
-    with patched_context(fabric.state, 'commands', fake_tasks):
+    with patched_context(swatch.state, 'commands', fake_tasks):
         eq_(_parallel_tasks(commands_to_run), expected)
 
 def test_parallel_tasks():

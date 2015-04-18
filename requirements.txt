@@ -1,10 +1,1 @@
-# These requirements are for DEVELOPMENT ONLY!
-# You do not need e.g. Sphinx or Fudge just to run the 'fab' tool.
-# Instead, these are necessary for executing the test suite or developing the
-# cutting edge (which may have different requirements from released versions.)
-
-# Development version of Paramiko, just in case we're in one of those phases.
--e git+https://github.com/paramiko/paramiko#egg=paramiko
-# Pull in actual "you already have local installed checkouts of Fabric +
-# Paramiko" dev deps.
--r dev-requirements.txt
+six

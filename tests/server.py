@@ -14,10 +14,10 @@ from StringIO import StringIO
 from functools import wraps
 from Python26SocketServer import BaseRequestHandler, ThreadingMixIn, TCPServer
 
-from fabric.operations import _sudo_prefix
-from fabric.api import env, hide
-from fabric.thread_handling import ThreadHandler
-from fabric.network import disconnect_all, ssh
+from swatch.operations import _sudo_prefix
+from swatch.api import env, hide
+from swatch.thread_handling import ThreadHandler
+from swatch.network import disconnect_all, ssh
 
 from fake_filesystem import FakeFilesystem, FakeFile
 
@@ -42,7 +42,7 @@ RESPONSES = {
     "ls /simple": "some output",
     "ls /": """AUTHORS
 FAQ
-Fabric.egg-info
+swatch.egg-info
 INSTALL
 LICENSE
 MANIFEST
@@ -51,7 +51,7 @@ build
 docs
 fabfile.py
 fabfile.pyc
-fabric
+swatch
 requirements.txt
 setup.py
 tests""",

@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
 from __future__ import with_statement
-from fabric.operations import local
+from swatch.operations import local
 import os
 
-from fabric.api import hide, get, show
-from fabric.contrib.files import upload_template, contains
-from fabric.context_managers import lcd
+from swatch.api import hide, get, show
+from swatch.contrib.files import upload_template, contains
+from swatch.context_managers import lcd
 
-from utils import FabricTest, eq_contents
+from utils import swatchTest, eq_contents
 from server import server
 
 
-class TestContrib(FabricTest):
+class TestContrib(swatchTest):
     # Make sure it knows / is a directory.
     # This is in lieu of starting down the "actual honest to god fake operating
     # system" road...:(
@@ -60,7 +60,7 @@ class TestContrib(FabricTest):
 
     @server(responses={
         'egrep "text" "/file.txt"': (
-            "sudo: unable to resolve host fabric",
+            "sudo: unable to resolve host swatch",
             "",
             1
         )}
