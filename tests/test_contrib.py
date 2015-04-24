@@ -142,10 +142,3 @@ class TestContrib(FabricTest):
 
         for (text, expected) in valid.iteritems():
             assert expected == _escape_for_regex(text)
-        
-
-
-
-
-
-        
