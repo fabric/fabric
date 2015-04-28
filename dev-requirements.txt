@@ -12,5 +12,7 @@ Fudge<1.0
 Sphinx>=1.2
 releases==0.6.1
 invoke==0.7.0
-invocations==0.5.0
+invocations==0.8.0
 alabaster==0.6.1
+semantic_version==2.4
+wheel==0.24

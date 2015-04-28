@@ -1,6 +1,6 @@
 from os.path import join
 
-from invocations import docs as _docs
+from invocations import docs as _docs, packaging
 
 from invoke import Collection
 
@@ -26,4 +26,4 @@ www = Collection.from_module(_docs, name='www', config={
 })
 
 
-ns = Collection(docs=docs, www=www)
+ns = Collection(docs=docs, www=www, release=packaging)
