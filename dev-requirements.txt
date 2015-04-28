@@ -11,7 +11,7 @@ Fudge<1.0
 # Documentation generation
 Sphinx>=1.2
 releases==0.6.1
-invoke==0.7.0
+invoke==0.10.1
 invocations==0.8.0
 alabaster==0.6.1
 semantic_version==2.4
