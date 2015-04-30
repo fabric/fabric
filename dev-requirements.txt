@@ -13,3 +13,7 @@ flake8==2.4.0
 sphinx>=1.2
 alabaster>=0.7
 releases>=0.7
+# Release tools
+semantic_version>=2.4,<2.5
+wheel==0.24
+twine==1.5
