@@ -8,8 +8,6 @@ import nose
 
 from fabric.api import abort, local, task
 
-from utils import msg
-
 
 @task(default=True)
 def test(args=None):
