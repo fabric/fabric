@@ -11,6 +11,7 @@ from nose.tools import eq_, raises
 from fabric.state import output, env
 from fabric.utils import warn, indent, abort, puts, fastprint, error, RingBuffer
 from fabric import utils  # For patching
+from fabric.api import local, quiet
 from fabric.context_managers import settings, hide
 from fabric.colors import magenta, red
 from utils import mock_streams, aborts, FabricTest, assert_contains, \
@@ -86,6 +87,18 @@ def test_abort_message():
     result = sys.stderr.getvalue()
     eq_("\nFatal error: Test\n\nAborting.\n", result)
 
+def test_abort_message_only_printed_once():
+    """
+    abort()'s SystemExit should not cause a reprint of the error message
+    """
+    # No good way to test the implicit stderr print which sys.exit/SystemExit
+    # perform when they are allowed to bubble all the way to the top. So, we
+    # invoke a subprocess and look at its stderr instead.
+    with quiet():
+        result = local("fab -f tests/support/aborts.py kaboom", capture=True)
+    # When error in #1318 is present, this has an extra "It burns!" at end of
+    # stderr string.
+    eq_(result.stderr, "Fatal error: It burns!\n\nAborting.\n")
 
 @mock_streams('stdout')
 def test_puts_with_user_output_on():
