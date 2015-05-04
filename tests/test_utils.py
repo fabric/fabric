@@ -73,7 +73,6 @@ def test_abort_with_exception():
     with settings(abort_exception=TestException):
         abort("Test")
 
-
 @mock_streams('stderr')
 @with_patched_object(output, 'aborts', True)
 def test_abort_message():
@@ -98,7 +97,20 @@ def test_abort_message_only_printed_once():
         result = local("fab -f tests/support/aborts.py kaboom", capture=True)
     # When error in #1318 is present, this has an extra "It burns!" at end of
     # stderr string.
-    eq_(result.stderr, "Fatal error: It burns!\n\nAborting.\n")
+    eq_(result.stderr, "Fatal error: It burns!\n\nAborting.")
+
+@mock_streams('stderr')
+@with_patched_object(output, 'aborts', True)
+def test_abort_exception_contains_separate_message_and_code():
+    """
+    abort()'s SystemExit contains distinct .code/.message attributes.
+    """
+    # Re #1318 / #1213
+    try:
+        abort("Test")
+    except SystemExit as e:
+        eq_(e.message, "Test")
+        eq_(e.code, 1)
 
 @mock_streams('stdout')
 def test_puts_with_user_output_on():
