@@ -711,6 +711,20 @@ If ``True``, causes ``fab`` (or non-``fab`` use of `~fabric.tasks.execute`) to s
     :option:`--skip-bad-hosts`, :ref:`excluding-hosts`, :doc:`execution`
 
 
+.. _skip-unknown-tasks:
+
+``skip_unknown_tasks``
+----------------------
+
+**Default:** ``False``
+
+If ``True``, causes ``fab`` (or non-``fab`` use of `~fabric.tasks.execute`)
+to skip over tasks not found, without aborting.
+
+.. seealso::
+    :option:`--skip-unknown-tasks`
+
+
 .. _ssh-config-path:
 
 ``ssh_config_path``

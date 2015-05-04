@@ -8,7 +8,6 @@ import nose
 
 from fabric.api import abort, local, task
 
-import tag
 from utils import msg
 
 
@@ -25,21 +24,3 @@ def test(args=None):
     default_args = "-sv --with-doctest --nologcapture --with-color %s" % tests
     default_args += (" " + args) if args else ""
     nose.core.run_exit(argv=[''] + default_args.split())
-
-
-@task
-def upload():
-    """
-    Build, register and upload to PyPI
-    """
-    with msg("Uploading to PyPI"):
-        local('python setup.py sdist register upload')
-
-
-@task
-def release(force='no'):
-    """
-    Tag, push tag to Github, & upload new version to PyPI.
-    """
-    tag.tag(force=force, push='yes')
-    upload()
