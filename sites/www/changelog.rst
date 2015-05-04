@@ -2,6 +2,10 @@
 Changelog
 =========
 
+* :bug:`1318` Update functionality added in :issue:`1213` so abort error
+  messages don't get printed twice (once by us, once by ``sys.exit``) but the
+  annotated exception error message is retained. Thanks to Felix Almeida for
+  the report.
 * :bug:`1305` (also :issue:`1313`) Fix a couple minor issues with the operation
   of & demo code for the ``JobQueue`` class. Thanks to ``@dioh`` and Horst
   Gutmann for the report & Cameron Lane for the patch.
