@@ -28,8 +28,11 @@ While 1.x moves on as above, we are working on a reimagined 2.x version of the
 tool, and plan to:
 
 * Finish and release `the Invoke tool/library
-  <https://github.com/pyinvoke/invoke>`_ (see also :issue:`565`), which is a
-  revamped and standalone version of Fabric's task running components. 
+  <https://github.com/pyinvoke/invoke>`_ (see also :issue:`565` and `this
+  Invoke FAQ
+  <http://www.pyinvoke.org/faq.html#why-was-invoke-split-off-from-the-fabric-project>`_),
+  which is a revamped and standalone version of Fabric's task running
+  components.
 
     * As of early 2015, Invoke is already reasonably mature and has a handful of
       features lacking in Fabric itself, including but not limited to:
