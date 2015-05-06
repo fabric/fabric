@@ -1,6 +1,8 @@
 from functools import partial
+import time
 
 from invoke.runners import Runner
+from paramiko import io_sleep
 
 
 class Remote(Runner):
@@ -54,7 +56,7 @@ class Remote(Runner):
             # TODO: where to access paramiko (for io_sleep)? here or via
             # something in Connection? (basically, how hard should Connection
             # encapsulate paramiko things?)
-            time.sleep(ssh.io_sleep)
+            time.sleep(io_sleep)
 
     def returncode(self):
         return self.channel.recv_exit_status()
