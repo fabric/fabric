@@ -28,16 +28,8 @@ class Remote_(Spec):
 
         def writes_remote_streams_to_local_streams(self):
             # E.g. hand in custom stream objs, assert they've been written to
-            skip()
-
-        def captures_remote_streams_to_variables(self):
-            # TODO: this is one test that could get merged into Invoke/Runner
-            # Just test return value while faking output from channel.recv
-            skip()
-
-        def captures_remote_exit_code(self):
-            # TODO: also potentially fodder for factoring
-            # Test return value while faking channel.recv_exit_status
+            # TODO: turn above into equiv of invoke @mock_subprocess, then use
+            # here
             skip()
 
         def pty_True_uses_paramiko_get_pty(self):
@@ -57,8 +49,6 @@ class Remote_(Spec):
         # with the Runner instead being a Remote. Or do we just replicate the
         # basics?
         
-        # TODO: perhaps make the session channel creation a contextmanager
-
         def may_wrap_command_with_things_like_bash_dash_c(self):
             "may wrap command with things like bash -c"
             # TODO: how? also implies top level run() wants to pass **kwargs to

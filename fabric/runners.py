@@ -1,3 +1,5 @@
+from functools import partial
+
 from invoke.runners import Runner
 
 
@@ -12,16 +14,10 @@ class Remote(Runner):
         `.Remote`'s ``__init__`` method expects a `.Connection` (or subclass)
         instance for its ``context`` argument.
     """
-    # TODO: Needs to fully implement run_direct() and run_pty(), no shared code
-    # (the factored outer bits are in invoke.runner.run())
-    
     def run_direct(self, command, warn, hide, encoding):
         channel = self.context._create_session()
         channel.exec_command(command)
 
-        # obtain pipes for stdin/out/err (TODO: arbitrary args for these)
-        # create objects to hold streams
-        # define thread target appending to objects & printing to streams
         #   (TODO: host prefixes depending on configuration)
         # create thread objects, add to list, start them
         # wait on remote proc (may require loop+sleep)
@@ -31,6 +27,54 @@ class Remote(Runner):
         #    well as wherever it was originally intended in Local?)
 
         return ("", "", 0, None)
+
+    def start(self, command):
+        # TODO: pty setup
+        self.channel = self.context._create_session()
+        self.channel.exec_command(command)
+
+    def stdout_reader(self):
+        return self.channel.recv
+
+    def stderr_reader(self):
+        return self.channel.recv_stderr
+
+    def default_encoding(self):
+        # TODO: this could be hairy or impossible!
+        return "utf-8"
+
+    def wait(self):
+        while True:
+            # TODO: fab1 workers raise_if_needed == ???
+            if self.channel.exit_status_ready():
+                return
+            # TODO: try/except KeyboardInterrupt around the sleep - necessary,
+            # but also make sure there's no open tickets about doing this
+            # better/different. (Also, see remote_interrupt)
+            # TODO: where to access paramiko (for io_sleep)? here or via
+            # something in Connection? (basically, how hard should Connection
+            # encapsulate paramiko things?)
+            time.sleep(ssh.io_sleep)
+
+    def returncode(self):
+        return self.channel.recv_exit_status()
+
+    # TODO: shit that is in fab 1 run() but could apply to invoke.Local too:
+    # * command timeout control
+    # * see rest of stuff in _run_command/_execute in operations.py...there is
+    # a bunch that applies generally like optional exit codes, etc
+
+    # TODO: general shit not done yet
+    # * stdin; Local relies on local process management to ensure stdin is
+    # hooked up; we cannot do that.
+    # * output prefixing
+    # * agent forwarding
+
+    # TODO: shit that has no Local equivalent that we probs need to backfill
+    # into Runner, probably just as a "finish()" or "stop()" (to mirror
+    # start()):
+    # * channel close()
+    # * agent-forward close()
 
 
 class RemoteSudo(Remote):
