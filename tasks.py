@@ -2,7 +2,7 @@ import sys
 import time
 
 from invocations.docs import docs, www
-from invocations.testing import test
+from invocations.testing import test, coverage
 from invocations import packaging
 
 from invoke import Collection, Context, ctask
@@ -69,4 +69,6 @@ def integration(c, module=None, runner=None, opts=None):
     test(c, module, runner, opts)
 
 
-ns = Collection(watch, docs, www, test, integration, release=packaging)
+ns = Collection(
+    watch, docs, www, test, coverage, integration, release=packaging,
+)
