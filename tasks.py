@@ -69,4 +69,4 @@ def integration(c, module=None, runner=None, opts=None):
     test(c, module, runner, opts)
 
 
-ns = Collection(watch, docs, www, test=test, integration=integration, release=packaging)
+ns = Collection(watch, docs, www, test, integration, release=packaging)
