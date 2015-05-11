@@ -7,6 +7,9 @@ from fabric.runners import Remote, RemoteSudo
 from _utils import mock_remote
 
 
+CMD = "nope"
+
+
 class Remote_(Spec):
     def needs_handle_on_a_Connection(self):
         c = Connection('host')
@@ -17,11 +20,11 @@ class Remote_(Spec):
         def calls_expected_paramiko_bits(self, chan):
             c = Connection('host')
             r = Remote(context=c)
-            r.run("command")
+            r.run(CMD)
             # mock_remote() makes generic sanity checks like "were
             # get_transport and open_session called", but we also want to make
             # sure that exec_command got run with our arg to run().
-            chan.exec_command.assert_called_with("command")
+            chan.exec_command.assert_called_with(CMD)
 
         def writes_remote_streams_to_local_streams(self):
             # E.g. hand in custom stream objs, assert they've been written to
