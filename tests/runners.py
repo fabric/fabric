@@ -4,6 +4,8 @@ from mock import Mock, patch
 from fabric.connection import Connection
 from fabric.runners import Remote, RemoteSudo
 
+from _utils import mock_remote
+
 
 class Remote_(Spec):
     def needs_handle_on_a_Connection(self):
@@ -11,20 +13,15 @@ class Remote_(Spec):
         ok_(Remote(context=c).context is c)
 
     class run:
-        @patch('fabric.connection.SSHClient')
-        def calls_expected_paramiko_bits(self, Client):
-            # Mock
-            client = Client.return_value
-            channel = Mock()
-            client.get_transport.return_value.open_session.return_value = channel
-            # Run
+        @mock_remote()
+        def calls_expected_paramiko_bits(self, chan):
             c = Connection('host')
             r = Remote(context=c)
             r.run("command")
-            # Test
-            client.get_transport.assert_called_with()
-            client.get_transport.return_value.open_session.assert_called_with()
-            channel.exec_command.assert_called_with("command")
+            # mock_remote() makes generic sanity checks like "were
+            # get_transport and open_session called", but we also want to make
+            # sure that exec_command got run with our arg to run().
+            chan.exec_command.assert_called_with("command")
 
         def writes_remote_streams_to_local_streams(self):
             # E.g. hand in custom stream objs, assert they've been written to
