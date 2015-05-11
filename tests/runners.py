@@ -1,4 +1,6 @@
-from spec import Spec, skip, ok_
+from invoke.vendor.six import StringIO
+
+from spec import Spec, skip, ok_, eq_
 from mock import Mock, patch
 
 from fabric.connection import Connection
@@ -26,11 +28,13 @@ class Remote_(Spec):
             # sure that exec_command got run with our arg to run().
             chan.exec_command.assert_called_with(CMD)
 
-        def writes_remote_streams_to_local_streams(self):
-            # E.g. hand in custom stream objs, assert they've been written to
-            # TODO: turn above into equiv of invoke @mock_subprocess, then use
-            # here
-            skip()
+        @mock_remote(out="hello yes this is dog")
+        def writes_remote_streams_to_local_streams(self, chan):
+            c = Connection('host')
+            r = Remote(context=c)
+            fakeout = StringIO()
+            r.run(CMD, out_stream=fakeout)
+            eq_(fakeout.getvalue(), "hello yes this is dog")
 
         def pty_True_uses_paramiko_get_pty(self):
             skip()
