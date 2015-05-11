@@ -47,7 +47,6 @@ class Remote(Runner):
 
     def wait(self):
         while True:
-            # TODO: fab1 workers raise_if_needed == ???
             if self.channel.exit_status_ready():
                 return
             # TODO: try/except KeyboardInterrupt around the sleep - necessary,
