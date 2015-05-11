@@ -40,7 +40,7 @@ class Remote_(Spec):
         def pty_True_uses_paramiko_get_pty(self, chan):
             c = Connection('host')
             r = Remote(context=c)
-            r.run(CMD)
+            r.run(CMD, pty=True)
             # TODO: use real pty-size detection, and unit test that on its own
             chan.get_pty.assert_called_with(width=80, height=24)
 
