@@ -21,7 +21,7 @@ class Main(Spec):
         """
         Run command on host "localhost"
         """
-        result = Connection('localhost').run('echo foo')
+        result = Connection('localhost').run('echo foo', hide=True)
         eq_(result.stdout, "foo\n")
         eq_(result.exited, 0)
         eq_(result.ok, True)
