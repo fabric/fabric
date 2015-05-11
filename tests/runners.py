@@ -36,8 +36,13 @@ class Remote_(Spec):
             r.run(CMD, out_stream=fakeout)
             eq_(fakeout.getvalue(), "hello yes this is dog")
 
-        def pty_True_uses_paramiko_get_pty(self):
-            skip()
+        @mock_remote()
+        def pty_True_uses_paramiko_get_pty(self, chan):
+            c = Connection('host')
+            r = Remote(context=c)
+            r.run(CMD)
+            # TODO: use real pty-size detection, and unit test that on its own
+            chan.get_pty.assert_called_with(width=80, height=24)
 
         # TODO: how much of Invoke's tests re: the upper level run() (re:
         # things like returning Result, behavior of Result, etc) to
