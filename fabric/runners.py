@@ -31,8 +31,9 @@ class Remote(Runner):
         return ("", "", 0, None)
 
     def start(self, command):
-        # TODO: pty setup
         self.channel = self.context._create_session()
+        if self.using_pty:
+            self.channel.get_pty(width=80, height=24)
         self.channel.exec_command(command)
 
     def stdout_reader(self):
