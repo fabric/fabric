@@ -70,6 +70,9 @@ class Remote(Runner):
     # hooked up; we cannot do that.
     # * output prefixing
     # * agent forwarding
+    # * reading at 4096 bytes/time instead of whatever inv defaults to (also,
+    # document why we are doing that, iirc it changed recentlyish via ticket)
+    # * TODO: oh god so much more, go look it up
 
     # TODO: shit that has no Local equivalent that we probs need to backfill
     # into Runner, probably just as a "finish()" or "stop()" (to mirror

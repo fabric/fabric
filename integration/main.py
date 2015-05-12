@@ -26,6 +26,14 @@ class Main(Spec):
         eq_(result.exited, 0)
         eq_(result.ok, True)
 
+    def simple_command_with_pty(self):
+        """
+        Run command under PTY on host "localhost"
+        """
+        result = Connection('localhost').run('echo foo', hide=True, pty=True)
+        eq_(result.stdout, "foo\r\n") # ptys change newlines to \r\n
+        eq_(result.pty, True)
+
     def simple_command_on_multiple_hosts(self):
         """
         Run command on localhost...twice!
