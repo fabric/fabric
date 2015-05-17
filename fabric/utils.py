@@ -47,7 +47,7 @@ def isatty(stream):
 
 def get_pty_size():
     """
-    Obtain (rows, cols) tuple for sizing a pty on the remote end.
+    Obtain (cols, rows) tuple for sizing a pty on the remote end.
 
     Defaults to 80x24 but will try to detect local (stdout-based) terminal
     window size on non-Windows platforms.
@@ -57,8 +57,8 @@ def get_pty_size():
         import termios
         import struct
 
-    default_rows, default_cols = 24, 80
-    rows, cols = default_rows, default_cols
+    default_cols, default_rows = 80, 24
+    cols, rows = default_cols, default_rows
     if not win32 and isatty(sys.stdout):
         # We want two short unsigned integers (rows, cols)
         fmt = 'HH'
@@ -69,7 +69,8 @@ def get_pty_size():
         try:
             result = fcntl.ioctl(sys.stdout.fileno(), termios.TIOCGWINSZ,
                 buffer)
-            # Unpack buffer back into Python data types
+            # Unpack buffer back into Python data types. (Note: WINSZ gives us
+            # rows-by-cols, instead of cols-by-rows.)
             rows, cols = struct.unpack(fmt, result)
             # Fall back to defaults if TIOCGWINSZ returns unreasonable values
             if rows == 0:
@@ -80,4 +81,4 @@ def get_pty_size():
         # Or termios not having a TIOCGWINSZ.
         except AttributeError:
             pass
-    return rows, cols
+    return cols, rows
