@@ -2,6 +2,10 @@
 Tests testing the fabric.utils module, not utils for the tests!
 """
 
+# TODO: skip on Windows CI, it may blow up on one of these
+import fcntl
+import termios
+
 from mock import patch
 from spec import Spec, eq_, skip
 
@@ -27,9 +31,11 @@ class get_local_user_(Spec):
 class pty_size(Spec):
     # TODO: Windows tests under appveyor
 
-    def calls_fcntl_with_TIOCGWINSZ(self):
+    @patch('fcntl.ioctl', wraps=fcntl.ioctl)
+    def calls_fcntl_with_TIOCGWINSZ(self, ioctl):
         # Basic terrible impl test because yea
-        skip()
+        get_pty_size()
+        eq_(ioctl.call_args_list[0][0][1], termios.TIOCGWINSZ)
 
     def defaults_to_80x24_when_stdout_lacks_fileno(self):
         # i.e. when accessing it throws AttributeError
