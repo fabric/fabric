@@ -33,7 +33,8 @@ class pty_size(Spec):
 
     @patch('fcntl.ioctl', wraps=fcntl.ioctl)
     def calls_fcntl_with_TIOCGWINSZ(self, ioctl):
-        # Basic terrible impl test because yea
+        # Test the default (Unix) implementation because that's all we can
+        # realistically do here.
         get_pty_size()
         eq_(ioctl.call_args_list[0][0][1], termios.TIOCGWINSZ)
 
