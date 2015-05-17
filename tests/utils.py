@@ -21,5 +21,4 @@ class get_local_user_(Spec):
     def KeyError_means_SaaS_and_thus_None(self, getuser):
         eq_(get_local_user(), None)
 
-    # TODO: if we find a way to run on a Windows CI environment, test for
-    # ImportError+win32.
+    # TODO: test for ImportError+win32 once appveyor is set up as w/ invoke
