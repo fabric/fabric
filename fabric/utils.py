@@ -1,3 +1,4 @@
+import os
 import sys
 
 
@@ -30,3 +31,53 @@ def get_local_user():
             import win32profile # noqa
             username = win32api.GetUserName()
     return username
+
+
+def isatty(stream):
+    """
+    Check if a stream is a tty.
+
+    Not all file-like objects implement the `isatty` method.
+    """
+    fn = getattr(stream, 'isatty', None)
+    if fn is None:
+        return False
+    return fn()
+
+
+def get_pty_size():
+    """
+    Obtain (rows, cols) tuple for sizing a pty on the remote end.
+
+    Defaults to 80x24 but will try to detect local (stdout-based) terminal
+    window size on non-Windows platforms.
+    """
+    if not win32:
+        import fcntl
+        import termios
+        import struct
+
+    default_rows, default_cols = 24, 80
+    rows, cols = default_rows, default_cols
+    if not win32 and isatty(sys.stdout):
+        # We want two short unsigned integers (rows, cols)
+        fmt = 'HH'
+        # Create an empty (zeroed) buffer for ioctl to map onto. Yay for C!
+        buffer = struct.pack(fmt, 0, 0)
+        # Call TIOCGWINSZ to get window size of stdout, returns our filled
+        # buffer
+        try:
+            result = fcntl.ioctl(sys.stdout.fileno(), termios.TIOCGWINSZ,
+                buffer)
+            # Unpack buffer back into Python data types
+            rows, cols = struct.unpack(fmt, result)
+            # Fall back to defaults if TIOCGWINSZ returns unreasonable values
+            if rows == 0:
+                rows = default_rows
+            if cols == 0:
+                cols = default_cols
+        # Deal with e.g. sys.stdout being monkeypatched, such as in testing.
+        # Or termios not having a TIOCGWINSZ.
+        except AttributeError:
+            pass
+    return rows, cols
