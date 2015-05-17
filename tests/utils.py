@@ -38,9 +38,11 @@ class pty_size(Spec):
         get_pty_size()
         eq_(ioctl.call_args_list[0][0][1], termios.TIOCGWINSZ)
 
-    def defaults_to_80x24_when_stdout_lacks_fileno(self):
+    @patch('sys.stdout')
+    def defaults_to_80x24_when_stdout_lacks_fileno(self, stdout):
         # i.e. when accessing it throws AttributeError
-        skip()
+        stdout.fileno.side_effect = AttributeError
+        eq_(get_pty_size(), (80, 24))
 
     def defaults_to_80x24_when_stdout_not_a_tty(self):
         # i.e. when os.isatty(sys.stdout) is False
