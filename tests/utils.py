@@ -2,14 +2,10 @@
 Tests testing the fabric.utils module, not utils for the tests!
 """
 
-# TODO: skip on Windows CI, it may blow up on one of these
-import fcntl
-import termios
-
 from mock import patch
 from spec import Spec, eq_, skip
 
-from fabric.utils import get_local_user, get_pty_size
+from fabric.utils import get_local_user
 
 
 # Basically implementation tests, because it's not feasible to do a "real" test
@@ -26,36 +22,3 @@ class get_local_user_(Spec):
         eq_(get_local_user(), None)
 
     # TODO: test for ImportError+win32 once appveyor is set up as w/ invoke
-
-
-class pty_size(Spec):
-    # TODO: Windows tests under appveyor
-
-    @patch('fcntl.ioctl', wraps=fcntl.ioctl)
-    def calls_fcntl_with_TIOCGWINSZ(self, ioctl):
-        # Test the default (Unix) implementation because that's all we can
-        # realistically do here.
-        get_pty_size()
-        eq_(ioctl.call_args_list[0][0][1], termios.TIOCGWINSZ)
-
-    @patch('sys.stdout')
-    @patch('fcntl.ioctl')
-    def defaults_to_80x24_when_stdout_lacks_fileno(self, ioctl, stdout):
-        # i.e. when accessing it throws AttributeError
-        stdout.fileno.side_effect = AttributeError
-        eq_(get_pty_size(), (80, 24))
-        # Make sure we skipped over ioctl
-        assert not ioctl.called
-
-    @patch('sys.stdout')
-    @patch('fcntl.ioctl')
-    def defaults_to_80x24_when_stdout_not_a_tty(self, ioctl, stdout):
-        # Make sure stdout acts like a real stream (means failure is more
-        # obvious)
-        stdout.fileno.return_value = 1
-        # Ensure it fails the isatty() test
-        stdout.isatty.return_value = False
-        # Test
-        eq_(get_pty_size(), (80, 24))
-        # Make sure we skipped over ioctl
-        assert not ioctl.called
