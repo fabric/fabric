@@ -39,10 +39,13 @@ class pty_size(Spec):
         eq_(ioctl.call_args_list[0][0][1], termios.TIOCGWINSZ)
 
     @patch('sys.stdout')
-    def defaults_to_80x24_when_stdout_lacks_fileno(self, stdout):
+    @patch('fcntl.ioctl')
+    def defaults_to_80x24_when_stdout_lacks_fileno(self, ioctl, stdout):
         # i.e. when accessing it throws AttributeError
         stdout.fileno.side_effect = AttributeError
         eq_(get_pty_size(), (80, 24))
+        # Make sure we skipped over ioctl
+        assert not ioctl.called
 
     @patch('sys.stdout')
     @patch('fcntl.ioctl')
