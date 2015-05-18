@@ -58,6 +58,27 @@ def watch(c):
         observer.stop()
     observer.join()
 
+
+# TODO: merge w/ invoke's task of same name
+@ctask
+def sites(c):
+    """
+    Build both doc sites w/ maxed nitpicking.
+    """
+    # Turn warnings into errors, emit warnings about missing references.
+    # This gives us a maximally noisy docs build.
+    # Also enable tracebacks for easier debuggage.
+    opts = "-W -n -T"
+    # This is super lolzy but we haven't actually tackled nontrivial in-Python
+    # task calling yet, so...
+    docs_c = Context(config=c.config.clone())
+    www_c = Context(config=c.config.clone())
+    docs_c.update(**docs.configuration())
+    www_c.update(**www.configuration())
+    docs['build'](docs_c, opts=opts)
+    www['build'](www_c, opts=opts)
+
+
 # TODO: merge w/ invoke's own such task, using invocations or ?
 @ctask(help=test.help)
 def integration(c, module=None, runner=None, opts=None):
@@ -70,5 +91,5 @@ def integration(c, module=None, runner=None, opts=None):
 
 
 ns = Collection(
-    watch, docs, www, test, coverage, integration, release=packaging,
+    watch, docs, www, test, coverage, integration, sites, release=packaging,
 )
