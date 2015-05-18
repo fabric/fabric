@@ -44,6 +44,15 @@ class pty_size(Spec):
         stdout.fileno.side_effect = AttributeError
         eq_(get_pty_size(), (80, 24))
 
-    def defaults_to_80x24_when_stdout_not_a_tty(self):
-        # i.e. when os.isatty(sys.stdout) is False
-        skip()
+    @patch('sys.stdout')
+    @patch('fcntl.ioctl')
+    def defaults_to_80x24_when_stdout_not_a_tty(self, ioctl, stdout):
+        # Make sure stdout acts like a real stream (means failure is more
+        # obvious)
+        stdout.fileno.return_value = 1
+        # Ensure it fails the isatty() test
+        stdout.isatty.return_value = False
+        # Test
+        eq_(get_pty_size(), (80, 24))
+        # Make sure we skipped over ioctl
+        assert not ioctl.called

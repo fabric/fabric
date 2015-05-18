@@ -38,6 +38,8 @@ def isatty(stream):
 
     Not all file-like objects implement the `isatty` method.
     """
+    # TODO: fallback to checking os.isatty(stream)? is that ever true when a
+    # stream lacks .isatty? (alt platforms? etc?)
     fn = getattr(stream, 'isatty', None)
     if fn is None:
         return False
