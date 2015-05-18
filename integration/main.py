@@ -44,7 +44,7 @@ class Main(Spec):
         Run command on localhost...twice!
         """
         skip()
-        Batch(['localhost', 'localhost']).run('echo foo')
+        Batch(['localhost', 'localhost']).run('echo foo') # noqa
         # => [Result, Result
 
     def sudo_command(self):
@@ -63,8 +63,8 @@ class Main(Spec):
         cxn.run('whoami')
         cxn.sudo('whoami')
         # Alternately...
-        cxn.run('whoami', runner=Basic)
-        cxn.run('whoami', runner=Sudo)
+        cxn.run('whoami', runner=Basic) # noqa
+        cxn.run('whoami', runner=Sudo) # noqa
 
     def switch_command_between_local_and_remote(self):
         """
@@ -73,5 +73,5 @@ class Main(Spec):
         # TODO: Only really makes sense at the task level though...
         skip()
         # Basic/raw
-        run('hostname') # Or Context().run('hostname')
+        run('hostname') # Or Context().run('hostname') # noqa
         Connection('localhost').run('hostname')

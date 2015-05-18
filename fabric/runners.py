@@ -1,4 +1,3 @@
-from functools import partial
 import time
 
 from invoke.runners import Runner

@@ -1,10 +1,9 @@
 from invoke.vendor.six import StringIO
 
 from spec import Spec, skip, ok_, eq_
-from mock import Mock, patch
 
 from fabric.connection import Connection
-from fabric.runners import Remote, RemoteSudo
+from fabric.runners import Remote
 
 from _utils import mock_remote
 
@@ -57,7 +56,7 @@ class Remote_(Spec):
         # Implies we want a way to import & run those tests ourselves, though,
         # with the Runner instead being a Remote. Or do we just replicate the
         # basics?
-        
+
         def may_wrap_command_with_things_like_bash_dash_c(self):
             "may wrap command with things like bash -c"
             # TODO: how? also implies top level run() wants to pass **kwargs to
