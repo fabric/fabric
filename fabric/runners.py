@@ -1,6 +1,6 @@
 import time
 
-from invoke.runners import Runner
+from invoke import Runner
 from paramiko import io_sleep
 
 
