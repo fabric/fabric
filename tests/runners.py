@@ -1,6 +1,7 @@
 from invoke.vendor.six import StringIO
 
 from spec import Spec, skip, ok_, eq_
+from invoke import pty_size
 
 from fabric.connection import Connection
 from fabric.runners import Remote
@@ -40,8 +41,8 @@ class Remote_(Spec):
             c = Connection('host')
             r = Remote(context=c)
             r.run(CMD, pty=True)
-            # TODO: use real pty-size detection, and unit test that on its own
-            chan.get_pty.assert_called_with(width=80, height=24)
+            cols, rows = pty_size()
+            chan.get_pty.assert_called_with(width=cols, height=rows)
 
         # TODO: how much of Invoke's tests re: the upper level run() (re:
         # things like returning Result, behavior of Result, etc) to
