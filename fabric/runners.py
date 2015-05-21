@@ -1,6 +1,6 @@
 import time
 
-from invoke import Runner
+from invoke import Runner, pty_size
 from paramiko import io_sleep
 
 
@@ -32,7 +32,8 @@ class Remote(Runner):
     def start(self, command):
         self.channel = self.context._create_session()
         if self.using_pty:
-            self.channel.get_pty(width=80, height=24)
+            rows, cols = pty_size()
+            self.channel.get_pty(width=rows, height=cols)
         self.channel.exec_command(command)
 
     def stdout_reader(self):
