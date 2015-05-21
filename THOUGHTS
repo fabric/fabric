@@ -23,13 +23,13 @@
       it is to users of Fab 1 who expect at least SSH config to be loaded.
 * Think of a few use cases re: the ssh_config, inv/fab configs, host-specific
   configs, loading, and how they would work / merge / where they would live:
-    * Lib base case of "literally just Host(foo).run(bar)": probably n/a?
-        * To get conf file loads, Host(foo,
+    * Lib base case of "literally just Connection(foo).run(bar)": probably n/a?
+        * To get conf file loads, Connection(foo,
           context=Context(load=True)).run(bar) or whatever? Implies we want
-          Context or similar able to generate Host objects so we can do
-          Context().get_host(foo).run(bar)?
-        * Or, as above, does Host(foo) implicitly load ssh_config et al? Such
-          that Host(my_foo_alias) connects to foo?
+          Context or similar able to generate Connection objects so we can do
+          Context().get_connection(foo).run(bar)?
+        * Or, as above, does Connection(foo) implicitly load ssh_config et al? Such
+          that Connection(my_foo_alias) connects to foo?
     * CLI base case of "fab -H foo -- bar" - same as above? or, as per Q, does
       it implicitly load after all?
     * CLI semi-base case of having single task def + "fab -H foo mytask" -
