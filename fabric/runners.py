@@ -15,20 +15,6 @@ class Remote(Runner):
         `.Remote`'s ``__init__`` method expects a `.Connection` (or subclass)
         instance for its ``context`` argument.
     """
-    def run_direct(self, command, warn, hide, encoding):
-        channel = self.context._create_session()
-        channel.exec_command(command)
-
-        #   (TODO: host prefixes depending on configuration)
-        # create thread objects, add to list, start them
-        # wait on remote proc (may require loop+sleep)
-        # join threads
-        # tie up captured stderr/out into single string objs
-        # return those + exit code (+ exception? does that make sense here as
-        #    well as wherever it was originally intended in Local?)
-
-        return ("", "", 0, None)
-
     def start(self, command):
         self.channel = self.context._create_session()
         if self.using_pty:
