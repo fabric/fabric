@@ -1,4 +1,5 @@
 from spec import skip, Spec, ok_, eq_
+from invoke import pty_size
 
 from fabric.connection import Connection
 
@@ -33,8 +34,8 @@ class Main(Spec):
         # Most Unix systems should have stty, which asplodes when not run under
         # a pty, and prints useful info otherwise
         result = Connection('localhost').run('stty -a', hide=True, pty=True)
-        # TODO: tie into pty size detection
-        ok_("24 rows; 80 columns;" in result.stdout)
+        cols, rows = pty_size()
+        ok_("{0} rows; {1} columns;".format(rows, cols) in result.stdout)
         # PTYs use \r\n, not \n, line separation
         ok_("\r\n" in result.stdout)
         eq_(result.pty, True)
