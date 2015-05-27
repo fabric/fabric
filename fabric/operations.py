@@ -14,6 +14,7 @@ import sys
 import time
 from glob import glob
 from contextlib import closing, contextmanager
+from threading import Timer
 
 from fabric.context_managers import (settings, char_buffered, hide,
     quiet as quiet_manager, warn_only as warn_only_manager)
@@ -1109,7 +1110,7 @@ def sudo(command, shell=True, pty=True, combine_stderr=None, user=None,
     )
 
 
-def local(command, capture=False, shell=None):
+def local(command, capture=False, shell=None, timeout=None):
     """
     Run a command on the local system.
 
@@ -1137,6 +1138,9 @@ def local(command, capture=False, shell=None):
     When ``capture=True``, you will not see any output from the subprocess in
     your terminal, but the return value will contain the captured
     stdout/stderr.
+
+    When ``timeout`` is not None, the local subprocess will be killed after
+    timeout seconds
 
     In either case, as with `~fabric.operations.run` and
     `~fabric.operations.sudo`, this return value exhibits the ``return_code``,
@@ -1181,7 +1185,13 @@ def local(command, capture=False, shell=None):
         p = subprocess.Popen(cmd_arg, shell=True, stdout=out_stream,
                              stderr=err_stream, executable=shell,
                              close_fds=(not win32))
-        (stdout, stderr) = p.communicate()
+        if timeout:
+            timer = Timer(timeout, p.kill)
+            timer.start()
+            (stdout, stderr) = p.communicate()
+            timer.cancel()
+        else:
+            (stdout, stderr) = p.communicate()
     finally:
         if dev_null is not None:
             dev_null.close()
