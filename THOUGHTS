@@ -28,8 +28,8 @@
           context=Context(load=True)).run(bar) or whatever? Implies we want
           Context or similar able to generate Connection objects so we can do
           Context().get_connection(foo).run(bar)?
-        * Or, as above, does Connection(foo) implicitly load ssh_config et al? Such
-          that Connection(my_foo_alias) connects to foo?
+        * Or, as above, does Connection(foo) implicitly load ssh_config et al?
+        Such that Connection(my_foo_alias) connects to foo?
     * CLI base case of "fab -H foo -- bar" - same as above? or, as per Q, does
       it implicitly load after all?
     * CLI semi-base case of having single task def + "fab -H foo mytask" -
