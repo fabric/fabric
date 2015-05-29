@@ -345,4 +345,63 @@ Really means the model needs to be many-to-one, a given Host or User could be as
 
 So perhaps it should really be that a Connection references a Host (unless it stores only the string and we use an eg Lexicon mapping to handle aliasing, as we do in Invoke) and...also the string identifying the User, which is then delegated to Host to look up (so we get that host's instance of that user)?
 
+### Newer thoughts on Host/User type stuff
+
+* First, the core mechanism for the host-alias problem needs to be config,
+  which was implied but not really stated above.
+    * Whether that config is baked in, always driven by SSH config loading, or
+    both (i.e. a "clean" path one CAN set internally, but which gets overlaid
+    by loaded SSH configs) doesn't necessarily matter
+    * But a 'quick' or 'minimal' answer would be to just say "ssh_config
+    already knows how to solve this, we will honor it, just use it".
+* Since it is in the config/context, which Connection has access to, we could
+  simply perform aliasing super early on in the Connection init.
+* Main question is how to deal with the fact that Connections are intended to
+  be standalone/non-global, but users would (probably?) expect aliasing (OR
+  even simply the SAME host string used in two different Connection objects!)
+  to reuse existing connections to the same host, instead of opening a new,
+  separate connection. Such reuse implies a global connection cache as in
+  Fabric 1.
+    * But having that is a no-go, generally
+    * Could have a per-cli/executor level cache for the CLI use case, but
+    that's still practically global and means tasks could affect one another
+    unintentionally
+        * Which ties into "how can tasks affect one another *in*tentionally
+        without allowing accidental bleeding" at a greater level...
+    * Why WOULD users care about two Connections being "the same", anyway? What
+    kinds of state do we expect to have in them that aren't directly derived
+    from config or kwargs - which would be the same almost all the time, such
+    as in the CLI use case?
+    * Additionally, in the CLI use case, the two "same" Connections would
+    likely not exist at the same time either (besides parallel, where we NEED
+    mutiple connections anyway, because socket reuse is bad) making it largely
+    moot, besides whatever savings one gets from reusing the outer connection
+    (vs the per-shell-command sessions).
+    * Could potentially enable a CLI-oriented cache that is purely opt-in, for
+    users who connect to many hosts per task AND have multiple tasks per
+    invocation (which is the only time this matters).
+        * What would that look like for a library use case? Presumably users
+        would start building their own "caches" which start to look a lot like
+        Fabric 1's ConnectionCache or roledef type things...
+* Besides connection reuse and aliasing, there's also the issue of rich host
+  metadata...
+    * This also should be Config driven at its source
+    * But having them be true objects instead of just nested hashes feels like
+    it makes sense; perhaps simply as read-only facades on top of the Config?
+        * Would users ever be wanting to change Host attributes in-flight?
+        Probably yes? I.e. true per-host setting overrides like "always use
+        user/ssh-key/etc X for host Y", "always use gateway X for host Y",
+        "disable ciphers ABC for host Y", etc etc - many of these are static
+        config-driven stuff, but I could see folks wanting to load them from,
+        say, Clusto or Chef Server.
+        * But does that imply modifying the Host objects, or
+        generating/modifying Configs and triggering a Config reload? What's the
+        difference, even?
+            * The source config data would not change, so one could see that
+            e.g. the ssh config had no data for a given host, and a runtime
+            thing updated Override-level data to add some info, or whatever
+            * So, does editing a Host object differ in any real way from
+            modifying Overrides? Is there ever a set of data that matters that
+            is not "config"? Don't think so...
+
 <!-- vim: set ft=markdown : -->
