@@ -187,23 +187,33 @@ command running in general. But probably remain lists under the hood.
 
 ### remote_tunnel
 
-Spawns new channels & sockets to handle the port forwards, tracks those in apparently-global state within fabric.contextmanagers (i.e. just inside the function itself? not sure why that works, the body should rerun every time the context manager is used) and hands a ThreadHandler to Paramiko which actually spins it up to forward ports.
+Spawns new channels & sockets to handle the port forwards, tracks those in
+apparently-global state within fabric.contextmanagers (i.e. just inside the
+function itself? not sure why that works, the body should rerun every time the
+context manager is used) and hands a ThreadHandler to Paramiko which actually
+spins it up to forward ports.
 
-So, probably needs a decently sized rewrite to be clean n such; only real Fab stuff it uses is the connection dict / env.host_string.
+So, probably needs a decently sized rewrite to be clean n such; only real Fab
+stuff it uses is the connection dict / env.host_string.
 
 ### settings
 
-Likely replaced by whatever settings API is exposed in Context. Maybe try to get a sense of what settings folks frequently use it for now, besides nesting hide/show + warn_only + host_string. Suspect that would be bulk of it?
+Likely replaced by whatever settings API is exposed in Context. Maybe try to
+get a sense of what settings folks frequently use it for now, besides nesting
+hide/show + warn_only + host_string. Suspect that would be bulk of it?
 
-Then again the ability to run with temporarily different context for arbitrary stuff is handy. Meh.
+Then again the ability to run with temporarily different context for arbitrary
+stuff is handy. Meh.
 
 ### shell_env
 
-Tracks a dict in Context, same as lcd/cd would with their lists? Once again, can probably roll into regular settings-y things.
+Tracks a dict in Context, same as lcd/cd would with their lists? Once again,
+can probably roll into regular settings-y things.
 
 ### warn_only
 
-Same as hide/show re: stdout/err - might not _need_ to be contextmanager anymore, just given as per-run() kwarg or tickled in Context settings junk.
+Same as hide/show re: stdout/err - might not _need_ to be contextmanager
+anymore, just given as per-run() kwarg or tickled in Context settings junk.
 
 
 ## Decorators
@@ -297,7 +307,10 @@ Where the core options set the default executor and per-task flags override.
 (--parallel etc would be sugar for --executor=parallel or maybe
 --strategy=parallel.)
 
-ANYWAY - so with the above strategy, this gives us complete CLI control over invocation, and we can have a per-task (kwarg-level probably) way of setting the default that task "wants" to be run as. So we'd still have @runs_once, but it's normalized now and on the same footing as parallel/serial.
+ANYWAY - so with the above strategy, this gives us complete CLI control over
+invocation, and we can have a per-task (kwarg-level probably) way of setting
+the default that task "wants" to be run as. So we'd still have @runs_once, but
+it's normalized now and on the same footing as parallel/serial.
 
 #### More thoughts on executing
 
@@ -308,21 +321,33 @@ In Invoke, Executor currently is responsible for:
 * calling it with CLI flag-args and the context
 * calling its pre- and post- tasks before and/or after
 
-and it is created once and then used throughout the 'session' (i.e. each task/context becomes my_executor.execute(task, ...)).
+and it is created once and then used throughout the 'session' (i.e. each
+task/context becomes my_executor.execute(task, ...)).
 
-Idea was to subclass it to add more things like how to deal with pre/post, how to run in serial/parallel, etc.
+Idea was to subclass it to add more things like how to deal with pre/post, how
+to run in serial/parallel, etc.
 
-However this doesn't fly with switching up executor/strategy per-task, as above. Would want to instantiate the executor once per parser context, at least niavely. However we then lose ability to track how many times a given task has been called 'globally' which is almost definitely required for nontrivial pre/post/dependency shit.
+However this doesn't fly with switching up executor/strategy per-task, as
+above. Would want to instantiate the executor once per parser context, at least
+niavely. However we then lose ability to track how many times a given task has
+been called 'globally' which is almost definitely required for nontrivial
+pre/post/dependency shit.
 
-So perhaps we split things up a bit, with collection management (including call tracking) in one object, and actual invocation/execution in another. Main problem is this requires communication, so we need a way for the latter to inform the former that it just ran tasks foo, bar, biz and baz N times.
+So perhaps we split things up a bit, with collection management (including call
+tracking) in one object, and actual invocation/execution in another. Main
+problem is this requires communication, so we need a way for the latter to
+inform the former that it just ran tasks foo, bar, biz and baz N times.
 
 
 
 ### task
 
-Simply a subclass or wrapper for Invoke's. Would have contextualized=True always (perhaps not even letting you set it to False - a "Fabric" task is meaningless without its host context).
+Simply a subclass or wrapper for Invoke's. Would have contextualized=True
+always (perhaps not even letting you set it to False - a "Fabric" task is
+meaningless without its host context).
 
-May end up just being a straight reimport of Invoke's, if all functionality can be pushed therein (like strategy selection).
+May end up just being a straight reimport of Invoke's, if all functionality can
+be pushed therein (like strategy selection).
 
 ### with_settings
 
@@ -333,17 +358,37 @@ Rest also TK
 
 ## Connection junk
 
-Thinking of Connection (primary user facing class with run(), put() etc) but also Host (name, aliases, possibly also IP address and such) (and therefore also HostCollection?), User (name, but could expose remote user stuff such as group/uid/gid/etc) and maybe Port (number, not sure what else honestly.)
+Thinking of Connection (primary user facing class with run(), put() etc) but
+also Host (name, aliases, possibly also IP address and such) (and therefore
+also HostCollection?), User (name, but could expose remote user stuff such as
+group/uid/gid/etc) and maybe Port (number, not sure what else honestly.)
 
-Problem with Host and User in this context is that having them be independent objects - at least in the sense I was considering (pass them into Connection(), use string arg values as shorthands for convenience) - doesn't fly because if they were kept around independent of a given Connection, none of the Connection specific attributes/methods (eg User('jforcier') - there's no context implied there, it might have a different uid/gid depending on connection.)
+Problem with Host and User in this context is that having them be independent
+objects - at least in the sense I was considering (pass them into Connection(),
+use string arg values as shorthands for convenience) - doesn't fly because if
+they were kept around independent of a given Connection, none of the Connection
+specific attributes/methods (eg User('jforcier') - there's no context implied
+there, it might have a different uid/gid depending on connection.)
 
-May just mean that the initial "take a rich object, allow string args" idea is dumb and it should just be "give me string args, I will figure out how to populate myself with specific-to-me instances of these useful objects", wherein instances of Host and User are explicitly tied to their Connection.
+May just mean that the initial "take a rich object, allow string args" idea is
+dumb and it should just be "give me string args, I will figure out how to
+populate myself with specific-to-me instances of these useful objects", wherein
+instances of Host and User are explicitly tied to their Connection.
 
-Host is a snag here because one reason to make it objectlike is to have N names, aka aliases, so that we understand Connection('web1') should result in the same core host object as Connection('my-default-webhost') should the user configure things that way / have an SSH config implying such.
+Host is a snag here because one reason to make it objectlike is to have N
+names, aka aliases, so that we understand Connection('web1') should result in
+the same core host object as Connection('my-default-webhost') should the user
+configure things that way / have an SSH config implying such.
 
-Really means the model needs to be many-to-one, a given Host or User could be associated with N Connections. They differ though, Hosts can be singletons of sorts (besides the alias implication which is easily solved via a map in Context) but Users need to be namespaced by Host.
+Really means the model needs to be many-to-one, a given Host or User could be
+associated with N Connections. They differ though, Hosts can be singletons of
+sorts (besides the alias implication which is easily solved via a map in
+Context) but Users need to be namespaced by Host.
 
-So perhaps it should really be that a Connection references a Host (unless it stores only the string and we use an eg Lexicon mapping to handle aliasing, as we do in Invoke) and...also the string identifying the User, which is then delegated to Host to look up (so we get that host's instance of that user)?
+So perhaps it should really be that a Connection references a Host (unless it
+stores only the string and we use an eg Lexicon mapping to handle aliasing, as
+we do in Invoke) and...also the string identifying the User, which is then
+delegated to Host to look up (so we get that host's instance of that user)?
 
 ### Newer thoughts on Host/User type stuff
 
