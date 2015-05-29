@@ -40,7 +40,7 @@ import select
 from fabric.thread_handling import ThreadHandler
 from fabric.state import output, win32, connections, env
 from fabric import state
-from fabric.utils import isatty
+from fabric.utils import isatty, import_non_local
 
 if not win32:
     import termios
@@ -69,6 +69,54 @@ def documented_contextmanager(func):
     wrapper.undecorated = func
     return wrapper
 
+@documented_contextmanager
+def fab_open(path, mode='r', verbose=False, **kwargs):
+    """
+    Context manager which behaves similar to with open(), except
+    working with remote files using fabric.api.get and fabric.api.put.
+
+    Supported file mode flags: rwabt+
+
+    There is technically no difference between b(byte) and t(text) modes,
+    since they both use io.BytesIO regardless.
+
+    If the fabric.api get or put functions should use some special keyword
+    arg such as use_sudo, pass them in as get_use_sudo, put_use_sudo, etc,
+    and they will be passed into the respective functions.
+
+    Usage example:
+
+    def read_remote_path(path):
+        with fab_open(path, 'r') as handle:
+            contents = handle.read()
+        print contents
+    """
+    from fabric.api import get, put
+    io = import_non_local('io') # we want Python's io, not fabric.io
+    g_kwargs = {k[4:]:v for k, v in kwargs.iteritems() if k.startswith('get_')}
+    p_kwargs = {k[4:]:v for k, v in kwargs.iteritems() if k.startswith('put_')}
+    # if two options in a, r, and w are selected, the mode is invalid
+    if len([x for x in 'arw' if x in mode]) != 1:
+        raise ValueError("must have one and only one mode in a,r,w")
+    fileobj = io.BytesIO()
+    # if r, a, or + are in mode, read in the existing file
+    if len([x for x in 'ra+' if x in mode]) > 0:
+        if verbose:
+            get(path, fileobj, **g_kwargs)
+        else:
+            with hide('everything'):
+                get(path, fileobj, **g_kwargs)
+        if 'a' not in mode:
+            fileobj.seek(0)
+    yield fileobj
+    # if w, a, or + are in mode, write out the file
+    if len([x for x in 'wa+' if x in mode]) > 0:
+        if verbose:
+            put(fileobj, path, **p_kwargs)
+        else:
+            with hide('everything'):
+                put(fileobj, path, **p_kwargs)
+    fileobj.close()
 
 @documented_contextmanager
 def show(*groups):

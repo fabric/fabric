@@ -3,10 +3,21 @@ Internal subroutines for e.g. aborting execution with an error message,
 or performing indenting on multiline output.
 """
 import os
+import imp
 import sys
 import textwrap
 from traceback import format_exc
 
+def import_non_local(name, custom_name=None):
+    """Allow importing of a non-local module.
+
+    For ex, attempting to import io within fabric would result
+    in fabric.io being imported instead of the core io module"""
+    custom_name = custom_name or name
+    fil, pathname, desc = imp.find_module(name, sys.path[1:])
+    module = imp.load_module(custom_name, fil, pathname, desc)
+    fil.close()
+    return module
 
 def _encode(msg, stream):
     if isinstance(msg, unicode) and hasattr(stream, 'encoding') and not stream.encoding is None:
