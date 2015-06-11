@@ -130,11 +130,11 @@ class Connection_(Spec):
                 port=22,
             )
 
-        def is_connected_still_False_when_connect_fails(self):
-            skip()
-
         def raises_some_sort_of_error_when_shit_explodes_idk(self):
             # ???
+            skip()
+
+        def is_connected_still_False_when_connect_fails(self):
             skip()
 
         def is_connected_False_even_if_failure_doesnt_raise_exception(self):
