@@ -1,3 +1,5 @@
+import socket
+
 from spec import Spec, skip, eq_, raises, ok_
 from mock import patch, Mock, call
 from paramiko.client import SSHClient, AutoAddPolicy
@@ -130,8 +132,17 @@ class Connection_(Spec):
                 port=22,
             )
 
-        def is_connected_still_False_when_connect_fails(self):
-            skip()
+        @patch('fabric.connection.SSHClient')
+        def is_connected_still_False_when_connect_fails(self, Client):
+            cxn = Connection('host')
+            client = Client.return_value
+            client.get_transport.return_value = Mock(active=False)
+            client.connect.side_effect = socket.error
+            try:
+                cxn.open()
+            except socket.error:
+                pass
+            eq_(cxn.is_connected, False)
 
         # TODO: all the various connect-time options such as agent forwarding,
         # host acceptance policies, how to auth, etc etc. These are all aspects
