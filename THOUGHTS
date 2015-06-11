@@ -418,16 +418,19 @@ delegated to Host to look up (so we get that host's instance of that user)?
     from config or kwargs - which would be the same almost all the time, such
     as in the CLI use case?
     * Additionally, in the CLI use case, the two "same" Connections would
-    likely not exist at the same time either (besides parallel, where we NEED
-    mutiple connections anyway, because socket reuse is bad) making it largely
-    moot, besides whatever savings one gets from reusing the outer connection
-    (vs the per-shell-command sessions).
+    likely not exist at the same time either (besides parallel execution
+    against the same host, such as parameterization, where we'd NEED mutiple
+    connections anyway because socket reuse is bad) making it largely moot,
+    besides whatever savings one gets from reusing the outer connection (vs the
+    per-shell-command sessions).
     * Could potentially enable a CLI-oriented cache that is purely opt-in, for
     users who connect to many hosts per task AND have multiple tasks per
-    invocation (which is the only time this matters).
+    invocation (which is the only time this matters?).
         * What would that look like for a library use case? Presumably users
         would start building their own "caches" which start to look a lot like
-        Fabric 1's ConnectionCache or roledef type things...
+        Fabric 1's ConnectionCache or roledef type things...in which case we &
+        they would benefit from some sort of generic cache object being
+        defined.
 * Besides connection reuse and aliasing, there's also the issue of rich host
   metadata...
     * This also should be Config driven at its source
@@ -448,5 +451,21 @@ delegated to Host to look up (so we get that host's instance of that user)?
             * So, does editing a Host object differ in any real way from
             modifying Overrides? Is there ever a set of data that matters that
             is not "config"? Don't think so...
+* Game plan from above:
+    * Don't worry about caching outer-layer connections for the time being; it
+    adds architectural overhead for currently unproven benefit, and can be
+    added pre-2.0 if necessary.
+    * Don't worry too much about purely-OO-oriented host metadata for now; just
+    ensure that folks can set config-level data somehow (e.g.
+    `config.hosts.hostname.settings_here`) and that it is honored as late as
+    possible.
+    * The 'alias problem' should thus be solved at first by allowing individual
+    host settings chunks to specify aliases, OR by aping ssh_config and
+    allowing individual host chunks/entries to specify an explicit hostname
+    (with the hostname being otherwise assumed to equal the settings key).
+        * Only downside here is it makes "one entry, multiple aliases" harder -
+        but being in line w/ ssh_config feels more important at first; we can
+        always add our own options alongside if we need to.
+
 
 <!-- vim: set ft=markdown : -->
