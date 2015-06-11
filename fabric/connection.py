@@ -109,10 +109,9 @@ class Connection(object):
         """
         Whether or not this connection is actually open.
         """
-        if self.client:
-            transport = self.client.get_transport()
-            if transport:
-                return transport.active
+        transport = self.client.get_transport()
+        if transport:
+            return transport.active
         return False
 
     def open(self):
