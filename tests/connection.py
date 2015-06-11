@@ -151,9 +151,6 @@ class Connection_(Spec):
         # TODO: though some/all of those things might want to be set to
         # defaults at initialization time...
 
-        def honors_config_option_for_known_hosts(self):
-            skip()
-
     class close:
         @patch('fabric.connection.SSHClient')
         def has_no_required_args_and_returns_None(self, Client):
