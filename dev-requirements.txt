@@ -9,6 +9,8 @@ six==1.6.1
 mock==1.0.1
 # Linting!
 flake8==2.4.0
+# Coverage!
+coverage==3.7.1
 # Documentation tools
 sphinx>=1.2
 alabaster>=0.7

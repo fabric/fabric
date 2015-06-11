@@ -93,3 +93,4 @@ def integration(c, module=None, runner=None, opts=None):
 ns = Collection(
     watch, docs, www, test, coverage, integration, sites, release=packaging,
 )
+ns.configure({"coverage": {"package": "fabric"}})

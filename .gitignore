@@ -16,3 +16,4 @@ TAGS
 .tox
 tox.ini
 .idea/
+htmlcov
