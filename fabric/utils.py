@@ -23,7 +23,7 @@ def get_local_user():
         pass
     # Older (?) Windows systems don't support getpass well; they should
     # have the `win32` module instead.
-    except ImportError:
+    except ImportError: # pragma: nocover
         if win32:
             import win32api
             import win32security # noqa
