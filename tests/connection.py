@@ -167,8 +167,15 @@ class Connection_(Spec):
             client = Client.return_value
             client.close.assert_called_with()
 
-        def has_no_effect_if_already_closed(self):
-            skip()
+        @patch('fabric.connection.SSHClient')
+        def has_no_effect_if_already_closed(self, Client):
+            client = Client.return_value
+            c = Connection('host')
+            c.open()
+            c.close()
+            client.get_transport.return_value = Mock(active=False)
+            c.close()
+            client.close.assert_called_once_with()
 
         @patch('fabric.connection.SSHClient')
         def is_connected_becomes_False(self, Client):
