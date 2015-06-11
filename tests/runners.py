@@ -44,6 +44,14 @@ class Remote_(Spec):
             cols, rows = pty_size()
             chan.get_pty.assert_called_with(width=cols, height=rows)
 
+        @mock_remote(out="some text", wait=1)
+        def wait_loop_performs_io_sleep(self, chan):
+            c = Connection('host')
+            r = Remote(context=c)
+            fakeout = StringIO()
+            r.run(CMD, out_stream=fakeout)
+            eq_(fakeout.getvalue(), "some text")
+
         # TODO: how much of Invoke's tests re: the upper level run() (re:
         # things like returning Result, behavior of Result, etc) to
         # duplicate here? Ideally none or very few core ones.
