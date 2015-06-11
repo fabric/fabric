@@ -130,16 +130,7 @@ class Connection_(Spec):
                 port=22,
             )
 
-        def raises_some_sort_of_error_when_shit_explodes_idk(self):
-            # ???
-            skip()
-
         def is_connected_still_False_when_connect_fails(self):
-            skip()
-
-        def is_connected_False_even_if_failure_doesnt_raise_exception(self):
-            # i.e. client.connect() didn't die BUT somehow its transport is
-            # none, or its transport says it's inactive
             skip()
 
         # TODO: all the various connect-time options such as agent forwarding,
