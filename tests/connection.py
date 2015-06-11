@@ -116,8 +116,16 @@ class Connection_(Spec):
             c.open()
             eq_(c.is_connected, True)
 
-        def has_no_effect_if_already_connected(self):
-            skip()
+        @patch('fabric.connection.SSHClient')
+        def has_no_effect_if_already_connected(self, Client):
+            cxn = Connection('host')
+            cxn.open()
+            cxn.open()
+            client = Client.return_value
+            client.connect.assert_called_once_with(
+                hostname='host',
+                port=22,
+            )
 
         def is_connected_still_False_when_connect_fails(self):
             skip()
