@@ -127,7 +127,8 @@ class Connection(object):
 
         If no connection is open, this method does nothing.
         """
-        self.client.close()
+        if self.is_connected:
+            self.client.close()
 
     def _create_session(self):
         # TODO: make this a contextmanager perhaps? 'with cxn.session() as
