@@ -100,8 +100,9 @@ class Connection_(Spec):
         @patch('fabric.connection.SSHClient')
         def calls_SSHClient_connect(self, Client):
             "calls paramiko.SSHClient.connect() with correct args"
-            Connection('host').open()
             client = Client.return_value
+            client.get_transport.return_value = Mock(active=False)
+            Connection('host').open()
             client.connect.assert_called_with(
                 hostname='host',
                 port=22,
@@ -119,9 +120,11 @@ class Connection_(Spec):
         @patch('fabric.connection.SSHClient')
         def has_no_effect_if_already_connected(self, Client):
             cxn = Connection('host')
-            cxn.open()
-            cxn.open()
             client = Client.return_value
+            client.get_transport.return_value = Mock(active=False)
+            cxn.open()
+            client.get_transport.return_value = Mock(active=True)
+            cxn.open()
             client.connect.assert_called_once_with(
                 hostname='host',
                 port=22,

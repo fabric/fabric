@@ -119,7 +119,8 @@ class Connection(object):
         """
         Initiate an SSH connection to the host/port this object is bound to.
         """
-        self.client.connect(hostname=self.host, port=self.port)
+        if not self.is_connected:
+            self.client.connect(hostname=self.host, port=self.port)
 
     def close(self):
         """
