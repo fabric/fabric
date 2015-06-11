@@ -186,9 +186,6 @@ class Connection_(Spec):
             c.close()
             eq_(c.is_connected, False)
 
-        def is_connected_becomes_False_even_on_error(self):
-            skip()
-
     class run:
         # NOTE: most actual run related tests live in the runners module's
         # tests. Here we are just testing the outer interface a bit.
