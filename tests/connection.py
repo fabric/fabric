@@ -221,8 +221,6 @@ class Connection_(Spec):
         def calls_invoke_Runner_run(self):
             skip()
 
-        # TODO: replicate any invoke tests for sanity check?
-
     class sudo:
         def calls_Remote_with_sudo_call_and_response_configuration(self):
             skip()
