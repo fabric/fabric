@@ -66,17 +66,6 @@ class Remote_(Spec):
         # with the Runner instead being a Remote. Or do we just replicate the
         # basics?
 
-        def may_wrap_command_with_things_like_bash_dash_c(self):
-            "may wrap command with things like bash -c"
-            # TODO: how? also implies top level run() wants to pass **kwargs to
-            # runner somehow, though that's dangerous; maybe allow runner to
-            # expose what it expects so run() can correctly determine things.
-            # TODO: oughtn't this be part of invoke proper?
-            skip()
-
-        def does_not_wrap_command_by_default(self):
-            skip()
-
         # TODO: all other run() tests from fab1...
 
 
