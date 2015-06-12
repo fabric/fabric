@@ -59,7 +59,7 @@ class Connection(object):
 
         :param str host:
             the hostname (or IP address) of this connection.
-            
+
             May include shorthand for the ``user`` and/or ``port`` parameters,
             of the form ``user@host``, ``host:port``, or ``user@host:port``.
 

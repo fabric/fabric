@@ -1,6 +1,6 @@
 import socket
 
-from spec import Spec, skip, eq_, raises, ok_
+from spec import Spec, eq_, raises, ok_
 from mock import patch, Mock, call
 from paramiko.client import SSHClient, AutoAddPolicy
 

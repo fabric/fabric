@@ -1,6 +1,6 @@
 from invoke.vendor.six import StringIO
 
-from spec import Spec, skip, ok_, eq_
+from spec import Spec, ok_, eq_
 from invoke import pty_size
 
 from fabric.connection import Connection
