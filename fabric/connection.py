@@ -101,6 +101,18 @@ class Connection(object):
         # TODO: when/how to run load_files, merge, load_shell_env, etc?
         # TODO: i.e. what is the lib use case here (and honestly in invoke too)
 
+        shorthand = self.derive_shorthand(host)
+        host = shorthand['host']
+        err = "You supplied the {0} via both shorthand and kwarg! Please pick one." # noqa
+        if shorthand['user'] is not None:
+            if user is not None:
+                raise ValueError(err.format('user'))
+            user = shorthand['user']
+        if shorthand['port'] is not None:
+            if port is not None:
+                raise ValueError(err.format('port'))
+            port = shorthand['port']
+
         #: The hostname of the target server.
         self.host = host
         #: The username this connection will use to connect to the remote end.
@@ -112,6 +124,28 @@ class Connection(object):
         client = SSHClient()
         client.set_missing_host_key_policy(AutoAddPolicy())
         self.client = client
+
+    def derive_shorthand(self, host_string):
+        user_hostport = host_string.rsplit('@', 1)
+        hostport = user_hostport.pop()
+        user = user_hostport[0] if user_hostport and user_hostport[0] else None
+
+        # IPv6: can't reliably tell where addr ends and port begins, so don't
+        # try (and don't bother adding special syntax either, user should avoid
+        # this situation by using port=).
+        if hostport.count(':') > 1:
+            host = hostport
+            port = None
+        # IPv4: can split on ':' reliably.
+        else:
+            host_port = hostport.rsplit(':', 1)
+            host = host_port.pop(0) or None
+            port = host_port[0] if host_port and host_port[0] else None
+
+        if port is not None:
+            port = int(port)
+
+        return {'user': user, 'host': host, 'port': port}
 
     @property
     def is_connected(self):
