@@ -222,7 +222,3 @@ class Connection_(Spec):
         def calls_invoke_Runner_run(self, invoke):
             Connection('host').local('foo')
             invoke.run.assert_called_with('foo')
-
-    class sudo:
-        def calls_Remote_with_sudo_call_and_response_configuration(self):
-            skip()
