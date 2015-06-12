@@ -34,6 +34,22 @@ class Connection_(Spec):
             def is_exposed_as_attribute(self):
                 eq_(Connection('host').host, 'host') # buffalo buffalo
 
+            def may_contain_user_shorthand(self):
+                c = Connection('user@host')
+                eq_(c.host, 'host')
+                eq_(c.user, 'user')
+
+            def may_contain_port_shorthand(self):
+                c = Connection('host:123')
+                eq_(c.host, 'host')
+                eq_(c.port, 123)
+
+            def may_contain_user_and_port_shorthand(self):
+                c = Connection('user@host:123')
+                eq_(c.host, 'host')
+                eq_(c.user, 'user')
+                eq_(c.port, 123)
+
         class user:
             def defaults_to_local_user_with_no_config(self):
                 # Tautology-tastic!
@@ -46,6 +62,24 @@ class Connection_(Spec):
             def may_be_given_as_kwarg(self):
                 eq_(Connection('host', user='somebody').user, 'somebody')
 
+            @raises(ValueError)
+            def errors_when_given_as_both_kwarg_and_shorthand(self):
+                Connection('user@host', user='otheruser')
+
+            def kwarg_wins_over_config(self):
+                config = Config(overrides={'user': 'nobody'})
+                eq_(
+                    Connection('host', user='somebody', config=config).user,
+                    'somebody'
+                )
+
+            def shorthand_wins_over_config(self):
+                config = Config(overrides={'user': 'nobody'})
+                eq_(
+                    Connection('somebody@host', config=config).user,
+                    'somebody'
+                )
+
         class port:
             def defaults_to_22_because_yup(self):
                 eq_(Connection('host').port, 22)
@@ -56,6 +90,24 @@ class Connection_(Spec):
 
             def may_be_given_as_kwarg(self):
                 eq_(Connection('host', port=2202).port, 2202)
+
+            @raises(ValueError)
+            def errors_when_given_as_both_kwarg_and_shorthand(self):
+                Connection('host:123', port=321)
+
+            def kwarg_wins_over_config(self):
+                config = Config(overrides={'port': 2222})
+                eq_(
+                    Connection('host', port=123, config=config).port,
+                    123
+                )
+
+            def shorthand_wins_over_config(self):
+                config = Config(overrides={'port': 2222})
+                eq_(
+                    Connection('host:123', config=config).port,
+                    123
+                )
 
         class config:
             def is_not_required(self):
