@@ -58,9 +58,17 @@ class Connection(object):
         Set up a new object representing a server connection.
 
         :param str host:
-            the hostname (or IP address) of this connection. May include
-            shorthand for the ``user`` and/or ``port`` parameters, of the form
-            ``[user@]host[:port]``.
+            the hostname (or IP address) of this connection.
+            
+            May include shorthand for the ``user`` and/or ``port`` parameters,
+            of the form ``user@host``, ``host:port``, or ``user@host:port``.
+
+            .. note::
+                Due to ambiguity, IPv6 host addresses are incompatible with the
+                ``host:port`` shorthand (though ``user@host`` will still work
+                OK). In other words, the presence of >1 ``:`` character will
+                prevent any attempt to derive a shorthand port number; use the
+                explicit ``port`` parameter instead.
 
         :param str user:
             the login user for the remote connection. Defaults to

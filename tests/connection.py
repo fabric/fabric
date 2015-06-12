@@ -50,6 +50,21 @@ class Connection_(Spec):
                 eq_(c.user, 'user')
                 eq_(c.port, 123)
 
+            def ipv6_addresses_work_ok_but_avoid_port_shorthand(self):
+                for addr in (
+                    '2001:DB8:0:0:0:0:0:1',
+                    '2001:DB8::1',
+                    '::1',
+                ):
+                    c = Connection(addr, port=123)
+                    eq_(c.user, get_local_user())
+                    eq_(c.host, addr)
+                    eq_(c.port, 123)
+                    c2 = Connection("somebody@{0}".format(addr), port=123)
+                    eq_(c2.user, "somebody")
+                    eq_(c2.host, addr)
+                    eq_(c2.port, 123)
+
         class user:
             def defaults_to_local_user_with_no_config(self):
                 # Tautology-tastic!
