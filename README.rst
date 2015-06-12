@@ -10,7 +10,7 @@ servers. A single-server execution might look like this::
     from fabric import Connection
 
     result = Connection('web1.example.com').run('uname -s')
-    print("web1 is {0}".format(result.stdout.strip()))
+    print("web1 is {0}".format(result.stdout))
 
 which could result in::
 
@@ -22,17 +22,17 @@ To check the ``uname`` of multiple servers, you might do this::
 
     results = Pool('web1', 'web2').run('uname -s')
     for host, result in results.items(): # 'results' is a dict
-        print("{0} is {1}".format(host.name, result.stdout.strip()))
+        print("{0} is {1}".format(host.name, result.stdout))
 
 resulting in e.g.::
 
     web1 is Linux
     web2 is Darwin
 
-Fabric also provides a task-oriented API, where you define a block of Python
-functionality oriented around some generic target host, and allow client code
-or command-line users to determine what host or hosts that task is executed on.
-(This mode of behavior is similar to Fabric's primary API in versions prior to
+Fabric also provides a task-oriented API, where you define a Python function
+operating on some generic target host, and allow client code or command-line
+users to determine which host or hosts that task is executed on. (This mode of
+behavior is similar to Fabric's primary API in versions prior to
 2.0.)
 
 For example, you might define a task function like so::
@@ -42,7 +42,7 @@ For example, you might define a task function like so::
     @task
     def get_uname(host):
         result = host.run("uname -s")
-        print("{0} is {1}".format(host.name, result.stdout.strip()))
+        print("{0} is {1}".format(host.name, result.stdout))
 
 and execute it like this::
 
