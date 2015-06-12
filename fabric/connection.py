@@ -150,8 +150,3 @@ class Connection(object):
         """
         self.open()
         return Remote(context=self).run(command, **kwargs)
-
-    def put(self):
-        """
-        Upload a local file or file-like object to the remote end.
-        """
