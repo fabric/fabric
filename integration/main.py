@@ -40,6 +40,14 @@ class Main(Spec):
         ok_("\r\n" in result.stdout)
         eq_(result.pty, True)
 
+    def local_commands(self):
+        # NOTE: most of the interesting tests about this are in invoke.runners
+        # / invoke.integration.
+        cxn = Connection('localhost')
+        result = cxn.local('echo foo')
+        eq_(result.stdout, 'foo\n')
+        assert not cxn.is_connected # meh way of proving it didn't use SSH
+
     def simple_command_on_multiple_hosts(self):
         """
         Run command on localhost...twice!

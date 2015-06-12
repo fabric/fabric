@@ -1,3 +1,4 @@
+import invoke # for mocking
 from invoke.config import Config as InvokeConfig, merge_dicts
 from paramiko.client import SSHClient, AutoAddPolicy
 
@@ -150,3 +151,13 @@ class Connection(object):
         """
         self.open()
         return Remote(context=self).run(command, **kwargs)
+
+    def local(self, *args, **kwargs):
+        """
+        Execute a shell command on the local system.
+
+        This method is a straight wrapper of `invoke.run`; see its docs for
+        details and call signature.
+        """
+        # TODO: use a context or self depending on how we do that above
+        return invoke.run(*args, **kwargs)
