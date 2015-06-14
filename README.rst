@@ -1,11 +1,11 @@
-Fabric is a Python (2.6+, 3.2+) library for high level, Pythonic SSH command
-execution. It builds on top of `Invoke <http://pyinvoke.org>`_ (task and
-command primitives) and `Paramiko <http://paramiko.org>`_ (SSH protocol
+Fabric is a high level Python (2.6+, 3.2+) library for SSH command execution.
+It builds on top of `Invoke <http://pyinvoke.org>`_ (task and command
+primitives) and `Paramiko <http://paramiko.org>`_ (SSH protocol
 implementation), extending their APIs to complement one another & provide
-additional functionality, all in a single consistent namespace.
+additional functionality.
 
-The most basic use of Fabric is to execute shell commands on one or more remote
-servers. A single-server execution might look like this::
+Its simplest use case is executing shell commands on one or more remote
+servers, e.g.::
 
     from fabric import Connection
 
