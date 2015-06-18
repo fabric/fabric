@@ -24,6 +24,10 @@ html_theme_options = {
 
     'link': '#3782BE',
     'link_hover': '#3782BE',
+
+    # Wide enough that 80-col code snippets aren't truncated on default font
+    # settings (at least for bitprophet's Chrome-on-OSX-Yosemite setup)
+    'page_width': '1024px',
 }
 html_sidebars = {
     '**': [
