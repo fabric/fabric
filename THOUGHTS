@@ -468,4 +468,20 @@ delegated to Host to look up (so we get that host's instance of that user)?
         always add our own options alongside if we need to.
 
 
+## Brainstorm for multi-cxn object name
+
+* Pool - not great, can imply a group of identical shared resources (as in
+  connection pooling to DBs) and also the kinda similar Clusto term
+* Group - all right, maybe too generic, potential confusion with auth groups
+  (but not really that likely as they are pretty distinct)
+* Batch - slightly mouthy/awkward, usually heard in ref to a "batch job" which
+  is both kinda accurate and kinda not
+* Connections (i.e. plural of Connection) - too confusing vs a "generic"
+  iterable of Collection objects (eg a list, tuple etc), also easy to
+  mistake/typo one for the other
+* Cluster - meh? probably too easy to confuse with a "real" cluster, as in, a
+  zookeeper/database/load balancer/etc cluster. Might sometimes map to one of
+  those but doesn't always
+
+
 <!-- vim: set ft=markdown : -->
