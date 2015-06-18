@@ -105,13 +105,13 @@ straightforward approach could be to iterate over a list or tuple of
     mac1: Darwin
     
 This approach works, but as use cases get more complex it can be
-useful to think of a collection of hosts as a single object. Enter `.Pool`, a
+useful to think of a collection of hosts as a single object. Enter `.Group`, a
 class wrapping one-or-more `.Connection` objects and offering a similar API.
 
-The previous example, using `.Pool`, looks like this::
+The previous example, using `.Group`, looks like this::
 
-    >>> from fabric import Pool
-    >>> results = Pool('web1', 'web2', 'mac1').run('uname -s')
+    >>> from fabric import Group
+    >>> results = Group('web1', 'web2', 'mac1').run('uname -s')
     >>> print(results)
     <ResultSet: {
         <Connection 'web1'>: <CommandResult 'uname -s'>,
@@ -126,7 +126,7 @@ The previous example, using `.Pool`, looks like this::
     web2: Linux
     mac1: Darwin
 
-Where `.Connection` methods return single `.Result` objects, `.Pool` methods
+Where `.Connection` methods return single `.Result` objects, `.Group` methods
 return `ResultSets <.ResultSet>` - `dict`-like objects offering access to
 individual per-connection results as well as metadata about the entire run.
 
@@ -136,10 +136,10 @@ Bringing it all together
 
 Finally, we arrive at the most realistic use case: you've got a bundle of
 commands and/or file transfers and you want to apply it to multiple servers.
-You *could* use multiple `.Pool` method calls to do this::
+You *could* use multiple `.Group` method calls to do this::
 
-    from fabric import Pool
-    pool = Pool('web1', 'web2', 'web3')
+    from fabric import Group
+    pool = Group('web1', 'web2', 'web3')
     pool.put('myfiles.tgz', '/opt/mydata')
     pool.run('tar -C /opt/mydata -xzvf /opt/mydata/myfiles.tgz')
 
@@ -148,7 +148,7 @@ action above only needs to happen if ``/opt/mydata`` is presently empty.
 Performing that sort of check requires execution on a per-server basis.
 
 You could fill that need by using iterables of `.Connection` objects (though
-this foregoes some benefits of using `Pools <.Pool>`)::
+this foregoes some benefits of using `Groups <.Group>`)::
 
     from fabric import Connection
     for host in ('web1', 'web2', 'web3'):
@@ -158,16 +158,16 @@ this foregoes some benefits of using `Pools <.Pool>`)::
             cxn.run('tar -C /opt/mydata -xzvf /opt/mydata/myfiles.tgz')
 
 Instead, remember how we used a function in that earlier example? You can hand
-such a function to `.Pool.execute` and get the best of both worlds::
+such a function to `.Group.execute` and get the best of both worlds::
 
-    from fabric import Pool
+    from fabric import Group
 
     def upload_and_unpack(cxn):
         if cxn.run('test -f /opt/mydata/myfile', warn=True).failed:
             cxn.put('myfiles.tgz', '/opt/mydata')
             cxn.run('tar -C /opt/mydata -xzvf /opt/mydata/myfiles.tgz')
 
-    Pool('web1', 'web2', 'web3').execute(upload_and_unpack)
+    Group('web1', 'web2', 'web3').execute(upload_and_unpack)
 
-`.Pool.execute`, like its sibling methods, returns `.ResultSet` objects; its
+`.Group.execute`, like its sibling methods, returns `.ResultSet` objects; its
 per-connection values are simply the return values of the function passed in.

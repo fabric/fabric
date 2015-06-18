@@ -36,12 +36,12 @@
       ditto
     * CLI slightly less base case of referencing a role or other pool within
       task?
-    * Lib case of same - do we do eg Pool(name) to load some pool config?
-        * Should Pool be the same as eg clusto pool or Fab 1 role?
+    * Lib case of same - do we do eg Group(name) to load some pool config?
+        * Should Group be the same as eg clusto pool or Fab 1 role?
         * Our tutorial implies it's a manual hostname list but that's probably
           silly / not common. Almost all the time you'd want to reference your
           own array/list, or some data structure resulting in same.
-        * Do we have some structure above Pool which yields Pools? Context
+        * Do we have some structure above Group which yields Groups? Context
           again? Something mapping to a truth db? What does it look like in the
           semi base "I just have a fabfile and an ssh_config" case?
     * Clusto-driven use case specifically: what would I love to replace servo's
@@ -52,7 +52,7 @@
 
 ## Newer specific questions to answer
 
-* Is Pool worth having in the tutorial (or at all)?
+* Is Group worth having in the tutorial (or at all)?
 * What sort of construct do we want - if any - for the equivalent of 'roles'?
   Anything in this space is going to ape, and almost definitely fall short of,
   APIs like those found in clusto or CM systems.
@@ -73,11 +73,11 @@ done because that's kinda silly?)
 
 * how does parallel work by default? clearly the superuser answer is "do it
   yourself using Connection objects" but what about the average user? is it a
-  kwarg to e.g. Pool.execute()? separate method(s)? function taking a pool arg?
+  kwarg to e.g. Group.execute()? separate method(s)? function taking a pool arg?
 * the 'two types of serial' should probs be handled with: if you want one
   command on all hosts, then another  command on all hosts, just use subsequent
-  calls to Pool.run(); if you want a set of commands on one host, then on
-  another host, use Pool.execute()?
+  calls to Group.run(); if you want a set of commands on one host, then on
+  another host, use Group.execute()?
 * how to handle the possibility of 'inner' execute's should that be a thing?
   e.g. someone defines a task, it gets explicitly or implicitly execute()'d
   against a pool, but inside it, it calls execute() on another pool? Tho this

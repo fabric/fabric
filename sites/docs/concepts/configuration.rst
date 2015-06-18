@@ -24,9 +24,9 @@ user-facing code.
 
 * Fabric simply seeks for specific configuration settings in an Invoke config
   object, either one handed explicitly into its own API objects like Connection
-  or Pool, or a default one; describe its defaults as we do for Invoke (user,
+  or Group, or a default one; describe its defaults as we do for Invoke (user,
   port etc).
-* Fabric's CLI driver generates Connections and Pools for you and hands in that
+* Fabric's CLI driver generates Connections and Groups for you and hands in that
   default config (initializing it with CLI options and so forth, just like
   Invoke does)
 
@@ -45,13 +45,13 @@ user-facing code.
 
 * Users who have a nontrivial, non-CLI-based setup (eg celery workers or some
   such) should manage their own 'base' Config file as well as their own
-  Connection/Pool generation?
+  Connection/Group generation?
 
     * What would this look like? If I have, say, a 5 module codebase not using
       CLI tasks, where would I store my in-code config settings (or my
       initialization of a Config object which loads conf files - i.e. replacing
       what the CLI module does), and how would I be setting up explicit
-      Connections and Pools?
+      Connections and Groups?
 
         * E.g. write some sample Jenkins/Celery esque background worker code -
           how does this work, how does it feel?
