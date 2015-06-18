@@ -1,10 +1,19 @@
 Welcome to Fabric!
 ==================
 
-This website covers project information for Fabric such as the changelog,
-contribution guidelines, development roadmap, news/blog, and so forth. Detailed
-conceptual and API documentation can be found at our code documentation site,
-`docs.fabfile.org <http://docs.fabfile.org>`_. Our README is below.
+.. Note: README uses level 3 headers
+.. include:: ../../README.rst
+
+What is this website?
+---------------------
+
+``www.fabfile.org`` provides project information for Fabric such as the
+changelog, contribution guidelines, development roadmap, news/blog, and so
+forth.
+
+Detailed conceptual and API documentation can be found at our code
+documentation site, `docs.fabfile.org <http://docs.fabfile.org>`_.
+
 
 .. toctree::
     :hidden:
@@ -17,6 +26,3 @@ conceptual and API documentation can be found at our code documentation site,
     Roadmap <roadmap>
     contact
 
-----
-
-.. include:: ../../README.rst
