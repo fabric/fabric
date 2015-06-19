@@ -1,7 +1,7 @@
 from spec import skip, Spec, ok_, eq_
 from invoke import pty_size
 
-from fabric.connection import Connection
+from fabric.connection import Connection, Group
 
 
 class Main(Spec):
@@ -52,9 +52,11 @@ class Main(Spec):
         """
         Run command on localhost...twice!
         """
-        skip()
-        Batch(['localhost', 'localhost']).run('echo foo') # noqa
-        # => [Result, Result
+        group = Group(['localhost', 'localhost'])
+        result = group.run('echo foo', hide=True)
+        # NOTE: currently, the result will only be 1 object, because both of
+        # them will end up as the same key. Derp.
+        eq_(result[group[0].host_string].stdout, "foo\n")
 
     def sudo_command(self):
         """
