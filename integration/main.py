@@ -44,7 +44,7 @@ class Main(Spec):
         # NOTE: most of the interesting tests about this are in invoke.runners
         # / invoke.integration.
         cxn = Connection('localhost')
-        result = cxn.local('echo foo')
+        result = cxn.local('echo foo', hide=True)
         eq_(result.stdout, 'foo\n')
         assert not cxn.is_connected # meh way of proving it didn't use SSH
 
