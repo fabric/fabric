@@ -77,12 +77,14 @@ class Main(Spec):
         cxn.run('whoami', runner=Basic) # noqa
         cxn.run('whoami', runner=Sudo) # noqa
 
-    def switch_command_between_local_and_remote(self):
+    def run_both_locally_and_remotely(self):
         """
         Run command truly locally, and over SSH via "localhost"
         """
-        # TODO: Only really makes sense at the task level though...
-        skip()
-        # Basic/raw
-        run('hostname') # Or Context().run('hostname') # noqa
-        Connection('localhost').run('hostname')
+        cxn = Connection('localhost')
+        result = cxn.local('echo foo', hide=True)
+        eq_(result.stdout, 'foo\n')
+        assert not cxn.is_connected # meh way of proving it didn't use SSH yet
+        result = cxn.run('echo foo', hide=True)
+        assert cxn.is_connected # NOW it's using SSH
+        eq_(result.stdout, 'foo\n')
