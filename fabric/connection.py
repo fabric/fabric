@@ -215,9 +215,6 @@ class Group(list):
     """
     A collection of `.Connection` objects whose API operates on its contents.
     """
-    # TODO: maybe have it act like an iterable yielding its connections too?
-    # TODO: also shit like append, extend, etc. maybe just inherit from list eh
-
     def __init__(self, hosts=None):
         """
         Create a group of connections from an iterable of shorthand strings.
@@ -243,6 +240,7 @@ class Group(list):
         # TODO: how to change method of execution across contents? subclass,
         # kwargs, additional methods, inject an executor?
         # TODO: retval needs to be host objects or something non-string
+        # TODO: also need way to deal with duplicate connections (see THOUGHTS)
         result = {}
         for cxn in self:
             result[cxn.host_string] = cxn.run(*args, **kwargs)
