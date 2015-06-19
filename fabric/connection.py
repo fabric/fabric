@@ -148,6 +148,12 @@ class Connection(object):
         return {'user': user, 'host': host, 'port': port}
 
     @property
+    def host_string(self):
+        # TODO: remove this ASAP once a better way of representing connections
+        # in aggregate results is found!
+        return "{0}@{1}:{2}".format(self.user, self.host, self.port)
+
+    @property
     def is_connected(self):
         """
         Whether or not this connection is actually open.
