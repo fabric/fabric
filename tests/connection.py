@@ -4,7 +4,7 @@ from spec import Spec, eq_, raises, ok_
 from mock import patch, Mock, call
 from paramiko.client import SSHClient, AutoAddPolicy
 
-from fabric.connection import Connection, Config
+from fabric.connection import Connection, Config, Group
 from fabric.utils import get_local_user
 
 
@@ -289,3 +289,34 @@ class Connection_(Spec):
         def calls_invoke_Runner_run(self, invoke):
             Connection('host').local('foo')
             invoke.run.assert_called_with('foo')
+
+
+class Group_(Spec):
+    class init:
+        "__init__"
+        def may_be_empty(self):
+            eq_(len(Group()), 0)
+
+        def takes_iterable_of_host_strings(self):
+            g = Group(('foo', 'bar'))
+            eq_(g[0].host, 'foo')
+            eq_(g[1].host, 'bar')
+
+    class from_connections:
+        def inits_from_iterable_of_Connections(self):
+            g = Group((Connection('foo'), Connection('bar')))
+            eq_(len(g), 2)
+            eq_(g[1].host, 'bar')
+
+    def acts_like_an_iterable_of_Connections(self):
+        g = Group(('foo', 'bar', 'biz'))
+        eq_(g[0].host, 'foo')
+        eq_(g[-1].host, 'biz')
+        eq_(len(g), 3)
+        for c in g:
+            ok_(isinstance(c, Connection))
+
+    class run:
+        def executes_arguments_on_contents_run_serially(self):
+            "executes arguments on contents' run() serially"
+            skip()

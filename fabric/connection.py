@@ -203,3 +203,24 @@ class Connection(object):
         """
         # TODO: use a context or self depending on how we do that above
         return invoke.run(*args, **kwargs)
+
+
+class Group(object):
+    """
+    A collection of `.Connection` objects whose API operates on its contents.
+    """
+    # TODO: maybe have it act like an iterable yielding its connections too?
+    # TODO: also shit like append, extend, etc. maybe just inherit from list eh
+    # TODO: how to change method of execution across contents? subclass,
+    # methods, inject an executor?
+
+    def __init__(self, hosts):
+        """
+        Create a group of connections from an iterable of shorthand strings.
+
+        See `.Connection` for details on the format of these strings - they
+        will be used as the first positional argument of `.Connection`
+        constructors.
+        """
+        # TODO: allow splat-args form in addition to iterable arg?
+        #self.connections = map(Connection, hosts)
