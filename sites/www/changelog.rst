@@ -2,6 +2,8 @@
 Changelog
 =========
 
+* :support:`1325` Clarify `~fabric.operations.put` docs re: the ``mode``
+  argument. Thanks to ``@mjmare`` for the catch.
 * :bug:`1318` Update functionality added in :issue:`1213` so abort error
   messages don't get printed twice (once by us, once by ``sys.exit``) but the
   annotated exception error message is retained. Thanks to Felix Almeida for
