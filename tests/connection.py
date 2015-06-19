@@ -319,4 +319,10 @@ class Group_(Spec):
     class run:
         def executes_arguments_on_contents_run_serially(self):
             "executes arguments on contents' run() serially"
-            skip()
+            cxns = [Connection('host1'), Connection('host2')]
+            for cxn in cxns:
+                cxn.run = Mock()
+            g = Group.from_connections(cxns)
+            g.run("command", hide=True, warn=True)
+            for cxn in cxns:
+                cxn.run.assert_called_with("command", hide=True, warn=True)
