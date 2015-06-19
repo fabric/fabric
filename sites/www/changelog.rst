@@ -2,6 +2,7 @@
 Changelog
 =========
 
+* :release:`1.10.2 <2015-06-19>`
 * :support:`1325` Clarify `~fabric.operations.put` docs re: the ``mode``
   argument. Thanks to ``@mjmare`` for the catch.
 * :bug:`1318` Update functionality added in :issue:`1213` so abort error
