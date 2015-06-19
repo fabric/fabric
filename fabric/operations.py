@@ -295,7 +295,8 @@ def put(local_path=None, remote_path=None, use_sudo=False,
     scripts). To do this, specify ``mirror_local_mode=True``.
 
     Alternately, you may use the ``mode`` kwarg to specify an exact mode, in
-    the same vein as ``os.chmod`` or the Unix ``chmod`` command.
+    the same vein as ``os.chmod``, such as an exact octal number (``0755``) or
+    a string representing one (``"0755"``).
 
     `~fabric.operations.put` will honor `~fabric.context_managers.cd`, so
     relative values in ``remote_path`` will be prepended by the current remote
