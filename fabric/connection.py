@@ -205,7 +205,7 @@ class Connection(object):
         return invoke.run(*args, **kwargs)
 
 
-class Group(object):
+class Group(list):
     """
     A collection of `.Connection` objects whose API operates on its contents.
     """
@@ -214,7 +214,7 @@ class Group(object):
     # TODO: how to change method of execution across contents? subclass,
     # methods, inject an executor?
 
-    def __init__(self, hosts):
+    def __init__(self, hosts=None):
         """
         Create a group of connections from an iterable of shorthand strings.
 
@@ -223,4 +223,14 @@ class Group(object):
         constructors.
         """
         # TODO: allow splat-args form in addition to iterable arg?
-        #self.connections = map(Connection, hosts)
+        if hosts:
+            self.extend(map(Connection, hosts))
+
+    @classmethod
+    def from_connections(cls, connections):
+        """
+        Alternate constructor accepting `.Connection` objects.
+        """
+        group = cls()
+        group.extend(connections)
+        return group

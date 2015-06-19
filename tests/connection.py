@@ -1,6 +1,6 @@
 import socket
 
-from spec import Spec, eq_, raises, ok_
+from spec import Spec, eq_, raises, ok_, skip
 from mock import patch, Mock, call
 from paramiko.client import SSHClient, AutoAddPolicy
 
@@ -304,7 +304,7 @@ class Group_(Spec):
 
     class from_connections:
         def inits_from_iterable_of_Connections(self):
-            g = Group((Connection('foo'), Connection('bar')))
+            g = Group.from_connections((Connection('foo'), Connection('bar')))
             eq_(len(g), 2)
             eq_(g[1].host, 'bar')
 
