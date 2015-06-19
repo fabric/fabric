@@ -340,3 +340,18 @@ class Group_(Spec):
             g.run("command", hide=True, warn=True)
             for cxn in cxns:
                 cxn.run.assert_called_with("command", hide=True, warn=True)
+
+        def returns_map_of_normalized_host_string_to_result(self):
+            c1 = Connection('host1', user='foo', port=222)
+            c2 = Connection('host2')
+            cxns = [c1, c2]
+            for cxn in cxns:
+                # Just have mocked run() return the object itself for easy
+                # identification of which object a result came from.
+                cxn.run = Mock(return_value=cxn)
+            g = Group.from_connections(cxns)
+            result = g.run("command", hide=True, warn=True)
+            ok_(result['foo@host1:222'] is c1)
+            # Proves normalization
+            hs = '{0}@host2:22'.format(get_local_user())
+            ok_(result[hs] is c2)

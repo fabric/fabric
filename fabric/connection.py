@@ -217,8 +217,6 @@ class Group(list):
     """
     # TODO: maybe have it act like an iterable yielding its connections too?
     # TODO: also shit like append, extend, etc. maybe just inherit from list eh
-    # TODO: how to change method of execution across contents? subclass,
-    # methods, inject an executor?
 
     def __init__(self, hosts=None):
         """
@@ -240,3 +238,12 @@ class Group(list):
         group = cls()
         group.extend(connections)
         return group
+
+    def run(self, *args, **kwargs):
+        # TODO: how to change method of execution across contents? subclass,
+        # kwargs, additional methods, inject an executor?
+        # TODO: retval needs to be host objects or something non-string
+        result = {}
+        for cxn in self:
+            result[cxn.host_string] = cxn.run(*args, **kwargs)
+        return result
