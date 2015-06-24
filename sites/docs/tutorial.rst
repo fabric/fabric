@@ -1,8 +1,8 @@
-=====================
-Overview and Tutorial
-=====================
+========
+Tutorial
+========
 
-Welcome! This document is a whirlwind tour of Fabric's core features. In-depth
+Welcome! This tutorial highlights Fabric's core features. In-depth
 documentation (linked throughout) can be found in the :doc:`conceptual
 documentation <concepts>` and the :doc:`API reference <api>`.
 
@@ -143,9 +143,9 @@ You *could* use multiple `.Group` method calls to do this::
     pool.put('myfiles.tgz', '/opt/mydata')
     pool.run('tar -C /opt/mydata -xzvf /opt/mydata/myfiles.tgz')
 
-This falls down once logic enters the picture, such as if the copy-and-untar
-action above only needs to happen if ``/opt/mydata`` is presently empty.
-Performing that sort of check requires execution on a per-server basis.
+That approach falls short as soon as logic becomes necessary - for example, if
+you only wanted to perform the copy-and-untar above when ``/opt/mydata`` is
+empty. Performing that sort of check requires execution on a per-server basis.
 
 You could fill that need by using iterables of `.Connection` objects (though
 this foregoes some benefits of using `Groups <.Group>`)::
@@ -157,8 +157,8 @@ this foregoes some benefits of using `Groups <.Group>`)::
             cxn.put('myfiles.tgz', '/opt/mydata')
             cxn.run('tar -C /opt/mydata -xzvf /opt/mydata/myfiles.tgz')
 
-Instead, remember how we used a function in that earlier example? You can hand
-such a function to `.Group.execute` and get the best of both worlds::
+Alternatively, remember how we used a function in that earlier example? You can
+hand such a function to `.Group.execute` and get the best of both worlds::
 
     from fabric import Group
 
