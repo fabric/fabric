@@ -1,6 +1,6 @@
 import time
 
-from invoke import Runner, pty_size
+from invoke import Runner, pty_size, Result
 from paramiko import io_sleep
 
 
@@ -47,6 +47,11 @@ class Remote(Runner):
     def returncode(self):
         return self.channel.recv_exit_status()
 
+    def generate_result(self, **kwargs):
+        kwargs['connection'] = self.context
+        return RemoteResult(**kwargs)
+
+
     # TODO: shit that is in fab 1 run() but could apply to invoke.Local too:
     # * command timeout control
     # * see rest of stuff in _run_command/_execute in operations.py...there is
@@ -83,3 +88,21 @@ class RemoteSudo(Remote):
     # TODO: that probably just means a method on Connection and no new class
     # here.
     pass
+
+
+class RemoteResult(Result):
+    """
+    A `.Result` which knows about host connections and similar metadata.
+    """
+    def __init__(self, **kwargs):
+        connection = kwargs.pop('connection')
+        super(RemoteResult, self).__init__(**kwargs)
+        self.connection = connection
+
+    @property
+    def host(self):
+        """
+        The host upon which the command was executed.
+        """
+        # TODO: change away from host string
+        return self.connection.host_string

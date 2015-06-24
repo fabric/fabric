@@ -65,7 +65,6 @@ class Remote_(Spec):
             eq_(result.ok, True)
             eq_(result.exited, 0)
             # Test the attr our own subclass adds
-            # TODO: change away from host string
             eq_(result.host, "{0}@host:22".format(get_local_user()))
 
         # TODO: how much of Invoke's tests re: the upper level run() (re:
