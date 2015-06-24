@@ -10,6 +10,8 @@ from fabric.utils import get_local_user
 from _utils import mock_remote
 
 
+# On most systems this will explode if actually executed as a shell command;
+# this lets us detect holes in our network mocking.
 CMD = "nope"
 
 
