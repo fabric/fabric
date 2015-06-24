@@ -1,10 +1,11 @@
 from invoke.vendor.six import StringIO
 
 from spec import Spec, ok_, eq_
-from invoke import pty_size
+from invoke import pty_size, Result
 
 from fabric.connection import Connection
 from fabric.runners import Remote
+from fabric.utils import get_local_user
 
 from _utils import mock_remote
 
@@ -52,13 +53,22 @@ class Remote_(Spec):
             r.run(CMD, out_stream=fakeout)
             eq_(fakeout.getvalue(), "some text")
 
+        @mock_remote()
+        def return_value_is_Result_subclass_exposing_host_used(self, chan):
+            c = Connection('host')
+            r = Remote(context=c)
+            result = r.run(CMD)
+            ok_(isinstance(result, Result))
+            # Mild sanity test for other Result superclass bits
+            eq_(result.ok, True)
+            eq_(result.exited, 0)
+            # Test the attr our own subclass adds
+            # TODO: change away from host string
+            eq_(result.host, "{0}@host:22".format(get_local_user()))
+
         # TODO: how much of Invoke's tests re: the upper level run() (re:
         # things like returning Result, behavior of Result, etc) to
         # duplicate here? Ideally none or very few core ones.
-
-        # TODO: do we need custom extensions to Result (which our tutorial
-        # actually claims we have - check if there are actually any differences
-        # from the core one at this point, because there might not be?)
 
         # TODO: only test guts of our stuff, Invoke's Runner tests should
         # handle all the normal shit like stdout/err print and capture.
