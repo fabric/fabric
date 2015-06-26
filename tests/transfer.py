@@ -1,4 +1,5 @@
 from spec import Spec, skip, ok_
+from mock import patch
 
 from fabric import Transfer, Connection
 
@@ -21,6 +22,9 @@ class Transfer_(Spec):
             ok_(Transfer(cxn).connection is cxn)
 
     class get:
+        def setup(self):
+            self.t = Transfer(Connection('host'))
+
         def preserves_remote_mode_by_default(self):
             # remote foo.txt is something unlikely to be default local
             # umask (but still readable by ourselves) -> get() -> local
@@ -28,9 +32,11 @@ class Transfer_(Spec):
             skip()
 
         class no_local_path:
-            def remote_relative_path_to_local_cwd(self):
-                # cxn.get('foo.txt') -> ./foo.txt
-                skip()
+            @patch('fabric.connection.SSHClient')
+            def remote_relative_path_to_local_cwd(self, SSHClient):
+                sftp = SSHClient.return_value.open_sftp.return_value
+                self.t.get('foo.txt')
+                sftp.get.assert_called_with('foo.txt', 'foo.txt')
 
             def remote_absolute_path_to_local_cwd(self):
                 # cxn.get('/tmp/foo.txt') -> ./foo.txt

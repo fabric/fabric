@@ -18,3 +18,9 @@ class Transfer(object):
 
     def __init__(self, connection):
         self.connection = connection
+
+    def get(self, remote, local=None):
+        # obtain connection.open_sftp()
+        # call result .get(remote, local)
+        # TODO: callback support
+        pass
