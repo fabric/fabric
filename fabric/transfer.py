@@ -16,3 +16,5 @@ class Transfer(object):
     """
     # TODO: SFTP clear default, but how to do SCP? subclass? init kwarg?
 
+    def __init__(self, connection):
+        self.connection = connection

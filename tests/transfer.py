@@ -1,6 +1,6 @@
-from spec import Spec, skip
+from spec import Spec, skip, ok_
 
-from fabric import transfer
+from fabric import Transfer, Connection
 
 
 # TODO: pull in all edge/corner case tests from fabric v1
@@ -10,8 +10,15 @@ class Transfer_(Spec):
         "__init__"
         def requires_connection(self):
             # Transfer() -> explodes
+            try:
+                Transfer()
+            except TypeError:
+                pass
+            else:
+                assert False, "Did not raise ArgumentError"
             # Transfer(Connection()) -> happy, exposes an attribute
-            skip()
+            cxn = Connection('host')
+            ok_(Transfer(cxn).connection is cxn)
 
     class get:
         def preserves_remote_mode_by_default(self):
