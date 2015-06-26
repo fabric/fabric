@@ -6,8 +6,6 @@ from fabric import transfer
 # TODO: pull in all edge/corner case tests from fabric v1
 
 class Transfer_(Spec):
-    # TODO: SFTP clear default, but how to do SCP? subclass? init kwarg?
-
     class init:
         "__init__"
         def requires_connection(self):

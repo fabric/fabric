@@ -11,4 +11,8 @@ File transfer via SFTP and/or SCP.
 
 
 class Transfer(object):
-    pass
+    """
+    `.Connection` wrapping class responsible for managing file upload/download.
+    """
+    # TODO: SFTP clear default, but how to do SCP? subclass? init kwarg?
+
