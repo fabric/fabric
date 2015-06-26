@@ -1,7 +1,7 @@
 from spec import Spec, eq_, ok_
 
 import fabric
-from fabric import _version, connection
+from fabric import _version, connection, transfer
 
 
 class init(Spec):
@@ -15,3 +15,6 @@ class init(Spec):
 
     def Group(self):
         ok_(fabric.Group is connection.Group)
+
+    def Transfer(self):
+        ok_(fabric.Transfer is transfer.Transfer)
