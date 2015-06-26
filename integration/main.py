@@ -1,7 +1,9 @@
+import os
+
 from spec import skip, Spec, ok_, eq_
 from invoke import pty_size
 
-from fabric.connection import Connection, Group
+from fabric import Connection, Group
 
 
 class Main(Spec):
@@ -88,3 +90,10 @@ class Main(Spec):
         result = cxn.run('echo foo', hide=True)
         assert cxn.is_connected # NOW it's using SSH
         eq_(result.stdout, 'foo\n')
+
+    def get_file(self):
+        cxn = Connection('localhost')
+        cxn.local('echo "foo" > foo.txt')
+        cxn.get('foo.txt', 'bar.txt')
+        ok_(os.path.exists('bar.txt'))
+        eq_(open('bar.txt').read(), "foo")
