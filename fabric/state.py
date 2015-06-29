@@ -104,6 +104,13 @@ env_options = [
         help="abort instead of prompting (for password, host, etc)"
     ),
 
+    make_option('--banner-timeout',
+        type='int',
+        default=None,
+        metavar="N",
+        help="set ssh banner timeout to N seconds"
+    ),
+
     make_option('-c', '--config',
         dest='rcfile',
         default=_rc_path(),

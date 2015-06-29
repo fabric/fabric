@@ -2,6 +2,8 @@
 Changelog
 =========
 
+* :feature:`1342` Add ``banner-timeout`` option to configure ssh banner timeout.
+  Thanks to ``@pgroudas``.
 * :release:`1.10.2 <2015-06-19>`
 * :support:`1325` Clarify `~fabric.operations.put` docs re: the ``mode``
   argument. Thanks to ``@mjmare`` for the catch.
