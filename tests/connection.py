@@ -18,6 +18,20 @@ class Connection_(Spec):
             ok_(isinstance(c, SSHClient))
             eq_(c.get_transport(), None)
 
+        def host_string(self):
+            eq_(
+                Connection('host').host_string,
+                '{0}@host:22'.format(get_local_user())
+            )
+            eq_(
+                Connection('host', user='user').host_string,
+                'user@host:22'
+            )
+            eq_(
+                Connection('host', user='user', port=1234).host_string,
+                'user@host:1234'
+            )
+
     class known_hosts_behavior:
         def defaults_to_auto_add(self):
             # TODO: change Paramiko API so this isn't a private access
@@ -289,20 +303,6 @@ class Connection_(Spec):
         def calls_invoke_Runner_run(self, invoke):
             Connection('host').local('foo')
             invoke.run.assert_called_with('foo')
-
-    def host_string(self):
-        eq_(
-            Connection('host').host_string,
-            '{0}@host:22'.format(get_local_user())
-        )
-        eq_(
-            Connection('host', user='user').host_string,
-            'user@host:22'
-        )
-        eq_(
-            Connection('host', user='user', port=1234).host_string,
-            'user@host:1234'
-        )
 
 
 class Group_(Spec):
