@@ -57,9 +57,9 @@ class Transfer(object):
         """
         # TODO: how does this API change if we want to implement
         # remote-to-remote file transfer?
-        # TODO: handle string interpolation bits, especially the default one,
-        # or at least think about how that would work re: split between single
-        # and multiple server targets.
+        # TODO: handle v1's string interpolation bits, especially the default
+        # one, or at least think about how that would work re: split between
+        # single and multiple server targets.
         # TODO: callback support
         #
         # obtain connection.open_sftp()
