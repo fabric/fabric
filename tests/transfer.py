@@ -47,24 +47,24 @@ class Transfer_(Spec):
                 sftp.get.assert_called_with('foo.txt', 'foo.txt')
 
             def remote_absolute_path_to_local_cwd(self):
-                # cxn.get('/tmp/foo.txt') -> ./foo.txt
+                # t.get('/tmp/foo.txt') -> ./foo.txt
                 skip()
 
         class has_local_path:
             def remote_relative_path_to_local_relative_path(self):
-                # cxn.get('foo.txt', local='bar.txt') -> ./bar.txt
+                # t.get('foo.txt', local='bar.txt') -> ./bar.txt
                 skip()
 
             def remote_absolute_path_to_local_relative_path(self):
-                # cxn.get('/tmp/foo.txt', local='bar.txt') -> ./bar.txt
+                # t.get('/tmp/foo.txt', local='bar.txt') -> ./bar.txt
                 skip()
 
             def remote_relative_path_to_local_absolute_path(self):
-                # cxn.get('foo.txt', local='/tmp/bar.txt') -> /tmp/bar.txt
+                # t.get('foo.txt', local='/tmp/bar.txt') -> /tmp/bar.txt
                 skip()
 
             def remote_absolute_path_to_local_absolute_path(self):
-                # cxn.get('/tmp/foo.txt', local='/tmp/bar.txt') -> /tmp/bar.txt
+                # t.get('/tmp/foo.txt', local='/tmp/bar.txt') -> /tmp/bar.txt
                 skip()
 
         class mode_concerns:
