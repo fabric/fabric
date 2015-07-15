@@ -54,7 +54,7 @@ file transfer; `.Connection.put` and `.Connection.get` exist to fill this need.
 For example, say you had an archive file you wanted to upload::
 
     >>> from fabric import Connection
-    >>> result = Connection('web1').put('myfiles.tgz', '/opt/mydata/')
+    >>> result = Connection('web1').put('myfiles.tgz', remote='/opt/mydata/')
     >>> print("Uploaded {0.local_path} to {0.remote_path}".format(result))
     Uploaded /home/localuser/myproject/myfiles.tgz to /opt/mydata/myfiles.tgz
 
