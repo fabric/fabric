@@ -51,7 +51,7 @@ class Transfer_(Spec):
                 # t.get('/tmp/foo.txt') -> ./foo.txt
                 skip()
 
-        class has_local_path:
+        class string_local_path:
             def remote_relative_path_to_local_relative_path(self):
                 # t.get('foo.txt', local='bar.txt') -> ./bar.txt
                 skip()
@@ -66,6 +66,15 @@ class Transfer_(Spec):
 
             def remote_absolute_path_to_local_absolute_path(self):
                 # t.get('/tmp/foo.txt', local='/tmp/bar.txt') -> /tmp/bar.txt
+                skip()
+
+        class file_local_path:
+            def remote_relative_path_to_local_StringIO(self):
+                # s = StringIO(); t.get('foo.txt', s) -> s filled up
+                skip()
+
+            def remote_absolute_path_to_local_StringIO(self):
+                # s = StringIO(); t.get('foo.txt', s) -> s filled up
                 skip()
 
         class mode_concerns:
