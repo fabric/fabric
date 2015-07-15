@@ -1,3 +1,5 @@
+import os
+
 from spec import Spec, skip, ok_, eq_
 from mock import patch
 
@@ -26,8 +28,11 @@ class Transfer_(Spec):
             @patch('fabric.connection.SSHClient')
             def accepts_single_remote_path_posarg(self, Client):
                 sftp = Client.return_value.open_sftp.return_value
-                result = Transfer(Connection('host')).get('remote-path')
-                eq_(result.remote, 'remote-path')
+                Transfer(Connection('host')).get('remote-path')
+                sftp.get.assert_called_with(
+                    localpath=os.getcwd(),
+                    remotepath='remote-path',
+                )
 
             def accepts_local_and_remote_kwargs(self):
                 # t.get(remote='remote-path', local='local-path')

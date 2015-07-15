@@ -2,6 +2,8 @@
 File transfer via SFTP and/or SCP.
 """
 
+import os
+
 # TODO: figure out best way to direct folks seeking rsync, to patchwork's rsync
 # call (which needs updating to use invoke.run() & fab 2 connection methods,
 # but is otherwise suitable).
@@ -66,8 +68,18 @@ class Transfer(object):
         # single and multiple server targets.
         # TODO: callback support
         #
+
+        # Massage local path
+        if local is None:
+            local = os.getcwd()
+        # Run Paramiko-level .get() (side-effects only. womp.)
         sftp = self.connection.sftp()
+        # TODO: how can we get the actual path paramiko is operating on (so
+        # we can present the full paths used)? do we suck it up and just do all
+        # the munging we want to do here? or do we push a lot of this deeper
+        # into paramiko now instead of later?
         sftp.get(remotepath=remote, localpath=local)
+        # Return something useful
         return Result(remote=remote, local=local)
 
 
