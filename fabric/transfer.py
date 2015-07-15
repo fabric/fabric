@@ -37,23 +37,23 @@ class Transfer(object):
             are simply written into it.
 
             .. note::
-                The file-like object is assumed to be in the caller's desired
-                state re: file position - no ``.seek(0)`` or similar is
-                performed.
+                The file-like object will be 'rewound' to the beginning using
+                `file.seek` to ensure a clean write.
 
-            **If a string is given**, it should be a path pointing to a local
-            directory or file and is subject to similar behavior as that seen
-            by common Unix utilities or OpenSSH's ``sftp`` or ``scp`` tools.
-            For example, if the local path is a directory, the remote path's
-            base filename will be added onto it (so ``get('foo/bar/file.txt',
-            '/tmp/')`` would result in creation or overwriting of
-            ``/tmp/file.txt``).
+            **If a string is given**, it should be a path to a local directory
+            or file and is subject to similar behavior as that seen by common
+            Unix utilities or OpenSSH's ``sftp`` or ``scp`` tools. For example,
+            if the local path is a directory, the remote path's base filename
+            will be added onto it (so ``get('foo/bar/file.txt', '/tmp/')``
+            would result in creation or overwriting of ``/tmp/file.txt``).
 
             .. note::
                 When dealing with nonexistent file paths, normal Python file
                 handling concerns will be present - for example, giving a local
                 path containing non-leaf directories which do not exist, will
                 typically result in an `OSError`.
+
+        :returns: A `.Result` object.
         """
         # TODO: how does this API change if we want to implement
         # remote-to-remote file transfer?
