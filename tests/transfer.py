@@ -25,11 +25,19 @@ class Transfer_(Spec):
         def setup(self):
             self.t = Transfer(Connection('host'))
 
-        def preserves_remote_mode_by_default(self):
-            # remote foo.txt is something unlikely to be default local
-            # umask (but still readable by ourselves) -> get() -> local
-            # file matches remote mode.
-            skip()
+        class basics:
+            def accepts_single_remote_path_posarg(self):
+                # t.get('remote-path')
+                skip()
+
+            def accepts_local_and_remote_kwargs(self):
+                # t.get(remote='remote-path', local='local-path')
+                skip()
+
+            def returns_rich_Result_object(self):
+                # result = t.get('remote-path')
+                # result has stuff, see tutorial
+                skip()
 
         class no_local_path:
             @patch('fabric.connection.SSHClient')
@@ -57,4 +65,11 @@ class Transfer_(Spec):
 
             def remote_absolute_path_to_local_absolute_path(self):
                 # cxn.get('/tmp/foo.txt', local='/tmp/bar.txt') -> /tmp/bar.txt
+                skip()
+
+        class mode_concerns:
+            def preserves_remote_mode_by_default(self):
+                # remote foo.txt is something unlikely to be default local
+                # umask (but still readable by ourselves) -> get() -> local
+                # file matches remote mode.
                 skip()
