@@ -80,14 +80,16 @@ def sites(c):
 
 
 # TODO: merge w/ invoke's own such task, using invocations or ?
-@ctask(help=test.help)
+@ctask(help=dict(test.help, module='Just run integration/STRING.py'))
 def integration(c, module=None, runner=None, opts=None):
     """
     Run the integration test suite. May be slow!
     """
     opts = opts or ""
     opts += " --tests=integration/"
-    test(c, module, runner, opts)
+    if module is not None:
+        opts += "{0}.py".format(module)
+    test(c, runner=runner, opts=opts)
 
 
 ns = Collection(
