@@ -66,6 +66,28 @@ class Transfer(object):
         # single and multiple server targets.
         # TODO: callback support
         #
-        # obtain connection.open_sftp()
-        # call result .get(remote, local)
-        pass
+        sftp = self.connection.sftp()
+        sftp.get(remotepath=remote, localpath=local)
+        return Result(remote=remote, local=local)
+
+
+class Result(object):
+    """
+    A container for information about the result of a file transfer.
+
+    See individual attribute/method documentation below for details.
+
+    .. note::
+        Unlike similar classes such as `invoke.runners.Result` or
+        `fabric.runners.RemoteResult`, this class has no useful truthiness
+        behavior. If a file transfer fails, some exception will be raised,
+        either an `OSError` or an error from within Paramiko (such as when the
+        local copy of the file is not the same size as the remote).
+    """
+    # TODO: how does this differ from put vs get?
+    def __init__(self, local, remote):
+        #: The local path the file was saved as, or ``None`` if a file-like
+        #: object was given instead.
+        self.local = local
+        #: The remote path downloaded from.
+        self.remote = remote

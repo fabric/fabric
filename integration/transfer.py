@@ -25,6 +25,7 @@ class Transfer_(Spec):
             result = t.get(remote=remote, local=local)
             # Make sure it arrived
             ok_(os.path.exists(local))
-            eq_(open(local).read(), 'yup')
+            eq_(open(local).read(), 'yup\n')
             # Sanity check result object
-            # TODO: this
+            eq_(result.remote, remote)
+            eq_(result.local, local)
