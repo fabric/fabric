@@ -210,6 +210,13 @@ class Connection(object):
         # TODO: use a context or self depending on how we do that above
         return invoke.run(*args, **kwargs)
 
+    def sftp(self):
+        """
+        Return a new `~paramiko.sftp_client.SFTPClient` object.
+        """
+        self.open()
+        return self.client.open_sftp()
+
 
 class Group(list):
     """

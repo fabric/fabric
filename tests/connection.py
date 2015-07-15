@@ -304,6 +304,16 @@ class Connection_(Spec):
             Connection('host').local('foo')
             invoke.run.assert_called_with('foo')
 
+    class sftp:
+        @patch('fabric.connection.SSHClient')
+        def returns_result_of_client_open_sftp(self, SSHClient):
+            "returns result of client.open_sftp()"
+            client = SSHClient.return_value
+            sentinel = object()
+            client.open_sftp.return_value = sentinel
+            eq_(Connection('host').sftp(), sentinel)
+            client.open_sftp.assert_called_with()
+
 
 class Group_(Spec):
     class init:
