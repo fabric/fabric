@@ -36,7 +36,8 @@ class Transfer_(Spec):
 
             def returns_rich_Result_object(self):
                 # result = t.get('remote-path')
-                # result has stuff, see tutorial
+                # result.remote_path == 'remote-path'
+                # result.local_path == '~/remote-path'
                 skip()
 
         class no_local_path:

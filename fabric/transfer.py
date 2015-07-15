@@ -33,12 +33,9 @@ class Transfer(object):
         :param str local:
             Local path to store downloaded file in, or a file-like object.
 
-            **If a file-like object is given**, the contents of the remote file
-            are simply written into it.
-
-            .. note::
-                The file-like object will be 'rewound' to the beginning using
-                `file.seek` to ensure a clean write.
+            **If ``None`` is given** (the default), the remote file is
+            downloaded to the current working directory (as seen by `os.cwd`)
+            using its remote filename.
 
             **If a string is given**, it should be a path to a local directory
             or file and is subject to similar behavior as that seen by common
@@ -49,9 +46,16 @@ class Transfer(object):
 
             .. note::
                 When dealing with nonexistent file paths, normal Python file
-                handling concerns will be present - for example, giving a local
-                path containing non-leaf directories which do not exist, will
+                handling concerns will be present - for example, a local path
+                containing non-leaf directories which do not exist, will
                 typically result in an `OSError`.
+
+            **If a file-like object is given**, the contents of the remote file
+            are simply written into it.
+
+            .. note::
+                The file-like object will be 'rewound' to the beginning using
+                `file.seek` to ensure a clean write.
 
         :returns: A `.Result` object.
         """
