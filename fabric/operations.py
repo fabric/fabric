@@ -168,6 +168,9 @@ def prompt(text, key=None, default='', validate=None):
 
     Either way, `prompt` will re-prompt until validation passes (or the user
     hits ``Ctrl-C``).
+    Using both ``validate`` and ``default`` will not display the default value
+    in square brackets. This allows you to manually display the valid options
+    that you're expecting.
 
     .. note::
         `~fabric.operations.prompt` honors :ref:`env.abort_on_prompts
@@ -190,6 +193,10 @@ def prompt(text, key=None, default='', validate=None):
         # With validation against a regular expression:
         release = prompt('Please supply a release name',
                 validate=r'^\w+-\d+(\.\d+)?$')
+                
+        # With validation against a regular expression and a default choice:
+        tagRequired = prompt('Tag this version? [Y/n]',
+                validate=r'^[yYnN]$', default='y')
 
         # Prompt regardless of the global abort-on-prompts setting:
         with settings(abort_on_prompts=False):
@@ -202,7 +209,7 @@ def prompt(text, key=None, default='', validate=None):
         previous_value = env.get(key)
     # Set up default display
     default_str = ""
-    if default != '':
+    if default != '' and validate is None:
         default_str = " [%s] " % str(default).strip()
     else:
         default_str = " "
