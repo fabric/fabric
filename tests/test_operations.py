@@ -386,6 +386,15 @@ class TestFileTransfers(FabricTest):
             # Another if-it-doesn't-error-out-it-passed test; meh.
             eq_(get('.bashrc', self.path()), [self.path('.bashrc')])
 
+    @server(files={'/top/%a/%(/%()/%(x)/%(no)s/%(host)s/%d': 'yo'})
+    def test_get_with_format_chars_on_server(self):
+        """
+        get('*') with format symbols (%) on remote paths should not break
+        """
+        remote = '*'
+        with hide('everything'):
+            get(remote, self.path())
+
     @server()
     def test_get_single_file(self):
         """

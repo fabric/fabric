@@ -25,6 +25,9 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :bug:`1348` Fix get() to not break when string format chars appear in files
+  on the remote server. Thanks `@natecode` for the bug report and `@bspink`
+  for the fix.
 * :release:`1.5.5 <2013-12-24>`
 * :bug:`956` Fix pty size detection when running inside Emacs. Thanks to
   `@akitada` for catch & patch.
