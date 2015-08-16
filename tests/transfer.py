@@ -49,9 +49,12 @@ class Transfer_(Spec):
             @patch('fabric.connection.SSHClient')
             def returns_rich_Result_object(self, Client):
                 sftp = Client.return_value.open_sftp.return_value
-                result = Transfer(Connection('host')).get('remote-path')
+                cxn = Connection('host')
+                result = Transfer(cxn).get('remote-path')
                 eq_(result.remote, 'remote-path')
                 eq_(result.local, os.getcwd())
+                ok_(result.connection is cxn)
+                # TODO: timing info
 
         class no_local_path:
             @patch('fabric.connection.SSHClient')

@@ -85,7 +85,7 @@ class Transfer(object):
         # into paramiko now instead of later?
         sftp.get(remotepath=remote, localpath=local)
         # Return something useful
-        return Result(remote=remote, local=local)
+        return Result(remote=remote, local=local, connection=self.connection)
 
 
 class Result(object):
@@ -102,13 +102,15 @@ class Result(object):
         local copy of the file is not the same size as the remote).
     """
     # TODO: how does this differ from put vs get?
-    def __init__(self, local, remote):
+    def __init__(self, local, remote, connection):
         #: The local path the file was saved as, or ``None`` if a file-like
         #: object was given instead.
         # TODO: or should it be a reference to the file-like obj?
         self.local = local
         #: The remote path downloaded from.
         self.remote = remote
+        #: The `.Connection` object this result was yielded from
+        self.connection = connection
 
     # TODO: ensure str/repr makes it easily differentiable from run() or
     # local() result objects (and vice versa).
