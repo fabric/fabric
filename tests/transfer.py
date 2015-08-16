@@ -34,15 +34,24 @@ class Transfer_(Spec):
                     remotepath='remote-path',
                 )
 
-            def accepts_local_and_remote_kwargs(self):
-                # t.get(remote='remote-path', local='local-path')
-                skip()
+            @patch('fabric.connection.SSHClient')
+            def accepts_local_and_remote_kwargs(self, Client):
+                sftp = Client.return_value.open_sftp.return_value
+                Transfer(Connection('host')).get(
+                    remote='remote-path',
+                    local='local-path',
+                )
+                sftp.get.assert_called_with(
+                    localpath='local-path',
+                    remotepath='remote-path',
+                )
 
-            def returns_rich_Result_object(self):
-                # result = t.get('remote-path')
-                # result.remote_path == 'remote-path'
-                # result.local_path == '~/remote-path'
-                skip()
+            @patch('fabric.connection.SSHClient')
+            def returns_rich_Result_object(self, Client):
+                sftp = Client.return_value.open_sftp.return_value
+                result = Transfer(Connection('host')).get('remote-path')
+                eq_(result.remote, 'remote-path')
+                eq_(result.local, os.getcwd())
 
         class no_local_path:
             @patch('fabric.connection.SSHClient')
