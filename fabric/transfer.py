@@ -41,15 +41,17 @@ class Transfer(object):
 
             **If a string is given**, it should be a path to a local directory
             or file and is subject to similar behavior as that seen by common
-            Unix utilities or OpenSSH's ``sftp`` or ``scp`` tools. For example,
-            if the local path is a directory, the remote path's base filename
-            will be added onto it (so ``get('foo/bar/file.txt', '/tmp/')``
-            would result in creation or overwriting of ``/tmp/file.txt``).
+            Unix utilities or OpenSSH's ``sftp`` or ``scp`` tools.
+
+            For example, if the local path is a directory, the remote path's
+            base filename will be added onto it (so ``get('foo/bar/file.txt',
+            '/tmp/')`` would result in creation or overwriting of
+            ``/tmp/file.txt``).
 
             .. note::
                 When dealing with nonexistent file paths, normal Python file
-                handling concerns will be present - for example, a local path
-                containing non-leaf directories which do not exist, will
+                handling concerns come into play - for example, a ``local``
+                path containing non-leaf directories which do not exist, will
                 typically result in an `OSError`.
 
             **If a file-like object is given**, the contents of the remote file
@@ -67,7 +69,10 @@ class Transfer(object):
         # one, or at least think about how that would work re: split between
         # single and multiple server targets.
         # TODO: callback support
-        #
+        # TODO: how best to allow changing the behavior/semantics of
+        # remote/local (e.g. users might want 'safer' behavior that complains
+        # instead of overwriting existing files) - this likely ties into the
+        # "how to handle recursive/rsync" and "how to handle scp" questions
 
         # Massage local path
         if local is None:
@@ -103,3 +108,6 @@ class Result(object):
         self.local = local
         #: The remote path downloaded from.
         self.remote = remote
+
+    # TODO: ensure str/repr makes it easily differentiable from run() or
+    # local() result objects (and vice versa).
