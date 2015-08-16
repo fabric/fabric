@@ -88,7 +88,11 @@ class Transfer_(Spec):
                 skip()
 
             def remote_absolute_path_to_local_StringIO(self):
-                # s = StringIO(); t.get('foo.txt', s) -> s filled up
+                # s = StringIO(); t.get('/tmp/foo.txt', s) -> s filled up
+                skip()
+
+            def result_contains_None_for_local_path(self):
+                # s = StringIO(); r = t.get('foo.txt', s); r.local == None
                 skip()
 
         class mode_concerns:

@@ -105,6 +105,7 @@ class Result(object):
     def __init__(self, local, remote):
         #: The local path the file was saved as, or ``None`` if a file-like
         #: object was given instead.
+        # TODO: or should it be a reference to the file-like obj?
         self.local = local
         #: The remote path downloaded from.
         self.remote = remote
