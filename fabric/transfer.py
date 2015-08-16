@@ -35,9 +35,9 @@ class Transfer(object):
         :param str local:
             Local path to store downloaded file in, or a file-like object.
 
-            **If ``None`` is given** (the default), the remote file is
-            downloaded to the current working directory (as seen by `os.cwd`)
-            using its remote filename.
+            **If None is given** (the default), the remote file is downloaded
+            to the current working directory (as seen by `os.cwd`) using its
+            remote filename.
 
             **If a string is given**, it should be a path to a local directory
             or file and is subject to similar behavior as that seen by common
@@ -109,7 +109,7 @@ class Result(object):
         self.local = local
         #: The remote path downloaded from.
         self.remote = remote
-        #: The `.Connection` object this result was yielded from
+        #: The `.Connection` object this result was obtained from.
         self.connection = connection
 
     # TODO: ensure str/repr makes it easily differentiable from run() or
