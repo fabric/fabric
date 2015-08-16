@@ -8,6 +8,13 @@ from fabric import Transfer, Connection
 
 # TODO: pull in all edge/corner case tests from fabric v1
 
+
+_mocked_client = patch('fabric.connection.SSHClient')
+
+def _sftp(Client):
+    return Client.return_value.open_sftp.return_value
+
+
 class Transfer_(Spec):
     class init:
         "__init__"
@@ -25,18 +32,18 @@ class Transfer_(Spec):
 
     class get:
         class basics:
-            @patch('fabric.connection.SSHClient')
+            @_mocked_client
             def accepts_single_remote_path_posarg(self, Client):
-                sftp = Client.return_value.open_sftp.return_value
+                sftp = _sftp(Client)
                 Transfer(Connection('host')).get('remote-path')
                 sftp.get.assert_called_with(
                     localpath=os.getcwd(),
                     remotepath='remote-path',
                 )
 
-            @patch('fabric.connection.SSHClient')
+            @_mocked_client
             def accepts_local_and_remote_kwargs(self, Client):
-                sftp = Client.return_value.open_sftp.return_value
+                sftp = _sftp(Client)
                 Transfer(Connection('host')).get(
                     remote='remote-path',
                     local='local-path',
@@ -46,20 +53,21 @@ class Transfer_(Spec):
                     remotepath='remote-path',
                 )
 
-            @patch('fabric.connection.SSHClient')
+            @_mocked_client
             def returns_rich_Result_object(self, Client):
-                sftp = Client.return_value.open_sftp.return_value
+                sftp = _sftp(Client)
                 cxn = Connection('host')
                 result = Transfer(cxn).get('remote-path')
                 eq_(result.remote, 'remote-path')
                 eq_(result.local, os.getcwd())
                 ok_(result.connection is cxn)
                 # TODO: timing info
+                # TODO: bytes-transferred info
 
         class no_local_path:
-            @patch('fabric.connection.SSHClient')
-            def remote_relative_path_to_local_cwd(self, SSHClient):
-                #sftp = SSHClient.return_value.open_sftp.return_value
+            @_mocked_client
+            def remote_relative_path_to_local_cwd(self, Client):
+                #sftp = SSH_sftp(Client)
                 #self.t.get('foo.txt')
                 #sftp.get.assert_called_with('foo.txt', 'foo.txt')
                 skip()
