@@ -498,4 +498,33 @@ layer, not just Fabric.
   fighting over and corrupting.
 
 
+## File-like objects & file transfer
+
+* Fab 1 has a single get() that takes dynamic arguments, inspects them, prints
+  what it is doing, and returns a list of local paths (which does not account
+  for file-like objects or FLOs).
+    * When it prints, it prints shit like ``<object>`` or whatnot when FLOs are
+    encountered, instead of a file path.
+* In 2, we focus on a 'clean' result object, with attributes for remote and
+  local paths. In all-files cases, it's easy, both are strings. How to handle
+  FLOs?
+    * My initial stab was to use None as a placeholder for FLOs, since the user
+    presumably has a handle on the FLO used and doesn't need another reference
+    to it.
+    * Another approach is to just include said other reference to the FLO
+    itself. This feels more utilitarian anyways, though it could potentially
+    complicate garbage collection.
+    * Either of these has the problem where users may have code inspecting a
+    Result object and assuming the default file-path/string case. Both are kind
+    of the same, though, since (sans other preprocessing) both appear pretty
+    obvious when sent thru str().
+    * What about when the value is treated as a file path in other areas
+    besides display (or use in stringly things like run()), such as attempts to
+    pass into open()?
+        * They'll raise a not immediately obvious to newbies TypeError,
+        `coercing to Unicode: need string or buffer, <x> found` (where "<x>" is
+        either 'instance' for StringIO or 'NoneType' for None).
+        * But what else can we do to prevent this? It's a dynamic language...
+
+
 <!-- vim: set ft=markdown : -->
