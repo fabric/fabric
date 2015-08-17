@@ -484,4 +484,18 @@ delegated to Host to look up (so we get that host's instance of that user)?
   those but doesn't always
 
 
+## Threading/concurrency concerns
+
+Things that need figuring out if they are used in multithreaded / concurrent
+execution (not an exhaustive list). NOTE that many of these apply to the Invoke
+layer, not just Fabric.
+
+* 'self' when using the expected class-based tasks - does each thread get its
+  own instance, etc
+* Current local working directory - tempting to "just use os.getcwd" (and we
+  start out defaulting to using this) but that doesn't work well in a
+  concurrent setup because it's still state that the threads/etc will be
+  fighting over and corrupting.
+
+
 <!-- vim: set ft=markdown : -->

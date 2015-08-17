@@ -1,4 +1,5 @@
 import os
+from StringIO import StringIO
 
 from spec import Spec, skip, ok_, eq_
 from mock import patch
@@ -65,13 +66,16 @@ class Transfer_(Spec):
                 # TODO: bytes-transferred info
 
         class file_local_path:
-            def remote_relative_path_to_local_StringIO(self):
-                # s = StringIO(); t.get('foo.txt', s) -> s filled up
-                skip()
-
-            def remote_absolute_path_to_local_StringIO(self):
-                # s = StringIO(); t.get('/tmp/foo.txt', s) -> s filled up
-                skip()
+            @_mocked_client
+            def remote_path_to_local_StringIO(self, Client):
+                sftp = _sftp(Client)
+                fd = StringIO()
+                Transfer(Connection('host')).get('remote-path', local=fd)
+                # Note: getfo, not get
+                sftp.getfo.assert_called_with(
+                    remotepath='remote-path',
+                    fl=fd,
+                )
 
             def result_contains_None_for_local_path(self):
                 # s = StringIO(); r = t.get('foo.txt', s); r.local == None

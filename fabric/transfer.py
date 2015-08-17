@@ -82,7 +82,7 @@ class Transfer(object):
         # TODO: how can we get the actual path paramiko is operating on (so
         # we can present the full paths used)? do we suck it up and just do all
         # the munging we want to do here? or do we push a lot of this deeper
-        # into paramiko now instead of later?
+        # into paramiko now instead of later? or do we just ignore?
         sftp.get(remotepath=remote, localpath=local)
         # Return something useful
         return Result(remote=remote, local=local, connection=self.connection)
