@@ -67,19 +67,24 @@ class Transfer_(Spec):
 
         class file_local_path:
             @_mocked_client
-            def remote_path_to_local_StringIO(self, Client):
+            def _get_to_stringio(self, Client)
                 sftp = _sftp(Client)
                 fd = StringIO()
-                Transfer(Connection('host')).get('remote-path', local=fd)
+                r = Transfer(Connection('host')).get('remote-path', local=fd)
                 # Note: getfo, not get
                 sftp.getfo.assert_called_with(
                     remotepath='remote-path',
                     fl=fd,
                 )
+                return r
+
+            def remote_path_to_local_StringIO(self):
+                self._get_to_stringio()
 
             def result_contains_None_for_local_path(self):
-                # s = StringIO(); r = t.get('foo.txt', s); r.local == None
-                skip()
+                result = self._get_to_stringio()
+                eq_(result.remote, 'remote-path')
+                eq_(result.local, None)
 
         class mode_concerns:
             def preserves_remote_mode_by_default(self):

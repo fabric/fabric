@@ -83,7 +83,12 @@ class Transfer(object):
         # we can present the full paths used)? do we suck it up and just do all
         # the munging we want to do here? or do we push a lot of this deeper
         # into paramiko now instead of later? or do we just ignore?
-        sftp.get(remotepath=remote, localpath=local)
+        #
+        # If local appears to be a file-like object, use sftp.getfo, not get
+        if hasattr(local, 'write') and callable(local.write):
+            sftp.getfo(remotepath=remote, fl=local)
+        else:
+            sftp.get(remotepath=remote, localpath=local)
         # Return something useful
         return Result(remote=remote, local=local, connection=self.connection)
 
