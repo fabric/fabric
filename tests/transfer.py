@@ -56,7 +56,7 @@ class Transfer_(Spec):
 
             @_mocked_client
             def returns_rich_Result_object(self, Client):
-                sftp = _sftp(Client)
+                _sftp(Client)
                 cxn = Connection('host')
                 result = Transfer(cxn).get('remote-path')
                 eq_(result.remote, 'remote-path')

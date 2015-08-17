@@ -3,7 +3,7 @@ import shutil
 import tempfile
 from StringIO import StringIO
 
-from spec import skip, Spec, ok_, eq_
+from spec import Spec, ok_, eq_
 
 from fabric import Transfer, Connection
 
