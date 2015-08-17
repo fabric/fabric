@@ -84,6 +84,8 @@ class Transfer(object):
         # the munging we want to do here? or do we push a lot of this deeper
         # into paramiko now instead of later? or do we just ignore?
         #
+        # TODO: probably preserve warning message from v1 when overwriting
+        # existing files. Use logging for that obviously.
         # If local appears to be a file-like object, use sftp.getfo, not get
         if hasattr(local, 'write') and callable(local.write):
             sftp.getfo(remotepath=remote, fl=local)
@@ -108,8 +110,8 @@ class Result(object):
     """
     # TODO: how does this differ from put vs get?
     def __init__(self, local, remote, connection):
-        #: The local path the file was saved as, or ``None`` if a file-like
-        #: object was given instead.
+        #: The local path the file was saved as, or the object it was saved
+        #: into if a file-like object was given instead.
         # TODO: or should it be a reference to the file-like obj?
         self.local = local
         #: The remote path downloaded from.

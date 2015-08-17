@@ -38,4 +38,4 @@ class Transfer_(Spec):
             result = self.t.get(remote=self.remote, local=fd)
             eq_(fd.getvalue(), 'yup\n')
             eq_(result.remote, self.remote)
-            eq_(result.local, None)
+            ok_(result.local is fd)
