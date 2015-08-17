@@ -3,6 +3,7 @@ from StringIO import StringIO
 
 from spec import Spec, skip, ok_, eq_
 from mock import patch
+from paramiko import SFTPAttributes
 
 from fabric import Transfer, Connection
 
@@ -32,13 +33,21 @@ class Transfer_(Spec):
             ok_(Transfer(cxn).connection is cxn)
 
     class get:
+        def setup(self):
+            self.os_patcher = patch('fabric.transfer.os')
+            self.mock_os = self.os_patcher.start()
+            self.cwd = self.mock_os.getcwd.return_value = 'fake-cwd'
+
+        def teardown(self):
+            patch.stopall()
+
         class basics:
             @_mocked_client
             def accepts_single_remote_path_posarg(self, Client):
                 sftp = _sftp(Client)
                 Transfer(Connection('host')).get('remote-path')
                 sftp.get.assert_called_with(
-                    localpath=os.getcwd(),
+                    localpath=self.cwd,
                     remotepath='remote-path',
                 )
 
@@ -60,7 +69,7 @@ class Transfer_(Spec):
                 cxn = Connection('host')
                 result = Transfer(cxn).get('remote-path')
                 eq_(result.remote, 'remote-path')
-                eq_(result.local, os.getcwd())
+                eq_(result.local, self.cwd)
                 ok_(result.connection is cxn)
                 # TODO: timing info
                 # TODO: bytes-transferred info
@@ -87,8 +96,19 @@ class Transfer_(Spec):
                 ok_(result.local is fd)
 
         class mode_concerns:
-            def preserves_remote_mode_by_default(self):
-                # remote foo.txt is something unlikely to be default local
-                # umask (but still readable by ourselves) -> get() -> local
-                # file matches remote mode.
+            @_mocked_client
+            def preserves_remote_mode_by_default(self, Client):
+                sftp = _sftp(Client)
+                # Attributes obj reflecting a realistic 'extended' octal mode
+                attrs = SFTPAttributes()
+                attrs.st_mode = 0100644
+                sftp.stat.return_value = attrs
+                # Perform transfer
+                Transfer(Connection('host')).get('remote-path', local='meh')
+                # Expect os.chmod to be called with the scrubbed/shifted
+                # version of same.
+                self.mock_os.chmod.assert_called_with('meh', 0644)
+
+            def allows_disabling_remote_mode_preservation(self):
+                # Meaning...it uses local umask, presumably? Explore & document
                 skip()

@@ -3,6 +3,7 @@ File transfer via SFTP and/or SCP.
 """
 
 import os
+import stat
 
 # TODO: figure out best way to direct folks seeking rsync, to patchwork's rsync
 # call (which needs updating to use invoke.run() & fab 2 connection methods,
@@ -24,6 +25,9 @@ class Transfer(object):
     def get(self, remote, local=None):
         """
         Download a file from the current connection to the local filesystem.
+
+        Writes out the local file as the current user, with the same mode as
+        the remote file.
 
         :param str remote:
             Remote file to download.
@@ -86,11 +90,18 @@ class Transfer(object):
         #
         # TODO: probably preserve warning message from v1 when overwriting
         # existing files. Use logging for that obviously.
+        #
         # If local appears to be a file-like object, use sftp.getfo, not get
         if hasattr(local, 'write') and callable(local.write):
             sftp.getfo(remotepath=remote, fl=local)
         else:
             sftp.get(remotepath=remote, localpath=local)
+            # Set mode to same as remote end
+            # TODO: Push this down into SFTPClient sometime (requires backwards
+            # incompat release.)
+            #
+            mode = stat.S_IMODE(sftp.stat(remote).st_mode)
+            os.chmod(local, mode)
         # Return something useful
         return Result(remote=remote, local=local, connection=self.connection)
 
