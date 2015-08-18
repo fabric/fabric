@@ -1,6 +1,6 @@
 import time
 
-from invoke import Runner, pty_size, Result
+from invoke import Runner, pty_size, Result as InvokeResult
 from paramiko import io_sleep
 
 
@@ -49,7 +49,7 @@ class Remote(Runner):
 
     def generate_result(self, **kwargs):
         kwargs['connection'] = self.context
-        return RemoteResult(**kwargs)
+        return Result(**kwargs)
 
 
     # TODO: shit that is in fab 1 run() but could apply to invoke.Local too:
@@ -90,13 +90,13 @@ class RemoteSudo(Remote):
     pass
 
 
-class RemoteResult(Result):
+class Result(InvokeResult):
     """
     A `.Result` which knows about host connections and similar metadata.
     """
     def __init__(self, **kwargs):
         connection = kwargs.pop('connection')
-        super(RemoteResult, self).__init__(**kwargs)
+        super(Result, self).__init__(**kwargs)
         self.connection = connection
 
     @property
@@ -106,3 +106,6 @@ class RemoteResult(Result):
         """
         # TODO: change away from host string
         return self.connection.host_string
+
+    # TODO: have useful str/repr differentiation from invoke.Result,
+    # transfer.Result etc.
