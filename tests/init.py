@@ -1,7 +1,7 @@
 from spec import Spec, eq_, ok_
 
 import fabric
-from fabric import _version, connection, transfer
+from fabric import _version, connection
 
 
 class init(Spec):

@@ -3,7 +3,8 @@ from StringIO import StringIO
 from spec import Spec, ok_, eq_
 from paramiko import SFTPAttributes
 
-from fabric import Transfer, Connection
+from fabric import Connection
+from fabric.transfer import Transfer
 
 from _utils import mock_sftp
 

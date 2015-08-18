@@ -6,7 +6,7 @@ from StringIO import StringIO
 
 from spec import Spec, ok_, eq_
 
-from fabric import Transfer, Connection
+from fabric import Connection
 
 
 class Transfer_(Spec):
@@ -24,13 +24,13 @@ class Transfer_(Spec):
 
     class get:
         def setup(self):
-            self.t = Transfer(Connection('localhost'))
+            self.c = Connection('localhost')
             self.remote = self._support('file.txt')
 
         def base_case(self):
             # Copy file from support to tempdir
             local = self._tmp('file.txt')
-            result = self.t.get(remote=self.remote, local=local)
+            result = self.c.get(remote=self.remote, local=local)
             # Make sure it arrived
             ok_(os.path.exists(local))
             eq_(open(local).read(), 'yup\n')
@@ -40,7 +40,7 @@ class Transfer_(Spec):
 
         def file_like_objects(self):
             fd = StringIO()
-            result = self.t.get(remote=self.remote, local=fd)
+            result = self.c.get(remote=self.remote, local=fd)
             eq_(fd.getvalue(), 'yup\n')
             eq_(result.remote, self.remote)
             ok_(result.local is fd)
@@ -50,5 +50,5 @@ class Transfer_(Spec):
             # set of permissions (oct 641, aka -rw-r----x)
             local = self._tmp('funky-perms.txt')
             remote = self._support('funky-perms.txt')
-            self.t.get(remote=remote, local=local)
+            self.c.get(remote=remote, local=local)
             eq_(stat.S_IMODE(os.stat(local).st_mode), 0641)
