@@ -15,6 +15,3 @@ class init(Spec):
 
     def Group(self):
         ok_(fabric.Group is connection.Group)
-
-    def Transfer(self):
-        ok_(fabric.Transfer is transfer.Transfer)

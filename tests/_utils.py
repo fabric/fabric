@@ -1,7 +1,8 @@
 from functools import wraps, partial
 from invoke.vendor.six import StringIO
 
-from fabric import Transfer, Connection
+from fabric import Connection
+from fabric.transfer import Transfer
 
 from spec import eq_
 from mock import patch, Mock
