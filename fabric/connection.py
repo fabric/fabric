@@ -193,10 +193,8 @@ class Connection(object):
         """
         Execute a shell command on the remote end of this connection.
 
-        This method largely just wraps a call to a `.Remote` instance's
-        `.Remote.run` method (e.g. ``Remote(context=self).run(...)``), and
-        as such has an identical signature/call semantics, an identical return
-        value type, and so forth.
+        This method simply wraps `.Remote.run` method; see its docs for
+        details.
         """
         self.open()
         return Remote(context=self).run(command, **kwargs)
