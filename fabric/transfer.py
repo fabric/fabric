@@ -22,12 +22,9 @@ class Transfer(object):
     def __init__(self, connection):
         self.connection = connection
 
-    def get(self, remote, local=None):
+    def get(self, remote, local=None, preserve_mode=True):
         """
         Download a file from the current connection to the local filesystem.
-
-        Writes out the local file as the current user, with the same mode as
-        the remote file.
 
         :param str remote:
             Remote file to download.
@@ -65,6 +62,10 @@ class Transfer(object):
                 The file-like object will be 'rewound' to the beginning using
                 `file.seek` to ensure a clean write.
 
+        :param bool preserve_mode:
+            Whether to `os.chmod` the local file so it matches the remote
+            file's mode (default: ``True``).
+
         :returns: A `.Result` object.
         """
         # TODO: how does this API change if we want to implement
@@ -101,7 +102,8 @@ class Transfer(object):
             # incompat release.)
             #
             mode = stat.S_IMODE(sftp.stat(remote).st_mode)
-            os.chmod(local, mode)
+            if preserve_mode:
+                os.chmod(local, mode)
         # Return something useful
         return Result(remote=remote, local=local, connection=self.connection)
 

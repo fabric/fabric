@@ -131,6 +131,10 @@ class Transfer_(Spec):
                 # version of same.
                 mock_os.chmod.assert_called_with('meh', 0644)
 
-            def allows_disabling_remote_mode_preservation(self):
-                # Meaning...it uses local umask, presumably? Explore & document
-                skip()
+            @_mock_sftp(expose_os=True)
+            def allows_disabling_remote_mode_preservation(
+                self, sftp, transfer, mock_os
+            ):
+                sftp.stat.return_value = self.attrs
+                transfer.get('remote-path', local='meh', preserve_mode=False)
+                ok_(not mock_os.chmod.called)
