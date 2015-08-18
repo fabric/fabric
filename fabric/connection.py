@@ -3,6 +3,7 @@ from invoke.config import Config as InvokeConfig, merge_dicts
 from paramiko.client import SSHClient, AutoAddPolicy
 
 from .runners import Remote
+from .transfer import Transfer
 from .utils import get_local_user
 
 
@@ -216,6 +217,15 @@ class Connection(object):
         """
         self.open()
         return self.client.open_sftp()
+
+    def get(self, *args, **kwargs):
+       """
+       Get a remote file to the local filesystem or file-like object.
+
+       Simply a wrapper for `.Transfer.get`. Please see its documentation for
+       all details.
+       """
+       return Transfer(self).get(*args, **kwargs)
 
 
 class Group(list):

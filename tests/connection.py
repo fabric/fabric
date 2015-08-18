@@ -314,6 +314,15 @@ class Connection_(Spec):
             eq_(Connection('host').sftp(), sentinel)
             client.open_sftp.assert_called_with()
 
+    class get:
+        @patch('fabric.connection.Transfer')
+        def calls_Transfer_get(self, Transfer):
+            "calls Transfer.get()"
+            c = Connection('host')
+            c.get('meh')
+            Transfer.assert_called_with(c)
+            Transfer.return_value.get.assert_called_with('meh')
+
 
 class Group_(Spec):
     class init:
