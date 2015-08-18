@@ -33,7 +33,7 @@ class Transfer(object):
             remote default CWD, typically connecting user's ``$HOME``) or
             absolute.
 
-        :param str local:
+        :param local:
             Local path to store downloaded file in, or a file-like object.
 
             **If None is given** (the default), the remote file is downloaded

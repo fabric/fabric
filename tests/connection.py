@@ -299,6 +299,8 @@ class Connection_(Spec):
                 ok_(r is sentinel)
 
     class local:
+        # NOTE: most tests for this functionality live in Invoke's runner
+        # tests.
         @patch('fabric.connection.invoke')
         def calls_invoke_Runner_run(self, invoke):
             Connection('host').local('foo')
