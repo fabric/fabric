@@ -1,5 +1,3 @@
-import os
-
 from spec import skip, Spec, ok_, eq_
 from invoke import pty_size
 

@@ -1,8 +1,7 @@
-import os
 from functools import wraps
 from StringIO import StringIO
 
-from spec import Spec, skip, ok_, eq_
+from spec import Spec, ok_, eq_
 from mock import patch
 from paramiko import SFTPAttributes
 
