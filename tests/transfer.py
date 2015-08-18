@@ -1,49 +1,14 @@
-from functools import wraps
 from StringIO import StringIO
 
 from spec import Spec, ok_, eq_
-from mock import patch
 from paramiko import SFTPAttributes
 
 from fabric import Transfer, Connection
 
+from _utils import mock_sftp
+
 
 # TODO: pull in all edge/corner case tests from fabric v1
-
-
-# TODO: dig harder into spec setup() treatment to figure out why it seems to be
-# double-running setup() or having one mock created per nesting level...then we
-# won't need this probably.
-def _mock_sftp(expose_os=False):
-    """
-    Mock SFTP things, including 'os' & handy ref to SFTPClient instance.
-
-    By default, hands decorated tests a reference to the mocked SFTPClient
-    instance and an instantiated Transfer instance, so their signature needs to
-    be: ``def xxx(self, sftp, transfer):``.
-
-    If ``expose_os=True``, the mocked ``os`` module is handed in, turning the
-    signature to: ``def xxx(self, sftp, transfer, mock_os):``.
-    """
-    def decorator(f):
-        @wraps(f)
-        @patch('fabric.transfer.os')
-        @patch('fabric.connection.SSHClient')
-        def wrapper(*args, **kwargs):
-            # Obtain the mocks given us by @patch (and 'self')
-            self, Client, mock_os = args
-            # The point of all this: shit common to all/most tests
-            sftp = Client.return_value.open_sftp.return_value
-            transfer = Transfer(Connection('host'))
-            mock_os.getcwd.return_value = 'fake-cwd'
-            # Pass them in as needed
-            passed_args = [self, sftp, transfer]
-            if expose_os:
-                passed_args.append(mock_os)
-            # TEST!
-            return f(*passed_args)
-        return wrapper
-    return decorator
 
 
 class Transfer_(Spec):
@@ -63,7 +28,7 @@ class Transfer_(Spec):
 
     class get:
         class basics:
-            @_mock_sftp(expose_os=True)
+            @mock_sftp(expose_os=True)
             def accepts_single_remote_path_posarg(
                 self, sftp, transfer, mock_os
             ):
@@ -73,7 +38,7 @@ class Transfer_(Spec):
                     remotepath='remote-path',
                 )
 
-            @_mock_sftp()
+            @mock_sftp()
             def accepts_local_and_remote_kwargs(self, sftp, transfer):
                 transfer.get(
                     remote='remote-path',
@@ -84,7 +49,7 @@ class Transfer_(Spec):
                     remotepath='remote-path',
                 )
 
-            @_mock_sftp(expose_os=True)
+            @mock_sftp(expose_os=True)
             def returns_rich_Result_object(self, sftp, transfer, mock_os):
                 cxn = Connection('host')
                 result = Transfer(cxn).get('remote-path')
@@ -95,7 +60,7 @@ class Transfer_(Spec):
                 # TODO: bytes-transferred info
 
         class file_local_path:
-            @_mock_sftp()
+            @mock_sftp()
             def _get_to_stringio(self, sftp, transfer):
                 fd = StringIO()
                 result = transfer.get('remote-path', local=fd)
@@ -119,7 +84,7 @@ class Transfer_(Spec):
                 self.attrs = SFTPAttributes()
                 self.attrs.st_mode = 0100644
 
-            @_mock_sftp(expose_os=True)
+            @mock_sftp(expose_os=True)
             def preserves_remote_mode_by_default(
                 self, sftp, transfer, mock_os
             ):
@@ -130,7 +95,7 @@ class Transfer_(Spec):
                 # version of same.
                 mock_os.chmod.assert_called_with('meh', 0644)
 
-            @_mock_sftp(expose_os=True)
+            @mock_sftp(expose_os=True)
             def allows_disabling_remote_mode_preservation(
                 self, sftp, transfer, mock_os
             ):

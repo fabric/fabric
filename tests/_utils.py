@@ -1,6 +1,8 @@
 from functools import wraps, partial
 from invoke.vendor.six import StringIO
 
+from fabric import Transfer, Connection
+
 from spec import eq_
 from mock import patch, Mock
 
@@ -43,5 +45,40 @@ def mock_remote(out='', err='', exit=0, wait=0):
             client.get_transport.assert_called_with()
             client.get_transport.return_value.open_session.assert_called_with()
             eq_(time.sleep.call_count, wait)
+        return wrapper
+    return decorator
+
+
+# TODO: dig harder into spec setup() treatment to figure out why it seems to be
+# double-running setup() or having one mock created per nesting level...then we
+# won't need this probably.
+def mock_sftp(expose_os=False):
+    """
+    Mock SFTP things, including 'os' & handy ref to SFTPClient instance.
+
+    By default, hands decorated tests a reference to the mocked SFTPClient
+    instance and an instantiated Transfer instance, so their signature needs to
+    be: ``def xxx(self, sftp, transfer):``.
+
+    If ``expose_os=True``, the mocked ``os`` module is handed in, turning the
+    signature to: ``def xxx(self, sftp, transfer, mock_os):``.
+    """
+    def decorator(f):
+        @wraps(f)
+        @patch('fabric.transfer.os')
+        @patch('fabric.connection.SSHClient')
+        def wrapper(*args, **kwargs):
+            # Obtain the mocks given us by @patch (and 'self')
+            self, Client, mock_os = args
+            # The point of all this: shit common to all/most tests
+            sftp = Client.return_value.open_sftp.return_value
+            transfer = Transfer(Connection('host'))
+            mock_os.getcwd.return_value = 'fake-cwd'
+            # Pass them in as needed
+            passed_args = [self, sftp, transfer]
+            if expose_os:
+                passed_args.append(mock_os)
+            # TEST!
+            return f(*passed_args)
         return wrapper
     return decorator
