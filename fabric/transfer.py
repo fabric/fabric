@@ -107,6 +107,52 @@ class Transfer(object):
         # Return something useful
         return Result(remote=remote, local=local, connection=self.connection)
 
+    def put(self, local, remote=None, preserve_mode=True):
+        """
+        Upload a file from the local filesystem to the current connection.
+
+        :param local:
+            Local path of file to upload, or a file-like object.
+
+            **If a string is given**, it should be a path to a local (regular)
+            file (not a directory).
+
+            .. note::
+                When dealing with nonexistent file paths, normal Python file
+                handling concerns come into play - for example, trying to
+                upload a nonexistent ``local`` path will typically result in an
+                `OSError`.
+
+            **If a file-like object is given**, its contents are written to the
+            remote file path.
+
+            .. note::
+                The file-like object will be 'rewound' to the beginning using
+                `file.seek` to ensure a clean read.
+
+        :param str remote:
+            Remote path to which the local file will be written; is subject to
+            similar behavior as that seen by common Unix utilities or OpenSSH's
+            ``sftp`` or ``scp`` tools.
+
+            If ``None`` is given (the default), the remote current working
+            directory (typically the connecting user's home directory) is
+            assumed.
+
+            .. note::
+                When ``local`` is a file-like object, ``remote`` is required
+                and must refer to a valid file path (not a directory).
+
+        :param bool preserve_mode:
+            Whether to ``chmod`` the remote file so it matches the local file's
+            mode (default: ``True``).
+
+        :returns: A `.Result` object.
+        """
+        # TODO: preserve honoring of  "name" attribute of file-like objects as
+        # in v1? did we just make that shit up or is it an actual part of the
+        # api in newer Pythons?
+
 
 class Result(object):
     """
