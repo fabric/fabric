@@ -48,6 +48,17 @@ def _shell_escape(string):
         string = string.replace(char, '\%s' % char)
     return string
 
+def _win32_shell_set_escape(string):
+    """
+    Escape an argument string specifically for the win32 SET command.
+
+    See https://technet.microsoft.com/en-us/library/cc754250.aspx
+    """
+
+    for char in '^<>|&':
+        string = string.replace(char, '^' + char)
+    return string
+
 
 class _AttributeString(str):
     """
@@ -701,17 +712,25 @@ def _prefix_env_vars(command, local=False):
     env_vars.update(env.shell_env)
 
     if env_vars:
-        set_cmd, exp_cmd = '', ''
+        set_cmd, exp_cmd, var_join = '', '', ' '
         if win32 and local:
             set_cmd = 'SET '
+            var_join = '&& '
+            set_cmd_template = '%s%s=%s'
+            shell_env_str_template = '%s%s&& '
+            val_escape_fn = _win32_shell_set_escape
         else:
             exp_cmd = 'export '
+            set_cmd_template = '%s%s="%s"'
+            shell_env_str_template = '%s%s && '
+            val_escape_fn = _shell_escape
 
-        exports = ' '.join(
-            '%s%s="%s"' % (set_cmd, k, v if k == 'PATH' else _shell_escape(v))
+        exports = var_join.join(
+            set_cmd_template % (set_cmd, k, v if k == 'PATH' else val_escape_fn(v))
             for k, v in env_vars.iteritems()
         )
-        shell_env_str = '%s%s && ' % (exp_cmd, exports)
+
+        shell_env_str = shell_env_str_template % (exp_cmd, exports)
     else:
         shell_env_str = ''
 
