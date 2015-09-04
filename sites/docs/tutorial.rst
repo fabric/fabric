@@ -10,6 +10,29 @@ documentation <concepts>` and the :doc:`API reference <api>`.
     If you're new to Python, we **strongly** recommend checking out `Python's
     own tutorial <https://docs.python.org/2.6/tutorial/index.html>`_ first.
 
+Prelude: Fabric and its relation to Invoke
+==========================================
+
+It's important to note that as of 2.0, Fabric is really two libraries working
+together:
+
+* `Invoke <https://pyinvoke.org>`_, which defines general interfaces (how CLI
+  tasks work, what executing shell commands looks like, etc) and implements
+  "local"-specific functionality (executing shell commands on the local host);
+* Fabric itself, which extends Invoke's interfaces where necessary
+  (implementing remote shell execution) and adds functionality with no local
+  analogue (such as file upload/download).
+
+Because of this, most imports will be from the ``fabric`` namespace (such as
+``from fabric import Connection``) -- but occasionally you'll import classes or
+variables directly from ``invoke`` when there's no Fabric-specific overriding
+going on. For example, when constructing task namespaces, you'll see ``from
+invoke import Collection``.
+
+.. TODO::
+    we should probably rename Collection to be Namespace or something; it's too
+    close to 'Connection'
+
 
 Run commands
 ============
