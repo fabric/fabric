@@ -33,31 +33,31 @@ class Transfer_(Spec):
             def accepts_single_remote_path_posarg(
                 self, sftp, transfer, mock_os
             ):
-                transfer.get('remote-path')
+                transfer.get('file')
                 sftp.get.assert_called_with(
-                    localpath='/local/remote-path',
-                    remotepath='/remote/remote-path',
+                    localpath='/local/file',
+                    remotepath='/remote/file',
                 )
 
             @mock_sftp()
             def accepts_local_and_remote_kwargs(self, sftp, transfer):
                 transfer.get(
-                    remote='remote-path',
-                    local='local-path',
+                    remote='path1',
+                    local='path2',
                 )
                 sftp.get.assert_called_with(
-                    remotepath='/remote/remote-path',
-                    localpath='/local/local-path',
+                    remotepath='/remote/path1',
+                    localpath='/local/path2',
                 )
 
             @mock_sftp(expose_os=True)
             def returns_rich_Result_object(self, sftp, transfer, mock_os):
                 cxn = Connection('host')
-                result = Transfer(cxn).get('remote-path')
-                eq_(result.orig_remote, 'remote-path')
-                eq_(result.remote, '/remote/remote-path')
+                result = Transfer(cxn).get('file')
+                eq_(result.orig_remote, 'file')
+                eq_(result.remote, '/remote/file')
                 eq_(result.orig_local, None)
-                eq_(result.local, '/local/remote-path')
+                eq_(result.local, '/local/file')
                 ok_(result.connection is cxn)
                 # TODO: timing info
                 # TODO: bytes-transferred info
@@ -83,10 +83,10 @@ class Transfer_(Spec):
             @mock_sftp()
             def _get_to_stringio(self, sftp, transfer):
                 fd = StringIO()
-                result = transfer.get('remote-path', local=fd)
+                result = transfer.get('file', local=fd)
                 # Note: getfo, not get
                 sftp.getfo.assert_called_with(
-                    remotepath='/remote/remote-path',
+                    remotepath='/remote/file',
                     fl=fd,
                 )
                 return result, fd
@@ -96,7 +96,7 @@ class Transfer_(Spec):
 
             def result_contains_fd_for_local_path(self):
                 result, fd = self._get_to_stringio()
-                eq_(result.remote, '/remote/remote-path')
+                eq_(result.remote, '/remote/file')
                 ok_(result.local is fd)
 
             def file_like_objects_are_rewound(self):
@@ -113,7 +113,7 @@ class Transfer_(Spec):
             ):
                 # Attributes obj reflecting a realistic 'extended' octal mode
                 sftp.stat.return_value = self.attrs
-                transfer.get('remote-path', local='meh')
+                transfer.get('file', local='meh')
                 # Expect os.chmod to be called with the scrubbed/shifted
                 # version of same.
                 mock_os.chmod.assert_called_with('/local/meh', 0644)
@@ -123,5 +123,5 @@ class Transfer_(Spec):
                 self, sftp, transfer, mock_os
             ):
                 sftp.stat.return_value = self.attrs
-                transfer.get('remote-path', local='meh', preserve_mode=False)
+                transfer.get('file', local='meh', preserve_mode=False)
                 ok_(not mock_os.chmod.called)
