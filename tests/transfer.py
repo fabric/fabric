@@ -1,6 +1,6 @@
 from StringIO import StringIO
 
-from spec import Spec, ok_, eq_
+from spec import Spec, ok_, eq_, skip
 from paramiko import SFTPAttributes
 
 from fabric import Connection
@@ -60,7 +60,24 @@ class Transfer_(Spec):
                 # TODO: timing info
                 # TODO: bytes-transferred info
 
-        class file_local_path:
+        class path_arg_edge_cases:
+            def local_None_uses_remote_filename(self):
+                skip()
+
+            def local_empty_string_uses_remote_filename(self):
+                skip()
+
+            def remote_arg_is_required(self):
+                skip()
+
+            def remote_arg_cannot_be_None(self):
+                skip()
+
+            def remote_arg_cannot_be_empty_string(self):
+                skip()
+
+        class file_like_local_paths:
+            "file-like local paths"
             @mock_sftp()
             def _get_to_stringio(self, sftp, transfer):
                 fd = StringIO()
@@ -79,6 +96,9 @@ class Transfer_(Spec):
                 result, fd = self._get_to_stringio()
                 eq_(result.remote, 'remote-path')
                 ok_(result.local is fd)
+
+            def file_like_objects_are_rewound(self):
+                skip()
 
         class mode_concerns:
             def setup(self):
