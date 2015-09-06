@@ -11,7 +11,9 @@ from fabric import Connection
 
 class Transfer_(Spec):
     def setup(self):
-        self.tmpdir = tempfile.mkdtemp()
+        # Apply realpath() because sometimes symlinks pop up and make life
+        # messy (e.g. /var/tmp is really /private/var/tmp on OS X)
+        self.tmpdir = os.path.realpath(tempfile.mkdtemp())
 
     def teardown(self):
         shutil.rmtree(self.tmpdir)
@@ -29,14 +31,23 @@ class Transfer_(Spec):
 
         def base_case(self):
             # Copy file from support to tempdir
-            local = self._tmp('file.txt')
-            result = self.c.get(remote=self.remote, local=local)
+            # TODO: consider path.py for contextmanager
+            cwd = os.getcwd()
+            os.chdir(self.tmpdir)
+            try:
+                result = self.c.get(self.remote)
+            finally:
+                os.chdir(cwd)
+
             # Make sure it arrived
+            local = self._tmp('file.txt')
             ok_(os.path.exists(local))
             eq_(open(local).read(), 'yup\n')
             # Sanity check result object
             eq_(result.remote, self.remote)
+            eq_(result.orig_remote, self.remote)
             eq_(result.local, local)
+            eq_(result.orig_local, None)
 
         def file_like_objects(self):
             fd = StringIO()

@@ -3,6 +3,7 @@ File transfer via SFTP and/or SCP.
 """
 
 import os
+import posixpath
 import stat
 
 # TODO: figure out best way to direct folks seeking rsync, to patchwork's rsync
@@ -15,7 +16,7 @@ import stat
 
 class Transfer(object):
     """
-    `.Connection` wrapping class responsible for managing file upload/download.
+    `.Connection`-wrapping class responsible for managing file upload/download.
     """
     # TODO: SFTP clear default, but how to do SCP? subclass? init kwarg?
 
@@ -30,15 +31,14 @@ class Transfer(object):
             Remote file to download.
 
             Must evaluate to a file (not a directory). May be relative (from
-            remote default CWD, typically connecting user's ``$HOME``) or
-            absolute.
+            remote CWD, typically connecting user's ``$HOME``) or absolute.
 
         :param local:
             Local path to store downloaded file in, or a file-like object.
 
-            **If None is given** (the default), the remote file is downloaded
-            to the current working directory (as seen by `os.cwd`) using its
-            remote filename.
+            **If None or another 'falsey'/empty value is given** (the default),
+            the remote file is downloaded to the current working directory (as
+            seen by `os.cwd`) using its remote filename.
 
             **If a string is given**, it should be a path to a local directory
             or file and is subject to similar behavior as that seen by common
@@ -69,7 +69,7 @@ class Transfer(object):
         :returns: A `.Result` object.
         """
         # TODO: how does this API change if we want to implement
-        # remote-to-remote file transfer?
+        # remote-to-remote file transfer? (Is that even realistic?)
         # TODO: handle v1's string interpolation bits, especially the default
         # one, or at least think about how that would work re: split between
         # single and multiple server targets.
@@ -79,21 +79,30 @@ class Transfer(object):
         # instead of overwriting existing files) - this likely ties into the
         # "how to handle recursive/rsync" and "how to handle scp" questions
 
-        # Massage local path
-        if local is None:
-            local = os.getcwd()
-        # Run Paramiko-level .get() (side-effects only. womp.)
         sftp = self.connection.sftp()
-        # TODO: how can we get the actual path paramiko is operating on (so
-        # we can present the full paths used)? do we suck it up and just do all
-        # the munging we want to do here? or do we push a lot of this deeper
-        # into paramiko now instead of later? or do we just ignore?
-        #
+
+        # Massage remote path
+        orig_remote = remote
+        remote = posixpath.join(sftp.getcwd() or sftp.normalize('.'), remote)
+
+        # Massage local path:
+        # - handle file-ness
+        # - if path, fill with remote name if empty, & make absolute
+        orig_local = local
+        is_file_like = hasattr(local, 'write') and callable(local.write)
+        if local is None:
+            local = posixpath.basename(remote)
+        if not is_file_like:
+            local = os.path.abspath(local)
+
+        # Run Paramiko-level .get() (side-effects only. womp.)
+        # TODO: push some of the path handling into Paramiko; it should be
+        # responsible for dealing with path cleaning etc.
         # TODO: probably preserve warning message from v1 when overwriting
         # existing files. Use logging for that obviously.
         #
         # If local appears to be a file-like object, use sftp.getfo, not get
-        if hasattr(local, 'write') and callable(local.write):
+        if is_file_like:
             sftp.getfo(remotepath=remote, fl=local)
         else:
             sftp.get(remotepath=remote, localpath=local)
@@ -105,7 +114,13 @@ class Transfer(object):
             if preserve_mode:
                 os.chmod(local, mode)
         # Return something useful
-        return Result(remote=remote, local=local, connection=self.connection)
+        return Result(
+            orig_remote=orig_remote,
+            remote=remote,
+            orig_local=orig_local,
+            local=local,
+            connection=self.connection,
+        )
 
     def put(self, local, remote=None, preserve_mode=True):
         """
@@ -150,8 +165,8 @@ class Transfer(object):
         :returns: A `.Result` object.
         """
         # TODO: preserve honoring of  "name" attribute of file-like objects as
-        # in v1? did we just make that shit up or is it an actual part of the
-        # api in newer Pythons?
+        # in v1, so one CAN just upload to a directory? did we just make that
+        # shit up or is it an actual part of the api in newer Pythons?
 
 
 class Result(object):
@@ -167,13 +182,25 @@ class Result(object):
         either an `OSError` or an error from within Paramiko (such as when the
         local copy of the file is not the same size as the remote).
     """
+    # TODO: either make them all distinct class names, or all just 'Result',
+    # sheesh.
     # TODO: how does this differ from put vs get?
-    def __init__(self, local, remote, connection):
+    def __init__(self, local, orig_local, remote, orig_remote, connection):
         #: The local path the file was saved as, or the object it was saved
         #: into if a file-like object was given instead.
+        #:
+        #: If a string path, this value is massaged to be absolute; see
+        #: `.orig_local` for the original argument value.
         self.local = local
-        #: The remote path downloaded from.
+        #: The original value given as the returning method's ``local``
+        #: argument.
+        self.orig_local = orig_local
+        #: The remote path downloaded from. Massaged to be absolute; see
+        #: `.orig_remote` for the original argument value.
         self.remote = remote
+        #: The original argument value given as the returning method's
+        #: ``remote`` argument.
+        self.orig_remote = orig_remote
         #: The `.Connection` object this result was obtained from.
         self.connection = connection
 

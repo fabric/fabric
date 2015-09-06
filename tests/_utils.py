@@ -71,11 +71,16 @@ def mock_sftp(expose_os=False):
         def wrapper(*args, **kwargs):
             # Obtain the mocks given us by @patch (and 'self')
             self, Client, mock_os = args
-            # The point of all this: shit common to all/most tests
+            # SFTP client instance mock
             sftp = Client.return_value.open_sftp.return_value
+            # All mock_sftp'd tests care about a Transfer instance
             transfer = Transfer(Connection('host'))
-            mock_os.getcwd.return_value = 'fake-cwd'
-            # Pass them in as needed
+            # Handle common filepath massage actions; tests will assume these.
+            def fake_abspath(path):
+                return '/local/{0}'.format(path)
+            mock_os.path.abspath.side_effect = fake_abspath
+            sftp.getcwd.return_value = '/remote'
+            # Pass in mocks as needed
             passed_args = [self, sftp, transfer]
             if expose_os:
                 passed_args.append(mock_os)
