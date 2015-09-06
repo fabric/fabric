@@ -27,6 +27,7 @@ class Transfer_(Spec):
             cxn = Connection('host')
             ok_(Transfer(cxn).connection is cxn)
 
+
     class get:
         class basics:
             @mock_sftp(expose_os=True)
@@ -125,3 +126,98 @@ class Transfer_(Spec):
                 sftp.stat.return_value = self.attrs
                 transfer.get('file', local='meh', preserve_mode=False)
                 ok_(not mock_os.chmod.called)
+
+
+    class put:
+        class basics:
+            @mock_sftp(expose_os=True)
+            def accepts_single_local_path_posarg(
+                self, sftp, transfer, mock_os
+            ):
+                transfer.put('file')
+                sftp.put.assert_called_with(
+                    localpath='/local/file',
+                    remotepath='/remote/file',
+                )
+
+            @mock_sftp()
+            def accepts_local_and_remote_kwargs(self, sftp, transfer):
+                transfer.put(
+                    remote='path1',
+                    local='path2',
+                )
+                sftp.put.assert_called_with(
+                    remotepath='/remote/path1',
+                    localpath='/local/path2',
+                )
+
+            @mock_sftp(expose_os=True)
+            def returns_rich_Result_object(self, sftp, transfer, mock_os):
+                cxn = Connection('host')
+                result = Transfer(cxn).put('file')
+                eq_(result.orig_remote, None)
+                eq_(result.remote, '/remote/file')
+                eq_(result.orig_local, 'file')
+                eq_(result.local, '/local/file')
+                ok_(result.connection is cxn)
+                # TODO: timing info
+                # TODO: bytes-transferred info
+
+        class path_arg_edge_cases:
+            def remote_None_uses_local_filename(self):
+                skip()
+
+            def remote_empty_string_uses_local_filename(self):
+                skip()
+
+            def local_arg_is_required(self):
+                skip()
+
+            def local_arg_cannot_be_None(self):
+                skip()
+
+            def local_arg_cannot_be_empty_string(self):
+                skip()
+
+        class file_like_local_paths:
+            "file-like local paths"
+            @mock_sftp()
+            def _put_from_stringio(self, sftp, transfer):
+                fd = StringIO()
+                result = transfer.put(fd, remote='file')
+                # Note: putfo, not put
+                sftp.putfo.assert_called_with(
+                    remotepath='/remote/file',
+                    fl=fd,
+                )
+                return result, fd
+
+            def remote_path_from_local_StringIO(self):
+                self._put_from_stringio()
+
+            def result_contains_fd_for_local_path(self):
+                result, fd = self._put_from_stringio()
+                eq_(result.remote, '/remote/file')
+                ok_(result.local is fd)
+
+            def file_like_objects_are_rewound(self):
+                skip()
+
+        class mode_concerns:
+            def setup(self):
+                self.local_mode = 0644 # or w/e
+
+            @mock_sftp(expose_os=True)
+            def preserves_local_mode_by_default(
+                self, sftp, transfer, mock_os
+            ):
+                mock_os.stat_or_we.return_value = self.local_mode
+                transfer.put('file')
+                sftp.chmod.assert_called_with('/remote/file', self.local_mode)
+
+            @mock_sftp(expose_os=True)
+            def allows_disabling_local_mode_preservation(
+                self, sftp, transfer, mock_os
+            ):
+                transfer.put('file', preserve_mode=False)
+                ok_(not sftp.chmod.called)
