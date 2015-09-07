@@ -77,7 +77,6 @@ class Transfer_(Spec):
             cwd = os.getcwd()
             os.chdir(self._support())
             try:
-                remote_tmp = self._tmp()
                 # TODO: wrap chdir at the Connection level
                 self.c.sftp().chdir(self._tmp())
                 result = self.c.put('file.txt')

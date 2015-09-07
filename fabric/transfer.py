@@ -173,7 +173,7 @@ class Transfer(object):
         orig_remote = remote
         if not remote:
             if is_file_like:
-                raise ValueError("Must give non-empty remote path when local is a file-like object!")
+                raise ValueError("Must give non-empty remote path when local is a file-like object!") # noqa
             else:
                 remote = os.path.basename(local)
                 debug("Massaged empty remote path into {0!r}".format(remote))
@@ -188,7 +188,7 @@ class Transfer(object):
         if not is_file_like:
             local = os.path.abspath(local)
             if local != orig_local:
-                debug("Massaged relative local path {0!r} into {1!r}".format(orig_local, local))
+                debug("Massaged relative local path {0!r} into {1!r}".format(orig_local, local)) # noqa
 
         # Run Paramiko-level .put() (side-effects only. womp.)
         # TODO: push some of the path handling into Paramiko; it should be
