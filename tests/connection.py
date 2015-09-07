@@ -316,6 +316,16 @@ class Connection_(Spec):
             eq_(Connection('host').sftp(), sentinel)
             client.open_sftp.assert_called_with()
 
+        @patch('fabric.connection.SSHClient')
+        def lazily_caches_result(self, SSHClient):
+            client = SSHClient.return_value
+            sentinel1, sentinel2 = object(), object()
+            client.open_sftp.side_effect = [sentinel1, sentinel2]
+            cxn = Connection('host')
+            ok_(cxn.sftp() is sentinel1)
+            ok_(cxn.sftp() is sentinel1)
+
+
     class get:
         @patch('fabric.connection.Transfer')
         def calls_Transfer_get(self, Transfer):
