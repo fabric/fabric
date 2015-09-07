@@ -110,8 +110,8 @@ class Transfer(object):
             # TODO: Push this down into SFTPClient sometime (requires backwards
             # incompat release.)
             #
-            mode = stat.S_IMODE(sftp.stat(remote).st_mode)
             if preserve_mode:
+                mode = stat.S_IMODE(sftp.stat(remote).st_mode)
                 os.chmod(local, mode)
         # Return something useful
         return Result(
