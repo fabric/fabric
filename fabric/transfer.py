@@ -150,9 +150,9 @@ class Transfer(object):
             similar behavior as that seen by common Unix utilities or OpenSSH's
             ``sftp`` or ``scp`` tools.
 
-            If ``None`` is given (the default), the remote current working
-            directory (typically the connecting user's home directory) is
-            assumed.
+            If ``None`` or another 'falsey'/empty value is given (the default),
+            the remote current working directory (typically the connecting
+            user's home directory) is assumed.
 
             .. note::
                 When ``local`` is a file-like object, ``remote`` is required
@@ -184,7 +184,8 @@ class Result(object):
     """
     # TODO: either make them all distinct class names, or all just 'Result',
     # sheesh.
-    # TODO: how does this differ from put vs get?
+    # TODO: how does this differ from put vs get? field stating which? (feels
+    # meh) distinct classes differing, for now, solely by name? (also meh)
     def __init__(self, local, orig_local, remote, orig_remote, connection):
         #: The local path the file was saved as, or the object it was saved
         #: into if a file-like object was given instead.
