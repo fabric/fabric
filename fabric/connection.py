@@ -211,10 +211,17 @@ class Connection(object):
 
     def sftp(self):
         """
-        Return a new `~paramiko.sftp_client.SFTPClient` object.
+        Return a `~paramiko.sftp_client.SFTPClient` object.
+
+        If called more than one time, memoizes the first result; thus, any
+        given `.Connection` instance will only ever have a single SFTP client,
+        and state (such as that managed by
+        `~paramiko.sftp_client.SFTPClient.chdir`) will be preserved.
         """
         self.open()
-        return self.client.open_sftp()
+        if not hasattr(self, '_sftp'):
+            self._sftp = self.client.open_sftp()
+        return self._sftp
 
     def get(self, *args, **kwargs):
         """
