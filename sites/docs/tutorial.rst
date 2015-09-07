@@ -29,7 +29,7 @@ variables directly from ``invoke`` when there's no Fabric-specific overriding
 going on. For example, when constructing task namespaces, you'll see ``from
 invoke import Collection``.
 
-.. TODO::
+.. TODO:
     we should probably rename Collection to be Namespace or something; it's too
     close to 'Connection'
 
@@ -149,9 +149,10 @@ The previous example, using `.Group`, looks like this::
     web2: Linux
     mac1: Darwin
 
-Where `.Connection` methods return single `.Result` objects, `.Group` methods
-return `ResultSets <.ResultSet>` - `dict`-like objects offering access to
-individual per-connection results as well as metadata about the entire run.
+Where `.Connection` methods return single ``Result`` objects (e.g.
+`fabric.runners.Result`), `.Group` methods return ``ResultSets`` -
+`dict`-like objects offering access to individual per-connection results as
+well as metadata about the entire run.
 
 
 Bringing it all together
@@ -181,7 +182,7 @@ this foregoes some benefits of using `Groups <.Group>`)::
             cxn.run('tar -C /opt/mydata -xzvf /opt/mydata/myfiles.tgz')
 
 Alternatively, remember how we used a function in that earlier example? You can
-hand such a function to `.Group.execute` and get the best of both worlds::
+hand such a function to ``Group.execute`` and get the best of both worlds::
 
     from fabric import Group
 
@@ -192,5 +193,5 @@ hand such a function to `.Group.execute` and get the best of both worlds::
 
     Group('web1', 'web2', 'web3').execute(upload_and_unpack)
 
-`.Group.execute`, like its sibling methods, returns `.ResultSet` objects; its
+``Group.execute``, like its sibling methods, returns ``ResultSet`` objects; its
 per-connection values are simply the return values of the function passed in.

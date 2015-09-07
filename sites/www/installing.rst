@@ -42,7 +42,7 @@ In order for Fabric's installation to succeed, you will need four primary pieces
 * the Python `Paramiko <http://paramiko.org>`_ SSH library (1.13+);
 * and Paramiko's dependency, the PyCrypto cryptography library.
 
-.. FIXME: update as appropriate
+.. TODO: update as appropriate
 
 and, if using the :ref:`parallel execution mode <parallel-execution>`:
 
@@ -73,7 +73,7 @@ setuptools dependency in the future, or include alternative support for the
 ``multiprocessing``
 -------------------
 
-.. FIXME: update parallel stuff
+.. TODO: update parallel stuff
 
 An optional dependency, the ``multiprocessing`` library is included in Python's
 standard library in version 2.6 and higher. If you're using Python 2.5 and want
@@ -83,7 +83,7 @@ you'll need to install it manually; the recommended route, as usual, is via
 <http://pypi.python.org/pypi/multiprocessing/>`_ for details.
 
 
-.. FIXME: ditto
+.. TODO: ditto
 
 .. warning::
     Early versions of Python 2.6 (in our testing, 2.6.0 through 2.6.2) ship
@@ -103,7 +103,7 @@ If you are interested in doing development work on Fabric (or even just running
 the test suite), you may also need to install some or all of the following
 packages:
 
-.. FIXME: Update for modern
+.. TODO: Update for modern
 
 * `git <http://git-scm.com>`_, in order to obtain some of the
   other dependencies below;
@@ -165,7 +165,7 @@ branches may be of interest and how you can help out, please see the
 ActivePython and PyPM
 =====================
 
-.. FIXME: update example output for fab 2 versions
+.. TODO: update example output for fab 2 versions
 
 Windows users who already have ActiveState's `ActivePython
 <http://www.activestate.com/activepython/downloads>`_ distribution installed

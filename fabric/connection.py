@@ -193,8 +193,8 @@ class Connection(object):
         """
         Execute a shell command on the remote end of this connection.
 
-        This method simply wraps `.Remote.run` method; see its docs for
-        details.
+        This method wraps an SSH-capable implementation of
+        `invoke.runners.Runner.run`; see its docs for details.
         """
         self.open()
         return Remote(context=self).run(command, **kwargs)
@@ -270,9 +270,12 @@ class Group(list):
     def run(self, *args, **kwargs):
         # TODO: how to change method of execution across contents? subclass,
         # kwargs, additional methods, inject an executor?
-        # TODO: retval needs to be host objects or something non-string
+        # TODO: retval needs to be host objects or something non-string. See
+        # how tutorial mentions 'ResultSet' - useful to construct or no?
         # TODO: also need way to deal with duplicate connections (see THOUGHTS)
         result = {}
         for cxn in self:
             result[cxn.host_string] = cxn.run(*args, **kwargs)
         return result
+
+    # TODO: execute() as mentioned in tutorial

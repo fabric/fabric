@@ -42,4 +42,4 @@ to make significant improvements without harming backwards compatibility. As
 such, the 1.x line now receives bugfixes only. We **strongly** encourage all
 users to upgrade to Fabric 2.x.
 
-.. FIXME: add link to an upgrade doc
+.. TODO: add link to an upgrade doc

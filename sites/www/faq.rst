@@ -2,8 +2,8 @@
 Frequently Asked/Answered Questions (FAQ)
 =========================================
 
-.. FIXME: update link to usage docs
-.. FIXME: general pass for new API links
+.. TODO: update link to usage docs
+.. TODO: general pass for new API links
 
 These are some of the most commonly encountered problems or frequently asked
 questions which we receive from users. They aren't intended as a substitute for
@@ -35,7 +35,7 @@ My (``cd``/``workon``/``export``/etc) calls don't seem to work!
 ===============================================================
 
 
-.. FIXME: change links to API
+.. TODO: change links to API
 
 While Fabric can be used for many shell-script-like tasks, there's a slightly
 unintuitive catch: each `~fabric.operations.run` or `~fabric.operations.sudo`
@@ -64,7 +64,7 @@ without error) like so::
     def deploy():
         run("cd /path/to/application && ./update.sh")
 
-.. FIXME: update link to whatever API replaces cd() prefix() etc
+.. TODO: update link to whatever API replaces cd() prefix() etc
 
 Fabric provides a convenient shortcut for this specific use case, in fact:
 `~fabric.context_managers.cd`. There is also `~fabric.context_managers.prefix`
@@ -129,7 +129,7 @@ expect a tty to be present, will complain -- and thus, stderr output about
 
 There are multiple ways to deal with this problem:
 
-.. FIXME: change references to `env`/etc
+.. TODO: change references to `env`/etc
 
 * Find and remove or comment out the offending program call. If the program was
   not added by you on purpose and is simply a legacy of the operating system,
@@ -180,7 +180,7 @@ disassociated from the calling shell, which may be done in a number of ways
 My remote system doesn't have ``bash`` installed by default, do I need to install ``bash``?
 ===========================================================================================
 
-.. FIXME: change reference to env.shell
+.. TODO: change reference to env.shell
 
 While Fabric is written with ``bash`` in mind, it's not an absolute
 requirement.  Simply change :ref:`env.shell <shell>` to call your desired shell, and

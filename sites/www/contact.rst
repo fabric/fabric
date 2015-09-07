@@ -2,7 +2,7 @@
 Contact
 =======
 
-.. FIXME: update prose, api doc links here
+.. TODO: update prose, api doc links here
 
 If you've scoured the :ref:`prose <usage-docs>` and :ref:`API <api_docs>`
 documentation and still can't find an answer to your question, below are

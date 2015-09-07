@@ -40,7 +40,7 @@ class Transfer(object):
 
             **If None or another 'falsey'/empty value is given** (the default),
             the remote file is downloaded to the current working directory (as
-            seen by `os.cwd`) using its remote filename.
+            seen by `os.getcwd`) using its remote filename.
 
             **If a string is given**, it should be a path to a local directory
             or file and is subject to similar behavior as that seen by common
@@ -55,7 +55,7 @@ class Transfer(object):
                 When dealing with nonexistent file paths, normal Python file
                 handling concerns come into play - for example, a ``local``
                 path containing non-leaf directories which do not exist, will
-                typically result in an `OSError`.
+                typically result in an `~exceptions.OSError`.
 
             **If a file-like object is given**, the contents of the remote file
             are simply written into it.
@@ -135,7 +135,7 @@ class Transfer(object):
                 When dealing with nonexistent file paths, normal Python file
                 handling concerns come into play - for example, trying to
                 upload a nonexistent ``local`` path will typically result in an
-                `OSError`.
+                `~exceptions.OSError`.
 
             **If a file-like object is given**, its contents are written to the
             remote file path.
@@ -234,13 +234,11 @@ class Result(object):
 
     .. note::
         Unlike similar classes such as `invoke.runners.Result` or
-        `fabric.runners.RemoteResult`, this class has no useful truthiness
-        behavior. If a file transfer fails, some exception will be raised,
-        either an `OSError` or an error from within Paramiko (such as when the
-        local copy of the file is not the same size as the remote).
+        `fabric.runners.Result`, this class has no useful truthiness behavior.
+        If a file transfer fails, some exception will be raised, either an
+        `~exceptions.OSError` or an error from within Paramiko (such as when
+        the local copy of the file is not the same size as the remote).
     """
-    # TODO: either make them all distinct class names, or all just 'Result',
-    # sheesh.
     # TODO: how does this differ from put vs get? field stating which? (feels
     # meh) distinct classes differing, for now, solely by name? (also meh)
     def __init__(self, local, orig_local, remote, orig_remote, connection):

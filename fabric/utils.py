@@ -8,7 +8,7 @@ def get_local_user():
     """
     Return the local executing username, or ``None`` if one can't be found.
     """
-    # FIXME: I don't understand why these lines were added outside the
+    # TODO: I don't understand why these lines were added outside the
     # try/except, since presumably it means the attempt at catching ImportError
     # wouldn't work. However, that's how the contributing user committed it.
     # Need an older Windows box to test it out, most likely.

@@ -26,7 +26,7 @@ Upgrading from Fabric 1.x
     * "Per-session" values such as ``env.hosts`` are now mostly present as
       read-only, informational attributes on ``Connection.session``.
 
-.. TODO::
+.. TODO:
     how to perform "setup" or "pre-execution" things like dynamically setting a
     "host list", where 'fab foo bar' wants 'foo' to change 'bar's context
     somehow? (Especially, what about 'fab foo bar biz baz' - can't simply tell

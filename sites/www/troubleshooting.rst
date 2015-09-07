@@ -24,7 +24,7 @@ report.
   behavior or output of a remote command, try recreating it without Fabric
   involved:
 
-.. FIXME: update specifics here
+.. TODO: update specifics here
 
     * Run Fabric with ``--show=debug`` and look for the ``run:`` or ``sudo:``
       line about the command in question. Try running that exact command,
