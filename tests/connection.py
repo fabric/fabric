@@ -325,6 +325,15 @@ class Connection_(Spec):
             Transfer.assert_called_with(c)
             Transfer.return_value.get.assert_called_with('meh')
 
+    class put:
+        @patch('fabric.connection.Transfer')
+        def calls_Transfer_put(self, Transfer):
+            "calls Transfer.put()"
+            c = Connection('host')
+            c.put('meh')
+            Transfer.assert_called_with(c)
+            Transfer.return_value.put.assert_called_with('meh')
+
 
 class Group_(Spec):
     class init:

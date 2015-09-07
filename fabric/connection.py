@@ -232,6 +232,15 @@ class Connection(object):
         """
         return Transfer(self).get(*args, **kwargs)
 
+    def put(self, *args, **kwargs):
+        """
+        Put a remote file (or file-like object) to the remote filesystem.
+
+        Simply a wrapper for `.Transfer.put`. Please see its documentation for
+        all details.
+        """
+        return Transfer(self).put(*args, **kwargs)
+
 
 class Group(list):
     """
