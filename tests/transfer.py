@@ -170,6 +170,9 @@ class Transfer_(Spec):
             def remote_empty_string_uses_local_filename(self):
                 skip()
 
+            def remote_cannot_be_empty_if_local_is_file_like(self):
+                skip()
+
             def local_arg_is_required(self):
                 skip()
 
