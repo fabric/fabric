@@ -1,6 +1,6 @@
 from StringIO import StringIO
 
-from spec import Spec, ok_, eq_, skip
+from spec import Spec, ok_, eq_, skip, raises
 from paramiko import SFTPAttributes
 
 from fabric import Connection
@@ -64,20 +64,28 @@ class Transfer_(Spec):
                 # TODO: bytes-transferred info
 
         class path_arg_edge_cases:
-            def local_None_uses_remote_filename(self):
-                skip()
+            @mock_sftp()
+            def local_None_uses_remote_filename(self, sftp, transfer):
+                eq_(transfer.get('file').local, '/local/file')
 
-            def local_empty_string_uses_remote_filename(self):
-                skip()
+            @mock_sftp()
+            def local_empty_string_uses_remote_filename(self, sftp, transfer):
+                eq_(transfer.get('file', local='').local, '/local/file')
 
-            def remote_arg_is_required(self):
-                skip()
+            @mock_sftp()
+            @raises(TypeError)
+            def remote_arg_is_required(self, sftp, transfer):
+                transfer.get()
 
-            def remote_arg_cannot_be_None(self):
-                skip()
+            @mock_sftp()
+            @raises(ValueError)
+            def remote_arg_cannot_be_None(self, sftp, transfer):
+                transfer.get(None)
 
-            def remote_arg_cannot_be_empty_string(self):
-                skip()
+            @mock_sftp()
+            @raises(ValueError)
+            def remote_arg_cannot_be_empty_string(self, sftp, transfer):
+                transfer.get('')
 
         class file_like_local_paths:
             "file-like local paths"
@@ -99,9 +107,6 @@ class Transfer_(Spec):
                 result, fd = self._get_to_stringio()
                 eq_(result.remote, '/remote/file')
                 ok_(result.local is fd)
-
-            def file_like_objects_are_rewound(self):
-                skip()
 
         class mode_concerns:
             def setup(self):
@@ -164,23 +169,33 @@ class Transfer_(Spec):
                 # TODO: bytes-transferred info
 
         class path_arg_edge_cases:
-            def remote_None_uses_local_filename(self):
-                skip()
+            @mock_sftp()
+            def remote_None_uses_local_filename(self, sftp, transfer):
+                eq_(transfer.put('file').remote, '/remote/file')
 
-            def remote_empty_string_uses_local_filename(self):
-                skip()
+            @mock_sftp()
+            def remote_empty_string_uses_local_filename(self, sftp, transfer):
+                eq_(transfer.put('file', remote='').remote, '/remote/file')
 
-            def remote_cannot_be_empty_if_local_is_file_like(self):
-                skip()
+            @mock_sftp()
+            @raises(ValueError)
+            def remote_cant_be_empty_if_local_file_like(self, sftp, transfer):
+                transfer.put(StringIO())
 
-            def local_arg_is_required(self):
-                skip()
+            @mock_sftp()
+            @raises(TypeError)
+            def local_arg_is_required(self, sftp, transfer):
+                transfer.put()
 
-            def local_arg_cannot_be_None(self):
-                skip()
+            @mock_sftp()
+            @raises(ValueError)
+            def local_arg_cannot_be_None(self, sftp, transfer):
+                transfer.put(None)
 
-            def local_arg_cannot_be_empty_string(self):
-                skip()
+            @mock_sftp()
+            @raises(ValueError)
+            def local_arg_cannot_be_empty_string(self, sftp, transfer):
+                transfer.put('')
 
         class file_like_local_paths:
             "file-like local paths"
@@ -202,9 +217,6 @@ class Transfer_(Spec):
                 result, fd = self._put_from_stringio()
                 eq_(result.remote, '/remote/file')
                 ok_(result.local is fd)
-
-            def file_like_objects_are_rewound(self):
-                skip()
 
         class mode_concerns:
             @mock_sftp(expose_os=True)

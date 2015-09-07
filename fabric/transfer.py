@@ -60,10 +60,6 @@ class Transfer(object):
             **If a file-like object is given**, the contents of the remote file
             are simply written into it.
 
-            .. note::
-                The file-like object will be 'rewound' to the beginning using
-                `file.seek` to ensure a clean write.
-
         :param bool preserve_mode:
             Whether to `os.chmod` the local file so it matches the remote
             file's mode (default: ``True``).
@@ -84,6 +80,8 @@ class Transfer(object):
         sftp = self.connection.sftp()
 
         # Massage remote path
+        if not remote:
+            raise ValueError("Remote path must not be empty!")
         orig_remote = remote
         remote = posixpath.join(sftp.getcwd() or sftp.normalize('.'), remote)
 
@@ -92,7 +90,7 @@ class Transfer(object):
         # - if path, fill with remote name if empty, & make absolute
         orig_local = local
         is_file_like = hasattr(local, 'write') and callable(local.write)
-        if local is None:
+        if not local:
             local = posixpath.basename(remote)
         if not is_file_like:
             local = os.path.abspath(local)
@@ -142,10 +140,6 @@ class Transfer(object):
             **If a file-like object is given**, its contents are written to the
             remote file path.
 
-            .. note::
-                The file-like object will be 'rewound' to the beginning using
-                `file.seek` to ensure a clean read.
-
         :param str remote:
             Remote path to which the local file will be written; is subject to
             similar behavior as that seen by common Unix utilities or OpenSSH's
@@ -170,22 +164,27 @@ class Transfer(object):
         # shit up or is it an actual part of the api in newer Pythons?
         sftp = self.connection.sftp()
 
+        if not local:
+            raise ValueError("Local path must not be empty!")
+
+        is_file_like = hasattr(local, 'write') and callable(local.write)
+
         # Massage remote path
         orig_remote = remote
-        if remote is None:
-            remote = os.path.basename(local)
-            debug("Massaged empty remote path into {0!r}".format(remote))
+        if not remote:
+            if is_file_like:
+                raise ValueError("Must give non-empty remote path when local is a file-like object!")
+            else:
+                remote = os.path.basename(local)
+                debug("Massaged empty remote path into {0!r}".format(remote))
         prejoined_remote = remote
         remote = posixpath.join(sftp.getcwd() or sftp.normalize('.'), remote)
         if remote != prejoined_remote:
             msg = "Massaged relative remote path {0!r} into {1!r}"
             debug(msg.format(prejoined_remote, remote))
 
-        # Massage local path:
-        # - handle file-ness
-        # - if path, fill with remote name if empty, & make absolute
+        # Massage local path
         orig_local = local
-        is_file_like = hasattr(local, 'write') and callable(local.write)
         if not is_file_like:
             local = os.path.abspath(local)
             if local != orig_local:
