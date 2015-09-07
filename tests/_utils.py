@@ -1,3 +1,5 @@
+import os
+
 from functools import wraps, partial
 from invoke.vendor.six import StringIO
 
@@ -80,6 +82,9 @@ def mock_sftp(expose_os=False):
                 return '/local/{0}'.format(path)
             mock_os.path.abspath.side_effect = fake_abspath
             sftp.getcwd.return_value = '/remote'
+            # Not super clear to me why the 'wraps' functionality in mock isn't
+            # working for this :(
+            mock_os.path.basename.side_effect = os.path.basename
             # Pass in mocks as needed
             passed_args = [self, sftp, transfer]
             if expose_os:

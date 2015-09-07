@@ -77,13 +77,16 @@ class Transfer_(Spec):
             cwd = os.getcwd()
             os.chdir(self._support())
             try:
+                remote_tmp = self._tmp()
+                # TODO: wrap chdir at the Connection level
+                self.c.sftp().chdir(self._tmp())
                 result = self.c.put('file.txt')
             finally:
                 os.chdir(cwd)
 
             # Make sure it arrived
             ok_(os.path.exists(self.remote))
-            eq_(open(remote).read(), 'yup\n')
+            eq_(open(self.remote).read(), 'yup\n')
             # Sanity check result object
             eq_(result.remote, self.remote)
             eq_(result.orig_remote, None)
@@ -91,9 +94,9 @@ class Transfer_(Spec):
             eq_(result.orig_local, 'file.txt')
 
         def file_like_objects(self):
-            fd = StringIO()
-            result = self.c.put(remote=self.remote, local=fd)
-            eq_(fd.getvalue(), 'yup\n')
+            fd = StringIO("yup\n")
+            result = self.c.put(local=fd, remote=self.remote)
+            eq_(open(self.remote).read(), "yup\n")
             eq_(result.remote, self.remote)
             ok_(result.local is fd)
 

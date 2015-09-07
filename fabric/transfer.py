@@ -6,6 +6,8 @@ import os
 import posixpath
 import stat
 
+from invoke.util import debug # TODO: actual logging! LOL
+
 # TODO: figure out best way to direct folks seeking rsync, to patchwork's rsync
 # call (which needs updating to use invoke.run() & fab 2 connection methods,
 # but is otherwise suitable).
@@ -167,6 +169,58 @@ class Transfer(object):
         # TODO: preserve honoring of  "name" attribute of file-like objects as
         # in v1, so one CAN just upload to a directory? did we just make that
         # shit up or is it an actual part of the api in newer Pythons?
+        sftp = self.connection.sftp()
+
+        # Massage remote path
+        orig_remote = remote
+        if remote is None:
+            remote = os.path.basename(local)
+            debug("Massaged empty remote path into {0!r}".format(remote))
+        prejoined_remote = remote
+        remote = posixpath.join(sftp.getcwd() or sftp.normalize('.'), remote)
+        if remote != prejoined_remote:
+            msg = "Massaged relative remote path {0!r} into {1!r}"
+            debug(msg.format(prejoined_remote, remote))
+
+        # Massage local path:
+        # - handle file-ness
+        # - if path, fill with remote name if empty, & make absolute
+        orig_local = local
+        is_file_like = hasattr(local, 'write') and callable(local.write)
+        if not is_file_like:
+            local = os.path.abspath(local)
+            if local != orig_local:
+                debug("Massaged relative local path {0!r} into {1!r}".format(orig_local, local))
+
+        # Run Paramiko-level .put() (side-effects only. womp.)
+        # TODO: push some of the path handling into Paramiko; it should be
+        # responsible for dealing with path cleaning etc.
+        # TODO: probably preserve warning message from v1 when overwriting
+        # existing files. Use logging for that obviously.
+        #
+        # If local appears to be a file-like object, use sftp.putfo, not put
+        if is_file_like:
+            msg = "Uploading file-like object {0!r} to {1!r}"
+            debug(msg.format(local, remote))
+            sftp.putfo(fl=local, remotepath=remote)
+        else:
+            debug("Uploading {0!r} to {1!r}".format(local, remote))
+            sftp.put(localpath=local, remotepath=remote)
+            # Set mode to same as local end
+            # TODO: Push this down into SFTPClient sometime (requires backwards
+            # incompat release.)
+            #
+            if preserve_mode:
+                mode = stat.S_IMODE(os.stat(local).st_mode)
+                sftp.chmod(remote, mode)
+        # Return something useful
+        return Result(
+            orig_remote=orig_remote,
+            remote=remote,
+            orig_local=orig_local,
+            local=local,
+            connection=self.connection,
+        )
 
 
 class Result(object):
