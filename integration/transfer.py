@@ -94,7 +94,8 @@ class Transfer_(Spec):
             eq_(result.orig_local, 'file.txt')
 
         def file_like_objects(self):
-            fd = StringIO("yup\n")
+            fd = StringIO()
+            fd.write("yup\n")
             result = self.c.put(local=fd, remote=self.remote)
             eq_(open(self.remote).read(), "yup\n")
             eq_(result.remote, self.remote)

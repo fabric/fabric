@@ -1,5 +1,6 @@
 from StringIO import StringIO
 
+from mock import Mock, call
 from spec import Spec, ok_, eq_, skip, raises
 from paramiko import SFTPAttributes
 
@@ -212,6 +213,14 @@ class Transfer_(Spec):
 
             def remote_path_from_local_StringIO(self):
                 self._put_from_stringio()
+
+            @mock_sftp()
+            def local_FLOs_are_rewound_before_putting(self, sftp, transfer):
+                fd = Mock()
+                fd.tell.return_value = 17
+                result = transfer.put(fd, remote='file')
+                seek_calls = fd.seek.call_args_list
+                eq_(seek_calls,[call(0), call(17)])
 
             def result_contains_fd_for_local_path(self):
                 result, fd = self._put_from_stringio()

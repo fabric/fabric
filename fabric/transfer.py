@@ -200,7 +200,12 @@ class Transfer(object):
         if is_file_like:
             msg = "Uploading file-like object {0!r} to {1!r}"
             debug(msg.format(local, remote))
-            sftp.putfo(fl=local, remotepath=remote)
+            pointer = local.tell()
+            try:
+                local.seek(0)
+                sftp.putfo(fl=local, remotepath=remote)
+            finally:
+                local.seek(pointer)
         else:
             debug("Uploading {0!r} to {1!r}".format(local, remote))
             sftp.put(localpath=local, remotepath=remote)
