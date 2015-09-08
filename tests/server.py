@@ -4,6 +4,7 @@ import copy
 import itertools
 import os
 import re
+import six
 import socket
 import stat
 import sys
@@ -489,6 +490,6 @@ def server(
                 # Handle subthread exceptions
                 e = worker.exception
                 if e:
-                    raise e[0], e[1], e[2]
+                    six.reraise(e[0], e[1], e[2])
         return inner
     return run_server
