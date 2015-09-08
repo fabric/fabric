@@ -221,7 +221,7 @@ def key_filenames():
     if isinstance(env.key_filename, six.string_types) or env.key_filename is None:
         keys = [keys]
     # Strip out any empty strings (such as the default value...meh)
-    keys = filter(bool, keys)
+    keys = list(filter(bool, keys))
     # Honor SSH config
     conf = ssh_config()
     if 'identityfile' in conf:
