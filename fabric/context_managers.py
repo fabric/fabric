@@ -155,13 +155,50 @@ def _setenv(variables):
                 del state.env[key]
 
 
-def settings(**kwargs):
+def settings(*args, **kwargs):
     """
     Nest context managers and/or override ``env`` variables.
 
-    It allows temporary overriding/updating of ``env`` with
-    any provided keyword arguments, e.g. ``with settings(user='foo'):``.
-    Original values, if any, will be restored once the ``with`` block closes.
+    `settings` serves two purposes:
+
+    * Most usefully, it allows temporary overriding/updating of ``env`` with
+      any provided keyword arguments, e.g. ``with settings(user='foo'):``.
+      Original values, if any, will be restored once the ``with`` block closes.
+
+        * The keyword argument ``clean_revert`` has special meaning for
+          ``settings`` itself (see below) and will be stripped out before
+          execution.
+
+    * In addition, it will use `contextlib.nested`_ to nest any given
+      non-keyword arguments, which should be other context managers, e.g.
+      ``with settings(hide('stderr'), show('stdout')):``.
+
+    .. _contextlib.nested: http://docs.python.org/library/contextlib.html#contextlib.nested
+
+    These behaviors may be specified at the same time if desired. An example
+    will hopefully illustrate why this is considered useful::
+
+        def my_task():
+            with settings(
+                hide('warnings', 'running', 'stdout', 'stderr'),
+                warn_only=True
+            ):
+                if run('ls /etc/lsb-release'):
+                    return 'Ubuntu'
+                elif run('ls /etc/redhat-release'):
+                    return 'RedHat'
+
+    The above task executes a `run` statement, but will warn instead of
+    aborting if the ``ls`` fails, and all output -- including the warning
+    itself -- is prevented from printing to the user. The end result, in this
+    scenario, is a completely silent task that allows the caller to figure out
+    what type of system the remote host is, without incurring the handful of
+    output that would normally occur.
+
+    Thus, `settings` may be used to set any combination of environment
+    variables in tandem with hiding (or showing) specific levels of output, or
+    in tandem with any other piece of Fabric functionality implemented as a
+    context manager.
 
       * The keyword argument ``clean_revert`` has special meaning for
         ``settings`` itself (see below) and will be stripped out before
@@ -202,7 +239,10 @@ def settings(**kwargs):
     .. versionadded:: 1.4.1
         The ``clean_revert`` kwarg.
     """
-    return _setenv(kwargs)
+    managers = list(args)
+    if kwargs:
+        managers.append(_setenv(kwargs))
+    return nested(*managers)
 
 
 def cd(path):
