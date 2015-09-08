@@ -29,10 +29,7 @@ pip, with `pip install fabric==dev`.
 For more information, please see the Fabric website or execute ``fab --help``.
 """ % (readme)
 
-if sys.version_info[:2] < (2, 6):
-    install_requires=['paramiko>=1.10,<1.13']
-else:
-    install_requires=['paramiko>=1.10']
+install_requires=['paramiko>=1.10', 'six>=1.9.0']
 
 
 setup(
