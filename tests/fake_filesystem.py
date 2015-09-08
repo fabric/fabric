@@ -1,15 +1,14 @@
 import os
+import six
 import stat
-from StringIO import StringIO
-from types import StringTypes
 
 from fabric.network import ssh
 
 
-class FakeFile(StringIO):
+class FakeFile(six.StringIO):
 
     def __init__(self, value=None, path=None):
-        init = lambda x: StringIO.__init__(self, x)
+        init = lambda x: six.StringIO.__init__(self, x)
         if value is None:
             init("")
             ftype = 'dir'
@@ -28,7 +27,7 @@ class FakeFile(StringIO):
         return self.getvalue()
 
     def write(self, value):
-        StringIO.write(self, value)
+        six.StringIO.write(self, value)
         self.attributes.st_size = len(self.getvalue())
 
     def close(self):
@@ -38,7 +37,7 @@ class FakeFile(StringIO):
         pass
 
     def __cmp__(self, other):
-        me = str(self) if isinstance(other, StringTypes) else self
+        me = str(self) if isinstance(other, six.string_types) else self
         return cmp(me, other)
 
 
@@ -46,11 +45,11 @@ class FakeFilesystem(dict):
     def __init__(self, d=None):
         # Replicate input dictionary using our custom __setitem__
         d = d or {}
-        for key, value in d.iteritems():
+        for key, value in six.iteritems(d):
             self[key] = value
 
     def __setitem__(self, key, value):
-        if isinstance(value, StringTypes) or value is None:
+        if isinstance(value, six.string_types) or value is None:
             value = FakeFile(value, key)
         super(FakeFilesystem, self).__setitem__(key, value)
 
