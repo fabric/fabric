@@ -9,6 +9,7 @@ import os
 import os.path
 import posixpath
 import re
+import six
 import subprocess
 import sys
 import time
@@ -709,7 +710,7 @@ def _prefix_env_vars(command, local=False):
 
         exports = ' '.join(
             '%s%s="%s"' % (set_cmd, k, v if k == 'PATH' else _shell_escape(v))
-            for k, v in env_vars.iteritems()
+            for k, v in six.iteritems(env_vars)
         )
         shell_env_str = '%s%s && ' % (exp_cmd, exports)
     else:

@@ -4,6 +4,7 @@ import sys
 import time
 import re
 import socket
+import six
 from select import select
 
 from fabric.state import env, output, win32
@@ -217,7 +218,7 @@ class OutputLooper(object):
         Iterate through the request prompts dict and return the response and
         original request if we find a match
         """
-        for tup in env.prompts.iteritems():
+        for tup in six.iteritems(env.prompts):
             if _endswith(self.capture, tup[0]):
                 return tup
         return None, None
