@@ -28,6 +28,18 @@ from fabric.state import output, win32, connections, env
 from fabric import state
 from fabric.utils import isatty
 
+if six.PY2:
+    from contextlib import nested
+else:
+    from contextlib import ExitStack
+
+    class nested(ExitStack):
+        def __init__(self, *managers):
+            super(nested, self).__init__()
+            for manager in managers:
+                self.enter_context(manager)
+
+
 if not win32:
     import termios
     import tty
@@ -518,7 +530,7 @@ def remote_tunnel(remote_port, local_port=None, local_host="localhost",
         transport.cancel_port_forward(remote_bind_address, remote_port)
 
 
-quiet = lambda: settings(hide('everything'), warn_only=True)
+quiet = lambda: nested(hide('everything'), settings( warn_only=True))
 quiet.__doc__ = """
     Alias to ``settings(hide('everything'), warn_only=True)``.
 
