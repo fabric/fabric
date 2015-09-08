@@ -169,7 +169,7 @@ class SFTP(object):
                 # The user should always own the copied file.
                 sudo('chown %s "%s"' % (env.user, target_path))
                 # Only root and the user has the right to read the file
-                sudo('chmod %o "%s"' % (0400, target_path))
+                sudo('chmod 400 "%s"' % target_path)
                 remote_path = target_path
 
         try:
