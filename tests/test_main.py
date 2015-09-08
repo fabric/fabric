@@ -4,6 +4,7 @@ import copy
 from collections import Mapping
 from functools import partial
 import os
+import six
 import sys
 from contextlib import contextmanager
 
@@ -586,7 +587,7 @@ def name_to_task(name):
 
 def strings_to_tasks(d):
     ret = {}
-    for key, value in d.iteritems():
+    for key, value in six.iteritems(d):
         if isinstance(value, Mapping):
             val = strings_to_tasks(value)
         else:
