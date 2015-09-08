@@ -22,7 +22,7 @@ try:
     import warnings
     warnings.simplefilter('ignore', DeprecationWarning)
     import paramiko as ssh
-except ImportError, e:
+except ImportError:
     import traceback
     traceback.print_exc()
     msg = """
@@ -89,7 +89,7 @@ def get_gateway(host, port, cache, replace=False):
         # ensure initial gateway connection
         if replace or gateway not in cache:
             if output.debug:
-                print "Creating new gateway connection to %r" % gateway
+                print("Creating new gateway connection to %r" % gateway)
             cache[gateway] = connect(*normalize(gateway) + (cache, False))
         # now we should have an open gw connection and can ask it for a
         # direct-tcpip channel to the real target. (bypass cache's own
@@ -140,7 +140,7 @@ class HostConnectionCache(dict):
         Force a new connection to ``key`` host string.
         """
         from fabric.state import env
-        
+
         user, host, port = normalize(key)
         key = normalize_to_string(key)
         seek_gateway = True
@@ -243,7 +243,7 @@ def key_from_env(passphrase=None):
                 sys.stderr.write("Trying to load it as %s\n" % pkey_class)
             try:
                 return pkey_class.from_private_key(StringIO(env.key), passphrase)
-            except Exception, e:
+            except Exception as e:
                 # File is valid key, but is encrypted: raise it, this will
                 # cause cxn loop to prompt for passphrase & retry
                 if 'Private key file is encrypted' in e:
@@ -461,14 +461,14 @@ def connect(user, host, port, cache, seek_gateway=True):
         # BadHostKeyException corresponds to key mismatch, i.e. what on the
         # command line results in the big banner error about man-in-the-middle
         # attacks.
-        except ssh.BadHostKeyException, e:
+        except ssh.BadHostKeyException as e:
             raise NetworkError("Host key for %s did not match pre-existing key! Server's key was changed recently, or possible man-in-the-middle attack." % host, e)
         # Prompt for new password to try on auth failure
         except (
             ssh.AuthenticationException,
             ssh.PasswordRequiredException,
             ssh.SSHException
-        ), e:
+        ) as e:
             msg = str(e)
             # If we get SSHExceptionError and the exception message indicates
             # SSH protocol banner read failures, assume it's caused by the
@@ -539,11 +539,11 @@ def connect(user, host, port, cache, seek_gateway=True):
             print('')
             sys.exit(0)
         # Handle DNS error / name lookup failure
-        except socket.gaierror, e:
+        except socket.gaierror as e:
             raise NetworkError('Name lookup failed for %s' % host, e)
         # Handle timeouts and retries, including generic errors
         # NOTE: In 2.6, socket.error subclasses IOError
-        except socket.error, e:
+        except socket.error as e:
             not_timeout = type(e) is not socket.timeout
             giving_up = _tried_enough(tries)
             # Baseline error msg for when debug is off
