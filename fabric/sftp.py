@@ -3,6 +3,7 @@ from __future__ import with_statement
 import hashlib
 import os
 import posixpath
+import six
 import stat
 import re
 from fnmatch import filter as fnfilter
@@ -266,7 +267,7 @@ class SFTP(object):
         if (local_is_path and mirror_local_mode) or (mode is not None):
             lmode = os.stat(local_path).st_mode if mirror_local_mode else mode
             # Cast to octal integer in case of string
-            if isinstance(lmode, basestring):
+            if isinstance(lmode, six.string_types):
                 lmode = int(lmode, 8)
             lmode = lmode & int('07777', 8)
             rmode = rattrs.st_mode
