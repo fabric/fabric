@@ -25,11 +25,15 @@ from fabric.tasks import Task, execute, get_task_details
 from fabric.task_utils import _Dict, crawl
 from fabric.utils import abort, indent, warn, _pty_size
 
+try:
+    reduce
+except NameError:
+    from functools import reduce
 
 # One-time calculation of "all internal callables" to avoid doing this on every
 # check of a given fabfile callable (in is_classic_task()).
 _modules = [api, project, files, console, colors]
-_internals = reduce(lambda x, y: x + filter(callable, vars(y).values()),
+_internals = reduce(lambda x, y: x + list(filter(callable, vars(y).values())),
     _modules,
     []
 )
