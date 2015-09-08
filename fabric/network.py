@@ -227,7 +227,7 @@ def key_filenames():
     if 'identityfile' in conf:
         # Assume a list here as we require Paramiko 1.10+
         keys.extend(conf['identityfile'])
-    return map(os.path.expanduser, keys)
+    return list(map(os.path.expanduser, keys))
 
 
 def key_from_env(passphrase=None):
