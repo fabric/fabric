@@ -3,13 +3,14 @@ Internal subroutines for e.g. aborting execution with an error message,
 or performing indenting on multiline output.
 """
 import os
+import six
 import sys
 import textwrap
 from traceback import format_exc
 
 
 def _encode(msg, stream):
-    if isinstance(msg, unicode) and hasattr(stream, 'encoding') and not stream.encoding is None:
+    if six.PY2 and isinstance(msg, unicode) and hasattr(stream, 'encoding') and not stream.encoding is None:
         return msg.encode(stream.encoding)
     else:
         return str(msg)
