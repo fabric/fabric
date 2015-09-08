@@ -11,7 +11,10 @@ import re
 import time
 import socket
 import sys
-from StringIO import StringIO
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO  # python3
 
 
 from fabric.auth import get_password, set_password
