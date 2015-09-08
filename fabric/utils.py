@@ -45,7 +45,7 @@ def abort(msg):
     if not env.colorize_errors:
         red  = lambda x: x
     else:
-        from colors import red
+        from fabric.colors import red
 
     if output.aborts:
         sys.stderr.write(red("\nFatal error: %s\n" % _encode(msg, sys.stderr)))
@@ -77,7 +77,7 @@ def warn(msg):
     if not env.colorize_errors:
         magenta = lambda x: x
     else:
-        from colors import magenta
+        from fabric.colors import magenta
 
     if output.warnings:
         msg = _encode(msg, sys.stderr)
