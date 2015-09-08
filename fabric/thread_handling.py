@@ -23,7 +23,4 @@ class ThreadHandler(object):
     def raise_if_needed(self):
         if self.exception:
             e = self.exception
-            if six.PY2:
-                raise e[0](e[1])
-            else:
-                raise e[0](e[1]).with_traceback(e[2])
+            six.reraise(e[0], e[1], e[2])
