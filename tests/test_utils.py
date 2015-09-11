@@ -1,5 +1,6 @@
 from __future__ import with_statement
 
+import six
 import sys
 import traceback
 from unittest import TestCase
@@ -97,7 +98,7 @@ def test_abort_message_only_printed_once():
         result = local("fab -f tests/support/aborts.py kaboom", capture=True)
     # When error in #1318 is present, this has an extra "It burns!" at end of
     # stderr string.
-    eq_(result.stderr, "Fatal error: It burns!\n\nAborting.")
+    eq_(result.stderr, six.binary_type("Fatal error: It burns!\n\nAborting."))
 
 @mock_streams('stderr')
 @with_patched_object(output, 'aborts', True)
