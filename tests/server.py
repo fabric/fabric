@@ -90,7 +90,7 @@ def _equalize(lists, fillval=None):
     """
     Pad all given list items in ``lists`` to be the same length.
     """
-    lists = map(list, lists)
+    lists = list(map(list, lists))
     upper = max(len(x) for x in lists)
     for lst in lists:
         diff = upper - len(lst)
