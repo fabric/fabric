@@ -1,8 +1,8 @@
 from __future__ import with_statement
 
 import os
+import six
 import sys
-from StringIO import StringIO
 
 from nose.tools import eq_, ok_
 
@@ -255,14 +255,14 @@ class TestQuietAndWarnOnly(FabricTest):
         run("ls /simple")
         ok_(sys.stdout.getvalue())
         # Reset
-        sys.stdout = StringIO()
+        sys.stdout = six.StringIO()
         # Real test
         with quiet():
             run("ls /simple")
         # Empty output
         ok_(not sys.stdout.getvalue())
         # Reset
-        sys.stdout = StringIO()
+        sys.stdout = six.StringIO()
         # Kwarg test
         run("ls /simple", quiet=True)
         ok_(not sys.stdout.getvalue())
