@@ -98,10 +98,7 @@ def test_abort_message_only_printed_once():
         result = local("fab -f tests/support/aborts.py kaboom", capture=True)
     # When error in #1318 is present, this has an extra "It burns!" at end of
     # stderr string.
-    result = result.stderr
-    if six.PY3:
-        result = result.encode('utf-8')
-    eq_(result, "Fatal error: It burns!\n\nAborting.")
+    eq_(result.stderr, "Fatal error: It burns!\n\nAborting.")
 
 @mock_streams('stderr')
 @with_patched_object(output, 'aborts', True)
