@@ -570,7 +570,7 @@ def connect(user, host, port, cache, seek_gateway=True):
             # Override eror msg if we were retrying other errors
             if not_timeout:
                 msg = "Low level socket error connecting to host %s on port %s: %s" % (
-                    host, port, e[1]
+                    host, port, e.args[1]
                 )
             # Here, all attempts failed. Tweak error msg to show # tries.
             # TODO: find good humanization module, jeez
