@@ -408,7 +408,7 @@ def serve_responses(responses, files, passwords, home, pubkeys, port):
             stderr = ""
             status = 0
             sleep = 0
-            if isinstance(result, types.StringTypes):
+            if isinstance(result, six.string_types):
                 stdout = result
             else:
                 size = len(result)
