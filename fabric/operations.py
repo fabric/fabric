@@ -1188,8 +1188,12 @@ def local(command, capture=False, shell=None):
         if dev_null is not None:
             dev_null.close()
     # Handle error condition (deal with stdout being None, too)
-    out = _AttributeString(stdout.strip() if stdout else "")
-    err = _AttributeString(stderr.strip() if stderr else "")
+    if six.PY3:
+        out = _AttributeString(stdout.decode('utf-8').strip() if stdout else "")
+        err = _AttributeString(stderr.decode('utf-8').strip() if stderr else "")
+    else:
+        out = _AttributeString(stdout.strip() if stdout else "")
+        err = _AttributeString(stderr.strip() if stderr else "")
     out.command = given_command
     out.real_command = wrapped_command
     out.failed = False
