@@ -1,6 +1,6 @@
 from fabric.api import task
 
-import debian
+from support.tree.system import debian
 
 @task
 def install_package():
