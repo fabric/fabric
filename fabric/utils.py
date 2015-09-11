@@ -361,7 +361,7 @@ def error(message, func=None, exception=None, stdout=None, stderr=None):
 
 def _format_error_output(header, body):
     term_width = _pty_size()[1]
-    header_side_length = (term_width - (len(header) + 2)) / 2
+    header_side_length = int((term_width - (len(header) + 2)) / 2)
     mark = "="
     side = mark * header_side_length
     return "\n\n%s %s %s\n\n%s\n\n%s" % (
