@@ -412,7 +412,7 @@ def _normal_list(docstrings=True):
         docstring = _print_docstring(docstrings, name)
         if docstring:
             lines = filter(None, docstring.splitlines())
-            first_line = lines[0].strip()
+            first_line = list(lines[0]).strip()
             # Truncate it if it's longer than N chars
             size = max_width - (max_len + len(sep) + len(trail))
             if len(first_line) > size:
