@@ -664,7 +664,7 @@ def disconnect_all():
     """
     from fabric.state import connections, output
     # Explicitly disconnect from all servers
-    for key in connections.keys():
+    for key in list(connections.keys()):
         if output.status:
             # Here we can't use the py3k print(x, end=" ")
             # because 2.5 backwards compatibility
