@@ -309,8 +309,8 @@ class TestCombineStderr(FabricTest):
         """
         combine_stderr: no kwarg => uses global value (True)
         """
-        output.everything = False
-        r = run("both_streams")
+        with show('everything'):
+            r = run("both_streams")
         # Note: the exact way the streams are jumbled here is an implementation
         # detail of our fake SSH server and may change in the future.
         eq_("ssttddoeurtr", r.stdout)
@@ -321,9 +321,9 @@ class TestCombineStderr(FabricTest):
         """
         combine_stderr: no kwarg => uses global value (False)
         """
-        output.everything = False
-        env.combine_stderr = False
-        r = run("both_streams")
+        with show('everything'):
+            env.combine_stderr = False
+            r = run("both_streams")
         eq_("stdout", r.stdout)
         eq_("stderr", r.stderr)
 
@@ -332,9 +332,9 @@ class TestCombineStderr(FabricTest):
         """
         combine_stderr: True kwarg => overrides global False value
         """
-        output.everything = False
-        env.combine_stderr = False
-        r = run("both_streams", combine_stderr=True)
+        with show('everything'):
+            env.combine_stderr = False
+            r = run("both_streams", combine_stderr=True)
         eq_("ssttddoeurtr", r.stdout)
         eq_(r.stderr, "")
 
@@ -343,9 +343,9 @@ class TestCombineStderr(FabricTest):
         """
         combine_stderr: False kwarg => overrides global True value
         """
-        output.everything = False
-        env.combine_stderr = True
-        r = run("both_streams", combine_stderr=False)
+        with show('everything'):
+            env.combine_stderr = True
+            r = run("both_streams", combine_stderr=False)
         eq_("stdout", r.stdout)
         eq_("stderr", r.stderr)
 
