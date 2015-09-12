@@ -566,7 +566,7 @@ def remote_tunnel(remote_port, local_port=None, local_host="localhost",
         transport.cancel_port_forward(remote_bind_address, remote_port)
 
 
-quiet = lambda: nested(hide('everything'), settings( warn_only=True))
+quiet = lambda: settings(hide('everything'), warn_only=True)
 quiet.__doc__ = """
     Alias to ``settings(hide('everything'), warn_only=True)``.
 
