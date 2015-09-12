@@ -438,7 +438,7 @@ class TestFileTransfers(FabricTest):
         local = self.path(remote)
         with hide('everything'):
             get(remote, local)
-        eq_contents(local, FILES[remote])
+        eq_contents(local, str(FILES[remote]))
 
     @server(files={'/base/dir with spaces/file': 'stuff!'})
     def test_get_file_from_relative_path_with_spaces(self):
@@ -459,7 +459,7 @@ class TestFileTransfers(FabricTest):
         with hide('everything'):
             get('file*.txt', self.tmpdir)
         for remote in remotes:
-            eq_contents(self.path(remote), FILES[remote])
+            eq_contents(self.path(remote), str(FILES[remote]))
 
     @server()
     def test_get_single_file_in_folder(self):
@@ -469,7 +469,7 @@ class TestFileTransfers(FabricTest):
         remote = 'folder/file3.txt'
         with hide('everything'):
             get('folder', self.tmpdir)
-        eq_contents(self.path(remote), FILES[remote])
+        eq_contents(self.path(remote), str(FILES[remote]))
 
     @server()
     def test_get_tree(self):
@@ -480,7 +480,7 @@ class TestFileTransfers(FabricTest):
             get('tree', self.tmpdir)
         leaves = filter(lambda x: x[0].startswith('/tree'), FILES.items())
         for path, contents in leaves:
-            eq_contents(self.path(path[1:]), contents)
+            eq_contents(self.path(path[1:]), str(contents))
 
     @server()
     def test_get_tree_with_implicit_local_path(self):
@@ -494,7 +494,7 @@ class TestFileTransfers(FabricTest):
             leaves = filter(lambda x: x[0].startswith('/tree'), FILES.items())
             for path, contents in leaves:
                 path = os.path.join(dirname, path[1:])
-                eq_contents(path, contents)
+                eq_contents(path, str(contents))
                 os.remove(path)
         # Cleanup
         finally:
@@ -551,7 +551,7 @@ class TestFileTransfers(FabricTest):
         target = '/etc/apache2/apache2.conf'
         with hide('everything'):
             get(target, self.tmpdir)
-        eq_contents(self.path(os.path.basename(target)), FILES[target])
+        eq_contents(self.path(os.path.basename(target)), str(FILES[target]))
 
     @server()
     def test_get_file_with_nonexistent_target(self):
@@ -562,7 +562,7 @@ class TestFileTransfers(FabricTest):
         target = 'file.txt'
         with hide('everything'):
             get(target, local)
-        eq_contents(local, FILES[target])
+        eq_contents(local, str(FILES[target]))
 
     @server()
     @mock_streams('stderr')
@@ -577,7 +577,7 @@ class TestFileTransfers(FabricTest):
         with hide('stdout', 'running'):
             get(target, local)
         assert "%s already exists" % local in sys.stderr.getvalue()
-        eq_contents(local, FILES[target])
+        eq_contents(local, str(FILES[target]))
 
     @server()
     def test_get_file_to_directory(self):
@@ -590,7 +590,7 @@ class TestFileTransfers(FabricTest):
         target = 'file.txt'
         with hide('everything'):
             get(target, self.tmpdir)
-        eq_contents(self.path(target), FILES[target])
+        eq_contents(self.path(target), str(FILES[target]))
 
     @server(port=2200)
     @server(port=2201)
@@ -661,11 +661,11 @@ class TestFileTransfers(FabricTest):
         """
         get()'s local_path arg should take file-like objects too
         """
-        fake_file = six.StringIO()
+        fake_file = six.BytesIO()
         target = '/file.txt'
         with hide('everything'):
             get(target, fake_file)
-        eq_(fake_file.getvalue(), FILES[target])
+        eq_(fake_file.getvalue().decode('utf-8'), str(FILES[target]))
 
     @server()
     def test_get_interpolation_without_host(self):
@@ -692,7 +692,8 @@ class TestFileTransfers(FabricTest):
         with hide('everything'):
             retval = get('tree', d)
         files = ['file1.txt', 'file2.txt', 'subfolder/file3.txt']
-        eq_(map(lambda x: os.path.join(d, 'tree', x), files), retval)
+        got = sorted(map(lambda x: os.path.join(d, 'tree', x), files))
+        eq_(list(got), sorted(retval))
 
     @server()
     def test_get_returns_none_for_stringio(self):
@@ -700,7 +701,7 @@ class TestFileTransfers(FabricTest):
         get() should return None if local_path is a StringIO
         """
         with hide('everything'):
-            eq_([], get('/file.txt', six.StringIO()))
+            eq_([], get('/file.txt', six.BytesIO()))
 
     @server()
     def test_get_return_value_failed_attribute(self):
