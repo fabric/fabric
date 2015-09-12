@@ -26,6 +26,8 @@ def _endswith(char_list, substring):
 
 
 def _has_newline(bytelist):
+    if six.PY3 and isinstance(bytelist, six.binary_type):
+        bytelist = bytelist.decode('utf-8')
     return '\r' in bytelist or '\n' in bytelist
 
 
