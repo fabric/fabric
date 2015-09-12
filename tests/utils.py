@@ -202,6 +202,9 @@ def aborts(func):
 
 
 def _patched_input(func, fake):
-    return func(sys.modules['__builtin__'], 'raw_input', fake)
+    if six.PY3 is True:
+        return func(sys.modules['builtins'], 'input', fake)
+    else:
+        return func(sys.modules['__builtin__'], 'raw_input', fake)
 patched_input = partial(_patched_input, patched_context)
 with_patched_input = partial(_patched_input, with_patched_object)
