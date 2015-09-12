@@ -214,7 +214,10 @@ def prompt(text, key=None, default='', validate=None):
     value = None
     while value is None:
         # Get input
-        value = raw_input(prompt_str) or default
+        if six.PY3 is True:
+            value = input(prompt_str) or default
+        else:
+            value = raw_input(prompt_str) or default
         # Handle validation
         if validate:
             # Callable
