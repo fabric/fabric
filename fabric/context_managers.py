@@ -200,10 +200,6 @@ def settings(*args, **kwargs):
     in tandem with any other piece of Fabric functionality implemented as a
     context manager.
 
-      * The keyword argument ``clean_revert`` has special meaning for
-        ``settings`` itself (see below) and will be stripped out before
-        execution.
-
     If ``clean_revert`` is set to ``True``, ``settings`` will **not** revert
     keys which are altered within the nested block, instead only reverting keys
     whose values remain the same as those given. More examples will make this
