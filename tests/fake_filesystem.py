@@ -27,6 +27,8 @@ class FakeFile(six.StringIO):
         return self.getvalue()
 
     def write(self, value):
+        if six.PY3 is True and isinstance(value, bytes):
+            value = value.decode('utf-8')
         six.StringIO.write(self, value)
         self.attributes.st_size = len(self.getvalue())
 
