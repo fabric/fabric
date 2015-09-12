@@ -157,6 +157,9 @@ def upload_template(filename, destination, context=None, use_jinja=False,
     if backup and exists(destination):
         func("cp %s{,.bak}" % _expand_path(destination))
 
+    if six.PY3 is True and isinstance(text, bytes):
+        text = text.decode('utf-8')
+
     # Upload the file.
     return put(
         local_path=StringIO(text),
