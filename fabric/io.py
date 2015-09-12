@@ -92,7 +92,7 @@ class OutputLooper(object):
                     raise CommandTimeout(timeout=self.timeout)
                 continue
 
-            if six.PY3 and isinstance(bytelist, six.binary_type):
+            if six.PY3 is True and isinstance(bytelist, six.binary_type):
                 # Note that we have to decode this right away, even if an error
                 # is thrown only later in the code, because e.g. '' != b'' (see
                 # first if below).
