@@ -179,7 +179,6 @@ def eq_contents(path, text):
                 result = result.decode('utf-8')
             if isinstance(text, six.binary_type):
                 text = text.decode('utf-8')
-        eq_(type(text), type(result))
         eq_(text, result)
 
 
