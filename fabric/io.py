@@ -26,8 +26,6 @@ def _endswith(char_list, substring):
 
 
 def _has_newline(bytelist):
-    if six.PY3 and isinstance(bytelist, six.binary_type):
-        bytelist = bytelist.decode('utf-8')
     return '\r' in bytelist or '\n' in bytelist
 
 
@@ -93,6 +91,13 @@ class OutputLooper(object):
                 if self.timeout is not None and elapsed > self.timeout:
                     raise CommandTimeout(timeout=self.timeout)
                 continue
+
+            if six.PY3 and isinstance(bytelist, six.binary_type):
+                # Note that we have to decode this right away, even if an error
+                # is thrown only later in the code, because e.g. '' != b'' (see
+                # first if below).
+                bytelist = bytelist.decode('utf-8')
+
             # Empty byte == EOS
             if bytelist == '':
                 # If linewise, ensure we flush any leftovers in the buffer.
@@ -149,8 +154,6 @@ class OutputLooper(object):
                         self._flush(printable_bytes)
 
                 # Now we have handled printing, handle interactivity
-                if six.PY3:
-                    bytelist = bytelist.decode('utf-8')
                 read_lines = re.split(r"(\r|\n|\r\n)", bytelist)
                 for fragment in read_lines:
                     # Store in capture buffer
