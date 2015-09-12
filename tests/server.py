@@ -434,6 +434,8 @@ def serve_responses(responses, files, passwords, home, pubkeys, port):
                 # newline
                 self.channel.send('\n')
                 # Test password
+                if six.PY3 is True:
+                    password = password.decode('utf-8')
                 if password == passwords[self.ssh_server.username]:
                     passed = True
                     break
