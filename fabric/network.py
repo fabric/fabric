@@ -16,7 +16,6 @@ import sys
 from fabric.auth import get_password, set_password
 from fabric.utils import abort, handle_prompt_abort, warn
 from fabric.exceptions import NetworkError
-from six.moves import input
 
 try:
     import warnings
@@ -645,8 +644,14 @@ def needs_host(func):
     def host_prompting_wrapper(*args, **kwargs):
         while not env.get('host_string', False):
             handle_prompt_abort("the target host connection string")
-            host_string = input("No hosts found. Please specify (single)"
-                                    " host string for connection: ")
+            prompt = "No hosts found. Please specify (single) " \
+                "host string for connection: "
+            # WARNING: do not use six.moves.input, because test cases to not
+            # overwrite that method with a faked method from Fudge
+            if six.PY3 is True:
+                host_string = input(prompt)
+            else:
+                host_string = raw_input(prompt)
             env.update(to_dict(host_string))
         return func(*args, **kwargs)
     host_prompting_wrapper.undecorated = func
