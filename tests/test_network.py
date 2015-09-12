@@ -321,8 +321,7 @@ class TestNetwork(FabricTest):
         """
         env.password = None
         env.no_agent = env.no_keys = True
-        output.everything = False
-        with password_response(PASSWORDS[env.user], silent=False):
+        with show('everything'), password_response(PASSWORDS[env.user], silent=False):
             run("ls /simple")
         regex = r'^\[%s\] Login password for \'%s\': ' % (env.host_string, env.user)
         assert_contains(regex, sys.stderr.getvalue())
@@ -336,8 +335,7 @@ class TestNetwork(FabricTest):
         env.password = None
         env.no_agent = env.no_keys = True
         env.key_filename = CLIENT_PRIVKEY
-        output.everything = False
-        with password_response(CLIENT_PRIVKEY_PASSPHRASE, silent=False):
+        with hide('everything'), password_response(CLIENT_PRIVKEY_PASSPHRASE, silent=False):
             run("ls /simple")
         regex = r'^\[%s\] Login password for \'%s\': ' % (env.host_string, env.user)
         assert_contains(regex, sys.stderr.getvalue())
