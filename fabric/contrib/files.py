@@ -9,10 +9,6 @@ import tempfile
 import re
 import os
 import six
-try:
-    from StringIO import StringIO
-except ImportError:
-    from io import StringIO
 
 from functools import partial
 
@@ -162,7 +158,7 @@ def upload_template(filename, destination, context=None, use_jinja=False,
 
     # Upload the file.
     return put(
-        local_path=StringIO(text),
+        local_path=six.StringIO(text),
         remote_path=destination,
         use_sudo=use_sudo,
         mirror_local_mode=mirror_local_mode,
