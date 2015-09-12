@@ -99,6 +99,7 @@ def require(*keys, **kwargs):
     # If all keys exist and are non-empty, we're good, so keep going.
     missing_keys = filter(lambda x: x not in env or (x in env and
         isinstance(env[x], (dict, list, tuple, set)) and not env[x]), keys)
+    missing_keys = list(missing_keys)
     if not missing_keys:
         return
     # Pluralization
