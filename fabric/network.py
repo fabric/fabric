@@ -587,7 +587,9 @@ def connect(user, host, port, cache, seek_gateway=True):
 def _password_prompt(prompt, stream):
     # NOTE: Using encode-to-ascii to prevent (Windows, at least) getpass from
     # choking if given Unicode.
-    return getpass.getpass(prompt.encode('ascii', 'ignore'), stream)
+    if six.PY3 is False:
+        prompt = prompt.encode('ascii', 'ignore')
+    return getpass.getpass(prompt, stream)
 
 def prompt_for_password(prompt=None, no_colon=False, stream=None):
     """
