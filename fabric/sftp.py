@@ -160,8 +160,12 @@ class SFTP(object):
         if use_sudo:
             target_path = remote_path
             hasher = hashlib.sha1()
-            hasher.update(env.host_string)
-            hasher.update(target_path)
+            if six.PY3 is True:
+                hasher.update(env.host_string.encode('utf-8'))
+                hasher.update(target_path.encode('utf-8'))
+            else:
+                hasher.update(env.host_string)
+                hasher.update(target_path)
             target_path = posixpath.join(temp_dir, hasher.hexdigest())
             # Temporarily nuke 'cwd' so sudo() doesn't "cd" its mv command.
             # (The target path has already been cwd-ified elsewhere.)
@@ -251,8 +255,12 @@ class SFTP(object):
         if use_sudo:
             target_path = remote_path
             hasher = hashlib.sha1()
-            hasher.update(env.host_string)
-            hasher.update(target_path)
+            if six.PY3 is True:
+                hasher.update(env.host_string.encode('utf-8'))
+                hasher.update(target_path.encode('utf-8'))
+            else:
+                hasher.update(env.host_string)
+                hasher.update(target_path)
             remote_path = posixpath.join(temp_dir, hasher.hexdigest())
         # Read, ensuring we handle file-like objects correct re: seek pointer
         putter = self.ftp.put
