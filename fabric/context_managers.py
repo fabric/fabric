@@ -28,7 +28,7 @@ from fabric.state import output, win32, connections, env
 from fabric import state
 from fabric.utils import isatty
 
-if six.PY2:
+if six.PY2 is True:
     from contextlib import nested
 else:
     from contextlib import ExitStack
