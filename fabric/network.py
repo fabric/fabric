@@ -12,15 +12,11 @@ import time
 import six
 import socket
 import sys
-try:
-    from StringIO import StringIO
-except ImportError:
-    from io import StringIO  # python3
-
 
 from fabric.auth import get_password, set_password
 from fabric.utils import abort, handle_prompt_abort, warn
 from fabric.exceptions import NetworkError
+from six.moves import input
 
 try:
     import warnings
@@ -246,7 +242,7 @@ def key_from_env(passphrase=None):
             if output.debug:
                 sys.stderr.write("Trying to load it as %s\n" % pkey_class)
             try:
-                return pkey_class.from_private_key(StringIO(env.key), passphrase)
+                return pkey_class.from_private_key(six.StringIO(env.key), passphrase)
             except Exception as e:
                 # File is valid key, but is encrypted: raise it, this will
                 # cause cxn loop to prompt for passphrase & retry
@@ -649,7 +645,7 @@ def needs_host(func):
     def host_prompting_wrapper(*args, **kwargs):
         while not env.get('host_string', False):
             handle_prompt_abort("the target host connection string")
-            host_string = raw_input("No hosts found. Please specify (single)"
+            host_string = input("No hosts found. Please specify (single)"
                                     " host string for connection: ")
             env.update(to_dict(host_string))
         return func(*args, **kwargs)
