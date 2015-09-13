@@ -16,8 +16,7 @@ from fabric.exceptions import CommandTimeout
 
 from fabric.decorators import with_settings
 from utils import *
-from server import (server, PORT, RESPONSES, FILES, PASSWORDS, CLIENT_PRIVKEY,
-    USER, CLIENT_PRIVKEY_PASSPHRASE)
+from server import server, FILES
 
 #
 # require()
