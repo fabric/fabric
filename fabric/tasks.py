@@ -1,13 +1,12 @@
 from __future__ import with_statement
 
-from functools import wraps
 import inspect
 import sys
 import textwrap
 
 from fabric import state
 from fabric.utils import abort, warn, error
-from fabric.network import to_dict, normalize_to_string, disconnect_all
+from fabric.network import to_dict, disconnect_all
 from fabric.context_managers import settings
 from fabric.job_queue import JobQueue
 from fabric.task_utils import crawl, merge, parse_kwargs
