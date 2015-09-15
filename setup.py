@@ -37,12 +37,11 @@ setup(
         'paramiko',
     ],
     packages=['fabric'],
-    # entry_points={
-    #     'console_scripts': [
-    #         'fabric = fabric.cli:main',
-    #         'fab = fabric.cli:main',
-    #     ]
-    # },
+    entry_points={
+        'console_scripts': [
+            'fab = fabric.main:program.run',
+        ]
+    },
 
     classifiers=[
         'Development Status :: 3 - Alpha',
