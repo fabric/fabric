@@ -10,8 +10,13 @@ from paramiko import __version__  as paramiko
 from . import __version__ as fabric
 
 
-program = Program(
+class Fab(Program):
+    def print_version(self):
+        super(Fab, self).print_version()
+        print("Paramiko {0}".format(paramiko))
+        print("Invoke {0}".format(invoke))
+
+program = Fab(
     name="Fabric",
     version=fabric,
-    #subversions=???
 )
