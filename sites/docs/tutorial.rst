@@ -198,3 +198,58 @@ hand such a function to ``Group.execute`` and get the best of both worlds::
 
 ``Group.execute``, like its sibling methods, returns ``ResultSet`` objects; its
 per-connection values are simply the return values of the function passed in.
+
+
+Addendum: the ``fab`` command-line tool
+=======================================
+
+It's often useful to run Fabric code from a shell, e.g. deploying applications
+or running sysadmin jobs on arbitrary servers. You could use regular
+:ref:`Invoke tasks <defining-and-running-task-functions>` with Fabric library
+code in them, but another option is Fabric's own "network-oriented" tool,
+``fab``.
+
+``fab`` wraps Invoke's CLI mechanics with features like host selection, letting
+you quickly run tasks on various servers - without having to e.g. define
+``host`` kwargs on all your tasks.
+
+.. note::
+    This mode was the primary API of Fabric 1.x; as of 2.0 it's just a
+    convenience. Whenever your use case falls outside these shortcuts, it
+    should be easy to revert to the library API directly (with or without
+    Invoke's less opinionated CLI tasks).
+
+For a final code example, let's adapt the previous one into a ``fab`` task
+module called ``fabfile.py``::
+
+    from invoke import ctask as task
+
+    @task
+    def upload_and_unpack(cxn):
+        if cxn.run('test -f /opt/mydata/myfile', warn=True).failed:
+            cxn.put('myfiles.tgz', '/opt/mydata')
+            cxn.run('tar -C /opt/mydata -xzvf /opt/mydata/myfiles.tgz')
+
+Not hard - all we did was copy our temporary task function into a file and slap
+a decorator on it. `.ctask` tells the CLI machinery to expose the task on the
+command line::
+
+    $ fab --list
+    Available tasks:
+
+      upload_and_unpack
+
+Then, when ``fab`` actually invokes a task, it knows how to stitch together
+arguments controlling target servers, and run the task once per server. To run
+the task once on a single server::
+
+    $ fab -H web1 upload_and_unpack
+
+When this occurs, ``cxn`` inside the task is set, effectively, to
+``Connection("web1")`` - as in earlier examples. Similarly, you can give more
+than one host, which creates a `.Group` under the hood and uses its
+`~.Group.execute` method::
+
+    $ fab -H web1,web2,web3 upload_and_unpack
+
+This is just the start; see :doc:`tasks` and :doc:`cli` for details.
