@@ -23,11 +23,14 @@ together:
   (implementing remote shell execution) and adds functionality with no local
   analogue (such as file upload/download).
 
+    * Most of the network functionality uses `Paramiko <https://paramiko.org>`_
+      under the hood - but most users will never need to import anything from
+      Paramiko directly.
+
 Because of this, most imports will be from the ``fabric`` namespace (such as
-``from fabric import Connection``) -- but occasionally you'll import classes or
-variables directly from ``invoke`` when there's no Fabric-specific overriding
-going on. For example, when constructing task namespaces, you'll see ``from
-invoke import Collection``.
+``from fabric import Connection``) -- but occasionally you'll import directly
+from ``invoke`` when Fabric's not overriding anything. For example, when
+constructing task namespaces, you'll see ``from invoke import Collection``.
 
 .. TODO:
     we should probably rename Collection to be Namespace or something; it's too
