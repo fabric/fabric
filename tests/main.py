@@ -2,10 +2,9 @@
 Tests concerned with the ``fab`` tool & how it overrides Invoke defaults.
 """
 
-import re
 import sys
 
-from spec import Spec, trap, assert_contains
+from spec import Spec, trap, assert_contains, eq_
 
 from fabric.main import program as fab_program
 
