@@ -47,3 +47,6 @@ Available tasks:
 
 """.lstrip()
             )
+
+    def exposes_hosts_flag_in_help(self):
+        expect("--help", "-H STRING, --hosts=STRING", test=assert_contains)
