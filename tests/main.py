@@ -5,6 +5,7 @@ Tests concerned with the ``fab`` tool & how it overrides Invoke defaults.
 import sys
 
 from spec import Spec, trap, assert_contains, eq_
+from invoke.util import cd
 
 from fabric.main import program as fab_program
 
@@ -33,3 +34,18 @@ Invoke .+
     @trap
     def help_output_says_fab(self):
         expect("--help", "Usage: fab", test=assert_contains)
+
+    @trap
+    def loads_fabfile_not_tasks(self):
+        "Loads fabfile.py, not tasks.py"
+        with cd('tests/_support'):
+            expect(
+                "--list",
+                """
+Available tasks:
+
+  build
+  deploy
+
+""".lstrip()
+            )
