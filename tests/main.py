@@ -11,6 +11,7 @@ from fabric.main import program as fab_program
 
 
 # TODO: figure out a non shite way to share Invoke's more beefy copy of same.
+@trap
 def expect(invocation, out, program=None, test=None):
     if program is None:
         program = fab_program
@@ -19,7 +20,6 @@ def expect(invocation, out, program=None, test=None):
 
 
 class Fab_(Spec):
-    @trap
     def version_output_contains_our_name_plus_deps(self):
         expect(
             "--version",
@@ -31,11 +31,9 @@ Invoke .+
             test=assert_contains
         )
 
-    @trap
     def help_output_says_fab(self):
         expect("--help", "Usage: fab", test=assert_contains)
 
-    @trap
     def loads_fabfile_not_tasks(self):
         "Loads fabfile.py, not tasks.py"
         with cd('tests/_support'):
