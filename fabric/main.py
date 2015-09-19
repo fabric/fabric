@@ -4,7 +4,7 @@ CLI entrypoint & parser configuration.
 Builds on top of Invoke's core functionality for same.
 """
 
-from invoke import Program, __version__ as invoke, FilesystemLoader
+from invoke import Program, __version__ as invoke, FilesystemLoader, Argument
 from paramiko import __version__ as paramiko
 
 from . import __version__ as fabric
@@ -15,6 +15,16 @@ class Fab(Program):
         super(Fab, self).print_version()
         print("Paramiko {0}".format(paramiko))
         print("Invoke {0}".format(invoke))
+
+    def core_args(self):
+        core_args = super(Fab, self).core_args()
+        my_args = [
+            Argument(
+                names=('H', 'hosts'),
+                help="Host name(s) to execute tasks against.",
+            ),
+        ]
+        return core_args + my_args
 
 
 class FabfileLoader(FilesystemLoader):
