@@ -5,9 +5,9 @@ from invoke import pty_size, Result
 
 from fabric.connection import Connection
 from fabric.runners import Remote
-from fabric.utils import get_local_user
+from fabric.util import get_local_user
 
-from _utils import mock_remote
+from _util import mock_remote
 
 
 # On most systems this will explode if actually executed as a shell command;

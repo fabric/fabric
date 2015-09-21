@@ -2,21 +2,13 @@
 Tests concerned with the ``fab`` tool & how it overrides Invoke defaults.
 """
 
+import os
 import sys
 
-from spec import Spec, trap, assert_contains, eq_
+from spec import Spec, assert_contains, eq_
 from invoke.util import cd
 
-from fabric.main import program as fab_program
-
-
-# TODO: figure out a non shite way to share Invoke's more beefy copy of same.
-@trap
-def expect(invocation, out, program=None, test=None):
-    if program is None:
-        program = fab_program
-    program.run("fab {0}".format(invocation), exit=False)
-    (test or eq_)(sys.stdout.getvalue(), out)
+from _util import expect
 
 
 class Fab_(Spec):
@@ -36,7 +28,7 @@ Invoke .+
 
     def loads_fabfile_not_tasks(self):
         "Loads fabfile.py, not tasks.py"
-        with cd('tests/_support'):
+        with cd(os.path.join(os.path.dirname(__file__), '_support')):
             expect(
                 "--list",
                 """

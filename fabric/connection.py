@@ -4,7 +4,7 @@ from paramiko.client import SSHClient, AutoAddPolicy
 
 from .runners import Remote
 from .transfer import Transfer
-from .utils import get_local_user
+from .util import get_local_user
 
 
 class Config(InvokeConfig):

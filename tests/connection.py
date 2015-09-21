@@ -5,7 +5,7 @@ from mock import patch, Mock, call
 from paramiko.client import SSHClient, AutoAddPolicy
 
 from fabric.connection import Connection, Config, Group
-from fabric.utils import get_local_user
+from fabric.util import get_local_user
 
 
 class Connection_(Spec):

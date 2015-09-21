@@ -7,7 +7,7 @@ from paramiko import SFTPAttributes
 from fabric import Connection
 from fabric.transfer import Transfer
 
-from _utils import mock_sftp
+from _util import mock_sftp
 
 
 # TODO: pull in all edge/corner case tests from fabric v1

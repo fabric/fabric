@@ -1,13 +1,22 @@
 import os
-
+import sys
 from functools import wraps, partial
 from invoke.vendor.six import StringIO
 
 from fabric import Connection
+from fabric.main import program as fab_program
 from fabric.transfer import Transfer
-
-from spec import eq_
 from mock import patch, Mock
+from spec import eq_, trap
+
+
+# TODO: figure out a non shite way to share Invoke's more beefy copy of same.
+@trap
+def expect(invocation, out, program=None, test=None):
+    if program is None:
+        program = fab_program
+    program.run("fab {0}".format(invocation), exit=False)
+    (test or eq_)(sys.stdout.getvalue(), out)
 
 
 def mock_remote(out='', err='', exit=0, wait=0):
