@@ -4,10 +4,13 @@ Tests concerned with the ``fab`` tool & how it overrides Invoke defaults.
 
 import os
 
+from mock import patch
 from spec import Spec, assert_contains
 from invoke.util import cd
 
-from _util import expect
+from fabric.main import Fab
+
+from _util import expect, mock_remote
 
 
 class Fab_(Spec):
@@ -41,3 +44,13 @@ Available tasks:
 
     def exposes_hosts_flag_in_help(self):
         expect("--help", "-H STRING, --hosts=STRING", test=assert_contains)
+
+    @mock_remote()
+    def executes_remainder_as_anonymous_task(self, chan):
+        # Because threading arbitrary mocks into @mock_remote is kinda hard
+        with patch('fabric.connection.Connection') as Connection:
+            Fab().run("fab -H myhost -- lol a command", exit=False)
+            # Did we connect to host 'myhost'?
+            Connection.assert_called_with("myhost")
+            # Did we execute "lol a command"?
+            chan.exec_command.assert_called_with("lol a command")
