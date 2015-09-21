@@ -3,9 +3,8 @@ Tests concerned with the ``fab`` tool & how it overrides Invoke defaults.
 """
 
 import os
-import sys
 
-from spec import Spec, assert_contains, eq_
+from spec import Spec, assert_contains
 from invoke.util import cd
 
 from _util import expect
