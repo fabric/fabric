@@ -49,8 +49,12 @@ Available tasks:
     def executes_remainder_as_anonymous_task(self, chan):
         # Because threading arbitrary mocks into @mock_remote is kinda hard
         with patch('fabric.connection.Connection') as Connection:
-            Fab().run("fab -H myhost -- lol a command", exit=False)
-            # Did we connect to host 'myhost'?
+            Fab().run("fab -H myhost,otherhost -- lol a command", exit=False)
+            # Did we connect to the hosts?
             Connection.assert_called_with("myhost")
-            # Did we execute "lol a command"?
+            Connection.assert_called_with("otherhost")
+            # Did we execute the command on both?
+            # TODO: how to tell these apart exactly ,do we need to update
+            # mock_remote? =/
+            chan.exec_command.assert_called_with("lol a command")
             chan.exec_command.assert_called_with("lol a command")
