@@ -4,7 +4,8 @@ CLI entrypoint & parser configuration.
 Builds on top of Invoke's core functionality for same.
 """
 
-from invoke import Program, __version__ as invoke, FilesystemLoader, Argument
+from invoke import Program, FilesystemLoader, Argument, Task, Executor
+from invoke import __version__ as invoke
 from paramiko import __version__ as paramiko
 
 from . import __version__ as fabric
@@ -27,6 +28,25 @@ class Fab(Program):
         return core_args + my_args
 
 
+# TODO: come up w/ a better name heh
+class FabExecutor(Executor):
+    def expand_tasks(self, tasks):
+        # We still want pre/post tasks expanded, so run our parent
+        tasks = super(FabExecutor, self).expand_tasks(tasks)
+        # Then tack on remainder to the end, if necessary
+        if self.core.remainder:
+            def anonymous(c):
+                c.run(self.core.remainder)
+            tasks.append(Task(body=anonymous, contextualized=True))
+        return tasks
+
+# TODO: would be nice to run w/o a fabfile present if we give a remainder
+# TODO: this also means running w/o any tasks, so tweaking core program loop
+# TODO: the above is present in Fab 1 and isn't SUPER required (it does nothing
+# you can't do w/ vanilla ssh client) but nice-to-have for backwards compat /
+# testing / etc.
+
+
 class FabfileLoader(FilesystemLoader):
     # TODO: we may run into issues re: swapping loader "strategies" (eg
     # FilesystemLoader vs...something else eventually) versus this sort of
@@ -39,4 +59,5 @@ program = Fab(
     name="Fabric",
     version=fabric,
     loader_class=FabfileLoader,
+    executor_class=FabExecutor,
 )
