@@ -46,16 +46,13 @@ Available tasks:
     def exposes_hosts_flag_in_help(self):
         expect("--help", "-H STRING, --hosts=STRING", test=assert_contains)
 
-    @mock_remote()
-    def executes_remainder_as_anonymous_task(self, chan):
-        # Because threading arbitrary mocks into @mock_remote is kinda hard
-        with patch('fabric.main.Connection', spec=Context) as Connection:
-            fab_program.run("fab -H myhost,otherhost -- lol a command", exit=False)
-            # Did we connect to the hosts?
-            eq_(Connection.call_args_list[0][1]['host'], 'myhost')
-            eq_(Connection.call_args_list[1][1]['host'], 'otherhost')
-            # Did we execute the command on both?
-            # TODO: how to tell these apart exactly ,do we need to update
-            # mock_remote? =/
-            chan.exec_command.assert_called_with("lol a command")
-            chan.exec_command.assert_called_with("lol a command")
+    @patch('fabric.main.Connection', spec=Context)
+    def executes_remainder_as_anonymous_task(self, Connection):
+        fab_program.run("fab -H myhost,otherhost -- lol a command", exit=False)
+        # Did we connect to the hosts?
+        eq_(Connection.call_args_list[0][1]['host'], 'myhost')
+        eq_(Connection.call_args_list[1][1]['host'], 'otherhost')
+        # Did we execute the command on both? (given same mock, just means
+        # "did it run twice". Meh.)
+        eq_(Connection.return_value.run.call_args_list[0][0][0], "lol a command")
+        eq_(Connection.return_value.run.call_args_list[1][0][0], "lol a command")
