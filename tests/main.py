@@ -48,11 +48,15 @@ Available tasks:
 
     @patch('fabric.main.Connection', spec=Context)
     def executes_remainder_as_anonymous_task(self, Connection):
-        fab_program.run("fab -H myhost,otherhost -- lol a command", exit=False)
+        fab_program.run("fab -H myhost,otherhost -- whoami", exit=False)
         # Did we connect to the hosts?
-        eq_(Connection.call_args_list[0][1]['host'], 'myhost')
-        eq_(Connection.call_args_list[1][1]['host'], 'otherhost')
+        eq_(
+            [x[1]['host'] for x in Connection.call_args_list],
+            ['myhost', 'otherhost']
+        )
         # Did we execute the command on both? (given same mock, just means
         # "did it run twice". Meh.)
-        eq_(Connection.return_value.run.call_args_list[0][0][0], "lol a command")
-        eq_(Connection.return_value.run.call_args_list[1][0][0], "lol a command")
+        eq_(
+            [x[0][0] for x in Connection.return_value.run.call_args_list],
+            ['whoami', 'whoami']
+        )
