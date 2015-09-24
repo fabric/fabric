@@ -301,10 +301,10 @@ class Connection_(Spec):
     class local:
         # NOTE: most tests for this functionality live in Invoke's runner
         # tests.
-        @patch('fabric.connection.invoke')
-        def calls_invoke_Runner_run(self, invoke):
+        @patch('invoke.context.Local')
+        def calls_invoke_Local_run(self, Local):
             Connection('host').local('foo')
-            invoke.run.assert_called_with('foo')
+            Local.return_value.run.assert_called_with('foo')
 
     class sftp:
         @patch('fabric.connection.SSHClient')

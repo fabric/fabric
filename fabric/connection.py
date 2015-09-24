@@ -1,4 +1,4 @@
-import invoke # for mocking
+from invoke import Context
 from invoke.config import Config as InvokeConfig, merge_dicts
 from paramiko.client import SSHClient, AutoAddPolicy
 
@@ -33,8 +33,7 @@ class Config(InvokeConfig):
         return defaults
 
 
-# TODO: inherit from, or proxy to, invoke.context.Context
-class Connection(object):
+class Connection(Context):
     """
     A connection to an SSH daemon, with methods for commands and file transfer.
 
@@ -49,6 +48,10 @@ class Connection(object):
     <close>`" lifecycle, though this is handled transparently: most users
     simply need to instantiate and call the interesting methods like `run` and
     `put`.
+
+    .. note::
+        This class rebinds `invoke.context.Context.run` to `.local` so both
+        remote and local command execution can coexist.
     """
     # TODO: push some of this into paramiko.client.Client? e.g. expand what
     # Client.exec_command does, it already allows configuring a subset of what
@@ -92,6 +95,10 @@ class Connection(object):
             http://zen-of-python.info/
             in-the-face-of-ambiguity-refuse-the-temptation-to-guess.html#12
         """
+        # NOTE: for now, we don't call our parent __init__, since all it does
+        # is set a default config (to Invoke's Config, not ours). If
+        # invoke.Context grows more behavior later we may need to change this.
+
         # TODO: how does this config mesh with the one from us being an Invoke
         # context, for keys not part of the defaults? Do we namespace all our
         # stuff or just overlay it? Starting with overlay, but...
@@ -206,8 +213,7 @@ class Connection(object):
         This method is a straight wrapper of `invoke.run`; see its docs for
         details and call signature.
         """
-        # TODO: use a context or self depending on how we do that above
-        return invoke.run(*args, **kwargs)
+        return super(Connection, self).run(*args, **kwargs)
 
     def sftp(self):
         """
