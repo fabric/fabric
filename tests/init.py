@@ -15,3 +15,6 @@ class init(Spec):
 
     def Group(self):
         ok_(fabric.Group is connection.Group)
+
+    def Config(self):
+        ok_(fabric.Config is connection.Config)
