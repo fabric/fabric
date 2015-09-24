@@ -4,7 +4,7 @@ Tests concerned with the ``fab`` tool & how it overrides Invoke defaults.
 
 import os
 
-from mock import patch, ANY
+from mock import patch
 from spec import Spec, assert_contains, eq_
 from invoke.util import cd
 
@@ -46,17 +46,14 @@ Available tasks:
     def exposes_hosts_flag_in_help(self):
         expect("--help", "-H STRING, --hosts=STRING", test=assert_contains)
 
-    @patch('fabric.main.Connection', spec=Connection)
-    def executes_remainder_as_anonymous_task(self, Connection):
-        fab_program.run("fab -H myhost,otherhost -- whoami", exit=False)
-        # Did we connect to the hosts?
-        eq_(
-            [x[1]['host'] for x in Connection.call_args_list],
-            ['myhost', 'otherhost']
-        )
-        # Did we execute the command on both? (given same mock, just means
-        # "did it run twice". Meh.)
-        eq_(
-            [x[0][0] for x in Connection.return_value.run.call_args_list],
-            ['whoami', 'whoami']
-        )
+    @mock_remote()
+    def executes_remainder_as_anonymous_task(self, chan):
+        # contextmanager because hard to thread extra mocks into the decorator
+        with patch('fabric.main.Connection', wraps=Connection) as MConnection:
+            fab_program.run("fab -H myhost -- whoami", exit=False)
+            # Did we connect to the host?
+            # (not using assert_called_with because using mock.ANY causes funky
+            # blowups when comparing with Config objects)
+            eq_(MConnection.call_args[1]['host'], 'myhost')
+            # Did we execute the command?
+            chan.exec_command.assert_called_with('whoami')
