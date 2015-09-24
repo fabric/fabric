@@ -91,12 +91,6 @@ class FabExecutor(Executor):
         # "how to mesh parameterization with pre/post/etc deduping".
         return tasks
 
-# TODO: would be nice to run w/o a fabfile present if we give a remainder
-# TODO: this also means running w/o any tasks, so tweaking core program loop
-# TODO: the above is present in Fab 1 and isn't SUPER required (it does nothing
-# you can't do w/ vanilla ssh client) but nice-to-have for backwards compat /
-# testing / etc.
-
 
 class FabfileLoader(FilesystemLoader):
     # TODO: we may run into issues re: swapping loader "strategies" (eg
