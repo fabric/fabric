@@ -7,8 +7,8 @@ import os
 from mock import patch, ANY
 from spec import Spec, assert_contains, eq_
 from invoke.util import cd
-from invoke import Context
 
+from fabric import Connection
 from fabric.main import Fab, program as fab_program
 
 from _util import expect, mock_remote
@@ -46,7 +46,7 @@ Available tasks:
     def exposes_hosts_flag_in_help(self):
         expect("--help", "-H STRING, --hosts=STRING", test=assert_contains)
 
-    @patch('fabric.main.Connection', spec=Context)
+    @patch('fabric.main.Connection', spec=Connection)
     def executes_remainder_as_anonymous_task(self, Connection):
         fab_program.run("fab -H myhost,otherhost -- whoami", exit=False)
         # Did we connect to the hosts?
