@@ -4,11 +4,12 @@ Tests concerned with the ``fab`` tool & how it overrides Invoke defaults.
 
 import os
 
-from mock import patch
-from spec import Spec, assert_contains
+from mock import patch, ANY
+from spec import Spec, assert_contains, eq_
 from invoke.util import cd
+from invoke import Context
 
-from fabric.main import Fab
+from fabric.main import Fab, program as fab_program
 
 from _util import expect, mock_remote
 
@@ -48,11 +49,11 @@ Available tasks:
     @mock_remote()
     def executes_remainder_as_anonymous_task(self, chan):
         # Because threading arbitrary mocks into @mock_remote is kinda hard
-        with patch('fabric.connection.Connection') as Connection:
-            Fab().run("fab -H myhost,otherhost -- lol a command", exit=False)
+        with patch('fabric.main.Connection', spec=Context) as Connection:
+            fab_program.run("fab -H myhost,otherhost -- lol a command", exit=False)
             # Did we connect to the hosts?
-            Connection.assert_called_with("myhost")
-            Connection.assert_called_with("otherhost")
+            eq_(Connection.call_args_list[0][1]['host'], 'myhost')
+            eq_(Connection.call_args_list[1][1]['host'], 'otherhost')
             # Did we execute the command on both?
             # TODO: how to tell these apart exactly ,do we need to update
             # mock_remote? =/
