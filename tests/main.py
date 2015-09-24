@@ -15,45 +15,64 @@ from _util import expect, mock_remote
 
 
 class Fab_(Spec):
-    def version_output_contains_our_name_plus_deps(self):
-        expect(
-            "--version",
-            r"""
-Fabric .+
-Paramiko .+
-Invoke .+
-""".strip(),
-            test=assert_contains
-        )
-
-    def help_output_says_fab(self):
-        expect("--help", "Usage: fab", test=assert_contains)
-
-    def loads_fabfile_not_tasks(self):
-        "Loads fabfile.py, not tasks.py"
-        with cd(os.path.join(os.path.dirname(__file__), '_support')):
+    class core_program_behavior:
+        def version_output_contains_our_name_plus_deps(self):
             expect(
-                "--list",
-                """
+                "--version",
+                r"""
+    Fabric .+
+    Paramiko .+
+    Invoke .+
+    """.strip(),
+                test=assert_contains
+            )
+
+        def help_output_says_fab(self):
+            expect("--help", "Usage: fab", test=assert_contains)
+
+        def exposes_hosts_flag_in_help(self):
+            expect("--help", "-H STRING, --hosts=STRING", test=assert_contains)
+
+        @mock_remote()
+        def executes_remainder_as_anonymous_task(self, chan):
+            # contextmanager because hard to thread extra mocks into the
+            # decorator
+            mock = patch('fabric.main.Connection', wraps=Connection)
+            with mock as MConnection:
+                fab_program.run("fab -H myhost -- whoami", exit=False)
+                # Did we connect to the host?
+                # (not using assert_called_with because using mock.ANY causes
+                # funky blowups when comparing with Config objects)
+                eq_(MConnection.call_args[1]['host'], 'myhost')
+                # Did we execute the command?
+                chan.exec_command.assert_called_with('whoami')
+
+
+    class fabfiles:
+        def loads_fabfile_not_tasks(self):
+            "Loads fabfile.py, not tasks.py"
+            with cd(os.path.join(os.path.dirname(__file__), '_support')):
+                expect(
+                    "--list",
+                    """
 Available tasks:
 
   build
   deploy
 
 """.lstrip()
-            )
+                )
 
-    def exposes_hosts_flag_in_help(self):
-        expect("--help", "-H STRING, --hosts=STRING", test=assert_contains)
 
-    @mock_remote()
-    def executes_remainder_as_anonymous_task(self, chan):
-        # contextmanager because hard to thread extra mocks into the decorator
-        with patch('fabric.main.Connection', wraps=Connection) as MConnection:
-            fab_program.run("fab -H myhost -- whoami", exit=False)
-            # Did we connect to the host?
-            # (not using assert_called_with because using mock.ANY causes funky
-            # blowups when comparing with Config objects)
-            eq_(MConnection.call_args[1]['host'], 'myhost')
-            # Did we execute the command?
-            chan.exec_command.assert_called_with('whoami')
+    class hosts_flag_parameterizes_tasks:
+        def single_string_is_single_host(self):
+            skip()
+
+        def comma_separated_string_is_multiple_hosts(self):
+            # TODO: requires mock_remote to be capable of multiple distinct
+            # connections somehow
+            skip()
+
+        def host_string_shorthand_is_passed_through(self):
+            # I.e. is just handed to Connection() as posarg
+            skip()
