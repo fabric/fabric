@@ -5,8 +5,7 @@ Builds on top of Invoke's core functionality for same.
 """
 
 from invoke import (
-    Program, FilesystemLoader, Argument, Task, Executor, Exit, Collection,
-    Call,
+    Program, FilesystemLoader, Argument, Task, Executor, Collection, Call,
 )
 from invoke import __version__ as invoke
 from invoke.util import debug

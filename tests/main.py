@@ -5,11 +5,11 @@ Tests concerned with the ``fab`` tool & how it overrides Invoke defaults.
 import os
 
 from mock import patch
-from spec import Spec, assert_contains, eq_
+from spec import Spec, assert_contains, eq_, skip
 from invoke.util import cd
 
 from fabric import Connection
-from fabric.main import Fab, program as fab_program
+from fabric.main import program as fab_program
 
 from _util import expect, mock_remote
 
@@ -20,10 +20,10 @@ class Fab_(Spec):
             expect(
                 "--version",
                 r"""
-    Fabric .+
-    Paramiko .+
-    Invoke .+
-    """.strip(),
+Fabric .+
+Paramiko .+
+Invoke .+
+""".strip(),
                 test=assert_contains
             )
 
