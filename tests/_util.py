@@ -93,7 +93,8 @@ def mock_remote(*calls):
 
                 # If requested, make exit_status_ready return False the first N
                 # times it is called in the wait() loop.
-                channel.exit_status_ready.side_effect = (wait * [False]) + [True]
+                readies = (wait * [False]) + [True]
+                channel.exit_status_ready.side_effect = readies
 
                 # Real-feeling IO
                 out_file = StringIO(out)
@@ -103,7 +104,7 @@ def mock_remote(*calls):
                     return fd.read(count)
                 channel.recv.side_effect = partial(fakeread, fileno=1)
                 channel.recv_stderr.side_effect = partial(fakeread, fileno=2)
-                
+
                 return client, channel
 
             my_calls = list(calls) if calls else [{}]
@@ -135,8 +136,9 @@ def mock_remote(*calls):
 
             # Sanity checks
             for client in clients:
-                client.get_transport.assert_called_with()
-                client.get_transport.return_value.open_session.assert_called_with()
+                t = client.get_transport
+                t.assert_called_with()
+                t.return_value.open_session.assert_called_with()
             eq_(time.sleep.call_count, sum(waits))
         return wrapper
     return decorator
