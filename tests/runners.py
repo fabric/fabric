@@ -31,7 +31,7 @@ class Remote_(Spec):
             # sure that exec_command got run with our arg to run().
             chan.exec_command.assert_called_with(CMD)
 
-        @mock_remote(out="hello yes this is dog")
+        @mock_remote({'out': "hello yes this is dog"})
         def writes_remote_streams_to_local_streams(self, chan):
             c = Connection('host')
             r = Remote(context=c)
