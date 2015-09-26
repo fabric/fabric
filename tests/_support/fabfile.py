@@ -1,11 +1,16 @@
-from invoke import task
+from invoke import ctask as task
 
 
 @task
-def build():
+def build(c):
     pass
 
 
 @task
-def deploy():
+def deploy(c):
     pass
+
+
+@task
+def basic_run(c):
+    c.run("nope")

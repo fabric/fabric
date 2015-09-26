@@ -14,6 +14,9 @@ from fabric.main import program as fab_program
 from _util import expect, mock_remote
 
 
+_support = os.path.join(os.path.dirname(__file__), '_support')
+
+
 class Fab_(Spec):
     class core_program_behavior:
         def version_output_contains_our_name_plus_deps(self):
@@ -51,12 +54,13 @@ Invoke .+
     class fabfiles:
         def loads_fabfile_not_tasks(self):
             "Loads fabfile.py, not tasks.py"
-            with cd(os.path.join(os.path.dirname(__file__), '_support')):
+            with cd(_support):
                 expect(
                     "--list",
                     """
 Available tasks:
 
+  basic_run
   build
   deploy
 
