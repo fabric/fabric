@@ -79,7 +79,12 @@ def mock_remote(*calls):
                 # more than one run() was executed per task.
                 # TODO: be more flexible about expected connections vs run()
                 # calls (which should be N-M, even though the
-                # base case for testing is usually 1-1).
+                # base case for testing is usually 1-1). Should be achievable
+                # w/ kwargs (tho perhaps disallow use of both args and kwargs
+                # since that starts to get messy - how do we know what to
+                # return from SSHClient.side_effect in that case? with kwargs
+                # it'd have to be using a real function mapping to hostnames,
+                # so having anonymous arg-based connections is then ambiguous.
                 transport.open_session.side_effect = [
                     channel,
                     Exception("Got more calls to run() than expected!")
