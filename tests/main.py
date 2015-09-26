@@ -77,6 +77,9 @@ Available tasks:
             # connections somehow
             skip()
 
+        def multiple_hosts_works_with_remainder_too(self):
+            skip()
+
         def host_string_shorthand_is_passed_through(self):
             # I.e. is just handed to Connection() as posarg
             skip()
