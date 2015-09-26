@@ -76,7 +76,7 @@ Available tasks:
             # list during parameterization/expansion XD
             with cd(_support):
                 fab_program.run("fab -H myhost basic_run")
-            chan.exec_command.assert_called_once_with('whoami')
+            chan.exec_command.assert_called_once_with('nope')
 
         def comma_separated_string_is_multiple_hosts(self):
             # TODO: requires mock_remote to be capable of multiple distinct

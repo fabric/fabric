@@ -58,7 +58,7 @@ class Fab(Program):
 class FabExecutor(Executor):
     def expand_tasks(self, tasks, config):
         # Generate new call list with per-host variants & Connections inserted
-        ret = list(tasks)
+        ret = []
         hosts = self.core[0].args.hosts.value.split(',')
         for task in tasks:
             for host in hosts:
