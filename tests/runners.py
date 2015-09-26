@@ -47,7 +47,7 @@ class Remote_(Spec):
             cols, rows = pty_size()
             chan.get_pty.assert_called_with(width=cols, height=rows)
 
-        @mock_remote(out="some text", wait=1)
+        @mock_remote({'out': "some text", 'wait': 1})
         def wait_loop_performs_io_sleep(self, chan):
             c = Connection('host')
             r = Remote(context=c)
