@@ -69,8 +69,14 @@ Available tasks:
 
 
     class hosts_flag_parameterizes_tasks:
-        def single_string_is_single_host(self):
-            skip()
+        @mock_remote()
+        def single_string_is_single_host_and_single_exec(self, chan):
+            # In addition to just testing a base case, this checks for a really
+            # dumb bug where one appends to, instead of replacing, the task
+            # list during parameterization/expansion XD
+            with cd(_support):
+                fab_program.run("fab -H myhost basic_run")
+            chan.exec_command.assert_called_once_with('whoami')
 
         def comma_separated_string_is_multiple_hosts(self):
             # TODO: requires mock_remote to be capable of multiple distinct

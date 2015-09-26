@@ -44,7 +44,8 @@ def mock_remote(*calls):
     """
     Mock one or more remote command executions.
 
-    ``*calls`` may be an array of dicts whose keys are as follows:
+    ``*calls`` may be an array of dicts mapping to single "connect and run()",
+    whose keys are as follows:
 
     * ``out`` and/or ``err``: strings yielded as the respective remote stream,
       default: ``""``.
@@ -72,7 +73,17 @@ def mock_remote(*calls):
                 client = Mock()
                 transport = client.get_transport.return_value
                 channel = Mock()
-                transport.open_session.return_value = channel
+
+                # Raise a useful exception if >1 session is called
+                # per requested (in this decorator) client. Such implies that
+                # more than one run() was executed per task.
+                # TODO: be more flexible about expected connections vs run()
+                # calls (which should be N-M, even though the
+                # base case for testing is usually 1-1).
+                transport.open_session.side_effect = [
+                    channel,
+                    Exception("Got more calls to run() than expected!")
+                ]
                 channel.recv_exit_status.return_value = exit
 
                 # If requested, make exit_status_ready return False the first N
