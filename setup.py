@@ -2,32 +2,25 @@
 
 from __future__ import with_statement
 
-import sys
-
 from setuptools import setup, find_packages
 
 from fabric.version import get_version
 
 
-with open('README.rst') as f:
-    readme = f.read()
-
 long_description = """
 Fabric3 is a fork of `Fabric <http://fabfile.org>`_ to provide compatability
-with Python 3.4+. The port still works with Python 2.7. Any new releases of
-Fabric will also be released here.
+with Python 3.4+. The port still works with Python 2.7.
+
+The goal is to stay 100% compatible with the original Fabric.  Any new releases
+of Fabric will also be released here.  Please file issues for any differences
+you find. Known differences are `documented on github
+<https://github.com/mathiasertl/fabric/>`.
 
 To find out what's new in this version of Fabric, please see `the changelog
-<http://fabfile.org/changelog.html>`_.
-
-----
-
-%s
-
-----
+<http://fabfile.org/changelog.html>`_ of the original Fabric.
 
 For more information, please see the Fabric website or execute ``fab --help``.
-""" % (readme)
+"""
 
 install_requires=['paramiko>=1.15.3', 'six>=1.9.0']
 
