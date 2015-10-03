@@ -1,6 +1,7 @@
 Fabric3 is a Python (2.7 or 3.4+) library and command-line tool for
 streamlining the use of SSH for application deployment or systems
-administration tasks.
+administration tasks. Please see below for known differences with the upstream
+version of Fabric.
 
 It provides a basic suite of operations for executing local or remote shell
 commands (normally or via ``sudo``) and uploading/downloading files, as well as
@@ -34,3 +35,8 @@ In addition to use via the ``fab`` tool, Fabric3's components may be imported
 into other Python code, providing a Pythonic interface to the SSH protocol
 suite at a higher level than that provided by e.g. the ``Paramiko`` library
 (which Fabric3 itself uses.)
+
+Differences with Fabric
+=======================
+
+TODO.
