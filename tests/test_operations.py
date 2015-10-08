@@ -462,6 +462,28 @@ class TestFileTransfers(FabricTest):
             eq_contents(self.path(remote), FILES[remote])
 
     @server()
+    def test_get_with_regex_only_matching_files(self):
+        """
+        get() should bring only items that match the pattern
+        """
+        remotes = ['file.txt', 'file2.txt']
+        with hide('everything'):
+            get('file*.txt', self.tmpdir, match_pattern=r'.*2.*', match_excludes=False)
+        eq_contents(self.path("file2.txt"), FILES["file2.txt"])
+        assert not self.exists_locally("file.txt")
+
+    @server()
+    def test_get_with_regex_only_non_matching_files(self):
+        """
+        get() should bring only items that do not match the pattern
+        """
+        remotes = ['file.txt', 'file2.txt']
+        with hide('everything'):
+            get('file*.txt', self.tmpdir, match_pattern=r'.*2.*', match_excludes=True)
+        eq_contents(self.path("file.txt"), FILES["file.txt"])
+        assert not self.exists_locally("file2.txt")
+
+    @server()
     def test_get_single_file_in_folder(self):
         """
         get() a folder containing one file
@@ -909,6 +931,36 @@ class TestFileTransfers(FabricTest):
         with hide('everything'):
             retval = put(self.path(glob), remote_directory)
         eq_(sorted(retval), sorted([remote_directory + path for path in paths]))
+
+    @server()
+    def test_put_with_regex_only_matching_files(self):
+        """
+        put() should send only items that match a regex pattern.
+        """
+        paths = ['foo1.txt', 'foo2.txt']
+        regex = '.*1.*'
+        remote_directory = '/'
+        for path in paths:
+            self.mkfile(path, 'foo!')
+
+        with hide('everything'):
+            retval = put(self.path("*"), remote_directory, match_pattern=regex, match_excludes=False)
+        eq_(sorted(retval), ["/foo1.txt"])
+
+    @server()
+    def test_put_with_regex_only_non_matching_files(self):
+        """
+        put() should send only items that don't match a regex pattern.
+        """
+        paths = ['foo1.txt', 'foo2.txt']
+        regex = '.*1.*'
+        remote_directory = '/'
+        for path in paths:
+            self.mkfile(path, 'foo!')
+
+        with hide('everything'):
+            retval = put(self.path("*"), remote_directory, match_pattern=regex, match_excludes=True)
+        eq_(sorted(retval), ["/foo2.txt"])
 
     @server()
     def test_put_sends_correct_file_with_globbing_off(self):

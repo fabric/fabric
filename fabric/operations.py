@@ -252,7 +252,8 @@ def prompt(text, key=None, default='', validate=None):
 
 @needs_host
 def put(local_path=None, remote_path=None, use_sudo=False,
-    mirror_local_mode=False, mode=None, use_glob=True, temp_dir=""):
+    mirror_local_mode=False, mode=None, use_glob=True, temp_dir="",
+    match_pattern=None, match_excludes=False):
     """
     Upload one or more files to a remote host.
 
@@ -298,6 +299,13 @@ def put(local_path=None, remote_path=None, use_sudo=False,
     the same vein as ``os.chmod``, such as an exact octal number (``0755``) or
     a string representing one (``"0755"``).
 
+    Use ``match_pattern`` to pass a regex string (or ``pattern``
+    object) to filter the files by their name. By default, the pattern
+    is inclusive, so only names that match the pattern are considered,
+    but you can use pass ``match_excludes=True`` to make it an
+    exclusive pattern, so only names that match the pattern are
+    skipped.
+
     `~fabric.operations.put` will honor `~fabric.context_managers.cd`, so
     relative values in ``remote_path`` will be prepended by the current remote
     working directory, if applicable. Thus, for example, the below snippet
@@ -315,6 +323,8 @@ def put(local_path=None, remote_path=None, use_sudo=False,
         put('bin/project.zip', '/tmp/project.zip')
         put('*.py', 'cgi-bin/')
         put('index.html', 'index.html', mode=0755)
+        put('local/repos/dir', 'remote/repos',
+            match_pattern=r'^.git$', match_excludes=True)
 
     .. note::
         If a file-like object such as StringIO has a ``name`` attribute, that
@@ -389,7 +399,13 @@ def put(local_path=None, remote_path=None, use_sudo=False,
         # Iterate over all given local files
         remote_paths = []
         failed_local_paths = []
+        pat = match_pattern and (isinstance(match_pattern, basestring) and
+                                 re.compile(match_pattern) or match_pattern) or None
         for lpath in names:
+            matches = pat and pat.match(os.path.basename(lpath))
+            if pat and ((match_excludes and matches) or
+                        (not match_excludes and not matches)):
+                continue
             try:
                 if local_is_path and os.path.isdir(lpath):
                     p = ftp.put_dir(lpath, remote_path, use_sudo,
@@ -412,7 +428,8 @@ def put(local_path=None, remote_path=None, use_sudo=False,
 
 
 @needs_host
-def get(remote_path, local_path=None, use_sudo=False, temp_dir=""):
+def get(remote_path, local_path=None, use_sudo=False, temp_dir="",
+    match_pattern=None, match_excludes=False):
     """
     Download one or more files from a remote host.
 
@@ -504,6 +521,11 @@ def get(remote_path, local_path=None, use_sudo=False, temp_dir=""):
         will be used in Fabric's printed output instead of the default
         ``<file obj>``
 
+    Use ``match_pattern`` and ``match_excludes`` for additional
+    control on which files are copied and works just like on ``put``.
+    See documentation on `~fabric.operations.put` for details and an
+    example.
+
     .. versionchanged:: 1.0
         Now honors the remote working directory as manipulated by
         `~fabric.context_managers.cd`, and the local working directory as
@@ -574,7 +596,14 @@ def get(remote_path, local_path=None, use_sudo=False, temp_dir=""):
                 if len(names) > 1 or ftp.isdir(names[0]):
                     error("[%s] %s is a glob or directory, but local_path is a file object!" % (env.host_string, remote_path))
 
+            pat = match_pattern and (isinstance(match_pattern, basestring) and
+                                     re.compile(match_pattern) or match_pattern) or None
+
             for remote_path in names:
+                matches = pat and pat.match(os.path.basename(remote_path))
+                if pat and ((match_excludes and matches) or
+                            (not match_excludes and not matches)):
+                    continue
                 if ftp.isdir(remote_path):
                     result = ftp.get_dir(remote_path, local_path, use_sudo, temp_dir)
                     local_files.extend(result)
