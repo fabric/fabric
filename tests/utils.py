@@ -70,8 +70,9 @@ class FabricTest(object):
 
     def mkfile(self, path, contents):
         dest = self.path(path)
-        if os.path.sep in path and not os.path.exists(dest):
-            os.makedirs(os.path.dirname(dest))
+        dirname = os.path.dirname(dest)
+        if os.path.sep in path and not os.path.exists(dirname):
+            os.makedirs(dirname)
         with open(dest, 'w') as fd:
             fd.write(contents)
         return dest
