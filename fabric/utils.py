@@ -409,3 +409,9 @@ def apply_lcwd(path, env):
     if not os.path.isabs(path) and env.lcwd:
         path = os.path.join(env.lcwd, path)
     return path
+
+def _is_fname_match(pat, pat_excludes, fname):
+    matches = pat and pat.match(os.path.basename(fname))
+    if pat and ((pat_excludes and matches) or
+                (not pat_excludes and not matches)):
+        return True

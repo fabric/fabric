@@ -8,7 +8,7 @@ import re
 from fnmatch import filter as fnfilter
 
 from fabric.state import output, connections, env
-from fabric.utils import warn
+from fabric.utils import warn, _is_fname_match
 from fabric.context_managers import settings
 
 
@@ -190,7 +190,9 @@ class SFTP(object):
         # to know.)
         return local_path
 
-    def get_dir(self, remote_path, local_path, use_sudo, temp_dir):
+    def get_dir(self, remote_path, local_path, use_sudo, temp_dir,
+        pat=None, match_excludes=False):
+
         # Decide what needs to be stripped from remote paths so they're all
         # relative to the given remote_path
         if os.path.basename(remote_path):
@@ -213,6 +215,8 @@ class SFTP(object):
 
             # Download any files in current directory
             for f in files:
+                if _is_fname_match(pat, match_excludes, f):
+                    continue
                 # Construct full and relative remote paths to this file
                 rpath = posixpath.join(context, f)
                 rremote = posixpath.join(rcontext, f)
@@ -292,7 +296,7 @@ class SFTP(object):
         return remote_path
 
     def put_dir(self, local_path, remote_path, use_sudo, mirror_local_mode,
-        mode, temp_dir):
+        mode, temp_dir, pat=None, match_excludes=False):
         if os.path.basename(local_path):
             strip = os.path.dirname(local_path)
         else:
@@ -316,6 +320,8 @@ class SFTP(object):
                     self.mkdir(n, use_sudo)
 
             for f in files:
+                if _is_fname_match(pat, match_excludes, f):
+                    continue
                 local_path = os.path.join(context, f)
                 n = posixpath.join(rcontext, f)
                 p = self.put(local_path, n, use_sudo, mirror_local_mode, mode,

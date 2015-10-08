@@ -29,7 +29,8 @@ from fabric.utils import (
     indent,
     _pty_size,
     warn,
-    apply_lcwd
+    apply_lcwd,
+    _is_fname_match
 )
 
 
@@ -402,16 +403,14 @@ def put(local_path=None, remote_path=None, use_sudo=False,
         pat = match_pattern and (isinstance(match_pattern, basestring) and
                                  re.compile(match_pattern) or match_pattern) or None
         for lpath in names:
-            matches = pat and pat.match(os.path.basename(lpath))
-            if pat and ((match_excludes and matches) or
-                        (not match_excludes and not matches)):
-                continue
             try:
                 if local_is_path and os.path.isdir(lpath):
                     p = ftp.put_dir(lpath, remote_path, use_sudo,
-                        mirror_local_mode, mode, temp_dir)
+                        mirror_local_mode, mode, temp_dir, pat, match_excludes)
                     remote_paths.extend(p)
                 else:
+                    if _is_fname_match(pat, match_excludes, lpath):
+                        continue
                     p = ftp.put(lpath, remote_path, use_sudo, mirror_local_mode,
                         mode, local_is_path, temp_dir)
                     remote_paths.append(p)
@@ -600,14 +599,12 @@ def get(remote_path, local_path=None, use_sudo=False, temp_dir="",
                                      re.compile(match_pattern) or match_pattern) or None
 
             for remote_path in names:
-                matches = pat and pat.match(os.path.basename(remote_path))
-                if pat and ((match_excludes and matches) or
-                            (not match_excludes and not matches)):
-                    continue
                 if ftp.isdir(remote_path):
-                    result = ftp.get_dir(remote_path, local_path, use_sudo, temp_dir)
+                    result = ftp.get_dir(remote_path, local_path, use_sudo, temp_dir, pat, match_excludes)
                     local_files.extend(result)
                 else:
+                    if _is_fname_match(pat, match_excludes, remote_path):
+                        continue
                     # Perform actual get. If getting to real local file path,
                     # add result (will be true final path value) to
                     # local_files. File-like objects are omitted.
