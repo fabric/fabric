@@ -411,6 +411,7 @@ def apply_lcwd(path, env):
     return path
 
 def _is_fname_match(pat, pat_excludes, fname):
+    """A True value always indicates that it should be skipped"""
     matches = pat and pat.match(os.path.basename(fname))
     if pat and ((pat_excludes and matches) or
                 (not pat_excludes and not matches)):

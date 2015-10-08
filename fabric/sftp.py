@@ -213,6 +213,9 @@ class SFTP(object):
             # end up with 'mylogs/apache2'
             lcontext = os.path.join(local_path, lcontext)
 
+            # Prune dirs so we don't walk into them.
+            dirs[:] = [d for d in dirs if not _is_fname_match(pat, match_excludes, d)]
+
             # Download any files in current directory
             for f in files:
                 if _is_fname_match(pat, match_excludes, f):
@@ -313,6 +316,9 @@ class SFTP(object):
 
             if not self.exists(rcontext):
                 self.mkdir(rcontext, use_sudo)
+
+            # Prune dirs so we don't walk into them.
+            dirs[:] = [d for d in dirs if not _is_fname_match(pat, match_excludes, d)]
 
             for d in dirs:
                 n = posixpath.join(rcontext, d)

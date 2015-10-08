@@ -478,7 +478,7 @@ class TestFileTransfers(FabricTest):
         """
         remotes = ["folder/file3.txt", "tree/subfolder/file3.txt"]
         with hide('everything'):
-            retval = get('/', self.tmpdir, match_pattern=r'.*3.*', match_excludes=False)
+            retval = get('/', self.tmpdir, match_pattern=r'.*3.*|folder|tree|subfolder', match_excludes=False)
         eq_(sorted(retval), sorted([self.path(f) for f in remotes]))
 
     @server()
@@ -496,9 +496,9 @@ class TestFileTransfers(FabricTest):
         """
         get() should bring only items that match the pattern
         """
-        remotes = ["file.txt", "tree/file1.txt"]
+        remotes = ["file.txt", "file2.txt"]
         with hide('everything'):
-            retval = get('/', self.tmpdir, match_pattern=r'.*[2-9].*', match_excludes=True)
+            retval = get('/', self.tmpdir, match_pattern=r'.*[3-9].*|tree|etc', match_excludes=True)
         eq_(sorted(retval), sorted([self.path(f) for f in remotes]))
 
     @server()
@@ -970,15 +970,15 @@ class TestFileTransfers(FabricTest):
         """
         put() should send only items that match a regex pattern.
         """
-        paths = ['foo1.txt', 'foo2.txt']
-        regex = '.*1.*'
+        paths = ['foo1.txt', 'foo2.txt', 'folder/foo11.txt']
+        regex = '.*1.*|folder'
         remote_directory = '/'
         for path in paths:
             self.mkfile(path, 'foo!')
 
         with hide('everything'):
             retval = put(self.tmpdir, remote_directory, match_pattern=regex, match_excludes=False)
-        eq_(retval, [os.path.join("/", os.path.basename(self.tmpdir), "foo1.txt")])
+        eq_(retval, [os.path.join("/", os.path.basename(self.tmpdir), f) for f in ("foo1.txt", "folder/foo11.txt")])
 
     @server()
     def test_put_with_regex_only_non_matching_files(self):
@@ -1000,7 +1000,7 @@ class TestFileTransfers(FabricTest):
         """
         put() should send only items that match a regex pattern.
         """
-        paths = ['foo1.txt', 'foo2.txt']
+        paths = ['foo1.txt', 'foo2.txt', 'subdir1/foo3.txt', 'subdir2/foo4.txt']
         regex = '.*1.*'
         remote_directory = '/'
         for path in paths:
@@ -1008,7 +1008,7 @@ class TestFileTransfers(FabricTest):
 
         with hide('everything'):
             retval = put(self.tmpdir, remote_directory, match_pattern=regex, match_excludes=True)
-        eq_(retval, [os.path.join("/", os.path.basename(self.tmpdir), "foo2.txt")])
+        eq_(retval, [os.path.join("/", os.path.basename(self.tmpdir), f) for f in ("foo2.txt", "subdir2/foo4.txt")])
 
     @server()
     def test_put_sends_correct_file_with_globbing_off(self):
