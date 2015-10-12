@@ -68,7 +68,7 @@ def first(*args, **kwargs):
 
 def upload_template(filename, destination, context=None, use_jinja=False,
     template_dir=None, use_sudo=False, backup=True, mirror_local_mode=False,
-    mode=None, pty=None):
+    mode=None, pty=None, keep_trailing_newline=False):
     """
     Render and upload a template text file to a remote host.
 
@@ -100,6 +100,10 @@ def upload_template(filename, destination, context=None, use_jinja=False,
     `~fabric.operations.run`/`~fabric.operations.sudo` calls, such as those
     used for testing directory-ness, making backups, etc.
 
+    The ``keep_trailing_newline`` kwarg will be passed when creating
+    Jinja2 Environment which is False by default, same as Jinja2's
+    behaviour.
+
     .. versionchanged:: 1.1
         Added the ``backup``, ``mirror_local_mode`` and ``mode`` kwargs.
     .. versionchanged:: 1.9
@@ -129,7 +133,8 @@ def upload_template(filename, destination, context=None, use_jinja=False,
             template_dir = template_dir or os.getcwd()
             template_dir = apply_lcwd(template_dir, env)
             from jinja2 import Environment, FileSystemLoader
-            jenv = Environment(loader=FileSystemLoader(template_dir))
+            jenv = Environment(loader=FileSystemLoader(template_dir),
+                               keep_trailing_newline=keep_trailing_newline)
             text = jenv.get_template(filename).render(**context or {})
             # Force to a byte representation of Unicode, or str()ification
             # within Paramiko's SFTP machinery may cause decode issues for
