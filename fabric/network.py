@@ -140,7 +140,7 @@ class HostConnectionCache(dict):
         Force a new connection to ``key`` host string.
         """
         from fabric.state import env
-        
+
         user, host, port = normalize(key)
         key = normalize_to_string(key)
         seek_gateway = True
@@ -294,10 +294,11 @@ def normalize(host_string, omit_port=False):
     # values)
     r = parse_host_string(host_string)
     host = r['host']
+
     # Env values (using defaults if somehow earlier defaults were replaced with
     # empty values)
     user = env.user or env.local_user
-    port = env.port or env.default_port
+
     # SSH config data
     conf = ssh_config(host_string)
     # Only use ssh_config values if the env value appears unmodified from
@@ -305,17 +306,29 @@ def normalize(host_string, omit_port=False):
     # takes precedence.
     if user == env.local_user and 'user' in conf:
         user = conf['user']
-    if port == env.default_port and 'port' in conf:
-        port = conf['port']
+
     # Also override host if needed
     if 'hostname' in conf:
         host = conf['hostname']
     # Merge explicit user/port values with the env/ssh_config derived ones
     # (Host is already done at this point.)
     user = r['user'] or user
-    port = r['port'] or port
+
     if omit_port:
         return user, host
+
+    # determine port from ssh config if enabled
+    ssh_config_port = None
+    if env.use_ssh_config:
+        ssh_config_port = conf.get('port', None)
+
+    # port priorities (from highest to lowest)
+    # 1. host string
+    # 2. ssh config (if enabled)
+    # 3. settings
+    # 4. default
+    port = r['port'] or ssh_config_port or env.port or env.default_port
+
     return user, host, port
 
 

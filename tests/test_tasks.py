@@ -14,7 +14,7 @@ from fabric.api import run, env, settings, hosts, roles, hide, parallel, task, r
 from fabric.network import from_dict
 from fabric.exceptions import NetworkError
 
-from utils import eq_, FabricTest, aborts, mock_streams
+from utils import eq_, FabricTest, aborts, mock_streams, support
 from server import server
 
 
@@ -416,6 +416,47 @@ class TestExecute(FabricTest):
             run = Fake(callable=True, expect_call=True)
         mytask = MyTask()
         execute(mytask)
+
+    @server(port=2200)
+    @server(port=2201)
+    def test_nested_execution_with_explicit_ports(self):
+        """
+        nested executions should work with defined ports
+        """
+
+        def sub_task_one():
+            eq_(env.port, '2201')
+            return "bar"
+
+        def sub_task_two():
+            eq_(env.port, '2202')
+
+        def sub_task_three():
+            eq_(env.port, '664')
+            run = execute(sub_task_four, hosts=['some_host'])
+            return run['some_host']
+
+        def sub_task_four():
+            # uses `Host *` in ssh_config
+            eq_(env.port, '666')
+            return "bar"
+
+        def main_task():
+            eq_(env.port, '2200')
+
+            execute(sub_task_one, hosts=['localhost:2201'])
+
+            with settings(port='2202'):
+                execute(sub_task_two, hosts=['localhost'])
+
+            with settings(use_ssh_config=True, ssh_config_path=support("ssh_config")):
+                run = execute(sub_task_three, hosts='myhost')
+
+            return run['myhost']
+
+        run = execute(main_task, hosts=['localhost:2200'])
+
+        eq_(run['localhost:2200'], 'bar')
 
 
 class TestExecuteEnvInteractions(FabricTest):
