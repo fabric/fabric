@@ -232,7 +232,7 @@ class SFTP(object):
     def put(self, local_path, remote_path, use_sudo, mirror_local_mode, mode,
         local_is_path, temp_dir):
 
-        from fabric.api import sudo, hide
+        from fabric.api import run, sudo, hide
         pre = self.ftp.getcwd()
         pre = pre if pre else ''
         if local_is_path and self.isdir(remote_path):
@@ -286,7 +286,10 @@ class SFTP(object):
             # Temporarily nuke 'cwd' so sudo() doesn't "cd" its mv command.
             # (The target path has already been cwd-ified elsewhere.)
             with settings(hide('everything'), cwd=""):
-                sudo("mv \"%s\" \"%s\"" % (remote_path, target_path))
+                # 'cp' uploaded file instead of moving,
+                # since 'mv' cannot be done with non-root users
+                sudo("cp -p \"%s\" \"%s\"" % (remote_path, target_path))
+                run("rm -f \"%s\"" % remote_path)
             # Revert to original remote_path for return value's sake
             remote_path = target_path
         return remote_path
