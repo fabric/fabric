@@ -140,7 +140,7 @@ class HostConnectionCache(dict):
         Force a new connection to ``key`` host string.
         """
         from fabric.state import env
-        
+
         user, host, port = normalize(key)
         key = normalize_to_string(key)
         seek_gateway = True
@@ -449,7 +449,11 @@ def connect(user, host, port, cache, seek_gateway=True):
                 timeout=env.timeout,
                 allow_agent=not env.no_agent,
                 look_for_keys=not env.no_keys,
-                sock=sock
+                sock=sock,
+                gss_auth=env.gss_auth,
+                gss_deleg_creds=env.gss_deleg,
+                gss_kex=env.gss_kex,
+                gss_host=host,
             )
             connected = True
 

@@ -141,6 +141,24 @@ env_options = [
         help="gateway host to connect through"
     ),
 
+    make_option('--gss-auth',
+        action='store_true',
+        default=False,
+        help="Use GSS-API authentication"
+    ),
+
+    make_option('--gss-deleg',
+        action='store_true',
+        default=False,
+        help="Delegate GSS-API client credentials or not"
+    ),
+
+    make_option('--gss-kex',
+        action='store_true',
+        default=False,
+        help="Perform GSS-API Key Exchange and user authentication"
+    ),
+
     make_option('--hide',
         metavar='LEVELS',
         help="comma-separated list of output levels to hide"
