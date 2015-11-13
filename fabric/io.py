@@ -2,7 +2,6 @@ from __future__ import with_statement
 
 import sys
 import time
-import os
 import re
 import socket
 from select import select
@@ -233,7 +232,7 @@ def input_loop(chan, using_pty):
             have_char = (r and r[0] == sys.stdin)
         if have_char and chan.input_enabled:
             # Send all local stdin to remote end's stdin
-            byte = msvcrt.getch() if win32 else os.read(sys.stdin.fileno(), 1)
+            byte = msvcrt.getch() if win32 else sys.stdin.read(1)
             chan.sendall(byte)
             # Optionally echo locally, if needed.
             if not using_pty and env.echo_stdin:
