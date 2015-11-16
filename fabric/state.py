@@ -49,7 +49,7 @@ def _get_system_username():
             import win32security
             import win32profile
             username = win32api.GetUserName()
-    return username
+    return username.strip()
 
 def _rc_path():
     """
