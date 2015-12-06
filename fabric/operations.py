@@ -256,6 +256,9 @@ def put(local_path=None, remote_path=None, use_sudo=False,
     """
     Upload one or more files to a remote host.
 
+    As with the OpenSSH ``sftp`` program, `.put` will overwrite pre-existing
+    remote files without requesting confirmation.
+
     `~fabric.operations.put` returns an iterable containing the absolute file
     paths of all remote files uploaded. This iterable also exhibits a
     ``.failed`` attribute containing any local file paths which failed to
