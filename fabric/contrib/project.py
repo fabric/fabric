@@ -44,6 +44,10 @@ def rsync_project(
     output of that function call; thus it will return the stdout, if any, of
     the resultant ``rsync`` call.
 
+    ``rsync_project()`` uses the current Fabric connection parameters (user,
+    host, port) by default, adding them to rsync's ssh options (then mixing in
+    ``ssh_opts``, if given -- see below.)
+
     ``rsync_project()`` takes the following parameters:
 
     * ``remote_dir``: the only required parameter, this is the path to the
