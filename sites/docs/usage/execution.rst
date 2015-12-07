@@ -667,6 +667,10 @@ immediately. However, if ``env.warn_only`` is set to ``True`` at the time of
 failure -- with, say, the `~fabric.context_managers.settings` context
 manager -- Fabric will emit a warning message but continue executing.
 
+To signal a failure error from a Fabric task, use the `~fabric.utils.abort`.
+`~fabric.utils.abort` signals an error as if it had been detected by Fabric and
+follows the regular execution model for control flow.
+
 
 .. _connections:
 
