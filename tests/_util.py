@@ -1,3 +1,4 @@
+from itertools import chain, repeat
 import os
 import sys
 import types
@@ -7,7 +8,7 @@ from invoke.vendor.six import StringIO
 from fabric import Connection
 from fabric.main import program as fab_program
 from fabric.transfer import Transfer
-from mock import patch, Mock
+from mock import patch, Mock, PropertyMock
 from spec import eq_, trap
 
 
@@ -77,8 +78,17 @@ def mock_remote(*calls):
             # Mock out Paramiko bits we expect to be used for most run() calls
             def make_client(out, err, exit, wait):
                 client = Mock()
-                transport = client.get_transport.return_value
+                transport = client.get_transport.return_value # another Mock
                 channel = Mock()
+
+                # Connection.open() tests transport.active before calling
+                # connect() So, needs to start out False, then be True
+                # afterwards (at least in default "connection succeeded"
+                # scenarios...)
+                # NOTE: if transport.active is called more than expected (e.g.
+                # for debugging purposes) that will goof this up :(
+                actives = chain([False], repeat(True))
+                type(transport).active = PropertyMock(side_effect=actives)
 
                 # Raise a useful exception if >1 session is called
                 # per requested (in this decorator) client. Such implies that
