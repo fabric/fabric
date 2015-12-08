@@ -400,7 +400,11 @@ def serve_responses(responses, files, passwords, home, pubkeys, port):
 
         def split_sudo_prompt(self):
             prefix = re.escape(_sudo_prefix(None, None).rstrip()) + ' +'
-            result = re.findall(r'^(%s)?(.*)$' % prefix, self.command)[0]
+            command = self.command
+            if six.PY3 and isinstance(command, bytes):
+                command = command.decode('utf-8')
+
+            result = re.findall(r'^(%s)?(.*)$' % prefix, command)[0]
             self.sudo_prompt, self.command = result
 
         def response(self):
