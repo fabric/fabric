@@ -26,7 +26,7 @@ class Fab(Program):
         my_args = [
             Argument(
                 names=('H', 'hosts'),
-                help="Host name(s) to execute tasks against.",
+                help="Comma-separated host name(s) to execute tasks against.",
             ),
         ]
         return core_args + my_args
