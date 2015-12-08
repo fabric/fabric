@@ -21,12 +21,12 @@ class Remote_(Spec):
         ok_(Remote(context=c).context is c)
 
     class run:
-        @mock_remote()
+        @mock_remote
         def calls_expected_paramiko_bits(self, chan):
             c = Connection('host')
             r = Remote(context=c)
             r.run(CMD)
-            # mock_remote() makes generic sanity checks like "were
+            # mock_remote makes generic sanity checks like "were
             # get_transport and open_session called", but we also want to make
             # sure that exec_command got run with our arg to run().
             chan.exec_command.assert_called_with(CMD)
@@ -39,7 +39,7 @@ class Remote_(Spec):
             r.run(CMD, out_stream=fakeout)
             eq_(fakeout.getvalue(), "hello yes this is dog")
 
-        @mock_remote()
+        @mock_remote
         def pty_True_uses_paramiko_get_pty(self, chan):
             c = Connection('host')
             r = Remote(context=c)
@@ -55,7 +55,7 @@ class Remote_(Spec):
             r.run(CMD, out_stream=fakeout)
             eq_(fakeout.getvalue(), "some text")
 
-        @mock_remote()
+        @mock_remote
         def return_value_is_Result_subclass_exposing_host_used(self, chan):
             c = Connection('host')
             r = Remote(context=c)

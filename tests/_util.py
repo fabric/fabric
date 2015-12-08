@@ -1,5 +1,6 @@
 import os
 import sys
+import types
 from functools import wraps, partial
 from invoke.vendor.six import StringIO
 
@@ -60,6 +61,11 @@ def mock_remote(*calls):
     If ``calls`` is empty, a single wholly-default call (i.e. empty out/err,
     exits 0, waits 0) is implied.
     """
+    # Was called as bare decorator, no args
+    bare = len(calls) == 1 and isinstance(calls[0], types.FunctionType)
+    if bare:
+        func = calls[0]
+        calls = []
     def decorator(f):
         @wraps(f)
         @patch('fabric.connection.SSHClient')
@@ -141,7 +147,12 @@ def mock_remote(*calls):
                 t.return_value.open_session.assert_called_with()
             eq_(time.sleep.call_count, sum(waits))
         return wrapper
-    return decorator
+    # Bare decorator, no args
+    if bare:
+        return decorator(func)
+    # Args were given
+    else:
+        return decorator
 
 
 # TODO: dig harder into spec setup() treatment to figure out why it seems to be

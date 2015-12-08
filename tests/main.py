@@ -36,7 +36,7 @@ Invoke .+
         def exposes_hosts_flag_in_help(self):
             expect("--help", "-H STRING, --hosts=STRING", test=assert_contains)
 
-        @mock_remote()
+        @mock_remote
         def executes_remainder_as_anonymous_task(self, chan):
             # contextmanager because hard to thread extra mocks into the
             # decorator
@@ -69,7 +69,7 @@ Available tasks:
 
 
     class hosts_flag_parameterizes_tasks:
-        @mock_remote()
+        @mock_remote
         def single_string_is_single_host_and_single_exec(self, chan):
             # In addition to just testing a base case, this checks for a really
             # dumb bug where one appends to, instead of replacing, the task
