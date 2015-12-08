@@ -167,9 +167,7 @@ class Connection(Context):
         Whether or not this connection is actually open.
         """
         transport = self.client.get_transport()
-        if transport:
-            return transport.active
-        return False
+        return transport.active if transport else False
 
     def open(self):
         """
