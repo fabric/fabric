@@ -133,6 +133,10 @@ class Connection(Context):
         client.set_missing_host_key_policy(AutoAddPolicy())
         self.client = client
 
+    def __str__(self):
+        s = "<Connection id={0} user='{1.user}' host='{1.host}' port={1.port}>"
+        return s.format(id(self), self)
+
     def derive_shorthand(self, host_string):
         user_hostport = host_string.rsplit('@', 1)
         hostport = user_hostport.pop()

@@ -175,6 +175,12 @@ class Connection_(Spec):
                     # resolve to False.
                     eq_(Connection('host').config.run.warn, "nope lol")
 
+    def stringrep(self):
+        "__str__"
+        c = Connection(user='me', host='there', port=123)
+        template = "<Connection id={0} user='me' host='there' port=123>"
+        eq_(str(c), template.format(id(c)))
+
     class open:
         @patch('fabric.connection.SSHClient')
         def has_no_required_args_and_returns_None(self, Client):
