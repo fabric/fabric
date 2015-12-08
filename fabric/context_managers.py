@@ -561,7 +561,7 @@ def local_tunnel(remote_port, remote_host=None, bind_port=None, bind_host=None):
                                          local_peer)
         if channel is None:
             raise Exception('Incoming request to %s:%d was rejected by the SSH server.' %
-                    self.remote_addr)
+                    remote_addr)
 
         th = ThreadHandler('fwd', _forwarder, channel, sock)
 
