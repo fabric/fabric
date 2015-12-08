@@ -88,6 +88,8 @@ def mock_remote(*calls):
                 # NOTE: if transport.active is called more than expected (e.g.
                 # for debugging purposes) that will goof this up :(
                 actives = chain([False], repeat(True))
+                # NOTE: setting PropertyMocks on a mock's type() is apparently
+                # How It Must Be Done, otherwise it sets the real attr value.
                 type(transport).active = PropertyMock(side_effect=actives)
 
                 # Raise a useful exception if >1 session is called
