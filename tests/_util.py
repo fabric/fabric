@@ -103,10 +103,7 @@ def mock_remote(*calls):
                 # return from SSHClient.side_effect in that case? with kwargs
                 # it'd have to be using a real function mapping to hostnames,
                 # so having anonymous arg-based connections is then ambiguous.
-                transport.open_session.side_effect = [
-                    channel,
-                    Exception("Got more calls to run() than expected!")
-                ]
+                transport.open_session.return_value = channel
                 channel.recv_exit_status.return_value = exit
 
                 # If requested, make exit_status_ready return False the first N
@@ -156,7 +153,7 @@ def mock_remote(*calls):
             for client in clients:
                 t = client.get_transport
                 t.assert_called_with()
-                t.return_value.open_session.assert_called_with()
+                t.return_value.open_session.assert_called_once_with()
             eq_(time.sleep.call_count, sum(waits))
         return wrapper
     # Bare decorator, no args
