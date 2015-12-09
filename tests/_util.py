@@ -73,10 +73,14 @@ def mock_remote(*executions, **hosts):
     the mock channel objects that are created.
     """
     # Was called as bare decorator, no args
-    bare = len(calls) == 1 and isinstance(calls[0], types.FunctionType)
+    bare = (
+        len(executions) == 1
+        and not hosts
+        and isinstance(executions[0], types.FunctionType)
+    )
     if bare:
-        func = calls[0]
-        calls = []
+        func = executions[0]
+        executions = []
     def decorator(f):
         @wraps(f)
         @patch('fabric.connection.SSHClient')
@@ -132,17 +136,17 @@ def mock_remote(*executions, **hosts):
 
                 return client, channel
 
-            my_calls = list(calls) if calls else [{}]
+            my_executions = list(executions) if executions else [{}]
 
             clients = []
             channels = []
             waits = []
-            for call in my_calls:
-                wait = call.get('wait', 0)
+            for x in my_executions:
+                wait = x.get('wait', 0)
                 client, channel = make_client(
-                    out=call.get('out', ""),
-                    err=call.get('err', ""),
-                    exit=call.get('exit', 0),
+                    out=x.get('out', ""),
+                    err=x.get('err', ""),
+                    exit=x.get('exit', 0),
                     wait=wait,
                 )
                 clients.append(client)
