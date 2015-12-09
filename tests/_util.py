@@ -42,12 +42,17 @@ def expect(invocation, out, program=None, test=None):
 # example.
 # TODO: tho still gotta figure out how to say "expect 'the default' (no
 # out/err, exit 0, wait 0) for host 'foo'", maybe that's another use of *args?
-def mock_remote(*calls):
+def mock_remote(*executions, **hosts):
     """
-    Mock one or more remote command executions.
+    Mock & expect one or more remote connections & command executions.
 
-    ``*calls`` may be an array of dicts mapping to single "connect and run()",
-    whose keys are as follows:
+    By default, with no parameterization, a single generic "connect and execute
+    a command" session is implied, returning empty strings for stdout/stderr,
+    exiting with exit code 0, and where ``exit_status_ready`` returns ``True``
+    immediately.
+
+    Positional arguments (if given) should be dicts, each mapping to a single
+    connect-and-execute session, with the following possible keys & values:
 
     * ``out`` and/or ``err``: strings yielded as the respective remote stream,
       default: ``""``.
@@ -56,11 +61,16 @@ def mock_remote(*calls):
       return ``False`` before they return ``True``. Default: ``0``
       (``exit_status_ready`` will return ``True`` the very first time).
 
-    The wrapped test function must take one positional arg for each entry in
-    ``calls``, as the mocked ``channel`` object for each will be passed in.
+    Keyword arguments (if given) should map expected hostnames to dicts of the
+    format described just above. While the positional argument sessions don't
+    place constraints on connection hostname, keyword-argument sessions will
+    raise exceptions if hostnames don't match (i.e. ``@mock_remote(foo={...})``
+    will fail a test if the code under test doesn't trigger a connection to
+    host 'foo').
 
-    If ``calls`` is empty, a single wholly-default call (i.e. empty out/err,
-    exits 0, waits 0) is implied.
+    The wrapped test function must accept positional and/or keyword arguments
+    mirroring those given to ``mock_remote``, which will be used to transfer
+    the mock channel objects that are created.
     """
     # Was called as bare decorator, no args
     bare = len(calls) == 1 and isinstance(calls[0], types.FunctionType)
