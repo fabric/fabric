@@ -81,6 +81,7 @@ def mock_remote(*executions, **hosts):
     if bare:
         func = executions[0]
         executions = []
+
     def decorator(f):
         @wraps(f)
         @patch('fabric.connection.SSHClient')
@@ -96,7 +97,7 @@ def mock_remote(*executions, **hosts):
                 channel = Mock()
 
                 # Connection.open() tests transport.active before calling
-                # connect() So, needs to start out False, then be True
+                # connect(). So, needs to start out False, then be True
                 # afterwards (at least in default "connection succeeded"
                 # scenarios...)
                 # NOTE: if transport.active is called more than expected (e.g.
@@ -106,17 +107,7 @@ def mock_remote(*executions, **hosts):
                 # How It Must Be Done, otherwise it sets the real attr value.
                 type(transport).active = PropertyMock(side_effect=actives)
 
-                # Raise a useful exception if >1 session is called
-                # per requested (in this decorator) client. Such implies that
-                # more than one run() was executed per task.
-                # TODO: be more flexible about expected connections vs run()
-                # calls (which should be N-M, even though the
-                # base case for testing is usually 1-1). Should be achievable
-                # w/ kwargs (tho perhaps disallow use of both args and kwargs
-                # since that starts to get messy - how do we know what to
-                # return from SSHClient.side_effect in that case? with kwargs
-                # it'd have to be using a real function mapping to hostnames,
-                # so having anonymous arg-based connections is then ambiguous.
+                # Start hooking up our mocks
                 transport.open_session.return_value = channel
                 channel.recv_exit_status.return_value = exit
 
@@ -125,7 +116,7 @@ def mock_remote(*executions, **hosts):
                 readies = chain(repeat(False, wait), repeat(True))
                 channel.exit_status_ready.side_effect = readies
 
-                # Real-feeling IO
+                # Real-feeling IO (not just returning whole strings)
                 out_file = StringIO(out)
                 err_file = StringIO(err)
                 def fakeread(count, fileno=None):
