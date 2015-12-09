@@ -21,66 +21,215 @@ def expect(invocation, out, program=None, test=None):
     (test or eq_)(sys.stdout.getvalue(), out)
 
 
-# TODO: this needs to be more like real mocking where I can set up >1 per test
-# with different expectations.
-# TODO: it should default to what it is now, a single exec_command instance
-# TODO: BUT it should error USEFULLY if something tries running >1 in a row.
-# Right now we just run into (initially) exit_status_ready having a
-# multiple-but-finite side_effect (due to how the 'wait' kwarg works) - which
-# is not a useful error.
-# TODO: so what should happen is transport.open_session needs to die usefully
-# if it's called more times than expected, since it maps to calls to run().
-# TODO: but that only gets us so far, we probably need more
-# funcs-as-side_effects which know to barf if they're called w/ unexpected
-# shit, that would allow us to say "ok I want to allow SSHClients to X and Y,
-# and only one run() on each" or "one run() on X returning blah stdout, two
-# runs on Y returning biz and baz stdouts".
-# TODO: it'd be ideal for these to work as orthogonally-composing decorators,
-# but may be easier as a single decorator with more flexible args somehow? e.g.
-# a *args of dicts with out/err/exit/wait keys, or a **kwargs of hostname keys
-# mapping to array of those? @mock_remote(host1={'out': 'lol butts'}) for
-# example.
-# TODO: tho still gotta figure out how to say "expect 'the default' (no
-# out/err, exit 0, wait 0) for host 'foo'", maybe that's another use of *args?
-def mock_remote(*executions, **hosts):
+class Command(object):
+    """
+    Data record specifying params of a command execution to mock/expect.
+
+    :param str cmd:
+        Command string to expect. If not given, no expectations about the
+        command executed will be set up. Default: ``None``.
+
+    :param str out: Data yielded as remote stdout. Default: ``""``.
+
+    :param str err: Data yielded as remote stderr. Default: ``""``.
+
+    :param int exit: Remote exit code. Default: ``0``.
+
+    :param int waits:
+        Number of calls to the channel's ``exit_status_ready`` that should
+        return ``False`` before it then returns ``True``. Default: ``0``
+        (``exit_status_ready`` will return ``True`` immediately).
+    """
+    def __init__(self, cmd=None, out="", err="", exit=0, waits=0):
+        self.cmd = cmd
+        self.out = out
+        self.err = err
+        self.exit = exit
+        self.waits = waits
+
+
+class Session(object):
+    """
+    A mock remote session of a single connection and 1 or more command execs.
+
+    Allows quick configuration of expected remote state, and also helps
+    generate the necessary test mocks used by `.mock_remote` itself. Only
+    useful when handed into `.mock_remote`.
+
+    The parameters ``cmd``, ``out``, ``err``, ``exit`` and ``waits`` are all
+    shorthand for the same constructor arguments for a single anonymous
+    `.Command`; see `.Command` for details.
+
+    To give fully explicit `.Command` objects, use the ``commands`` parameter.
+
+    :param str host:
+        Which hostname to expect a connection to. If given, will cause a test
+        failure if a connection is made to a different host instead. Default:
+        ``None``.
+
+    :param commands:
+        Iterable of `.Command` objects, used when mocking nontrivial sessions
+        involving >1 command execution per host. Default: ``None``.
+
+        .. note::
+            Giving ``cmd``, ``out`` etc alongside explicit ``commands`` is not
+            allowed and will result in an error.
+    """
+    def __init__(
+        self,
+        host=None,
+        commands=None,
+        cmd=None,
+        out=None,
+        err=None,
+        exit=None,
+        waits=None
+    ):
+        # Sanity check
+        params = (cmd or out or err or exit or waits)
+        if commands and params:
+            raise ValueError("You can't give both 'commands' and individual Command parameters!") # noqa
+        # Fill in values
+        self.host = host
+        self.commands = commands
+        if params:
+            # Honestly dunno which is dumber, this or duplicating Command's
+            # default kwarg values in this method's signature...sigh
+            kwargs = {}
+            if cmd is not None:
+                kwargs['cmd'] = cmd
+            if out is not None:
+                kwargs['out'] = out
+            if err is not None:
+                kwargs['err'] = err
+            if exit is not None:
+                kwargs['exit'] = exit
+            if waits is not None:
+                kwargs['waits'] = waits
+            self.commands = [Command(**kwargs)]
+        if not self.commands:
+            self.commands = [Command()]
+
+    def generate_mocks(self):
+        """
+        Sets up a mock `.SSHClient` and one or more mock `Channel` objects.
+
+        Specifically, the client will expect itself to be connected to
+        ``self.host`` (if given), the channels will be associated with the
+        client's `.Transport`, and the channels will expect/provide
+        command-execution behavior as specified on the `.Command` objects
+        supplied to this `.Session`.
+
+        The client is then attached as ``self.client`` and the channels as
+        ``self.channels`.
+
+        :returns:
+            ``None`` - this is mostly a "deferred setup" method and callers
+            will just reference the above attributes (and call more methods) as
+            needed.
+        """
+        client = Mock()
+        transport = client.get_transport.return_value # another Mock
+
+        # Connection.open() tests transport.active before calling
+        # connect(). So, needs to start out False, then be True
+        # afterwards (at least in default "connection succeeded"
+        # scenarios...)
+        actives = chain([False], repeat(True))
+        # NOTE: setting PropertyMocks on a mock's type() is apparently
+        # How It Must Be Done, otherwise it sets the real attr value.
+        type(transport).active = PropertyMock(side_effect=actives)
+
+        channels = []
+        for command in self.commands:
+            channel = Mock()
+            channel.recv_exit_status.return_value = command.exit
+
+            # If requested, make exit_status_ready return False the first N
+            # times it is called in the wait() loop.
+            readies = chain(repeat(False, command.waits), repeat(True))
+            channel.exit_status_ready.side_effect = readies
+
+            # Real-feeling IO (not just returning whole strings)
+            out_file = StringIO(command.out)
+            err_file = StringIO(command.err)
+            def fakeread(count, fileno=None):
+                fd = {1: out_file, 2: err_file}[fileno]
+                return fd.read(count)
+            channel.recv.side_effect = partial(fakeread, fileno=1)
+            channel.recv_stderr.side_effect = partial(fakeread, fileno=2)
+
+            channels.append(channel)
+
+        # Have our transport yield those channel mocks in order when
+        # open_session() is called.
+        transport.open_session.side_effect = channels
+
+        self.client = client
+        self.channels = channels
+
+    def sanity_check(self):
+        # Ensure transport was gotten
+        transport = self.client.get_transport
+        transport.assert_called_with()
+        # And that its open_session was called once per channel
+        transport.return_value.open_session.assert_called_once_with()
+        # TODO: make assertions about hostname in connect & command in
+        # exec_command!
+
+
+def mock_remote(*sessions):
     """
     Mock & expect one or more remote connections & command executions.
 
-    By default, with no parameterization, a single generic "connect and execute
-    a command" session is implied, returning empty strings for stdout/stderr,
-    exiting with exit code 0, and where ``exit_status_ready`` returns ``True``
-    immediately.
+    With no parameterization (``@mock_remote``) or empty parameterization
+    (``@mock_remote()``) a single default connection+execution is implied, i.e,
+    equivalent to ``@mock_remote(Session())``.
 
-    Positional arguments (if given) should be dicts, each mapping to a single
-    connect-and-execute session, with the following possible keys & values:
+    When parameterized, takes `.Session` objects (see warning below about
+    ordering).
 
-    * ``out`` and/or ``err``: strings yielded as the respective remote stream,
-      default: ``""``.
-    * ``exit``: integer of remote exit code, default: ``0``.
-    * ``wait``: how many calls to the channel's ``exit_status_ready`` should
-      return ``False`` before they return ``True``. Default: ``0``
-      (``exit_status_ready`` will return ``True`` the very first time).
+    .. warning::
+        Due to ``SSHClient``'s API, we must expect connections in the order
+        that they are made. If you run into failures caused by explicitly
+        expecting hosts in this manner, **make sure** the order of sessions
+        and commands you're giving ``@mock_remote`` matches the order in
+        which the code under test is creating new ``SSHClient`` objects!
 
-    Keyword arguments (if given) should map expected hostnames to dicts of the
-    format described just above. While the positional argument sessions don't
-    place constraints on connection hostname, keyword-argument sessions will
-    raise exceptions if hostnames don't match (i.e. ``@mock_remote(foo={...})``
-    will fail a test if the code under test doesn't trigger a connection to
-    host 'foo').
+    The wrapped test function must accept a positional argument for each command
+    in ``*sessions``, which are used to hand in the mock channel objects that
+    are created (so that the test function may make asserts with them).
 
-    The wrapped test function must accept positional and/or keyword arguments
-    mirroring those given to ``mock_remote``, which will be used to transfer
-    the mock channel objects that are created.
+    .. note::
+        The actual logic involved is a flattening of all commands across the
+        sessions, to make accessing them within the tests fast and easy. E.g.
+        in this test setup::
+
+            @mock_remote(
+                Session(Command('whoami'), Command('uname')),
+                Session(host='foo', cmd='ls /'),
+            )
+
+        you would want to set up the test signature for 3 command channels::
+
+            @mock_remote(...)
+            def mytest(self, chan_whoami, chan_uname, chan_ls):
+                pass
+
+        Most of the time, however, there is a 1:1 map between session and
+        command, making this straightforward.
     """
     # Was called as bare decorator, no args
     bare = (
-        len(executions) == 1
-        and not hosts
-        and isinstance(executions[0], types.FunctionType)
+        len(sessions) == 1
+        and isinstance(sessions[0], types.FunctionType)
     )
     if bare:
-        func = executions[0]
-        executions = []
+        func = sessions[0]
+        sessions = []
+    # Either bare or called with empty parens
+    if not sessions:
+        sessions = [Session()]
 
     def decorator(f):
         @wraps(f)
@@ -90,76 +239,40 @@ def mock_remote(*executions, **hosts):
             args = list(args)
             SSHClient, time = args.pop(), args.pop()
 
-            # Mock out Paramiko bits we expect to be used for most run() calls
-            def make_client(out, err, exit, wait):
-                client = Mock()
-                transport = client.get_transport.return_value # another Mock
-                channel = Mock()
-
-                # Connection.open() tests transport.active before calling
-                # connect(). So, needs to start out False, then be True
-                # afterwards (at least in default "connection succeeded"
-                # scenarios...)
-                # NOTE: if transport.active is called more than expected (e.g.
-                # for debugging purposes) that will goof this up :(
-                actives = chain([False], repeat(True))
-                # NOTE: setting PropertyMocks on a mock's type() is apparently
-                # How It Must Be Done, otherwise it sets the real attr value.
-                type(transport).active = PropertyMock(side_effect=actives)
-
-                # Start hooking up our mocks
-                transport.open_session.return_value = channel
-                channel.recv_exit_status.return_value = exit
-
-                # If requested, make exit_status_ready return False the first N
-                # times it is called in the wait() loop.
-                readies = chain(repeat(False, wait), repeat(True))
-                channel.exit_status_ready.side_effect = readies
-
-                # Real-feeling IO (not just returning whole strings)
-                out_file = StringIO(out)
-                err_file = StringIO(err)
-                def fakeread(count, fileno=None):
-                    fd = {1: out_file, 2: err_file}[fileno]
-                    return fd.read(count)
-                channel.recv.side_effect = partial(fakeread, fileno=1)
-                channel.recv_stderr.side_effect = partial(fakeread, fileno=2)
-
-                return client, channel
-
-            my_executions = list(executions) if executions else [{}]
-
+            # Mock clients, to be inspected afterwards during sanity-checks
             clients = []
-            channels = []
-            waits = []
-            for x in my_executions:
-                wait = x.get('wait', 0)
-                client, channel = make_client(
-                    out=x.get('out', ""),
-                    err=x.get('err', ""),
-                    exit=x.get('exit', 0),
-                    wait=wait,
-                )
-                clients.append(client)
-                channels.append(channel)
-                waits.append(wait)
+            # The channels of those clients, for handing into test function
+            all_channels = []
+            for session in sessions:
+                session.generate_mocks()
+                clients.append(session.client)
+                all_channels.extend(session.channels)
 
             # Each time the mocked SSHClient class is instantiated, it will
             # yield one of our mocked clients (w/ mocked transport & channel)
             # generated above.
             SSHClient.side_effect = clients
 
-            # Run test, passing in channel obj (as it's the most useful mock)
-            # as last arg
-            args.extend(channels)
+            # Run test, passing in the channels involved for asserts/etc
+            args.extend(chain.from_iterable(x.channels for x in sessions))
             f(*args, **kwargs)
 
-            # Sanity checks
-            for client in clients:
-                t = client.get_transport
-                t.assert_called_with()
-                t.return_value.open_session.assert_called_once_with()
-            eq_(time.sleep.call_count, sum(waits))
+            # Post-execution sanity checks
+            for session in sessions:
+                # Basic stuff about transport, channel etc
+                session.sanity_check()
+            # Internals call time.sleep() while waiting and we want to ensure
+            # that this happened as many times as expected. Due to it being a
+            # stdlib/global call, best we can do is make assertions about the
+            # total number of calls - can't pin them down to individual
+            # sessions/clients/channels.
+            total_waits = sum(
+                cmd.waits
+                for cmd in session.commands
+                for session in sessions
+            )
+            # TODO: be more explicit, make this "a bunch of call(1)'s"?
+            eq_(time.sleep.call_count, total_waits)
         return wrapper
     # Bare decorator, no args
     if bare:

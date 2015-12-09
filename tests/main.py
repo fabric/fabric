@@ -11,7 +11,7 @@ from invoke.util import cd
 from fabric import Connection
 from fabric.main import program as fab_program
 
-from _util import expect, mock_remote
+from _util import expect, mock_remote, Session
 
 
 _support = os.path.join(os.path.dirname(__file__), '_support')

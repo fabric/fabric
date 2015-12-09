@@ -7,7 +7,7 @@ from fabric.connection import Connection
 from fabric.runners import Remote
 from fabric.util import get_local_user
 
-from _util import mock_remote
+from _util import mock_remote, Session
 
 
 # On most systems this will explode if actually executed as a shell command;
@@ -31,7 +31,7 @@ class Remote_(Spec):
             # sure that exec_command got run with our arg to run().
             chan.exec_command.assert_called_with(CMD)
 
-        @mock_remote({'out': "hello yes this is dog"})
+        @mock_remote(Session(out="hello yes this is dog"))
         def writes_remote_streams_to_local_streams(self, chan):
             c = Connection('host')
             r = Remote(context=c)
@@ -47,7 +47,7 @@ class Remote_(Spec):
             cols, rows = pty_size()
             chan.get_pty.assert_called_with(width=cols, height=rows)
 
-        @mock_remote({'out': "some text", 'wait': 1})
+        @mock_remote(Session(out="some text", waits=1))
         def wait_loop_performs_io_sleep(self, chan):
             c = Connection('host')
             r = Remote(context=c)
