@@ -108,7 +108,7 @@ def mock_remote(*calls):
 
                 # If requested, make exit_status_ready return False the first N
                 # times it is called in the wait() loop.
-                readies = (wait * [False]) + [True]
+                readies = chain(repeat(False, wait), repeat(True))
                 channel.exit_status_ready.side_effect = readies
 
                 # Real-feeling IO
