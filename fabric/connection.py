@@ -133,6 +133,10 @@ class Connection(Context):
         client.set_missing_host_key_policy(AutoAddPolicy())
         self.client = client
 
+        #: A convenience handle onto the return value of
+        #: ``self.client.get_transport()``.
+        self.transport = None
+
     def __str__(self):
         s = "<Connection id={0} user='{1.user}' host='{1.host}' port={1.port}>"
         return s.format(id(self), self)
@@ -170,15 +174,17 @@ class Connection(Context):
         """
         Whether or not this connection is actually open.
         """
-        transport = self.client.get_transport()
-        return transport.active if transport else False
+        return self.transport.active if self.transport else False
 
     def open(self):
         """
         Initiate an SSH connection to the host/port this object is bound to.
+
+        Also saves a handle to the now-set Transport object for easier access.
         """
         if not self.is_connected:
             self.client.connect(hostname=self.host, port=self.port)
+            self.transport = self.client.get_transport()
 
     def close(self):
         """
@@ -196,7 +202,7 @@ class Connection(Context):
         # TODO: implies we may want to do the same for Connection itself
         # (though that might not be the primary API for it)
         self.open()
-        return self.client.get_transport().open_session()
+        return self.transport.open_session()
 
     def run(self, command, **kwargs):
         """
