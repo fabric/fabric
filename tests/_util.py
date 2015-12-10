@@ -181,11 +181,10 @@ class Session(object):
             port=ANY
         )
 
-        # And per-run() we expect a single session open, connect and
-        # command_exec. Bundle them up so that by end of run we can ensure we
-        # only got the calls expected.
+        # Calls to open_session will be 1-per-command but are on transport, not
+        # channel, so we can only really inspect how many happened in
+        # aggregate. Save a list for later comparison to call_args.
         session_opens = []
-        command_execs = []
 
         for channel, command in zip(self.channels, self.commands):
             # Expect an open_session for each command exec
@@ -193,7 +192,7 @@ class Session(object):
             # Expect that the channel gets an exec_command
             channel.exec_command.assert_called_with(command.cmd or ANY)
 
-        # Test equality to actual call lists recorded
+        # Make sure open_session was called expected number of times.
         eq_(transport.return_value.open_session.call_args_list, session_opens)
 
 
@@ -215,9 +214,10 @@ def mock_remote(*sessions):
         and commands you're giving ``@mock_remote`` matches the order in
         which the code under test is creating new ``SSHClient`` objects!
 
-    The wrapped test function must accept a positional argument for each command
-    in ``*sessions``, which are used to hand in the mock channel objects that
-    are created (so that the test function may make asserts with them).
+    The wrapped test function must accept a positional argument for each
+    command in ``*sessions``, which are used to hand in the mock channel
+    objects that are created (so that the test function may make asserts with
+    them).
 
     .. note::
         The actual logic involved is a flattening of all commands across the

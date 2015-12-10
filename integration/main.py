@@ -5,6 +5,7 @@ from fabric import Connection, Group
 
 
 class Main(Spec):
+    # TODO: move these to per-module tests...
     def connection_open_generates_real_connection(self):
         c = Connection('localhost')
         c.open()

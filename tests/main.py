@@ -4,14 +4,12 @@ Tests concerned with the ``fab`` tool & how it overrides Invoke defaults.
 
 import os
 
-from mock import patch
-from spec import Spec, assert_contains, eq_, skip
+from spec import Spec, assert_contains, skip
 from invoke.util import cd
 
-from fabric import Connection
 from fabric.main import program as fab_program
 
-from _util import expect, mock_remote, Session, Command
+from _util import expect, mock_remote, Session
 
 
 _support = os.path.join(os.path.dirname(__file__), '_support')

@@ -267,7 +267,8 @@ class Connection_(Spec):
             # True, so we want .active to retuen True.
             # - Second Connection.close() also asks is_connected which needs to
             # False this time.
-            type(client.get_transport.return_value).active = PropertyMock(side_effect=[True, False])
+            prop = PropertyMock(side_effect=[True, False])
+            type(client.get_transport.return_value).active = prop
             c.open()
             c.close()
             c.close()
