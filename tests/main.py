@@ -11,7 +11,7 @@ from invoke.util import cd
 from fabric import Connection
 from fabric.main import program as fab_program
 
-from _util import expect, mock_remote, Session
+from _util import expect, mock_remote, Session, Command
 
 
 _support = os.path.join(os.path.dirname(__file__), '_support')
@@ -36,20 +36,11 @@ Invoke .+
         def exposes_hosts_flag_in_help(self):
             expect("--help", "-H STRING, --hosts=STRING", test=assert_contains)
 
-        @mock_remote
+        @mock_remote(Session('myhost', cmd='whoami'))
         def executes_remainder_as_anonymous_task(self, chan):
-            # contextmanager because hard to thread extra mocks into the
-            # decorator
-            mock = patch('fabric.main.Connection', wraps=Connection)
-            with mock as MConnection:
-                fab_program.run("fab -H myhost -- whoami", exit=False)
-                # Did we connect to the host?
-                # (not using assert_called_with because using mock.ANY causes
-                # funky blowups when comparing with Config objects)
-                eq_(MConnection.call_args[1]['host'], 'myhost')
-                # Did we execute the command?
-                chan.exec_command.assert_called_with('whoami')
-
+            # All useful asserts re: host connection & command exec are
+            # performed in @mock_remote.
+            fab_program.run("fab -H myhost -- whoami", exit=False)
 
     class fabfiles:
         def loads_fabfile_not_tasks(self):

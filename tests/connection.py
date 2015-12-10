@@ -1,7 +1,7 @@
 import socket
 
 from spec import Spec, eq_, raises, ok_
-from mock import patch, Mock, call
+from mock import patch, Mock, call, PropertyMock
 from paramiko.client import SSHClient, AutoAddPolicy
 
 from fabric.connection import Connection, Config, Group
@@ -210,9 +210,10 @@ class Connection_(Spec):
         def has_no_effect_if_already_connected(self, Client):
             cxn = Connection('host')
             client = Client.return_value
-            client.get_transport.return_value = Mock(active=False)
+            # First open() never gets to .active; subsequently it needs to
+            # appear connected, so True.
+            client.get_transport.return_value.active = True
             cxn.open()
-            client.get_transport.return_value = Mock(active=True)
             cxn.open()
             client.connect.assert_called_once_with(
                 hostname='host',
@@ -258,9 +259,17 @@ class Connection_(Spec):
         def has_no_effect_if_already_closed(self, Client):
             client = Client.return_value
             c = Connection('host')
+            # Expected flow:
+            # - Connection.open() asks is_connected which checks
+            # self.transport, which is initially None, so .active isn't even
+            # checked.
+            # - First Connection.close() asks is_connected and that needs to be
+            # True, so we want .active to retuen True.
+            # - Second Connection.close() also asks is_connected which needs to
+            # False this time.
+            type(client.get_transport.return_value).active = PropertyMock(side_effect=[True, False])
             c.open()
             c.close()
-            client.get_transport.return_value = Mock(active=False)
             c.close()
             client.close.assert_called_once_with()
 

@@ -8,7 +8,7 @@ from invoke.vendor.six import StringIO
 from fabric import Connection
 from fabric.main import program as fab_program
 from fabric.transfer import Transfer
-from mock import patch, Mock, PropertyMock
+from mock import patch, Mock, PropertyMock, call, ANY
 from spec import eq_, trap
 
 
@@ -131,11 +131,13 @@ class Session(object):
         client = Mock()
         transport = client.get_transport.return_value # another Mock
 
-        # Connection.open() tests transport.active before calling
-        # connect(). So, needs to start out False, then be True
-        # afterwards (at least in default "connection succeeded"
-        # scenarios...)
-        actives = chain([False], repeat(True))
+        # NOTE: this originally did chain([False], repeat(True)) so that
+        # get_transport().active was False initially, then True. However,
+        # because we also have to consider when get_transport() comes back None
+        # (which it does initially), the case where we get back a non-None
+        # transport _and_ it's not active yet, isn't useful to test, and
+        # complicates text expectations. So we don't, for now.
+        actives = repeat(True)
         # NOTE: setting PropertyMocks on a mock's type() is apparently
         # How It Must Be Done, otherwise it sets the real attr value.
         type(transport).active = PropertyMock(side_effect=actives)
@@ -169,13 +171,30 @@ class Session(object):
         self.channels = channels
 
     def sanity_check(self):
-        # Ensure transport was gotten
+        # Per-session we expect a single transport get
         transport = self.client.get_transport
-        transport.assert_called_with()
-        # And that its open_session was called once per channel
-        transport.return_value.open_session.assert_called_once_with()
-        # TODO: make assertions about hostname in connect & command in
-        # exec_command!
+        transport.assert_called_once_with()
+        # And a single connect to our target host.
+        # TODO: give a shit about port too
+        self.client.connect.assert_called_once_with(
+            hostname=self.host or ANY,
+            port=ANY
+        )
+
+        # And per-run() we expect a single session open, connect and
+        # command_exec. Bundle them up so that by end of run we can ensure we
+        # only got the calls expected.
+        session_opens = []
+        command_execs = []
+
+        for channel, command in zip(self.channels, self.commands):
+            # Expect an open_session for each command exec
+            session_opens.append(call())
+            # Expect that the channel gets an exec_command
+            channel.exec_command.assert_called_with(command.cmd or ANY)
+
+        # Test equality to actual call lists recorded
+        eq_(transport.return_value.open_session.call_args_list, session_opens)
 
 
 def mock_remote(*sessions):
