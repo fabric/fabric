@@ -67,10 +67,12 @@ Available tasks:
                 fab_program.run("fab -H myhost basic_run")
             chan.exec_command.assert_called_once_with('nope')
 
-        def comma_separated_string_is_multiple_hosts(self):
-            # TODO: requires mock_remote to be capable of multiple distinct
-            # connections somehow
-            skip()
+        @mock_remote(
+            Session('host1', cmd='whoami'),
+            Session('host2', cmd='whoami'),
+        )
+        def comma_separated_string_is_multiple_hosts(self, chan1, chan2):
+            fab_program.run("fab -H host1,host2 -- whoami")
 
         def multiple_hosts_works_with_remainder_too(self):
             skip()

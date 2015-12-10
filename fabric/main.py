@@ -56,32 +56,42 @@ class Fab(Program):
 
 # TODO: come up w/ a better name heh
 class FabExecutor(Executor):
-    def expand_tasks(self, tasks, config):
+    def expand_calls(self, calls, config):
         # Generate new call list with per-host variants & Connections inserted
         ret = []
         hosts = self.core[0].args.hosts.value.split(',')
-        for task in tasks:
+        for call in calls:
+            # TODO: how will non-host-parameterized tasks work here?
+            # TODO: also roles & such of course.
             for host in hosts:
                 # TODO: handle pre/post, which we are currently ignoring
                 #   (see parent class' implementation)
-                ret.append(self.parameterize(task, host, config))
+                ret.append(self.parameterize(call, host, config))
         # Add remainder as anonymous task
         if self.core.remainder:
             def anonymous(c):
                 c.run(self.core.remainder)
             anon = Call(Task(body=anonymous, contextualized=True))
+            # TODO: see above TODOs about non-parameterized setups, roles etc
+            # TODO: will likely need to refactor that logic some more so it can
+            # be used both there and here.
             for host in hosts:
                 ret.append(self.parameterize(anon, host, config, True))
         return ret
 
-    def parameterize(self, task, host, config, remainder=False):
-        # Give it a Connection as its Context (and see Connection's own
-        # TODO note regarding merging it & Context itself)
-        # TODO: clone task before mutating
-        debug("Parameterizing {0!r} for host {1!r}".format(task, host))
-        config = self.config_for(task, config, anonymous=remainder)
-        task.context = Connection(host=host, config=config)
-        return task
+    def parameterize(self, call, host, config, remainder=False):
+        """
+        Parameterize a Call with a given host.
+
+        Involves cloning the call in question & updating its config w/ host.
+        """
+        debug("Parameterizing {0!r} for host {1!r}".format(call, host))
+        clone = call.clone()
+        # Generate a new config so they aren't shared
+        config = self.config_for(clone, config, anonymous=remainder)
+        # Make a new connection from the current host & config, set as context
+        clone.context = Connection(host=host, config=config)
+        return clone
 
     def dedupe(self, tasks):
         # Don't perform deduping, we will often have "duplicate" tasks w/
