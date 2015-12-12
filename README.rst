@@ -4,12 +4,12 @@ administration tasks. This is a fork of the original
 [Fabric](http://www.fabfile.org/) ([git](https://github.com/fabric/fabric)) with
 the intention of providing support for Python3, while maintaining support for
 all non-archaic versions if Python2.  Please see below for known differences
-with the upstream version of Fabric. To switch to Fabric3, simply do:
+with the upstream version of Fabric. To switch to Fabric3, simply do::
 
    pip uninstall Fabric
    pip install Fabric3
 
-... and don't forget to update any requirements.txt files accordingly:
+... and don't forget to update any requirements.txt files accordingly::
 
    # Fabric==1.10.2
    Fabric3==1.10.2.post1
