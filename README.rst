@@ -46,6 +46,10 @@ Generally this project aims to be a drop-in replacement for Fabric and will
 periodically merge any changes from the upstream project. Any differences are
 noted here:
 
+* The release installs as `Fabric3`. Despite it's name, this version is tested
+  with Python2.7 and Python 3.4+.
+* Versioning is based on upstream Fabric releases, with a `postX` appended. So
+  version "1.10.2.post1" is equivalent to Fabrics own "1.10.2" release.
 * In Python3, Fabric3 implements its own version of `contextlib.nested` based on
   `contextlib.ExitStack`, since it's no longer available in Python3. Please note
   that it was removed with good reason, we do not encourage you use it.
