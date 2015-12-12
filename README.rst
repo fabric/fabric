@@ -1,7 +1,7 @@
 Fabric3 is a Python (2.7 or 3.4+) library and command-line tool for
 streamlining the use of SSH for application deployment or systems
 administration tasks. This is a fork of the original
-`Fabric <http://www.fabfile.org/>`_ (`git <https://github.com/fabric/fabric>`) with
+`Fabric <http://www.fabfile.org/>`_ (`git <https://github.com/fabric/fabric>`_) with
 the intention of providing support for Python3, while maintaining support for
 all non-archaic versions if Python2.  Please see below for known differences
 with the upstream version of Fabric. To switch to Fabric3, simply do::
