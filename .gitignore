@@ -6,7 +6,7 @@
 *.egg
 .DS_Store
 .*.swp
-Fabric.egg-info
+Fabric3.egg-info
 .coverage
 docs/_build
 dist
@@ -17,3 +17,13 @@ TAGS
 tox.ini
 .idea/
 sites/*/_build
+/env/
+/env3/
+/include/
+/lib/
+/local/
+/bin/
+/man/
+/py3/
+/py2/
+/src/
