@@ -42,4 +42,10 @@ suite at a higher level than that provided by e.g. the ``Paramiko`` library
 Differences with Fabric
 =======================
 
-TODO.
+Generally this project aims to be a drop-in replacement for Fabric and will
+periodically merge any changes from the upstream project. Any differences are
+noted here:
+
+* In Python3, Fabric3 implements its own version of `contextlib.nested` based on
+  `contextlib.ExitStack`, since it's no longer available in Python3. Please note
+  that it was removed with good reason, we do not encourage you use it.
