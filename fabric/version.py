@@ -51,6 +51,7 @@ def get_version(form='short'):
     tertiary = VERSION[2]
     type_ = VERSION[3]
     final = (type_ == "final")
+    post = (type_ == "post")
     type_num = VERSION[4]
     firsts = "".join([x[0] for x in type_.split()])
 
@@ -61,7 +62,9 @@ def get_version(form='short'):
     v = branch
     if (tertiary or final):
         v += "." + str(tertiary)
-    if not final:
+    if post:
+        v += '.%s%s' % (type_, type_num)
+    elif not final:
         v += firsts
         if type_num:
             v += str(type_num)
