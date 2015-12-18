@@ -22,11 +22,14 @@ class Remote(Runner):
             self.channel.get_pty(width=rows, height=cols)
         self.channel.exec_command(command)
 
-    def stdout_reader(self):
-        return self.channel.recv
+    def read_stdout(self, num_bytes):
+        return self.channel.recv(num_bytes)
 
-    def stderr_reader(self):
-        return self.channel.recv_stderr
+    def read_stderr(self, num_bytes):
+        return self.channel.recv_stderr(num_bytes)
+
+    def write_stdin(self, data):
+        return self.channel.sendall(data)
 
     def default_encoding(self):
         # TODO: this could be hairy or impossible!
