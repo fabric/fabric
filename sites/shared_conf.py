@@ -7,7 +7,7 @@ import alabaster
 
 # Alabaster theme + mini-extension
 html_theme_path = [alabaster.get_path()]
-extensions = ['alabaster']
+extensions = ['alabaster', 'sphinx.ext.intersphinx']
 # Paths relative to invoking conf.py - not this shared file
 html_static_path = [join('..', '_shared_static')]
 html_theme = 'alabaster'

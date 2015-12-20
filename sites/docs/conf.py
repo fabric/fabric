@@ -5,8 +5,8 @@ sys.path.append(abspath(join(dirname(__file__), '..')))
 sys.path.append(abspath(join(dirname(__file__), '..', '..')))
 from shared_conf import *
 
-# Enable autodoc, intersphinx
-extensions.extend(['sphinx.ext.autodoc', 'sphinx.ext.intersphinx'])
+# Enable autodoc
+extensions.append('sphinx.ext.autodoc')
 
 # Autodoc settings
 autodoc_default_flags = ['members', 'special-members']
@@ -17,16 +17,7 @@ target = join(dirname(__file__), '..', 'www', '_build')
 if os.environ.get('READTHEDOCS') == 'True':
     target = 'http://www.fabfile.org/'
 www = (target, None)
-# Ditto Invoke
-target = join(
-    dirname(__file__),
-    '..', '..', '..',
-    'invoke', 'sites', 'docs', '_build'
-)
-if os.environ.get('READTHEDOCS') == 'True':
-    target = 'http://docs.pyinvoke.org/'
-invoke = (target, None)
-# Intersphinx connection to stdlib + www site
+# Intersphinx connection to www site
 intersphinx_mapping.update({
     'www': www,
 })
