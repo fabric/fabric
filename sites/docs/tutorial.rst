@@ -72,6 +72,28 @@ seen above: what was requested, what happened while the remote action occurred,
 and what the final result was.
 
 
+Superuser privileges
+====================
+
+blah blah you can also run via sudo() which is identical to run() but which
+sets command wrapper (how to do that in invoke?) to 'sudo -c xxx', and
+sets autoresponse to sudo prompt + <config for password, wherever that
+lives...needs to be per-host + default>
+
+(This means we need another Invoke ticket for command wrapping, unless one
+already exists...)
+
+Include explicit note that both command wrapping and autoresponse can be set by
+hand with regular ol' run() if desired, sudo() is simply a convenience.
+
+.. TODO: and apparently sudo _requires_ pty=True to work well, if a password is
+needed. grump. figure out realistic shit around this: always pty when sudo;
+default to pty generally (starting to seem like maybe the right approach so
+far...maybe)  since differing between sudo and run is dumb; figure out if we
+can force sudo to 'ask' stderr even if it thinks no terminal is there; ???
+.. TODO: ohhh that's why we used -S, so...try that first lolllll
+
+
 Transfer files
 ==============
 
