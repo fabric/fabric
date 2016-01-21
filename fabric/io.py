@@ -76,6 +76,7 @@ class OutputLooper(object):
         initial_prefix_printed = False
         seen_cr = False
         line = []
+        py3_buffer = b''
 
         # Allow prefix to be turned off.
         if not env.output_prefix:
@@ -96,7 +97,18 @@ class OutputLooper(object):
                 # Note that we have to decode this right away, even if an error
                 # is thrown only later in the code, because e.g. '' != b'' (see
                 # first if below).
-                bytelist = bytelist.decode('utf-8')
+                py3_buffer += bytelist
+                try:
+                    bytelist = py3_buffer.decode('utf-8')
+                except UnicodeDecodeError:
+                    # Go back and grab more bytes so we hopefully get a
+                    # complete and valid Python string.
+                    # Might hang here if remote server sends garbage but unsure
+                    # if it's worth switching to processing byte by byte ...
+                    continue
+                else:
+                    # Reset the buffer as we succeeded
+                    py3_buffer = b''
 
             # Empty byte == EOS
             if bytelist == '':
