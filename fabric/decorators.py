@@ -10,6 +10,7 @@ from Crypto import Random
 
 from fabric import tasks
 from .context_managers import settings
+import decorator
 
 
 def task(*args, **kwargs):
@@ -48,18 +49,31 @@ def _wrap_as_new(original, new):
 
 def _list_annotating_decorator(attribute, *values):
     def attach_list(func):
-        @wraps(func)
-        def inner_decorator(*args, **kwargs):
-            return func(*args, **kwargs)
+        if isinstance(func, tasks.Task):
+            actual_func = func.wrapped
+            wrapper = func
+        else:
+            actual_func = func
+            wrapper = None
+
+        actual_func = decorator.FunctionMaker.create(
+            actual_func,
+            'return f(%(signature)s)',
+            dict(f=actual_func), __wrapped__=actual_func)
+
         _values = values
         # Allow for single iterable argument as well as *args
         if len(_values) == 1 and not isinstance(_values[0], basestring):
             _values = _values[0]
-        setattr(inner_decorator, attribute, list(_values))
-        # Don't replace @task new-style task objects with inner_decorator by
-        # itself -- wrap in a new Task object first.
-        inner_decorator = _wrap_as_new(func, inner_decorator)
-        return inner_decorator
+        setattr(actual_func, attribute, list(_values))
+
+        if wrapper is not None:
+            # Don't replace @task new-style task objects with inner_decorator by
+            # itself -- wrap in a new Task object first.
+            wrapper = tasks.WrappedCallableTask(actual_func)
+            return wrapper
+        else:
+            return actual_func
     return attach_list
 
 
