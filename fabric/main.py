@@ -75,9 +75,10 @@ def _is_package(path):
     """
     Is the given path a Python package?
     """
+    _exists = lambda s: os.path.exists(os.path.join(path, s))
     return (
         os.path.isdir(path)
-        and os.path.exists(os.path.join(path, '__init__.py'))
+        and (_exists('__init__.py') or _exists('__init__.pyc'))
     )
 
 
