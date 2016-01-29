@@ -243,6 +243,7 @@ def settings(*args, **kwargs):
     return nested(*managers)
 
 
+@contextmanager
 def cd(path):
     """
     Context manager that keeps directory state when calling remote operations.
