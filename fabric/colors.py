@@ -24,7 +24,9 @@ for that particular invocation, which usually shows up as a bold or brighter
 version of the original color on most terminals.
 
 It is now possible to disable color printing completely by setting the environment
-variable FABRIC_DISABLE_COLORS.  The value doesn't matter as long as it exists.
+variable FABRIC_DISABLE_COLORS.  The value doesn't matter as long as it is
+Pythonically True.
+
 """
 
 import os
@@ -34,7 +36,7 @@ def _wrap_with(code):
     def inner(text, bold=False):
         c = code
 
-        if os.environ.get("FABRIC_DISABLE_COLORS", None):
+        if os.environ.get('FABRIC_DISABLE_COLORS') is None:
             return text
 
         if bold:
