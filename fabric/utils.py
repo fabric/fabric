@@ -30,9 +30,12 @@ def abort(msg):
     """
     Abort execution, print ``msg`` to stderr and exit with error status (1.)
 
-    This function currently makes use of `sys.exit`_, which raises
-    `SystemExit`_. Therefore, it's possible to detect and recover from inner
-    calls to `abort` by using ``except SystemExit`` or similar.
+    This function currently makes use of `SystemExit`_ in a manner that is
+    similar to `sys.exit`_ (but which skips the automatic printing to stderr,
+    allowing us to more tightly control it via settings).
+
+    Therefore, it's possible to detect and recover from inner calls to `abort`
+    by using ``except SystemExit`` or similar.
 
     .. _sys.exit: http://docs.python.org/library/sys.html#sys.exit
     .. _SystemExit: http://docs.python.org/library/exceptions.html#exceptions.SystemExit
@@ -50,7 +53,13 @@ def abort(msg):
     if env.abort_exception:
         raise env.abort_exception(msg)
     else:
-        sys.exit(msg)
+        # See issue #1318 for details on the below; it lets us construct a
+        # valid, useful SystemExit while sidestepping the automatic stderr
+        # print (which would otherwise duplicate with the above in a
+        # non-controllable fashion).
+        e = SystemExit(1)
+        e.message = msg
+        raise e
 
 
 def warn(msg):

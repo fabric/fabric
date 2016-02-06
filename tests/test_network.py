@@ -16,7 +16,6 @@ from fabric.io import output_loop
 import fabric.network  # So I can call patch_object correctly. Sigh.
 from fabric.state import env, output, _get_system_username
 from fabric.operations import run, sudo, prompt
-from fabric.exceptions import NetworkError
 from fabric.tasks import execute
 from fabric.api import parallel
 from fabric import utils # for patching

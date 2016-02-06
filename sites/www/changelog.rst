@@ -2,6 +2,28 @@
 Changelog
 =========
 
+* :release:`1.10.2 <2015-06-19>`
+* :support:`1325` Clarify `~fabric.operations.put` docs re: the ``mode``
+  argument. Thanks to ``@mjmare`` for the catch.
+* :bug:`1318` Update functionality added in :issue:`1213` so abort error
+  messages don't get printed twice (once by us, once by ``sys.exit``) but the
+  annotated exception error message is retained. Thanks to Felix Almeida for
+  the report.
+* :bug:`1305` (also :issue:`1313`) Fix a couple minor issues with the operation
+  of & demo code for the ``JobQueue`` class. Thanks to ``@dioh`` and Horst
+  Gutmann for the report & Cameron Lane for the patch.
+* :bug:`980` (also :issue:`1312`) Redirect output of ``cd`` to ``/dev/null`` so
+  users enabling bash's ``CDPATH`` (or similar features in other shells) don't
+  have polluted output captures. Thanks to Alex North-Keys for the original
+  report & Steve Ivy for the fix.
+* :bug:`1289` Fix "NameError: free variable referenced before assignment in
+  enclosing scope". Thanks to ``@SamuelMarks`` for catch & patch.
+* :bug:`1286` (also :issue:`971`, :issue:`1032`) Recursively unwrap decorators
+  instead of only unwrapping a single decorator level, when obtaining task
+  docstrings. Thanks to Avishai Ish-Shalom for the original report & Max Kovgan
+  for the patch.
+* :bug:`1273` Fix issue with ssh/config not having a cross-platform default
+  path. Thanks to ``@SamuelMarks`` for catch & patch.
 * :feature:`1200` Introduced ``exceptions`` output level, so users don't have to
   deal with the debug output just to see tracebacks.
 * :support:`1239` Update README to work better under raw docutils so the
