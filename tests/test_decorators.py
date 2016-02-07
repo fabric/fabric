@@ -1,5 +1,3 @@
-from __future__ import with_statement
-
 import random
 import sys
 
@@ -13,7 +11,7 @@ import fabric # for patching fabric.state.xxx
 from fabric.tasks import _parallel_tasks, requires_parallel, execute
 from fabric.context_managers import lcd, settings, hide
 
-from utils import mock_streams
+from mock_streams import mock_streams
 
 
 #

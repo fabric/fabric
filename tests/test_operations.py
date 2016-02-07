@@ -1,23 +1,27 @@
-from __future__ import with_statement
-
+import os
+import re
+import shutil
 import six
+import sys
 
-from nose.tools import ok_
+from nose.tools import ok_, raises
 from fudge import with_fakes, Fake
 from fudge.inspector import arg as fudge_arg
 from paramiko.sftp_client import SFTPClient  # for patching
 
-from fabric.state import env, output
-from fabric.context_managers import nested
+from fabric.state import env
+from fabric.context_managers import nested, settings
 from fabric.operations import require, prompt, _sudo_prefix, _shell_wrap, \
     _shell_escape
 from fabric.api import get, put, hide, show, cd, lcd, local, run, sudo, quiet
 from fabric.exceptions import CommandTimeout
+from fabric.sftp import SFTP
 
 from fabric.decorators import with_settings
-from utils import *
-from server import (server, PORT, RESPONSES, FILES, PASSWORDS, CLIENT_PRIVKEY,
-    USER, CLIENT_PRIVKEY_PASSPHRASE)
+from mock_streams import mock_streams
+from utils import (FabricTest, aborts, eq_, with_patched_input, eq_contents, patched_context,
+                   assert_contains)
+from server import server, FILES
 
 #
 # require()
