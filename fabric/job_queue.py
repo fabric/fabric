@@ -5,7 +5,6 @@ May use ``multiprocessing.Process`` or ``threading.Thread`` objects as queue
 items, though within Fabric itself only ``Process`` objects are used/supported.
 """
 
-from __future__ import with_statement
 import time
 try:
     import Queue

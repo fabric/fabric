@@ -77,6 +77,7 @@ ChangeLog
    * Cleanup imports in test suite.
    * Add Python 2/3/3.5 classifiers in setup.py.
    * Remove `fabric.utils.RingBuffer` with `collections.deque` from stdlib.
+   * Remove `with_statement` future import, it does nothing in Python 2.6+.
 
 1.10.2.post2 (2016-01-31)
    * Identify as Fabric3 on the command-line (#4).

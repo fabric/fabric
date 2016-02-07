@@ -1,8 +1,6 @@
 """
 Convenience decorators for use in fabfiles.
 """
-from __future__ import with_statement
-
 import six
 import types
 from functools import wraps

@@ -1,8 +1,6 @@
 """
 Useful non-core functionality, e.g. functions composing multiple operations.
 """
-from __future__ import with_statement
-
 from os import getcwd, sep
 import os.path
 from datetime import datetime
