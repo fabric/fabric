@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
-from __future__ import with_statement
-from fabric.operations import local
 import os
 import six
 
-from fabric.api import hide, get, show
 from fabric.contrib.files import upload_template, contains
-from fabric.context_managers import lcd
+from fabric.context_managers import hide, lcd
+from fabric.operations import get
 
 from utils import FabricTest, eq_contents
 from server import server

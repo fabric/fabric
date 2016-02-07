@@ -1,22 +1,18 @@
-from __future__ import with_statement
-
-import six
 import sys
-import traceback
 from unittest import TestCase
 
 from fudge import Fake, patched_context, with_fakes
 from fudge.patcher import with_patched_object
 from nose.tools import eq_, raises
 
-from fabric.state import output, env
+from fabric.state import output
 from fabric.utils import warn, indent, abort, puts, fastprint, error, RingBuffer
 from fabric import utils  # For patching
 from fabric.api import local, quiet
 from fabric.context_managers import settings, hide
 from fabric.colors import magenta, red
-from utils import mock_streams, aborts, FabricTest, assert_contains, \
-    assert_not_contains
+from mock_streams import mock_streams
+from utils import aborts, FabricTest, assert_contains, assert_not_contains
 
 
 @mock_streams('stderr')
@@ -30,19 +26,19 @@ def test_warn():
 
 
 def test_indent():
-    for description, input, output in (
+    for description, input, output_str in (
         ("Sanity check: 1 line string",
             'Test', '    Test'),
         ("List of strings turns in to strings joined by \\n",
             ["Test", "Test"], '    Test\n    Test'),
     ):
         eq_.description = "indent(): %s" % description
-        yield eq_, indent(input), output
+        yield eq_, indent(input), output_str
         del eq_.description
 
 
 def test_indent_with_strip():
-    for description, input, output in (
+    for description, input, output_str in (
         ("Sanity check: 1 line string",
             indent('Test', strip=True), '    Test'),
         ("Check list of strings",
@@ -52,7 +48,7 @@ def test_indent_with_strip():
             '    Test\n    Test'),
     ):
         eq_.description = "indent(strip=True): %s" % description
-        yield eq_, input, output
+        yield eq_, input, output_str
         del eq_.description
 
 
@@ -173,7 +169,6 @@ def test_puts_without_prefix():
     puts() shouldn't prefix output with env.host_string if show_prefix is False
     """
     s = "my output"
-    h = "localhost"
     puts(s, show_prefix=False)
     eq_(sys.stdout.getvalue(), "%s" % (s + "\n"))
 

@@ -1,21 +1,15 @@
-from __future__ import with_statement
-
-import copy
-import itertools
 import os
 import re
 import six
 import socket
-import stat
-import sys
 import threading
 import time
-import types
 from functools import wraps
 from Python26SocketServer import BaseRequestHandler, ThreadingMixIn, TCPServer
 
 from fabric.operations import _sudo_prefix
-from fabric.api import env, hide
+from fabric.context_managers import hide
+from fabric.state import env
 from fabric.thread_handling import ThreadHandler
 from fabric.network import disconnect_all, ssh
 

@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import with_statement
-
 import sys
 from io import BytesIO
 
@@ -8,7 +6,7 @@ from nose.tools import eq_
 
 from fabric.io import OutputLooper
 from fabric.context_managers import hide, settings
-from utils import mock_streams
+from mock_streams import mock_streams
 
 
 def test_request_prompts():

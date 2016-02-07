@@ -1,18 +1,12 @@
-from __future__ import with_statement
-
-from datetime import datetime
-import copy
-import getpass
 import sys
 
-from nose.tools import with_setup, ok_, raises
-from fudge import (Fake, clear_calls, clear_expectations, patch_object, verify,
-    with_patched_object, patched_context, with_fakes)
+from nose.tools import ok_
+from fudge import (Fake, patch_object, with_patched_object, patched_context,
+                   with_fakes)
 
 from fabric.context_managers import settings, hide, show
 from fabric.network import (HostConnectionCache, join_host_strings, normalize,
     denormalize, key_filenames, ssh)
-from fabric.io import output_loop
 import fabric.network  # So I can call patch_object correctly. Sigh.
 from fabric.state import env, output, _get_system_username
 from fabric.operations import run, sudo, prompt
@@ -20,8 +14,10 @@ from fabric.tasks import execute
 from fabric.api import parallel
 from fabric import utils # for patching
 
-from utils import *
-from server import (server, PORT, RESPONSES, PASSWORDS, CLIENT_PRIVKEY, USER,
+from mock_streams import mock_streams
+from utils import (FabricTest, eq_, password_response, aborts, support, patched_input,
+                   assert_contains)
+from server import (server, RESPONSES, PASSWORDS, CLIENT_PRIVKEY, USER,
     CLIENT_PRIVKEY_PASSPHRASE)
 
 

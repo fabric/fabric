@@ -1,5 +1,3 @@
-from __future__ import with_statement
-
 import os
 import six
 import sys
@@ -10,7 +8,8 @@ from fabric.state import env, output
 from fabric.context_managers import (cd, settings, lcd, hide, shell_env, quiet,
     warn_only, prefix, path)
 from fabric.operations import run, local, _prefix_commands
-from utils import mock_streams, FabricTest
+from mock_streams import mock_streams
+from utils import FabricTest
 from server import server
 
 
