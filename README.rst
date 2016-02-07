@@ -71,7 +71,10 @@ noted here:
 ChangeLog
 ---------
 
-1.10.2.post2
+1.10.2.post3 (2016-02-07)
+   * Cleanup imports in test suite.
+
+1.10.2.post2 (2016-01-31)
    * Identify as Fabric3 on the command-line (#4).
    * Fix UnicodeDecodeError when receiving remote data (#5).
    * Require paramiko 1.16.0.
