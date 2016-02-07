@@ -3,7 +3,6 @@ Useful non-core functionality, e.g. functions composing multiple operations.
 """
 from os import getcwd, sep
 import os.path
-from datetime import datetime
 from tempfile import mkdtemp
 
 from fabric.network import needs_host, key_filenames, normalize

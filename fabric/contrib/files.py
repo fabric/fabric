@@ -3,15 +3,16 @@ Module providing easy API for working with remote files and folders.
 """
 
 import hashlib
-import tempfile
 import re
 import os
 import six
 
 from functools import partial
 
-from fabric.api import *
-from fabric.utils import apply_lcwd
+from fabric.context_managers import hide, settings
+from fabric.operations import put, run, sudo
+from fabric.state import env
+from fabric.utils import abort, apply_lcwd
 
 
 def exists(path, use_sudo=False, verbose=False):

@@ -12,7 +12,7 @@ import socket
 import sys
 
 from fabric.auth import get_password, set_password
-from fabric.utils import abort, handle_prompt_abort, warn
+from fabric.utils import handle_prompt_abort, warn
 from fabric.exceptions import NetworkError
 
 try:
