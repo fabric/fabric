@@ -22,7 +22,7 @@ To find out what's new in this version of Fabric, please see `the changelog
 For more information, please see the Fabric website or execute ``fab --help``.
 """
 
-install_requires=['paramiko>=1.15.3', 'six>=1.10.0']
+install_requires=['paramiko>=1.16.0', 'six>=1.10.0']
 
 
 setup(
