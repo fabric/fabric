@@ -117,6 +117,7 @@ class OutputLooper(object):
                     self._flush(self.prefix)
                     self._flush("".join(line))
                 break
+
             # A None capture variable implies that we're in open_shell()
             if self.capture is None:
                 # Just print directly -- no prefixes, no capturing, nada
