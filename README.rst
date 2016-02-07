@@ -67,7 +67,7 @@ noted here:
   that it was removed with good reason, we do not encourage you use it.
 * Fabric3 requires the `six` library for compatability.
 * Minimum requirements for paramiko have been bumped to 1.16.0.
-* There is one known issue in the test-suite (#6) that should be fixed by
+* There is one known issue in the test-suite (see #6) that should be fixed by
   paramiko 1.16.1.
 
 ChangeLog
