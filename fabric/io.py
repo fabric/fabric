@@ -5,13 +5,13 @@ import time
 import re
 import socket
 import six
+from collections import deque
 from select import select
 
 from fabric.state import env, output, win32
 from fabric.auth import get_password, set_password
 import fabric.network
 from fabric.network import ssh, normalize
-from fabric.utils import RingBuffer
 from fabric.exceptions import CommandTimeout
 
 
@@ -48,7 +48,7 @@ class OutputLooper(object):
         self.linewise = (env.linewise or env.parallel)
         self.reprompt = False
         self.read_size = 4096
-        self.write_buffer = RingBuffer([], maxlen=len(self.prefix))
+        self.write_buffer = deque(maxlen=len(self.prefix))
 
     def _flush(self, text):
         self.stream.write(text)
