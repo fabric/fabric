@@ -60,11 +60,11 @@ noted here:
   with Python2.7 and Python 3.4+.
 * Versioning is based on upstream Fabric releases, with a `postX` appended. So
   version "1.10.2.post2" is equivalent to Fabrics own "1.10.2" release.
-* `fabric.utils.RingBuffer` is removed, use `collections.deque` from the
+* ``fabric.utils.RingBuffer`` is removed, use ``collections.deque`` from the
   standard library instead.
-* In Python3, Fabric3 implements its own version of `contextlib.nested` based on
-  `contextlib.ExitStack`, since it's no longer available in Python3. Please note
-  that it was removed with good reason, we do not encourage you use it.
+* In Python3, Fabric3 implements its own version of ``contextlib.nested`` based
+  on ``contextlib.ExitStack``, since it's no longer available in Python3. Please
+  note that it was removed with good reason, we do not encourage you use it.
 * Fabric3 requires the `six` library for compatability.
 * Minimum requirements for paramiko have been bumped to 1.16.0.
 * There is one known issue in the test-suite (see #6) that should be fixed by
@@ -76,8 +76,8 @@ ChangeLog
 1.10.2.post3 (not yet released)
    * Cleanup imports in main code base and test suite.
    * Add Python 2/3/3.5 classifiers in setup.py.
-   * Remove `fabric.utils.RingBuffer` with `collections.deque` from stdlib.
-   * Remove `with_statement` future import, it does nothing in Python 2.6+.
+   * Remove ``fabric.utils.RingBuffer`` with ``collections.deque`` from stdlib.
+   * Remove ``with_statement`` __future__ import, it does nothing in Python 2.6+.
 
 1.10.2.post2 (2016-01-31)
    * Identify as Fabric3 on the command-line (#4).
