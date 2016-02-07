@@ -75,7 +75,7 @@ ChangeLog
 
 1.10.2.post3 (2016-02-07)
    * Cleanup imports in test suite.
-   * Add Python 2/3/3.5 classifiers in setup.py
+   * Add Python 2/3/3.5 classifiers in setup.py.
    * Remove `fabric.utils.RingBuffer` with `collections.deque` from stdlib.
 
 1.10.2.post2 (2016-01-31)
