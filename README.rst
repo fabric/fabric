@@ -12,7 +12,7 @@ with the upstream version of Fabric. To switch to Fabric3, simply do::
 ... and don't forget to update any requirements.txt files accordingly::
 
    # Fabric==1.10.2
-   Fabric3==1.10.2.post1
+   Fabric3==1.10.2.post2
 
 It provides a basic suite of operations for executing local or remote shell
 commands (normally or via ``sudo``) and uploading/downloading files, as well as
@@ -59,9 +59,19 @@ noted here:
 * The release installs as `Fabric3`. Despite it's name, this version is tested
   with Python2.7 and Python 3.4+.
 * Versioning is based on upstream Fabric releases, with a `postX` appended. So
-  version "1.10.2.post1" is equivalent to Fabrics own "1.10.2" release.
+  version "1.10.2.post2" is equivalent to Fabrics own "1.10.2" release.
 * In Python3, Fabric3 implements its own version of `contextlib.nested` based on
   `contextlib.ExitStack`, since it's no longer available in Python3. Please note
   that it was removed with good reason, we do not encourage you use it.
 * Fabric3 requires the `six` library for compatability.
-* Minimum requirements for paramiko have been bumped to 1.15.3.
+* Minimum requirements for paramiko have been bumped to 1.16.0.
+* There is one known issue in the test-suite (#6) that should be fixed by
+  paramiko 1.16.1.
+
+ChangeLog
+---------
+
+1.10.2.post2
+   * Identify as Fabric3 on the command-line (#4).
+   * Fix UnicodeDecodeError when receiving remote data (#5).
+   * Require paramiko 1.16.0.
