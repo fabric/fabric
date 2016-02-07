@@ -73,7 +73,7 @@ noted here:
 ChangeLog
 ---------
 
-1.10.2.post3 (2016-02-07)
+1.10.2.post3 (not yet released)
    * Cleanup imports in main code base and test suite.
    * Add Python 2/3/3.5 classifiers in setup.py.
    * Remove `fabric.utils.RingBuffer` with `collections.deque` from stdlib.
