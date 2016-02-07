@@ -73,6 +73,7 @@ ChangeLog
 
 1.10.2.post3 (2016-02-07)
    * Cleanup imports in test suite.
+   * Add Python 2/3/3.5 classifiers in setup.py
 
 1.10.2.post2 (2016-01-31)
    * Identify as Fabric3 on the command-line (#4).
