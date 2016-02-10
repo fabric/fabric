@@ -3,11 +3,9 @@ from __future__ import with_statement
 import copy
 from functools import partial
 from operator import isMappingType
-import os
 import sys
-from contextlib import contextmanager
 
-from fudge import Fake, patched_context, with_fakes
+from fudge import Fake, patched_context
 from nose.tools import ok_, eq_
 
 from fabric.decorators import hosts, roles, task
@@ -16,11 +14,10 @@ from fabric.main import (parse_arguments, _escape_split,
         load_fabfile as _load_fabfile, list_commands, _task_names,
         COMMANDS_HEADER, NESTED_REMINDER)
 import fabric.state
-from fabric.state import _AttributeDict
 from fabric.tasks import Task, WrappedCallableTask
 from fabric.task_utils import _crawl, crawl, merge
 
-from utils import mock_streams, eq_, FabricTest, fabfile, path_prefix, aborts
+from utils import FabricTest, fabfile, path_prefix, aborts
 
 
 # Stupid load_fabfile wrapper to hide newly added return value.
