@@ -39,13 +39,12 @@ class Remote(Runner):
         while True:
             if self.channel.exit_status_ready():
                 return
-            # TODO: try/except KeyboardInterrupt around the sleep - necessary,
-            # but also make sure there's no open tickets about doing this
-            # better/different. (Also, see remote_interrupt)
             # TODO: where to access paramiko (for io_sleep)? here or via
             # something in Connection? (basically, how hard should Connection
             # encapsulate paramiko things?)
             time.sleep(io_sleep)
+
+    # TODO: implement Runner.send_interrupt (see v1's remote_interrupt)
 
     def returncode(self):
         return self.channel.recv_exit_status()
