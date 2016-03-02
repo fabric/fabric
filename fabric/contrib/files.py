@@ -369,8 +369,10 @@ def append(filename, text, use_sudo=False, partial=False, escape=True,
     When a list is given, each string inside is handled independently (but in
     the order given.)
 
-    If ``text`` is already found in ``filename``, the append is not run. Otherwise, the given text is appended to the
-    end of the given ``filename`` via e.g. ``echo '$text' >> $filename``.
+    If ``text`` is already found in ``filename``, the append is not run and 
+    returns immediately.
+    Otherwise, the given text is appended to the end of the given ``filename``
+    via e.g. ``echo '$text' >> $filename``.
 
     The test for whether ``text`` already exists defaults to a full line match,
     e.g. ``^<text>$``, as this seems to be the most sensible approach for the
