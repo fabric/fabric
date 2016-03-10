@@ -196,13 +196,22 @@ def sed(filename, before, after, limit='', use_sudo=False, backup='.bak',
         Added the ``shell`` keyword argument.
     """
     func = use_sudo and sudo or run
+    
+    # Test the OS because of differences between sed versions
+    with hide('running', 'stdout'):
+        platform = run("uname")
+    
+     # Characters to be escaped
+    chars = "/'()"
+    if platform != 'Linux':
+        # Characters to be escaped in replacement only (they're useful in regexen
+        # in the 'before' part)
+        for char in "()":
+            after = after.replace(char, r'\%s' % char)
+        chars = "/'"
     # Characters to be escaped in both
-    for char in "/'":
+    for char in chars:
         before = before.replace(char, r'\%s' % char)
-        after = after.replace(char, r'\%s' % char)
-    # Characters to be escaped in replacement only (they're useful in regexen
-    # in the 'before' part)
-    for char in "()":
         after = after.replace(char, r'\%s' % char)
     if limit:
         limit = r'/%s/ ' % limit
@@ -211,10 +220,7 @@ def sed(filename, before, after, limit='', use_sudo=False, backup='.bak',
         'filename': _expand_path(filename),
         'backup': backup
     }
-    # Test the OS because of differences between sed versions
-
-    with hide('running', 'stdout'):
-        platform = run("uname")
+    
     if platform in ('NetBSD', 'OpenBSD', 'QNX'):
         # Attempt to protect against failures/collisions
         hasher = hashlib.sha1()
