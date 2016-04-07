@@ -2,6 +2,11 @@
 Changelog
 =========
 
+* :bug:`1389 major` Gently overhaul SSH port derivation so it's less
+  surprising; previously, any non-default value stored in ``env.port`` was
+  overriding all SSH-config derived values. See the API docs for
+  `~fabric.network.normalize` for details on how it now behaves. Thanks to
+  Harry Weppner for catch & patch.
 * :support:`1454 backported` Remove use of ``:option:`` directives in the
   changelog, it's currently broken in modern Sphinx & doesn't seem to have
   actually functioned on Renaissance-era Sphinx either.
