@@ -2,6 +2,10 @@
 Changelog
 =========
 
+* :bug:`1348` (via :issue:`1361`) Fix a bug in `~fabric.operations.get` where
+  remote file paths containing Python string formatting escape codes caused an
+  exception. Thanks to ``@natecode`` for the report and Bradley Spink for the
+  fix.
 * :release:`1.10.2 <2015-06-19>`
 * :support:`1325` Clarify `~fabric.operations.put` docs re: the ``mode``
   argument. Thanks to ``@mjmare`` for the catch.
