@@ -613,7 +613,7 @@ class TestSSHConfig(FabricTest):
         """
         Global Port should NOT override nondefault env.port
         """
-        with settings(port="777"):
+        with settings(port="777", use_ssh_config=False):
             eq_(normalize("localhost")[2], "777")
 
     def test_specific_port_with_default_env(self):
