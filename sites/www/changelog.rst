@@ -2,6 +2,9 @@
 Changelog
 =========
 
+* :feature:`1271` Allow users whose fabfiles use `fabric.colors` to disable
+  colorization at runtime by specifying ``FABRIC_DISABLE_COLORS=1`` (or any
+  other non-empty value). Credit: Eric Berg.
 * :feature:`1326` Make `~fabric.contrib.project.rsync_project` aware of
   ``env.gateway``, using a ``ProxyCommand`` under the hood. Credit: David
   Rasch.
