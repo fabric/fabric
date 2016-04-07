@@ -360,6 +360,11 @@ verbatim into Paramiko's ``Client.connect`` method, and control
 Kerberos/GSS-API behavior. For details, see Paramiko's docs: `GSS-API
 authentication <http://docs.paramiko.org/en/latest/api/ssh_gss.html>`_, `GSS-API key exchange <http://docs.paramiko.org/en/latest/api/kex_gss.html>`_.
 
+.. note::
+    This functionality requires Paramiko ``1.15`` or above! You will get
+    ``TypeError`` about unexpected keyword arguments with Paramiko ``1.14`` or
+    earlier, as it lacks Kerberos support.
+
 .. versionadded:: 1.11
 .. seealso:: :option:`--gss-auth`, :option:`--gss-deleg`, :option:`--gss-kex`
 

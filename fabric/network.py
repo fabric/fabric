@@ -457,8 +457,9 @@ def connect(user, host, port, cache, seek_gateway=True):
             if seek_gateway:
                 sock = get_gateway(host, port, cache, replace=tries > 0)
 
-            # Ready to connect
-            client.connect(
+            # Set up kwargs (this lets us skip GSS-API kwargs unless explicitly
+            # set; otherwise older Paramiko versions will be cranky.)
+            kwargs = dict(
                 hostname=host,
                 port=int(port),
                 username=user,
@@ -469,11 +470,15 @@ def connect(user, host, port, cache, seek_gateway=True):
                 allow_agent=not env.no_agent,
                 look_for_keys=not env.no_keys,
                 sock=sock,
-                gss_auth=env.gss_auth,
-                gss_deleg_creds=env.gss_deleg,
-                gss_kex=env.gss_kex,
-                gss_host=host,
             )
+            for suffix in ('auth', 'deleg_creds', 'kex'):
+                name = 'gss_{0}'.format(suffix)
+                val = env.get(name, None)
+                if val is not None:
+                    kwargs[name] = val
+
+            # Ready to connect
+            client.connect(**kwargs)
             connected = True
 
             # set a keepalive if desired
