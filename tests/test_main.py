@@ -462,7 +462,9 @@ class TestNamespaces(FabricTest):
             ok_("bar" in funcs)
 
     def test_exception_exclusion(self):
-        """ Exception subclasses should not be considered as tasks """
+        """
+        Exception subclasses should not be considered as tasks
+        """
         exceptions = fabfile("exceptions_fabfile.py")
         with path_prefix(exceptions):
             docs, funcs = load_fabfile(exceptions)
