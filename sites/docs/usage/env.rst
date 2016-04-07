@@ -348,6 +348,20 @@ traffic through the remote SSH daemon to the final destination.
 
 .. seealso:: :option:`--gateway <-g>`
 
+.. _kerberos:
+
+``gss_(auth|deleg|kex)``
+------------------------
+
+**Default:** ``False`` for all.
+
+These three options (``gss_auth``, ``gss_deleg``, and ``gss_kex``) are passed
+verbatim into Paramiko's ``Client.connect`` method, and control
+Kerberos/GSS-API behavior. For details, see Paramiko's docs: `GSS-API
+authentication <http://docs.paramiko.org/en/latest/api/ssh_gss.html>`_, `GSS-API key exchange <http://docs.paramiko.org/en/latest/api/kex_gss.html>`_.
+
+.. versionadded:: 1.11
+.. seealso:: :option:`--gss-auth`, :option:`--gss-deleg`, :option:`--gss-kex`
 
 .. _host_string:
 
@@ -406,7 +420,7 @@ The global host list used when composing per-task host lists.
 **Default:** ``0`` (i.e. no keepalive)
 
 An integer specifying an SSH keepalive interval to use; basically maps to the
-SSH config option ``ClientAliveInterval``. Useful if you find connections are
+SSH config option ``ServerAliveInterval``. Useful if you find connections are
 timing out due to meddlesome network hardware or what have you.
 
 .. seealso:: :option:`--keepalive`

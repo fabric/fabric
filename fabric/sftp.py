@@ -12,6 +12,9 @@ from fabric.utils import warn
 from fabric.context_managers import settings
 
 
+# TODO: use self.sftp.listdir_iter on Paramiko 1.15+
+
+
 def _format_local(local_path, local_is_path):
     """Format a path for log output"""
     if local_is_path:
@@ -127,9 +130,10 @@ class SFTP(object):
         }
 
         if local_is_path:
-            # Naive fix to issue #711
-            escaped_path = re.sub(r'(%[^()]*\w)', r'%\1', local_path)
-            local_path = os.path.abspath(escaped_path % path_vars )
+            # Fix for issue #711 and #1348 - escape %'s as well as possible.
+            format_re = r'(%%(?!\((?:%s)\)\w))' % '|'.join(path_vars.keys())
+            escaped_path = re.sub(format_re, r'%\1', local_path)
+            local_path = os.path.abspath(escaped_path % path_vars)
 
             # Ensure we give ssh.SFTPCLient a file by prepending and/or
             # creating local directories as appropriate.

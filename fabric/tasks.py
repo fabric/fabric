@@ -177,7 +177,10 @@ class WrappedCallableTask(Task):
         return getattr(self.wrapped, k)
 
     def __details__(self):
-        return get_task_details(self.wrapped)
+        orig = self
+        while 'wrapped' in orig.__dict__:
+            orig = orig.__dict__.get('wrapped')
+        return get_task_details(orig)
 
 
 def requires_parallel(task):

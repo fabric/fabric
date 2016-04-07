@@ -76,3 +76,14 @@ backwards-compatible) as more use-cases are solved and added.
     :glob:
 
     api/contrib/*
+
+
+Contributing & Running Tests
+----------------------------
+
+For advanced users & developers looking to help fix bugs or add new features.
+
+.. toctree::
+    :hidden:
+
+    running_tests
