@@ -157,24 +157,23 @@ below.
 
 .. cmdoption:: --gss-auth
 
-    Toggles use of `Paramiko's support for GSS-API authentication
-    <http://docs.paramiko.org/en/latest/api/ssh_gss.html>`_.
+    Toggles use of GSS-API authentication.
 
+    .. seealso:: :ref:`kerberos`
     .. versionadded:: 1.11
 
 .. cmdoption:: --gss-deleg
 
-    Toggles whether GSS-API client credentials are delegated. (See `Paramiko's
-    GSS-API docs <http://docs.paramiko.org/en/latest/api/ssh_gss.html>`_ for
-    details.)
+    Toggles whether GSS-API client credentials are delegated.
 
+    .. seealso:: :ref:`kerberos`
     .. versionadded:: 1.11
 
 .. cmdoption:: --gss-kex
 
-    Toggles whether GSS-API key exchange is used. (See `Paramiko's docs
-    <http://docs.paramiko.org/en/latest/api/kex_gss.html>`_ for details.)
+    Toggles whether GSS-API key exchange is used.
 
+    .. seealso:: :ref:`kerberos`
     .. versionadded:: 1.11
 
 .. cmdoption:: -h, --help

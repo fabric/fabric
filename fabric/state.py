@@ -342,6 +342,9 @@ env = _AttributeDict({
     'effective_roles': [],
     'exclude_hosts': [],
     'gateway': None,
+    'gss_auth': False,
+    'gss_deleg': False,
+    'gss_kex': False,
     'host': None,
     'host_string': None,
     'lcwd': '',  # Must be empty string, not None, for concatenation purposes

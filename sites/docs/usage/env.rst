@@ -348,6 +348,20 @@ traffic through the remote SSH daemon to the final destination.
 
 .. seealso:: :option:`--gateway <-g>`
 
+.. _kerberos:
+
+``gss_(auth|deleg|kex)``
+------------------------
+
+**Default:** ``False`` for all.
+
+These three options (``gss_auth``, ``gss_deleg``, and ``gss_kex``) are passed
+verbatim into Paramiko's ``Client.connect`` method, and control
+Kerberos/GSS-API behavior. For details, see Paramiko's docs: `GSS-API
+authentication <http://docs.paramiko.org/en/latest/api/ssh_gss.html>`_, `GSS-API key exchange <http://docs.paramiko.org/en/latest/api/kex_gss.html>`_.
+
+.. versionadded:: 1.11
+.. seealso:: :option:`--gss-auth`, :option:`--gss-deleg`, :option:`--gss-kex`
 
 .. _host_string:
 
