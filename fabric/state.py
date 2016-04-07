@@ -143,19 +143,19 @@ env_options = [
 
     make_option('--gss-auth',
         action='store_true',
-        default=False,
+        default=None,
         help="Use GSS-API authentication"
     ),
 
     make_option('--gss-deleg',
         action='store_true',
-        default=False,
+        default=None,
         help="Delegate GSS-API client credentials or not"
     ),
 
     make_option('--gss-kex',
         action='store_true',
-        default=False,
+        default=None,
         help="Perform GSS-API Key Exchange and user authentication"
     ),
 
@@ -342,9 +342,9 @@ env = _AttributeDict({
     'effective_roles': [],
     'exclude_hosts': [],
     'gateway': None,
-    'gss_auth': False,
-    'gss_deleg': False,
-    'gss_kex': False,
+    'gss_auth': None,
+    'gss_deleg': None,
+    'gss_kex': None,
     'host': None,
     'host_string': None,
     'lcwd': '',  # Must be empty string, not None, for concatenation purposes
