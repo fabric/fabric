@@ -52,6 +52,9 @@ def merge(hosts, roles, exclude, roledefs):
     role_hosts = []
     for role in roles:
         value = roledefs[role]
+        # Handle dict style roledefs
+        if isinstance(value, dict):
+            value = value['hosts']
         # Handle "lazy" roles (callables)
         if callable(value):
             value = value()

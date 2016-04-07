@@ -44,6 +44,10 @@ def rsync_project(
     output of that function call; thus it will return the stdout, if any, of
     the resultant ``rsync`` call.
 
+    ``rsync_project()`` uses the current Fabric connection parameters (user,
+    host, port) by default, adding them to rsync's ssh options (then mixing in
+    ``ssh_opts``, if given -- see below.)
+
     ``rsync_project()`` takes the following parameters:
 
     * ``remote_dir``: the only required parameter, this is the path to the
@@ -52,7 +56,7 @@ def rsync_project(
 
         * If ``local_dir`` ends with a trailing slash, the files will be
           dropped inside of ``remote_dir``. E.g.
-          ``rsync_project("/home/username/project", "foldername/")`` will drop
+          ``rsync_project("/home/username/project/", "foldername/")`` will drop
           the contents of ``foldername`` inside of ``/home/username/project``.
         * If ``local_dir`` does **not** end with a trailing slash (and this
           includes the default scenario, when ``local_dir`` is not specified),

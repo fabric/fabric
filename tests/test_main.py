@@ -35,7 +35,7 @@ def load_fabfile(*args, **kwargs):
 
 def test_argument_parsing():
     for args, output in [
-        # Basic 
+        # Basic
         ('abc', ('abc', [], {}, [], [], [])),
         # Arg
         ('ab:c', ('ab', ['c'], {}, [], [], [])),
@@ -94,11 +94,16 @@ def test_escaped_task_kwarg_split():
 #
 
 # Allow calling Task.get_hosts as function instead (meh.)
-def get_hosts(command, *args):
-    return WrappedCallableTask(command).get_hosts(*args)
+def get_hosts_and_effective_roles(command, *args):
+    return WrappedCallableTask(command).get_hosts_and_effective_roles(*args)
 
-def eq_hosts(command, host_list, env=None, func=set):
-    eq_(func(get_hosts(command, [], [], [], env)), func(host_list))
+def eq_hosts(command, expected_hosts, cli_hosts=None, excluded_hosts=None, env=None, func=set):
+    eq_(func(get_hosts_and_effective_roles(command, cli_hosts or [], [], excluded_hosts or [], env)[0]),
+        func(expected_hosts))
+
+def eq_effective_roles(command, expected_effective_roles, cli_roles=None, env=None, func=set):
+    eq_(func(get_hosts_and_effective_roles(command, [], cli_roles or [], [], env)[1]),
+        func(expected_effective_roles))
 
 true_eq_hosts = partial(eq_hosts, func=lambda x: x)
 
@@ -128,6 +133,27 @@ def test_roles_decorator_by_itself():
     def command():
         pass
     eq_hosts(command, ['a', 'b'], env={'roledefs': fake_roles})
+    eq_effective_roles(command, ['r1'], env={'roledefs': fake_roles})
+
+def test_roles_decorator_overrides_env_roles():
+    """
+    If @roles is used it replaces any env.roles value
+    """
+    @roles('r1')
+    def command():
+        pass
+    eq_effective_roles(command, ['r1'], env={'roledefs': fake_roles,
+                                             'roles': ['r2']})
+
+def test_cli_roles_override_decorator_roles():
+    """
+    If CLI roles are provided they replace roles defined in @roles.
+    """
+    @roles('r1')
+    def command():
+        pass
+    eq_effective_roles(command, ['r2'], cli_roles=['r2'], env={'roledefs': fake_roles})
+
 
 def test_hosts_and_roles_together():
     """
@@ -138,6 +164,7 @@ def test_hosts_and_roles_together():
     def command():
         pass
     eq_hosts(command, ['a', 'b', 'c', 'd'], env={'roledefs': fake_roles})
+    eq_effective_roles(command, ['r1', 'r2'], env={'roledefs': fake_roles})
 
 def test_host_role_merge_deduping():
     """
@@ -181,6 +208,7 @@ def test_roles_as_tuples():
     def command():
         pass
     eq_hosts(command, ['a', 'b'], env={'roledefs': tuple_roles})
+    eq_effective_roles(command, ['r1'], env={'roledefs': fake_roles})
 
 
 def test_hosts_as_tuples():
@@ -199,8 +227,7 @@ def test_hosts_decorator_overrides_env_hosts():
     @hosts('bar')
     def command():
         pass
-    eq_hosts(command, ['bar'])
-    assert 'foo' not in get_hosts(command, [], [], [], {'hosts': ['foo']})
+    eq_hosts(command, ['bar'], env={'hosts': ['foo']})
 
 def test_hosts_decorator_overrides_env_hosts_with_task_decorator_first():
     """
@@ -210,16 +237,14 @@ def test_hosts_decorator_overrides_env_hosts_with_task_decorator_first():
     @hosts('bar')
     def command():
         pass
-    eq_hosts(command, ['bar'])
-    assert 'foo' not in get_hosts(command, [], [], {'hosts': ['foo']})
+    eq_hosts(command, ['bar'], env={'hosts': ['foo']})
 
 def test_hosts_decorator_overrides_env_hosts_with_task_decorator_last():
     @hosts('bar')
     @task
     def command():
         pass
-    eq_hosts(command, ['bar'])
-    assert 'foo' not in get_hosts(command, [], [], {'hosts': ['foo']})
+    eq_hosts(command, ['bar'], env={'hosts': ['foo']})
 
 def test_hosts_stripped_env_hosts():
     """
@@ -228,7 +253,7 @@ def test_hosts_stripped_env_hosts():
     def command():
         pass
     myenv = {'hosts': [' foo ', 'bar '], 'roles': [], 'exclude_hosts': []}
-    eq_hosts(command, ['foo', 'bar'], myenv)
+    eq_hosts(command, ['foo', 'bar'], env=myenv)
 
 
 spaced_roles = {
@@ -243,7 +268,22 @@ def test_roles_stripped_env_hosts():
     @roles('r1')
     def command():
         pass
-    eq_hosts(command, ['a', 'b'], {'roledefs': spaced_roles})
+    eq_hosts(command, ['a', 'b'], env={'roledefs': spaced_roles})
+
+
+dict_roles = {
+    'r1': {'hosts': ['a', 'b']},
+    'r2': ['b', 'c'],
+}
+
+def test_hosts_in_role_dict():
+    """
+    Make sure hosts defined in env.roles are cleaned of extra spaces
+    """
+    @roles('r1')
+    def command():
+        pass
+    eq_hosts(command, ['a', 'b'], env={'roledefs': dict_roles})
 
 
 def test_hosts_decorator_expands_single_iterable():
@@ -278,14 +318,17 @@ def test_roles_decorator_expands_single_iterable():
 def dummy(): pass
 
 def test_get_hosts_excludes_cli_exclude_hosts_from_cli_hosts():
-    assert 'foo' not in get_hosts(dummy, ['foo', 'bar'], [], ['foo'])
+    eq_hosts(dummy, ['bar'], cli_hosts=['foo', 'bar'], excluded_hosts=['foo'])
 
 def test_get_hosts_excludes_cli_exclude_hosts_from_decorator_hosts():
-    assert 'foo' not in get_hosts(hosts('foo', 'bar')(dummy), [], [], ['foo'])
+    @hosts('foo', 'bar')
+    def command():
+        pass
+    eq_hosts(command, ['bar'], excluded_hosts=['foo'])
 
 def test_get_hosts_excludes_global_exclude_hosts_from_global_hosts():
     fake_env = {'hosts': ['foo', 'bar'], 'exclude_hosts': ['foo']}
-    assert 'foo' not in get_hosts(dummy, [], [], [], fake_env)
+    eq_hosts(dummy, ['bar'], env=fake_env)
 
 
 
@@ -302,7 +345,7 @@ def test_aborts_on_nonexistent_roles():
 
 def test_accepts_non_list_hosts():
     """
-     Aborts if hosts is a string, not a list
+    Coerces given host string to a one-item list
     """
     assert merge('badhosts', [], [], {}) == ['badhosts']
 
@@ -417,6 +460,16 @@ class TestNamespaces(FabricTest):
             eq_(len(funcs), 2)
             ok_("foo" in funcs)
             ok_("bar" in funcs)
+
+    def test_exception_exclusion(self):
+        """
+        Exception subclasses should not be considered as tasks
+        """
+        exceptions = fabfile("exceptions_fabfile.py")
+        with path_prefix(exceptions):
+            docs, funcs = load_fabfile(exceptions)
+            ok_("some_task" in funcs)
+            ok_("NotATask" not in funcs)
 
     def test_explicit_discovery(self):
         """

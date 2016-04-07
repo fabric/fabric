@@ -1,24 +1,17 @@
 from __future__ import with_statement
 
-import os
-import shutil
-import sys
-import types
 from contextlib import nested
 from StringIO import StringIO
 
-import unittest
-import random
-import types
-
-from nose.tools import raises, eq_, ok_
-from fudge import with_patched_object
+from nose.tools import ok_
+from fudge import with_fakes, Fake
+from fudge.inspector import arg as fudge_arg
+from paramiko.sftp_client import SFTPClient  # for patching
 
 from fabric.state import env, output
 from fabric.operations import require, prompt, _sudo_prefix, _shell_wrap, \
     _shell_escape
 from fabric.api import get, put, hide, show, cd, lcd, local, run, sudo, quiet
-from fabric.sftp import SFTP
 from fabric.exceptions import CommandTimeout
 
 from fabric.decorators import with_settings
@@ -436,6 +429,15 @@ class TestFileTransfers(FabricTest):
             # Another if-it-doesn't-error-out-it-passed test; meh.
             eq_(get('.bashrc', self.path()), [self.path('.bashrc')])
 
+    @server(files={'/top/%a/%(/%()/%(x)/%(no)s/%(host)s/%d': 'yo'})
+    def test_get_with_format_chars_on_server(self):
+        """
+        get('*') with format symbols (%) on remote paths should not break
+        """
+        remote = '*'
+        with hide('everything'):
+            get(remote, self.path())
+
     @server()
     def test_get_single_file(self):
         """
@@ -730,9 +732,64 @@ class TestFileTransfers(FabricTest):
             sftp = SFTP(env.host_string)
             eq_(sftp.glob(path), [path])
 
+    @server()
+    @with_fakes
+    def test_get_use_sudo(self):
+        """
+        get(use_sudo=True) works by copying to a temporary path, downloading it and then removing it at the end
+        """
+        # the sha1 hash is the unique filename of the file being downloaded. sha1(<filename>)
+        name = "229a29e5693876645e39de0cb0532e43ad73311a"
+        fake_run = Fake('_run_command', callable=True, expect_call=True).with_matching_args(
+            'cp -p "/etc/apache2/apache2.conf" "%s"' % name, True, True, None,
+        ).next_call().with_matching_args(
+            'chown username "%s"' % name, True, True, None,
+        ).next_call().with_matching_args(
+            'chmod 400 "%s"' % name, True, True, None,
+        ).next_call().with_matching_args(
+            'rm -f "%s"' % name, True, True, None,
+        )
+        fake_get = Fake('get', callable=True, expect_call=True).with_args(
+            name, fudge_arg.any_value())
+
+        with hide('everything'):
+            with patched_context('fabric.operations', '_run_command', fake_run):
+                with patched_context(SFTPClient, 'get', fake_get):
+                    retval = get('/etc/apache2/apache2.conf', self.path(), use_sudo=True)
+                    # check that the downloaded file has the same name as the one requested
+                    assert retval[0].endswith('apache2.conf')
+
+    @server()
+    @with_fakes
+    def test_get_use_sudo_temp_dir(self):
+        """
+        get(use_sudo=True, temp_dir="/tmp") works by copying to a /tmp/sha1_hash, downloading it and then removing it at the end
+        """
+        # the sha1 hash is the unique filename of the file being downloaded. sha1(<filename>)
+        name = "229a29e5693876645e39de0cb0532e43ad73311a"
+        fake_run = Fake('_run_command', callable=True, expect_call=True).with_matching_args(
+            'cp -p "/etc/apache2/apache2.conf" "/tmp/%s"' % name, True, True, None,
+        ).next_call().with_matching_args(
+            'chown username "/tmp/%s"' % name, True, True, None,
+        ).next_call().with_matching_args(
+            'chmod 400 "/tmp/%s"' % name, True, True, None,
+        ).next_call().with_matching_args(
+            'rm -f "/tmp/%s"' % name, True, True, None,
+        )
+        fake_get = Fake('get', callable=True, expect_call=True).with_args(
+            '/tmp/%s' % name, fudge_arg.any_value())
+
+        with hide('everything'):
+            with patched_context('fabric.operations', '_run_command', fake_run):
+                with patched_context(SFTPClient, 'get', fake_get):
+                    retval = get('/etc/apache2/apache2.conf', self.path(), use_sudo=True, temp_dir="/tmp")
+                    # check that the downloaded file has the same name as the one requested
+                    assert retval[0].endswith('apache2.conf')
+
     #
     # put()
     #
+
     @server()
     def test_put_file_to_existing_directory(self):
         """
@@ -875,9 +932,53 @@ class TestFileTransfers(FabricTest):
             get('/foo[bar].txt', local2)
         eq_contents(local2, text)
 
+    @server()
+    @with_fakes
+    def test_put_use_sudo(self):
+        """
+        put(use_sudo=True) works by uploading a the `local_path` to a temporary path and then moving it to a `remote_path`
+        """
+        # the sha1 hash is the unique filename of the file being downloaded. sha1(<filename>)
+        fake_run = Fake('_run_command', callable=True, expect_call=True).with_matching_args(
+            'mv "7c91837ec0b3570264a325df6b7ef949ee22bc56" "/foobar.txt"', True, True, None,
+        )
+        fake_put = Fake('put', callable=True, expect_call=True).with_args(fudge_arg.any_value(),
+                                                                          '7c91837ec0b3570264a325df6b7ef949ee22bc56')
+
+        local_path = self.mkfile('foobar.txt', "baz")
+        with hide('everything'):
+            with patched_context('fabric.operations', '_run_command', fake_run):
+                with patched_context(SFTPClient, 'put', fake_put):
+                    retval = put(local_path, "/", use_sudo=True)
+                    # check that the downloaded file has the same name as the one requested
+                    assert retval[0].endswith('foobar.txt')
+
+    @server()
+    @with_fakes
+    def test_put_use_sudo_temp_dir(self):
+        """
+        put(use_sudo=True, temp_dir='/tmp/') works by uploading a file to /tmp/ and then moving it to a `remote_path`
+        """
+        # the sha1 hash is the unique filename of the file being downloaded. sha1(<filename>)
+        fake_run = Fake('_run_command', callable=True, expect_call=True).with_matching_args(
+            'mv "/tmp/7c91837ec0b3570264a325df6b7ef949ee22bc56" "/foobar.txt"', True, True, None,
+        )
+        fake_put = Fake('put', callable=True, expect_call=True).with_args(fudge_arg.any_value(),
+                                                                          '/tmp/7c91837ec0b3570264a325df6b7ef949ee22bc56')
+
+        local_path = self.mkfile('foobar.txt', "baz")
+        with hide('everything'):
+            with patched_context('fabric.operations', '_run_command', fake_run):
+                with patched_context(SFTPClient, 'put', fake_put):
+                    retval = put(local_path, "/", use_sudo=True, temp_dir='/tmp/')
+                    # check that the downloaded file has the same name as the one requested
+                    assert retval[0].endswith('foobar.txt')
+
+
     #
     # Interactions with cd()
     #
+
     @server()
     def test_cd_should_apply_to_put(self):
         """

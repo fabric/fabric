@@ -10,11 +10,11 @@ import sys
 import fabric
 from fabric.tasks import WrappedCallableTask, execute, Task, get_task_details
 from fabric.main import display_command
-from fabric.api import run, env, settings, hosts, roles, hide, parallel, task
+from fabric.api import run, env, settings, hosts, roles, hide, parallel, task, runs_once, serial
 from fabric.network import from_dict
 from fabric.exceptions import NetworkError
 
-from utils import eq_, FabricTest, aborts, mock_streams
+from utils import eq_, FabricTest, aborts, mock_streams, support
 from server import server
 
 
@@ -210,6 +210,15 @@ class TestExecute(FabricTest):
         should abort if given an invalid task name
         """
         execute('thisisnotavalidtaskname')
+
+    def test_should_not_abort_if_task_name_not_found_with_skip(self):
+        """
+        should not abort if given an invalid task name
+        and skip_unknown_tasks in env
+        """
+        env.skip_unknown_tasks = True
+        execute('thisisnotavalidtaskname')
+        del env['skip_unknown_tasks']
 
     @with_fakes
     def test_should_pass_through_args_kwargs(self):
@@ -408,6 +417,50 @@ class TestExecute(FabricTest):
         mytask = MyTask()
         execute(mytask)
 
+    @server(port=2200)
+    @server(port=2201)
+    def test_nested_execution_with_explicit_ports(self):
+        """
+        nested executions should work with defined ports
+        """
+
+        def expect_host_string_port():
+            eq_(env.port, '2201')
+            return "bar"
+
+        def expect_env_port():
+            eq_(env.port, '2202')
+
+        def expect_per_host_config_port():
+            eq_(env.port, '664')
+            run = execute(expect_default_config_port, hosts=['some_host'])
+            return run['some_host']
+
+        def expect_default_config_port():
+            # uses `Host *` in ssh_config
+            eq_(env.port, '666')
+            return "bar"
+
+        def main_task():
+            eq_(env.port, '2200')
+
+            execute(expect_host_string_port, hosts=['localhost:2201'])
+
+            with settings(port='2202'):
+                execute(expect_env_port, hosts=['localhost'])
+
+            with settings(
+                use_ssh_config=True,
+                ssh_config_path=support("ssh_config")
+            ):
+                run = execute(expect_per_host_config_port, hosts='myhost')
+
+            return run['myhost']
+
+        run = execute(main_task, hosts=['localhost:2200'])
+
+        eq_(run['localhost:2200'], 'bar')
+
 
 class TestExecuteEnvInteractions(FabricTest):
     def set_network(self):
@@ -457,6 +510,9 @@ class TestExecuteEnvInteractions(FabricTest):
 
 class TestTaskDetails(unittest.TestCase):
     def test_old_style_task_with_default_args(self):
+        """
+        __details__() should print docstr for old style task methods with default args
+        """
         def task_old_style(arg1, arg2, arg3=None, arg4='yes'):
             '''Docstring'''
         details = get_task_details(task_old_style)
@@ -465,6 +521,10 @@ class TestTaskDetails(unittest.TestCase):
             details)
 
     def test_old_style_task_without_default_args(self):
+        """
+        __details__() should print docstr for old style task methods without default args
+        """
+
         def task_old_style(arg1, arg2):
             '''Docstring'''
         details = get_task_details(task_old_style)
@@ -473,6 +533,10 @@ class TestTaskDetails(unittest.TestCase):
             details)
 
     def test_old_style_task_without_args(self):
+        """
+        __details__() should print docstr for old style task methods without args
+        """
+
         def task_old_style():
             '''Docstring'''
         details = get_task_details(task_old_style)
@@ -481,14 +545,43 @@ class TestTaskDetails(unittest.TestCase):
             details)
 
     def test_decorated_task(self):
+        """
+        __details__() should print docstr for method with any number and order of decorations
+        """
+        expected = "\n".join([
+            "Docstring",
+            "Arguments: arg1",
+            ])
+
         @task
         def decorated_task(arg1):
             '''Docstring'''
-        eq_("Docstring\n"
-            "Arguments: arg1",
-            decorated_task.__details__())
+
+        actual = decorated_task.__details__()
+        eq_(expected, actual)
+
+        @runs_once
+        @task
+        def decorated_task1(arg1):
+            '''Docstring'''
+
+        actual = decorated_task1.__details__()
+        eq_(expected, actual)
+
+        @runs_once
+        @serial
+        @task
+        def decorated_task2(arg1):
+            '''Docstring'''
+
+        actual = decorated_task2.__details__()
+        eq_(expected, actual)
 
     def test_subclassed_task(self):
+        """
+        __details__() should print docstr for subclassed task methods with args
+        """
+
         class SpecificTask(Task):
             def run(self, arg1, arg2, arg3):
                 '''Docstring'''
@@ -498,6 +591,10 @@ class TestTaskDetails(unittest.TestCase):
 
     @mock_streams('stdout')
     def test_multiline_docstring_indented_correctly(self):
+        """
+        display_command() should properly indent docstr for old style task methods
+        """
+
         def mytask(arg1):
             """
             This is a multi line docstring.

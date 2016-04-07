@@ -15,7 +15,7 @@ class NetworkError(Exception):
         self.wrapped = wrapped
 
     def __str__(self):
-        return self.message
+        return self.message or ""
 
     def __repr__(self):
         return "%s(%s) => %r" % (
@@ -24,4 +24,9 @@ class NetworkError(Exception):
 
 
 class CommandTimeout(Exception):
-    pass
+    def __init__(self, timeout):
+        self.timeout = timeout
+
+        message = 'Command failed to finish in %s seconds' % (timeout)
+        self.message = message
+        super(CommandTimeout, self).__init__(message)

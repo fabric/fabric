@@ -256,6 +256,9 @@ def put(local_path=None, remote_path=None, use_sudo=False,
     """
     Upload one or more files to a remote host.
 
+    As with the OpenSSH ``sftp`` program, `.put` will overwrite pre-existing
+    remote files without requesting confirmation.
+
     `~fabric.operations.put` returns an iterable containing the absolute file
     paths of all remote files uploaded. This iterable also exhibits a
     ``.failed`` attribute containing any local file paths which failed to
@@ -295,7 +298,8 @@ def put(local_path=None, remote_path=None, use_sudo=False,
     scripts). To do this, specify ``mirror_local_mode=True``.
 
     Alternately, you may use the ``mode`` kwarg to specify an exact mode, in
-    the same vein as ``os.chmod`` or the Unix ``chmod`` command.
+    the same vein as ``os.chmod``, such as an exact octal number (``0755``) or
+    a string representing one (``"0755"``).
 
     `~fabric.operations.put` will honor `~fabric.context_managers.cd`, so
     relative values in ``remote_path`` will be prepended by the current remote
@@ -411,7 +415,7 @@ def put(local_path=None, remote_path=None, use_sudo=False,
 
 
 @needs_host
-def get(remote_path, local_path=None):
+def get(remote_path, local_path=None, use_sudo=False, temp_dir=""):
     """
     Download one or more files from a remote host.
 
@@ -444,6 +448,13 @@ def get(remote_path, local_path=None):
     * ``basename``: The filename part of the remote file path, e.g. the
       ``utils.py`` in ``src/projectname/utils.py``
     * ``path``: The full remote path, e.g. ``src/projectname/utils.py``.
+
+    While the SFTP protocol (which `get` uses) has no direct ability to download
+    files from locations not owned by the connecting user, you may specify
+    ``use_sudo=True`` to work around this. When set, this setting allows `get`
+    to copy (using sudo) the remote files to a temporary location on the remote end
+    (defaults to remote user's ``$HOME``; this may be overridden via ``temp_dir``),
+    and then download them to ``local_path``.
 
     .. note::
         When ``remote_path`` is an absolute directory path, only the inner
@@ -552,8 +563,14 @@ def get(remote_path, local_path=None):
         failed_remote_files = []
 
         try:
-            # Glob remote path
-            names = ftp.glob(remote_path)
+            # Glob remote path if it's a directory; otherwise use as-is
+            if (
+                ftp.isdir(remote_path)
+                or '*' in remote_path or '?' in remote_path
+            ):
+                names = ftp.glob(remote_path)
+            else:
+                names = [remote_path]
 
             # Handle invalid local-file-object situations
             if not local_is_path:
@@ -562,14 +579,13 @@ def get(remote_path, local_path=None):
 
             for remote_path in names:
                 if ftp.isdir(remote_path):
-                    result = ftp.get_dir(remote_path, local_path)
+                    result = ftp.get_dir(remote_path, local_path, use_sudo, temp_dir)
                     local_files.extend(result)
                 else:
                     # Perform actual get. If getting to real local file path,
                     # add result (will be true final path value) to
                     # local_files. File-like objects are omitted.
-                    result = ftp.get(remote_path, local_path, local_is_path,
-                        os.path.basename(remote_path))
+                    result = ftp.get(remote_path, local_path, use_sudo, local_is_path, os.path.basename(remote_path), temp_dir)
                     if local_is_path:
                         local_files.append(result)
 
@@ -651,8 +667,9 @@ def _prefix_commands(command, which):
     # Also place it at the front of the list, in case user is expecting another
     # prefixed command to be "in" the current working directory.
     cwd = env.cwd if which == 'remote' else env.lcwd
+    redirect = " >/dev/null" if not win32 else ''
     if cwd:
-        prefixes.insert(0, 'cd %s' % cwd)
+        prefixes.insert(0, 'cd %s%s' % (cwd, redirect))
     glue = " && "
     prefix = (glue.join(prefixes) + glue) if prefixes else ""
     return prefix + command
@@ -954,7 +971,13 @@ def run(command, shell=True, pty=True, combine_stderr=None, quiet=False,
     string via a shell interpreter, the value of which may be controlled by
     setting ``env.shell`` (defaulting to something similar to ``/bin/bash -l -c
     "<command>"``.) Any double-quote (``"``) or dollar-sign (``$``) characters
-    in ``command`` will be automatically escaped when ``shell`` is True.
+    in ``command`` will be automatically escaped when ``shell`` is True (unless
+    disabled by setting ``shell_escape=False``).
+
+    When ``shell=False``, no shell wrapping or escaping will occur. (It's
+    possible to specify ``shell=False, shell_escape=True`` if desired, which
+    will still trigger escaping of dollar signs, etc but will not wrap with a
+    shell program invocation).
 
     `run` will return the result of the remote program's stdout as a single
     (likely multiline) string. This string will exhibit ``failed`` and
@@ -1127,7 +1150,8 @@ def local(command, capture=False, shell=None):
 
     In either case, as with `~fabric.operations.run` and
     `~fabric.operations.sudo`, this return value exhibits the ``return_code``,
-    ``stderr``, ``failed`` and ``succeeded`` attributes. See `run` for details.
+    ``stderr``, ``failed``, ``succeeded``, ``command`` and ``real_command``
+    attributes. See `run` for details.
 
     `~fabric.operations.local` will honor the `~fabric.context_managers.lcd`
     context manager, allowing you to control its current working directory
@@ -1140,6 +1164,8 @@ def local(command, capture=False, shell=None):
         Now honors the `~fabric.context_managers.lcd` context manager.
     .. versionchanged:: 1.0
         Changed the default value of ``capture`` from ``True`` to ``False``.
+    .. versionadded:: 1.9
+        The return value attributes ``.command`` and ``.real_command``.
     """
     given_command = command
     # Apply cd(), path() etc
@@ -1162,12 +1188,9 @@ def local(command, capture=False, shell=None):
         err_stream = None if output.stderr else dev_null
     try:
         cmd_arg = wrapped_command if win32 else [wrapped_command]
-        if shell is not None:
-            p = subprocess.Popen(cmd_arg, shell=True, stdout=out_stream,
-                                 stderr=err_stream, executable=shell)
-        else:
-            p = subprocess.Popen(cmd_arg, shell=True, stdout=out_stream,
-                                 stderr=err_stream)
+        p = subprocess.Popen(cmd_arg, shell=True, stdout=out_stream,
+                             stderr=err_stream, executable=shell,
+                             close_fds=(not win32))
         (stdout, stderr) = p.communicate()
     finally:
         if dev_null is not None:
@@ -1175,6 +1198,8 @@ def local(command, capture=False, shell=None):
     # Handle error condition (deal with stdout being None, too)
     out = _AttributeString(stdout.strip() if stdout else "")
     err = _AttributeString(stderr.strip() if stderr else "")
+    out.command = given_command
+    out.real_command = wrapped_command
     out.failed = False
     out.return_code = p.returncode
     out.stderr = err
@@ -1188,7 +1213,7 @@ def local(command, capture=False, shell=None):
 
 
 @needs_host
-def reboot(wait=120):
+def reboot(wait=120, command='reboot'):
     """
     Reboot the remote system.
 
@@ -1225,7 +1250,7 @@ def reboot(wait=120):
         timeout=timeout,
         connection_attempts=attempts
     ):
-        sudo('reboot')
+        sudo(command)
         # Try to make sure we don't slip in before pre-reboot lockdown
         time.sleep(5)
         # This is actually an internal-ish API call, but users can simply drop

@@ -1,33 +1,38 @@
 language: python
 python:
-  - "2.5"
   - "2.6"
   - "2.7"
 install:
   # Build/test dependencies
-  - pip install -r requirements.txt --use-mirrors
+  - pip install -r requirements.txt
   # Get fab to test fab
   - pip install -e .
-  # Install third-party multiprocessing on 2.5
-  - "if [[ $TRAVIS_PYTHON_VERSION == '2.5' ]]; then pip install multiprocessing; fi"
   # Deal with issue on Travis builders re: multiprocessing.Queue :(
   - "sudo rm -rf /dev/shm && sudo ln -s /run/shm /dev/shm"
-  # Jinja2 for some tests, in a version that isn't broken on 2.5 :(
-  - 'pip install "jinja2<2.7"'
+  - "pip install jinja2"
 before_script:
   # Allow us to SSH passwordless to localhost
   - ssh-keygen -f ~/.ssh/id_rsa -N ""
   - cp ~/.ssh/{id_rsa.pub,authorized_keys}
+  # Creation of an SSH agent for testing forwarding
+  - eval $(ssh-agent)
+  - ssh-add
 script:
   # Normal tests
   - fab test
   # Integration tests
   - fab -H localhost test:"--tests\=integration"
-  # Make sure the docs build
-  - fab docs
+  # Build docs; www first without warnings so its intersphinx objects file
+  # generates. Then docs (with warnings->errors), then www again (also w/
+  # warnings on.) FUN TIMES WITH CIRCULAR DEPENDENCIES.
+  - invoke www
+  - invoke docs -o -W
+  - invoke www -c -o -W
 notifications:
   irc:
     channels: "irc.freenode.org#fabric"
+    template:
+      - "%{repository}@%{branch}: %{message} (%{build_url})"
     on_success: change
     on_failure: change
   email: false

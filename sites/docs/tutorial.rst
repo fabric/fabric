@@ -14,7 +14,7 @@ What is Fabric?
 
 As the ``README`` says:
 
-    .. include:: ../README.rst
+    .. include:: ../../README.rst
         :end-before: It provides
 
 More specifically, Fabric is:
@@ -463,6 +463,6 @@ This fabfile makes use of a large portion of Fabric's feature set:
 
 However, there's still a lot more we haven't covered here! Please make sure you
 follow the various "see also" links, and check out the documentation table of
-contents on :ref:`the main index page <documentation-index>`.
+contents on :doc:`the main index page <index>`.
 
 Thanks for reading!
