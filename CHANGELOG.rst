@@ -1,3 +1,4 @@
-The CHANGELOG is maintained in the `sites/www/changelog.rst <sites/www/changelog.rst>`_ file.
+The CHANGELOG lives in `sites/www/changelog.rst <sites/www/changelog.rst>`_.
 
-It is viewable online as HTML at `fabfile.org/changelog.html <http://www.fabfile.org/changelog.html>`_.
+An HTML version lives online at `fabfile.org/changelog.html
+<http://fabfile.org/changelog.html>`_.
