@@ -2,6 +2,9 @@
 Changelog
 =========
 
+* :feature:`1261` Expose Paramiko's Kerberos functionality as Fabric config
+  vars & command-line options. Thanks to Ramanan Sivaranjan for catch & patch,
+  and to Johannes Löthberg & Michael Bennett for additional testing.
 * :feature:`1271` Allow users whose fabfiles use `fabric.colors` to disable
   colorization at runtime by specifying ``FABRIC_DISABLE_COLORS=1`` (or any
   other non-empty value). Credit: Eric Berg.
