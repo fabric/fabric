@@ -294,7 +294,7 @@ def normalize(host_string, omit_port=False):
     * When the SSH config doesn't specify a port (at all - including a default
       ``Host *`` block), Fabric's internal setting ``env.port`` is consulted.
     * If ``env.port`` is empty, ``env.default_port`` is checked (which should
-      always be, as one would expect, port ``22``.
+      always be, as one would expect, port ``22``).
     """
     from fabric.state import env
     # Gracefully handle "empty" input by returning empty output
