@@ -556,8 +556,8 @@ Changelog
   `~fabric.contrib.project.rsync_project` bailing out due to a None port value
   when run under `@parallel <fabric.decorators.parallel>`. Thanks to Rob
   Terhaar for the report.
-* :bug:`339` Don't show imported `~fabric.colors` members in :option:`--list
-  <-l>` output.  Thanks to Nick Trew for the report.
+* :bug:`339` Don't show imported `~fabric.colors` members in ``--list``
+  output.  Thanks to Nick Trew for the report.
 * :release:`1.3.3 <2011-11-23>`
 * :release:`1.2.5 <2011-11-23>`
 * :release:`1.1.7 <2011-11-23>`
