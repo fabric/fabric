@@ -133,9 +133,9 @@ loading other fabfiles which also modify it, of course)::
         'dns': ['ns1', 'ns2']
     }
 
-Role definitions are not necessary configuration of hosts only, but could hold
-other role specific settings of your choice. This is achieved by defining the
-roles as dicts and host strings under a ``hosts`` key::
+Role definitions are not necessarily configuration of hosts only, they can
+also hold additional role specific settings of your choice. This is achieved
+by defining the roles as dicts and host strings under a ``hosts`` key::
 
     from fabric.api import env
 
@@ -666,6 +666,10 @@ rule, so Fabric provides ``env.warn_only``, a Boolean setting. It defaults to
 immediately. However, if ``env.warn_only`` is set to ``True`` at the time of
 failure -- with, say, the `~fabric.context_managers.settings` context
 manager -- Fabric will emit a warning message but continue executing.
+
+To signal a failure error from a Fabric task, use the `~fabric.utils.abort`.
+`~fabric.utils.abort` signals an error as if it had been detected by Fabric and
+follows the regular execution model for control flow.
 
 
 .. _connections:

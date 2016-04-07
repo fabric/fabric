@@ -2,6 +2,33 @@
 Changelog
 =========
 
+* :feature:`1271` Allow users whose fabfiles use `fabric.colors` to disable
+  colorization at runtime by specifying ``FABRIC_DISABLE_COLORS=1`` (or any
+  other non-empty value). Credit: Eric Berg.
+* :feature:`1326` Make `~fabric.contrib.project.rsync_project` aware of
+  ``env.gateway``, using a ``ProxyCommand`` under the hood. Credit: David
+  Rasch.
+* :support:`1359` Add a more-visible top-level ``CHANGELOG.rst`` pointing users
+  to the actual changelog stored within the Sphinx directory tree. Thanks to
+  Jonathan Vanasco for catch & patch.
+* :feature:`1388` Expose Jinja's ``keep_trailing_newline`` parameter in
+  `~fabric.contrib.files.upload_template` so users can force template renders
+  to preserve trailing newlines. Thanks to Chen Lei for the patch.
+* :bug:`1389 major` Gently overhaul SSH port derivation so it's less
+  surprising; previously, any non-default value stored in ``env.port`` was
+  overriding all SSH-config derived values. See the API docs for
+  `~fabric.network.normalize` for details on how it now behaves. Thanks to
+  Harry Weppner for catch & patch.
+* :support:`1454 backported` Remove use of ``:option:`` directives in the
+  changelog, it's currently broken in modern Sphinx & doesn't seem to have
+  actually functioned on Renaissance-era Sphinx either.
+* :bug:`1365` (via :issue:`1372`) Classic-style fabfiles (ones not using
+  ``@task``) erroneously included custom exception subclasses when collecting
+  tasks. This is now fixed thanks to ``@mattvonrocketstein``.
+* :bug:`1348` (via :issue:`1361`) Fix a bug in `~fabric.operations.get` where
+  remote file paths containing Python string formatting escape codes caused an
+  exception. Thanks to ``@natecode`` for the report and Bradley Spink for the
+  fix.
 * :release:`1.10.2 <2015-06-19>`
 * :support:`1325` Clarify `~fabric.operations.put` docs re: the ``mode``
   argument. Thanks to ``@mjmare`` for the catch.
@@ -172,7 +199,7 @@ Changelog
 * :feature:`925` Added `contrib.files.is_link <.is_link>`. Thanks to `@jtangas`
   for the patch.
 * :feature:`922` Task argument strings are now displayed when using
-  :option:`fab -d <-d>`. Thanks to Kevin Qiu for the patch.
+  ``fab -d``. Thanks to Kevin Qiu for the patch.
 * :bug:`912` Leaving ``template_dir`` un-specified when using
   `.upload_template` in Jinja mode used to cause ``'NoneType' has no attribute
   'startswith'`` errors. This has been fixed. Thanks to Erick Yellott for catch
@@ -331,9 +358,8 @@ Changelog
 * :bug:`736 major` Ensure context managers that build env vars play nice with
   ``contextlib.nested`` by deferring env var reference to entry time, not call
   time. Thanks to Matthew Tretter for catch & patch.
-* :feature:`763` Add :option:`--initial-password-prompt <-I>` to allow
-  prefilling the password cache at the start of a run. Great for sudo-powered
-  parallel runs.
+* :feature:`763` Add ``--initial-password-prompt`` to allow prefilling the
+  password cache at the start of a run. Great for sudo-powered parallel runs.
 * :feature:`665` (and #629) Update `~fabric.contrib.files.upload_template` to
   have a more useful return value, namely that of its internal
   `~fabric.operations.put` call. Thanks to Miquel Torres for the catch &
@@ -478,9 +504,9 @@ Changelog
 * :bug:`499` `contrib.files.first <fabric.contrib.files.first>` used an
   outdated function signature in its wrapped `~fabric.contrib.files.exists`
   call. This has been fixed. Thanks to Massimiliano Torromeo for catch & patch.
-* :bug:`551` :option:`--list <-l>` output now detects terminal window size
-  and truncates (or doesn't truncate) accordingly. Thanks to Horacio G. de Oro
-  for the initial pull request.
+* :bug:`551` ``--list`` output now detects terminal window size and truncates
+  (or doesn't truncate) accordingly. Thanks to Horacio G. de Oro for the
+  initial pull request.
 * :bug:`572` Parallel task aborts (as oppposed to unhandled exceptions) now
   correctly print their abort messages instead of tracebacks, and cause the
   parent process to exit with the correct (nonzero) return code. Thanks to Ian
@@ -521,19 +547,19 @@ Changelog
   `~fabric.contrib.files.append` and `~fabric.contrib.files.contains` to try
   and handle more corner cases. Thanks to Neilen Marais for the patch.
 * :support:`532` Reorganized and cleaned up the output of ``fab --help``.
-* :feature:`8` Added :option:`--skip-bad-hosts`/:ref:`env.skip_bad_hosts
+* :feature:`8` Added ``--skip-bad-hosts``/:ref:`env.skip_bad_hosts
   <skip-bad-hosts>` option to allow skipping past temporarily down/unreachable
   hosts.
-* :feature:`13` Env vars may now be set at runtime via the new :option:`--set`
+* :feature:`13` Env vars may now be set at runtime via the new ``--set``
   command-line flag.
 * :feature:`506` A new :ref:`output alias <output-aliases>`, ``commands``, has
   been added, which allows hiding remote stdout and local "running command X"
   output lines.
 * :feature:`72` SSH agent forwarding support has made it into Fabric's SSH
   library, and hooks for using it have been added (disabled by default; use
-  :option:`-A` or :ref:`env.forward_agent <forward-agent>` to enable.) Thanks
-  to Ben Davis for porting an existing Paramiko patch to `ssh` and providing
-  the necessary tweak to Fabric.
+  ``-A`` or :ref:`env.forward_agent <forward-agent>` to enable.) Thanks to Ben
+  Davis for porting an existing Paramiko patch to `ssh` and providing the
+  necessary tweak to Fabric.
 * :release:`1.3.4 <2012-01-12>`
 * :bug:`492` `@parallel <fabric.decorators.parallel>` did not automatically
   trigger :ref:`linewise output <linewise-output>`, as was intended. This has
@@ -547,8 +573,8 @@ Changelog
   `~fabric.contrib.project.rsync_project` bailing out due to a None port value
   when run under `@parallel <fabric.decorators.parallel>`. Thanks to Rob
   Terhaar for the report.
-* :bug:`339` Don't show imported `~fabric.colors` members in :option:`--list
-  <-l>` output.  Thanks to Nick Trew for the report.
+* :bug:`339` Don't show imported `~fabric.colors` members in ``--list``
+  output.  Thanks to Nick Trew for the report.
 * :release:`1.3.3 <2011-11-23>`
 * :release:`1.2.5 <2011-11-23>`
 * :release:`1.1.7 <2011-11-23>`
@@ -632,9 +658,8 @@ Changelog
   suggested solution.
 * :support:`393 backported` Fixed a typo in an example code snippet in the task
   docs.  Thanks to Hugo Garza for the catch.
-* :bug:`396` :option:`--shortlist` broke after the addition of
-  :option:`--list-format <-F>` and no longer displayed the short list format
-  correctly. This has been fixed.
+* :bug:`396` ``--shortlist`` broke after the addition of ``--list-format`` and
+  no longer displayed the short list format correctly. This has been fixed.
 * :bug:`373` Re-added missing functionality preventing :ref:`host exclusion
   <excluding-hosts>` from working correctly.
 * :bug:`303` Updated terminal size detection to correctly skip over non-tty
