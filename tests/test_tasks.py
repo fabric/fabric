@@ -424,19 +424,19 @@ class TestExecute(FabricTest):
         nested executions should work with defined ports
         """
 
-        def sub_task_one():
+        def expect_host_string_port():
             eq_(env.port, '2201')
             return "bar"
 
-        def sub_task_two():
+        def expect_env_port():
             eq_(env.port, '2202')
 
-        def sub_task_three():
+        def expect_per_host_config_port():
             eq_(env.port, '664')
-            run = execute(sub_task_four, hosts=['some_host'])
+            run = execute(expect_default_config_port, hosts=['some_host'])
             return run['some_host']
 
-        def sub_task_four():
+        def expect_default_config_port():
             # uses `Host *` in ssh_config
             eq_(env.port, '666')
             return "bar"
@@ -444,13 +444,16 @@ class TestExecute(FabricTest):
         def main_task():
             eq_(env.port, '2200')
 
-            execute(sub_task_one, hosts=['localhost:2201'])
+            execute(expect_host_string_port, hosts=['localhost:2201'])
 
             with settings(port='2202'):
-                execute(sub_task_two, hosts=['localhost'])
+                execute(expect_env_port, hosts=['localhost'])
 
-            with settings(use_ssh_config=True, ssh_config_path=support("ssh_config")):
-                run = execute(sub_task_three, hosts='myhost')
+            with settings(
+                use_ssh_config=True,
+                ssh_config_path=support("ssh_config")
+            ):
+                run = execute(expect_per_host_config_port, hosts='myhost')
 
             return run['myhost']
 
