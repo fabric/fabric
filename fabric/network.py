@@ -285,6 +285,16 @@ def normalize(host_string, omit_port=False):
     This function will process SSH config files if Fabric is configured to do
     so, and will use them to fill in some default values or swap in hostname
     aliases.
+
+    Regarding SSH port used:
+
+    * Ports explicitly given within host strings always win, no matter what.
+    * When the host string lacks a port, SSH-config driven port configurations
+      are used next.
+    * When the SSH config doesn't specify a port (at all - including a default
+      ``Host *`` block), Fabric's internal setting ``env.port`` is consulted.
+    * If ``env.port`` is empty, ``env.default_port`` is checked (which should
+      always be, as one would expect, port ``22``.
     """
     from fabric.state import env
     # Gracefully handle "empty" input by returning empty output
@@ -322,11 +332,7 @@ def normalize(host_string, omit_port=False):
     if env.use_ssh_config:
         ssh_config_port = conf.get('port', None)
 
-    # port priorities (from highest to lowest)
-    # 1. host string
-    # 2. ssh config (if enabled)
-    # 3. settings
-    # 4. default
+    # port priority order (as in docstring)
     port = r['port'] or ssh_config_port or env.port or env.default_port
 
     return user, host, port
