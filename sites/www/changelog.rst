@@ -2,6 +2,9 @@
 Changelog
 =========
 
+* :bug:`1365` (via :issue:`1372`) Classic-style fabfiles (ones not using
+  ``@task``) erroneously included custom exception subclasses when collecting
+  tasks. This is now fixed thanks to ``@mattvonrocketstein``.
 * :bug:`1348` (via :issue:`1361`) Fix a bug in `~fabric.operations.get` where
   remote file paths containing Python string formatting escape codes caused an
   exception. Thanks to ``@natecode`` for the report and Bradley Spink for the

@@ -35,7 +35,7 @@ def load_fabfile(*args, **kwargs):
 
 def test_argument_parsing():
     for args, output in [
-        # Basic 
+        # Basic
         ('abc', ('abc', [], {}, [], [], [])),
         # Arg
         ('ab:c', ('ab', ['c'], {}, [], [], [])),
@@ -460,6 +460,16 @@ class TestNamespaces(FabricTest):
             eq_(len(funcs), 2)
             ok_("foo" in funcs)
             ok_("bar" in funcs)
+
+    def test_exception_exclusion(self):
+        """
+        Exception subclasses should not be considered as tasks
+        """
+        exceptions = fabfile("exceptions_fabfile.py")
+        with path_prefix(exceptions):
+            docs, funcs = load_fabfile(exceptions)
+            ok_("some_task" in funcs)
+            ok_("NotATask" not in funcs)
 
     def test_explicit_discovery(self):
         """
