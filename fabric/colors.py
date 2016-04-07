@@ -23,10 +23,10 @@ If ``bold`` is set to ``True``, the ANSI flag for bolding will be flipped on
 for that particular invocation, which usually shows up as a bold or brighter
 version of the original color on most terminals.
 
-It is now possible to disable color printing completely by setting the environment
-variable FABRIC_DISABLE_COLORS.  The value doesn't matter as long as it is
-Pythonically True.
-
+.. versionchanged:: 1.11
+    Added support for the shell env var ``FABRIC_DISABLE_COLORS``; if this
+    variable is present and set to any non-empty value, all colorization driven
+    by this module will be skipped/disabled.
 """
 
 import os
