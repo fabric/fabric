@@ -517,8 +517,11 @@ If ``fab`` executes all commands on all hosts successfully, success (0) is retur
 
 Otherwise,
 
-* If an invalid command or option is specified, ``fab`` aborts with an exit status of 1.
-* If a connection to a host fails, ``fab`` aborts with an exit status of 1. It will not try the next host.
-* If a local or remote command fails (returns non-zero status), ``fab`` aborts with an exit status of 1. 
-  The exit status of the original command can be found in the log.
-* If a Python exception is thrown, ``fab`` aborts with an exit status of 1. 
+* If an invalid command or option is specified, ``fab`` aborts with an exit
+  status of 1.
+* If a connection to a host fails, ``fab`` aborts with an exit status of 1. It
+  will not try the next host.
+* If a local or remote command fails (returns non-zero status), ``fab`` aborts
+  with an exit status of 1. The exit status of the original command can be
+  found in the log.
+* If a Python exception is thrown, ``fab`` aborts with an exit status of 1.
