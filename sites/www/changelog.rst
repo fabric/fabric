@@ -2,6 +2,8 @@
 Changelog
 =========
 
+* :support:`1257` Add notes to the usage docs for ``fab`` regarding the
+  program's exit status. Credit: ``@koalaman``.
 * :support:`1454 backported` Remove use of ``:option:`` directives in the
   changelog, it's currently broken in modern Sphinx & doesn't seem to have
   actually functioned on Renaissance-era Sphinx either.
