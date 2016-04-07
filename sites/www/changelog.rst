@@ -2,6 +2,9 @@
 Changelog
 =========
 
+* :feature:`1388` Expose Jinja's ``keep_trailing_newline`` parameter in
+  `~fabric.contrib.files.upload_template` so users can force template renders
+  to preserve trailing newlines. Thanks to Chen Lei for the patch.
 * :bug:`1389 major` Gently overhaul SSH port derivation so it's less
   surprising; previously, any non-default value stored in ``env.port`` was
   overriding all SSH-config derived values. See the API docs for

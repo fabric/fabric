@@ -108,6 +108,8 @@ def upload_template(filename, destination, context=None, use_jinja=False,
         Added the ``backup``, ``mirror_local_mode`` and ``mode`` kwargs.
     .. versionchanged:: 1.9
         Added the ``pty`` kwarg.
+    .. versionchanged:: 1.11
+        Added the ``keep_trailing_newline`` kwarg.
     """
     func = use_sudo and sudo or run
     if pty is not None:
