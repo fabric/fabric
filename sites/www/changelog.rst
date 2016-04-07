@@ -2,6 +2,8 @@
 Changelog
 =========
 
+* :support:`1257` Add notes to the usage docs for ``fab`` regarding the
+  program's exit status. Credit: ``@koalaman``.
 * :feature:`1261` Expose Paramiko's Kerberos functionality as Fabric config
   vars & command-line options. Thanks to Ramanan Sivaranjan for catch & patch,
   and to Johannes Löthberg & Michael Bennett for additional testing.
