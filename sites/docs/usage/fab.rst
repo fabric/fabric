@@ -488,3 +488,16 @@ username, and you don't want to modify ``env.user`` in a project's fabfile
 Then, when running ``fab``, your fabfile would load up with ``env.user`` set to
 ``'ssh_user_name'``. Other users of that fabfile could do the same, allowing
 the fabfile itself to be cleanly agnostic regarding the default username.
+
+Exit status
+============
+
+If ``fab`` executes all commands on all hosts successfully, success (0) is returned.
+
+Otherwise,
+
+* If an invalid command or option is specified, ``fab`` aborts with an exit status of 1.
+* If a connection to a host fails, ``fab`` aborts with an exit status of 1. It will not try the next host.
+* If a local or remote command fails (returns non-zero status), ``fab`` aborts with an exit status of 1. 
+  The exit status of the original command can be found in the log.
+* If a Python exception is thrown, ``fab`` aborts with an exit status of 1. 
