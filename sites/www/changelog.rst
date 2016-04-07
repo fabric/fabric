@@ -2,6 +2,9 @@
 Changelog
 =========
 
+* :feature:`1326` Make `~fabric.contrib.project.rsync_project` aware of
+  ``env.gateway``, using a ``ProxyCommand`` under the hood. Credit: David
+  Rasch.
 * :support:`1359` Add a more-visible top-level ``CHANGELOG.rst`` pointing users
   to the actual changelog stored within the Sphinx directory tree. Thanks to
   Jonathan Vanasco for catch & patch.
