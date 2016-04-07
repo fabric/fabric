@@ -256,6 +256,9 @@ def put(local_path=None, remote_path=None, use_sudo=False,
     """
     Upload one or more files to a remote host.
 
+    As with the OpenSSH ``sftp`` program, `.put` will overwrite pre-existing
+    remote files without requesting confirmation.
+
     `~fabric.operations.put` returns an iterable containing the absolute file
     paths of all remote files uploaded. This iterable also exhibits a
     ``.failed`` attribute containing any local file paths which failed to
@@ -968,7 +971,13 @@ def run(command, shell=True, pty=True, combine_stderr=None, quiet=False,
     string via a shell interpreter, the value of which may be controlled by
     setting ``env.shell`` (defaulting to something similar to ``/bin/bash -l -c
     "<command>"``.) Any double-quote (``"``) or dollar-sign (``$``) characters
-    in ``command`` will be automatically escaped when ``shell`` is True.
+    in ``command`` will be automatically escaped when ``shell`` is True (unless
+    disabled by setting ``shell_escape=False``).
+
+    When ``shell=False``, no shell wrapping or escaping will occur. (It's
+    possible to specify ``shell=False, shell_escape=True`` if desired, which
+    will still trigger escaping of dollar signs, etc but will not wrap with a
+    shell program invocation).
 
     `run` will return the result of the remote program's stdout as a single
     (likely multiline) string. This string will exhibit ``failed`` and
