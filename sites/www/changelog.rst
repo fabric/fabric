@@ -2,6 +2,9 @@
 Changelog
 =========
 
+* :support:`1454 backported` Remove use of ``:option:`` directives in the
+  changelog, it's currently broken in modern Sphinx & doesn't seem to have
+  actually functioned on Renaissance-era Sphinx either.
 * :bug:`1365` (via :issue:`1372`) Classic-style fabfiles (ones not using
   ``@task``) erroneously included custom exception subclasses when collecting
   tasks. This is now fixed thanks to ``@mattvonrocketstein``.
