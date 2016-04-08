@@ -2,6 +2,9 @@
 Changelog
 =========
 
+* :feature:`932` Add a ``temp_dir`` kwarg to
+  `~fabric.contrib.files.upload_template` which is passed into its inner
+  `~fabric.operations.put` call. Thanks to ``@nburlett`` for the patch.
 * :support:`1257` Add notes to the usage docs for ``fab`` regarding the
   program's exit status. Credit: ``@koalaman``.
 * :feature:`1261` Expose Paramiko's Kerberos functionality as Fabric config
