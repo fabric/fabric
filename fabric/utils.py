@@ -7,13 +7,35 @@ import sys
 import textwrap
 from traceback import format_exc
 
+
+def _encode(msg, stream):
+    if isinstance(msg, unicode) and hasattr(stream, 'encoding') and not stream.encoding is None:
+        return msg.encode(stream.encoding)
+    else:
+        return str(msg)
+
+
+def isatty(stream):
+    """Check if a stream is a tty.
+
+    Not all file-like objects implement the `isatty` method.
+    """
+    fn = getattr(stream, 'isatty', None)
+    if fn is None:
+        return False
+    return fn()
+
+
 def abort(msg):
     """
     Abort execution, print ``msg`` to stderr and exit with error status (1.)
 
-    This function currently makes use of `sys.exit`_, which raises
-    `SystemExit`_. Therefore, it's possible to detect and recover from inner
-    calls to `abort` by using ``except SystemExit`` or similar.
+    This function currently makes use of `SystemExit`_ in a manner that is
+    similar to `sys.exit`_ (but which skips the automatic printing to stderr,
+    allowing us to more tightly control it via settings).
+
+    Therefore, it's possible to detect and recover from inner calls to `abort`
+    by using ``except SystemExit`` or similar.
 
     .. _sys.exit: http://docs.python.org/library/sys.html#sys.exit
     .. _SystemExit: http://docs.python.org/library/exceptions.html#exceptions.SystemExit
@@ -25,13 +47,19 @@ def abort(msg):
         from colors import red
 
     if output.aborts:
-        sys.stderr.write(red("\nFatal error: %s\n" % str(msg)))
+        sys.stderr.write(red("\nFatal error: %s\n" % _encode(msg, sys.stderr)))
         sys.stderr.write(red("\nAborting.\n"))
 
     if env.abort_exception:
         raise env.abort_exception(msg)
     else:
-        sys.exit(1)
+        # See issue #1318 for details on the below; it lets us construct a
+        # valid, useful SystemExit while sidestepping the automatic stderr
+        # print (which would otherwise duplicate with the above in a
+        # non-controllable fashion).
+        e = SystemExit(1)
+        e.message = msg
+        raise e
 
 
 def warn(msg):
@@ -51,6 +79,7 @@ def warn(msg):
         from colors import magenta
 
     if output.warnings:
+        msg = _encode(msg, sys.stderr)
         sys.stderr.write(magenta("\nWarning: %s\n\n" % msg))
 
 
@@ -110,7 +139,7 @@ def puts(text, show_prefix=None, end="\n", flush=False):
         prefix = ""
         if env.host_string and show_prefix:
             prefix = "[%s] " % env.host_string
-        sys.stdout.write(prefix + str(text) + end)
+        sys.stdout.write(prefix + _encode(text, sys.stdout) + end)
         if flush:
             sys.stdout.flush()
 
@@ -265,7 +294,7 @@ def _pty_size():
 
     default_rows, default_cols = 24, 80
     rows, cols = default_rows, default_cols
-    if not win32 and sys.stdout.isatty():
+    if not win32 and isatty(sys.stdout):
         # We want two short unsigned integers (rows, cols)
         fmt = 'HH'
         # Create an empty (zeroed) buffer for ioctl to map onto. Yay for C!
@@ -305,9 +334,11 @@ def error(message, func=None, exception=None, stdout=None, stderr=None):
     import fabric.state
     if func is None:
         func = fabric.state.env.warn_only and warn or abort
-    # If debug printing is on, append a traceback to the message
-    if fabric.state.output.debug:
-        message += "\n\n" + format_exc()
+    # If exception printing is on, append a traceback to the message
+    if fabric.state.output.exceptions or fabric.state.output.debug:
+        exception_message = format_exc()
+        if exception_message:
+            message += "\n\n" + exception_message
     # Otherwise, if we were given an exception, append its contents.
     elif exception is not None:
         # Figure out how to get a string out of the exception; EnvironmentError

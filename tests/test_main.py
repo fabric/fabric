@@ -35,7 +35,7 @@ def load_fabfile(*args, **kwargs):
 
 def test_argument_parsing():
     for args, output in [
-        # Basic 
+        # Basic
         ('abc', ('abc', [], {}, [], [], [])),
         # Arg
         ('ab:c', ('ab', ['c'], {}, [], [], [])),
@@ -271,6 +271,21 @@ def test_roles_stripped_env_hosts():
     eq_hosts(command, ['a', 'b'], env={'roledefs': spaced_roles})
 
 
+dict_roles = {
+    'r1': {'hosts': ['a', 'b']},
+    'r2': ['b', 'c'],
+}
+
+def test_hosts_in_role_dict():
+    """
+    Make sure hosts defined in env.roles are cleaned of extra spaces
+    """
+    @roles('r1')
+    def command():
+        pass
+    eq_hosts(command, ['a', 'b'], env={'roledefs': dict_roles})
+
+
 def test_hosts_decorator_expands_single_iterable():
     """
     @hosts(iterable) should behave like @hosts(*iterable)
@@ -445,6 +460,16 @@ class TestNamespaces(FabricTest):
             eq_(len(funcs), 2)
             ok_("foo" in funcs)
             ok_("bar" in funcs)
+
+    def test_exception_exclusion(self):
+        """
+        Exception subclasses should not be considered as tasks
+        """
+        exceptions = fabfile("exceptions_fabfile.py")
+        with path_prefix(exceptions):
+            docs, funcs = load_fabfile(exceptions)
+            ok_("some_task" in funcs)
+            ok_("NotATask" not in funcs)
 
     def test_explicit_discovery(self):
         """

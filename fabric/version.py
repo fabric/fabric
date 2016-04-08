@@ -9,7 +9,7 @@ from subprocess import Popen, PIPE
 from os.path import abspath, dirname
 
 
-VERSION = (1, 9, 0, 'final', 0)
+VERSION = (1, 10, 2, 'final', 0)
 
 
 def git_sha():
@@ -53,8 +53,6 @@ def get_version(form='short'):
     final = (type_ == "final")
     type_num = VERSION[4]
     firsts = "".join([x[0] for x in type_.split()])
-    sha = git_sha()
-    sha1 = (" (%s)" % sha) if sha else ""
 
     # Branch
     versions['branch'] = branch
@@ -67,8 +65,6 @@ def get_version(form='short'):
         v += firsts
         if type_num:
             v += str(type_num)
-        else:
-            v += sha1
     versions['short'] = v
 
     # Normal
@@ -79,7 +75,7 @@ def get_version(form='short'):
         if type_num:
             v += " " + type_ + " " + str(type_num)
         else:
-            v += " pre-" + type_ + sha1
+            v += " pre-" + type_
     versions['normal'] = v
 
     # Verbose
@@ -90,7 +86,7 @@ def get_version(form='short'):
         if type_num:
             v += " " + type_ + " " + str(type_num)
         else:
-            v += " pre-" + type_ + sha1
+            v += " pre-" + type_
     else:
         v += " final"
     versions['verbose'] = v

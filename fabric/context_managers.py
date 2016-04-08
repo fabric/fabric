@@ -34,13 +34,13 @@ Context managers for use with the ``with`` statement.
 """
 
 from contextlib import contextmanager, nested
-import sys
 import socket
 import select
 
 from fabric.thread_handling import ThreadHandler
 from fabric.state import output, win32, connections, env
 from fabric import state
+from fabric.utils import isatty
 
 if not win32:
     import termios
@@ -51,9 +51,9 @@ def _set_output(groups, which):
     """
     Refactored subroutine used by ``hide`` and ``show``.
     """
+    previous = {}
     try:
         # Preserve original values, pull in new given value to use
-        previous = {}
         for group in output.expand_aliases(groups):
             previous[group] = output[group]
             output[group] = which
@@ -429,7 +429,7 @@ def char_buffered(pipe):
 
     Only applies on Unix-based systems; on Windows this is a no-op.
     """
-    if win32 or not pipe.isatty():
+    if win32 or not isatty(pipe):
         yield
     else:
         old_settings = termios.tcgetattr(pipe)
@@ -541,7 +541,7 @@ def remote_tunnel(remote_port, local_port=None, local_host="localhost",
             sock.connect((local_host, local_port))
         except Exception, e:
             print "[%s] rtunnel: cannot connect to %s:%d (from local)" % (env.host_string, local_host, local_port)
-            chan.close()
+            channel.close()
             return
 
         print "[%s] rtunnel: opened reverse tunnel: %r -> %r -> %r"\
@@ -563,7 +563,6 @@ def remote_tunnel(remote_port, local_port=None, local_host="localhost",
             th.thread.join()
             th.raise_if_needed()
         transport.cancel_port_forward(remote_bind_address, remote_port)
-
 
 
 quiet = lambda: settings(hide('everything'), warn_only=True)

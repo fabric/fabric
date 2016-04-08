@@ -155,6 +155,27 @@ below.
 
     .. versionadded:: 1.5
 
+.. cmdoption:: --gss-auth
+
+    Toggles use of GSS-API authentication.
+
+    .. seealso:: :ref:`kerberos`
+    .. versionadded:: 1.11
+
+.. cmdoption:: --gss-deleg
+
+    Toggles whether GSS-API client credentials are delegated.
+
+    .. seealso:: :ref:`kerberos`
+    .. versionadded:: 1.11
+
+.. cmdoption:: --gss-kex
+
+    Toggles whether GSS-API key exchange is used.
+
+    .. seealso:: :ref:`kerberos`
+    .. versionadded:: 1.11
+
 .. cmdoption:: -h, --help
 
     Displays a standard help message, with all possible options and a brief
@@ -320,6 +341,14 @@ below.
 
     .. versionadded:: 1.4
 
+.. cmdoption:: --skip-unknown-tasks
+
+    Sets :ref:`env.skip_unknown_tasks <skip-unknown-tasks>`, causing Fabric to skip
+    unknown tasks.
+
+    .. seealso::
+        :ref:`env.skip_unknown_tasks <skip-unknown-tasks>`
+
 .. cmdoption:: --timeout=N, -t N
 
     Set connection timeout in seconds. Sets :ref:`env.timeout <timeout>`.
@@ -480,3 +509,19 @@ username, and you don't want to modify ``env.user`` in a project's fabfile
 Then, when running ``fab``, your fabfile would load up with ``env.user`` set to
 ``'ssh_user_name'``. Other users of that fabfile could do the same, allowing
 the fabfile itself to be cleanly agnostic regarding the default username.
+
+Exit status
+============
+
+If ``fab`` executes all commands on all hosts successfully, success (0) is returned.
+
+Otherwise,
+
+* If an invalid command or option is specified, ``fab`` aborts with an exit
+  status of 1.
+* If a connection to a host fails, ``fab`` aborts with an exit status of 1. It
+  will not try the next host.
+* If a local or remote command fails (returns non-zero status), ``fab`` aborts
+  with an exit status of 1. The exit status of the original command can be
+  found in the log.
+* If a Python exception is thrown, ``fab`` aborts with an exit status of 1.

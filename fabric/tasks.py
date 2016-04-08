@@ -177,7 +177,10 @@ class WrappedCallableTask(Task):
         return getattr(self.wrapped, k)
 
     def __details__(self):
-        return get_task_details(self.wrapped)
+        orig = self
+        while 'wrapped' in orig.__dict__:
+            orig = orig.__dict__.get('wrapped')
+        return get_task_details(orig)
 
 
 def requires_parallel(task):
@@ -201,6 +204,10 @@ def _parallel_tasks(commands_to_run):
         lambda x: requires_parallel(crawl(x[0], state.commands)),
         commands_to_run
     ))
+
+
+def _is_network_error_ignored():
+    return not state.env.use_exceptions_for['network'] and state.env.skip_bad_hosts
 
 
 def _execute(task, host, my_env, args, kwargs, jobs, queue, multiprocessing):
@@ -231,8 +238,7 @@ def _execute(task, host, my_env, args, kwargs, jobs, queue, multiprocessing):
             def submit(result):
                 queue.put({'name': name, 'result': result})
             try:
-                key = normalize_to_string(state.env.host_string)
-                state.connections.pop(key, "")
+                state.connections.clear()
                 submit(task.run(*args, **kwargs))
             except BaseException, e: # We really do want to capture everything
                 # SystemExit implies use of abort(), which prints its own
@@ -241,12 +247,16 @@ def _execute(task, host, my_env, args, kwargs, jobs, queue, multiprocessing):
                 # clear what host encountered the exception that will
                 # print.
                 if e.__class__ is not SystemExit:
-                    sys.stderr.write("!!! Parallel execution exception under host %r:\n" % name)
+                    if not (isinstance(e, NetworkError) and
+                            _is_network_error_ignored()):
+                        sys.stderr.write("!!! Parallel execution exception under host %r:\n" % name)
                     submit(e)
                 # Here, anything -- unexpected exceptions, or abort()
                 # driven SystemExits -- will bubble up and terminate the
                 # child process.
-                raise
+                if not (isinstance(e, NetworkError) and
+                        _is_network_error_ignored()):
+                    raise
 
         # Stuff into Process wrapper
         kwarg_dict = {
@@ -323,7 +333,12 @@ def execute(task, *args, **kwargs):
         my_env['command'] = task
         task = crawl(task, state.commands)
         if task is None:
-            abort("%r is not callable or a valid task name" % (task,))
+            msg = "%r is not callable or a valid task name" % (my_env['command'],)
+            if state.env.get('skip_unknown_tasks', False):
+                warn(msg)
+                return
+            else:
+                abort(msg)
     # Set env.command if we were given a real function or callable task obj
     else:
         dunder_name = getattr(task, '__name__', None)
@@ -397,7 +412,10 @@ def execute(task, *args, **kwargs):
             ran_jobs = jobs.run()
             for name, d in ran_jobs.iteritems():
                 if d['exit_code'] != 0:
-                    if isinstance(d['results'], BaseException):
+                    if isinstance(d['results'], NetworkError) and \
+                            _is_network_error_ignored():
+                        error(d['results'].message, func=warn, exception=d['results'].wrapped)
+                    elif isinstance(d['results'], BaseException):
                         error(err, exception=d['results'])
                     else:
                         error(err)

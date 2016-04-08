@@ -9,6 +9,7 @@ The other callables defined in this module are internal only. Anything useful
 to individuals leveraging Fabric as a library, should be kept elsewhere.
 """
 import getpass
+import inspect
 from operator import isMappingType
 from optparse import OptionParser
 import os
@@ -125,6 +126,7 @@ def is_classic_task(tup):
             callable(func)
             and (func not in _internals)
             and not name.startswith('_')
+            and not (inspect.isclass(func) and issubclass(func, Exception))
         )
     # Handle poorly behaved __eq__ implementations
     except (ValueError, TypeError):
@@ -709,7 +711,7 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
                 unknown_commands.append(tup[0])
 
         # Abort if any unknown commands were specified
-        if unknown_commands:
+        if unknown_commands and not state.env.get('skip_unknown_tasks', False):
             warn("Command(s) not found:\n%s" \
                 % indent(unknown_commands))
             show_commands(None, options.list_format, 1)

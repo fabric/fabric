@@ -9,14 +9,18 @@ aborting execution.
  
 Typical use involves creating a Python module containing one or more functions,
 then executing them via the ``fab`` command-line tool. Below is a small but
-complete "fabfile" containing a single task::
+complete "fabfile" containing a single task:
+
+.. code-block:: python
 
     from fabric.api import run
 
     def host_type():
         run('uname -s')
 
-Once a task is defined, it may be run on one or more servers, like so::
+If you save the above as ``fabfile.py`` (the default module that
+``fab`` loads), you can run the tasks defined in it on one or more
+servers, like so::
 
     $ fab -H localhost,linuxbox host_type
     [localhost] run: uname -s

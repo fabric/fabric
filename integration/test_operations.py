@@ -5,7 +5,9 @@ import os
 import posixpath
 import shutil
 
-from fabric.api import run, path, put, sudo, abort, warn_only, env, cd, local
+from fabric.api import (
+    run, path, put, sudo, abort, warn_only, env, cd, local, settings, get
+)
 from fabric.contrib.files import exists
 
 from utils import Integration
@@ -127,3 +129,58 @@ class TestOperations(Integration):
             assert exists(posixpath.dirname(uploaded[0]))
         finally:
             shutil.rmtree(localdir)
+
+    def test_agent_forwarding_functions(self):
+        # When paramiko #399 is present this will hang indefinitely
+        with settings(forward_agent=True):
+            run('ssh-add -L')
+
+    def test_get_with_use_sudo_unowned_file(self):
+        # Ensure target is not normally readable by us
+        target = self.filepath
+        sudo("echo 'nope' > %s" % target)
+        sudo("chown root:root %s" % target)
+        sudo("chmod 0440 %s" % target)
+        # Pull down with use_sudo, confirm contents
+        local_ = StringIO()
+        result = get(
+            local_path=local_,
+            remote_path=target,
+            use_sudo=True,
+        )
+        assert local_.getvalue() == "nope\n"
+
+    def test_get_with_use_sudo_groupowned_file(self):
+        # Issue #1226: file gotten w/ use_sudo, file normally readable via
+        # group perms (yes - so use_sudo not required - full use case involves
+        # full-directory get() where use_sudo *is* required). Prior to fix,
+        # temp file is chmod 404 which seems to cause perm denied due to group
+        # membership (despite 'other' readability).
+        target = self.filepath
+        sudo("echo 'nope' > %s" % target)
+        # Same group as connected user
+        gid = run("id -g")
+        sudo("chown root:%s %s" % (gid, target))
+        # Same perms as bug use case (only really need group read)
+        sudo("chmod 0640 %s" % target)
+        # Do eet
+        local_ = StringIO()
+        result = get(
+            local_path=local_,
+            remote_path=target,
+            use_sudo=True,
+        )
+        assert local_.getvalue() == "nope\n"
+
+    def test_get_from_unreadable_dir(self):
+        # Put file in dir as normal user
+        remotepath = "%s/myfile.txt" % self.dirpath
+        run("echo 'foo' > %s" % remotepath)
+        # Make dir unreadable (but still executable - impossible to obtain
+        # file if dir is both unreadable and unexecutable)
+        sudo("chown root:root %s" % self.dirpath)
+        sudo("chmod 711 %s" % self.dirpath)
+        # Try gettin' it
+        local_ = StringIO()
+        get(local_path=local_, remote_path=remotepath)
+        assert local_.getvalue() == 'foo\n'

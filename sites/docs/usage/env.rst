@@ -303,6 +303,7 @@ limits on per-process open files, or network hardware.
 Set by ``fab`` to the roles list of the currently executing command. For
 informational purposes only.
 
+.. versionadded:: 1.9
 .. seealso:: :doc:`execution`
 
 .. _exclude-hosts:
@@ -347,6 +348,25 @@ traffic through the remote SSH daemon to the final destination.
 
 .. seealso:: :option:`--gateway <-g>`
 
+.. _kerberos:
+
+``gss_(auth|deleg|kex)``
+------------------------
+
+**Default:** ``False`` for all.
+
+These three options (``gss_auth``, ``gss_deleg``, and ``gss_kex``) are passed
+verbatim into Paramiko's ``Client.connect`` method, and control
+Kerberos/GSS-API behavior. For details, see Paramiko's docs: `GSS-API
+authentication <http://docs.paramiko.org/en/latest/api/ssh_gss.html>`_, `GSS-API key exchange <http://docs.paramiko.org/en/latest/api/kex_gss.html>`_.
+
+.. note::
+    This functionality requires Paramiko ``1.15`` or above! You will get
+    ``TypeError`` about unexpected keyword arguments with Paramiko ``1.14`` or
+    earlier, as it lacks Kerberos support.
+
+.. versionadded:: 1.11
+.. seealso:: :option:`--gss-auth`, :option:`--gss-deleg`, :option:`--gss-kex`
 
 .. _host_string:
 
@@ -376,6 +396,7 @@ If ``True``, enables forwarding of your local SSH agent to the remote end.
 
 .. seealso:: :option:`--forward-agent <-A>`
 
+.. _host:
 
 ``host``
 --------
@@ -404,7 +425,7 @@ The global host list used when composing per-task host lists.
 **Default:** ``0`` (i.e. no keepalive)
 
 An integer specifying an SSH keepalive interval to use; basically maps to the
-SSH config option ``ClientAliveInterval``. Useful if you find connections are
+SSH config option ``ServerAliveInterval``. Useful if you find connections are
 timing out due to meddlesome network hardware or what have you.
 
 .. seealso:: :option:`--keepalive`
@@ -530,6 +551,11 @@ This dictionary is largely for internal use, and is filled automatically as a
 per-host-string password cache. Keys are full :ref:`host strings
 <host-strings>` and values are passwords (strings).
 
+.. warning::
+    If you modify or generate this dict manually, **you must use fully
+    qualified host strings** with user and port values. See the link above for
+    details on the host string API.
+
 .. seealso:: :ref:`password-management`
 
 .. versionadded:: 1.0
@@ -653,6 +679,8 @@ read this file before reading the user's known-hosts file.
 
 .. seealso:: :doc:`ssh`
 
+.. _roledefs:
+
 ``roledefs``
 ------------
 
@@ -700,6 +728,20 @@ If ``True``, causes ``fab`` (or non-``fab`` use of `~fabric.tasks.execute`) to s
 .. versionadded:: 1.4
 .. seealso::
     :option:`--skip-bad-hosts`, :ref:`excluding-hosts`, :doc:`execution`
+
+
+.. _skip-unknown-tasks:
+
+``skip_unknown_tasks``
+----------------------
+
+**Default:** ``False``
+
+If ``True``, causes ``fab`` (or non-``fab`` use of `~fabric.tasks.execute`)
+to skip over tasks not found, without aborting.
+
+.. seealso::
+    :option:`--skip-unknown-tasks`
 
 
 .. _ssh-config-path:
@@ -884,7 +926,6 @@ probably won't break anything either.
 **Default:** ``False``
 
 Specifies whether or not to warn, instead of abort, when
-`~fabric.operations.run`/`~fabric.operations.sudo`/`~fabric.operations.local`
-encounter error conditions.
+`~fabric.operations` encounter error conditions.
 
 .. seealso:: :option:`--warn-only <-w>`, :doc:`execution`
