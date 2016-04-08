@@ -722,7 +722,8 @@ def _prefix_env_vars(command, local=False):
 
 
 def _execute(channel, command, pty=True, combine_stderr=None,
-    invoke_shell=False, stdout=None, stderr=None, timeout=None):
+    invoke_shell=False, stdout=None, stderr=None, timeout=None,
+    save_stdout=True, save_stderr=True):
     """
     Execute ``command`` over ``channel``.
 
@@ -788,6 +789,11 @@ def _execute(channel, command, pty=True, combine_stderr=None,
         if invoke_shell:
             stdout_buf = stderr_buf = None
 
+        if not save_stdout:
+            stdout_buf = None
+        if not save_stderr:
+            stderr_buf = None
+
         workers = (
             ThreadHandler('out', output_loop, channel, "recv",
                 capture=stdout_buf, stream=stdout, timeout=timeout),
@@ -832,8 +838,9 @@ def _execute(channel, command, pty=True, combine_stderr=None,
             forward.close()
 
         # Update stdout/stderr with captured values if applicable
-        if not invoke_shell:
+        if not stdout_buf is None:
             stdout_buf = ''.join(stdout_buf).strip()
+        if not stderr_buf is None:
             stderr_buf = ''.join(stderr_buf).strip()
 
         # Tie off "loose" output by printing a newline. Helps to ensure any
@@ -889,7 +896,8 @@ def _noop():
 
 def _run_command(command, shell=True, pty=True, combine_stderr=True,
     sudo=False, user=None, quiet=False, warn_only=False, stdout=None,
-    stderr=None, group=None, timeout=None, shell_escape=None):
+    stderr=None, group=None, timeout=None, shell_escape=None,
+    save_stdout=True, save_stderr=True):
     """
     Underpinnings of `run` and `sudo`. See their docstrings for more info.
     """
@@ -925,7 +933,8 @@ def _run_command(command, shell=True, pty=True, combine_stderr=True,
         result_stdout, result_stderr, status = _execute(
             channel=default_channel(), command=wrapped_command, pty=pty,
             combine_stderr=combine_stderr, invoke_shell=False, stdout=stdout,
-            stderr=stderr, timeout=timeout)
+            stderr=stderr, timeout=timeout, save_stdout=save_stdout,
+            save_stderr=save_stderr)
 
         # Assemble output string
         out = _AttributeString(result_stdout)
@@ -963,7 +972,8 @@ def _run_command(command, shell=True, pty=True, combine_stderr=True,
 
 @needs_host
 def run(command, shell=True, pty=True, combine_stderr=None, quiet=False,
-    warn_only=False, stdout=None, stderr=None, timeout=None, shell_escape=None):
+    warn_only=False, stdout=None, stderr=None, timeout=None, shell_escape=None,
+    save_stdout=True, save_stderr=True):
     """
     Run a shell command on a remote host.
 
@@ -980,12 +990,12 @@ def run(command, shell=True, pty=True, combine_stderr=None, quiet=False,
     shell program invocation).
 
     `run` will return the result of the remote program's stdout as a single
-    (likely multiline) string. This string will exhibit ``failed`` and
-    ``succeeded`` boolean attributes specifying whether the command failed or
-    succeeded, and will also include the return code as the ``return_code``
-    attribute. Furthermore, it includes a copy of the requested & actual
-    command strings executed, as ``.command`` and ``.real_command``,
-    respectively.
+    (likely multiline) string (unless save_stdout is set to False).This string
+    will exhibit ``failed`` and ``succeeded`` boolean attributes specifying
+    whether the command failed or succeeded, and will also include the return
+    code as the ``return_code`` attribute. Furthermore, it includes a copy of
+    the requested & actual command strings executed, as ``.command`` and
+    ``.real_command``, respectively.
 
     Any text entered in your local terminal will be forwarded to the remote
     program as it runs, thus allowing you to interact with password or other
@@ -1029,12 +1039,18 @@ def run(command, shell=True, pty=True, combine_stderr=None, quiet=False,
     If you want to disable Fabric's automatic attempts at escaping quotes,
     dollar signs etc., specify ``shell_escape=False``.
 
+    If you don't want ``run()`` to buffer stdout/stderr and return them (for
+    avoiding high memory consumption when running commands that generate lots
+    of output, for example), use ``save_stdout=False`` and/or
+    ``save_stderr=False``
+
     Examples::
 
         run("ls /var/www/")
         run("ls /home/myuser", shell=False)
         output = run('ls /var/www/site1')
         run("take_a_long_time", timeout=5)
+        run("generates_lots_of_output_to_stdout", save_stdout=False)
 
     .. versionadded:: 1.0
         The ``succeeded`` and ``stderr`` return value attributes, the
@@ -1059,10 +1075,14 @@ def run(command, shell=True, pty=True, combine_stderr=None, quiet=False,
 
     .. versionadded:: 1.7
         The ``shell_escape`` argument.
+
+    .. versionadded:: 1.11.0
+        The ``save_stdout`` and ``save_stderr`` arguments.
     """
     return _run_command(command, shell, pty, combine_stderr, quiet=quiet,
         warn_only=warn_only, stdout=stdout, stderr=stderr, timeout=timeout,
-        shell_escape=shell_escape)
+        shell_escape=shell_escape, save_stdout=save_stdout,
+        save_stderr=save_stderr)
 
 
 @needs_host
