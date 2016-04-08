@@ -2,6 +2,8 @@
 Changelog
 =========
 
+* :support:`943 backported` Tweak ``env.warn_only`` docs to note that it
+  applies to all operations, not just ``run``/``sudo``. Thanks ``@akitada``.
 * :support:`1257 backported` Add notes to the usage docs for ``fab`` regarding
   the program's exit status. Credit: ``@koalaman``.
 * :support:`1454 backported` Remove use of ``:option:`` directives in the
