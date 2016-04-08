@@ -2,6 +2,8 @@
 Changelog
 =========
 
+* :feature:`1161` Add ``use_sudo`` kwarg to `~fabric.operations.reboot`.
+  Credit: Bryce Verdier.
 * :support:`943 backported` Tweak ``env.warn_only`` docs to note that it
   applies to all operations, not just ``run``/``sudo``. Thanks ``@akitada``.
 * :feature:`932` Add a ``temp_dir`` kwarg to
