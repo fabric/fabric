@@ -111,7 +111,7 @@ def upload_template(filename, destination, context=None, use_jinja=False,
     .. versionchanged:: 1.11
         Added the ``keep_trailing_newline`` kwarg.
     .. versionchanged:: 1.11
-        Added the  ``temp_dir`` kwarg
+        Added the  ``temp_dir`` kwarg.
     """
     func = use_sudo and sudo or run
     if pty is not None:
