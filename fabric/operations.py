@@ -1237,9 +1237,9 @@ def reboot(wait=120, command='reboot', use_sudo=True):
         Changed the ``wait`` kwarg to be optional, and refactored to leverage
         the new reconnection functionality; it may not actually have to wait
         for ``wait`` seconds before reconnecting.
-    .. versionchanged:: ?
+    .. versionchanged:: 1.11
         Added ``use_sudo`` as a kwarg. Maintained old functionality by setting
-        the value to True.
+        the default value to True.
     """
     # Shorter timeout for a more granular cycle than the default.
     timeout = 5
@@ -1253,10 +1253,7 @@ def reboot(wait=120, command='reboot', use_sudo=True):
         timeout=timeout,
         connection_attempts=attempts
     ):
-        if use_sudo is True:
-            sudo(command)
-        else:
-            run(command)
+        (sudo if use_sudo else run)(command)
         # Try to make sure we don't slip in before pre-reboot lockdown
         time.sleep(5)
         # This is actually an internal-ish API call, but users can simply drop
