@@ -2,11 +2,13 @@
 Changelog
 =========
 
+* :support:`943 backported` Tweak ``env.warn_only`` docs to note that it
+  applies to all operations, not just ``run``/``sudo``. Thanks ``@akitada``.
 * :feature:`932` Add a ``temp_dir`` kwarg to
   `~fabric.contrib.files.upload_template` which is passed into its inner
   `~fabric.operations.put` call. Thanks to ``@nburlett`` for the patch.
-* :support:`1257` Add notes to the usage docs for ``fab`` regarding the
-  program's exit status. Credit: ``@koalaman``.
+* :support:`1257 backported` Add notes to the usage docs for ``fab`` regarding
+  the program's exit status. Credit: ``@koalaman``.
 * :feature:`1261` Expose Paramiko's Kerberos functionality as Fabric config
   vars & command-line options. Thanks to Ramanan Sivaranjan for catch & patch,
   and to Johannes Löthberg & Michael Bennett for additional testing.

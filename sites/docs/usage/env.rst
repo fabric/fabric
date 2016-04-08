@@ -926,7 +926,6 @@ probably won't break anything either.
 **Default:** ``False``
 
 Specifies whether or not to warn, instead of abort, when
-`~fabric.operations.run`/`~fabric.operations.sudo`/`~fabric.operations.local`
-encounter error conditions.
+`~fabric.operations` encounter error conditions.
 
 .. seealso:: :option:`--warn-only <-w>`, :doc:`execution`
