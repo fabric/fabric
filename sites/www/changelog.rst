@@ -2,6 +2,11 @@
 Changelog
 =========
 
+* :release:`1.11.1 <2016-04-09>`
+* :bug:`-` Bumped version to ``1.11.1`` due to apparently accidentally
+  uploading a false ``1.11.0`` to PyPI sometime in the past (PyPI is secure &
+  prevents reusing deleted filenames.) We have no memory of this, but databases
+  don't lie!
 * :release:`1.11.0 <2016-04-09>`
 * :release:`1.10.3 <2016-04-09>`
 * :bug:`1135` (via :issue:`1241`) Modified order of operations in
