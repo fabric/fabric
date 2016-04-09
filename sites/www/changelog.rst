@@ -2,6 +2,7 @@
 Changelog
 =========
 
+* :release:`1.10.3 <2016-04-09>`
 * :support:`943 backported` Tweak ``env.warn_only`` docs to note that it
   applies to all operations, not just ``run``/``sudo``. Thanks ``@akitada``.
 * :support:`1257 backported` Add notes to the usage docs for ``fab`` regarding
