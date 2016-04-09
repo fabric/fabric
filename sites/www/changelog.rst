@@ -2,6 +2,11 @@
 Changelog
 =========
 
+* :feature:`800` Add ``capture_buffer_size`` kwarg to
+  `~fabric.operations.run`/`~fabric.operations.sudo` so users can limit memory
+  usage in situations where subprocesses generate very large amounts of
+  stdout/err. Thanks to Jordan Starcher for the report & Omri Bahumi for an
+  early version of the patchset.
 * :feature:`1161` Add ``use_sudo`` kwarg to `~fabric.operations.reboot`.
   Credit: Bryce Verdier.
 * :support:`943 backported` Tweak ``env.warn_only`` docs to note that it
