@@ -372,7 +372,7 @@ def contains(filename, text, exact=False, use_sudo=False, escape=True,
             text = "^%s$" % text
     with settings(hide('everything'), warn_only=True):
         egrep_cmd = 'egrep "%s" %s' % (text, _expand_path(filename))
-        if case_sensitive is False:
+        if not case_sensitive:
             egrep_cmd = egrep_cmd.replace('egrep', 'egrep -i', 1)
         return func(egrep_cmd, shell=shell).succeeded
 
