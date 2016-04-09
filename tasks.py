@@ -5,3 +5,9 @@ from invoke import Collection
 
 
 ns = Collection(docs, www, release=packaging)
+ns.configure({
+    'packaging': {
+        'sign': True,
+        'wheel': True,
+    },
+})
