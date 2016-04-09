@@ -362,7 +362,7 @@ def contains(filename, text, exact=False, use_sudo=False, escape=True,
         Added ``escape`` keyword argument.
     .. versionadded:: 1.6
         Added the ``shell`` keyword argument.
-    .. versionadded:: 1.10
+    .. versionadded:: 1.11
         Added the ``case_sensitive`` keyword argument.
     """
     func = use_sudo and sudo or run
