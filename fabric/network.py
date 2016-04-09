@@ -415,7 +415,7 @@ def connect(user, host, port, cache, seek_gateway=True):
         Whether to try setting up a gateway socket for this connection. Used so
         the actual gateway connection can prevent recursion.
     """
-    from state import env, output
+    from fabric.state import env, output
 
     #
     # Initialization
