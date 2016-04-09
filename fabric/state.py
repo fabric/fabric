@@ -68,7 +68,7 @@ def _rc_path():
     return expanded_rc_path
 
 default_port = '22'  # hurr durr
-default_ssh_config_path = '~/.ssh/config'
+default_ssh_config_path = os.path.join(os.path.expanduser('~'), '.ssh', 'config')
 
 # Options/settings which exist both as environment keys and which can be set on
 # the command line, are defined here. When used via `fab` they will be added to
@@ -139,6 +139,24 @@ env_options = [
         default=None,
         metavar='HOST',
         help="gateway host to connect through"
+    ),
+
+    make_option('--gss-auth',
+        action='store_true',
+        default=None,
+        help="Use GSS-API authentication"
+    ),
+
+    make_option('--gss-deleg',
+        action='store_true',
+        default=None,
+        help="Delegate GSS-API client credentials or not"
+    ),
+
+    make_option('--gss-kex',
+        action='store_true',
+        default=None,
+        help="Perform GSS-API Key Exchange and user authentication"
     ),
 
     make_option('--hide',
@@ -324,6 +342,9 @@ env = _AttributeDict({
     'effective_roles': [],
     'exclude_hosts': [],
     'gateway': None,
+    'gss_auth': None,
+    'gss_deleg': None,
+    'gss_kex': None,
     'host': None,
     'host_string': None,
     'lcwd': '',  # Must be empty string, not None, for concatenation purposes
@@ -426,10 +447,11 @@ output = _AliasDict({
     'running': True,
     'stdout': True,
     'stderr': True,
+    'exceptions': False,
     'debug': False,
     'user': True
 }, aliases={
-    'everything': ['warnings', 'running', 'user', 'output'],
+    'everything': ['warnings', 'running', 'user', 'output', 'exceptions'],
     'output': ['stdout', 'stderr'],
     'commands': ['stdout', 'running']
 })
