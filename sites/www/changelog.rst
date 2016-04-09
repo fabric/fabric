@@ -1,8 +1,10 @@
 =========
 Changelog
 =========
-* :feature:`1203` Add ``case_sensitive`` keyword argument to allow passing
-  ``-i`` flag to ``egrep``. Report by ``@xoul``, patch by ``@cmattoon``.
+
+* :feature:`1203` (via :issue:`1240`) Add a ``case_sensitive`` kwarg to
+  `~fabric.contrib.files.contains` (which toggles use of ``egrep -i``). Report
+  by ``@xoul``, patch by Curtis Mattoon.
 * :feature:`800` Add ``capture_buffer_size`` kwarg to
   `~fabric.operations.run`/`~fabric.operations.sudo` so users can limit memory
   usage in situations where subprocesses generate very large amounts of
