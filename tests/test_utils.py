@@ -1,6 +1,7 @@
 from __future__ import with_statement
 
 import sys
+import traceback
 from unittest import TestCase
 
 from fudge import Fake, patched_context, with_fakes
@@ -10,9 +11,11 @@ from nose.tools import eq_, raises
 from fabric.state import output, env
 from fabric.utils import warn, indent, abort, puts, fastprint, error, RingBuffer
 from fabric import utils  # For patching
+from fabric.api import local, quiet
 from fabric.context_managers import settings, hide
 from fabric.colors import magenta, red
-from utils import mock_streams, aborts, FabricTest, assert_contains
+from utils import mock_streams, aborts, FabricTest, assert_contains, \
+    assert_not_contains
 
 
 @mock_streams('stderr')
@@ -70,7 +73,6 @@ def test_abort_with_exception():
     with settings(abort_exception=TestException):
         abort("Test")
 
-
 @mock_streams('stderr')
 @with_patched_object(output, 'aborts', True)
 def test_abort_message():
@@ -84,6 +86,31 @@ def test_abort_message():
     result = sys.stderr.getvalue()
     eq_("\nFatal error: Test\n\nAborting.\n", result)
 
+def test_abort_message_only_printed_once():
+    """
+    abort()'s SystemExit should not cause a reprint of the error message
+    """
+    # No good way to test the implicit stderr print which sys.exit/SystemExit
+    # perform when they are allowed to bubble all the way to the top. So, we
+    # invoke a subprocess and look at its stderr instead.
+    with quiet():
+        result = local("fab -f tests/support/aborts.py kaboom", capture=True)
+    # When error in #1318 is present, this has an extra "It burns!" at end of
+    # stderr string.
+    eq_(result.stderr, "Fatal error: It burns!\n\nAborting.")
+
+@mock_streams('stderr')
+@with_patched_object(output, 'aborts', True)
+def test_abort_exception_contains_separate_message_and_code():
+    """
+    abort()'s SystemExit contains distinct .code/.message attributes.
+    """
+    # Re #1318 / #1213
+    try:
+        abort("Test")
+    except SystemExit as e:
+        eq_(e.message, "Test")
+        eq_(e.code, 1)
 
 @mock_streams('stdout')
 def test_puts_with_user_output_on():
@@ -163,6 +190,8 @@ def test_fastprint_calls_puts():
 
 
 class TestErrorHandling(FabricTest):
+    dummy_string = 'test1234!'
+
     @with_patched_object(utils, 'warn', Fake('warn', callable=True,
         expect_call=True))
     def test_error_warns_if_warn_only_True_and_func_None(self):
@@ -199,6 +228,45 @@ class TestErrorHandling(FabricTest):
         with hide('stdout'):
             error("error message", func=utils.abort, stdout=stdout)
         assert_contains(stdout, sys.stdout.getvalue())
+
+    @mock_streams('stdout')
+    @with_patched_object(utils, 'abort', Fake('abort', callable=True,
+        expect_call=True).calls(lambda x: sys.stdout.write(x + "\n")))
+    @with_patched_object(output, 'exceptions', True)
+    @with_patched_object(utils, 'format_exc', Fake('format_exc', callable=True,
+        expect_call=True).returns(dummy_string))
+    def test_includes_traceback_if_exceptions_logging_is_on(self):
+        """
+        error() includes traceback in message if exceptions logging is on
+        """
+        error("error message", func=utils.abort, stdout=error)
+        assert_contains(self.dummy_string, sys.stdout.getvalue())
+
+    @mock_streams('stdout')
+    @with_patched_object(utils, 'abort', Fake('abort', callable=True,
+        expect_call=True).calls(lambda x: sys.stdout.write(x + "\n")))
+    @with_patched_object(output, 'debug', True)
+    @with_patched_object(utils, 'format_exc', Fake('format_exc', callable=True,
+        expect_call=True).returns(dummy_string))
+    def test_includes_traceback_if_debug_logging_is_on(self):
+        """
+        error() includes traceback in message if debug logging is on (backwardis compatibility)
+        """
+        error("error message", func=utils.abort, stdout=error)
+        assert_contains(self.dummy_string, sys.stdout.getvalue())
+
+    @mock_streams('stdout')
+    @with_patched_object(utils, 'abort', Fake('abort', callable=True,
+        expect_call=True).calls(lambda x: sys.stdout.write(x + "\n")))
+    @with_patched_object(output, 'exceptions', True)
+    @with_patched_object(utils, 'format_exc', Fake('format_exc', callable=True,
+        expect_call=True).returns(None))
+    def test_doesnt_print_None_when_no_traceback_present(self):
+        """
+        error() doesn't include None in message if there is no traceback
+        """
+        error("error message", func=utils.abort, stdout=error)
+        assert_not_contains('None', sys.stdout.getvalue())
 
     @mock_streams('stderr')
     @with_patched_object(utils, 'abort', Fake('abort', callable=True,
@@ -255,3 +323,31 @@ class TestRingBuffer(TestCase):
         self.b.extend("abcde")
         self.b.extend("fgh")
         eq_(self.b, ['d', 'e', 'f', 'g', 'h'])
+
+    def test_plus_equals(self):
+        self.b += "abcdefgh"
+        eq_(self.b, ['d', 'e', 'f', 'g', 'h'])
+
+    def test_oversized_extend(self):
+        self.b.extend("abcdefghijklmn")
+        eq_(self.b, ['j', 'k', 'l', 'm', 'n'])
+
+    def test_zero_maxlen_append(self):
+        b = RingBuffer([], maxlen=0)
+        b.append('a')
+        eq_(b, [])
+
+    def test_zero_maxlen_extend(self):
+        b = RingBuffer([], maxlen=0)
+        b.extend('abcdefghijklmnop')
+        eq_(b, [])
+
+    def test_None_maxlen_append(self):
+        b = RingBuffer([], maxlen=None)
+        b.append('a')
+        eq_(b, ['a'])
+
+    def test_None_maxlen_extend(self):
+        b = RingBuffer([], maxlen=None)
+        b.extend('abcdefghijklmnop')
+        eq_(''.join(b), 'abcdefghijklmnop')

@@ -30,9 +30,12 @@ def abort(msg):
     """
     Abort execution, print ``msg`` to stderr and exit with error status (1.)
 
-    This function currently makes use of `sys.exit`_, which raises
-    `SystemExit`_. Therefore, it's possible to detect and recover from inner
-    calls to `abort` by using ``except SystemExit`` or similar.
+    This function currently makes use of `SystemExit`_ in a manner that is
+    similar to `sys.exit`_ (but which skips the automatic printing to stderr,
+    allowing us to more tightly control it via settings).
+
+    Therefore, it's possible to detect and recover from inner calls to `abort`
+    by using ``except SystemExit`` or similar.
 
     .. _sys.exit: http://docs.python.org/library/sys.html#sys.exit
     .. _SystemExit: http://docs.python.org/library/exceptions.html#exceptions.SystemExit
@@ -50,7 +53,13 @@ def abort(msg):
     if env.abort_exception:
         raise env.abort_exception(msg)
     else:
-        sys.exit(msg)
+        # See issue #1318 for details on the below; it lets us construct a
+        # valid, useful SystemExit while sidestepping the automatic stderr
+        # print (which would otherwise duplicate with the above in a
+        # non-controllable fashion).
+        e = SystemExit(1)
+        e.message = msg
+        raise e
 
 
 def warn(msg):
@@ -325,9 +334,11 @@ def error(message, func=None, exception=None, stdout=None, stderr=None):
     import fabric.state
     if func is None:
         func = fabric.state.env.warn_only and warn or abort
-    # If debug printing is on, append a traceback to the message
-    if fabric.state.output.debug:
-        message += "\n\n" + format_exc()
+    # If exception printing is on, append a traceback to the message
+    if fabric.state.output.exceptions or fabric.state.output.debug:
+        exception_message = format_exc()
+        if exception_message:
+            message += "\n\n" + exception_message
     # Otherwise, if we were given an exception, append its contents.
     elif exception is not None:
         # Figure out how to get a string out of the exception; EnvironmentError
@@ -360,24 +371,29 @@ def _format_error_output(header, body):
 # TODO: replace with collections.deque(maxlen=xxx) in Python 2.6
 class RingBuffer(list):
     def __init__(self, value, maxlen):
-        # Heh.
+        # Because it's annoying typing this multiple times.
         self._super = super(RingBuffer, self)
+        # Python 2.6 deque compatible option name!
         self._maxlen = maxlen
         return self._super.__init__(value)
 
-    def _free(self):
-        return self._maxlen - len(self)
+    def _trim(self):
+        if self._maxlen is None:
+            return
+        overage = max(len(self) - self._maxlen, 0)
+        del self[0:overage]
 
     def append(self, value):
-        if self._free() == 0:
-            del self[0]
-        return self._super.append(value)
+        self._super.append(value)
+        self._trim()
 
     def extend(self, values):
-        overage = len(values) - self._free()
-        if overage > 0:
-            del self[0:overage]
-        return self._super.extend(values)
+        self._super.extend(values)
+        self._trim()
+
+    def __iadd__(self, other):
+        self.extend(other)
+        return self
 
     # Paranoia from here on out.
     def insert(self, index, value):

@@ -22,13 +22,23 @@ Because these functions simply return modified strings, you can nest them::
 If ``bold`` is set to ``True``, the ANSI flag for bolding will be flipped on
 for that particular invocation, which usually shows up as a bold or brighter
 version of the original color on most terminals.
+
+.. versionchanged:: 1.11
+    Added support for the shell env var ``FABRIC_DISABLE_COLORS``; if this
+    variable is present and set to any non-empty value, all colorization driven
+    by this module will be skipped/disabled.
 """
 
+import os
 
 def _wrap_with(code):
 
     def inner(text, bold=False):
         c = code
+
+        if os.environ.get('FABRIC_DISABLE_COLORS'):
+            return text
+
         if bold:
             c = "1;%s" % c
         return "\033[%sm%s\033[0m" % (c, text)
