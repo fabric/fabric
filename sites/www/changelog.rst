@@ -2,6 +2,7 @@
 Changelog
 =========
 
+* :release:`1.10.3 <2016-04-09>`
 * :bug:`1135` (via :issue:`1241`) Modified order of operations in
   `~fabric.operations.run`/`~fabric.operations.sudo` to apply environment vars
   before prefixing commands (instead of after). Report by ``@warsamebashir``,
