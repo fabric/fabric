@@ -81,7 +81,7 @@ class TestContrib(FabricTest):
         contains() should perform a case-sensitive search by default.
         """
         with hide('everything'):
-            result = contains('/etc/apache2/apache2.conf', 'Include other.conf', 
+            result = contains('/etc/apache2/apache2.conf', 'Include other.conf',
                               use_sudo=True)
             assert result == True
 
@@ -93,8 +93,8 @@ class TestContrib(FabricTest):
         contains() should perform a case-insensitive search when passed `case_sensitive=False`
         """
         with hide('everything'):
-            result = contains('/etc/apache2/apache2.conf', 
-                              'include Other.CONF', 
+            result = contains('/etc/apache2/apache2.conf',
+                              'include Other.CONF',
                               use_sudo=True,
                               case_sensitive=False)
             assert result == True
