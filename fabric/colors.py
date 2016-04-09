@@ -36,7 +36,7 @@ def _wrap_with(code):
     def inner(text, bold=False):
         c = code
 
-        if os.environ.get('FABRIC_DISABLE_COLORS') is None:
+        if os.environ.get('FABRIC_DISABLE_COLORS'):
             return text
 
         if bold:
