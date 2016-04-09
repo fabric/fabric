@@ -2,9 +2,10 @@
 Changelog
 =========
 
-* :bug:`1135` Modified order of operations in ``_run_command()`` to apply
-  environment vars before prefixing commands. Report by ``@warsamebashir``,
-  patch by ``@cmattoon``.
+* :bug:`1135` (via :issue:`1241`) Modified order of operations in
+  `~fabric.operations.run`/`~fabric.operations.sudo` to apply environment vars
+  before prefixing commands (instead of after). Report by ``@warsamebashir``,
+  patch by Curtis Mattoon.
 * :feature:`1203` (via :issue:`1240`) Add a ``case_sensitive`` kwarg to
   `~fabric.contrib.files.contains` (which toggles use of ``egrep -i``). Report
   by ``@xoul``, patch by Curtis Mattoon.
