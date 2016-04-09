@@ -323,3 +323,31 @@ class TestRingBuffer(TestCase):
         self.b.extend("abcde")
         self.b.extend("fgh")
         eq_(self.b, ['d', 'e', 'f', 'g', 'h'])
+
+    def test_plus_equals(self):
+        self.b += "abcdefgh"
+        eq_(self.b, ['d', 'e', 'f', 'g', 'h'])
+
+    def test_oversized_extend(self):
+        self.b.extend("abcdefghijklmn")
+        eq_(self.b, ['j', 'k', 'l', 'm', 'n'])
+
+    def test_zero_maxlen_append(self):
+        b = RingBuffer([], maxlen=0)
+        b.append('a')
+        eq_(b, [])
+
+    def test_zero_maxlen_extend(self):
+        b = RingBuffer([], maxlen=0)
+        b.extend('abcdefghijklmnop')
+        eq_(b, [])
+
+    def test_None_maxlen_append(self):
+        b = RingBuffer([], maxlen=None)
+        b.append('a')
+        eq_(b, ['a'])
+
+    def test_None_maxlen_extend(self):
+        b = RingBuffer([], maxlen=None)
+        b.extend('abcdefghijklmnop')
+        eq_(''.join(b), 'abcdefghijklmnop')
