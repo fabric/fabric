@@ -66,12 +66,15 @@ noted here:
   on ``contextlib.ExitStack``, since it's no longer available in Python3. Please
   note that it was removed with good reason, we do not encourage you use it.
 * Fabric3 requires the `six` library for compatability.
-* Minimum requirements for paramiko have been bumped to 1.16.0.
-* There is one known issue in the test-suite (see #6) that should be fixed by
-  paramiko 1.16.1.
+* Minimum requirements for paramiko have been bumped to 1.17.0.
 
 ChangeLog
 ---------
+
+This ChangeLog lists changes other then that of the upstream Fabric release.
+
+1.11.1.post1
+   * Require paramiko 1.17.0 or later.
 
 1.10.2.post3 (2016-02-07)
    * Cleanup imports in main code base and test suite.
