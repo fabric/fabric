@@ -12,6 +12,7 @@ import subprocess
 import sys
 import time
 from glob import glob
+from collections import deque
 from contextlib import closing, contextmanager
 
 from fabric.context_managers import (settings, char_buffered, hide,
@@ -22,13 +23,7 @@ from fabric.sftp import SFTP
 from fabric.state import env, connections, output, win32, default_channel
 from fabric.thread_handling import ThreadHandler
 from fabric.utils import (
-    abort,
-    error,
-    handle_prompt_abort,
-    indent,
-    _pty_size,
-    warn,
-    apply_lcwd
+    abort, error, handle_prompt_abort, indent, _pty_size, warn, apply_lcwd,
 )
 
 
@@ -725,7 +720,8 @@ def _prefix_env_vars(command, local=False):
 
 
 def _execute(channel, command, pty=True, combine_stderr=None,
-    invoke_shell=False, stdout=None, stderr=None, timeout=None):
+    invoke_shell=False, stdout=None, stderr=None, timeout=None,
+    capture_buffer_size=None):
     """
     Execute ``command`` over ``channel``.
 
@@ -739,6 +735,10 @@ def _execute(channel, command, pty=True, combine_stderr=None,
     ``invoke_shell`` controls whether we use ``exec_command`` or
     ``invoke_shell`` (plus a handful of other things, such as always forcing a
     pty.)
+
+    ``capture_buffer_size`` controls the length of the ring-buffers used to
+    capture stdout/stderr. (This is ignored if ``invoke_shell=True``, since
+    that completely disables capturing overall.)
 
     Returns a three-tuple of (``stdout``, ``stderr``, ``status``), where
     ``stdout``/``stderr`` are captured output strings and ``status`` is the
@@ -787,7 +787,8 @@ def _execute(channel, command, pty=True, combine_stderr=None,
 
         # Init stdout, stderr capturing. Must use lists instead of strings as
         # strings are immutable and we're using these as pass-by-reference
-        stdout_buf, stderr_buf = [], []
+        stdout_buf = deque(maxlen=capture_buffer_size)
+        stderr_buf = deque(maxlen=capture_buffer_size)
         if invoke_shell:
             stdout_buf = stderr_buf = None
 
@@ -892,7 +893,8 @@ def _noop():
 
 def _run_command(command, shell=True, pty=True, combine_stderr=True,
     sudo=False, user=None, quiet=False, warn_only=False, stdout=None,
-    stderr=None, group=None, timeout=None, shell_escape=None):
+    stderr=None, group=None, timeout=None, shell_escape=None,
+    capture_buffer_size=None):
     """
     Underpinnings of `run` and `sudo`. See their docstrings for more info.
     """
@@ -912,7 +914,7 @@ def _run_command(command, shell=True, pty=True, combine_stderr=True,
 
         # Handle context manager modifications, and shell wrapping
         wrapped_command = _shell_wrap(
-            _prefix_commands(_prefix_env_vars(command), 'remote'),
+            _prefix_env_vars(_prefix_commands(command, 'remote')),
             shell_escape,
             shell,
             _sudo_prefix(user, group) if sudo else None
@@ -928,7 +930,8 @@ def _run_command(command, shell=True, pty=True, combine_stderr=True,
         result_stdout, result_stderr, status = _execute(
             channel=default_channel(), command=wrapped_command, pty=pty,
             combine_stderr=combine_stderr, invoke_shell=False, stdout=stdout,
-            stderr=stderr, timeout=timeout)
+            stderr=stderr, timeout=timeout,
+            capture_buffer_size=capture_buffer_size)
 
         # Assemble output string
         out = _AttributeString(result_stdout)
@@ -966,7 +969,8 @@ def _run_command(command, shell=True, pty=True, combine_stderr=True,
 
 @needs_host
 def run(command, shell=True, pty=True, combine_stderr=None, quiet=False,
-    warn_only=False, stdout=None, stderr=None, timeout=None, shell_escape=None):
+    warn_only=False, stdout=None, stderr=None, timeout=None, shell_escape=None,
+    capture_buffer_size=None):
     """
     Run a shell command on a remote host.
 
@@ -989,6 +993,21 @@ def run(command, shell=True, pty=True, combine_stderr=None, quiet=False,
     attribute. Furthermore, it includes a copy of the requested & actual
     command strings executed, as ``.command`` and ``.real_command``,
     respectively.
+
+    To lessen memory use when running extremely verbose programs (and,
+    naturally, when having access to their full output afterwards is not
+    necessary!) you may limit how much of the program's stdout/err is stored by
+    setting ``capture_buffer_size`` to an integer value.
+
+    .. warning::
+        Do not set ``capture_buffer_size`` to any value smaller than the length
+        of ``env.sudo_prompt`` or you will likely break the functionality of
+        `sudo`! Ditto any user prompts stored in ``env.prompts``.
+
+    .. note::
+        This value is used for each buffer independently, so e.g. ``1024`` may
+        result in storing a total of ``2048`` bytes if there's data in both
+        streams.)
 
     Any text entered in your local terminal will be forwarded to the remote
     program as it runs, thus allowing you to interact with password or other
@@ -1062,16 +1081,21 @@ def run(command, shell=True, pty=True, combine_stderr=None, quiet=False,
 
     .. versionadded:: 1.7
         The ``shell_escape`` argument.
+
+    .. versionadded:: 1.11
+        The ``capture_buffer_size`` argument.
     """
-    return _run_command(command, shell, pty, combine_stderr, quiet=quiet,
+    return _run_command(
+        command, shell, pty, combine_stderr, quiet=quiet,
         warn_only=warn_only, stdout=stdout, stderr=stderr, timeout=timeout,
-        shell_escape=shell_escape)
+        shell_escape=shell_escape, capture_buffer_size=capture_buffer_size,
+    )
 
 
 @needs_host
 def sudo(command, shell=True, pty=True, combine_stderr=None, user=None,
     quiet=False, warn_only=False, stdout=None, stderr=None, group=None,
-    timeout=None, shell_escape=None):
+    timeout=None, shell_escape=None, capture_buffer_size=None):
     """
     Run a shell command on a remote host, with superuser privileges.
 
@@ -1113,12 +1137,16 @@ def sudo(command, shell=True, pty=True, combine_stderr=None, user=None,
 
     .. versionadded:: 1.7
         The ``shell_escape`` argument.
+
+    .. versionadded:: 1.11
+        The ``capture_buffer_size`` argument.
     """
     return _run_command(
         command, shell, pty, combine_stderr, sudo=True,
         user=user if user else env.sudo_user,
         group=group, quiet=quiet, warn_only=warn_only, stdout=stdout,
         stderr=stderr, timeout=timeout, shell_escape=shell_escape,
+        capture_buffer_size=capture_buffer_size,
     )
 
 
@@ -1220,7 +1248,7 @@ def local(command, capture=False, shell=None):
 
 
 @needs_host
-def reboot(wait=120, command='reboot'):
+def reboot(wait=120, command='reboot', use_sudo=True):
     """
     Reboot the remote system.
 
@@ -1244,6 +1272,9 @@ def reboot(wait=120, command='reboot'):
         Changed the ``wait`` kwarg to be optional, and refactored to leverage
         the new reconnection functionality; it may not actually have to wait
         for ``wait`` seconds before reconnecting.
+    .. versionchanged:: 1.11
+        Added ``use_sudo`` as a kwarg. Maintained old functionality by setting
+        the default value to True.
     """
     # Shorter timeout for a more granular cycle than the default.
     timeout = 5
@@ -1257,7 +1288,7 @@ def reboot(wait=120, command='reboot'):
         timeout=timeout,
         connection_attempts=attempts
     ):
-        sudo(command)
+        (sudo if use_sudo else run)(command)
         # Try to make sure we don't slip in before pre-reboot lockdown
         time.sleep(5)
         # This is actually an internal-ish API call, but users can simply drop

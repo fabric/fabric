@@ -118,7 +118,16 @@ def rsync_project(
     port_string = "-p %s" % port
     # RSH
     rsh_string = ""
-    rsh_parts = [key_string, port_string, ssh_opts]
+    if env.gateway is None:
+        gateway_opts = ""
+    else:
+        gw_user, gw_host, gw_port = normalize(env.gateway)
+        gw_str = "-A -o \"ProxyCommand=ssh %s -p %s %s@%s nc %s %s\""
+        gateway_opts = gw_str % (
+            key_string, gw_port, gw_user, gw_host, host, port
+        )
+
+    rsh_parts = [key_string, port_string, ssh_opts, gateway_opts]
     if any(rsh_parts):
         rsh_string = "--rsh='ssh %s'" % " ".join(rsh_parts)
     # Set up options part of string

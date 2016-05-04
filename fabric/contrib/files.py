@@ -68,7 +68,7 @@ def first(*args, **kwargs):
 
 def upload_template(filename, destination, context=None, use_jinja=False,
     template_dir=None, use_sudo=False, backup=True, mirror_local_mode=False,
-    mode=None, pty=None):
+    mode=None, pty=None, keep_trailing_newline=False, temp_dir=''):
     """
     Render and upload a template text file to a remote host.
 
@@ -92,18 +92,26 @@ def upload_template(filename, destination, context=None, use_jinja=False,
     By default, the file will be copied to ``destination`` as the logged-in
     user; specify ``use_sudo=True`` to use `sudo` instead.
 
-    The ``mirror_local_mode`` and ``mode`` kwargs are passed directly to an
-    internal `~fabric.operations.put` call; please see its documentation for
-    details on these two options.
+    The ``mirror_local_mode``, ``mode``, and ``temp_dir`` kwargs are passed
+    directly to an internal `~fabric.operations.put` call; please see its
+    documentation for details on these two options.
 
     The ``pty`` kwarg will be passed verbatim to any internal
     `~fabric.operations.run`/`~fabric.operations.sudo` calls, such as those
     used for testing directory-ness, making backups, etc.
 
+    The ``keep_trailing_newline`` kwarg will be passed when creating
+    Jinja2 Environment which is False by default, same as Jinja2's
+    behaviour.
+
     .. versionchanged:: 1.1
         Added the ``backup``, ``mirror_local_mode`` and ``mode`` kwargs.
     .. versionchanged:: 1.9
         Added the ``pty`` kwarg.
+    .. versionchanged:: 1.11
+        Added the ``keep_trailing_newline`` kwarg.
+    .. versionchanged:: 1.11
+        Added the  ``temp_dir`` kwarg.
     """
     func = use_sudo and sudo or run
     if pty is not None:
@@ -129,7 +137,8 @@ def upload_template(filename, destination, context=None, use_jinja=False,
             template_dir = template_dir or os.getcwd()
             template_dir = apply_lcwd(template_dir, env)
             from jinja2 import Environment, FileSystemLoader
-            jenv = Environment(loader=FileSystemLoader(template_dir))
+            jenv = Environment(loader=FileSystemLoader(template_dir),
+                               keep_trailing_newline=keep_trailing_newline)
             text = jenv.get_template(filename).render(**context or {})
             # Force to a byte representation of Unicode, or str()ification
             # within Paramiko's SFTP machinery may cause decode issues for
@@ -161,7 +170,8 @@ def upload_template(filename, destination, context=None, use_jinja=False,
         remote_path=destination,
         use_sudo=use_sudo,
         mirror_local_mode=mirror_local_mode,
-        mode=mode
+        mode=mode,
+        temp_dir=temp_dir
     )
 
 
@@ -321,7 +331,7 @@ def comment(filename, regex, use_sudo=False, char='#', backup='.bak',
 
 
 def contains(filename, text, exact=False, use_sudo=False, escape=True,
-    shell=False):
+    shell=False, case_sensitive=True):
     """
     Return True if ``filename`` contains ``text`` (which may be a regex.)
 
@@ -343,6 +353,8 @@ def contains(filename, text, exact=False, use_sudo=False, escape=True,
     The ``shell`` argument will be eventually passed to ``run/sudo``. See
     description of the same argumnet in ``~fabric.contrib.sed`` for details.
 
+    If ``case_sensitive`` is False, the `-i` flag will be passed to ``egrep``.
+
     .. versionchanged:: 1.0
         Swapped the order of the ``filename`` and ``text`` arguments to be
         consistent with other functions in this module.
@@ -353,6 +365,8 @@ def contains(filename, text, exact=False, use_sudo=False, escape=True,
         Added ``escape`` keyword argument.
     .. versionadded:: 1.6
         Added the ``shell`` keyword argument.
+    .. versionadded:: 1.11
+        Added the ``case_sensitive`` keyword argument.
     """
     func = use_sudo and sudo or run
     if escape:
@@ -361,6 +375,8 @@ def contains(filename, text, exact=False, use_sudo=False, escape=True,
             text = "^%s$" % text
     with settings(hide('everything'), warn_only=True):
         egrep_cmd = 'egrep "%s" %s' % (text, _expand_path(filename))
+        if not case_sensitive:
+            egrep_cmd = egrep_cmd.replace('egrep', 'egrep -i', 1)
         return func(egrep_cmd, shell=shell).succeeded
 
 
