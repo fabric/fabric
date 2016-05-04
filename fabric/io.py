@@ -18,7 +18,7 @@ if win32:
 
 
 def _endswith(char_list, substring):
-    tail = char_list[-1 * len(substring):]
+    tail = list(char_list)[-1 * len(substring):]
     substring = list(substring)
     return tail == substring
 
