@@ -1,14 +1,13 @@
 from __future__ import with_statement
 
 import sys
-import traceback
 from unittest import TestCase
 
 from fudge import Fake, patched_context, with_fakes
 from fudge.patcher import with_patched_object
 from nose.tools import eq_, raises
 
-from fabric.state import output, env
+from fabric.state import output
 from fabric.utils import warn, indent, abort, puts, fastprint, error, RingBuffer
 from fabric import utils  # For patching
 from fabric.api import local, quiet

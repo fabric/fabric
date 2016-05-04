@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import with_statement
-from fabric.operations import local
 import os
 
-from fabric.api import hide, get, show
+from fabric.api import hide, get
 from fabric.contrib.files import upload_template, contains
 from fabric.context_managers import lcd
 

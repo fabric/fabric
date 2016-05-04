@@ -1,6 +1,5 @@
 from __future__ import with_statement
 
-from contextlib import contextmanager
 from fudge import Fake, patched_context, with_fakes
 import unittest
 from nose.tools import eq_, raises, ok_
@@ -11,10 +10,9 @@ import fabric
 from fabric.tasks import WrappedCallableTask, execute, Task, get_task_details
 from fabric.main import display_command
 from fabric.api import run, env, settings, hosts, roles, hide, parallel, task, runs_once, serial
-from fabric.network import from_dict
 from fabric.exceptions import NetworkError
 
-from utils import eq_, FabricTest, aborts, mock_streams, support
+from utils import FabricTest, aborts, mock_streams, support
 from server import server
 
 

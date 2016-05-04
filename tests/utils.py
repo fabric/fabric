@@ -1,7 +1,6 @@
 from __future__ import with_statement
 
 from contextlib import contextmanager
-from copy import deepcopy
 from fudge.patcher import with_patched_object
 from functools import partial
 from types import StringTypes
@@ -13,15 +12,12 @@ import shutil
 import sys
 import tempfile
 
-from fudge import Fake, patched_context, clear_expectations, with_patched_object
+from fudge import Fake, patched_context, clear_expectations
 from nose.tools import raises
-from nose import SkipTest
 
-from fabric.context_managers import settings
 from fabric.state import env, output
 from fabric.sftp import SFTP
-import fabric.network
-from fabric.network import normalize, to_dict
+from fabric.network import to_dict
 
 from server import PORT, PASSWORDS, USER, HOST
 from mock_streams import mock_streams

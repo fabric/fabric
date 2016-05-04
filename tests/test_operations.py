@@ -1,11 +1,17 @@
 from __future__ import with_statement
 
+import os
+import re
+import shutil
+import sys
+
 from contextlib import nested
 from StringIO import StringIO
 
-from nose.tools import ok_
-from fudge import with_fakes, Fake
+from nose.tools import ok_, raises
+from fudge import patched_context, with_fakes, Fake
 from fudge.inspector import arg as fudge_arg
+from mock_streams import mock_streams
 from paramiko.sftp_client import SFTPClient  # for patching
 
 from fabric.state import env, output
@@ -14,10 +20,12 @@ from fabric.operations import require, prompt, _sudo_prefix, _shell_wrap, \
 from fabric.api import get, put, hide, show, cd, lcd, local, run, sudo, quiet
 from fabric.exceptions import CommandTimeout
 
+from fabric.sftp import SFTP
+from fabric.context_managers import settings
 from fabric.decorators import with_settings
-from utils import *
-from server import (server, PORT, RESPONSES, FILES, PASSWORDS, CLIENT_PRIVKEY,
-    USER, CLIENT_PRIVKEY_PASSPHRASE)
+from utils import (eq_, aborts, assert_contains, eq_contents,
+                   with_patched_input, FabricTest)
+from server import server, FILES
 
 #
 # require()
