@@ -191,7 +191,13 @@ class OutputLooper(object):
         # backwards compatible with Fabric 0.9.x behavior; the user
         # will still see the prompt on their screen (no way to avoid
         # this) but at least it won't clutter up the captured text.
-        del self.capture[-1 * len(env.sudo_prompt):]
+
+        # NOTE: Yes, the original RingBuffer from Fabric can do this more elegantly.
+        #       This removes the last N elements from the list.
+        _pop_count = min(len(self.capture), len(env.sudo_prompt))
+        for i in range(0, _pop_count):
+            self.capture.pop()
+
         # If the password we just tried was bad, prompt the user again.
         if (not password) or self.reprompt:
             # Print the prompt and/or the "try again" notice if
