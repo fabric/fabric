@@ -227,7 +227,7 @@ class OutputLooper(object):
 
     def try_again(self):
         # Remove text from capture buffer
-        self.capture = self.capture[:len(env.again_prompt)]
+        self.capture = list(self.capture)[:len(env.again_prompt)]
         # Set state so we re-prompt the user at the next prompt.
         self.reprompt = True
 
