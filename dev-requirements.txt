@@ -2,7 +2,7 @@
 # checkout installed! Stable Paramiko may not be sufficient!
 
 # Test runner/testing utils
-nose
+nose<2.0
 # Rudolf adds color to the output of 'fab test'. This is a custom fork
 # addressing Python 2.7 and Nose's 'skip' plugin compatibility issues.
 -e git+https://github.com/bitprophet/rudolf#egg=rudolf
