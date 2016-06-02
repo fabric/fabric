@@ -51,8 +51,30 @@ class TestParallel(FabricTest):
                 run("ls /")
                 if env.host_string == host2:
                     raise OhNoesException
-            
+
             execute(mytask, hosts=[host1, host2])
+
+    @server(port=2200)
+    @server(port=2201)
+    @aborts
+    def test_parallel_quit_on_failure(self):
+        with settings(
+                hide('everything'),
+                parallel_exit_on_errors=True
+        ):
+            host1 = '127.0.0.1:2200'
+            host2 = '127.0.0.1:2201'
+
+            @parallel
+            def mytask():
+                run("ls /")
+                if env.host_string == host2:
+                    raise OhNoesException
+
+            try:
+                execute(mytask, hosts=[host1, host2])
+            except Exception:
+                pass
 
     @server(port=2200)
     @server(port=2201)

@@ -18,7 +18,7 @@ from fabric.context_managers import settings
 class JobQueue(object):
     """
     The goal of this class is to make a queue of processes to run, and go
-    through them running X number at any given time. 
+    through them running X number at any given time.
 
     So if the bubble is 5 start with 5 running and move the bubble of running
     procs along the queue looking something like this:
@@ -31,7 +31,7 @@ class JobQueue(object):
         __________________[~~~~~]..
         ____________________[~~~~~]
         ___________________________
-                                End 
+                                End
     """
     def __init__(self, max_running, comms_queue):
         """
@@ -45,6 +45,8 @@ class JobQueue(object):
         self._comms_queue = comms_queue
         self._finished = False
         self._closed = False
+        self._abort = False
+        self._abort_reason = None
         self._debug = False
 
     def _all_alive(self):
@@ -138,6 +140,11 @@ class JobQueue(object):
 
         # Main loop!
         while not self._finished:
+            if self._abort:
+                self._queued = []
+                raise Exception("Aborting remaining jobs since job %s failed." %
+                                self._abort_reason)
+
             while len(self._running) < self._max and self._queued:
                 _advance_the_queue()
 
@@ -148,6 +155,9 @@ class JobQueue(object):
                             print("Job queue found finished proc: %s." %
                                     job.name)
                         done = self._running.pop(id)
+                        if done.exitcode != 0 and env.parallel_exit_on_errors:
+                            self._abort = True
+                            self._abort_reason = done.name
                         self._completed.append(done)
 
                 if self._debug:
