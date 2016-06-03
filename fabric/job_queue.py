@@ -46,7 +46,6 @@ class JobQueue(object):
         self._finished = False
         self._closed = False
         self._abort = False
-        self._abort_reason = None
         self._debug = False
 
     def _all_alive(self):
@@ -142,8 +141,6 @@ class JobQueue(object):
         while not self._finished:
             if self._abort:
                 self._queued = []
-                raise Exception("Aborting remaining jobs since job %s failed." %
-                                self._abort_reason)
 
             while len(self._running) < self._max and self._queued:
                 _advance_the_queue()
@@ -157,7 +154,6 @@ class JobQueue(object):
                         done = self._running.pop(id)
                         if done.exitcode != 0 and env.parallel_exit_on_errors:
                             self._abort = True
-                            self._abort_reason = done.name
                         self._completed.append(done)
 
                 if self._debug:

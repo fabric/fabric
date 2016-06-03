@@ -224,7 +224,7 @@ env_options = [
         help="default to parallel execution method"
     ),
 
-    make_option('--quit-parallel-run-on-errors',
+    make_option('--parallel-exit-on-errors',
         dest='parallel_exit_on_errors',
         action='store_true',
         default=False,
