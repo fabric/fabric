@@ -47,14 +47,6 @@ class Remote_(Spec):
             cols, rows = pty_size()
             chan.get_pty.assert_called_with(width=cols, height=rows)
 
-        @mock_remote(Session(out="some text", waits=1))
-        def wait_loop_performs_io_sleep(self, chan):
-            c = Connection('host')
-            r = Remote(context=c)
-            fakeout = StringIO()
-            r.run(CMD, out_stream=fakeout)
-            eq_(fakeout.getvalue(), "some text")
-
         @mock_remote
         def return_value_is_Result_subclass_exposing_host_used(self, chan):
             c = Connection('host')
