@@ -1,6 +1,6 @@
 import socket
 
-from spec import Spec, eq_, raises, ok_
+from spec import Spec, eq_, raises, ok_, skip
 from mock import patch, Mock, call, PropertyMock
 from paramiko.client import SSHClient, AutoAddPolicy
 
@@ -321,6 +321,21 @@ class Connection_(Spec):
         def calls_invoke_Local_run(self, Local):
             Connection('host').local('foo')
             Local.return_value.run.assert_called_with('foo')
+
+    class sudo:
+        # NOTE: most tests for this functionality live in Invoke's runner
+        # tests.
+
+        def wraps_command_in_sudo_dash_c(self):
+            skip()
+
+        def responds_with_configured_sudo_password(self):
+            skip()
+
+        # TODO: per-host passwords work?
+        # TODO: default password fallback works?
+        # TODO: runtime password works?
+        # TODO: how to differentiate these passwords from connection ones?
 
     class sftp:
         @patch('fabric.connection.SSHClient')
