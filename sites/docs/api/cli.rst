@@ -6,6 +6,15 @@ This page documents the details of Fabric's optional command-line interface,
 ``fab``.
 
 
+Options & arguments
+===================
+
+.. option:: -H, --hosts
+
+    Takes a comma-separated string listing hostnames against which tasks
+    should be executed, in serial. See :ref:`runtime-hosts`.
+
+
 Seeking & loading tasks
 =======================
 
@@ -22,6 +31,8 @@ look for ``/home/myuser/projects/mywebapp/fabfile.py`` (or
 treats both the same). If it's not found there,
 ``/home/myuser/projects/fabfile.py`` is sought next; and so forth.
 
+
+.. _runtime-hosts:
 
 Runtime specification of host lists
 ===================================
@@ -51,7 +62,7 @@ the following manner::
 
     $ fab [options] -- [shell command]
 
-where everything after the ``--`` is turned into a temporary `.Remote.run`
+where everything after the ``--`` is turned into a temporary `.Connection.run`
 call, and is not parsed for ``fab`` options. If you've specified a host list
 via an earlier task or the core CLI flags, this usage will act like a one-line
 anonymous task.
