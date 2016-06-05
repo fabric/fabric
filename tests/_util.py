@@ -253,10 +253,9 @@ def mock_remote(*sessions):
     def decorator(f):
         @wraps(f)
         @patch('fabric.connection.SSHClient')
-        @patch('fabric.runners.time')
         def wrapper(*args, **kwargs):
             args = list(args)
-            SSHClient, time = args.pop(), args.pop()
+            SSHClient = args.pop()
 
             # Mock clients, to be inspected afterwards during sanity-checks
             clients = []
@@ -280,18 +279,6 @@ def mock_remote(*sessions):
             for session in sessions:
                 # Basic stuff about transport, channel etc
                 session.sanity_check()
-            # Internals call time.sleep() while waiting and we want to ensure
-            # that this happened as many times as expected. Due to it being a
-            # stdlib/global call, best we can do is make assertions about the
-            # total number of calls - can't pin them down to individual
-            # sessions/clients/channels.
-            total_waits = sum(
-                cmd.waits
-                for cmd in session.commands
-                for session in sessions
-            )
-            # TODO: be more explicit, make this "a bunch of call(1)'s"?
-            eq_(time.sleep.call_count, total_waits)
         return wrapper
     # Bare decorator, no args
     if bare:
