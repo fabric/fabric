@@ -15,36 +15,38 @@ class Remote(Runner):
         `.Remote`'s ``__init__`` method expects a `.Connection` (or subclass)
         instance for its ``context`` argument.
     """
-    def start(self, command):
+    def start(self, command, shell, env):
         self.channel = self.context._create_session()
         if self.using_pty:
             rows, cols = pty_size()
             self.channel.get_pty(width=rows, height=cols)
         self.channel.exec_command(command)
 
-    def read_stdout(self, num_bytes):
+    def read_proc_stdout(self, num_bytes):
         return self.channel.recv(num_bytes)
 
-    def read_stderr(self, num_bytes):
+    def read_proc_stderr(self, num_bytes):
         return self.channel.recv_stderr(num_bytes)
 
-    def write_stdin(self, data):
+    def _write_proc_stdin(self, data):
         return self.channel.sendall(data)
 
-    def default_encoding(self):
-        # TODO: this could be hairy or impossible!
-        return "utf-8"
+    @property
+    def process_is_finished(self):
+        return self.channel.exit_status_ready()
 
-    def wait(self):
-        while True:
-            if self.channel.exit_status_ready():
-                return
-            # TODO: where to access paramiko (for io_sleep)? here or via
-            # something in Connection? (basically, how hard should Connection
-            # encapsulate paramiko things?)
-            time.sleep(io_sleep)
-
-    # TODO: implement Runner.send_interrupt (see v1's remote_interrupt)
+    def send_interrupt(self, interrupt):
+        # NOTE: in v1, we just reraised the KeyboardInterrupt unless a PTY was
+        # present; this seems to have been because without a PTY, the
+        # below escape sequence is ignored, so all we can do is immediately
+        # terminate on our end.
+        # NOTE: also in v1, the raising of the KeyboardInterrupt completely
+        # skipped all thread joining & cleanup; presumably regular interpreter
+        # shutdown suffices to tie everything off well enough.
+        if self.using_pty:
+            self.channel.send(u'\x03')
+        else:
+            raise interrupt
 
     def returncode(self):
         return self.channel.recv_exit_status()
