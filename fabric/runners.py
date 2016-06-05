@@ -1,7 +1,4 @@
-import time
-
 from invoke import Runner, pty_size, Result as InvokeResult
-from paramiko import io_sleep
 
 
 class Remote(Runner):
