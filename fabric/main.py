@@ -71,7 +71,7 @@ class FabExecutor(Executor):
         if self.core.remainder:
             def anonymous(c):
                 c.run(self.core.remainder)
-            anon = Call(Task(body=anonymous, contextualized=True))
+            anon = Call(Task(body=anonymous))
             # TODO: see above TODOs about non-parameterized setups, roles etc
             # TODO: will likely need to refactor that logic some more so it can
             # be used both there and here.

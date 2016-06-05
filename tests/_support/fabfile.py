@@ -1,4 +1,4 @@
-from invoke import ctask as task
+from invoke import task
 
 
 @task

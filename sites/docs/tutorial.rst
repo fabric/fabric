@@ -244,7 +244,7 @@ you quickly run tasks on various servers - without having to e.g. define
 For a final code example, let's adapt the previous one into a ``fab`` task
 module called ``fabfile.py``::
 
-    from invoke import ctask as task
+    from invoke import task
 
     @task
     def upload_and_unpack(cxn):
@@ -253,7 +253,7 @@ module called ``fabfile.py``::
             cxn.run('tar -C /opt/mydata -xzvf /opt/mydata/myfiles.tgz')
 
 Not hard - all we did was copy our temporary task function into a file and slap
-a decorator on it. `.ctask` tells the CLI machinery to expose the task on the
+a decorator on it. `.task` tells the CLI machinery to expose the task on the
 command line::
 
     $ fab --list

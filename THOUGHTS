@@ -252,11 +252,11 @@ allow this:
 then `runonce` does need a way to tell the CLI junk that it should not be run
 once each for the host list.
 
-If we assume all Fabric tasks are contextualized, "local" or "runs once" tasks
-still look no different from "normal" ones. So it's the execution mechanism
-that has to differentiate between "I run this N times for this vector of
-Connections" versus "I run this once with a single non-connection-oriented
-Context".
+Since all tasks (since Invoke removed non-contextualized ones) are
+contextualized, "local" or "runs once" tasks still look no different from
+"normal" ones. So it's the execution mechanism that has to differentiate
+between "I run this N times for this vector of Connections" versus "I run this
+once with a single non-connection-oriented Context".
 
 Feels like cleanest solution is to do away with "global" host lists entirely
 and force ALL such invocations to be what in Fab 1 are "meta" tasks. I.e. if
