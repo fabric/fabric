@@ -41,6 +41,9 @@ class Remote(Runner):
         # skipped all thread joining & cleanup; presumably regular interpreter
         # shutdown suffices to tie everything off well enough.
         if self.using_pty:
+            # Submit hex ASCII character 3, aka ETX, which most Unix PTYs
+            # interpret as a foreground SIGINT.
+            # TODO: is there anything else we can do here to be more portable?
             self.channel.send(u'\x03')
         else:
             raise interrupt
