@@ -59,6 +59,23 @@ class Remote_(Spec):
             # Test the attr our own subclass adds
             eq_(result.host, "{0}@host:22".format(get_local_user()))
 
+        @mock_remote
+        def local_interrupts_send_ETX_to_remote_pty(self, chan):
+            # TODO: somehow merge with similar in Invoke's suite? Meh.
+            class _KeyboardInterruptingRemote(Remote):
+                def wait(self):
+                    raise KeyboardInterrupt
+
+            r = _KeyboardInterruptingRemote(context=Connection('host'))
+            try:
+                r.run(CMD, pty=True)
+            except KeyboardInterrupt:
+                pass
+            else:
+                # Sanity check
+                assert False, "Didn't receive expected KeyboardInterrupt"
+            chan.send.assert_called_once_with(u'\x03')
+
         # TODO: how much of Invoke's tests re: the upper level run() (re:
         # things like returning Result, behavior of Result, etc) to
         # duplicate here? Ideally none or very few core ones.
