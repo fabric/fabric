@@ -1,9 +1,9 @@
 from itertools import chain, repeat
+from io import BytesIO
 import os
 import sys
 import types
 from functools import wraps, partial
-from invoke.vendor.six import StringIO
 
 from fabric import Connection
 from fabric.main import program as fab_program
@@ -29,9 +29,9 @@ class Command(object):
         Command string to expect. If not given, no expectations about the
         command executed will be set up. Default: ``None``.
 
-    :param str out: Data yielded as remote stdout. Default: ``""``.
+    :param bytes out: Data yielded as remote stdout. Default: ``b""``.
 
-    :param str err: Data yielded as remote stderr. Default: ``""``.
+    :param bytes err: Data yielded as remote stderr. Default: ``b""``.
 
     :param int exit: Remote exit code. Default: ``0``.
 
@@ -40,7 +40,7 @@ class Command(object):
         return ``False`` before it then returns ``True``. Default: ``0``
         (``exit_status_ready`` will return ``True`` immediately).
     """
-    def __init__(self, cmd=None, out="", err="", exit=0, waits=0):
+    def __init__(self, cmd=None, out=b"", err=b"", exit=0, waits=0):
         self.cmd = cmd
         self.out = out
         self.err = err
@@ -153,8 +153,8 @@ class Session(object):
             channel.exit_status_ready.side_effect = readies
 
             # Real-feeling IO (not just returning whole strings)
-            out_file = StringIO(command.out)
-            err_file = StringIO(command.err)
+            out_file = BytesIO(command.out)
+            err_file = BytesIO(command.err)
             def fakeread(count, fileno=None):
                 fd = {1: out_file, 2: err_file}[fileno]
                 return fd.read(count)
