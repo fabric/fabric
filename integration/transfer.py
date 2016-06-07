@@ -63,7 +63,7 @@ class Transfer_(Spec):
             local = self._tmp('funky-perms.txt')
             remote = self._support('funky-perms.txt')
             self.c.get(remote=remote, local=local)
-            eq_(stat.S_IMODE(os.stat(local).st_mode), 0641)
+            eq_(stat.S_IMODE(os.stat(local).st_mode), 0o641)
 
 
     class put:
@@ -106,4 +106,4 @@ class Transfer_(Spec):
             local = self._support('funky-perms.txt')
             remote = self._tmp('funky-perms.txt')
             self.c.put(remote=remote, local=local)
-            eq_(stat.S_IMODE(os.stat(remote).st_mode), 0641)
+            eq_(stat.S_IMODE(os.stat(remote).st_mode), 0o641)

@@ -112,7 +112,7 @@ class Transfer_(Spec):
         class mode_concerns:
             def setup(self):
                 self.attrs = SFTPAttributes()
-                self.attrs.st_mode = 0100644
+                self.attrs.st_mode = 0o100644
 
             @mock_sftp(expose_os=True)
             def preserves_remote_mode_by_default(
@@ -123,7 +123,7 @@ class Transfer_(Spec):
                 transfer.get('file', local='meh')
                 # Expect os.chmod to be called with the scrubbed/shifted
                 # version of same.
-                mock_os.chmod.assert_called_with('/local/meh', 0644)
+                mock_os.chmod.assert_called_with('/local/meh', 0o644)
 
             @mock_sftp(expose_os=True)
             def allows_disabling_remote_mode_preservation(
@@ -232,9 +232,9 @@ class Transfer_(Spec):
             def preserves_local_mode_by_default(
                 self, sftp, transfer, mock_os
             ):
-                mock_os.stat.return_value.st_mode = 33188 # realistic for 0644
+                mock_os.stat.return_value.st_mode = 33188 # realistic for 0o644
                 transfer.put('file')
-                sftp.chmod.assert_called_with('/remote/file', 0644)
+                sftp.chmod.assert_called_with('/remote/file', 0o644)
 
             @mock_sftp(expose_os=True)
             def allows_disabling_local_mode_preservation(
