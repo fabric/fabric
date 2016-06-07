@@ -2,7 +2,7 @@ import os
 import shutil
 import stat
 import tempfile
-from StringIO import StringIO
+from io import BytesIO
 
 from spec import Spec, ok_, eq_
 
@@ -43,7 +43,7 @@ class Transfer_(Spec):
             # Make sure it arrived
             local = self._tmp('file.txt')
             ok_(os.path.exists(local))
-            eq_(open(local).read(), 'yup\n')
+            eq_(open(local).read(), "yup\n")
             # Sanity check result object
             eq_(result.remote, self.remote)
             eq_(result.orig_remote, self.remote)
@@ -51,9 +51,9 @@ class Transfer_(Spec):
             eq_(result.orig_local, None)
 
         def file_like_objects(self):
-            fd = StringIO()
+            fd = BytesIO()
             result = self.c.get(remote=self.remote, local=fd)
-            eq_(fd.getvalue(), 'yup\n')
+            eq_(fd.getvalue(), b"yup\n")
             eq_(result.remote, self.remote)
             ok_(result.local is fd)
 
@@ -85,7 +85,7 @@ class Transfer_(Spec):
 
             # Make sure it arrived
             ok_(os.path.exists(self.remote))
-            eq_(open(self.remote).read(), 'yup\n')
+            eq_(open(self.remote).read(), "yup\n")
             # Sanity check result object
             eq_(result.remote, self.remote)
             eq_(result.orig_remote, None)
@@ -93,8 +93,8 @@ class Transfer_(Spec):
             eq_(result.orig_local, 'file.txt')
 
         def file_like_objects(self):
-            fd = StringIO()
-            fd.write("yup\n")
+            fd = BytesIO()
+            fd.write(b"yup\n")
             result = self.c.put(local=fd, remote=self.remote)
             eq_(open(self.remote).read(), "yup\n")
             eq_(result.remote, self.remote)
