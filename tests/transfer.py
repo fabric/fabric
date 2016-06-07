@@ -1,4 +1,4 @@
-from StringIO import StringIO
+from invoke.vendor.six import StringIO
 
 from mock import Mock, call
 from spec import Spec, ok_, eq_, raises
