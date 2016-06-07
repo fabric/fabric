@@ -67,7 +67,7 @@ and notes about other Python versions:
 * Fabric has not yet been tested on **Python 3.x** and is thus likely to be
   incompatible with that line of development. However, we try to be at least
   somewhat forward-looking (e.g. using ``print()`` instead of ``print``) and
-  will definitely be porting to 3.x in the future once our dependencies do.
+  will definitely be porting to 3.x in the future.
 
 setuptools
 ----------
