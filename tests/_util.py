@@ -318,6 +318,12 @@ def mock_sftp(expose_os=False):
                 return '/local/{0}'.format(path)
             mock_os.path.abspath.side_effect = fake_abspath
             sftp.getcwd.return_value = '/remote'
+            # Ensure stat st_mode is a real number; Python 2 stat.S_IMODE
+            # doesn't appear to care if it's handed a MagicMock, but Python 3's
+            # does. (...ok?)
+            fake_mode = 0o644 # arbitrary real-ish mode
+            sftp.stat.return_value.st_mode = fake_mode
+            mock_os.stat.return_value.st_mode = fake_mode
             # Not super clear to me why the 'wraps' functionality in mock isn't
             # working for this :(
             mock_os.path.basename.side_effect = os.path.basename
