@@ -53,6 +53,9 @@ class Connection(Context):
         This class rebinds `invoke.context.Context.run` to `.local` so both
         remote and local command execution can coexist.
     """
+    # TODO: should "reopening" an existing Connection object that has been
+    # closed, be allowed? (See e.g. how v1 detects closed/semi-closed
+    # connections & nukes them before creating a new client to the same host.)
     # TODO: push some of this into paramiko.client.Client? e.g. expand what
     # Client.exec_command does, it already allows configuring a subset of what
     # we do / will eventually do / did in 1.x. It's silly to have to do
