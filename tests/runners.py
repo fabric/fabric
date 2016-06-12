@@ -76,6 +76,31 @@ class Remote_(Spec):
                 assert False, "Didn't receive expected KeyboardInterrupt"
             chan.send.assert_called_once_with(u'\x03')
 
+        @mock_remote
+        def channel_is_closed_normally(self, chan):
+            # I.e. Remote.stop() closes the channel automatically
+            r = Remote(context=Connection('host'))
+            r.run(CMD)
+            chan.close.assert_called_once_with()
+
+        @mock_remote
+        def channel_is_closed_on_exceptions(self, chan):
+            # I.e. Remote.stop() is called within a try/finally.
+            # Technically is just testing invoke.Runner, but meh.
+            class Oops(Exception):
+                pass
+            class _OopsRemote(Remote):
+                def wait(self):
+                    raise Oops()
+            r = _OopsRemote(context=Connection('host'))
+            try:
+                r.run(CMD)
+            except Oops:
+                chan.close.assert_called_once_with()
+            else:
+                assert False, "Runner failed to raise exception!"
+
+
         # TODO: how much of Invoke's tests re: the upper level run() (re:
         # things like returning Result, behavior of Result, etc) to
         # duplicate here? Ideally none or very few core ones.

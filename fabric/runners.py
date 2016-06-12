@@ -55,6 +55,9 @@ class Remote(Runner):
         kwargs['connection'] = self.context
         return Result(**kwargs)
 
+    def stop(self):
+        self.channel.close()
+
 
     # TODO: shit that is in fab 1 run() but could apply to invoke.Local too:
     # * command timeout control
