@@ -55,8 +55,8 @@ class Connection(Context):
     """
     # TODO: push some of this into paramiko.client.Client? e.g. expand what
     # Client.exec_command does, it already allows configuring a subset of what
-    # we do / will eventually do / did in 1.x.
-    # It's silly to have to do .get_transport().open_session().
+    # we do / will eventually do / did in 1.x. It's silly to have to do
+    # .get_transport().open_session().
     def __init__(self, host, user=None, port=None, config=None):
         """
         Set up a new object representing a server connection.
@@ -166,7 +166,8 @@ class Connection(Context):
     @property
     def host_string(self):
         # TODO: remove this ASAP once a better way of representing connections
-        # in aggregate results is found!
+        # in aggregate results is found! (E.g. including local port or other
+        # truly-differentiating data)
         return "{0}@{1}:{2}".format(self.user, self.host, self.port)
 
     @property
@@ -269,6 +270,7 @@ class Group(list):
         constructors.
         """
         # TODO: allow splat-args form in addition to iterable arg?
+        # TODO: #563, #388 (could be here or higher up in Program area)
         if hosts:
             self.extend(map(Connection, hosts))
 
