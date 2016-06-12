@@ -297,4 +297,6 @@ class Group(list):
             result[cxn.host_string] = cxn.run(*args, **kwargs)
         return result
 
+    # TODO: mirror Connection's close()?
+
     # TODO: execute() as mentioned in tutorial
