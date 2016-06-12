@@ -247,7 +247,7 @@ class Connection_(Spec):
             eq_(c.close(), None)
 
         @patch('fabric.connection.SSHClient')
-        def calls_SSHClient_connect(self, Client):
+        def calls_SSHClient_close(self, Client):
             "calls paramiko.SSHClient.close()"
             c = Connection('host')
             c.open()
