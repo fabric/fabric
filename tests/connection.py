@@ -283,6 +283,13 @@ class Connection_(Spec):
             c.close()
             eq_(c.is_connected, False)
 
+        @patch('fabric.connection.SSHClient')
+        def class_works_as_a_closing_contextmanager(self, Client):
+            client = Client.return_value
+            with Connection('host') as c:
+                c.open()
+            client.close.assert_called_once_with()
+
     class run:
         # NOTE: most actual run related tests live in the runners module's
         # tests. Here we are just testing the outer interface a bit.

@@ -43,11 +43,26 @@ class Connection(Context):
     level operations with that `~paramiko.client.SSHClient` and
     `~paramiko.channel.Channel` instances generated from it.
 
-    Like `~paramiko.client.SSHClient`, `.Connection` has a basic "`create
-    <__init__>`, `connect/open <open>`, `do work <run>`, `disconnect/close
-    <close>`" lifecycle, though this is handled transparently: most users
-    simply need to instantiate and call the interesting methods like `run` and
-    `put`.
+    `.Connection` has a basic "`create <__init__>`, `connect/open <open>`, `do
+    work <run>`, `disconnect/close <close>`" lifecycle:
+
+    * `Instantiation <__init__>` imprints the object with its connection
+      parameters (but does **not** actually initiate the network connection).
+    * Methods like `run`, `get` etc automatically trigger a call to
+      `open` if the connection is not active; users may of course call `open`
+      manually if desired.
+    * Connections do not always need to be explicitly closed; much of the
+      time, Paramiko's garbage collection hooks or Python's own shutdown
+      sequence will take care of things. **However**, should you encounter edge
+      cases (for example, sessions hanging on exit) it's helpful to explicitly
+      close connections when you're done with them.
+
+      This can be accomplished by manually calling `close`, or by using the
+      object as a contextmanager::
+
+        with Connection('host') as cxn:
+            cxn.run('command')
+            cxn.put('file')
 
     .. note::
         This class rebinds `invoke.context.Context.run` to `.local` so both
@@ -199,12 +214,13 @@ class Connection(Context):
         if self.is_connected:
             self.client.close()
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        self.close()
+
     def _create_session(self):
-        # TODO: make this a contextmanager perhaps? 'with cxn.session() as
-        # channel: channel.exec_command(blah)' - tho still unsure if it should
-        # be public API right away.
-        # TODO: implies we may want to do the same for Connection itself
-        # (though that might not be the primary API for it)
         self.open()
         return self.transport.open_session()
 
