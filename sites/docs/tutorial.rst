@@ -37,26 +37,31 @@ constructing task namespaces, you'll see ``from invoke import Collection``.
     close to 'Connection'
 
 
-Run commands
-============
+Run commands via connections and ``run``
+========================================
 
 The most basic use of Fabric is to execute a shell command on a server (via
-SSH), then (optionally) interrogate the result::
-
+SSH), then (optionally) interrogate the result. By default, the remote
+program's output is printed directly to your terminal, *and* captured. A basic
+example::
 
     >>> from fabric import Connection
-    >>> result = Connection('web1').run('uname -s')
-    >>> print(result.host)
-    web1
-    >>> print(result.command)
-    uname -s
-    >>> print(result.stdout.strip())
+    >>> cxn = Connection('web1')
+    >>> result = cxn.run('uname -s')
     Linux
+    >>> result.host
+    'web1'
+    >>> result.command
+    'uname -s'
+    >>> result.stdout
+    'Linux\n'
+    >>> result.stderr
+    ''
 
-Meet `.Connection`, which represents an SSH connection and provides the core
-of Fabric's API. `.Connection` objects need at least a hostname to be created
-successfully, and may be further parameterized by username and/or port
-number. You can give these explicitly via args/kwargs::
+Meet `.Connection`, which represents an SSH connection and provides the core of
+Fabric's API, such as `~.Connection.run`. `.Connection` objects need at least a
+hostname to be created successfully, and may be further parameterized by
+username and/or port number. You can give these explicitly via args/kwargs::
 
     Connection(host='web1', user='deploy', port=2202)
 
@@ -66,35 +71,79 @@ appears!)::
 
     Connection('deploy@web1:2202')
 
-`.Connection` objects' methods usually return instances of
-`invoke.runners.Result` (or subclasses thereof) exposing the sorts of details
-seen above: what was requested, what happened while the remote action occurred,
-and what the final result was.
+`.Connection` objects' methods (like `~.Connection.run`) usually return
+instances of `invoke.runners.Result` (or subclasses thereof) exposing the sorts
+of details seen above: what was requested, what happened while the remote
+action occurred, and what the final result was.
 
+Superuser privileges via auto-response
+======================================
 
-Superuser privileges
-====================
-
-blah blah you can also run via sudo() which is identical to run() but which
-sets command wrapper (how to do that in invoke?) to 'sudo -c xxx', and
-sets autoresponse to sudo prompt + <config for password, wherever that
-lives...needs to be per-host + default>
-
-(This means we need another Invoke ticket for command wrapping, unless one
-already exists...)
-
-Include explicit note that both command wrapping and autoresponse can be set by
-hand with regular ol' run() if desired, sudo() is simply a convenience.
+Need to run things as the remote system's superuser? You could invoke the
+``sudo`` program via `~.Connection.run`, and (if your remote system isn't
+configured with passwordless sudo) respond to the password prompt by hand.
+(Note how we need to request a remote pseudo-terminal; most ``sudo``
+implementations get grumpy at password-prompt time otherwise.)
 
 .. TODO:
-    and apparently sudo _requires_ pty=True to work well, if a password is
-    needed. grump. figure out realistic shit around this: always pty when sudo;
-    default to pty generally (starting to seem like maybe the right approach so
-    far...maybe)  since differing between sudo and run is dumb; figure out if
-    we can force sudo to 'ask' stderr even if it thinks no terminal is
-    there; ???
+    update repr() of Result a bit, insert it in the below examples. Right now a
+    real session of the below results in extra lines all
+    '<fabric.runners.Result object at 0xh3x>'.
 
-.. TODO: ohhh that's why we used -S, so...try that first lolllll
+.. TODO:
+    this is all probably still too detailed for a real tutorial; probably move
+    most of it into a conceptual doc?
+
+::
+
+    >>> from fabric import Connection
+    >>> cxn = Connection('db1')
+    >>> cxn.run('sudo /usr/sbin/useradd mydbuser', pty=True)
+    [sudo] password for yourusername:
+    >>> cxn.run('id -u mydbuser')
+    1001
+
+Giving passwords by hand every time can get old; thankfully Invoke's powerful
+command-execution functionality includes the ability to :ref:`auto-respond
+<autoresponding>` to program output with pre-defined input. We can use this for
+``sudo``::
+
+    >>> responses = {'[sudo] password for yourusername:': 'mypassword'}
+    >>> cxn.run('sudo whoami', pty=True, responses=responses)
+    [sudo] password for yourusername:
+    root
+
+It's difficult to show in a snippet, but when the above was executed, the user
+didn't need to type anything; ``mypassword`` was sent to the remote program
+automatically. Much easier!
+
+The ``sudo`` helper
+-------------------
+
+The above example using ``responses`` still has a few minor problems as a "how
+you should ``sudo``" solution:
+
+* Giving ``responses=`` every time would itself get pretty old;
+* Hardcoding your password in your scripts is poor security practice;
+* ``sudo`` may present different prompt text on different systems;
+
+And so on. To prevent every user from writing their own wrapper, Fabric
+provides its own::
+
+    >>> from fabric import Connection
+    >>> cxn = Connection('db1')
+    >>> cxn.sudo('whoami', hide='stderr')
+    No stored 'sudo' password found! Please enter it now: 
+    root
+    >>> cxn.sudo('/usr/sbin/useradd mydbuser')
+    >>> cxn.run('id -u mydbuser')
+    1001
+
+What happened here? `~.Connection.sudo` checked to see if a sudo password had
+been loaded by the :doc:`configuration system <configuration>`. Upon not
+finding one, it prompted the user (using `getpass.getpass`) to fill that value
+in, then set up an auto-response for use by all subsequent `~.Connection.sudo`
+calls.
 
 
 Transfer files
