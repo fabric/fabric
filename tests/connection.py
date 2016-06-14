@@ -330,14 +330,29 @@ class Connection_(Spec):
             Local.return_value.run.assert_called_with('foo')
 
     class sudo:
-        # NOTE: most tests for this functionality live in Invoke's runner
-        # tests.
-
-        def wraps_command_in_sudo_dash_c(self):
+        def prefixes_command_with_sudo(self):
+            # Expects start() called with "sudo -S -p <prompt> command"
             skip()
 
-        def responds_with_configured_sudo_password(self):
+        def autoresponds_with_configured_sudo_password(self):
+            # Expects inner run() call to be given responses={'[sudo] xxx':
+            # 'password'}
             skip()
+
+        def does_not_overwrite_responses_if_existing_autoresponse_is_set(self):
+            # I.e. user, for some reason, set an autoresponse for the expected
+            # sudo prompt already. Expects to NOT give responses=xxx to inner
+            # run() call.
+            skip()
+
+        def prompts_when_no_configured_password_is_found(self):
+            # Expects call to getpass, then the result to be set in responses=
+            skip()
+
+        def passes_through_all_other_run_kwargs(self):
+            # Test some small but wide-ranging subset of run() kwargs
+            skip()
+
 
         # TODO: per-host passwords work?
         # TODO: default password fallback works?
