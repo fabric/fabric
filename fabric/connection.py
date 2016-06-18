@@ -249,7 +249,7 @@ class Connection(Context):
         * Updates the value of the ``responses`` dict (see
           :ref:`autoresponding`) so that it includes a key for the ``sudo``
           password prompt.
-        * Fills in the value/response for that key from the ``sudo_password``
+        * Fills in the value/response for that key from the ``sudo.password``
           :doc:`configuration </concepts/configuration>` setting; as usual, a
           per-host value is preferred over the general one, if both are found.
 
@@ -257,15 +257,15 @@ class Connection(Context):
           `getpass <getpass.getpass>`, and the value is stored in memory
           (within the general configuration section) for reuse.
         * Builds a full ``sudo`` command string using the supplied ``command``
-          argument prefixed by the ``sudo_prefix`` configuration setting.
+          argument prefixed by the ``sudo.prefix`` configuration setting.
         * Executes that command via a call to `run`, returning the result.
 
         As with `~invoke.runners.Runner.run`, these additional behaviors may be
         configured via runtime keyword arguments, which will override use of
         the configuration system.
 
-        :param str password: Runtime override for ``sudo_password``.
-        :param str prefix: Runtime override for ``sudo_prefix``.
+        :param str password: Runtime override for ``sudo.password``.
+        :param str prefix: Runtime override for ``sudo.prefix``.
         """
         pass
 

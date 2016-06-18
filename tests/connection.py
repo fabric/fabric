@@ -154,11 +154,29 @@ class Connection_(Spec):
                 eq_(c.config['port'], 22)
 
             def defaults_to_merger_of_global_defaults(self):
+                # I.e. our global_defaults + Invoke's global_defaults
                 c = Connection('host')
                 # From invoke's global_defaults
                 eq_(c.config.run.warn, False)
                 # From ours
                 eq_(c.config.port, 22)
+
+            def our_config_has_various_default_keys(self):
+                # NOTE: Duplicates some other tests but we're now starting to
+                # grow options not directly related to user/port stuff, so best
+                # to have at least one test listing all expected keys.
+                c = Connection('host')
+                for keyparts in (
+                    ('port',),
+                    ('user',),
+                    ('sudo', 'prompt'),
+                    ('sudo', 'password'),
+                ):
+                    obj = c.config
+                    for key in keyparts:
+                        err = "Didn't find expected config key path '{0}'!"
+                        assert key in obj, err.format(".".join(keyparts))
+                        obj = obj[key]
 
             def our_defaults_override_invokes(self):
                 "our defaults override invoke's"
