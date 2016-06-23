@@ -387,6 +387,23 @@ def _task_names(mapping):
     return tasks
 
 
+def _task_names_max_length(task_names=None, _cache={}):
+    """
+    Return the length of the larger task name.
+
+    This function offer the advantage to keep a cache of this value.
+    """
+    if _cache is None:
+        _cache = {}
+    if 'max_length' not in _cache:
+        if task_names is None:
+            task_names = _task_names(state.commands)
+        _cache['max_length'] = reduce(lambda a, b: max(a, len(b)),
+                                                      task_names, 0)
+    return _cache['max_length']
+
+
+
 def _print_docstring(docstrings, name):
     if not docstrings:
         return False
@@ -395,25 +412,48 @@ def _print_docstring(docstrings, name):
         return docstring
 
 
+def _oneline_docstring_max_size(max_len, sep, trail):
+    max_width = _pty_size()[1] - 1 - len(trail)
+    size = max_width - (max_len + len(sep) + len(trail))
+    return size
+
+
+def _oneline_docstring(name, docstring, max_len, sep, trail, _cache={}):
+    """
+    Return a line, containing the task name and its docstring, formated to be
+    displayed in the standard output (according to _pty_size)
+    This function keep the display size memoized, so it do not take into account
+    the reshaping of the pty.
+    """
+    # Get line max size
+    if _cache is None:
+        _cache = {}
+    _cache_key = (max_len, sep, trail)
+    if _cache_key not in _cache:
+        _cache[_cache_key] = _oneline_docstring_max_size(max_len, sep, trail)
+    size = _cache[_cache_key]
+    # Extract docstring first line
+    lines = filter(None, docstring.splitlines())
+    first_line = lines[0].strip()
+    # Truncate it if it's longer than N chars
+    if len(first_line) > size:
+        first_line = first_line[:size] + trail
+    docstring = name.ljust(max_len) + sep + first_line
+    return docstring
+
+
 def _normal_list(docstrings=True):
     result = []
     task_names = _task_names(state.commands)
     # Want separator between name, description to be straight col
-    max_len = reduce(lambda a, b: max(a, len(b)), task_names, 0)
+    max_len = _task_names_max_length(task_names, _cache=None)
     sep = '  '
     trail = '...'
-    max_width = _pty_size()[1] - 1 - len(trail)
     for name in task_names:
-        output = None
         docstring = _print_docstring(docstrings, name)
         if docstring:
-            lines = filter(None, docstring.splitlines())
-            first_line = lines[0].strip()
-            # Truncate it if it's longer than N chars
-            size = max_width - (max_len + len(sep) + len(trail))
-            if len(first_line) > size:
-                first_line = first_line[:size] + trail
-            output = name.ljust(max_len) + sep + first_line
+            output = _oneline_docstring(
+                name, docstring, max_len, sep, trail, _cache=None)
         # Or nothing (so just the name)
         else:
             output = name
@@ -424,8 +464,17 @@ def _normal_list(docstrings=True):
 def _nested_list(mapping, level=1):
     result = []
     tasks, collections = _sift_tasks(mapping)
+    # Compute docstring formating numbers
+    max_len = _task_names_max_length()
+    sep = '  '
+    trail = '...'
     # Tasks come first
-    result.extend(map(lambda x: indent(x, spaces=level * 4), tasks))
+    for task in tasks:
+        docstring = mapping[task].__doc__
+        task = indent(task, spaces=level * 4)
+        if docstring:
+            task = _oneline_docstring(task, docstring, max_len, sep, trail)
+        result.append(task)
     for collection in collections:
         module = mapping[collection]
         # Section/module "header"
