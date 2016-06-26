@@ -64,7 +64,12 @@ class Main(Spec):
         Run command via sudo on host "localhost"
         """
         skip()
-        Connection('localhost').sudo('echo foo')
+        # TODO: difficult to make noninteractive, see
+        # https://github.com/pyinvoke/invoke/issues/366
+        eq_(
+            Connection('localhost').sudo('whoami').stdout,
+            'root\n',
+        )
 
     def mixed_sudo_and_normal_commands(self):
         """

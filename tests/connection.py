@@ -348,34 +348,25 @@ class Connection_(Spec):
             Local.return_value.run.assert_called_with('foo')
 
     class sudo:
-        def prefixes_command_with_sudo(self):
-            # Expects start() called with "sudo -S -p <prompt> command"
+        @patch('fabric.connection.Remote')
+        def basic_invocation(self, Remote):
+            # Technically duplicates Invoke-level tests, but ensures things
+            # still work correctly at our level.
+            cxn = Connection('host')
+            cxn.sudo('foo')
+            cmd = "sudo -S -p '{0}' foo".format(cxn.config.sudo.prompt)
+            Remote.return_value.run.assert_called_once_with(cmd)
+
+        def per_host_password_works_as_expected(self):
+            # TODO: needs clearly defined "per-host" config API, if a distinct
+            # one is necessary besides "the config obj handed in when
+            # instantiating the Connection".
+            # E.g. generate a Connection pulling in a sudo.password value from
+            # what would be a generic conf file or similar, *and* one more
+            # specific to that particular Connection (perhaps simply the
+            # 'override' level?), w/ test asserting the more-specific value is
+            # what's submitted.
             skip()
-
-        def autoresponds_with_configured_sudo_password(self):
-            # Expects inner run() call to be given responses={'[sudo] xxx':
-            # 'password'}
-            skip()
-
-        def does_not_overwrite_responses_if_existing_autoresponse_is_set(self):
-            # I.e. user, for some reason, set an autoresponse for the expected
-            # sudo prompt already. Expects to NOT give responses=xxx to inner
-            # run() call.
-            skip()
-
-        def prompts_when_no_configured_password_is_found(self):
-            # Expects call to getpass, then the result to be set in responses=
-            skip()
-
-        def passes_through_all_other_run_kwargs(self):
-            # Test some small but wide-ranging subset of run() kwargs
-            skip()
-
-
-        # TODO: per-host passwords work?
-        # TODO: default password fallback works?
-        # TODO: runtime password works?
-        # TODO: how to differentiate these passwords from connection ones?
 
     class sftp:
         @patch('fabric.connection.SSHClient')
