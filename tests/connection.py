@@ -348,14 +348,16 @@ class Connection_(Spec):
             Local.return_value.run.assert_called_with('foo')
 
     class sudo:
+        @patch('fabric.connection.SSHClient')
         @patch('fabric.connection.Remote')
-        def basic_invocation(self, Remote):
+        @patch('invoke.context.getpass')
+        def basic_invocation(self, getpass, Remote, Client):
             # Technically duplicates Invoke-level tests, but ensures things
             # still work correctly at our level.
             cxn = Connection('host')
             cxn.sudo('foo')
             cmd = "sudo -S -p '{0}' foo".format(cxn.config.sudo.prompt)
-            Remote.return_value.run.assert_called_once_with(cmd)
+            eq_(Remote.return_value.run.call_args[0][0], cmd)
 
         def per_host_password_works_as_expected(self):
             # TODO: needs clearly defined "per-host" config API, if a distinct

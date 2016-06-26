@@ -243,10 +243,11 @@ class Connection(Context):
         configuration overrides in addition to the generic/global ones. Thus,
         for example, per-host sudo passwords may be configured.
         """
-        pass
-        #prompt = "[sudo] password:"
-        #cmd_str = "sudo -S -p '{0}' {1}".format(prompt, command)
-        #return Remote(context=self).run(cmd_str)
+        # TODO: we may never actually need to tweak the implementation, in
+        # which case we want to...just touch Remote.sudo.__doc__ or something?
+        # Move the above to the API doc shim page? (Will that even render
+        # inherited-only methods?)
+        super(Connection, self).sudo(command, **kwargs)
 
     def local(self, *args, **kwargs):
         """
