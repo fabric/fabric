@@ -25,6 +25,9 @@ def rsync_project(
     ssh_opts='',
     capture=False,
     upload=True,
+    sudo=False,
+    user=None,
+    group=None,
     default_opts='-pthrvz'
 ):
     """
@@ -85,6 +88,7 @@ def rsync_project(
       performed up or downstream. Upstream by default.
     * ``default_opts``: the default rsync options ``-pthrvz``, override if
       desired (e.g. to remove verbosity, etc).
+    * ``sudo``: run the rsync command using sudo.
 
     Furthermore, this function transparently honors Fabric's port and SSH key
     settings. Calling this function when the current host string contains a
@@ -159,7 +163,7 @@ def rsync_project(
 
     if output.running:
         print("[%s] rsync_project: %s" % (env.host_string, cmd))
-    return local(cmd, capture=capture)
+    return local(cmd, capture=capture, sudo=sudo, user=user, group=group)
 
 
 def upload_project(local_dir=None, remote_dir="", use_sudo=False):

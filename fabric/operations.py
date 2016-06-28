@@ -1147,7 +1147,7 @@ def sudo(command, shell=True, pty=True, combine_stderr=None, user=None,
     )
 
 
-def local(command, capture=False, shell=None):
+def local(command, capture=False, shell=None, sudo=False, user=None, group=None):
     """
     Run a command on the local system.
 
@@ -1198,7 +1198,8 @@ def local(command, capture=False, shell=None):
     given_command = command
     # Apply cd(), path() etc
     with_env = _prefix_env_vars(command, local=True)
-    wrapped_command = _prefix_commands(with_env, 'local')
+    with_prefix = _prefix_commands(with_env, 'local')
+    wrapped_command = _sudo_prefix(user, group) + " " + with_prefix if sudo else with_prefix
     if output.debug:
         print("[localhost] local: %s" % (wrapped_command))
     elif output.running:
