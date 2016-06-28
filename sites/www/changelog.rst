@@ -2,6 +2,8 @@
 Changelog
 =========
 
+* :bug:`1458` Correct the message when host is not found in known hosts
+  and ``reject_unknown_host`` and ``abort_on_prompts`` are enabled.
 * :bug:`1447` Fix a relative import in ``fabric.network`` to be
   correctly/consistently absolute instead. Thanks to ``@bildzeitung`` for catch
   & patch.

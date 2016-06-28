@@ -525,6 +525,12 @@ def connect(user, host, port, cache, seek_gateway=True):
                 and not is_key_load_error(e):
                 raise NetworkError(msg, e)
 
+            # Paramiko raises SSHException when host not found in known_hosts
+            # (missing or not supported cert)
+            if e.__class__ is ssh.SSHException \
+                and msg == "Server '%s' not found in known_hosts" % host:
+                raise NetworkError(msg, e)
+
             # Otherwise, assume an auth exception, and prompt for new/better
             # password.
 
