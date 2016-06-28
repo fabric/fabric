@@ -546,6 +546,22 @@ class TestConnections(FabricTest):
         with settings(hide('everything'), skip_bad_hosts=True):
             execute(subtask, hosts=['nope.nonexistent.com'])
 
+    @server()
+    def test_host_not_in_known_hosts_exception(self):
+        """
+        Check reject_unknown_hosts exception
+        """
+        with settings(hide('everything'), reject_unknown_hosts=True,
+                      disable_known_hosts=True, abort_on_prompts=True):
+            try:
+                run("echo foo")
+            except fabric.network.NetworkError as exc:
+                exp = "Server '[127.0.0.1]:2200' not found in known_hosts"
+                assert str(exc) == exp, "%s != %s" % (exc, exp)
+            else:
+                raise AssertionError("Host connected without valid "
+                                     "fingerprint.")
+
 
 @parallel
 def parallel_subtask():
