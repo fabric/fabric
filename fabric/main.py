@@ -396,29 +396,56 @@ def _print_docstring(docstrings, name):
 
 
 def _normal_list(docstrings=True):
-    result = []
+    try:
+        from tabulate import tabulate
+    except ImportError:
+        import re        
+        def tabulate(rows, **kwargs):
+            non_printable = re.compile('\\033\[[0-9]+m')
+            column_widths = []
+            columns = len(rows[0])
+            for c in range(columns):
+                column_widths.append(max(map(len, [ non_printable.sub('', row[c]) for row in rows ])))
+            if 'headers' in kwargs:
+                if kwargs['headers'] == 'firstrow':
+                    headers = rows.pop(0)
+                elif isinstance(kwargs['headers'], list):
+                    headers = kwargs['headers']                    
+            table = [ "".join([ h.ljust(len(h) - len(non_printable.sub('', h)) + column_widths[index] + 2) for index, h in enumerate(headers) ]) ]
+            table.append("".join([ '-'*column_widths[n] + 2*' ' for n in range(len(headers)) ]))
+            for row in rows:                
+                table.append("".join([ cell.ljust(len(cell) - len(non_printable.sub('', cell)) + column_widths[index] + 2) for index, cell in enumerate(row) ]))
+            return "\n".join(table)
+    from textwrap import wrap
+    
+    # http://stackoverflow.com/questions/287871/print-in-terminal-with-colors-using-python
+    BOLD = '\033[1m'
+    ENDC = '\033[0m'
+    GREEN = '\033[92m'    
     task_names = _task_names(state.commands)
-    # Want separator between name, description to be straight col
-    max_len = reduce(lambda a, b: max(a, len(b)), task_names, 0)
-    sep = '  '
-    trail = '...'
-    max_width = _pty_size()[1] - 1 - len(trail)
+    max_len = max(map(len, task_names))
+    max_width = _pty_size()[1] - 1 - max_len - 4
+    command_help = { "Task" : [], }
+    if docstrings:
+      command_help["Description"] = []
     for name in task_names:
-        output = None
+        command_help["Task"].append(GREEN + name + ENDC)        
         docstring = _print_docstring(docstrings, name)
-        if docstring:
-            lines = filter(None, docstring.splitlines())
-            first_line = lines[0].strip()
-            # Truncate it if it's longer than N chars
-            size = max_width - (max_len + len(sep) + len(trail))
-            if len(first_line) > size:
-                first_line = first_line[:size] + trail
-            output = name.ljust(max_len) + sep + first_line
-        # Or nothing (so just the name)
+        if docstring is None:
+          docstring = False
         else:
-            output = name
-        result.append(indent(output))
-    return result
+          docstring = docstring.strip()
+        if docstring and docstring != "":
+            doclines = [ "\n".join(wrap(line.strip(), max_width)) for line in docstring.split("\n") ]
+            for index, line in enumerate(doclines):
+                command_help["Description"].append(line)
+                if index < len(doclines) - 1:
+                    command_help["Task"].append("")
+    headers = [ BOLD + h + ENDC for h in command_help.keys() ]            
+    if docstrings and command_help["Description"]:
+      return [ tabulate(zip(command_help["Task"], command_help["Description"]), headers=headers) ]
+    else:
+      return command_help["Task"]
 
 
 def _nested_list(mapping, level=1):

@@ -5,6 +5,7 @@ from functools import partial
 from operator import isMappingType
 import os
 import sys
+import re
 from contextlib import contextmanager
 
 from fudge import Fake, patched_context, with_fakes
@@ -552,9 +553,11 @@ class TestNamespaces(FabricTest):
 #
 
 def eq_output(docstring, format_, expected):
+    non_printable = re.compile('\\033\[[0-9]+m|\-+')
+    whitespace = re.compile('\s+')    
     return eq_(
-        "\n".join(list_commands(docstring, format_)),
-        expected
+        whitespace.sub(' ', non_printable.sub('', "\n".join(list_commands(docstring, format_)))).strip(),
+        whitespace.sub(' ', expected).strip()
     )
 
 def list_output(module, format_, expected):
@@ -568,10 +571,11 @@ def test_list_output():
     lead = ":\n\n    "
     normal_head = COMMANDS_HEADER + lead
     nested_head = COMMANDS_HEADER + NESTED_REMINDER + lead
+    normal_docstring = COMMANDS_HEADER + lead + "Task Description "
     for desc, module, format_, expected in (
         ("shorthand (& with namespacing)", 'deep', 'short', "submodule.subsubmodule.deeptask"),
         ("normal (& with namespacing)", 'deep', 'normal', normal_head + "submodule.subsubmodule.deeptask"),
-        ("normal (with docstring)", 'docstring', 'normal', normal_head + "foo  Foos!"),
+        ("normal (with docstring)", 'docstring', 'normal', normal_docstring + "foo  Foos!"),
         ("nested (leaf only)", 'deep', 'nested', nested_head + """submodule:
         subsubmodule:
             deeptask"""),
