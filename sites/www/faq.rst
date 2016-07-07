@@ -251,6 +251,12 @@ argument, like so::
 
 This has been shown to work on FreeBSD and may work on other systems as well.
 
+If the remote host uses ``csh`` for your login shell, fabric requires the shell variable
+backslash_quote to be set, or else the quoting will not work. If this is not the default,
+you probably want to add the following line to ``~/.cshrc``::
+
+    set backslash_quote
+
 
 I'm sometimes incorrectly asked for a passphrase instead of a password.
 =======================================================================
