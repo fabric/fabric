@@ -10,7 +10,6 @@ import time
 import Queue
 from multiprocessing import Process
 
-from fabric.state import env
 from fabric.network import ssh
 from fabric.context_managers import settings
 

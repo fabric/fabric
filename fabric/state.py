@@ -46,8 +46,6 @@ def _get_system_username():
     except ImportError:
         if win32:
             import win32api
-            import win32security
-            import win32profile
             username = win32api.GetUserName()
     return username
 
