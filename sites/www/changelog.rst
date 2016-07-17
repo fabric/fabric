@@ -2,7 +2,7 @@
 Changelog
 =========
 
-* :bug:`1458` Use of ~username in remote_path executes server-side when using
+* :bug:`1486` (via :issue:`465`) Use of ~username in remote_path executes server-side when using
   ``get`` or ``put``: this remotely runs ``awk`` on ``/etc/passwd``.
 * :bug:`1447` Fix a relative import in ``fabric.network`` to be
   correctly/consistently absolute instead. Thanks to ``@bildzeitung`` for catch
