@@ -244,6 +244,34 @@ def prompt(text, key=None, default='', validate=None):
     # And return the value, too, just in case someone finds that useful.
     return value
 
+def _remote_tilde_expand (remote_path=None, use_sudo=False):
+    """
+    Performs tilde (~) expansion on a remote host
+
+    Theoretically you could just replace any occurrence ~/ with
+    /home/{env.user} and ~username/ with /home/{username}. However,
+    this works on the presumption that all home directories are
+    stored under /home. Currently this pulls the remote home directory
+    directly from /etc/passwd by executing awk, but there may be a
+    more elegant way of doing this.
+    """
+    if remote_path.startswith('~'):
+        if not '/' in remote_path:
+            expand_user = remote_path[1:]
+            remote_path = ''
+        else:
+            expand_user = remote_path[1:remote_path.index('/')]
+            remote_path = remote_path[remote_path.index('/')+1:]
+
+        if expand_user == '':
+            expand_user = env.sudo_user if use_sudo else env.user;
+
+        expanded = _run_command (command="awk -F: '$1 == \"%s\" {print $6}' /etc/passwd" % (expand_user), sudo=use_sudo, quiet=True)
+        remote_path = expanded + '/' + remote_path
+
+        return remote_path
+    else:
+        return remote_path
 
 @needs_host
 def put(local_path=None, remote_path=None, use_sudo=False,
@@ -351,8 +379,7 @@ def put(local_path=None, remote_path=None, use_sudo=False,
         remote_path = remote_path or home
 
         # Expand tildes
-        if remote_path.startswith('~'):
-            remote_path = remote_path.replace('~', home, 1)
+        remote_path = _remote_tilde_expand (remote_path, use_sudo)
 
         # Honor cd() (assumes Unix style file paths on remote end)
         if not os.path.isabs(remote_path) and env.get('cwd'):
@@ -536,8 +563,7 @@ def get(remote_path, local_path=None, use_sudo=False, temp_dir=""):
     with closing(ftp) as ftp:
         home = ftp.normalize('.')
         # Expand home directory markers (tildes, etc)
-        if remote_path.startswith('~'):
-            remote_path = remote_path.replace('~', home, 1)
+        remote_path = _remote_tilde_expand (remote_path, use_sudo)
         if local_is_path:
             local_path = os.path.expanduser(local_path)
 
