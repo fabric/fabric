@@ -831,6 +831,12 @@ there exists :option:`--initial-sudo-password-prompt`.
     "foo"`` and ``env.sudo_password = "bar"``), the ``sudo`` specific passwords
     will be used.
 
+.. note::
+    Due to backwards compatibility concerns, user-entered ``sudo`` passwords
+    will still be cached into ``env.password``/``env.passwords``;
+    ``env.sudo_password``/``env.sudo_passwords`` are purely for noninteractive
+    use.
+
 .. [#] We highly recommend the use of SSH `key-based access
     <http://en.wikipedia.org/wiki/Public_key>`_ instead of relying on
     homogeneous password setups, as it's significantly more secure.
