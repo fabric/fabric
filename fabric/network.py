@@ -442,7 +442,7 @@ def connect(user, host, port, cache, seek_gateway=True):
 
     # Initialize loop variables
     connected = False
-    password = get_password(user, host, port)
+    password = get_password(user, host, port, login_only=True)
     tries = 0
     sock = None
 
