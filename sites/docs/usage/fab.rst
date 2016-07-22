@@ -222,6 +222,13 @@ below.
 
     .. seealso:: :ref:`password-management`
 
+.. cmdoption:: --initial-sudo-password-prompt
+
+    Like :option:`--initial-password-prompt <-I>`, but for prefilling
+    :ref:`sudo_password` instead of :ref:`password`.
+
+    .. versionadded:: 1.12
+
 .. cmdoption:: -k
 
     Sets :ref:`env.no_keys <no_keys>` to ``True``, forcing the SSH layer to not
@@ -257,7 +264,9 @@ below.
     used as the default password when making SSH connections or calling the
     ``sudo`` program.
 
-    .. seealso:: :option:`--initial-password-prompt <-I>`
+    .. seealso::
+        :option:`--initial-password-prompt <-I>`,
+        :option:`--sudo-password`
 
 .. cmdoption:: -P, --parallel
 
@@ -348,6 +357,12 @@ below.
 
     .. seealso::
         :ref:`env.skip_unknown_tasks <skip-unknown-tasks>`
+
+.. cmdoption:: --sudo-password
+
+    Sets :ref:`env.sudo_password <sudo_password>`.
+
+    .. versionadded:: 1.12
 
 .. cmdoption:: --timeout=N, -t N
 

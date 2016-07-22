@@ -772,12 +772,15 @@ continue, instead of aborting.
 Password management
 ===================
 
-Fabric maintains an in-memory, two-tier password cache to help remember your
-login and sudo passwords in certain situations; this helps avoid tedious
-re-entry when multiple systems share the same password [#]_, or if a remote
-system's ``sudo`` configuration doesn't do its own caching.
+Fabric maintains an in-memory password cache of your login and sudo passwords
+in certain situations; this helps avoid tedious re-entry when multiple systems
+share the same password [#]_, or if a remote system's ``sudo`` configuration
+doesn't do its own caching.
 
-The first layer is a simple default or fallback password cache,
+Pre-filling the password caches
+-------------------------------
+
+The first layer is a simple default or fallback password value,
 :ref:`env.password <password>` (which may also be set at the command line via
 :option:`--password <-p>` or :option:`--initial-password-prompt <-I>`). This
 env var stores a single password which (if non-empty) will be tried in the
@@ -793,14 +796,40 @@ only require a single password entry for each. (Previous versions of Fabric
 used only the single, default password cache and thus required password
 re-entry every time the previously entered password became invalid.)
 
+Auto-filling/updating from user input
+-------------------------------------
+
 Depending on your configuration and the number of hosts your session will
-connect to, you may find setting either or both of these env vars to be useful.
-However, Fabric will automatically fill them in as necessary without any
-additional configuration.
+connect to, you may find setting either or both of the above env vars to be
+useful. However, Fabric will automatically fill them in as necessary without
+any additional configuration.
 
 Specifically, each time a password prompt is presented to the user, the value
 entered is used to update both the single default password cache, and the cache
 value for the current value of ``env.host_string``.
+
+Specifying ``sudo``-only passwords
+----------------------------------
+
+In some situations (such as those involving two-factor authentication, or any
+other situation where submitting a password at login time is not desired or
+correct) you may want to only cache passwords intended for ``sudo``, instead of
+reusing the values for both login and ``sudo`` purposes.
+
+To do this, you may set :ref:`env.sudo_password <sudo_password>` or populate
+:ref:`env.sudo_passwords <sudo_passwords>`, which mirror ``env.password`` and
+``env.passwords`` (described above). These values will **only** be used in
+responding to ``sudo`` password prompts, and will never be submitted at
+connection time.
+
+There is also an analogue to the ``--password`` command line flag, named
+:option:`--sudo-password`, and like :option:`--initial-password-prompt <-I>`,
+there exists :option:`--initial-sudo-password-prompt`.
+
+.. note::
+    When both types of passwords are filled in (e.g. if ``env.password =
+    "foo"`` and ``env.sudo_password = "bar"``), the ``sudo`` specific passwords
+    will be used.
 
 .. [#] We highly recommend the use of SSH `key-based access
     <http://en.wikipedia.org/wiki/Public_key>`_ instead of relying on
