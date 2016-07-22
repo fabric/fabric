@@ -808,6 +808,8 @@ Specifically, each time a password prompt is presented to the user, the value
 entered is used to update both the single default password cache, and the cache
 value for the current value of ``env.host_string``.
 
+.. _sudo-passwords:
+
 Specifying ``sudo``-only passwords
 ----------------------------------
 

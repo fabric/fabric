@@ -2,6 +2,10 @@
 Changelog
 =========
 
+* :feature:`1491` Implement ``sudo``-specific password caching (:ref:`docs
+  <sudo-passwords>`). This can be used to work around issues where over-eager
+  submission of ``env.password`` at login time causes authentication problems
+  (e.g. during two-factor auth).
 * :bug:`1447` Fix a relative import in ``fabric.network`` to be
   correctly/consistently absolute instead. Thanks to ``@bildzeitung`` for catch
   & patch.
