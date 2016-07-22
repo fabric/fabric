@@ -343,8 +343,8 @@ below.
 
 .. cmdoption:: --skip-unknown-tasks
 
-    Sets :ref:`env.skip_unknown_tasks <skip-unknown-tasks>`, causing Fabric to skip
-    unknown tasks.
+    Sets :ref:`env.skip_unknown_tasks <skip-unknown-tasks>`, causing Fabric to
+    skip unknown tasks.
 
     .. seealso::
         :ref:`env.skip_unknown_tasks <skip-unknown-tasks>`
