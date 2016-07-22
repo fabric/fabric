@@ -407,7 +407,8 @@ connections = HostConnectionCache()
 
 
 def _open_session():
-    return connections[env.host_string].get_transport().open_session()
+    t = env.timeout
+    return connections[env.host_string].get_transport().open_session(timeout=t)
 
 
 def default_channel():
