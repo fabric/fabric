@@ -202,6 +202,15 @@ class Connection(Context):
         Also saves a handle to the now-set Transport object for easier access.
         """
         if not self.is_connected:
+            # TODO: work in all the stuff Fabric 1 supports here & maybe some
+            # it doesn't.
+            # TODO: and if possible, make it easy for users to arbitrarily
+            # submit kwargs so we don't have to constantly manage kwarg parity
+            # for stuff that otherwise doesn't need any dev on our side. (Think
+            # things like timeouts, Kerberos kwargs, etc.)
+            # TODO: and that methodology should ideally work with the config
+            # system somehow, even if it's e.g.
+            # config.fabric.extra_connection_kwargs or something.
             self.client.connect(hostname=self.host, port=self.port)
             self.transport = self.client.get_transport()
 
