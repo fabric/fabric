@@ -2,6 +2,7 @@
 Changelog
 =========
 
+* :release:`1.10.4 <2016-07-25>`
 * :bug:`1447` Fix a relative import in ``fabric.network`` to be
   correctly/consistently absolute instead. Thanks to ``@bildzeitung`` for catch
   & patch.
