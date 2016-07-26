@@ -13,7 +13,7 @@ Changelog
   correctly/consistently absolute instead. Thanks to ``@bildzeitung`` for catch
   & patch.
 * :release:`1.11.1 <2016-04-09>`
-* :bug:`-` Bumped version to ``1.11.1`` due to apparently accidentally
+* :bug:`- (==1.11)` Bumped version to ``1.11.1`` due to apparently accidentally
   uploading a false ``1.11.0`` to PyPI sometime in the past (PyPI is secure &
   prevents reusing deleted filenames.) We have no memory of this, but databases
   don't lie!

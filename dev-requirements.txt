@@ -10,7 +10,7 @@ nose<2.0
 Fudge<1.0
 # Documentation generation
 Sphinx==1.3.4
-releases==0.6.1
+releases>=1.2.0,<2
 invoke>=0.12,<0.13
 invocations>=0.12,<0.13
 alabaster>=0.6.1
