@@ -2,6 +2,7 @@
 Changelog
 =========
 
+* :release:`1.12.0 <2016-07-25>`
 * :release:`1.11.2 <2016-07-25>`
 * :release:`1.10.4 <2016-07-25>`
 * :feature:`1491` Implement ``sudo``-specific password caching (:ref:`docs
