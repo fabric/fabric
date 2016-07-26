@@ -186,6 +186,9 @@ class Connection(Context):
         # TODO: remove this ASAP once a better way of representing connections
         # in aggregate results is found! (E.g. including local port or other
         # truly-differentiating data)
+        # TODO: or at least rename/doc it so it's obvious it's just a
+        # convenient identifier & not something used instead of an actual
+        # Connection object.
         return "{0}@{1}:{2}".format(self.user, self.host, self.port)
 
     @property
