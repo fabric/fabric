@@ -35,6 +35,7 @@ class Connection_(Spec):
     class known_hosts_behavior:
         def defaults_to_auto_add(self):
             # TODO: change Paramiko API so this isn't a private access
+            # TODO: maybe just merge with the __init__ test that is similar
             ok_(isinstance(Connection('host').client._policy, AutoAddPolicy))
 
     class init:
@@ -192,6 +193,28 @@ class Connection_(Spec):
                     # If our global_defaults didn't win, this would still
                     # resolve to False.
                     eq_(Connection('host').config.run.warn, "nope lol")
+
+        class initializes_client:
+            @patch('fabric.connection.SSHClient')
+            def instantiates_empty_SSHClient(self, Client):
+                Connection('host')
+                Client.assert_called_once_with()
+
+            @patch('fabric.connection.SSHClient')
+            @patch('fabric.connection.AutoAddPolicy')
+            def sets_missing_host_key_policy(self, Policy, Client):
+                # TODO: should make the policy configurable early on
+                sentinel = Mock()
+                Policy.return_value = sentinel
+                Connection('host')
+                set_policy = Client.return_value.set_missing_host_key_policy
+                set_policy.assert_called_once_with(sentinel)
+
+            @patch('fabric.connection.SSHClient')
+            def is_made_available_as_client_attr(self, Client):
+                sentinel = Mock()
+                Client.return_value = sentinel
+                ok_(Connection('host').client is sentinel)
 
     def stringrep(self):
         "__str__"
