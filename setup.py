@@ -35,8 +35,7 @@ setup(
         # TODO: pinning
         'invoke>=0.13,<2.0',
         'paramiko>=2.0,<3.0',
-        # TODO: get rid of this sometime, is concession to my Yosemite
-        'cryptography>=1.1,<1.4',
+        'cryptography>=1.1',
     ],
     packages=['fabric'],
     entry_points={
