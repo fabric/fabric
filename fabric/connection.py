@@ -214,7 +214,12 @@ class Connection(Context):
             # TODO: and that methodology should ideally work with the config
             # system somehow, even if it's e.g.
             # config.fabric.extra_connection_kwargs or something.
-            self.client.connect(hostname=self.host, port=self.port)
+            kwargs = dict(
+                username=self.user,
+                hostname=self.host,
+                port=self.port,
+            )
+            self.client.connect(**kwargs)
             self.transport = self.client.get_transport()
 
     def close(self):

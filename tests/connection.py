@@ -234,6 +234,7 @@ class Connection_(Spec):
             client.get_transport.return_value = Mock(active=False)
             Connection('host').open()
             client.connect.assert_called_with(
+                username=get_local_user(),
                 hostname='host',
                 port=22,
             )
@@ -256,10 +257,7 @@ class Connection_(Spec):
             client.get_transport.return_value.active = True
             cxn.open()
             cxn.open()
-            client.connect.assert_called_once_with(
-                hostname='host',
-                port=22,
-            )
+            eq_(client.connect.call_count, 1)
 
         @patch('fabric.connection.SSHClient')
         def is_connected_still_False_when_connect_fails(self, Client):
@@ -273,6 +271,17 @@ class Connection_(Spec):
                 pass
             eq_(cxn.is_connected, False)
 
+        @patch('fabric.connection.SSHClient')
+        def uses_configured_user_host_and_port(self, Client):
+            cxn = Connection(user='myuser', host='myhost', port=9001)
+            client = Client.return_value
+            client.get_transport.return_value = Mock(active=False)
+            cxn.open()
+            client.connect.assert_called_once_with(
+                username='myuser',
+                hostname='myhost',
+                port=9001,
+            )
         # TODO: all the various connect-time options such as agent forwarding,
         # host acceptance policies, how to auth, etc etc. These are all aspects
         # of a given session and not necessarily the same for entire lifetime
