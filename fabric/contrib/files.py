@@ -27,7 +27,12 @@ def exists(path, use_sudo=False, verbose=False):
     behavior.
     """
     func = use_sudo and sudo or run
-    cmd = 'stat %s' % (_expand_path(path) if func("ver").failed else path)
+    with settings(hide('everything'), warn_only=True):
+        try:
+            result = func("ver") #is there better way to detect remote windows?
+            cmd = 'stat %s' % (_expand_path(path) if result.failed else path)
+        except:
+            cmd = 'test -e %s' % _expand_path(path)
     # If verbose, run normally
     if verbose:
         with settings(warn_only=True):
