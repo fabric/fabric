@@ -589,7 +589,12 @@ def update_output_levels(show, hide):
 
 
 def show_commands(docstring, format, code=0):
-    print("\n".join(list_commands(docstring, format)))
+    content = "\n".join(list_commands(docstring, format))
+    if isinstance(content, unicode):
+        import codecs, locale
+        encoding = codecs.lookup(locale.getpreferredencoding()).name
+        content = content.encode(encoding)
+    print(content)
     sys.exit(code)
 
 
