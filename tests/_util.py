@@ -177,6 +177,7 @@ class Session(object):
         # And a single connect to our target host.
         # TODO: give a shit about port too
         self.client.connect.assert_called_once_with(
+            username=ANY,
             hostname=self.host or ANY,
             port=ANY
         )
