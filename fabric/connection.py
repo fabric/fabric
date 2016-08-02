@@ -110,6 +110,8 @@ class Connection(Context):
 
             Default: ``None``, in which case no gatewaying will occur.
 
+            .. seealso:: :ref:`ssh-gateways`
+
         :raises exceptions.ValueError:
             if user or port values are given via both ``host`` shorthand *and*
             their own arguments. (We `refuse the temptation to guess`_).

@@ -2,6 +2,8 @@
 Networking
 ==========
 
+.. _ssh-gateways:
+
 SSH connection gateways
 =======================
 
@@ -30,15 +32,21 @@ and not any Fabric-level config, but sometimes more flexible).
 
 This style of gateway is so named because it uses the SSH protocol's
 ``direct-tcpip`` channel type - a lightweight method of requesting that the
-gateway's ``sshd`` open a connection on our behalf to an internal system.
+gateway's ``sshd`` open a connection on our behalf to another system.
 
-Its implementation in Fabric is simple: just create a new `.Connection` object
-parameterized for the gateway, and use it as the ``gateway`` parameter when
-creating your inner/real `.Connection`::
+Its use is simple: create a new `.Connection` object parameterized for the
+gateway, and use it as the ``gateway`` parameter when creating your inner/real
+`.Connection`::
 
     from fabric import Connection
 
     cxn = Connection('internalhost', gateway=Connection('gatewayhost'))
+
+As with any other `.Connection`, the gateway connection may be configured with
+a specific username, port number, and so forth. (This includes ``gateway``
+itself - they can be chained indefinitely!)
+
+.. TODO: confirm that, hah
 
 ``ProxyCommand``
 ----------------
