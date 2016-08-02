@@ -27,7 +27,7 @@ def exists(path, use_sudo=False, verbose=False):
     """
     func = use_sudo and sudo or run
     with settings(hide('everything'), warn_only=True):
-        cmd = 'stat %s' % (_expand_path(path) if func("ver").failed else path)
+        cmd = 'stat %s' % _expand_path(path)
     # If verbose, run normally
     if verbose:
         with settings(warn_only=True):
@@ -424,4 +424,5 @@ def _escape_for_regex(text):
     return regex
 
 def _expand_path(path):
-    return '"$(echo %s)"' % path
+    with settings(hide('everything'), warn_only=True):
+        return path if '"' in run('echo "WinOS echoes quotes"') else '"$(echo %s)"' % path
