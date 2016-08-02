@@ -75,7 +75,7 @@ class Connection(Context):
     # Client.exec_command does, it already allows configuring a subset of what
     # we do / will eventually do / did in 1.x. It's silly to have to do
     # .get_transport().open_session().
-    def __init__(self, host, user=None, port=None, config=None):
+    def __init__(self, host, user=None, port=None, config=None, gateway=None):
         """
         Set up a new object representing a server connection.
 
@@ -104,6 +104,11 @@ class Connection(Context):
             `.Connection` (e.g. default SSH port and so forth).
 
             Default is an anonymous `.Config` object.
+
+        :param fabric.connection.Connection gateway:
+            another `.Connection` to use as a ``direct-tcpip`` SSH gateway.
+
+            Default: ``None``, in which case no gatewaying will occur.
 
         :raises exceptions.ValueError:
             if user or port values are given via both ``host`` shorthand *and*
@@ -145,6 +150,8 @@ class Connection(Context):
         self.user = user or self.config.user
         #: The network port to connect on.
         self.port = port or self.config.port
+        #: The gateway `.Connection` to be used, if any.
+        self.gateway = gateway
 
         #: The `paramiko.client.SSHClient` instance this connection wraps.
         client = SSHClient()
@@ -156,6 +163,7 @@ class Connection(Context):
         self.transport = None
 
     def __str__(self):
+        # TODO: insert gateway in some kind of shorthand (...maybe host_string)
         s = "<Connection id={0} user='{1.user}' host='{1.host}' port={1.port}>"
         return s.format(id(self), self)
 
@@ -202,6 +210,9 @@ class Connection(Context):
         """
         Initiate an SSH connection to the host/port this object is bound to.
 
+        This may include activating & obtaining a `direct-tcpip` channel from
+        the configured gateway connection, if one is set.
+
         Also saves a handle to the now-set Transport object for easier access.
         """
         if not self.is_connected:
@@ -219,8 +230,29 @@ class Connection(Context):
                 hostname=self.host,
                 port=self.port,
             )
+            if self.gateway:
+                kwargs['sock'] = self.open_gateway()
             self.client.connect(**kwargs)
             self.transport = self.client.get_transport()
+
+    def open_gateway(self):
+        """
+        Open a ``direct-tcpip`` connection via configured `gateway`.
+
+        You probably don't want to call this directly.
+
+        :returns: A `paramiko.channel.Channel` object (which is socket-like.)
+        """
+        # TODO: logging
+        self.gateway.open()
+        # TODO: document exactly why this is the way it is. Why the
+        # last basically-empty tuple?
+        # TODO: cache/expose as an attribute?
+        return self.gateway.transport.open_channel(
+            'direct-tcpip',
+            (self.gateway.host, int(self.gateway.port)),
+            ('', 0),
+        )
 
     def close(self):
         """
