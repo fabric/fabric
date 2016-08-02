@@ -69,7 +69,7 @@ available ``netcat``, via ``nc %h %p``.
 If Fabric detects an applicable ``ProxyCommand`` directive in a loaded SSH
 config file, it will be used automatically.
 
-.. TODO:: expand this when 'in-memory' ssh_config manipulation becomes a thing
+.. TODO: expand this when 'in-memory' ssh_config manipulation becomes a thing
 
 Additional concerns
 -------------------

@@ -45,7 +45,7 @@ API organization
   on the CLI) are implemented via `.Group` objects, which are lightweight
   wrappers around multiple Connections.
 
-.. TODO::
+.. TODO:
     how will we support roles on the CLI or otherwise? 100% user-driven? Show
     an example of how to implement fabric 1's roles with a basic one-level
     dict, maybe?
@@ -66,7 +66,7 @@ CLI tasks
 - Old-style task functions (those not decorated with ``@task``) are gone. You
   must now always use ``@task``.
 
-.. TODO::
+.. TODO:
     how to handle 'local-only' tasks exactly? have both @task decorators
     imported at the same time? just use the remote one (like fabric 1
     effectively did)? use invoke solely for CLI and import fabric solely as a

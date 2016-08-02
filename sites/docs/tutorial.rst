@@ -140,10 +140,10 @@ provides its own::
     1001
 
 What happened here? `~.Connection.sudo` checked to see if a sudo password had
-been loaded by the :doc:`configuration system <configuration>`. Upon not
-finding one, it prompted the user (using `getpass.getpass`) to fill that value
-in, then set up an auto-response for use by all subsequent `~.Connection.sudo`
-calls.
+been loaded by the :doc:`configuration system </concepts/configuration>`. Upon
+not finding one, it prompted the user (using `getpass.getpass`) to fill that
+value in, then set up an auto-response for use by all subsequent
+`~.Connection.sudo` calls.
 
 
 Transfer files
