@@ -443,7 +443,7 @@ def _expand_path(path):
     Return a path expansion
 
     E.g.    ~/some/path     ->  /home/myuser/some/path
-            /user/*/share   ->  /user/local/share
+            /user/\*/share   ->  /user/local/share
     More examples can be found here: http://linuxcommand.org/lc3_lts0080.php
 
     .. versionchanged:: 1.0
