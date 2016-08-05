@@ -25,7 +25,7 @@ def exists(path, use_sudo=False, verbose=False):
     stderr and any warning resulting from the file not existing) in order to
     avoid cluttering output. You may specify ``verbose=True`` to change this
     behavior.
-    
+
     .. versionchanged:: 1.0
         In order to increase the support to Windows as well,
         `test -e` was replaced by `stat` which is
@@ -447,7 +447,7 @@ def _escape_for_regex(text):
 def is_win():
     """
     Return True if remote SSH server is running Windows OS, False otherwise
-    
+
     The idea is based on echoing quoted text!
     *NIX systems will echo quote text only,
     while windows echoes quotation marks as well.
@@ -458,6 +458,7 @@ def is_win():
 def _expand_path(path):
     """
     Return a path expansion
+
     E.g.    ~/some/path     ->  /home/myuser/some/path
             /user/*/share   ->  /user/local/share
     More examples can be found here: http://linuxcommand.org/lc3_lts0080.php
