@@ -76,13 +76,13 @@ This ChangeLog lists changes other then that of the upstream Fabric release.
 1.11.1.post1
    * Require paramiko 1.17.0 or later.
 
+1.10.2.post2 (2016-01-31)
+   * Identify as Fabric3 on the command-line (#4).
+   * Fix UnicodeDecodeError when receiving remote data (#5).
+   * Require paramiko 1.16.0.
+
 1.10.2.post3 (2016-02-07)
    * Cleanup imports in main code base and test suite.
    * Add Python 2/3/3.5 classifiers in setup.py.
    * Remove ``fabric.utils.RingBuffer`` with ``collections.deque`` from stdlib.
    * Remove ``with_statement`` __future__ import, it does nothing in Python 2.6+.
-
-1.10.2.post2 (2016-01-31)
-   * Identify as Fabric3 on the command-line (#4).
-   * Fix UnicodeDecodeError when receiving remote data (#5).
-   * Require paramiko 1.16.0.
