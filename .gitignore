@@ -27,3 +27,5 @@ sites/*/_build
 /py3/
 /py2/
 /src/
+/Makefile
+/venvs/
