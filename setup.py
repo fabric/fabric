@@ -22,7 +22,7 @@ To find out what's new in this version of Fabric, please see `the changelog
 For more information, please see the Fabric website or execute ``fab --help``.
 """
 
-install_requires=['paramiko>=1.17.0,<2.0', 'six>=1.10.0']
+install_requires=['paramiko>=1.17.2,<2.0', 'six>=1.10.0']
 
 
 setup(
@@ -37,7 +37,7 @@ setup(
     url='https://github.com/mathiasertl/fabric/',
     packages=find_packages(),
     test_suite='nose.collector',
-    tests_require=['nose', 'fudge<1.0', 'jinja2'],
+    tests_require=['nose<2.0', 'fudge<1.0', 'jinja2<3.0'],
     install_requires=install_requires,
     entry_points={
         'console_scripts': [
