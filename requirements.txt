@@ -4,7 +4,7 @@
 # cutting edge (which may have different requirements from released versions.)
 
 # Development version of Paramiko, just in case we're in one of those phases.
--e git+https://github.com/paramiko/paramiko#egg=paramiko
+-e git+https://github.com/paramiko/paramiko@1.17#egg=paramiko
 # Pull in actual "you already have local installed checkouts of Fabric +
 # Paramiko" dev deps.
 -r dev-requirements.txt
