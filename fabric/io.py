@@ -168,7 +168,7 @@ class OutputLooper(object):
                     # Handle prompts
                     expected, response = self._get_prompt_response()
                     if expected:
-                        del self.capture[-1 * len(expected):]
+                        del list(self.capture)[-1 * len(expected):]
                         self.chan.sendall(str(response) + '\n')
                     else:
                         prompt = _endswith(self.capture, env.sudo_prompt)
