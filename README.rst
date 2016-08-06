@@ -11,8 +11,8 @@ with the upstream version of Fabric. To switch to Fabric3, simply do::
 
 ... and don't forget to update any requirements.txt files accordingly::
 
-   # Fabric==1.11.1
-   Fabric3==1.11.1.post1
+   # Fabric==1.12.0
+   Fabric3==1.12.0.post1
 
 It provides a basic suite of operations for executing local or remote shell
 commands (normally or via ``sudo``) and uploading/downloading files, as well as
@@ -59,7 +59,7 @@ noted here:
 * The release installs as `Fabric3`. Despite it's name, this version is tested
   with Python2.7 and Python 3.4+.
 * Versioning is based on upstream Fabric releases, with a `postX` appended. So
-  version "1.11.1.post1" is equivalent to Fabrics own "1.11.1" release.
+  version "1.12.0.post1" is equivalent to Fabrics own "1.12.0" release.
 * ``fabric.utils.RingBuffer`` is removed, use ``collections.deque`` from the
   standard library instead.
 * In Python3, Fabric3 implements its own version of ``contextlib.nested`` based
@@ -72,6 +72,10 @@ ChangeLog
 ---------
 
 This ChangeLog lists changes other then that of the upstream Fabric release.
+
+1.12.0.post1
+   * Sync with 1.12.0 upstream release.
+   * Fix prompts in Python3.5 (see #18)
 
 1.11.1.post1
    * Require paramiko 1.17.0 or later.
