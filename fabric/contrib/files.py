@@ -449,7 +449,7 @@ def is_win():
     Return True if remote SSH server is running Windows OS, False otherwise
 
     The idea is based on echoing quoted text!
-    *NIX systems will echo quote text only,
+    \*NIX systems will echo quote text only,
     while windows echoes quotation marks as well.
     """
     with settings(hide('everything'), warn_only=True):
