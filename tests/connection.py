@@ -3,6 +3,7 @@ import socket
 from spec import Spec, eq_, raises, ok_, skip
 from mock import patch, Mock, call, PropertyMock
 from paramiko.client import SSHClient, AutoAddPolicy
+from paramiko.proxy import ProxyCommand
 
 from fabric.connection import Connection, Config, Group
 from fabric.util import get_local_user
@@ -199,10 +200,14 @@ class Connection_(Spec):
                 c = Connection(host='host')
                 eq_(c.gateway, None)
 
-            def can_be_set_via_kwarg(self):
+            def takes_a_Connection(self):
                 c = Connection('host', gateway=Connection('otherhost'))
                 ok_(isinstance(c.gateway, Connection))
                 eq_(c.gateway.host, 'otherhost')
+
+            def takes_a_string(self):
+                c = Connection('host', gateway="meh")
+                eq_(c.gateway, "meh")
 
         class initializes_client:
             @patch('fabric.connection.SSHClient')
@@ -294,32 +299,42 @@ class Connection_(Spec):
             )
 
         @patch('fabric.connection.SSHClient')
-        def uses_gateway_as_sock_arg_to_SSHClient_connect(self, Client):
-            "uses gateway as 'sock' arg to SSHClient.connect"
+        def uses_gateway_channel_as_sock_for_SSHClient_connect(self, Client):
+            "uses Connection gateway as 'sock' arg to SSHClient.connect"
             # Setup
             mock_gw = Mock()
             mock_main = Mock()
             Client.side_effect = [mock_gw, mock_main]
             gw = Connection('otherhost')
+            gw.open = Mock(wraps=gw.open)
             main = Connection('host', gateway=gw)
             main.open()
+            # Expect gateway is also open()'d
+            gw.open.assert_called_once_with()
             # Expect direct-tcpip channel open on 1st client
             open_channel = mock_gw.get_transport.return_value.open_channel
             chan_calls = open_channel.call_args
             type_, cxn, _ = chan_calls[0]
             eq_(type_, 'direct-tcpip')
-            eq_(cxn, ('otherhost', 22))
+            eq_(cxn, ('host', 22))
             # Expect result of that channel open as sock arg to connect()
             sock_arg = mock_main.connect.call_args[1]['sock']
             ok_(sock_arg is open_channel.return_value)
 
         @patch('fabric.connection.SSHClient')
-        def opens_gateway_too(self, Client):
-            gw = Connection('otherhost')
-            gw.open = Mock(wraps=gw.open)
-            main = Connection('host', gateway=gw)
+        @patch('fabric.connection.ProxyCommand')
+        def uses_proxycommand_as_sock_for_Client_connect(self, moxy, Client):
+            "uses ProxyCommand from gateway as 'sock' arg to SSHClient.connect"
+            # Setup
+            cxn = Mock()
+            Client.return_value = cxn
+            main = Connection('host', gateway="net catty %h %p")
             main.open()
-            gw.open.assert_called_once_with()
+            # Expect ProxyCommand instantiation
+            moxy.assert_called_once_with("net catty host 22")
+            # Expect result of that as sock arg to connect()
+            sock_arg = cxn.connect.call_args[1]['sock']
+            ok_(sock_arg is moxy.return_value)
 
         # TODO: all the various connect-time options such as agent forwarding,
         # host acceptance policies, how to auth, etc etc. These are all aspects

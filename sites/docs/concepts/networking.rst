@@ -66,10 +66,16 @@ filtering/gatekeeping applications.
 ``ssh -W %h:%p gatewayhost``; or (on SSH versions lacking ``-W``) the widely
 available ``netcat``, via ``nc %h %p``.
 
-If Fabric detects an applicable ``ProxyCommand`` directive in a loaded SSH
-config file, it will be used automatically.
+Fabric supports ``ProxyCommand`` by accepting command string (`str` or
+`unicode`) objects in the ``gateway`` kwarg of `.Connection`; this is then used
+to populate a `paramiko.proxy.ProxyCommand` object at connection time.
+
+As with most other SSH config directives, this will be done automatically on
+your behalf if SSH config loading is enabled and your config file contains an
+applicable ``ProxyCommand`` directive for the current connection.
 
 .. TODO: expand this when 'in-memory' ssh_config manipulation becomes a thing
+.. TODO: link to SSH config loading toggle option when it's set up
 
 Additional concerns
 -------------------
@@ -79,9 +85,14 @@ performs better, uses fewer resources on your local system, and has an
 easier-to-use API.
 
 .. warning::
-    It's not possible to activate both styles of gateway for the same
-    connection. If Fabric sees a non-empty ``gateway`` kwarg *and* a configured
-    ``ProxyCommand``, it will exit with a complaint.
+    Using both types of gateways simultaneously (i.e. supplying a `.Connection`
+    as the ``gateway`` via kwarg or config, *and* loading a config file containing
+    ``ProxyCommand``) is considered an error and will result in an exception.
+
+.. TODO:
+    wants an option to say "I understand that I have both active, please ignore
+    my SSH conf file". (Can't do this by default or folks unaware there's a
+    conflict will have a bad time. Also, ambiguity etc.)
 
 
 other sections TK... (maybe nest files further??):

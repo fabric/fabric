@@ -1,6 +1,9 @@
 from invoke import Context
 from invoke.config import Config as InvokeConfig, merge_dicts
+from invoke.vendor import six
 from paramiko.client import SSHClient, AutoAddPolicy
+from paramiko.config import SSHConfig
+from paramiko.proxy import ProxyCommand
 
 from .runners import Remote
 from .transfer import Transfer
@@ -105,8 +108,14 @@ class Connection(Context):
 
             Default is an anonymous `.Config` object.
 
-        :param fabric.connection.Connection gateway:
-            another `.Connection` to use as a ``direct-tcpip`` SSH gateway.
+        :param gateway:
+            An object to use as a proxy or gateway for this connection.
+
+            This parameter accepts one of the following:
+
+            - another `.Connection` (for a ``direct-tcpip`` gateway);
+            - a shell command string as a `str` or `unicode` (for a
+              ``ProxyCommand`` gateway).
 
             Default: ``None``, in which case no gatewaying will occur.
 
@@ -152,8 +161,15 @@ class Connection(Context):
         self.user = user or self.config.user
         #: The network port to connect on.
         self.port = port or self.config.port
-        #: The gateway `.Connection` to be used, if any.
+        #: The gateway `.Connection` or ``ProxyCommand`` string to be used,
+        #: if any.
         self.gateway = gateway
+        # TODO: consider whether it's likely to bother advanced users that
+        # there's no trivial way to tell the two gateway types apart besides
+        # using `isinstance`. Feels like 'no', but still a code smell.
+        # NOTE: we use string above, vs ProxyCommand obj, to avoid spinning up
+        # the ProxyCommand subprocess at init time, vs open() time.
+        # TODO: make paramiko.proxy.ProxyCommand lazy instead?
 
         #: The `paramiko.client.SSHClient` instance this connection wraps.
         client = SSHClient()
@@ -165,7 +181,9 @@ class Connection(Context):
         self.transport = None
 
     def __str__(self):
-        # TODO: insert gateway in some kind of shorthand (...maybe host_string)
+        # TODO: insert gateway in some kind of shorthand? (Possibly problematic
+        # with ProxyCommand; for Connection, host string probs ok? too long
+        # still?)
         s = "<Connection id={0} user='{1.user}' host='{1.host}' port={1.port}>"
         return s.format(id(self), self)
 
@@ -212,8 +230,8 @@ class Connection(Context):
         """
         Initiate an SSH connection to the host/port this object is bound to.
 
-        This may include activating & obtaining a `direct-tcpip` channel from
-        the configured gateway connection, if one is set.
+        This may include activating the configured gateway connection, if one
+        is set.
 
         Also saves a handle to the now-set Transport object for easier access.
         """
@@ -239,17 +257,29 @@ class Connection(Context):
 
     def open_gateway(self):
         """
-        Open a ``direct-tcpip`` connection via configured `gateway`.
+        Obtain a socket-like object from `gateway`.
 
-        You probably don't want to call this directly.
-
-        :returns: A `paramiko.channel.Channel` object (which is socket-like.)
+        :returns:
+            A ``direct-tcpip`` `paramiko.channel.Channel`, if `gateway` was a
+            `.Connection`; or a `~paramiko.proxy.ProxyCommand`, if `gateway`
+            was a `str` or `unicode`.
         """
+        # ProxyCommand is faster to set up, so do it first.
+        if isinstance(self.gateway, six.string_types):
+            # Leverage a dummy SSHConfig to ensure %h/%p/etc are parsed.
+            # TODO: use real SSH config once loading one properly is
+            # implemented.
+            ssh_conf = SSHConfig()
+            dummy = "Host {0}\n    ProxyCommand {1}"
+            ssh_conf.parse(six.StringIO(dummy.format(self.host, self.gateway)))
+            return ProxyCommand(ssh_conf.lookup(self.host)['proxycommand'])
+        # Handle inner-Connection gateway type here.
         # TODO: logging
         self.gateway.open()
+        # TODO: expose the opened channel itself as an attribute? (another
+        # possible argument for separating the two gateway types...)
         # TODO: document exactly why this is the way it is. Why the
         # last basically-empty tuple?
-        # TODO: cache/expose as an attribute?
         return self.gateway.transport.open_channel(
             'direct-tcpip',
             (self.gateway.host, int(self.gateway.port)),
