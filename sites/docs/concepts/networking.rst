@@ -64,7 +64,7 @@ filtering/gatekeeping applications.
 
 ``ProxyCommand`` subprocesses are typically another ``ssh`` command, such as
 ``ssh -W %h:%p gatewayhost``; or (on SSH versions lacking ``-W``) the widely
-available ``netcat``, via ``nc %h %p``.
+available ``netcat``, via ``ssh gatewayhost nc %h %p``.
 
 Fabric supports ``ProxyCommand`` by accepting command string (`str` or
 `unicode`) objects in the ``gateway`` kwarg of `.Connection`; this is then used
