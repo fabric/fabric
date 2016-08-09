@@ -62,10 +62,12 @@ class Session(object):
 
     To give fully explicit `.Command` objects, use the ``commands`` parameter.
 
+    :param str user:
     :param str host:
-        Which hostname to expect a connection to. If given, will cause a test
-        failure if a connection is made to a different host instead. Default:
-        ``None``.
+    :param int port:
+        Sets up expectations that a connection will be generated to the given
+        user, host and/or port. If ``None`` (default), no expectations are
+        generated / any value is accepted.
 
     :param commands:
         Iterable of `.Command` objects, used when mocking nontrivial sessions
@@ -78,6 +80,8 @@ class Session(object):
     def __init__(
         self,
         host=None,
+        user=None,
+        port=None,
         commands=None,
         cmd=None,
         out=None,
@@ -91,6 +95,8 @@ class Session(object):
             raise ValueError("You can't give both 'commands' and individual Command parameters!") # noqa
         # Fill in values
         self.host = host
+        self.user = user
+        self.port = port
         self.commands = commands
         if params:
             # Honestly dunno which is dumber, this or duplicating Command's
@@ -175,11 +181,10 @@ class Session(object):
         transport = self.client.get_transport
         transport.assert_called_once_with()
         # And a single connect to our target host.
-        # TODO: give a shit about port too
         self.client.connect.assert_called_once_with(
-            username=ANY,
+            username=self.user or ANY,
             hostname=self.host or ANY,
-            port=ANY
+            port=self.port or ANY
         )
 
         # Calls to open_session will be 1-per-command but are on transport, not
