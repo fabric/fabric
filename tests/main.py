@@ -77,8 +77,12 @@ Available tasks:
             with cd(_support):
                 fab_program.run("fab -H host1,host2 basic_run")
 
-        def multiple_hosts_works_with_remainder_too(self):
-            skip()
+        @mock_remote(
+            Session('host1', cmd='whoami'),
+            Session('host2', cmd='whoami'),
+        )
+        def multiple_hosts_works_with_remainder_too(self, chan1, chan2):
+            fab_program.run("fab -H host1,host2 -- whoami")
 
         def host_string_shorthand_is_passed_through(self):
             # I.e. is just handed to Connection() as posarg
