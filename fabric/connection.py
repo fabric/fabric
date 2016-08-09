@@ -282,7 +282,7 @@ class Connection(Context):
         # last basically-empty tuple?
         return self.gateway.transport.open_channel(
             'direct-tcpip',
-            (self.gateway.host, int(self.gateway.port)),
+            (self.host, int(self.port)),
             ('', 0),
         )
 
