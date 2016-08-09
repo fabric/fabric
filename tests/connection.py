@@ -3,7 +3,6 @@ import socket
 from spec import Spec, eq_, raises, ok_, skip
 from mock import patch, Mock, call, PropertyMock
 from paramiko.client import SSHClient, AutoAddPolicy
-from paramiko.proxy import ProxyCommand
 
 from fabric.connection import Connection, Config, Group
 from fabric.util import get_local_user
