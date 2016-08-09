@@ -58,21 +58,24 @@ Available tasks:
 
 
     class hosts_flag_parameterizes_tasks:
-        @mock_remote
+        # NOTE: many of these just rely on mock_remote's builtin
+        # "channel.exec_command called with given command string" asserts.
+
+        @mock_remote(Session('myhost', cmd='nope'))
         def single_string_is_single_host_and_single_exec(self, chan):
             # In addition to just testing a base case, this checks for a really
             # dumb bug where one appends to, instead of replacing, the task
             # list during parameterization/expansion XD
             with cd(_support):
                 fab_program.run("fab -H myhost basic_run")
-            chan.exec_command.assert_called_once_with('nope')
 
         @mock_remote(
-            Session('host1', cmd='whoami'),
-            Session('host2', cmd='whoami'),
+            Session('host1', cmd='nope'),
+            Session('host2', cmd='nope'),
         )
         def comma_separated_string_is_multiple_hosts(self, chan1, chan2):
-            fab_program.run("fab -H host1,host2 -- whoami")
+            with cd(_support):
+                fab_program.run("fab -H host1,host2 basic_run")
 
         def multiple_hosts_works_with_remainder_too(self):
             skip()
