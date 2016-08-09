@@ -82,9 +82,19 @@ Remote shell commands
 Networking
 ==========
 
-- ``env.gateway`` is now the ``gateway`` kwarg to `.Connection`, and should be
-  another `.Connection` object instead of a host string.
-- TK: ProxyCommand is also still supported and is configured XYZ.
+- ``env.gateway`` is now the ``gateway`` kwarg to `.Connection`, and -- for
+  ``direct-tcpip`` style gateways -- should be another `.Connection` object
+  instead of a host string.
+
+    - **New:** You may specify a runtime, non-SSH-config-driven
+      ``ProxyCommand``-style string as the ``gateway`` kwarg instead, which
+      will act just like a regular ``ProxyCommand``.
+    - SSH-config-driven ``ProxyCommand`` continues to work as it did in v1,
+      provided SSH config loading is active.
+
+    .. TODO:
+        once that is figured out, link to it, eg "SSH configs are loaded by
+        default unless you set XYZ to False"
 
 .. TODO:
     how to perform "setup" or "pre-execution" things like dynamically setting a
