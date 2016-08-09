@@ -4,8 +4,8 @@ Tests concerned with the ``fab`` tool & how it overrides Invoke defaults.
 
 import os
 
-from spec import Spec, assert_contains, skip
 from invoke.util import cd
+from spec import Spec, assert_contains, skip
 
 from fabric.main import program as fab_program
 
@@ -84,6 +84,6 @@ Available tasks:
         def multiple_hosts_works_with_remainder_too(self, chan1, chan2):
             fab_program.run("fab -H host1,host2 -- whoami")
 
-        def host_string_shorthand_is_passed_through(self):
-            # I.e. is just handed to Connection() as posarg
-            skip()
+        @mock_remote(Session(user='someuser', host='host1', port=1234))
+        def host_string_shorthand_is_passed_through(self, chan):
+            fab_program.run("fab -H someuser@host1:1234 -- whoami")
