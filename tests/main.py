@@ -5,6 +5,7 @@ Tests concerned with the ``fab`` tool & how it overrides Invoke defaults.
 import os
 
 from invoke.util import cd
+from mock import patch
 from spec import Spec, assert_contains, skip
 
 from fabric.main import program as fab_program
@@ -87,3 +88,13 @@ Available tasks:
         @mock_remote(Session(user='someuser', host='host1', port=1234))
         def host_string_shorthand_is_passed_through(self, chan):
             fab_program.run("fab -H someuser@host1:1234 -- whoami")
+
+        class no_hosts_flag_at_all:
+            @patch('fabric.main.Context')
+            def calls_task_once_with_invoke_context(self, Context):
+                with cd(_support):
+                    fab_program.run("fab basic_run")
+                Context.return_value.run.assert_called_once_with('nope')
+
+            def generates_exception_if_combined_with_remainder(self):
+                skip()

@@ -53,6 +53,10 @@ print ``Running <task name> on <host>!``::
     Running taskB on host2!
     Running taskB on host3!
 
+.. note::
+    When :option:`--hosts` is not given, ``fab`` behaves similarly to Invoke's
+    :ref:`command-line interface <inv>`, generating regular instances of
+    `~invoke.context.Context` instead of `Connections <.Connection>`.
 
 Executing arbitrary/ad-hoc commands
 ===================================
