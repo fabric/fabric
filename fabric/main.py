@@ -6,6 +6,7 @@ Builds on top of Invoke's core functionality for same.
 
 from invoke import (
     Program, FilesystemLoader, Argument, Task, Executor, Collection, Call,
+    Context
 )
 from invoke import __version__ as invoke
 from invoke.util import debug
@@ -59,14 +60,19 @@ class FabExecutor(Executor):
     def expand_calls(self, calls, config):
         # Generate new call list with per-host variants & Connections inserted
         ret = []
-        hosts = self.core[0].args.hosts.value.split(',')
+        # TODO: mesh well with Invoke list-type args helper (inv #132)
+        hosts = self.core[0].args.hosts.value
+        hosts = hosts.split(',') if hosts else []
         for call in calls:
-            # TODO: how will non-host-parameterized tasks work here?
-            # TODO: also roles & such of course.
+            # TODO: roles, etc
             for host in hosts:
                 # TODO: handle pre/post, which we are currently ignoring
                 #   (see parent class' implementation)
                 ret.append(self.parameterize(call, host, config))
+            # Deal with lack of hosts arg (acts same as `inv` in that case)
+            if not hosts:
+                call.context = Context(config=config)
+                ret.append(call)
         # Add remainder as anonymous task
         if self.core.remainder:
             def anonymous(c):

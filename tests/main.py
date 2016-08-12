@@ -8,6 +8,7 @@ from invoke.util import cd
 from mock import patch
 from spec import Spec, assert_contains, skip
 
+from invoke import Context
 from fabric.main import program as fab_program
 
 from _util import expect, mock_remote, Session
@@ -90,7 +91,7 @@ Available tasks:
             fab_program.run("fab -H someuser@host1:1234 -- whoami")
 
         class no_hosts_flag_at_all:
-            @patch('fabric.main.Context')
+            @patch('fabric.main.Context', spec=Context)
             def calls_task_once_with_invoke_context(self, Context):
                 with cd(_support):
                     fab_program.run("fab basic_run")
