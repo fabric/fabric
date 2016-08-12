@@ -78,7 +78,7 @@ class Connection(Context):
     # Client.exec_command does, it already allows configuring a subset of what
     # we do / will eventually do / did in 1.x. It's silly to have to do
     # .get_transport().open_session().
-    def __init__(self, host, user=None, port=None, config=None, gateway=None):
+    def __init__(self, host, user=None, port=None, config=None, gateway=None, key=None):
         """
         Set up a new object representing a server connection.
 
@@ -180,6 +180,8 @@ class Connection(Context):
         #: ``self.client.get_transport()``.
         self.transport = None
 
+        self.key_filename = key
+
     def __str__(self):
         # TODO: insert gateway in some kind of shorthand? (Possibly problematic
         # with ProxyCommand; for Connection, host string probs ok? too long
@@ -252,6 +254,8 @@ class Connection(Context):
             )
             if self.gateway:
                 kwargs['sock'] = self.open_gateway()
+            if self.key_filename:
+                kwargs['key_filename'] = self.key_filename
             self.client.connect(**kwargs)
             self.transport = self.client.get_transport()
 
