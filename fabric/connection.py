@@ -294,13 +294,20 @@ class Connection(Context):
         # TODO: logging
         self.gateway.open()
         # TODO: expose the opened channel itself as an attribute? (another
-        # possible argument for separating the two gateway types...)
-        # TODO: document exactly why this is the way it is. Why the
-        # last basically-empty tuple?
+        # possible argument for separating the two gateway types...) e.g. if
+        # someone wanted to piggyback on it for other same-interpreter socket
+        # needs...
+        # TODO: and the inverse? allow users to supply their own socket/like
+        # object they got via $WHEREEVER?
+        # TODO: how best to expose timeout param? reuse general connection
+        # timeout from config?
         return self.gateway.transport.open_channel(
-            'direct-tcpip',
-            (self.host, int(self.port)),
-            ('', 0),
+            kind='direct-tcpip',
+            dest_addr=(self.host, int(self.port)),
+            # NOTE: src_addr needs to be 'empty but not None' values to
+            # correctly encode into a network message. Theoretically Paramiko
+            # could auto-interpret None sometime & save us the trouble.
+            src_addr=('', 0),
         )
 
     def close(self):
