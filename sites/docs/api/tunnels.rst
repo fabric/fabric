@@ -1,0 +1,5 @@
+==============
+``tunnels``
+==============
+
+.. automodule:: fabric.tunnels
