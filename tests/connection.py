@@ -230,11 +230,38 @@ class Connection_(Spec):
                 Client.return_value = sentinel
                 ok_(Connection('host').client is sentinel)
 
-    def stringrep(self):
-        "__str__"
-        c = Connection(user='me', host='there', port=123)
-        template = "<Connection id={0} user='me' host='there' port=123>"
-        eq_(str(c), template.format(id(c)))
+    class string_representation:
+        "string representations"
+        def str_displays_repr(self):
+            c = Connection('meh')
+            eq_(str(c), "<Connection id={0} host='meh'>".format(id(c)))
+
+        def displays_core_params(self):
+            c = Connection(user='me', host='there', port=123)
+            template = "<Connection id={0} user='me' host='there' port=123>"
+            eq_(repr(c), template.format(id(c)))
+
+        def omits_default_param_values(self):
+            c = Connection('justhost')
+            eq_(repr(c), "<Connection id={0} host='justhost'>".format(id(c)))
+
+        def param_comparison_uses_config(self):
+            conf = Config(overrides={'user': 'zerocool'})
+            c = Connection(
+                user='zerocool', host='myhost', port=123, config=conf
+            )
+            template = "<Connection id={0} host='myhost' port=123>"
+            eq_(repr(c), template.format(id(c)))
+
+        def direct_tcpip_gateway_shows_type(self):
+            c = Connection(host='myhost', gateway=Connection('jump'))
+            template = "<Connection id={0} host='myhost' gw=direct-tcpip>"
+            eq_(repr(c), template.format(id(c)))
+
+        def proxycommand_gateway_shows_type(self):
+            c = Connection(host='myhost', gateway='netcat is cool')
+            template = "<Connection id={0} host='myhost' gw=proxy>"
+            eq_(repr(c), template.format(id(c)))
 
     class open:
         @patch('fabric.connection.SSHClient')

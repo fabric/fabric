@@ -186,11 +186,21 @@ class Connection(Context):
         self.key_filename = key
 
     def __str__(self):
-        # TODO: insert gateway in some kind of shorthand? (Possibly problematic
-        # with ProxyCommand; for Connection, host string probs ok? too long
-        # still?)
-        s = "<Connection id={0} user='{1.user}' host='{1.host}' port={1.port}>"
-        return s.format(id(self), self)
+        bits = [('id', id(self))]
+        if self.user != self.config.user:
+            bits.append(('user', repr(self.user)))
+        bits.append(('host', repr(self.host)))
+        if self.port != self.config.port:
+            bits.append(('port', repr(self.port)))
+        if self.gateway:
+            # Displaying type because gw params would probs be too verbose
+            val = 'direct-tcpip'
+            if isinstance(self.gateway, six.string_types):
+                val = 'proxy'
+            bits.append(('gw', val))
+        return "<Connection {0}>".format(
+            " ".join("{0}={1}".format(*x) for x in bits)
+        )
 
     def derive_shorthand(self, host_string):
         user_hostport = host_string.rsplit('@', 1)
