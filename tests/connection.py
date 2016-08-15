@@ -139,6 +139,14 @@ class Connection_(Spec):
                     123
                 )
 
+        class key_filename:
+            def defaults_to_None(self):
+                eq_(Connection('host').key_filename, None)
+
+            def exposed_as_attribute(self):
+                c = Connection('host', key_filename='foo.key')
+                eq_(c.key_filename, 'foo.key')
+
         class config:
             def is_not_required(self):
                 eq_(Connection('host').config.__class__, Config)
@@ -322,6 +330,33 @@ class Connection_(Spec):
                 username='myuser',
                 hostname='myhost',
                 port=9001,
+            )
+
+        @patch('fabric.connection.SSHClient')
+        def uses_configured_key_filename(self, Client):
+            cxn = Connection(host='myhost', key_filename='foo.key')
+            client = Client.return_value
+            client.get_transport.return_value = Mock(active=False)
+            cxn.open()
+            client.connect.assert_called_once_with(
+                username=get_local_user(),
+                hostname='myhost',
+                key_filename='foo.key',
+                port=22,
+            )
+
+        @patch('fabric.connection.SSHClient')
+        def key_filename_can_be_list_too(self, Client):
+            names = ['foo.key', 'bar.key']
+            cxn = Connection(host='myhost', key_filename=names)
+            client = Client.return_value
+            client.get_transport.return_value = Mock(active=False)
+            cxn.open()
+            client.connect.assert_called_once_with(
+                username=get_local_user(),
+                hostname='myhost',
+                key_filename=names,
+                port=22,
             )
 
         @patch('fabric.connection.SSHClient')

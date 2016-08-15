@@ -84,7 +84,15 @@ class Connection(Context):
     # Client.exec_command does, it already allows configuring a subset of what
     # we do / will eventually do / did in 1.x. It's silly to have to do
     # .get_transport().open_session().
-    def __init__(self, host, user=None, port=None, config=None, gateway=None, key=None):
+    def __init__(
+        self,
+        host,
+        user=None,
+        port=None,
+        key_filename=None,
+        config=None,
+        gateway=None
+    ):
         """
         Set up a new object representing a server connection.
 
@@ -107,6 +115,12 @@ class Connection(Context):
 
         :param int port:
             the remote port. Defaults to ``config.port``.
+
+        :param str key_filename:
+            a string or list of strings specifying SSH key paths to load.
+
+            Passed directly to `paramiko.client.SSHClient.connect`. Default:
+            ``None``.
 
         :param fabric.connection.Config config:
             configuration settings to use when executing methods on this
@@ -167,6 +181,8 @@ class Connection(Context):
         self.user = user or self.config.user
         #: The network port to connect on.
         self.port = port or self.config.port
+        #: Specified key filename(s) used for authentication.
+        self.key_filename = key_filename
         #: The gateway `.Connection` or ``ProxyCommand`` string to be used,
         #: if any.
         self.gateway = gateway
@@ -183,7 +199,6 @@ class Connection(Context):
         #: ``self.client.get_transport()``.
         self.transport = None
 
-        self.key_filename = key
 
     def __str__(self):
         bits = [('id', id(self))]
