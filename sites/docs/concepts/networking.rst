@@ -24,29 +24,35 @@ the resulting shell. This works for individual long-running sessions, but
 becomes a burden when it must be done frequently.
 
 There are two gateway solutions available in Fabric: ``direct-tcpip`` (easier,
-less overhead) or ``ProxyCommand`` (more overhead, only reads your SSH config
-and not any Fabric-level config, but sometimes more flexible).
+less overhead, can be nested) or ``ProxyCommand`` (more overhead, can't be
+nested, only reads your SSH config and not any Fabric-level config, but
+sometimes more flexible).
 
 ``direct-tcpip``
 ----------------
 
 This style of gateway is so named because it uses the SSH protocol's
 ``direct-tcpip`` channel type - a lightweight method of requesting that the
-gateway's ``sshd`` open a connection on our behalf to another system.
+gateway's ``sshd`` open a connection on our behalf to another system. These
+channel objects (instances of `paramiko.channel.Channel`) implement Python's
+socket API and are thus usable in place of real operating system sockets for
+nearly any Python code.
 
-Its use is simple: create a new `.Connection` object parameterized for the
-gateway, and use it as the ``gateway`` parameter when creating your inner/real
-`.Connection`::
+``direct-tcpip`` is simple to use: create a new `.Connection` object
+parameterized for the gateway, and supply it as the ``gateway`` parameter when
+creating your inner/real `.Connection`::
 
     from fabric import Connection
 
     cxn = Connection('internalhost', gateway=Connection('gatewayhost'))
 
 As with any other `.Connection`, the gateway connection may be configured with
-a specific username, port number, and so forth. (This includes ``gateway``
-itself - they can be chained indefinitely!)
+its own username, port number, and so forth. (This includes ``gateway`` itself
+- they can be chained indefinitely!)
 
-.. TODO: confirm that, hah
+.. TODO:
+    should it default to user/port from the 'outer' Connection? Some users may
+    assume it will? (Mostly user.)
 
 ``ProxyCommand``
 ----------------
@@ -56,11 +62,10 @@ The traditional OpenSSH command-line client offers a ``ProxyCommand`` directive
 inner connection's input and output through an arbitrary local subprocess.
 
 Compared to ``direct-tcpip`` gateways, this adds overhead (the extra
-subprocess) and requires that all pertinent connection parameters live in
-your OpenSSH config file (as opposed to anything read via Fabric's own
-configuration system). In trade, it allows for advanced tricks, such as SSH
-port forwarding / tunnelling, use of SOCKS proxies, or custom
-filtering/gatekeeping applications.
+subprocess), can't be nested, and requires that all pertinent connection
+parameters live in your OpenSSH config file (as opposed to anything read via
+Fabric's own configuration system). In trade, it allows for advanced tricks
+like use of SOCKS proxies, or custom filtering/gatekeeping applications.
 
 ``ProxyCommand`` subprocesses are typically another ``ssh`` command, such as
 ``ssh -W %h:%p gatewayhost``; or (on SSH versions lacking ``-W``) the widely
@@ -76,6 +81,7 @@ applicable ``ProxyCommand`` directive for the current connection.
 
 .. TODO: expand this when 'in-memory' ssh_config manipulation becomes a thing
 .. TODO: link to SSH config loading toggle option when it's set up
+.. TODO: add note about ``ssh -J`` sometime
 
 Additional concerns
 -------------------
@@ -86,8 +92,9 @@ easier-to-use API.
 
 .. warning::
     Using both types of gateways simultaneously (i.e. supplying a `.Connection`
-    as the ``gateway`` via kwarg or config, *and* loading a config file containing
-    ``ProxyCommand``) is considered an error and will result in an exception.
+    as the ``gateway`` via kwarg or config, *and* loading a config file
+    containing ``ProxyCommand``) is considered an error and will result in an
+    exception.
 
 .. TODO:
     wants an option to say "I understand that I have both active, please ignore
