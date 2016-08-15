@@ -170,9 +170,6 @@ class Connection(Context):
         #: The gateway `.Connection` or ``ProxyCommand`` string to be used,
         #: if any.
         self.gateway = gateway
-        # TODO: consider whether it's likely to bother advanced users that
-        # there's no trivial way to tell the two gateway types apart besides
-        # using `isinstance`. Feels like 'no', but still a code smell.
         # NOTE: we use string above, vs ProxyCommand obj, to avoid spinning up
         # the ProxyCommand subprocess at init time, vs open() time.
         # TODO: make paramiko.proxy.ProxyCommand lazy instead?
