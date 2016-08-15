@@ -374,10 +374,9 @@ class Connection_(Spec):
             gw.open.assert_called_once_with()
             # Expect direct-tcpip channel open on 1st client
             open_channel = mock_gw.get_transport.return_value.open_channel
-            chan_calls = open_channel.call_args
-            type_, cxn, _ = chan_calls[0]
-            eq_(type_, 'direct-tcpip')
-            eq_(cxn, ('host', 22))
+            kwargs = open_channel.call_args[1]
+            eq_(kwargs['kind'], 'direct-tcpip')
+            eq_(kwargs['dest_addr'], ('host', 22))
             # Expect result of that channel open as sock arg to connect()
             sock_arg = mock_main.connect.call_args[1]['sock']
             ok_(sock_arg is open_channel.return_value)
