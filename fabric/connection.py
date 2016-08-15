@@ -199,7 +199,6 @@ class Connection(Context):
         #: ``self.client.get_transport()``.
         self.transport = None
 
-
     def __str__(self):
         bits = [('id', id(self))]
         if self.user != self.config.user:

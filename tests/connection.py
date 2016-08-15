@@ -535,7 +535,6 @@ class Connection_(Spec):
             ok_(cxn.sftp() is sentinel1)
             ok_(cxn.sftp() is sentinel1)
 
-
     class get:
         @patch('fabric.connection.Transfer')
         def calls_Transfer_get(self, Transfer):
