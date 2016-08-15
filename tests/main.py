@@ -6,10 +6,11 @@ import os
 
 from invoke.util import cd
 from mock import patch
-from spec import Spec, assert_contains, skip
+from spec import Spec, assert_contains, skip, raises
 
 from invoke import Context
 from fabric.main import program as fab_program
+from fabric.exceptions import NothingToDo
 
 from _util import expect, mock_remote, Session
 
@@ -97,5 +98,6 @@ Available tasks:
                     fab_program.run("fab basic_run")
                 Context.return_value.run.assert_called_once_with('nope')
 
+            @raises(NothingToDo)
             def generates_exception_if_combined_with_remainder(self):
-                skip()
+                fab_program.run("fab -- nope")

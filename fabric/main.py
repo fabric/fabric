@@ -14,6 +14,7 @@ from paramiko import __version__ as paramiko
 
 from . import __version__ as fabric
 from . import Config, Connection
+from .exceptions import NothingToDo
 
 
 class Fab(Program):
@@ -64,7 +65,7 @@ class FabExecutor(Executor):
         hosts = self.core[0].args.hosts.value
         hosts = hosts.split(',') if hosts else []
         for call in calls:
-            # TODO: roles, etc
+            # TODO: roles, other non-runtime host parameterizations, etc
             for host in hosts:
                 # TODO: handle pre/post, which we are currently ignoring
                 #   (see parent class' implementation)
@@ -75,6 +76,10 @@ class FabExecutor(Executor):
                 ret.append(call)
         # Add remainder as anonymous task
         if self.core.remainder:
+            # TODO: this will need to change once there are more options for
+            # setting host lists besides "-H or 100% within-task"
+            if not hosts:
+                raise NothingToDo("Was told to run a command, but not given any hosts to run it on!")
             def anonymous(c):
                 c.run(self.core.remainder)
             anon = Call(Task(body=anonymous))
