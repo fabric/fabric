@@ -1,6 +1,7 @@
 import errno
 import select
 import socket
+import time
 from threading import Thread, Event
 
 
@@ -41,7 +42,7 @@ class Listener(Thread):
             except socket.error as e:
                 if e.errno is errno.EAGAIN:
                     # TODO: make configurable
-                    import time; time.sleep(0.01)
+                    time.sleep(0.01)
                     continue
                 raise
 
@@ -125,4 +126,3 @@ class Tunnel(Thread):
             self.sock.close()
         except socket.error:
             pass
-

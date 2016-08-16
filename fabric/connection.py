@@ -1,8 +1,5 @@
 from contextlib import contextmanager
-from threading import Thread, Event
-import errno
-import select
-import socket
+from threading import Event
 
 from invoke import Context
 from invoke.config import Config as InvokeConfig, merge_dicts
@@ -13,7 +10,7 @@ from paramiko.proxy import ProxyCommand
 
 from .runners import Remote
 from .transfer import Transfer
-from .tunnels import Listener, Tunnel
+from .tunnels import Listener
 from .util import get_local_user
 
 

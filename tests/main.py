@@ -6,7 +6,7 @@ import os
 
 from invoke.util import cd
 from mock import patch
-from spec import Spec, assert_contains, skip, raises
+from spec import Spec, assert_contains, raises
 
 from invoke import Context
 from fabric.main import program as fab_program
