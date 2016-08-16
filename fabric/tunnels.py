@@ -40,6 +40,7 @@ class Listener(Thread):
                 tun_sock, local_addr = sock.accept()
             except socket.error as e:
                 if e.errno is errno.EAGAIN:
+                    # TODO: make configurable
                     import time; time.sleep(0.01)
                     continue
                 raise
