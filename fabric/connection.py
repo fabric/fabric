@@ -410,8 +410,6 @@ class Connection(Context):
         """
         return Transfer(self).put(*args, **kwargs)
 
-    # TODO: finalize API names/nomenclature, "forwarding" is really confusing
-    # always, how best to mitigate that exactly?
     # TODO: clean up docstrings
     # TODO: yield the socket for advanced users? Other advanced use cases
     # (perhaps factor out socket creation itself)?
