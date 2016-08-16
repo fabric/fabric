@@ -49,8 +49,6 @@ class Listener(Thread):
             channel = self.transport.open_channel(
                 'direct-tcpip',
                 self.remote_address,
-                # TODO: realtalk, why isn't THIS just (local_host, local_port)?!
-                # Can't Paramiko's own threading do all this shit for us?
                 local_addr,
             )
 
