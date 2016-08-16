@@ -4,7 +4,7 @@ import socket
 from threading import Thread, Event
 
 
-# TODO: inherit from error-handling thread
+# TODO: inherit from invoke.util.ExceptionHandlingThread
 class Listener(Thread):
     def __init__(self,
         local_host, local_port,
