@@ -590,9 +590,10 @@ class Connection_(Spec):
                 # Make sure we give listener thread enough time to boot up :(
                 # Otherwise we can assert before it does things.
                 time.sleep(0.1)
-                # Setup
                 eq_(client.connect.call_args[1]['hostname'], 'host')
-                # TODO: how hard do we care about testing setsockopt?
+                listener_sock.setsockopt.assert_called_once_with(
+                    socket.SOL_SOCKET, socket.SO_REUSEADDR, 1
+                )
                 listener_sock.setblocking.assert_called_once_with(0)
                 listener_sock.bind.assert_called_once_with(('localhost', 1234))
                 listener_sock.listen.assert_called_once_with(1)
@@ -601,15 +602,13 @@ class Connection_(Spec):
                     ('localhost', 1234),
                     local_addr,
                 )
-                # Tunneling itself
-                eq_(select.select.call_args[0][0], [tunnel_sock, channel])
                 # Local write to tunnel_sock is implied by its mocked-out
                 # recv() call above...
                 channel.sendall.assert_called_once_with(data)
             # Shutdown, with another sleep because threads.
             time.sleep(0.1)
-            channel.close.assert_called_once_with()
             tunnel_sock.close.assert_called_once_with()
+            channel.close.assert_called_once_with()
             listener_sock.close.assert_called_once_with()
 
 
