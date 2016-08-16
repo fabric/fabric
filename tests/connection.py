@@ -1,4 +1,8 @@
+from itertools import chain, repeat
+from invoke.vendor.six import b
+import errno
 import socket
+import time
 
 from spec import Spec, eq_, raises, ok_, skip
 from mock import patch, Mock, call, PropertyMock
@@ -552,6 +556,61 @@ class Connection_(Spec):
             c.put('meh')
             Transfer.assert_called_with(c)
             Transfer.return_value.put.assert_called_with('meh')
+
+    # TODO: refactor for forward_remote
+    class forward_local:
+        @patch('fabric.tunnels.select')
+        @patch('fabric.tunnels.socket.socket')
+        @patch('fabric.connection.SSHClient')
+        def forwards_local_port_to_remote_end(self, Client, mocket, select):
+            client = Client.return_value
+            listener_sock = Mock(name='listener_sock')
+            data = b("Some data")
+            tunnel_sock = Mock(name='tunnel_sock', recv=lambda n: data)
+            local_addr = Mock()
+            transport = client.get_transport.return_value
+            channel = transport.open_channel.return_value
+            # socket.socket is only called once directly
+            mocket.return_value = listener_sock
+            # The 2nd socket is obtained via an accept() (which should only
+            # fire once & raise EAGAIN after)
+            listener_sock.accept.side_effect = chain(
+                [(tunnel_sock, local_addr)],
+                repeat(socket.error(errno.EAGAIN, "nothing yet")),
+            )
+            # select.select() returns three N-tuples. Have it just act like a
+            # single read event happened, then quiet after. So chain a
+            # single-item iterable to a repeat(). (Mock has no built-in way to
+            # do this apparently.)
+            select.select.side_effect = chain(
+                [[(tunnel_sock,), tuple(), tuple()]],
+                repeat([tuple(), tuple(), tuple()]),
+            )
+            with Connection('host').forward_local(1234):
+                # Make sure we give listener thread enough time to boot up :(
+                # Otherwise we can assert before it does things.
+                time.sleep(0.1)
+                # Setup
+                eq_(client.connect.call_args[1]['hostname'], 'host')
+                # TODO: how hard do we care about testing setsockopt?
+                listener_sock.setblocking.assert_called_once_with(0)
+                listener_sock.bind.assert_called_once_with(('localhost', 1234))
+                listener_sock.listen.assert_called_once_with(1)
+                transport.open_channel.assert_called_once_with(
+                    'direct-tcpip',
+                    ('localhost', 1234),
+                    local_addr,
+                )
+                # Tunneling itself
+                eq_(select.select.call_args[0][0], [tunnel_sock, channel])
+                # Local write to tunnel_sock is implied by its mocked-out
+                # recv() call above...
+                channel.sendall.assert_called_once_with(data)
+            # Shutdown, with another sleep because threads.
+            time.sleep(0.1)
+            channel.close.assert_called_once_with()
+            tunnel_sock.close.assert_called_once_with()
+            listener_sock.close.assert_called_once_with()
 
 
 class Group_(Spec):
