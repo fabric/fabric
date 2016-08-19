@@ -767,6 +767,35 @@ are considered successful.
 
 .. versionadded:: 1.6
 
+
+.. _sudo_password:
+
+``sudo_password``
+-----------------
+
+**Default:** ``None``
+
+The default password to submit to ``sudo`` password prompts. If empty or
+``None``, :ref:`env.password <password>` and/or :ref:`env.passwords
+<passwords>` is used as a fallback.
+
+.. seealso::
+    :ref:`password-management`, :option:`--sudo-password`,
+    :option:`--initial-sudo-password-prompt`
+.. versionadded:: 1.12
+
+.. _sudo_passwords:
+
+``sudo_passwords``
+------------------
+
+**Default:** ``{}``
+
+Identical to :ref:`passwords`, but used for sudo-only passwords.
+
+.. seealso:: :ref:`password-management`
+.. versionadded:: 1.12
+
 .. _sudo_prefix:
 
 ``sudo_prefix``

@@ -194,6 +194,8 @@ class OutputLooper(object):
             self.chan.input_enabled = True
             # Update env.password, env.passwords if necessary
             user, host, port = normalize(env.host_string)
+            # TODO: in 2.x, make sure to only update sudo-specific password
+            # config values, not login ones.
             set_password(user, host, port, password)
             # Reset reprompt flag
             self.reprompt = False

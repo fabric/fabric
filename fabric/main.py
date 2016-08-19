@@ -302,6 +302,12 @@ def parse_options():
         help="Force password prompt up-front"
     )
 
+    parser.add_option('--initial-sudo-password-prompt',
+        action='store_true',
+        default=False,
+        help="Force sudo password prompt up-front"
+    )
+
     # List Fab commands found in loaded fabfiles/source files
     parser.add_option('-l', '--list',
         action='store_true',
@@ -730,6 +736,11 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
         if options.initial_password_prompt:
             prompt = "Initial value for env.password: "
             state.env.password = getpass.getpass(prompt)
+
+        # Ditto sudo_password
+        if options.initial_sudo_password_prompt:
+            prompt = "Initial value for env.sudo_password: "
+            state.env.sudo_password = getpass.getpass(prompt)
 
         if state.output.debug:
             names = ", ".join(x[0] for x in commands_to_run)
