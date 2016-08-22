@@ -2,6 +2,11 @@
 Changelog
 =========
 
+* :bug:`1470` When using `~fabric.operations.get` with glob expressions, a lack
+  of matches for the glob would result in an empty file named after the glob
+  expression (in addition to raising an error). This has been fixed so the
+  empty file is no longer generated. Thanks to Georgy Kibardin for the catch &
+  initial patch.
 * :feature:`1495` Update the internals of `~fabric.contrib.files` so its
   members work with SSH servers running on Windows. Thanks to Hamdi Sahloul for
   the patch.
