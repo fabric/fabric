@@ -2,7 +2,13 @@
 Changelog
 =========
 
-* :bug:`1458` Correct the message when host is not found in known hosts
+* :bug:`1458` Detect ``known_hosts``-related instances of
+  ``paramiko.SSHException`` and prevent them from being handled like
+  authentication errors (which is the default behavior). This fixes
+  issues with incorrect password prompts or prompt-related exceptions when
+  using ``reject_unknown_hosts`` and encountering missing or bad
+  ``known_hosts`` entries. Thanks to Lukáš Doktor for catch & patch.
+  Correct the message when host is not found in known hosts
   and ``reject_unknown_host`` and ``abort_on_prompts`` are enabled.
 * :release:`1.10.4 <2016-07-25>`
 * :bug:`1447` Fix a relative import in ``fabric.network`` to be
