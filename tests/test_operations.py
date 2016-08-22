@@ -18,10 +18,10 @@ from fabric.state import env, output
 from fabric.operations import require, prompt, _sudo_prefix, _shell_wrap, \
     _shell_escape
 from fabric.api import get, put, hide, show, cd, lcd, local, run, sudo, quiet
+from fabric.context_managers import settings
 from fabric.exceptions import CommandTimeout
 
 from fabric.sftp import SFTP
-from fabric.context_managers import settings
 from fabric.decorators import with_settings
 from utils import (eq_, aborts, assert_contains, eq_contents,
                    with_patched_input, FabricTest)

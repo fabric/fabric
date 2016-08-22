@@ -5,13 +5,12 @@ Module providing easy API for working with remote files and folders.
 from __future__ import with_statement
 
 import hashlib
-import tempfile
 import re
 import os
 from StringIO import StringIO
 from functools import partial
 
-from fabric.api import *
+from fabric.api import run, sudo, hide, settings, env, put, abort
 from fabric.utils import apply_lcwd
 
 

@@ -2,6 +2,9 @@
 Changelog
 =========
 
+* :support:`1379` (also :issue:`1464`) Clean up a lot of unused imports and
+  similar cruft (many found via ``flake8 --select E4``). Thanks to Mathias Ertl
+  for the original patches.
 * :bug:`1458` Detect ``known_hosts``-related instances of
   ``paramiko.SSHException`` and prevent them from being handled like
   authentication errors (which is the default behavior). This fixes

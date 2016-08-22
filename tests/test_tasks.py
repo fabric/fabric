@@ -2,7 +2,7 @@ from __future__ import with_statement
 
 from fudge import Fake, patched_context, with_fakes
 import unittest
-from nose.tools import eq_, raises, ok_
+from nose.tools import raises, ok_
 import random
 import sys
 
@@ -31,7 +31,7 @@ class TestWrappedCallableTask(unittest.TestCase):
 
         def foo(): pass
         try:
-            task = WrappedCallableTask(foo, *args)
+            WrappedCallableTask(foo, *args)
         except TypeError:
             msg = "__init__ raised a TypeError, meaning args weren't handled"
             self.fail(msg)
@@ -42,7 +42,7 @@ class TestWrappedCallableTask(unittest.TestCase):
 
         def foo(): pass
         try:
-            task = WrappedCallableTask(foo, **kwargs)
+            WrappedCallableTask(foo, **kwargs)
         except TypeError:
             self.fail(
                 "__init__ raised a TypeError, meaning kwargs weren't handled")
@@ -50,12 +50,12 @@ class TestWrappedCallableTask(unittest.TestCase):
     def test_allows_any_number_of_args(self):
         args = [i for i in range(random.randint(0, 10))]
         def foo(): pass
-        task = WrappedCallableTask(foo, *args)
+        WrappedCallableTask(foo, *args)
 
     def test_allows_any_number_of_kwargs(self):
         kwargs = dict([("key%d" % i, i) for i in range(random.randint(0, 10))])
         def foo(): pass
-        task = WrappedCallableTask(foo, **kwargs)
+        WrappedCallableTask(foo, **kwargs)
 
     def test_run_is_wrapped_callable(self):
         def foo(): pass
