@@ -561,6 +561,23 @@ class TestFileTransfers(FabricTest):
         self._invalid_file_obj_situations('/tree')
 
     @server()
+    def test_nonexistent_glob_should_not_create_empty_files(self):
+        path = self.path()
+        with settings(hide('everything'), warn_only=True):
+            get('/nope*.txt', path)
+        assert not self.exists_locally(os.path.join(path, 'nope*.txt'))
+
+    @server()
+    def test_nonexistent_glob_raises_error(self):
+        try:
+            with hide('everything', 'aborts'):
+                get('/nope*.txt', self.path())
+        except SystemExit as e:
+            assert 'No such file' in e.message
+        else:
+            assert False
+
+    @server()
     def test_get_single_file_absolutely(self):
         """
         get() a single file, using absolute file path
