@@ -25,7 +25,7 @@ def exists(path, use_sudo=False, verbose=False):
     avoid cluttering output. You may specify ``verbose=True`` to change this
     behavior.
 
-    .. versionchanged:: 1.10.5
+    .. versionchanged:: 1.13
         Replaced internal use of ``test -e`` with ``stat`` for improved remote
         cross-platform (e.g. Windows) compatibility.
     """
