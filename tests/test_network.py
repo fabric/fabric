@@ -551,8 +551,10 @@ class TestConnections(FabricTest):
         """
         Check reject_unknown_hosts exception
         """
-        with settings(hide('everything'), reject_unknown_hosts=True,
-                      disable_known_hosts=True, abort_on_prompts=True):
+        with settings(
+            hide('everything'), password=None, reject_unknown_hosts=True,
+            disable_known_hosts=True, abort_on_prompts=True,
+        ):
             try:
                 run("echo foo")
             except fabric.network.NetworkError as exc:
