@@ -67,10 +67,6 @@ class OutputLooper(object):
         (Timeouts before then are considered part of normal short-timeout fast
         network reading; see Fabric issue #733 for background.)
         """
-        # Internal capture-buffer-like buffer, used solely for state keeping.
-        # Unlike 'capture', nothing is ever purged from this.
-        _buffer = []
-
         # Initialize loop variables
         initial_prefix_printed = False
         seen_cr = False
@@ -150,8 +146,6 @@ class OutputLooper(object):
                 for fragment in read_lines:
                     # Store in capture buffer
                     self.capture += fragment
-                    # Store in internal buffer
-                    _buffer += fragment
                     # Handle prompts
                     expected, response = self._get_prompt_response()
                     if expected:

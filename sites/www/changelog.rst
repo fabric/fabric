@@ -11,15 +11,59 @@ Changelog
   issues with incorrect password prompts or prompt-related exceptions when
   using ``reject_unknown_hosts`` and encountering missing or bad
   ``known_hosts`` entries. Thanks to Lukáš Doktor for catch & patch.
+* :release:`1.11.2 <2016-07-25>`
 * :release:`1.10.4 <2016-07-25>`
 * :bug:`1447` Fix a relative import in ``fabric.network`` to be
   correctly/consistently absolute instead. Thanks to ``@bildzeitung`` for catch
   & patch.
+* :release:`1.11.1 <2016-04-09>`
+* :bug:`- (==1.11)` Bumped version to ``1.11.1`` due to apparently accidentally
+  uploading a false ``1.11.0`` to PyPI sometime in the past (PyPI is secure &
+  prevents reusing deleted filenames.) We have no memory of this, but databases
+  don't lie!
+* :release:`1.11.0 <2016-04-09>`
 * :release:`1.10.3 <2016-04-09>`
+* :bug:`1135` (via :issue:`1241`) Modified order of operations in
+  `~fabric.operations.run`/`~fabric.operations.sudo` to apply environment vars
+  before prefixing commands (instead of after). Report by ``@warsamebashir``,
+  patch by Curtis Mattoon.
+* :feature:`1203` (via :issue:`1240`) Add a ``case_sensitive`` kwarg to
+  `~fabric.contrib.files.contains` (which toggles use of ``egrep -i``). Report
+  by ``@xoul``, patch by Curtis Mattoon.
+* :feature:`800` Add ``capture_buffer_size`` kwarg to
+  `~fabric.operations.run`/`~fabric.operations.sudo` so users can limit memory
+  usage in situations where subprocesses generate very large amounts of
+  stdout/err. Thanks to Jordan Starcher for the report & Omri Bahumi for an
+  early version of the patchset.
+* :feature:`1161` Add ``use_sudo`` kwarg to `~fabric.operations.reboot`.
+  Credit: Bryce Verdier.
 * :support:`943 backported` Tweak ``env.warn_only`` docs to note that it
   applies to all operations, not just ``run``/``sudo``. Thanks ``@akitada``.
+* :feature:`932` Add a ``temp_dir`` kwarg to
+  `~fabric.contrib.files.upload_template` which is passed into its inner
+  `~fabric.operations.put` call. Thanks to ``@nburlett`` for the patch.
 * :support:`1257 backported` Add notes to the usage docs for ``fab`` regarding
   the program's exit status. Credit: ``@koalaman``.
+* :feature:`1261` Expose Paramiko's Kerberos functionality as Fabric config
+  vars & command-line options. Thanks to Ramanan Sivaranjan for catch & patch,
+  and to Johannes Löthberg & Michael Bennett for additional testing.
+* :feature:`1271` Allow users whose fabfiles use `fabric.colors` to disable
+  colorization at runtime by specifying ``FABRIC_DISABLE_COLORS=1`` (or any
+  other non-empty value). Credit: Eric Berg.
+* :feature:`1326` Make `~fabric.contrib.project.rsync_project` aware of
+  ``env.gateway``, using a ``ProxyCommand`` under the hood. Credit: David
+  Rasch.
+* :support:`1359` Add a more-visible top-level ``CHANGELOG.rst`` pointing users
+  to the actual changelog stored within the Sphinx directory tree. Thanks to
+  Jonathan Vanasco for catch & patch.
+* :feature:`1388` Expose Jinja's ``keep_trailing_newline`` parameter in
+  `~fabric.contrib.files.upload_template` so users can force template renders
+  to preserve trailing newlines. Thanks to Chen Lei for the patch.
+* :bug:`1389 major` Gently overhaul SSH port derivation so it's less
+  surprising; previously, any non-default value stored in ``env.port`` was
+  overriding all SSH-config derived values. See the API docs for
+  `~fabric.network.normalize` for details on how it now behaves. Thanks to
+  Harry Weppner for catch & patch.
 * :support:`1454 backported` Remove use of ``:option:`` directives in the
   changelog, it's currently broken in modern Sphinx & doesn't seem to have
   actually functioned on Renaissance-era Sphinx either.

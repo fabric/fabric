@@ -155,6 +155,27 @@ below.
 
     .. versionadded:: 1.5
 
+.. cmdoption:: --gss-auth
+
+    Toggles use of GSS-API authentication.
+
+    .. seealso:: :ref:`kerberos`
+    .. versionadded:: 1.11
+
+.. cmdoption:: --gss-deleg
+
+    Toggles whether GSS-API client credentials are delegated.
+
+    .. seealso:: :ref:`kerberos`
+    .. versionadded:: 1.11
+
+.. cmdoption:: --gss-kex
+
+    Toggles whether GSS-API key exchange is used.
+
+    .. seealso:: :ref:`kerberos`
+    .. versionadded:: 1.11
+
 .. cmdoption:: -h, --help
 
     Displays a standard help message, with all possible options and a brief

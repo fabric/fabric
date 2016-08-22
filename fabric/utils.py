@@ -371,24 +371,29 @@ def _format_error_output(header, body):
 # TODO: replace with collections.deque(maxlen=xxx) in Python 2.6
 class RingBuffer(list):
     def __init__(self, value, maxlen):
-        # Heh.
+        # Because it's annoying typing this multiple times.
         self._super = super(RingBuffer, self)
+        # Python 2.6 deque compatible option name!
         self._maxlen = maxlen
         return self._super.__init__(value)
 
-    def _free(self):
-        return self._maxlen - len(self)
+    def _trim(self):
+        if self._maxlen is None:
+            return
+        overage = max(len(self) - self._maxlen, 0)
+        del self[0:overage]
 
     def append(self, value):
-        if self._free() == 0:
-            del self[0]
-        return self._super.append(value)
+        self._super.append(value)
+        self._trim()
 
     def extend(self, values):
-        overage = len(values) - self._free()
-        if overage > 0:
-            del self[0:overage]
-        return self._super.extend(values)
+        self._super.extend(values)
+        self._trim()
+
+    def __iadd__(self, other):
+        self.extend(other)
+        return self
 
     # Paranoia from here on out.
     def insert(self, index, value):
