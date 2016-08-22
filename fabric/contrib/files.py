@@ -25,10 +25,9 @@ def exists(path, use_sudo=False, verbose=False):
     avoid cluttering output. You may specify ``verbose=True`` to change this
     behavior.
 
-    .. versionchanged:: 1.0
-        In order to increase the support to Windows as well,
-        `test -e` was replaced by `stat` which is
-        commonly ported to Windows with other GNU tools.
+    .. versionchanged:: 1.10.5
+        Replaced internal use of ``test -e`` with ``stat`` for improved remote
+        cross-platform (e.g. Windows) compatibility.
     """
     func = use_sudo and sudo or run
     cmd = 'stat %s' % _expand_path(path)
