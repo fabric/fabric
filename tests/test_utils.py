@@ -40,7 +40,7 @@ def test_indent():
 
 
 def test_indent_with_strip():
-    for description, input_ output_ in (
+    for description, input_, output_ in (
         ("Sanity check: 1 line string",
             indent('Test', strip=True), '    Test'),
         ("Check list of strings",
@@ -50,7 +50,7 @@ def test_indent_with_strip():
             '    Test\n    Test'),
     ):
         eq_.description = "indent(strip=True): %s" % description
-        yield eq_, input_ output_
+        yield eq_, input_, output_
         del eq_.description
 
 
