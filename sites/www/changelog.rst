@@ -2,6 +2,11 @@
 Changelog
 =========
 
+* :bug:`1470` When using `~fabric.operations.get` with glob expressions, a lack
+  of matches for the glob would result in an empty file named after the glob
+  expression (in addition to raising an error). This has been fixed so the
+  empty file is no longer generated. Thanks to Georgy Kibardin for the catch &
+  initial patch.
 * :support:`1483 backported` (also re: :issue:`1386`, :issue:`1374`,
   :issue:`1300`) Add :ref:`an FAQ <faq-csh>` about quote problems in remote
   ``csh`` causing issues with Fabric's shell-wrapping and quote-escaping.
