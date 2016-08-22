@@ -559,11 +559,11 @@ def get(remote_path, local_path=None, use_sudo=False, temp_dir=""):
 
         try:
             # Glob remote path if it's a directory; otherwise use as-is
-            if (
-                ftp.isdir(remote_path)
-                or '*' in remote_path or '?' in remote_path
-            ):
+            is_pattern = '*' in remote_path or '?' in remote_path
+            if ftp.isdir(remote_path) or is_pattern:
                 names = ftp.glob(remote_path)
+                if is_pattern and names == [remote_path]:  # No matches for our pattern
+                    names = []
             else:
                 names = [remote_path]
 
