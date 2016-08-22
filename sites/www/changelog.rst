@@ -5,9 +5,13 @@ Changelog
 * :feature:`1495` Update the internals of `~fabric.contrib.files` so its
   members work with SSH servers running on Windows. Thanks to Hamdi Sahloul for
   the patch.
-* :support:`1379` (also :issue:`1464`) Clean up a lot of unused imports and
-  similar cruft (many found via ``flake8 --select E4``). Thanks to Mathias Ertl
-  for the original patches.
+* :support:`1483 backported` (also re: :issue:`1386`, :issue:`1374`,
+  :issue:`1300`) Add :ref:`an FAQ <faq-csh>` about quote problems in remote
+  ``csh`` causing issues with Fabric's shell-wrapping and quote-escaping.
+  Thanks to Michael Radziej for the update.
+* :support:`1379 backported` (also :issue:`1464`) Clean up a lot of unused
+  imports and similar cruft (many found via ``flake8 --select E4``). Thanks to
+  Mathias Ertl for the original patches.
 * :bug:`1458` Detect ``known_hosts``-related instances of
   ``paramiko.SSHException`` and prevent them from being handled like
   authentication errors (which is the default behavior). This fixes
