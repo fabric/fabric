@@ -2,6 +2,9 @@
 Changelog
 =========
 
+* :feature:`1495` Update the internals of `~fabric.contrib.files` so its
+  members work with SSH servers running on Windows. Thanks to Hamdi Sahloul for
+  the patch.
 * :support:`1379` (also :issue:`1464`) Clean up a lot of unused imports and
   similar cruft (many found via ``flake8 --select E4``). Thanks to Mathias Ertl
   for the original patches.
