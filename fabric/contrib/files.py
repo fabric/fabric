@@ -10,7 +10,7 @@ import os
 from StringIO import StringIO
 from functools import partial
 
-from fabric.api import *
+from fabric.api import run, sudo, hide, settings, env, put, abort
 from fabric.utils import apply_lcwd
 
 

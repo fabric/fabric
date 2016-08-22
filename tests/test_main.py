@@ -494,7 +494,6 @@ class TestNamespaces(FabricTest):
         Wrapped new-style tasks should preserve their function names
         """
         module = fabfile('decorated_fabfile_with_classbased_task.py')
-        from fabric.state import env
         with path_prefix(module):
             docs, funcs = load_fabfile(module)
             eq_(len(funcs), 1)
@@ -506,7 +505,6 @@ class TestNamespaces(FabricTest):
         variable name.
         """
         module = fabfile('classbased_task_fabfile.py')
-        from fabric.state import env
         with path_prefix(module):
             docs, funcs = load_fabfile(module)
             eq_(len(funcs), 1)

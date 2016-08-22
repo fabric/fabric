@@ -22,7 +22,6 @@ from fabric.context_managers import settings
 from fabric.exceptions import CommandTimeout
 
 from fabric.sftp import SFTP
-from fabric.context_managers import settings
 from fabric.decorators import with_settings
 from utils import (eq_, aborts, assert_contains, eq_contents,
                    with_patched_input, FabricTest)
