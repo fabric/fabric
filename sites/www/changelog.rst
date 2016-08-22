@@ -2,6 +2,12 @@
 Changelog
 =========
 
+* :bug:`1458` Detect ``known_hosts``-related instances of
+  ``paramiko.SSHException`` and prevent them from being handled like
+  authentication errors (which is the default behavior). This fixes
+  issues with incorrect password prompts or prompt-related exceptions when
+  using ``reject_unknown_hosts`` and encountering missing or bad
+  ``known_hosts`` entries. Thanks to Lukáš Doktor for catch & patch.
 * :release:`1.12.0 <2016-07-25>`
 * :release:`1.11.2 <2016-07-25>`
 * :release:`1.10.4 <2016-07-25>`
