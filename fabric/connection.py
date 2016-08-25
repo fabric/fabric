@@ -412,8 +412,13 @@ class Connection(Context):
     # (perhaps factor out socket creation itself)?
     # TODO: probably push some of this down into Paramiko
     @contextmanager
-    def forward_local(self, local_port, remote_port=None,
-        remote_host='localhost', local_host='localhost'):
+    def forward_local(
+        self,
+        local_port,
+        remote_port=None,
+        remote_host='localhost',
+        local_host='localhost',
+    ):
         """
         Open a tunnel connecting ``local_port`` to the server's environment.
 
@@ -436,13 +441,13 @@ class Connection(Context):
 
         :param int local_port: The local port number on which to listen.
 
-        :param str local_host:
-            The local hostname/interface on which to listen. Default:
-            ``localhost``.
-
         :param int remote_port:
             The remote port number. Defaults to the same value as
             ``local_port``.
+
+        :param str local_host:
+            The local hostname/interface on which to listen. Default:
+            ``localhost``.
 
         :param str remote_host:
             The remote hostname serving the forwarded remote port. Default:
