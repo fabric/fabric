@@ -1,5 +1,6 @@
 from contextlib import contextmanager
 from threading import Event
+import socket
 
 from invoke import Context
 from invoke.config import Config as InvokeConfig, merge_dicts
@@ -10,7 +11,7 @@ from paramiko.proxy import ProxyCommand
 
 from .runners import Remote
 from .transfer import Transfer
-from .tunnels import Listener
+from .tunnels import Listener, Tunnel
 from .util import get_local_user
 
 
@@ -488,8 +489,111 @@ class Connection(Context):
             # here (where we used direct-tcpip) vs the opposite method (which
             # is what uses forward-tcpip)?
 
-    def forward_remote(self, xxx):
-        pass
+    # TODO: clean up docstrings
+    # TODO: probably push some of this down into Paramiko
+    @contextmanager
+    def forward_remote(
+        self,
+        remote_port,
+        local_port=None,
+        remote_host='127.0.0.1',
+        local_host='localhost',
+    ):
+        """
+        Open a tunnel connecting ``remote_port`` to the local environment.
+
+        For example, say you're running a new webservice in development mode on
+        your workstation at port 8080, and want to funnel traffic to it from a
+        production or staging environment.
+        
+        In most situations this isn't possible as your office network probably
+        blocks most/all inbound traffic. But you have SSH access to this
+        server, so you can temporarily make port 8080 on that server act like
+        port 8080 on your workstation::
+
+            from fabric import Connection
+
+            cxn = Connection('my-remote-server')
+            with cxn.forward_remote(8080):
+                cxn.run("remote-data-writer --port 8080")
+                # Assuming remote-data-writer runs until interrupted, this will
+                # stay open until you Ctrl-C...
+
+        This method is analogous to using the ``-R`` option of OpenSSH's
+        ``ssh`` program.
+
+        :param int remote_port: The remote port number on which to listen.
+
+        :param int local_port:
+            The local port number. Defaults to the same value as
+            ``remote_port``.
+
+        :param str local_host:
+            The local hostname/interface the forward connection talks to.
+            Default: ``localhost``.
+
+        :param str remote_host:
+            The remote interface address to listen on when forwarding
+            connections. Default: ``127.0.0.1`` (i.e. only listen on the remote
+            localhost).
+
+        :returns:
+            Nothing; this method is only useful as a context manager affecting
+            local operating system state.
+        """
+        if not local_port:
+            local_port = remote_port
+        # TODO: this really wants to be a decorator
+        self.open()
+        # Callback executes on each connection to the remote port and is given
+        # a Channel hooked up to said port. (We don't actually care about the
+        # source/dest host/port pairs at all; only whether the channel has data
+        # to read and suchlike.)
+        # We then pair that channel with a new 'outbound' socket connection to
+        # the local host/port being forwarded, in a new Tunnel.
+        # That Tunnel is then added to a shared data structure so we can track
+        # & close them during shutdown.
+        #
+        # TODO: this approach is less than ideal because we have to share state
+        # between ourselves & the callback handed into the transport's own
+        # thread handling (which is roughly analogous to our self-controlled
+        # Listener for local forwarding). See if we can use more of Paramiko's
+        # API (or improve it and then do so) so that isn't necessary.
+        tunnels = []
+        def callback(channel, (src_addr, src_port), (dst_addr, dst_port)):
+            sock = socket.socket()
+            # TODO: handle connection failure such that channel, etc get closed
+            sock.connect((local_host, local_port))
+            # TODO: we don't actually need to generate the Events at our level,
+            # do we? Just let Tunnel.__init__ do it; all we do is "press its
+            # button" on shutdown...
+            tunnel = Tunnel(channel=channel, sock=sock, finished=Event())
+            tunnel.start()
+            # Communication between ourselves & the Paramiko handling subthread
+            tunnels.append(tunnel)
+        # Ask Paramiko (really, the remote sshd) to call our callback whenever
+        # connections are established on the remote iface/port.
+        # transport.request_port_forward(remote_host, remote_port, callback)
+        try:
+            self.transport.request_port_forward(
+                address=remote_host,
+                port=remote_port,
+                handler=callback,
+            )
+            yield
+        finally:
+            # TODO: see above re: lack of a Listener
+            # TODO: and/or also refactor with Listener re: shutdown logic. E.g.
+            # maybe have a non-thread Listener-alike with a method that acts as
+            # the callback? At least then there's a tiny bit more
+            # encapsulation...meh.
+            for tunnel in tunnels:
+                tunnel.finished.set()
+                tunnel.join()
+            self.transport.cancel_port_forward(
+                address=remote_host,
+                port=remote_port,
+            )
 
 
 class Group(list):
