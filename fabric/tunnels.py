@@ -85,27 +85,36 @@ class Tunnel(Thread):
         self.channel = channel
         self.sock = sock
         self.finished = finished
+        self.socket_chunk_size = 1024
+        self.channel_chunk_size = 1024
         super(Tunnel, self).__init__()
 
     def run(self):
         try:
+            empty_sock, empty_chan = None, None
             while not self.finished.is_set():
-                # TODO: not x-platform...or is it??
                 r, w, x = select.select([self.sock, self.channel], [], [], 1)
-                # TODO: This can be generalized more, I think
                 if self.sock in r:
-                    # TODO: make configurable, possibly reusing other
-                    # parameterizations for similar things
-                    data = self.sock.recv(1024)
-                    if len(data) == 0:
-                        break
-                    self.channel.sendall(data)
+                    empty_sock = self.read_and_write(
+                        self.sock, self.channel, self.socket_chunk_size
+                    )
                 if self.channel in r:
-                    # TODO: ditto
-                    data = self.channel.recv(1024)
-                    if len(data) == 0:
-                        break
-                    self.sock.sendall(data)
+                    empty_chan = self.read_and_write(
+                        self.channel, self.socket, self.channel_chunk_size
+                    )
+                if empty_sock or empty_chan:
+                    break
         finally:
             self.channel.close()
             self.sock.close()
+
+    def read_and_write(self, reader, writer, chunk_size):
+        """
+        Read ``chunk_size`` from ``reader``, writing result to ``writer``.
+
+        Returns ``None`` if successful, or ``True`` if the read was empty.
+        """
+        data = reader.recv(chunk_size)
+        if len(data) == 0:
+            return True
+        writer.sendall(data)
