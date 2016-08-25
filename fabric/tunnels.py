@@ -106,14 +106,6 @@ class Tunnel(Thread):
                     if len(data) == 0:
                         break
                     self.sock.sendall(data)
-        except socket.error, e:
-            # Sockets return bad file descriptor if closed.
-            # Maybe there is a cleaner way of doing this?
-            # TODO: do we really want these now that we're using a threading
-            # Event to signal shutdown? Feels like they might be due to the
-            # "yank plug on socket/channel" style of shutdown from v1 impl
-            if e.errno not in (socket.EBADF, errno.ECONNRESET):
-                raise
         finally:
             self.channel.close()
             self.sock.close()
