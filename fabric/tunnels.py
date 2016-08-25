@@ -114,15 +114,6 @@ class Tunnel(Thread):
             # "yank plug on socket/channel" style of shutdown from v1 impl
             if e.errno not in (socket.EBADF, errno.ECONNRESET):
                 raise
-
-        # TODO: turn both of these into one loop
-        # TODO: and probably don't try/except socket.errors...ugh
-        try:
+        finally:
             self.channel.close()
-        except socket.error:
-            pass
-
-        try:
             self.sock.close()
-        except socket.error:
-            pass
