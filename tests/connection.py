@@ -611,6 +611,15 @@ class Connection_(Spec):
             channel.close.assert_called_once_with()
             listener_sock.close.assert_called_once_with()
 
+        def distinct_remote_port(self):
+            skip()
+
+        def non_localhost_listener(self):
+            skip()
+
+        def non_remote_localhost_connection(self):
+            skip()
+
 
 class Group_(Spec):
     class init:
