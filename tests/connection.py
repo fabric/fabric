@@ -620,6 +620,15 @@ class Connection_(Spec):
         def non_remote_localhost_connection(self):
             skip()
 
+        def multiple_tunnels_can_be_open_at_once(self):
+            skip()
+
+        def tunnel_errors_bubble_up(self):
+            skip()
+
+        def listener_errors_bubble_up(self):
+            skip()
+
 
 class Group_(Spec):
     class init:
