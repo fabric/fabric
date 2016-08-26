@@ -276,11 +276,11 @@ class SFTP(object):
             # Cast to octal integer in case of string
             if isinstance(lmode, six.string_types):
                 lmode = int(lmode, 8)
-            lmode = lmode & int('07777', 8)
+            lmode = lmode & int('0o7777', 8)
             rmode = rattrs.st_mode
             # Only bitshift if we actually got an rmode
             if rmode is not None:
-                rmode = rmode & int('07777', 8)
+                rmode = rmode & int('0o7777', 8)
             if lmode != rmode:
                 if use_sudo:
                     # Temporarily nuke 'cwd' so sudo() doesn't "cd" its mv

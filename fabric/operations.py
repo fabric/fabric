@@ -297,7 +297,7 @@ def put(local_path=None, remote_path=None, use_sudo=False,
 
     Alternately, you may use the ``mode`` kwarg to specify an exact mode, in
     the same vein as ``os.chmod``, such as an exact octal number (``0o755``) or
-    a string representing one (``"0755"``).
+    a string representing one (``"0o755"``).
 
     `~fabric.operations.put` will honor `~fabric.context_managers.cd`, so
     relative values in ``remote_path`` will be prepended by the current remote
