@@ -28,11 +28,11 @@ script:
   - invoke www
   - invoke docs -o -W
   - invoke www -c -o -W
-notifications:
-  irc:
-    channels: "irc.freenode.org#fabric"
-    template:
-      - "%{repository}@%{branch}: %{message} (%{build_url})"
-    on_success: change
-    on_failure: change
-  email: false
+#notifications:
+#  irc:
+#    channels: "irc.freenode.org#fabric"
+#    template:
+#      - "%{repository}@%{branch}: %{message} (%{build_url})"
+#    on_success: change
+#    on_failure: change
+#  email: false
