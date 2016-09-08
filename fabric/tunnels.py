@@ -102,7 +102,7 @@ class Tunnel(Thread):
                     )
                 if self.channel in r:
                     empty_chan = self.read_and_write(
-                        self.channel, self.socket, self.channel_chunk_size
+                        self.channel, self.sock, self.channel_chunk_size
                     )
                 if empty_sock or empty_chan:
                     break
