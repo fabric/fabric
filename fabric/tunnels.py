@@ -2,7 +2,7 @@ import errno
 import select
 import socket
 import time
-from threading import Thread, Event
+from threading import Event, Thread
 
 
 # TODO: inherit from invoke.util.ExceptionHandlingThread

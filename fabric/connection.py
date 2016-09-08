@@ -4,10 +4,10 @@ import socket
 
 from invoke import Context
 from invoke.config import Config as InvokeConfig, merge_dicts
-from invoke.vendor import six
 from paramiko.client import SSHClient, AutoAddPolicy
 from paramiko.config import SSHConfig
 from paramiko.proxy import ProxyCommand
+from invoke.vendor import six
 
 from .runners import Remote
 from .transfer import Transfer
