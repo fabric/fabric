@@ -1,7 +1,7 @@
 language: python
 python:
-  - "2.6"
   - "2.7"
+  - "3.5"
 install:
   # Build/test dependencies
   - pip install -r requirements.txt
@@ -28,11 +28,11 @@ script:
   - invoke www
   - invoke docs -o -W
   - invoke www -c -o -W
-notifications:
-  irc:
-    channels: "irc.freenode.org#fabric"
-    template:
-      - "%{repository}@%{branch}: %{message} (%{build_url})"
-    on_success: change
-    on_failure: change
-  email: false
+#notifications:
+#  irc:
+#    channels: "irc.freenode.org#fabric"
+#    template:
+#      - "%{repository}@%{branch}: %{message} (%{build_url})"
+#    on_success: change
+#    on_failure: change
+#  email: false
