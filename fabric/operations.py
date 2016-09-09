@@ -296,8 +296,8 @@ def put(local_path=None, remote_path=None, use_sudo=False,
     scripts). To do this, specify ``mirror_local_mode=True``.
 
     Alternately, you may use the ``mode`` kwarg to specify an exact mode, in
-    the same vein as ``os.chmod``, such as an exact octal number (``0755``) or
-    a string representing one (``"0755"``).
+    the same vein as ``os.chmod``, such as an exact octal number (``0o755``) or
+    a string representing one (``"0o755"``).
 
     `~fabric.operations.put` will honor `~fabric.context_managers.cd`, so
     relative values in ``remote_path`` will be prepended by the current remote
@@ -315,7 +315,7 @@ def put(local_path=None, remote_path=None, use_sudo=False,
 
         put('bin/project.zip', '/tmp/project.zip')
         put('*.py', 'cgi-bin/')
-        put('index.html', 'index.html', mode=0755)
+        put('index.html', 'index.html', mode=0o755)
 
     .. note::
         If a file-like object such as StringIO has a ``name`` attribute, that
