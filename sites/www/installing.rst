@@ -18,18 +18,14 @@ Advanced users wanting to install a development version may use ``pip`` to grab
 the latest master branch (as well as the dev version of the Paramiko
 dependency)::
 
-    $ pip install paramiko==dev
-    $ pip install fabric==dev
-
-Or, to install an editable version for debugging/hacking, execute ``pip
-install -e .`` (or ``python setup.py develop``) inside a :ref:`downloaded
-<downloads>` or :ref:`cloned <source-code-checkouts>` copy of the source code.
+    $ pip install -e git+https://github.com/paramiko/paramiko/#egg=paramiko
+    $ pip install -e git+https://github.com/fabric/fabric/#egg=fabric
 
 .. warning::
 
-    Any development installs of Fabric (whether via ``==dev`` or ``install
-    -e``) require the development version of Paramiko to be installed
-    beforehand, or Fabric's installation may fail.
+    Development installs of Fabric, regardless of whether they involve source
+    checkouts or direct ``pip`` installs, require the development version of
+    Paramiko to be installed beforehand or Fabric's installation may fail.
 
 
 Dependencies
