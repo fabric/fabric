@@ -41,6 +41,15 @@ API organization
   parameters, etc) can also be stored in these objects, and will affect how
   they operate. This configuration is also inherited from the CLI machinery
   when the latter is in use.
+- The basic "respond to prompts" functionality found as Fabric 1's
+  ``env.prompts`` dictionary option, has been significantly fleshed out into a
+  framework of :ref:`Watchers <autoresponding>` which operate on a running
+  command's input and output streams.
+
+    - In addition, ``sudo`` has been rewritten to use that framework; while
+      it's still useful to have implemented in Fabric (actually Invoke) itself,
+      it doesn't use any private internals any longer.
+
 - *Roles* (and other lists-of-host-strings such as the result of using ``-H``
   on the CLI) are implemented via `.Group` objects, which are lightweight
   wrappers around multiple Connections.
