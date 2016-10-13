@@ -1,6 +1,6 @@
 from __future__ import with_statement
 
-from fudge import Fake, patched_context, with_fakes
+from fudge import Fake, patched_context, with_fakes, patch
 import unittest
 from nose.tools import raises, ok_
 import random
@@ -403,6 +403,27 @@ class TestExecute(FabricTest):
         with hide('everything'):
             retval = execute(task)
         eq_(retval, {'127.0.0.1:2200': '2200', '127.0.0.1:2201': '2201'})
+
+    @patch("fabric.utils.abort")
+    @server(port=2200)
+    @server(port=2201)
+    def test_parallel_reporting_all_errors(self, fake_abort):
+        """
+        Parallel mode should still return values as in serial mode
+        """
+        fake_abort.expects_call().with_args(
+            "One or more hosts failed while executing task 'task'\n\n"
+            "127.0.0.1:2201  Underlying exception:     Failed\n"
+            "127.0.0.1:2200  Underlying exception:     Failed\n\n"
+            "..........................."
+        )
+
+        @parallel
+        @hosts('127.0.0.1:2200', '127.0.0.1:2201')
+        def task():
+            raise Exception("Failed")
+        with hide('everything'):
+            execute(task)
 
     @with_fakes
     def test_should_work_with_Task_subclasses(self):
