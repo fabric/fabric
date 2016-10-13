@@ -400,10 +400,10 @@ def execute(task, *args, **kwargs):
                 disconnect_all()
 
         failed = False
-        failedMessages = []
+        failed_messages = []
 
         def failed_instance(message):
-            failedMessages.append(message.replace("\n", " "))
+            failed_messages.append(message.replace("\n", " "))
 
         # If running in parallel, block until job queue is emptied
         if jobs:
@@ -433,7 +433,7 @@ def execute(task, *args, **kwargs):
                         error(name + "experienced an unknown error", func=failed_instance)
                 results[name] = d['results']
             if failed:
-                error(err + "\n\n" + "\n".join(failedMessages) + "\n\n............................")
+                error(err + "\n\n" + "\n".join(failed_messages) + "\n\n...........................")
 
     # Or just run once for local-only
     else:
