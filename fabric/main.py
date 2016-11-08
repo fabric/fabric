@@ -197,7 +197,7 @@ def load_tasks_from_module(imported):
         imported_vars = [(name, imported_vars[name]) for name in \
                          imported_vars if name in imported_vars["__all__"]]
     else:
-        imported_vars = imported_vars.items()
+        imported_vars = list(imported_vars.items())
     # Return a two-tuple value.  First is the documentation, second is a
     # dictionary of callables only (and don't include Fab operations or
     # underscored callables)
