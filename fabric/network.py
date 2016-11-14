@@ -83,7 +83,7 @@ def get_gateway(host, port, cache, replace=False):
     """
     from fabric.state import env, output
     sock = None
-    proxy_command = ssh_config().get('proxycommand', None)
+    proxy_command = getproxycommand() or ssh_config().get('proxycommand', None)
     if env.gateway:
         gateway = normalize_to_string(env.gateway)
         # ensure initial gateway connection
@@ -171,6 +171,51 @@ class HostConnectionCache(dict):
 
     def __contains__(self, key):
         return dict.__contains__(self, normalize_to_string(key))
+
+
+def getproxycommand(command=None):
+    """
+    Get and generates proxy command from env.
+
+    If `proxycommand` not in env or `env.proxycommand` is not
+    string return `None`
+
+    Generate proxy command with current `host_string`
+
+    We can generate separate proxy command.
+
+    The following options are defined.
+
+    `command`
+        :default: ``None``
+
+        Return generated proxy command.
+
+    """
+    from fabric.state import env, output
+
+    if command is None:
+        if not 'proxycommand' in env:
+            return None
+
+    command = env.proxycommand
+
+    if not isinstance(command, str):
+        if output.debug:
+            print "Proxy command must be string"
+        return None
+
+    host_dict = parse_host_string(env.host_string)
+
+    replacements = [
+        ('%h', host_dict['host']),
+        ('%p', host_dict.get('port')),
+        ('%r', host_dict.get('user'))]
+
+    for find, replace in replacements:
+        command = command.replace(find, str(replace))
+
+    return command
 
 
 def ssh_config(host_string=None):
