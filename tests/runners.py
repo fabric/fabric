@@ -60,23 +60,6 @@ class Remote_(Spec):
             eq_(result.host, "{0}@host:22".format(get_local_user()))
 
         @mock_remote
-        def local_interrupts_send_ETX_to_remote_pty(self, chan):
-            # TODO: somehow merge with similar in Invoke's suite? Meh.
-            class _KeyboardInterruptingRemote(Remote):
-                def wait(self):
-                    raise KeyboardInterrupt
-
-            r = _KeyboardInterruptingRemote(context=Connection('host'))
-            try:
-                r.run(CMD, pty=True)
-            except KeyboardInterrupt:
-                pass
-            else:
-                # Sanity check
-                assert False, "Didn't receive expected KeyboardInterrupt"
-            chan.send.assert_called_once_with(u'\x03')
-
-        @mock_remote
         def channel_is_closed_normally(self, chan):
             # I.e. Remote.stop() closes the channel automatically
             r = Remote(context=Connection('host'))
