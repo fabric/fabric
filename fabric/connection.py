@@ -88,6 +88,7 @@ class Connection(Context):
         host,
         user=None,
         port=None,
+        key=None,
         key_filename=None,
         config=None,
         gateway=None
@@ -114,6 +115,13 @@ class Connection(Context):
 
         :param int port:
             the remote port. Defaults to ``config.port``.
+
+        :param str key:
+            an in-memory `paramiko.pkey.PKey` subclass instance (e.g.
+            `paramiko.rsakey.RSAKey`) to use for authentication.
+
+            Passed directly to `paramiko.client.SSHClient.connect`. Default:
+            ``None``.
 
         :param str key_filename:
             a string or list of strings specifying SSH key paths to load.
@@ -180,6 +188,8 @@ class Connection(Context):
         self.user = user or self.config.user
         #: The network port to connect on.
         self.port = port or self.config.port
+        #: `paramiko.pkey.PKey` object used for authentication.
+        self.key = key
         #: Specified key filename(s) used for authentication.
         self.key_filename = key_filename
         #: The gateway `.Connection` or ``ProxyCommand`` string to be used,
@@ -280,6 +290,11 @@ class Connection(Context):
             )
             if self.gateway:
                 kwargs['sock'] = self.open_gateway()
+            if self.key:
+                # TODO: autodetect which pkey subclass to use? try 'em all in
+                # some order like Paramiko itself does with files? (Push this
+                # into Paramiko and just make this a string arg? yea!)
+                kwargs['pkey'] = self.key
             if self.key_filename:
                 kwargs['key_filename'] = self.key_filename
             self.client.connect(**kwargs)
