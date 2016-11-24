@@ -76,6 +76,14 @@ class Connection(Context):
         This class rebinds `invoke.context.Context.run` to `.local` so both
         remote and local command execution can coexist.
     """
+    # NOTE: these are initialized here because they shadow config options.
+    # Otherwise there's no way to inform __setattr__ that they should be
+    # treated as real attributes instead of config proxies.
+    # Once an instance is created, these values will always be non-None because
+    # they default to the default config values.
+    user = None
+    port = None
+
     # TODO: should "reopening" an existing Connection object that has been
     # closed, be allowed? (See e.g. how v1 detects closed/semi-closed
     # connections & nukes them before creating a new client to the same host.)
