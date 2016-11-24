@@ -514,7 +514,7 @@ class Connection(Context):
         For example, say you're running a new webservice in development mode on
         your workstation at port 8080, and want to funnel traffic to it from a
         production or staging environment.
-        
+
         In most situations this isn't possible as your office network probably
         blocks most/all inbound traffic. But you have SSH access to this
         server, so you can temporarily make port 8080 on that server act like
