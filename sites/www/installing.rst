@@ -22,11 +22,33 @@ are typically older and harder to support), typically called ``fabric`` or
 
     $ sudo apt-get install fabric
 
+Installing Fabric 2.x as ``fabric2``
+====================================
 
+Users who are migrating from Fabric 1 to Fabric 2 may find it useful to have
+both versions installed side-by-side. The easiest way to do this is to use the
+handy ``fabric2`` PyPI entry::
 
+    $ pip install fabric2
 
+This upload is generated from the normal Fabric repository, but is tweaked at
+build time so that it installs a ``fabric2`` package instead of a ``fabric``
+one. The codebase is otherwise unchanged.
 
+Users working off of the Git repository can enable that same tweak with an
+environment variable, e.g.::
 
+    $ PACKAGE_AS_FABRIC2=yes pip install -e .
+
+or::
+
+    $ PACKAGE_AS_FABRIC2=yes python setup.py develop
+
+or any other ``setup.py`` related command.
+
+.. note::
+    The value of the environment variable doesn't matter, as long as it is not
+    empty.
 
 Dependencies
 ============

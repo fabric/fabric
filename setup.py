@@ -1,14 +1,29 @@
 #!/usr/bin/env python
 
-# Support setuptools or distutils
-try:
-    from setuptools import setup
-except ImportError:
-    from distutils.core import setup
+import os
+import setuptools
+
+# Enable the option of building/installing Fabric 2.x as "fabric2". This allows
+# users migrating from 1.x to 2.x to have both in the same process space and
+# migrate piecemeal. It leverages the fact that the Git repository holds a
+# symbolic link from 'fabric' to 'fabric2' (so it effectively has a 'copy' of
+# the code under either name).
+#
+# NOTE: this only works when one is executing setup.py directly (e.g. it cannot
+# be triggered when installing a wheel or other binary archive); the
+# maintainers take care of triggering this explicitly at build time so that two
+# different wheels & PyPI entries are in play.
+#
+# See also sites/www/installing.txt.
+package_name = 'fabric'
+binary_name = 'fab'
+if os.environ.get('PACKAGE_AS_FABRIC2', None):
+    package_name = 'fabric2'
+    binary_name = 'fab2'
 
 # Version info -- read without importing
 _locals = {}
-with open('fabric/_version.py') as fp:
+with open(os.path.join(package_name, '_version.py')) as fp:
     exec(fp.read(), None, _locals)
 version = _locals['__version__']
 
@@ -20,8 +35,8 @@ To find out what's new in this version of Fabric, please see `the changelog
 {0}
 """.format(open('README.rst').read())
 
-setup(
-    name='fabric',
+setuptools.setup(
+    name=package_name,
     version=version,
     description='High level SSH command execution',
     license='BSD',
@@ -37,10 +52,10 @@ setup(
         'paramiko>=1.16,<3.0',
         'cryptography>=1.1',
     ],
-    packages=['fabric'],
+    packages=[package_name],
     entry_points={
         'console_scripts': [
-            'fab = fabric.main:program.run',
+            '{0} = {1}.main:program.run'.format(binary_name, package_name),
         ]
     },
 
