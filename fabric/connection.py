@@ -569,7 +569,7 @@ class Connection(Context):
         # Listener for local forwarding). See if we can use more of Paramiko's
         # API (or improve it and then do so) so that isn't necessary.
         tunnels = []
-        def callback(channel, (src_addr, src_port), (dst_addr, dst_port)):
+        def callback(channel, src_addr_tup, dst_addr_tup):
             sock = socket.socket()
             # TODO: handle connection failure such that channel, etc get closed
             sock.connect((local_host, local_port))
