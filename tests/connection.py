@@ -293,6 +293,18 @@ class Connection_(Spec):
             )
 
         @patch('fabric.connection.SSHClient')
+        def passes_through_kwargs(self, Client):
+            client = Client.return_value
+            client.get_transport.return_value = Mock(active=False)
+            Connection('host').open(foobar='bizbaz')
+            client.connect.assert_called_with(
+                username=get_local_user(),
+                hostname='host',
+                port=22,
+                foobar='bizbaz',
+            )
+
+        @patch('fabric.connection.SSHClient')
         def is_connected_True_when_successful(self, Client):
             # Ensure the parts of Paramiko we test act like things are cool
             client = Client.return_value

@@ -272,7 +272,7 @@ class Connection(Context):
         """
         return self.transport.active if self.transport else False
 
-    def open(self):
+    def open(self, **kwargs):
         """
         Initiate an SSH connection to the host/port this object is bound to.
 
@@ -280,18 +280,20 @@ class Connection(Context):
         is set.
 
         Also saves a handle to the now-set Transport object for easier access.
+
+        Accepts arbitrary ``kwargs`` which are passed untouched into the
+        Paramiko ``Client.connect`` method call.
         """
         if not self.is_connected:
             # TODO: work in all the stuff Fabric 1 supports here & maybe some
             # it doesn't.
-            # TODO: and if possible, make it easy for users to arbitrarily
-            # submit kwargs so we don't have to constantly manage kwarg parity
-            # for stuff that otherwise doesn't need any dev on our side. (Think
-            # things like timeouts, Kerberos kwargs, etc.)
+            # TODO: make the kwargs-passthru work well with
+            # __init__+implicit-open() as well; requiring explicit open() to
+            # pass any params feels unfriendly, even if it works in a pinch.
             # TODO: and that methodology should ideally work with the config
             # system somehow, even if it's e.g.
             # config.fabric.extra_connection_kwargs or something.
-            kwargs = dict(
+            kwargs = dict(kwargs,
                 username=self.user,
                 hostname=self.host,
                 port=self.port,
