@@ -76,6 +76,14 @@ class Connection(Context):
         This class rebinds `invoke.context.Context.run` to `.local` so both
         remote and local command execution can coexist.
     """
+    # NOTE: these are initialized here because they shadow config options.
+    # Otherwise there's no way to inform __setattr__ that they should be
+    # treated as real attributes instead of config proxies.
+    # Once an instance is created, these values will always be non-None because
+    # they default to the default config values.
+    user = None
+    port = None
+
     # TODO: should "reopening" an existing Connection object that has been
     # closed, be allowed? (See e.g. how v1 detects closed/semi-closed
     # connections & nukes them before creating a new client to the same host.)
@@ -521,7 +529,7 @@ class Connection(Context):
         For example, say you're running a new webservice in development mode on
         your workstation at port 8080, and want to funnel traffic to it from a
         production or staging environment.
-        
+
         In most situations this isn't possible as your office network probably
         blocks most/all inbound traffic. But you have SSH access to this
         server, so you can temporarily make port 8080 on that server act like
@@ -576,7 +584,7 @@ class Connection(Context):
         # Listener for local forwarding). See if we can use more of Paramiko's
         # API (or improve it and then do so) so that isn't necessary.
         tunnels = []
-        def callback(channel, (src_addr, src_port), (dst_addr, dst_port)):
+        def callback(channel, src_addr_tup, dst_addr_tup):
             sock = socket.socket()
             # TODO: handle connection failure such that channel, etc get closed
             sock.connect((local_host, local_port))

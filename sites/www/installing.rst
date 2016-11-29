@@ -2,45 +2,63 @@
 Installing
 ==========
 
-Fabric is best installed via `pip <http://pip-installer.org>`_ (highly
-recommended) or `easy_install
-<http://wiki.python.org/moin/CheeseShopTutorial>`_ (older, but still works
-fine), e.g.::
+Fabric is best installed via `pip <http://pip-installer.org>`_::
 
     $ pip install fabric
 
-You may also opt to use your operating system's package manager; the package is
-typically called ``fabric`` or ``python-fabric``. E.g.::
+All advanced ``pip`` use cases work too, such as::
+
+    $ pip install -e git+https://github.com/fabric/fabric
+
+Or cloning the Git repository and running::
+
+    $ pip install -e .
+
+within it.
+
+Your operating system may also have a Fabric package available (though these
+are typically older and harder to support), typically called ``fabric`` or
+``python-fabric``. E.g.::
 
     $ sudo apt-get install fabric
 
-Advanced users wanting to install a development version may use ``pip`` to grab
-the latest master branch (as well as the dev version of the Paramiko
-dependency)::
+Installing Fabric 2.x as ``fabric2``
+====================================
 
-    $ pip install paramiko==dev
-    $ pip install fabric==dev
+Users who are migrating from Fabric 1 to Fabric 2 may find it useful to have
+both versions installed side-by-side. The easiest way to do this is to use the
+handy ``fabric2`` PyPI entry::
 
-Or, to install an editable version for debugging/hacking, execute ``pip
-install -e .`` (or ``python setup.py develop``) inside a :ref:`downloaded
-<downloads>` or :ref:`cloned <source-code-checkouts>` copy of the source code.
+    $ pip install fabric2
 
-.. warning::
+This upload is generated from the normal Fabric repository, but is tweaked at
+build time so that it installs a ``fabric2`` package instead of a ``fabric``
+one. The codebase is otherwise unchanged.
 
-    Any development installs of Fabric (whether via ``==dev`` or ``install
-    -e``) require the development version of Paramiko to be installed
-    beforehand, or Fabric's installation may fail.
+Users working off of the Git repository can enable that same tweak with an
+environment variable, e.g.::
 
+    $ PACKAGE_AS_FABRIC2=yes pip install -e .
+
+or::
+
+    $ PACKAGE_AS_FABRIC2=yes python setup.py develop
+
+or any other ``setup.py`` related command.
+
+.. note::
+    The value of the environment variable doesn't matter, as long as it is not
+    empty.
 
 Dependencies
 ============
 
 In order for Fabric's installation to succeed, you will need four primary pieces of software:
 
-* the Python programming language (2.6, 2.7, or 3.2+);
+* the Python programming language;
 * the ``setuptools`` packaging/installation library;
-* the Python `Paramiko <http://paramiko.org>`_ SSH library (1.13+);
-* and Paramiko's dependency, the PyCrypto cryptography library.
+* the Python `Paramiko <http://paramiko.org>`_ SSH library;
+* and Paramiko's dependency, `Cryptography <https://cryptography.io>`_.
 
 .. TODO: update as appropriate
 
@@ -54,21 +72,18 @@ gotchas.
 Python
 ------
 
-Fabric requires `Python <http://python.org>`_ version 2.6+ or 3.2+. Python
+Fabric requires `Python <http://python.org>`_ version 2.6+ or 3.3+. Python
 versions older than 2.6 are significantly more difficult to support in a dual
 Python 2 + Python 3 environment, and will never have support.
 
 setuptools
 ----------
 
-`Setuptools`_ comes with some Python installations by default; if yours doesn't,
-you'll need to grab it. In such situations it's typically packaged as
-``python-setuptools``, ``py26-setuptools`` or similar. Fabric may drop its
-setuptools dependency in the future, or include alternative support for the
-`Distribute`_ project, but for now setuptools is required for installation.
+`Setuptools`_ comes with most Python installations by default; if yours
+doesn't, you'll need to grab it. In such situations it's typically packaged as
+``python-setuptools``, ``py26-setuptools`` or similar.
 
 .. _setuptools: http://pypi.python.org/pypi/setuptools
-.. _Distribute: http://pypi.python.org/pypi/distribute
 
 ``multiprocessing``
 -------------------
@@ -103,7 +118,7 @@ If you are interested in doing development work on Fabric (or even just running
 the test suite), you may also need to install some or all of the following
 packages:
 
-.. TODO: Update for modern
+.. TODO: Update for modern or just nix because, really?
 
 * `git <http://git-scm.com>`_, in order to obtain some of the
   other dependencies below;
@@ -140,8 +155,8 @@ The Fabric developers manage the project's source code with the `Git
 downloading official releases, you have the following options:
 
 * Clone the canonical repository straight from `the Fabric organization's
-  repository on Github <https://github.com/fabric/fabric>`_,
-  ``git://github.com/fabric/fabric.git``
+  repository on Github <https://github.com/fabric/fabric>`_ (cloning
+  instructions available on that page).
 * Make your own fork of the Github repository by making a Github account,
   visiting `fabric/fabric <http://github.com/fabric/fabric>`_ and clicking the
   "fork" button.
@@ -150,10 +165,9 @@ downloading official releases, you have the following options:
 
     If you've obtained the Fabric source via source control and plan on
     updating your checkout in the future, we highly suggest using ``pip install
-    -e .`` (or ``python setup.py develop`` if you don't have ``pip``) instead
-    -- it will use symbolic links instead of file copies, ensuring that imports
-    of the library or use of the command-line tool will always refer to your
-    checkout.
+    -e .`` (or ``python setup.py develop``) instead -- it will use symbolic
+    links instead of file copies, ensuring that imports of the library or use
+    of the command-line tool will always refer to your checkout.
 
 For information on the hows and whys of Fabric development, including which
 branches may be of interest and how you can help out, please see the
