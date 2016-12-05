@@ -2,6 +2,7 @@
 Changelog
 =========
 
+* :release:`1.12.1 <2016-12-05>`
 * :release:`1.11.3 <2016-12-05>`
 * :release:`1.10.5 <2016-12-05>`
 * :bug:`1470` When using `~fabric.operations.get` with glob expressions, a lack
