@@ -2,6 +2,7 @@
 Changelog
 =========
 
+* :release:`1.10.5 <2016-12-05>`
 * :bug:`1470` When using `~fabric.operations.get` with glob expressions, a lack
   of matches for the glob would result in an empty file named after the glob
   expression (in addition to raising an error). This has been fixed so the
