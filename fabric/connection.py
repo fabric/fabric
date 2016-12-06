@@ -391,7 +391,7 @@ class Connection(Context):
         # Move the above to the API doc shim page? (Will that even render
         # inherited-only methods?)
         # NOTE: no need to open(), can rely on run()'s.
-        super(Connection, self).sudo(command, **kwargs)
+        return super(Connection, self).sudo(command, **kwargs)
 
     def local(self, *args, **kwargs):
         """
