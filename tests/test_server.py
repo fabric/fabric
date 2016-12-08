@@ -7,6 +7,7 @@ no need to pollute Fab's own test suite. (Yes, if these tests fail, it's likely
 that the Fabric tests using the test server may also have issues, but still.)
 """
 
+from __future__ import absolute_import
 from nose.tools import eq_, ok_
 
 from fabric.network import ssh
@@ -92,7 +93,7 @@ def test_list_folder():
         # not "no files found"
         ok_(results != ssh.SFTP_NO_SUCH_FILE)
         # Grab filename from SFTPAttribute objects in result
-        output = map(lambda x: x.filename, results)
+        output = [x.filename for x in results]
         # Yield test generator
         eq_.description = "list_folder: %s" % desc
         yield eq_, set(expected), set(output)

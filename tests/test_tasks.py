@@ -1,5 +1,7 @@
 from __future__ import with_statement
 
+from __future__ import absolute_import
+from __future__ import print_function
 from fudge import Fake, patched_context, with_fakes
 import unittest
 from nose.tools import raises, ok_
@@ -14,6 +16,8 @@ from fabric.exceptions import NetworkError
 
 from utils import eq_, FabricTest, aborts, mock_streams, support
 from server import server
+import six
+from six.moves import range
 
 
 def test_base_task_provides_undefined_name():
@@ -37,7 +41,7 @@ class TestWrappedCallableTask(unittest.TestCase):
             self.fail(msg)
 
     def test_passes_unused_kwargs_to_parent(self):
-        random_range = range(random.randint(1, 10))
+        random_range = list(range(random.randint(1, 10)))
         kwargs = dict([("key_%s" % i, i) for i in random_range])
 
         def foo(): pass
@@ -151,7 +155,7 @@ def test_decorator_closure_hiding():
     """
     from fabric.decorators import task, hosts
     def foo():
-        print(env.host_string)
+        print((env.host_string))
     foo = task(hosts("me@localhost")(foo))
     eq_(["me@localhost"], foo.hosts)
 
@@ -165,7 +169,7 @@ def dict_contains(superset, subset):
     """
     Assert that all key/val pairs in dict 'subset' also exist in 'superset'
     """
-    for key, value in subset.iteritems():
+    for key, value in six.iteritems(subset):
         ok_(key in superset)
         eq_(superset[key], value)
 
@@ -351,7 +355,7 @@ class TestExecute(FabricTest):
         Networked but serial tasks should return per-host-string dict
         """
         ports = [2200, 2201]
-        hosts = map(lambda x: '127.0.0.1:%s' % x, ports)
+        hosts = ['127.0.0.1:%s' % x for x in ports]
         def task():
             run("ls /simple")
             return "foo"

@@ -127,6 +127,8 @@ BaseServer:
 # standard regression test.
 # To run it manually, run Lib/test/test_socketserver.py.
 
+from __future__ import absolute_import
+from __future__ import print_function
 __version__ = "0.4"
 
 import socket
@@ -329,11 +331,11 @@ class BaseServer:
         The default is to print a traceback and continue.
 
         """
-        print('-' * 40)
-        print('Exception happened during processing of request from %s' % (client_address,))
+        print(('-' * 40))
+        print(('Exception happened during processing of request from %s' % (client_address,)))
         import traceback
         traceback.print_exc()  # XXX But this goes to stderr!
-        print('-' * 40)
+        print(('-' * 40))
 
 
 class TCPServer(BaseServer):
@@ -509,7 +511,7 @@ class ForkingMixIn:
                 continue
             try:
                 self.active_children.remove(pid)
-            except ValueError, e:
+            except ValueError as e:
                 raise ValueError('%s. x=%d and list=%r' % \
                                     (e.message, pid, self.active_children))
 
@@ -631,7 +633,7 @@ class BaseRequestHandler:
             self.handle()
             self.finish()
         finally:
-            sys.exc_traceback = None    # Help garbage collection
+            sys.exc_info()[2] = None    # Help garbage collection
 
     def setup(self):
         pass

@@ -29,6 +29,7 @@ version of the original color on most terminals.
     by this module will be skipped/disabled.
 """
 
+from __future__ import absolute_import
 import os
 
 def _wrap_with(code):

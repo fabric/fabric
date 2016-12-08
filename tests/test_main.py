@@ -1,5 +1,6 @@
 from __future__ import with_statement
 
+from __future__ import absolute_import
 import copy
 from functools import partial
 from operator import isMappingType
@@ -18,6 +19,7 @@ from fabric.tasks import Task, WrappedCallableTask
 from fabric.task_utils import _crawl, crawl, merge
 
 from utils import FabricTest, fabfile, path_prefix, aborts
+import six
 
 
 # Stupid load_fabfile wrapper to hide newly added return value.
@@ -591,7 +593,7 @@ def name_to_task(name):
 
 def strings_to_tasks(d):
     ret = {}
-    for key, value in d.iteritems():
+    for key, value in six.iteritems(d):
         if isMappingType(value):
             val = strings_to_tasks(value)
         else:

@@ -1,5 +1,6 @@
 from __future__ import with_statement
 
+from __future__ import absolute_import
 from fabric.api import run, parallel, env, hide, execute, settings
 
 from utils import FabricTest, eq_, aborts, mock_streams

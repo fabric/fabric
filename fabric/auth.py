@@ -3,6 +3,7 @@ Common authentication subroutines. Primarily for internal use.
 """
 
 
+from __future__ import absolute_import
 def get_password(user, host, port, login_only=False):
     from fabric.state import env
     from fabric.network import join_host_strings

@@ -2,14 +2,16 @@
 Internal subroutines for e.g. aborting execution with an error message,
 or performing indenting on multiline output.
 """
+from __future__ import absolute_import
 import os
 import sys
 import textwrap
 from traceback import format_exc
+import six
 
 
 def _encode(msg, stream):
-    if isinstance(msg, unicode) and hasattr(stream, 'encoding') and not stream.encoding is None:
+    if isinstance(msg, six.text_type) and hasattr(stream, 'encoding') and not stream.encoding is None:
         return msg.encode(stream.encoding)
     else:
         return str(msg)
@@ -44,7 +46,7 @@ def abort(msg):
     if not env.colorize_errors:
         red  = lambda x: x
     else:
-        from colors import red
+        from .colors import red
 
     if output.aborts:
         sys.stderr.write(red("\nFatal error: %s\n" % _encode(msg, sys.stderr)))
@@ -76,7 +78,7 @@ def warn(msg):
     if not env.colorize_errors:
         magenta = lambda x: x
     else:
-        from colors import magenta
+        from .colors import magenta
 
     if output.warnings:
         msg = _encode(msg, sys.stderr)
