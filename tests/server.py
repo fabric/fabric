@@ -1,16 +1,11 @@
 from __future__ import with_statement
 
-import copy
-import itertools
 import os
 import re
 import socket
-import stat
-import sys
 import threading
 import time
 import types
-from StringIO import StringIO
 from functools import wraps
 from Python26SocketServer import BaseRequestHandler, ThreadingMixIn, TCPServer
 

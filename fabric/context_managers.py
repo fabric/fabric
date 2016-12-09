@@ -539,7 +539,7 @@ def remote_tunnel(remote_port, local_port=None, local_host="localhost",
 
         try:
             sock.connect((local_host, local_port))
-        except Exception, e:
+        except Exception:
             print "[%s] rtunnel: cannot connect to %s:%d (from local)" % (env.host_string, local_host, local_port)
             channel.close()
             return

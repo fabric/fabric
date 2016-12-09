@@ -71,7 +71,7 @@ def mock_streams(which):
             if stderr:
                 my_stderr, sys.stderr = sys.stderr, fake_stderr
             try:
-                ret = func(*args, **kwargs)
+                func(*args, **kwargs)
             finally:
                 if stdout:
                     sys.stdout = my_stdout

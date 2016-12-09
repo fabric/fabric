@@ -252,6 +252,18 @@ argument, like so::
 This has been shown to work on FreeBSD and may work on other systems as well.
 
 
+.. _faq-csh:
+
+I use ``csh`` remotely and keep getting errors about ``Unmatched ".``.
+======================================================================
+
+If the remote host uses ``csh`` for your login shell, Fabric requires the shell
+variable ``backslash_quote`` to be set, or else any quote-escaping Fabric does
+will not work. For example, add the following line to ``~/.cshrc``::
+
+    set backslash_quote
+
+
 I'm sometimes incorrectly asked for a passphrase instead of a password.
 =======================================================================
 

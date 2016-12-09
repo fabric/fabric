@@ -1,7 +1,5 @@
 import os
-import types
 import re
-import sys
 
 from fabric.api import run, local
 from fabric.contrib import files, project

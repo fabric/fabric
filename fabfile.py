@@ -6,7 +6,7 @@ from __future__ import with_statement
 
 import nose
 
-from fabric.api import abort, local, task
+from fabric.api import task
 
 
 @task(default=True)

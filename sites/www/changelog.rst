@@ -2,6 +2,41 @@
 Changelog
 =========
 
+* :release:`1.13.0 <2016-12-09>`
+* :support:`1461` Update setup requirements to allow Paramiko 2.x, now that
+  it's stable and been out in the wild for some time. Paramiko 1.x still works
+  like it always did; the only change to Paramiko 2 was the backend moving from
+  PyCrypto to Cryptography.
+
+  .. warning::
+    If you are upgrading an existing environment, the install dependencies have
+    changed; please see Paramiko's installation docs for details:
+    http://www.paramiko.org/installing.html
+
+* :release:`1.12.1 <2016-12-05>`
+* :release:`1.11.3 <2016-12-05>`
+* :release:`1.10.5 <2016-12-05>`
+* :bug:`1470` When using `~fabric.operations.get` with glob expressions, a lack
+  of matches for the glob would result in an empty file named after the glob
+  expression (in addition to raising an error). This has been fixed so the
+  empty file is no longer generated. Thanks to Georgy Kibardin for the catch &
+  initial patch.
+* :feature:`1495` Update the internals of `~fabric.contrib.files` so its
+  members work with SSH servers running on Windows. Thanks to Hamdi Sahloul for
+  the patch.
+* :support:`1483 backported` (also re: :issue:`1386`, :issue:`1374`,
+  :issue:`1300`) Add :ref:`an FAQ <faq-csh>` about quote problems in remote
+  ``csh`` causing issues with Fabric's shell-wrapping and quote-escaping.
+  Thanks to Michael Radziej for the update.
+* :support:`1379 backported` (also :issue:`1464`) Clean up a lot of unused
+  imports and similar cruft (many found via ``flake8 --select E4``). Thanks to
+  Mathias Ertl for the original patches.
+* :bug:`1458` Detect ``known_hosts``-related instances of
+  ``paramiko.SSHException`` and prevent them from being handled like
+  authentication errors (which is the default behavior). This fixes
+  issues with incorrect password prompts or prompt-related exceptions when
+  using ``reject_unknown_hosts`` and encountering missing or bad
+  ``known_hosts`` entries. Thanks to Lukáš Doktor for catch & patch.
 * :release:`1.12.0 <2016-07-25>`
 * :release:`1.11.2 <2016-07-25>`
 * :release:`1.10.4 <2016-07-25>`

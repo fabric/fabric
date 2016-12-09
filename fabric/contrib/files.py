@@ -5,13 +5,12 @@ Module providing easy API for working with remote files and folders.
 from __future__ import with_statement
 
 import hashlib
-import tempfile
 import re
 import os
 from StringIO import StringIO
 from functools import partial
 
-from fabric.api import *
+from fabric.api import run, sudo, hide, settings, env, put, abort
 from fabric.utils import apply_lcwd
 
 
@@ -25,9 +24,13 @@ def exists(path, use_sudo=False, verbose=False):
     stderr and any warning resulting from the file not existing) in order to
     avoid cluttering output. You may specify ``verbose=True`` to change this
     behavior.
+
+    .. versionchanged:: 1.13
+        Replaced internal use of ``test -e`` with ``stat`` for improved remote
+        cross-platform (e.g. Windows) compatibility.
     """
     func = use_sudo and sudo or run
-    cmd = 'test -e %s' % _expand_path(path)
+    cmd = 'stat %s' % _expand_path(path)
     # If verbose, run normally
     if verbose:
         with settings(warn_only=True):
@@ -439,5 +442,25 @@ def _escape_for_regex(text):
     regex = regex.replace(r"\'", "'")
     return regex
 
+def is_win():
+    """
+    Return True if remote SSH server is running Windows, False otherwise.
+
+    The idea is based on echoing quoted text: \*NIX systems will echo quoted
+    text only, while Windows echoes quotation marks as well.
+    """
+    with settings(hide('everything'), warn_only=True):
+        return '"' in run('echo "Will you echo quotation marks"')
+
 def _expand_path(path):
-    return '"$(echo %s)"' % path
+    """
+    Return a path expansion
+
+    E.g.    ~/some/path     ->  /home/myuser/some/path
+            /user/\*/share   ->  /user/local/share
+    More examples can be found here: http://linuxcommand.org/lc3_lts0080.php
+
+    .. versionchanged:: 1.0
+        Avoid breaking remote Windows commands which does not support expansion.
+    """
+    return path if is_win() else '"$(echo %s)"' % path

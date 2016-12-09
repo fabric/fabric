@@ -16,9 +16,8 @@ long_description = """
 To find out what's new in this version of Fabric, please see `the changelog
 <http://fabfile.org/changelog.html>`_.
 
-You can also install the `in-development version
-<https://github.com/fabric/fabric/tarball/master#egg=fabric-dev>`_ using
-pip, with `pip install fabric==dev`.
+You can also install the `development version via ``pip install -e
+git+https://github.com/fabric/fabric/#egg=fabric``.
 
 ----
 
@@ -32,7 +31,7 @@ For more information, please see the Fabric website or execute ``fab --help``.
 if sys.version_info[:2] < (2, 6):
     install_requires=['paramiko>=1.10,<1.13']
 else:
-    install_requires=['paramiko>=1.10,<2.0']
+    install_requires=['paramiko>=1.10,<3.0']
 
 
 setup(

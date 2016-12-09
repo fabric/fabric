@@ -1,23 +1,31 @@
 from __future__ import with_statement
 
+import os
+import re
+import shutil
+import sys
+
 from contextlib import nested
 from StringIO import StringIO
 
-from nose.tools import ok_
-from fudge import with_fakes, Fake
+from nose.tools import ok_, raises
+from fudge import patched_context, with_fakes, Fake
 from fudge.inspector import arg as fudge_arg
+from mock_streams import mock_streams
 from paramiko.sftp_client import SFTPClient  # for patching
 
 from fabric.state import env, output
 from fabric.operations import require, prompt, _sudo_prefix, _shell_wrap, \
     _shell_escape
 from fabric.api import get, put, hide, show, cd, lcd, local, run, sudo, quiet
+from fabric.context_managers import settings
 from fabric.exceptions import CommandTimeout
 
+from fabric.sftp import SFTP
 from fabric.decorators import with_settings
-from utils import *
-from server import (server, PORT, RESPONSES, FILES, PASSWORDS, CLIENT_PRIVKEY,
-    USER, CLIENT_PRIVKEY_PASSPHRASE)
+from utils import (eq_, aborts, assert_contains, eq_contents,
+                   with_patched_input, FabricTest)
+from server import server, FILES
 
 #
 # require()
@@ -551,6 +559,23 @@ class TestFileTransfers(FabricTest):
         Remote directory and local file object is invalid
         """
         self._invalid_file_obj_situations('/tree')
+
+    @server()
+    def test_nonexistent_glob_should_not_create_empty_files(self):
+        path = self.path()
+        with settings(hide('everything'), warn_only=True):
+            get('/nope*.txt', path)
+        assert not self.exists_locally(os.path.join(path, 'nope*.txt'))
+
+    @server()
+    def test_nonexistent_glob_raises_error(self):
+        try:
+            with hide('everything', 'aborts'):
+                get('/nope*.txt', self.path())
+        except SystemExit as e:
+            assert 'No such file' in e.message
+        else:
+            assert False
 
     @server()
     def test_get_single_file_absolutely(self):
