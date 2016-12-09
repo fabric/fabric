@@ -2,6 +2,9 @@
 Changelog
 =========
 
+* :bug:`1462` Make a PyCrypto-specific import and method call optional to avoid
+  ``ImportError`` problems under Paramiko 2.x. Thanks to Alex Gaynor for catch
+  & patch!
 * :release:`1.13.0 <2016-12-09>`
 * :support:`1461` Update setup requirements to allow Paramiko 2.x, now that
   it's stable and been out in the wild for some time. Paramiko 1.x still works
