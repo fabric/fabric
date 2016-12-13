@@ -472,7 +472,7 @@ def connect(user, host, port, cache, seek_gateway=True):
                 sock=sock,
             )
             for suffix in ('auth', 'deleg_creds', 'kex'):
-                name = 'gss_{0}'.format(suffix)
+                name = "gss_" + suffix
                 val = env.get(name, None)
                 if val is not None:
                     kwargs[name] = val
