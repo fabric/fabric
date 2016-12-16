@@ -160,3 +160,10 @@ please see the API docs linked in each bullet point:
   :option:`--show` arguments to :doc:`fab`, which behave exactly like the
   context managers of the same names (but are, naturally, globally applied) and
   take comma-separated strings as input.
+
+Prefix output
+=============
+
+By default Fabric prefixes every line of ouput with either ``[hostname] out:``
+or ``[hostname] err:``. Those prefixes may be hidden by setting
+``env.output_prefix`` to ``False``.
