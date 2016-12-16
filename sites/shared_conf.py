@@ -18,7 +18,6 @@ html_theme_options = {
     'github_user': 'fabric',
     'github_repo': 'fabric',
     'travis_button': True,
-    'gratipay_user': 'bitprophet',
     'analytics_id': 'UA-18486793-1',
 
     'link': '#3782BE',

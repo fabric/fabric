@@ -133,9 +133,9 @@ loading other fabfiles which also modify it, of course)::
         'dns': ['ns1', 'ns2']
     }
 
-Role definitions are not necessary configuration of hosts only, but could hold
-other role specific settings of your choice. This is achieved by defining the
-roles as dicts and host strings under a ``hosts`` key::
+Role definitions are not necessarily configuration of hosts only, they can
+also hold additional role specific settings of your choice. This is achieved
+by defining the roles as dicts and host strings under a ``hosts`` key::
 
     from fabric.api import env
 
