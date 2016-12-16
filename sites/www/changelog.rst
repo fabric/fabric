@@ -2,6 +2,7 @@
 Changelog
 =========
 
+* :support:`1539` Add documentation for :ref:`env.output_prefix <output_prefix>`. Thanks ``@jphalip``.
 * :bug:`1514` Compatibility with Python 2.5 was broken by using the ``format()``
   method of a string (only in 1.11+). Report by ``@pedrudehuere``.
 * :release:`1.13.1 <2016-12-09>`
