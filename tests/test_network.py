@@ -2,13 +2,13 @@ from __future__ import with_statement
 
 import sys
 
-from nose.tools import ok_
+from nose.tools import ok_, raises
 from fudge import (Fake, patch_object, with_patched_object, patched_context,
                    with_fakes)
 
 from fabric.context_managers import settings, hide, show
 from fabric.network import (HostConnectionCache, join_host_strings, normalize,
-                            denormalize, key_filenames, ssh, NetworkError)
+                            denormalize, key_filenames, ssh, NetworkError, connect)
 from fabric.state import env, output, _get_system_username
 from fabric.operations import run, sudo, prompt
 from fabric.tasks import execute
@@ -231,6 +231,34 @@ class TestNetwork(FabricTest):
         with password_response(PASSWORDS[env.user], times_called=1):
             cache = HostConnectionCache()
             cache[env.host_string]
+
+    @with_fakes
+    @raises(NetworkError)
+    def test_connect_does_not_prompt_password_when_ssh_raises_channel_exception(self):
+        def raise_channel_exception_once(*args, **kwargs):
+            if raise_channel_exception_once.should_raise_channel_exception:
+                raise_channel_exception_once.should_raise_channel_exception = False
+                raise ssh.ChannelException(2, 'Connect failed')
+        raise_channel_exception_once.should_raise_channel_exception = True
+
+        def generate_fake_client():
+            fake_client = Fake('SSHClient', allows_any_call=True, expect_call=True)
+            fake_client.provides('connect').calls(raise_channel_exception_once)
+            return fake_client
+
+        fake_ssh = Fake('ssh', allows_any_call=True)
+        fake_ssh.provides('SSHClient').calls(generate_fake_client)
+        # We need the real exceptions here to preserve the inheritence structure
+        fake_ssh.SSHException = ssh.SSHException
+        fake_ssh.ChannelException = ssh.ChannelException
+        patched_connect = patch_object('fabric.network', 'ssh', fake_ssh)
+        patched_password = patch_object('fabric.network', 'prompt_for_password', Fake('prompt_for_password', callable = True).times_called(0))
+        try:
+            connect('user', 'localhost', 22, HostConnectionCache())
+        finally:
+            # Restore ssh
+            patched_connect.restore()
+            patched_password.restore()
 
 
     @mock_streams('stdout')
