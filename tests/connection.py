@@ -206,6 +206,9 @@ class Connection_(Spec):
                     # resolve to False.
                     eq_(Connection('host').config.run.warn, "nope lol")
 
+            def we_override_replace_env(self):
+                eq_(Connection('host').config.run.replace_env, True)
+
         class gateway:
             def is_optional_and_defaults_to_None(self):
                 c = Connection(host='host')
@@ -293,6 +296,18 @@ class Connection_(Spec):
             )
 
         @patch('fabric.connection.SSHClient')
+        def passes_through_kwargs(self, Client):
+            client = Client.return_value
+            client.get_transport.return_value = Mock(active=False)
+            Connection('host').open(foobar='bizbaz')
+            client.connect.assert_called_with(
+                username=get_local_user(),
+                hostname='host',
+                port=22,
+                foobar='bizbaz',
+            )
+
+        @patch('fabric.connection.SSHClient')
         def is_connected_True_when_successful(self, Client):
             # Ensure the parts of Paramiko we test act like things are cool
             client = Client.return_value
@@ -360,6 +375,20 @@ class Connection_(Spec):
                 username=get_local_user(),
                 hostname='myhost',
                 key_filename=names,
+                port=22,
+            )
+
+        @patch('fabric.connection.SSHClient')
+        def uses_configured_key_as_pkey(self, Client):
+            dummy = Mock('key') # No need to deal with a 'real' PKey subclass
+            cxn = Connection(host='myhost', key=dummy)
+            client = Client.return_value
+            client.get_transport.return_value = Mock(active=False)
+            cxn.open()
+            client.connect.assert_called_once_with(
+                username=get_local_user(),
+                hostname='myhost',
+                pkey=dummy,
                 port=22,
             )
 
@@ -505,9 +534,11 @@ class Connection_(Spec):
             # Technically duplicates Invoke-level tests, but ensures things
             # still work correctly at our level.
             cxn = Connection('host')
-            cxn.sudo('foo')
+            expected = Remote.return_value.run.return_value
+            result = cxn.sudo('foo')
             cmd = "sudo -S -p '{0}' foo".format(cxn.config.sudo.prompt)
             eq_(Remote.return_value.run.call_args[0][0], cmd)
+            ok_(result is expected, "sudo() did not return run()'s result!!")
 
         def per_host_password_works_as_expected(self):
             # TODO: needs clearly defined "per-host" config API, if a distinct

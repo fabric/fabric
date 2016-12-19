@@ -12,7 +12,7 @@ flake8==2.4.0
 # Coverage!
 coverage==3.7.1
 # Documentation tools
-sphinx>=1.2
+sphinx>=1.4,<1.5
 alabaster>=0.7,<2.0
 releases>=0.7,<2.0
 # Release tools

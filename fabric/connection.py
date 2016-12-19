@@ -19,23 +19,46 @@ class Config(InvokeConfig):
     """
     An `invoke.config.Config` subclass with extra Fabric-related defaults.
 
-    This class behaves like `invoke.config.Config` in every way, save for that
-    its `~invoke.config.Config.global_defaults` staticmethod has been extended
-    to add Fabric-specific settings such as user and port number.
+    This class behaves like `invoke.config.Config` in every way, except that
+    its `global_defaults` staticmethod has been extended to add/modify some
+    default settings. (See its documentation, below, for details.)
 
     Intended for use with `.Connection`, as using vanilla
     `invoke.config.Config` objects would require you to manually define
-    ``port``, ``user`` and so forth .
+    ``port``, ``user`` and so forth.
     """
-    # NOTE: docs for these are kept in sites/docs/api/connection.rst for
-    # tighter control over value display (avoids baking docs-building user's
-    # username into the docs).
     @staticmethod
     def global_defaults():
+        """
+        Default configuration values and behavior toggles.
+
+        Fabric only extends this method in order to make minor adjustments and
+        additions to Invoke's `~invoke.config.Config.global_defaults`; see its
+        documentation for the base values, such as the config subtrees
+        controlling behavior of ``run`` or how ``tasks`` behave.
+
+        Values that differ from Invoke's defaults:
+
+        - ``run.replace_env``: ``True``, instead of ``False``. This is for
+          security purposes (leaking local environment data remotely by default
+          would be unsanitary) & for compatibility with the behavior of
+          OpenSSH. (See also: the warning under
+          `paramiko.channel.Channel.set_environment_variable`.)
+
+        New-to-Fabric default values:
+
+        * ``port``: TCP port number to which `.Connection` objects connect when
+          not otherwise specified. Default: ``22``.
+        * ``user``: Username given to the remote ``sshd`` when connecting.
+          Default: your local username.
+        """
         defaults = InvokeConfig.global_defaults()
         ours = {
             'port': 22,
             'user': get_local_user(),
+            'run': {
+                'replace_env': True,
+            },
         }
         merge_dicts(defaults, ours)
         return defaults
@@ -96,6 +119,7 @@ class Connection(Context):
         host,
         user=None,
         port=None,
+        key=None,
         key_filename=None,
         config=None,
         gateway=None
@@ -122,6 +146,13 @@ class Connection(Context):
 
         :param int port:
             the remote port. Defaults to ``config.port``.
+
+        :param str key:
+            an in-memory `paramiko.pkey.PKey` subclass instance (e.g.
+            `paramiko.rsakey.RSAKey`) to use for authentication.
+
+            Passed directly to `paramiko.client.SSHClient.connect`. Default:
+            ``None``.
 
         :param str key_filename:
             a string or list of strings specifying SSH key paths to load.
@@ -158,7 +189,9 @@ class Connection(Context):
         """
         # NOTE: for now, we don't call our parent __init__, since all it does
         # is set a default config (to Invoke's Config, not ours). If
-        # invoke.Context grows more behavior later we may need to change this.
+        # invoke.Context grows more behavior later we may need to change this,
+        # e.g. by having parent define a '_set_default_config' or whatnot.
+        # NOTE: that would also free us up from doing object.__setattr__ below.
 
         # TODO: how does this config mesh with the one from us being an Invoke
         # context, for keys not part of the defaults? Do we namespace all our
@@ -166,7 +199,9 @@ class Connection(Context):
 
         #: The .Config object referenced when handling default values (for e.g.
         #: user or port, when not explicitly given) or deciding how to behave.
-        self.config = config if config is not None else Config()
+        if config is None:
+            config = Config()
+        object.__setattr__(self, 'config', config)
         # TODO: when/how to run load_files, merge, load_shell_env, etc?
         # TODO: i.e. what is the lib use case here (and honestly in invoke too)
 
@@ -188,6 +223,8 @@ class Connection(Context):
         self.user = user or self.config.user
         #: The network port to connect on.
         self.port = port or self.config.port
+        #: `paramiko.pkey.PKey` object used for authentication.
+        self.key = key
         #: Specified key filename(s) used for authentication.
         self.key_filename = key_filename
         #: The gateway `.Connection` or ``ProxyCommand`` string to be used,
@@ -262,7 +299,7 @@ class Connection(Context):
         """
         return self.transport.active if self.transport else False
 
-    def open(self):
+    def open(self, **kwargs):
         """
         Initiate an SSH connection to the host/port this object is bound to.
 
@@ -270,24 +307,31 @@ class Connection(Context):
         is set.
 
         Also saves a handle to the now-set Transport object for easier access.
+
+        Accepts arbitrary ``kwargs`` which are passed untouched into the
+        Paramiko ``Client.connect`` method call.
         """
         if not self.is_connected:
             # TODO: work in all the stuff Fabric 1 supports here & maybe some
             # it doesn't.
-            # TODO: and if possible, make it easy for users to arbitrarily
-            # submit kwargs so we don't have to constantly manage kwarg parity
-            # for stuff that otherwise doesn't need any dev on our side. (Think
-            # things like timeouts, Kerberos kwargs, etc.)
+            # TODO: make the kwargs-passthru work well with
+            # __init__+implicit-open() as well; requiring explicit open() to
+            # pass any params feels unfriendly, even if it works in a pinch.
             # TODO: and that methodology should ideally work with the config
             # system somehow, even if it's e.g.
             # config.fabric.extra_connection_kwargs or something.
-            kwargs = dict(
+            kwargs = dict(kwargs,
                 username=self.user,
                 hostname=self.host,
                 port=self.port,
             )
             if self.gateway:
                 kwargs['sock'] = self.open_gateway()
+            if self.key:
+                # TODO: autodetect which pkey subclass to use? try 'em all in
+                # some order like Paramiko itself does with files? (Push this
+                # into Paramiko and just make this a string/bytes arg? yea!)
+                kwargs['pkey'] = self.key
             if self.key_filename:
                 kwargs['key_filename'] = self.key_filename
             self.client.connect(**kwargs)
@@ -355,7 +399,12 @@ class Connection(Context):
         Execute a shell command on the remote end of this connection.
 
         This method wraps an SSH-capable implementation of
-        `invoke.runners.Runner.run`; see its docs for details.
+        `invoke.runners.Runner.run`; see its documentation for details.
+
+        .. warning::
+            There are a few spots where Fabric departs from Invoke's default
+            settings/behaviors; they are documented under
+            `.Config.global_defaults`.
         """
         self.open()
         return Remote(context=self).run(command, **kwargs)
@@ -374,7 +423,7 @@ class Connection(Context):
         # Move the above to the API doc shim page? (Will that even render
         # inherited-only methods?)
         # NOTE: no need to open(), can rely on run()'s.
-        super(Connection, self).sudo(command, **kwargs)
+        return super(Connection, self).sudo(command, **kwargs)
 
     def local(self, *args, **kwargs):
         """
