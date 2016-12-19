@@ -24,7 +24,7 @@ class Connection_(Spec):
     class run:
         def simple_command_on_host(self):
             """
-            Run command on host "localhost"
+            Run command on localhost
             """
             result = Connection('localhost').run('echo foo', hide=True)
             eq_(result.stdout, "foo\n")
@@ -33,7 +33,7 @@ class Connection_(Spec):
 
         def simple_command_with_pty(self):
             """
-            Run command under PTY on host "localhost"
+            Run command under PTY on localhost
             """
             # Most Unix systems should have stty, which asplodes when not run
             # under a pty, and prints useful info otherwise
@@ -57,7 +57,7 @@ class Connection_(Spec):
 
     def mixed_use_of_local_and_run(self):
         """
-        Run command truly locally, and over SSH via "localhost"
+        Run command truly locally, and over SSH via localhost
         """
         cxn = Connection('localhost')
         result = cxn.local('echo foo', hide=True)
@@ -70,7 +70,7 @@ class Connection_(Spec):
     class sudo:
         def sudo_command(self):
             """
-            Run command via sudo on host "localhost"
+            Run command via sudo on host localhost
             """
             skip()
             # TODO: difficult to make noninteractive, see
@@ -82,7 +82,7 @@ class Connection_(Spec):
 
         def mixed_sudo_and_normal_commands(self):
             """
-            Run command via sudo, and not via sudo, on "localhost"
+            Run command via sudo, and not via sudo, on localhost
             """
             skip()
             cxn = Connection('localhost')
