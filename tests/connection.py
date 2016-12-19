@@ -379,6 +379,20 @@ class Connection_(Spec):
             )
 
         @patch('fabric.connection.SSHClient')
+        def uses_configured_key_as_pkey(self, Client):
+            dummy = Mock('key') # No need to deal with a 'real' PKey subclass
+            cxn = Connection(host='myhost', key=dummy)
+            client = Client.return_value
+            client.get_transport.return_value = Mock(active=False)
+            cxn.open()
+            client.connect.assert_called_once_with(
+                username=get_local_user(),
+                hostname='myhost',
+                pkey=dummy,
+                port=22,
+            )
+
+        @patch('fabric.connection.SSHClient')
         def uses_gateway_channel_as_sock_for_SSHClient_connect(self, Client):
             "uses Connection gateway as 'sock' arg to SSHClient.connect"
             # Setup
