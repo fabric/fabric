@@ -49,7 +49,7 @@ setuptools.setup(
     install_requires=[
         # TODO: pinning
         'invoke>=0.13,<2.0',
-        'paramiko>=1.16,<3.0',
+        'paramiko>=2.1,<3.0',
         'cryptography>=1.1',
     ],
     packages=[package_name],

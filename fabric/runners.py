@@ -17,6 +17,13 @@ class Remote(Runner):
         if self.using_pty:
             rows, cols = pty_size()
             self.channel.get_pty(width=rows, height=cols)
+        # TODO: consider adding an option to conditionally turn this
+        # update_environment call into a command-string prefixing behavior
+        # instead (e.g. when one isn't able/willing to update remote server's
+        # AcceptEnv setting). OR: rely on higher-level generic command
+        # prefixing functionality, when implemented.
+        # TODO: honor SendEnv from ssh_config
+        self.channel.update_environment(env)
         self.channel.exec_command(command)
 
     def read_proc_stdout(self, num_bytes):
