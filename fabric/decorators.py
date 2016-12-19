@@ -5,7 +5,10 @@ import six
 import types
 from functools import wraps
 
-from Crypto import Random
+try:
+    from Crypto import Random
+except ImportError:
+    Random = None
 
 from fabric import tasks
 from .context_managers import settings
@@ -176,7 +179,8 @@ def parallel(pool_size=None):
             # Required for ssh/PyCrypto to be happy in multiprocessing
             # (as far as we can tell, this is needed even with the extra such
             # calls in newer versions of paramiko.)
-            Random.atfork()
+            if Random:
+                Random.atfork()
             return func(*args, **kwargs)
         inner.parallel = True
         inner.serial = False
