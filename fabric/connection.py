@@ -330,7 +330,7 @@ class Connection(Context):
             if self.key:
                 # TODO: autodetect which pkey subclass to use? try 'em all in
                 # some order like Paramiko itself does with files? (Push this
-                # into Paramiko and just make this a string arg? yea!)
+                # into Paramiko and just make this a string/bytes arg? yea!)
                 kwargs['pkey'] = self.key
             if self.key_filename:
                 kwargs['key_filename'] = self.key_filename
