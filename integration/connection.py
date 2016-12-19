@@ -4,8 +4,7 @@ from invoke import pty_size
 from fabric import Connection, Group
 
 
-class Main(Spec):
-    # TODO: move these to per-module tests...
+class Connection_(Spec):
     def connection_open_generates_real_connection(self):
         c = Connection('localhost')
         c.open()
