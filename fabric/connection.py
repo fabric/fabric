@@ -166,7 +166,9 @@ class Connection(Context):
         """
         # NOTE: for now, we don't call our parent __init__, since all it does
         # is set a default config (to Invoke's Config, not ours). If
-        # invoke.Context grows more behavior later we may need to change this.
+        # invoke.Context grows more behavior later we may need to change this,
+        # e.g. by having parent define a '_set_default_config' or whatnot.
+        # NOTE: that would also free us up from doing object.__setattr__ below.
 
         # TODO: how does this config mesh with the one from us being an Invoke
         # context, for keys not part of the defaults? Do we namespace all our
@@ -174,7 +176,9 @@ class Connection(Context):
 
         #: The .Config object referenced when handling default values (for e.g.
         #: user or port, when not explicitly given) or deciding how to behave.
-        self.config = config if config is not None else Config()
+        if config is None:
+            config = Config()
+        object.__setattr__(self, 'config', config)
         # TODO: when/how to run load_files, merge, load_shell_env, etc?
         # TODO: i.e. what is the lib use case here (and honestly in invoke too)
 
