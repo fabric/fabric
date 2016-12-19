@@ -6,13 +6,13 @@ from threading import Event, Thread
 
 
 # TODO: inherit from invoke.util.ExceptionHandlingThread
-class Listener(Thread):
+class TunnelManager(Thread):
     def __init__(self,
         local_host, local_port,
         remote_host, remote_port,
         transport, finished
     ):
-        super(Listener, self).__init__()
+        super(TunnelManager, self).__init__()
         self.local_address = (local_host, local_port)
         self.remote_address = (remote_host, remote_port)
         self.transport = transport

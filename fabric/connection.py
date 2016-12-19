@@ -11,7 +11,7 @@ from invoke.vendor import six
 
 from .runners import Remote
 from .transfer import Transfer
-from .tunnels import Listener, Tunnel
+from .tunnels import TunnelManager, Tunnel
 from .util import get_local_user
 
 
@@ -520,28 +520,27 @@ class Connection(Context):
         if not remote_port:
             remote_port = local_port
 
-        # Listener does all of the work, sitting in the background (so we can
-        # yield) and spawning threads every time somebody connects to our local
-        # port.
-        # TODO: rename to something like TunnelManager?
+        # TunnelManager does all of the work, sitting in the background (so we
+        # can yield) and spawning threads every time somebody connects to our
+        # local port.
         finished = Event()
-        listener = Listener(
+        manager = TunnelManager(
             local_port=local_port, local_host=local_host,
             remote_port=remote_port, remote_host=remote_host,
             # TODO: not a huge fan of handing in our transport, but...?
             transport=self.transport, finished=finished,
         )
-        listener.start()
+        manager.start()
 
         # Return control to caller now that things ought to be operational
         try:
             yield
         # Teardown once user exits block
         finally:
-            # Signal to listener that it should close all open tunnels
+            # Signal to manager that it should close all open tunnels
             finished.set()
             # Then wait for it to do so
-            listener.join()
+            manager.join()
             # TODO: raise any errors encountered inside thread
             # TODO: cancel port forward on transport? Does that even make sense
             # here (where we used direct-tcpip) vs the opposite method (which
@@ -615,8 +614,9 @@ class Connection(Context):
         # TODO: this approach is less than ideal because we have to share state
         # between ourselves & the callback handed into the transport's own
         # thread handling (which is roughly analogous to our self-controlled
-        # Listener for local forwarding). See if we can use more of Paramiko's
-        # API (or improve it and then do so) so that isn't necessary.
+        # TunnelManager for local forwarding). See if we can use more of
+        # Paramiko's API (or improve it and then do so) so that isn't
+        # necessary.
         tunnels = []
         def callback(channel, src_addr_tup, dst_addr_tup):
             sock = socket.socket()
@@ -640,10 +640,10 @@ class Connection(Context):
             )
             yield
         finally:
-            # TODO: see above re: lack of a Listener
-            # TODO: and/or also refactor with Listener re: shutdown logic. E.g.
-            # maybe have a non-thread Listener-alike with a method that acts as
-            # the callback? At least then there's a tiny bit more
+            # TODO: see above re: lack of a TunnelManager
+            # TODO: and/or also refactor with TunnelManager re: shutdown logic.
+            # E.g. maybe have a non-thread TunnelManager-alike with a method
+            # that acts as the callback? At least then there's a tiny bit more
             # encapsulation...meh.
             for tunnel in tunnels:
                 tunnel.finished.set()
