@@ -206,6 +206,9 @@ class Connection_(Spec):
                     # resolve to False.
                     eq_(Connection('host').config.run.warn, "nope lol")
 
+            def we_override_replace_env(self):
+                eq_(Connection('host').config.run.replace_env, True)
+
         class gateway:
             def is_optional_and_defaults_to_None(self):
                 c = Connection(host='host')
