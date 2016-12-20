@@ -68,13 +68,17 @@ class Connection_(Spec):
         eq_(result.stdout, 'foo\n')
 
     class sudo:
+        # TODO: set up the Travis-level changes from
+        # https://github.com/pyinvoke/invoke/issues/366 - tl;dr these tests
+        # get skipped when run on a workstation but get run under Travis, and
+        # require the test suite to be set up with a known-password,
+        # passworded-sudo user.
+
         def sudo_command(self):
             """
             Run command via sudo on host localhost
             """
             skip()
-            # TODO: difficult to make noninteractive, see
-            # https://github.com/pyinvoke/invoke/issues/366
             eq_(
                 Connection('localhost').sudo('whoami').stdout,
                 'root\n',
