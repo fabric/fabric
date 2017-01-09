@@ -687,11 +687,11 @@ class Connection_(Spec):
                 'remote_host': 'nearby_remote_host',
             })
 
-        def tunnel_errors_bubble_up(self):
+        def _thread_error(self, which):
             try:
                 self._forward_local({
                     'local_port': 1234,
-                    'tunnel_explode': True,
+                    '{}_explode'.format(which): True,
                 })
             except ThreadException:
                 # yay
@@ -699,10 +699,15 @@ class Connection_(Spec):
             else:
                 # no exception happened :( implies the thread went boom but
                 # nobody noticed
-                assert False, "Failed to get ThreadException on tunnel error"
+                err = "Failed to get ThreadException on {} error".format(which)
+                assert False, err
+
+        def tunnel_errors_bubble_up(self):
+            self._thread_error('tunnel')
 
         def tunnel_manager_errors_bubble_up(self):
-            skip()
+            self._thread_error('listener')
+
 
         # TODO: this requires additional refactoring of _forward_local to be
         # more like the decorators in _util
