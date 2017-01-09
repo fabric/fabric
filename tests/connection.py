@@ -685,6 +685,47 @@ class Connection_(Spec):
         def listener_errors_bubble_up(self):
             skip()
 
+    class forward_remote:
+        @patch('fabric.connection.SSHClient')
+        def _forward_remote(self, kwargs, Client):
+            # TODO: implement this; it'll be semi similar to _forward_local
+            # above, but distinct in that its main assertion is that
+            # `sock.connect` is called to the local end, and its .write is
+            # called with data submitted to a mock of whatever Paramiko is
+            # doing inside request_port_forward.
+            skip()
+
+        def forwards_remote_port_to_local_end(self):
+            self._forward_remote({'remote_port': 1234})
+
+        def distinct_local_port(self):
+            self._forward_remote({
+                'remote_port': 1234,
+                'local_port': 4321,
+            })
+
+        def non_localhost_connections(self):
+            self._forward_remote({
+                'remote_port': 1234,
+                'local_host': 'nearby_local_host',
+            })
+
+        def remote_non_localhost_listener(self):
+            self._forward_remote({
+                'remote_port': 1234,
+                'remote_host': '192.168.1.254',
+            })
+
+        # TODO: these require additional refactoring of _forward_remote to be
+        # more like the decorators in _util
+        def multiple_tunnels_can_be_open_at_once(self):
+            skip()
+
+        def tunnel_errors_bubble_up(self):
+            skip()
+
+        def listener_errors_bubble_up(self):
+            skip()
 
 class Group_(Spec):
     class init:
