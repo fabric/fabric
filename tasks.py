@@ -1,5 +1,7 @@
 from invocations.docs import docs, www, sites, watch_docs
-from invocations.testing import test, integration, coverage, watch_tests, count_errors
+from invocations.testing import (
+    test, integration, coverage, watch_tests, count_errors,
+)
 from invocations import packaging
 
 from invoke import Collection
