@@ -593,7 +593,11 @@ class Connection_(Spec):
         @patch('fabric.tunnels.select')
         @patch('fabric.tunnels.socket.socket')
         @patch('fabric.connection.SSHClient')
-        def _forward_local(self, local_port, Client, mocket, select):
+        def _forward_local(self, kwargs, Client, mocket, select):
+            # Tease out bits of kwargs for use in the mocking/expecting.
+            # But leave it alone for raw passthru to the API call itself.
+            local_port = kwargs['local_port']
+            remote_port = kwargs.get('remote_port', local_port)
             client = Client.return_value
             listener_sock = Mock(name='listener_sock')
             data = b("Some data")
@@ -617,7 +621,7 @@ class Connection_(Spec):
                 [[(tunnel_sock,), tuple(), tuple()]],
                 repeat([tuple(), tuple(), tuple()]),
             )
-            with Connection('host').forward_local(local_port):
+            with Connection('host').forward_local(**kwargs):
                 # Make sure we give listener thread enough time to boot up :(
                 # Otherwise we might assert before it does things. (NOTE:
                 # doesn't need to be much, even at 0.01s, 0/100 trials failed
@@ -632,7 +636,7 @@ class Connection_(Spec):
                 listener_sock.listen.assert_called_once_with(1)
                 transport.open_channel.assert_called_once_with(
                     'direct-tcpip',
-                    ('localhost', local_port),
+                    ('localhost', remote_port),
                     local_addr,
                 )
                 # Local write to tunnel_sock is implied by its mocked-out
@@ -645,10 +649,13 @@ class Connection_(Spec):
             listener_sock.close.assert_called_once_with()
 
         def forwards_local_port_to_remote_end(self):
-            self._forward_local(1234)
+            self._forward_local({'local_port': 1234})
 
         def distinct_remote_port(self):
-            skip()
+            self._forward_local({
+                'local_port': 1234,
+                'remote_port': 4321,
+            })
 
         def non_localhost_listener(self):
             skip()
