@@ -720,20 +720,6 @@ class Connection_(Spec):
         def multiple_tunnels_can_be_open_at_once(self):
             skip()
 
-        def multiple_tunnel_errors_appear_in_thread_exception(self):
-            # E.g. two tunnels opened via nested contextmanagers (or modern
-            # style multi context managers, or contextlib.nested(), etc etc)
-            # both have tunnel-level errors; a ThreadingException should appear
-            # whose .exceptions contains both.
-            skip()
-
-        def mixed_tunnel_and_listener_errors_appear_in_thread_exception(self):
-            # E.g. with a single tunnel having both a tunnel error and a (at
-            # close time, since an exception at open time would mean the tunnel
-            # never runs) listener/manager error, the resulting ThreadException
-            # contains two exceptions.
-            skip()
-
     class forward_remote:
         @patch('fabric.connection.SSHClient')
         def _forward_remote(self, kwargs, Client):
