@@ -619,7 +619,9 @@ class Connection_(Spec):
             )
             with Connection('host').forward_local(1234):
                 # Make sure we give listener thread enough time to boot up :(
-                # Otherwise we can assert before it does things.
+                # Otherwise we might assert before it does things.
+                # TODO: use threading events for that? if is only used for
+                # testing, feels kind of gross, but...
                 time.sleep(0.1)
                 eq_(client.connect.call_args[1]['hostname'], 'host')
                 listener_sock.setsockopt.assert_called_once_with(
