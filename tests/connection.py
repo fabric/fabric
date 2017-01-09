@@ -674,6 +674,8 @@ class Connection_(Spec):
                 'remote_host': 'nearby_remote_host',
             })
 
+        # TODO: these require additional refactoring of _forward_local to be
+        # more like the decorators in _util
         def multiple_tunnels_can_be_open_at_once(self):
             skip()
 
