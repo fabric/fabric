@@ -604,11 +604,13 @@ class Connection_(Spec):
             remote_host = kwargs.get('remote_host', 'localhost')
             # These aren't part of the real sig, but this is easier than trying
             # to reconcile the mock decorators + optional-value kwargs. meh.
-            tunnel_explode = kwargs.pop('tunnel_explode', False)
-            listener_explode = kwargs.pop('listener_explode', False)
+            tunnel_exception = kwargs.pop('tunnel_exception', False)
+            listener_exception = kwargs.pop('listener_exception', False)
             # Mock setup
             client = Client.return_value
             listener_sock = Mock(name='listener_sock')
+            if listener_exception:
+                listener_sock.bind.side_effect = listener_exception
             data = b("Some data")
             tunnel_sock = Mock(name='tunnel_sock', recv=lambda n: data)
             local_addr = Mock()
@@ -627,8 +629,8 @@ class Connection_(Spec):
             # single-item iterable to a repeat(). (Mock has no built-in way to
             # do this apparently.)
             initial = [(tunnel_sock,), tuple(), tuple()]
-            if tunnel_explode:
-                initial = Exception
+            if tunnel_exception:
+                initial = tunnel_exception
             select.select.side_effect = chain(
                 [initial],
                 repeat([tuple(), tuple(), tuple()]),
@@ -647,24 +649,26 @@ class Connection_(Spec):
                 listener_sock.bind.assert_called_once_with(
                     (local_host, local_port)
                 )
-                listener_sock.listen.assert_called_once_with(1)
-                transport.open_channel.assert_called_once_with(
-                    'direct-tcpip',
-                    (remote_host, remote_port),
-                    local_addr,
-                )
+                if not listener_exception:
+                    listener_sock.listen.assert_called_once_with(1)
+                    transport.open_channel.assert_called_once_with(
+                        'direct-tcpip',
+                        (remote_host, remote_port),
+                        local_addr,
+                    )
                 # Local write to tunnel_sock is implied by its mocked-out
                 # recv() call above...
                 # NOTE: don't assert if explodey; we want to mimic "the only
                 # error that occurred was within the thread" behavior being
                 # tested by thread-exception-handling tests
-                if not tunnel_explode:
+                if not (tunnel_exception or listener_exception):
                     channel.sendall.assert_called_once_with(data)
             # Shutdown, with another sleep because threads.
             time.sleep(0.01)
-            tunnel_sock.close.assert_called_once_with()
-            channel.close.assert_called_once_with()
-            listener_sock.close.assert_called_once_with()
+            if not listener_exception:
+                tunnel_sock.close.assert_called_once_with()
+                channel.close.assert_called_once_with()
+                listener_sock.close.assert_called_once_with()
 
         def forwards_local_port_to_remote_end(self):
             self._forward_local({'local_port': 1234})
@@ -688,14 +692,17 @@ class Connection_(Spec):
             })
 
         def _thread_error(self, which):
+            class Sentinel(Exception):
+                pass
             try:
                 self._forward_local({
                     'local_port': 1234,
-                    '{}_explode'.format(which): True,
+                    '{}_exception'.format(which): Sentinel,
                 })
-            except ThreadException:
-                # yay
-                pass
+            except ThreadException as e:
+                # NOTE: ensures that we're getting what we expected and not
+                # some deeper, test-bug related error
+                ok_(isinstance(e.wrapped, Sentinel))
             else:
                 # no exception happened :( implies the thread went boom but
                 # nobody noticed
