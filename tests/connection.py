@@ -641,7 +641,7 @@ class Connection_(Spec):
                 listener_sock.listen.assert_called_once_with(1)
                 transport.open_channel.assert_called_once_with(
                     'direct-tcpip',
-                    ('localhost', remote_port),
+                    (remote_host, remote_port),
                     local_addr,
                 )
                 # Local write to tunnel_sock is implied by its mocked-out
@@ -665,11 +665,14 @@ class Connection_(Spec):
         def non_localhost_listener(self):
             self._forward_local({
                 'local_port': 1234,
-                'remote_host': 'notlocalhost',
+                'local_host': 'nearby_local_host',
             })
 
         def non_remote_localhost_connection(self):
-            skip()
+            self._forward_local({
+                'local_port': 1234,
+                'remote_host': 'nearby_remote_host',
+            })
 
         def multiple_tunnels_can_be_open_at_once(self):
             skip()
