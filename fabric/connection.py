@@ -586,7 +586,7 @@ class Connection(Context):
             ``remote_port``.
 
         :param str local_host:
-            The local hostname/interface the forward connection talks to.
+            The local hostname/interface the forwarded connection talks to.
             Default: ``localhost``.
 
         :param str remote_host:
