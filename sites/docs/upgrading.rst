@@ -65,6 +65,14 @@ API organization
     an example of how to implement fabric 1's roles with a basic one-level
     dict, maybe?
 
+- ``fabric.context_managers.remote_tunnel`` (which forwards a locally
+  visible/open port to the remote end so remote processes may connect to it) is
+  now `.Connection.forward_local`.
+- Accompanying `.Connection.forward_local` is the logical inversion,
+  `.Connection.forward_remote` (forwards a remotely visible port locally),
+  which is new in Fabric 2 and was not implemented in Fabric 1 at time of
+  writing (though there are patches for it).
+
 CLI tasks
 =========
 
