@@ -588,7 +588,6 @@ class Connection_(Spec):
             Transfer.assert_called_with(c)
             Transfer.return_value.put.assert_called_with('meh')
 
-    # TODO: refactor for forward_remote
     class forward_local:
         @patch('fabric.tunnels.select')
         @patch('fabric.tunnels.socket.socket')
@@ -596,8 +595,12 @@ class Connection_(Spec):
         def _forward_local(self, kwargs, Client, mocket, select):
             # Tease out bits of kwargs for use in the mocking/expecting.
             # But leave it alone for raw passthru to the API call itself.
+            # TODO: unhappy with how much this apes the real code & its sig...
             local_port = kwargs['local_port']
             remote_port = kwargs.get('remote_port', local_port)
+            local_host = kwargs.get('local_host', 'localhost')
+            remote_host = kwargs.get('remote_host', 'localhost')
+            # Mock setup
             client = Client.return_value
             listener_sock = Mock(name='listener_sock')
             data = b("Some data")
@@ -632,7 +635,9 @@ class Connection_(Spec):
                     socket.SOL_SOCKET, socket.SO_REUSEADDR, 1
                 )
                 listener_sock.setblocking.assert_called_once_with(0)
-                listener_sock.bind.assert_called_once_with(('localhost', local_port))
+                listener_sock.bind.assert_called_once_with(
+                    (local_host, local_port)
+                )
                 listener_sock.listen.assert_called_once_with(1)
                 transport.open_channel.assert_called_once_with(
                     'direct-tcpip',
@@ -658,7 +663,10 @@ class Connection_(Spec):
             })
 
         def non_localhost_listener(self):
-            skip()
+            self._forward_local({
+                'local_port': 1234,
+                'remote_host': 'notlocalhost',
+            })
 
         def non_remote_localhost_connection(self):
             skip()
