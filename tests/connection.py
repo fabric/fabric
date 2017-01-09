@@ -8,6 +8,8 @@ from spec import Spec, eq_, raises, ok_, skip
 from mock import patch, Mock, call, PropertyMock
 from paramiko.client import SSHClient, AutoAddPolicy
 
+from invoke.exceptions import ThreadException
+
 from fabric.connection import Connection, Config, Group
 from fabric.util import get_local_user
 
@@ -600,6 +602,10 @@ class Connection_(Spec):
             remote_port = kwargs.get('remote_port', local_port)
             local_host = kwargs.get('local_host', 'localhost')
             remote_host = kwargs.get('remote_host', 'localhost')
+            # These aren't part of the real sig, but this is easier than trying
+            # to reconcile the mock decorators + optional-value kwargs. meh.
+            tunnel_explode = kwargs.pop('tunnel_explode', False)
+            listener_explode = kwargs.pop('listener_explode', False)
             # Mock setup
             client = Client.return_value
             listener_sock = Mock(name='listener_sock')
@@ -620,8 +626,11 @@ class Connection_(Spec):
             # single read event happened, then quiet after. So chain a
             # single-item iterable to a repeat(). (Mock has no built-in way to
             # do this apparently.)
+            initial = [(tunnel_sock,), tuple(), tuple()]
+            if tunnel_explode:
+                initial = Exception
             select.select.side_effect = chain(
-                [[(tunnel_sock,), tuple(), tuple()]],
+                [initial],
                 repeat([tuple(), tuple(), tuple()]),
             )
             with Connection('host').forward_local(**kwargs):
@@ -646,7 +655,11 @@ class Connection_(Spec):
                 )
                 # Local write to tunnel_sock is implied by its mocked-out
                 # recv() call above...
-                channel.sendall.assert_called_once_with(data)
+                # NOTE: don't assert if explodey; we want to mimic "the only
+                # error that occurred was within the thread" behavior being
+                # tested by thread-exception-handling tests
+                if not tunnel_explode:
+                    channel.sendall.assert_called_once_with(data)
             # Shutdown, with another sleep because threads.
             time.sleep(0.01)
             tunnel_sock.close.assert_called_once_with()
@@ -674,15 +687,26 @@ class Connection_(Spec):
                 'remote_host': 'nearby_remote_host',
             })
 
-        # TODO: these require additional refactoring of _forward_local to be
+        def tunnel_errors_bubble_up(self):
+            try:
+                self._forward_local({
+                    'local_port': 1234,
+                    'tunnel_explode': True,
+                })
+            except ThreadException:
+                # yay
+                pass
+            else:
+                # no exception happened :( implies the thread went boom but
+                # nobody noticed
+                assert False, "Failed to get ThreadException on tunnel error"
+
+        def tunnel_manager_errors_bubble_up(self):
+            skip()
+
+        # TODO: this requires additional refactoring of _forward_local to be
         # more like the decorators in _util
         def multiple_tunnels_can_be_open_at_once(self):
-            skip()
-
-        def tunnel_errors_bubble_up(self):
-            skip()
-
-        def listener_errors_bubble_up(self):
             skip()
 
     class forward_remote:
