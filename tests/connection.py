@@ -593,7 +593,7 @@ class Connection_(Spec):
         @patch('fabric.tunnels.select')
         @patch('fabric.tunnels.socket.socket')
         @patch('fabric.connection.SSHClient')
-        def forwards_local_port_to_remote_end(self, Client, mocket, select):
+        def _forward_local(self, local_port, Client, mocket, select):
             client = Client.return_value
             listener_sock = Mock(name='listener_sock')
             data = b("Some data")
@@ -617,7 +617,7 @@ class Connection_(Spec):
                 [[(tunnel_sock,), tuple(), tuple()]],
                 repeat([tuple(), tuple(), tuple()]),
             )
-            with Connection('host').forward_local(1234):
+            with Connection('host').forward_local(local_port):
                 # Make sure we give listener thread enough time to boot up :(
                 # Otherwise we might assert before it does things. (NOTE:
                 # doesn't need to be much, even at 0.01s, 0/100 trials failed
@@ -628,11 +628,11 @@ class Connection_(Spec):
                     socket.SOL_SOCKET, socket.SO_REUSEADDR, 1
                 )
                 listener_sock.setblocking.assert_called_once_with(0)
-                listener_sock.bind.assert_called_once_with(('localhost', 1234))
+                listener_sock.bind.assert_called_once_with(('localhost', local_port))
                 listener_sock.listen.assert_called_once_with(1)
                 transport.open_channel.assert_called_once_with(
                     'direct-tcpip',
-                    ('localhost', 1234),
+                    ('localhost', local_port),
                     local_addr,
                 )
                 # Local write to tunnel_sock is implied by its mocked-out
@@ -643,6 +643,9 @@ class Connection_(Spec):
             tunnel_sock.close.assert_called_once_with()
             channel.close.assert_called_once_with()
             listener_sock.close.assert_called_once_with()
+
+        def forwards_local_port_to_remote_end(self):
+            self._forward_local(1234)
 
         def distinct_remote_port(self):
             skip()
