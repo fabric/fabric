@@ -702,7 +702,10 @@ class Connection_(Spec):
             except ThreadException as e:
                 # NOTE: ensures that we're getting what we expected and not
                 # some deeper, test-bug related error
-                ok_(isinstance(e.wrapped, Sentinel))
+                eq_(len(e.exceptions), 1)
+                inner = e.exceptions[0]
+                err = "Expected wrapped exception to be Sentinel, was {}".format(inner.type.__name__)
+                ok_(inner.type is Sentinel, err)
             else:
                 # no exception happened :( implies the thread went boom but
                 # nobody noticed

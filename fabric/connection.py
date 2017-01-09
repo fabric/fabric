@@ -2,12 +2,14 @@ from contextlib import contextmanager
 from threading import Event
 import socket
 
+from invoke.vendor import six
+
 from invoke import Context
 from invoke.config import Config as InvokeConfig, merge_dicts
+from invoke.exceptions import ThreadException
 from paramiko.client import SSHClient, AutoAddPolicy
 from paramiko.config import SSHConfig
 from paramiko.proxy import ProxyCommand
-from invoke.vendor import six
 
 from .runners import Remote
 from .transfer import Transfer
@@ -541,7 +543,24 @@ class Connection(Context):
             finished.set()
             # Then wait for it to do so
             manager.join()
-            # TODO: raise any errors encountered inside thread
+            # Raise threading errors from within the manager, which would be
+            # one of:
+            # - an inner ThreadException, which was created by the manager on
+            # behalf of its Tunnels; this gets directly raised.
+            # - some other exception, which would thus have occurred in the
+            # manager itself; we wrap this in a new ThreadException.
+            # NOTE: in these cases, some of the metadata tracking in
+            # ExceptionHandlingThread/ExceptionWrapper/ThreadException (which
+            # is useful when dealing with multiple nearly-identical sibling IO
+            # threads) is superfluous, but it doesn't feel worth breaking
+            # things up further; we just ignore it for now.
+            wrapper = manager.exception()
+            if wrapper is not None:
+                if wrapper.type is ThreadException:
+                    raise wrapper.value
+                else:
+                    raise ThreadException([wrapper])
+
             # TODO: cancel port forward on transport? Does that even make sense
             # here (where we used direct-tcpip) vs the opposite method (which
             # is what uses forward-tcpip)?

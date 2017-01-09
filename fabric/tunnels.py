@@ -2,11 +2,13 @@ import errno
 import select
 import socket
 import time
-from threading import Event, Thread
+from threading import Event
+
+from invoke.exceptions import ThreadException
+from invoke.util import ExceptionHandlingThread
 
 
-# TODO: inherit from invoke.util.ExceptionHandlingThread
-class TunnelManager(Thread):
+class TunnelManager(ExceptionHandlingThread):
     def __init__(self,
         local_host, local_port,
         remote_host, remote_port,
@@ -18,7 +20,7 @@ class TunnelManager(Thread):
         self.transport = transport
         self.finished = finished
 
-    def run(self):
+    def _run(self):
         # Track each tunnel that gets opened during our lifetime
         tunnels = []
 
@@ -64,22 +66,27 @@ class TunnelManager(Thread):
             tunnel.start()
             tunnels.append(tunnel)
 
+        exceptions = []
         # Propogate shutdown signal to all tunnels & wait for closure
         # TODO: would be nice to have some output or at least logging here,
         # especially for "sets up a handful of tunnels" use cases like
         # forwarding nontrivial HTTP traffic.
         for tunnel in tunnels:
             tunnel.finished.set()
-            # TODO: handle in-thread errors
             tunnel.join()
+            wrapper = tunnel.exception()
+            if wrapper:
+                exceptions.append(wrapper)
+        # Handle exceptions
+        if exceptions:
+            raise ThreadException(exceptions)
 
         # All we have left to close is our own sock.
-        # TODO: handle errors?
+        # TODO: use try/finally?
         sock.close()
 
 
-# TODO: inherit from the 'safe' error-handling thread class in Invoke?
-class Tunnel(Thread):
+class Tunnel(ExceptionHandlingThread):
     """
     Thread that forwards data between an SSH channel and a local socket.
     """
@@ -91,7 +98,7 @@ class Tunnel(Thread):
         self.channel_chunk_size = 1024
         super(Tunnel, self).__init__()
 
-    def run(self):
+    def _run(self):
         try:
             empty_sock, empty_chan = None, None
             while not self.finished.is_set():
