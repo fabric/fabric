@@ -420,10 +420,9 @@ class Connection(Context):
         configuration overrides in addition to the generic/global ones. Thus,
         for example, per-host sudo passwords may be configured.
         """
-        # TODO: we may never actually need to tweak the implementation, in
-        # which case we want to...just touch Remote.sudo.__doc__ or something?
-        # Move the above to the API doc shim page? (Will that even render
-        # inherited-only methods?)
+        # TODO: if we never end up needing to modify this, is there a non shite
+        # way to tell Sphinx to just use the docstring for the parent class'
+        # sudo()? :inherited-members: adds waaaay too much garbage :(
         # NOTE: no need to open(), can rely on run()'s.
         return super(Connection, self).sudo(command, **kwargs)
 
