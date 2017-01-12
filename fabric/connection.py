@@ -59,6 +59,7 @@ class Config(InvokeConfig):
         ours = {
             'port': 22,
             'user': get_local_user(),
+            'forward_agent': False,
             'run': {
                 'replace_env': True,
             },
@@ -109,6 +110,7 @@ class Connection(Context):
     # they default to the default config values.
     user = None
     port = None
+    forward_agent = None
 
     # TODO: should "reopening" an existing Connection object that has been
     # closed, be allowed? (See e.g. how v1 detects closed/semi-closed
@@ -125,7 +127,8 @@ class Connection(Context):
         key=None,
         key_filename=None,
         config=None,
-        gateway=None
+        gateway=None,
+        forward_agent=None,
     ):
         """
         Set up a new object representing a server connection.
@@ -182,6 +185,11 @@ class Connection(Context):
 
             .. seealso:: :ref:`ssh-gateways`
 
+        :param bool forward_agent:
+            Whether to enable SSH agent forwarding.
+
+            Default: ``False`` (same as OpenSSH).
+
         :raises exceptions.ValueError:
             if user or port values are given via both ``host`` shorthand *and*
             their own arguments. (We `refuse the temptation to guess`_).
@@ -236,6 +244,10 @@ class Connection(Context):
         # NOTE: we use string above, vs ProxyCommand obj, to avoid spinning up
         # the ProxyCommand subprocess at init time, vs open() time.
         # TODO: make paramiko.proxy.ProxyCommand lazy instead?
+        if forward_agent is None:
+            forward_agent = self.config.forward_agent
+        #: Whether agent forwarding is enabled.
+        self.forward_agent = forward_agent
 
         #: The `paramiko.client.SSHClient` instance this connection wraps.
         client = SSHClient()
