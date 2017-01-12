@@ -474,6 +474,16 @@ class Connection_(Spec):
             client.close.assert_called_with()
 
         @patch('fabric.connection.SSHClient')
+        @patch('fabric.connection.AgentRequestHandler')
+        def calls_agent_handler_close_if_enabled(self, Handler, Client):
+            c = Connection('host', forward_agent=True)
+            chan = c.create_session()
+            c.close()
+            # NOTE: this will need to change if, for w/e reason, we ever want
+            # to run multiple handlers at once
+            Handler.return_value.close.assert_called_once_with()
+
+        @patch('fabric.connection.SSHClient')
         def has_no_effect_if_already_closed(self, Client):
             client = Client.return_value
             c = Connection('host')
@@ -507,6 +517,24 @@ class Connection_(Spec):
             with Connection('host') as c:
                 c.open()
             client.close.assert_called_once_with()
+
+    class create_session:
+        @patch('fabric.connection.SSHClient')
+        def calls_open_for_you(self, Client):
+            c = Connection('host')
+            c.open = Mock()
+            c.transport = Mock() # so create_session no asplode
+            _ = c.create_session()
+            ok_(c.open.called)
+
+        @patch('fabric.connection.SSHClient')
+        @patch('fabric.connection.AgentRequestHandler')
+        def activates_paramiko_agent_forwarding_if_configured(
+            self, Handler, Client
+        ):
+            c = Connection('host', forward_agent=True)
+            chan = c.create_session()
+            Handler.assert_called_once_with(chan)
 
     class run:
         # NOTE: most actual run related tests live in the runners module's

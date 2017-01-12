@@ -13,7 +13,7 @@ class Remote(Runner):
         instance for its ``context`` argument.
     """
     def start(self, command, shell, env):
-        self.channel = self.context._create_session()
+        self.channel = self.context.create_session()
         if self.using_pty:
             rows, cols = pty_size()
             self.channel.get_pty(width=rows, height=cols)

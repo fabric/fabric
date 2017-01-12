@@ -7,6 +7,7 @@ from invoke.vendor import six
 from invoke import Context
 from invoke.config import Config as InvokeConfig, merge_dicts
 from invoke.exceptions import ThreadException
+from paramiko.agent import AgentRequestHandler
 from paramiko.client import SSHClient, AutoAddPolicy
 from paramiko.config import SSHConfig
 from paramiko.proxy import ProxyCommand
@@ -392,7 +393,7 @@ class Connection(Context):
     def __exit__(self, *exc):
         self.close()
 
-    def _create_session(self):
+    def create_session(self):
         self.open()
         # TODO: do channel-y things here, such as enabling agent forwarding
         return self.transport.open_session()
