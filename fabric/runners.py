@@ -63,7 +63,8 @@ class Remote(Runner):
         return Result(**kwargs)
 
     def stop(self):
-        self.channel.close()
+        if hasattr(self, 'channel'):
+            self.channel.close()
 
 
     # TODO: shit that is in fab 1 run() but could apply to invoke.Local too:

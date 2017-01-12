@@ -67,7 +67,7 @@ class Remote_(Spec):
             chan.close.assert_called_once_with()
 
         @mock_remote
-        def channel_is_closed_on_exceptions(self, chan):
+        def channel_is_closed_on_body_exceptions(self, chan):
             # I.e. Remote.stop() is called within a try/finally.
             # Technically is just testing invoke.Runner, but meh.
             class Oops(Exception):
@@ -83,6 +83,25 @@ class Remote_(Spec):
             else:
                 assert False, "Runner failed to raise exception!"
 
+        def channel_close_skipped_when_channel_not_even_made(self):
+            # I.e. if obtaining self.channel doesn't even happen (i.e. if
+            # Connection.create_session() dies), we need to account for that
+            # case...
+            class Oops(Exception):
+                pass
+            def oops():
+                raise Oops
+            cxn = Connection('host')
+            cxn.create_session = oops
+            r = Remote(context=cxn)
+            # When bug present, this will result in AttributeError because
+            # Remote has no 'channel'
+            try:
+                r.run(CMD)
+            except Oops:
+                pass
+            else:
+                assert False, "Weird, Oops never got raised..."
 
         # TODO: how much of Invoke's tests re: the upper level run() (re:
         # things like returning Result, behavior of Result, etc) to
