@@ -145,6 +145,22 @@ class Connection_(Spec):
                     123
                 )
 
+        class forward_agent:
+            def defaults_to_False(self):
+                eq_(Connection('host').forward_agent, False)
+
+            def accepts_configuration_value(self):
+                config = Config(overrides={'forward_agent': True})
+                eq_(Connection('host', config=config).forward_agent, True)
+
+            def may_be_given_as_kwarg(self):
+                eq_(Connection('host', forward_agent=True).forward_agent, True)
+
+            def kwarg_wins_over_config(self):
+                config = Config(overrides={'forward_agent': True})
+                cxn = Connection('host', forward_agent=False, config=config)
+                eq_(cxn.forward_agent, False)
+
         class key_filename:
             def defaults_to_None(self):
                 eq_(Connection('host').key_filename, None)
@@ -167,6 +183,7 @@ class Connection_(Spec):
             def inserts_missing_default_keys(self):
                 c = Connection('host', config=Config())
                 eq_(c.config['port'], 22)
+                eq_(c.config['forward_agent'], False)
 
             def defaults_to_merger_of_global_defaults(self):
                 # I.e. our global_defaults + Invoke's global_defaults
@@ -184,6 +201,7 @@ class Connection_(Spec):
                 for keyparts in (
                     ('port',),
                     ('user',),
+                    ('forward_agent',),
                     ('sudo', 'prompt'),
                     ('sudo', 'password'),
                 ):
@@ -202,6 +220,7 @@ class Connection_(Spec):
                         'run': {'warn': "nope lol"},
                         'user': 'me',
                         'port': 22,
+                        'forward_agent': False,
                     }
                 ):
                     # If our global_defaults didn't win, this would still

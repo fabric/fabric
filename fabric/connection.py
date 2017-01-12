@@ -394,6 +394,7 @@ class Connection(Context):
 
     def _create_session(self):
         self.open()
+        # TODO: do channel-y things here, such as enabling agent forwarding
         return self.transport.open_session()
 
     def run(self, command, **kwargs):
