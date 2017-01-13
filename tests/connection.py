@@ -8,6 +8,7 @@ from spec import Spec, eq_, raises, ok_, skip
 from mock import patch, Mock, call, PropertyMock
 from paramiko.client import SSHClient, AutoAddPolicy
 
+from invoke.config import Config as InvokeConfig
 from invoke.exceptions import ThreadException
 
 from fabric.connection import Connection, Config, Group
@@ -229,6 +230,18 @@ class Connection_(Spec):
 
             def we_override_replace_env(self):
                 eq_(Connection('host').config.run.replace_env, True)
+
+            def if_given_an_invoke_Config_we_upgrade_to_our_own_Config(self):
+                # Scenario: user has Fabric-level data present at vanilla
+                # Invoke config level, and is then creating Connection objects
+                # with those vanilla invoke Configs.
+                # (Could also _not_ have any Fabric-level data, but then that's
+                # just a base case...)
+                # TODO: adjust this if we ever switch to all our settings being
+                # namespaced...
+                vanilla = InvokeConfig(overrides={'forward_agent': True})
+                cxn = Connection('host', config=vanilla)
+                eq_(cxn.forward_agent, True) # not False, which is default
 
         class gateway:
             def is_optional_and_defaults_to_None(self):

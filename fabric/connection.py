@@ -166,9 +166,12 @@ class Connection(Context):
             Passed directly to `paramiko.client.SSHClient.connect`. Default:
             ``None``.
 
-        :param fabric.connection.Config config:
+        :param config:
             configuration settings to use when executing methods on this
             `.Connection` (e.g. default SSH port and so forth).
+
+            Should be a `.Config` or an `invoke.config.Config`
+            (which will be turned into a `fabric.connection.Config`).
 
             Default is an anonymous `.Config` object.
 
@@ -212,6 +215,11 @@ class Connection(Context):
         #: user or port, when not explicitly given) or deciding how to behave.
         if config is None:
             config = Config()
+        # Handle 'vanilla' Invoke config objects, which need cloning 'into' one
+        # of our own Configs (which grants the new defaults, etc, while not
+        # squashing them if the Invoke-level config already accounted for them)
+        elif not isinstance(config, Config):
+            config = config.clone(into=Config)
         object.__setattr__(self, 'config', config)
         # TODO: when/how to run load_files, merge, load_shell_env, etc?
         # TODO: i.e. what is the lib use case here (and honestly in invoke too)
