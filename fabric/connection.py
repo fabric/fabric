@@ -406,6 +406,8 @@ class Connection(Context):
         """
         if self.is_connected:
             self.client.close()
+            if self.forward_agent and hasattr(self, 'agent_handler'):
+                self.agent_handler.close()
 
     def __enter__(self):
         return self
@@ -415,8 +417,10 @@ class Connection(Context):
 
     def create_session(self):
         self.open()
-        # TODO: do channel-y things here, such as enabling agent forwarding
-        return self.transport.open_session()
+        channel = self.transport.open_session()
+        if self.forward_agent:
+            self.agent_handler = AgentRequestHandler(channel)
+        return channel
 
     def run(self, command, **kwargs):
         """
