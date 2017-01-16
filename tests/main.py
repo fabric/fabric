@@ -59,7 +59,6 @@ Available tasks:
 """.lstrip()
                 )
 
-
     class hosts_flag_parameterizes_tasks:
         # NOTE: many of these just rely on mock_remote's builtin
         # "channel.exec_command called with given command string" asserts.
