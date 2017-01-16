@@ -171,6 +171,10 @@ class Connection_(Spec):
                 eq_(c.key_filename, 'foo.key')
 
         class config:
+            # NOTE: behavior local to Config itself is tested in its own test
+            # module; below is solely about Connection's config kwarg and its
+            # handling of that value
+
             def is_not_required(self):
                 eq_(Connection('host').config.__class__, Config)
 
@@ -180,56 +184,6 @@ class Connection_(Spec):
                 ok_(c is config)
                 eq_(config['user'], 'me')
                 eq_(config['custom'], 'option')
-
-            def inserts_missing_default_keys(self):
-                c = Connection('host', config=Config())
-                eq_(c.config['port'], 22)
-                eq_(c.config['forward_agent'], False)
-
-            def defaults_to_merger_of_global_defaults(self):
-                # I.e. our global_defaults + Invoke's global_defaults
-                c = Connection('host')
-                # From invoke's global_defaults
-                eq_(c.config.run.warn, False)
-                # From ours
-                eq_(c.config.port, 22)
-
-            def our_config_has_various_default_keys(self):
-                # NOTE: Duplicates some other tests but we're now starting to
-                # grow options not directly related to user/port stuff, so best
-                # to have at least one test listing all expected keys.
-                c = Connection('host')
-                for keyparts in (
-                    ('port',),
-                    ('user',),
-                    ('forward_agent',),
-                    ('sudo', 'prompt'),
-                    ('sudo', 'password'),
-                ):
-                    obj = c.config
-                    for key in keyparts:
-                        err = "Didn't find expected config key path '{0}'!"
-                        assert key in obj, err.format(".".join(keyparts))
-                        obj = obj[key]
-
-            def our_defaults_override_invokes(self):
-                "our defaults override invoke's"
-                with patch.object(
-                    Config,
-                    'global_defaults',
-                    return_value={
-                        'run': {'warn': "nope lol"},
-                        'user': 'me',
-                        'port': 22,
-                        'forward_agent': False,
-                    }
-                ):
-                    # If our global_defaults didn't win, this would still
-                    # resolve to False.
-                    eq_(Connection('host').config.run.warn, "nope lol")
-
-            def we_override_replace_env(self):
-                eq_(Connection('host').config.run.replace_env, True)
 
             def if_given_an_invoke_Config_we_upgrade_to_our_own_Config(self):
                 # Scenario: user has Fabric-level data present at vanilla
