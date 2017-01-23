@@ -73,11 +73,10 @@ class Connection(Context):
         host,
         user=None,
         port=None,
-        key=None,
-        key_filename=None,
         config=None,
         gateway=None,
         forward_agent=None,
+        connect_kwargs=None,
     ):
         """
         Set up a new object representing a server connection.
@@ -101,19 +100,6 @@ class Connection(Context):
 
         :param int port:
             the remote port. Defaults to ``config.port``.
-
-        :param str key:
-            an in-memory `paramiko.pkey.PKey` subclass instance (e.g.
-            `paramiko.rsakey.RSAKey`) to use for authentication.
-
-            Passed directly to `paramiko.client.SSHClient.connect`. Default:
-            ``None``.
-
-        :param str key_filename:
-            a string or list of strings specifying SSH key paths to load.
-
-            Passed directly to `paramiko.client.SSHClient.connect`. Default:
-            ``None``.
 
         :param config:
             configuration settings to use when executing methods on this
@@ -141,6 +127,18 @@ class Connection(Context):
             Whether to enable SSH agent forwarding.
 
             Default: ``False`` (same as OpenSSH).
+
+        :param dict connect_kwargs:
+            Keyword arguments handed verbatim to
+            `SSHClient.connect <paramiko.client.SSHClient.connect>` (when
+            `.open` is called).
+
+            `.Connection` tries not to grow additional settings/kwargs of its
+            own unless it is adding value of some kind; thus,
+            ``connect_kwargs`` is the right place to hand in parameters such as
+            ``pkey`` or ``key_filename``.
+
+            Default: ``{}``.
 
         :raises exceptions.ValueError:
             if user or port values are given via both ``host`` shorthand *and*
@@ -187,10 +185,6 @@ class Connection(Context):
         self.user = user or self.config.user
         #: The network port to connect on.
         self.port = port or self.config.port
-        #: `paramiko.pkey.PKey` object used for authentication.
-        self.key = key
-        #: Specified key filename(s) used for authentication.
-        self.key_filename = key_filename
         #: The gateway `.Connection` or ``ProxyCommand`` string to be used,
         #: if any.
         self.gateway = gateway
@@ -201,6 +195,13 @@ class Connection(Context):
             forward_agent = self.config.forward_agent
         #: Whether agent forwarding is enabled.
         self.forward_agent = forward_agent
+        # TODO: should still allow for defining some of these via config, even
+        # if it's simply inside a 'connect_kwargs' config key
+        if connect_kwargs is None:
+            connect_kwargs = {}
+        #: Keyword arguments given to `paramiko.client.SSHClient.connect` when
+        #: `open` is called.
+        self.connect_kwargs = connect_kwargs
 
         #: The `paramiko.client.SSHClient` instance this connection wraps.
         client = SSHClient()
@@ -276,7 +277,7 @@ class Connection(Context):
         """
         return self.transport.active if self.transport else False
 
-    def open(self, **kwargs):
+    def open(self):
         """
         Initiate an SSH connection to the host/port this object is bound to.
 
@@ -285,32 +286,19 @@ class Connection(Context):
 
         Also saves a handle to the now-set Transport object for easier access.
 
-        Accepts arbitrary ``kwargs`` which are passed untouched into the
-        Paramiko ``Client.connect`` method call.
+        The `__init__` argument ``connect_kwargs`` is used here; its contents
+        are used as keyword arguments to the
+        `paramiko.client.SSHClient.connect` call.
         """
         if not self.is_connected:
-            # TODO: work in all the stuff Fabric 1 supports here & maybe some
-            # it doesn't.
-            # TODO: make the kwargs-passthru work well with
-            # __init__+implicit-open() as well; requiring explicit open() to
-            # pass any params feels unfriendly, even if it works in a pinch.
-            # TODO: and that methodology should ideally work with the config
-            # system somehow, even if it's e.g.
-            # config.fabric.extra_connection_kwargs or something.
-            kwargs = dict(kwargs,
+            kwargs = dict(
                 username=self.user,
                 hostname=self.host,
                 port=self.port,
             )
             if self.gateway:
                 kwargs['sock'] = self.open_gateway()
-            if self.key:
-                # TODO: autodetect which pkey subclass to use? try 'em all in
-                # some order like Paramiko itself does with files? (Push this
-                # into Paramiko and just make this a string/bytes arg? yea!)
-                kwargs['pkey'] = self.key
-            if self.key_filename:
-                kwargs['key_filename'] = self.key_filename
+            kwargs.update(self.connect_kwargs)
             self.client.connect(**kwargs)
             self.transport = self.client.get_transport()
 
