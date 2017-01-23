@@ -435,7 +435,6 @@ class Connection(Context):
         """
         return Transfer(self).put(*args, **kwargs)
 
-    # TODO: clean up docstrings
     # TODO: yield the socket for advanced users? Other advanced use cases
     # (perhaps factor out socket creation itself)?
     # TODO: probably push some of this down into Paramiko
@@ -532,7 +531,6 @@ class Connection(Context):
             # here (where we used direct-tcpip) vs the opposite method (which
             # is what uses forward-tcpip)?
 
-    # TODO: clean up docstrings
     # TODO: probably push some of this down into Paramiko
     @contextmanager
     def forward_remote(
