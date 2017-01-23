@@ -2,6 +2,7 @@ from contextlib import contextmanager
 from threading import Event
 import socket
 
+from invoke.vendor.decorator import decorator
 from invoke.vendor import six
 
 from invoke import Context
@@ -15,6 +16,12 @@ from .config import Config
 from .runners import Remote
 from .transfer import Transfer
 from .tunnels import TunnelManager, Tunnel
+
+
+@decorator
+def opens(method, self, *args, **kwargs):
+    self.open()
+    return method(self, *args, **kwargs)
 
 
 class Connection(Context):
@@ -357,13 +364,14 @@ class Connection(Context):
     def __exit__(self, *exc):
         self.close()
 
+    @opens
     def create_session(self):
-        self.open()
         channel = self.transport.open_session()
         if self.forward_agent:
             self.agent_handler = AgentRequestHandler(channel)
         return channel
 
+    @opens
     def run(self, command, **kwargs):
         """
         Execute a shell command on the remote end of this connection.
@@ -376,7 +384,6 @@ class Connection(Context):
             settings/behaviors; they are documented under
             `.Config.global_defaults`.
         """
-        self.open()
         return Remote(context=self).run(command, **kwargs)
 
     def sudo(self, command, **kwargs):
@@ -403,6 +410,7 @@ class Connection(Context):
         """
         return super(Connection, self).run(*args, **kwargs)
 
+    @opens
     def sftp(self):
         """
         Return a `~paramiko.sftp_client.SFTPClient` object.
@@ -412,7 +420,6 @@ class Connection(Context):
         and state (such as that managed by
         `~paramiko.sftp_client.SFTPClient.chdir`) will be preserved.
         """
-        self.open()
         if not hasattr(self, '_sftp'):
             self._sftp = self.client.open_sftp()
         return self._sftp
@@ -439,6 +446,7 @@ class Connection(Context):
     # (perhaps factor out socket creation itself)?
     # TODO: probably push some of this down into Paramiko
     @contextmanager
+    @opens
     def forward_local(
         self,
         local_port,
@@ -484,7 +492,6 @@ class Connection(Context):
             Nothing; this method is only useful as a context manager affecting
             local operating system state.
         """
-        self.open()
         if not remote_port:
             remote_port = local_port
 
@@ -533,6 +540,7 @@ class Connection(Context):
 
     # TODO: probably push some of this down into Paramiko
     @contextmanager
+    @opens
     def forward_remote(
         self,
         remote_port,
@@ -584,8 +592,6 @@ class Connection(Context):
         """
         if not local_port:
             local_port = remote_port
-        # TODO: this really wants to be a decorator
-        self.open()
         # Callback executes on each connection to the remote port and is given
         # a Channel hooked up to said port. (We don't actually care about the
         # source/dest host/port pairs at all; only whether the channel has data
