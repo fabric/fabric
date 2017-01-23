@@ -251,16 +251,6 @@ class Connection(Context):
         return {'user': user, 'host': host, 'port': port}
 
     @property
-    def host_string(self):
-        # TODO: remove this ASAP once a better way of representing connections
-        # in aggregate results is found! (E.g. including local port or other
-        # truly-differentiating data)
-        # TODO: or at least rename/doc it so it's obvious it's just a
-        # convenient identifier & not something used instead of an actual
-        # Connection object.
-        return "{0}@{1}:{2}".format(self.user, self.host, self.port)
-
-    @property
     def is_connected(self):
         """
         Whether or not this connection is actually open.
@@ -677,7 +667,7 @@ class Group(list):
         # TODO: also need way to deal with duplicate connections (see THOUGHTS)
         result = {}
         for cxn in self:
-            result[cxn.host_string] = cxn.run(*args, **kwargs)
+            result[cxn] = cxn.run(*args, **kwargs)
         return result
 
     # TODO: mirror Connection's close()?

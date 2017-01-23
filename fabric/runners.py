@@ -114,13 +114,5 @@ class Result(InvokeResult):
         super(Result, self).__init__(**kwargs)
         self.connection = connection
 
-    @property
-    def host(self):
-        """
-        The host upon which the command was executed.
-        """
-        # TODO: change away from host string
-        return self.connection.host_string
-
     # TODO: have useful str/repr differentiation from invoke.Result,
     # transfer.Result etc.

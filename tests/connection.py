@@ -25,20 +25,6 @@ class Connection_(Spec):
             ok_(isinstance(c, SSHClient))
             eq_(c.get_transport(), None)
 
-        def host_string(self):
-            eq_(
-                Connection('host').host_string,
-                '{0}@host:22'.format(get_local_user())
-            )
-            eq_(
-                Connection('host', user='user').host_string,
-                'user@host:22'
-            )
-            eq_(
-                Connection('host', user='user', port=1234).host_string,
-                'user@host:1234'
-            )
-
     class known_hosts_behavior:
         def defaults_to_auto_add(self):
             # TODO: change Paramiko API so this isn't a private access
@@ -818,17 +804,14 @@ class Group_(Spec):
             for cxn in cxns:
                 cxn.run.assert_called_with("command", hide=True, warn=True)
 
-        def returns_map_of_normalized_host_string_to_result(self):
+        def returns_map_of_Connection_object_to_result(self):
             c1 = Connection('host1', user='foo', port=222)
             c2 = Connection('host2')
             cxns = [c1, c2]
             for cxn in cxns:
-                # Just have mocked run() return the object itself for easy
-                # identification of which object a result came from.
-                cxn.run = Mock(return_value=cxn)
+                # str() of connection seems a reasonable way to compare results
+                cxn.run = Mock(return_value=str(cxn))
             g = Group.from_connections(cxns)
             result = g.run("command", hide=True, warn=True)
-            ok_(result['foo@host1:222'] is c1)
-            # Proves normalization
-            hs = '{0}@host2:22'.format(get_local_user())
-            ok_(result[hs] is c2)
+            eq_(result[c1], "<Connection host=host1 user=foo port=222>")
+            eq_(result[c2], "<Connection host=host2>")

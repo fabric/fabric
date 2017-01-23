@@ -48,7 +48,7 @@ class Remote_(Spec):
             chan.get_pty.assert_called_with(width=cols, height=rows)
 
         @mock_remote
-        def return_value_is_Result_subclass_exposing_host_used(self, chan):
+        def return_value_is_Result_subclass_exposing_cxn_used(self, chan):
             c = Connection('host')
             r = Remote(context=c)
             result = r.run(CMD)
@@ -57,7 +57,7 @@ class Remote_(Spec):
             eq_(result.ok, True)
             eq_(result.exited, 0)
             # Test the attr our own subclass adds
-            eq_(result.host, "{0}@host:22".format(get_local_user()))
+            ok_(result.connection is c)
 
         @mock_remote
         def channel_is_closed_normally(self, chan):
