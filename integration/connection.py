@@ -106,4 +106,4 @@ class Group_(Spec):
         result = group.run('echo foo', hide=True)
         # NOTE: currently, the result will only be 1 object, because both of
         # them will end up as the same key. Derp.
-        eq_(result[group[0].host_string].stdout, "foo\n")
+        eq_(result[group[0]].stdout, "foo\n")

@@ -5,7 +5,6 @@ from invoke import pty_size, Result
 
 from fabric.connection import Connection
 from fabric.runners import Remote
-from fabric.util import get_local_user
 
 from _util import mock_remote, Session
 

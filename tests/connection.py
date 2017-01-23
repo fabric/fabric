@@ -430,7 +430,7 @@ class Connection_(Spec):
         @patch('fabric.connection.AgentRequestHandler')
         def calls_agent_handler_close_if_enabled(self, Handler, Client):
             c = Connection('host', forward_agent=True)
-            chan = c.create_session()
+            c.create_session()
             c.close()
             # NOTE: this will need to change if, for w/e reason, we ever want
             # to run multiple handlers at once
@@ -477,7 +477,7 @@ class Connection_(Spec):
             c = Connection('host')
             c.open = Mock()
             c.transport = Mock() # so create_session no asplode
-            _ = c.create_session()
+            c.create_session()
             ok_(c.open.called)
 
         @patch('fabric.connection.SSHClient')
@@ -704,8 +704,8 @@ class Connection_(Spec):
                 # some deeper, test-bug related error
                 eq_(len(e.exceptions), 1)
                 inner = e.exceptions[0]
-                err = "Expected wrapped exception to be Sentinel, was {}".format(inner.type.__name__)
-                ok_(inner.type is Sentinel, err)
+                err = "Expected wrapped exception to be Sentinel, was {}"
+                ok_(inner.type is Sentinel, err.format(inner.type.__name__))
             else:
                 # no exception happened :( implies the thread went boom but
                 # nobody noticed
