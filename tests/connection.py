@@ -252,6 +252,22 @@ class Connection_(Spec):
             template = "<Connection host=myhost gw=proxy>"
             eq_(repr(c), template)
 
+    class comparison_and_hashing:
+        def comparison_uses_host_user_and_port(self):
+            eq_(Connection('host'), Connection('host'))
+            eq_(Connection('host', user='foo'), Connection('host', user='foo'))
+            eq_(
+                Connection('host', user='foo', port=123),
+                Connection('host', user='foo', port=123),
+            )
+
+        def comparison_to_non_Connections_is_False(self):
+            eq_(Connection('host') == 15, False)
+
+        def hashing_works(self):
+            eq_(hash(Connection('host')), hash(Connection('host')))
+
+
     class open:
         @patch('fabric.connection.SSHClient')
         def has_no_required_args_and_returns_None(self, Client):
@@ -764,6 +780,7 @@ class Connection_(Spec):
 
         def listener_errors_bubble_up(self):
             skip()
+
 
 class Group_(Spec):
     class init:

@@ -231,6 +231,22 @@ class Connection(Context):
             " ".join("{0}={1}".format(*x) for x in bits)
         )
 
+    def _identity(self):
+        return (self.host, self.user, self.port)
+
+    def __eq__(self, other):
+        if not isinstance(other, Connection):
+            return False
+        # TODO: consider including gateway and maybe even other init kwargs?
+        # Whether two cxns w/ same user/host/port but different
+        # gateway/keys/etc, should be considered "the same", is unclear.
+        return self._identity() == other._identity()
+
+    def __hash__(self):
+        # NOTE: this departs from Context/DataProxy, which is not usefully
+        # hashable.
+        return hash(self._identity())
+
     def derive_shorthand(self, host_string):
         user_hostport = host_string.rsplit('@', 1)
         hostport = user_hostport.pop()
