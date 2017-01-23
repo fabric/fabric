@@ -267,7 +267,6 @@ class Connection_(Spec):
         def hashing_works(self):
             eq_(hash(Connection('host')), hash(Connection('host')))
 
-
     class open:
         @patch('fabric.connection.SSHClient')
         def has_no_required_args_and_returns_None(self, Client):
