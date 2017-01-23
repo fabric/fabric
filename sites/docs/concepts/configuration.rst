@@ -7,7 +7,7 @@ Basics
 
 The heart of Fabric's configuration system (as with much of the rest of Fabric)
 relies on Invoke functionality, namely `invoke.config.Config` (technically, a
-lightweight subclass, `fabric.connection.Config`). For practical details on
+lightweight subclass, `fabric.config.Config`). For practical details on
 what this means re: configuring Fabric's behavior, please see :ref:`Invoke's
 configuration documentation <invoke:configuration>`.
 

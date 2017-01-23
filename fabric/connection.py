@@ -120,7 +120,7 @@ class Connection(Context):
             `.Connection` (e.g. default SSH port and so forth).
 
             Should be a `.Config` or an `invoke.config.Config`
-            (which will be turned into a `fabric.connection.Config`).
+            (which will be turned into a `.Config`).
 
             Default is an anonymous `.Config` object.
 
