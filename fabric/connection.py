@@ -543,12 +543,12 @@ class Connection(Context):
         """
         Open a tunnel connecting ``remote_port`` to the local environment.
 
-        For example, say you're running a new webservice in development mode on
-        your workstation at port 8080, and want to funnel traffic to it from a
+        For example, say you're running a daemon in development mode on your
+        workstation at port 8080, and want to funnel traffic to it from a
         production or staging environment.
 
-        In most situations this isn't possible as your office network probably
-        blocks most/all inbound traffic. But you have SSH access to this
+        In most situations this isn't possible as your office/home network
+        probably blocks inbound traffic. But you have SSH access to this
         server, so you can temporarily make port 8080 on that server act like
         port 8080 on your workstation::
 

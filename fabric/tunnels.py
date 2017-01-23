@@ -88,7 +88,7 @@ class TunnelManager(ExceptionHandlingThread):
 
 class Tunnel(ExceptionHandlingThread):
     """
-    Thread that forwards data between an SSH channel and a local socket.
+    Bidirectionally forward data between an SSH channel and local socket.
     """
     def __init__(self, channel, sock, finished):
         self.channel = channel
