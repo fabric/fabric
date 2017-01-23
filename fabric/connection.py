@@ -212,12 +212,15 @@ class Connection(Context):
         self.transport = None
 
     def __str__(self):
-        bits = [('id', id(self))]
+        # Host comes first as it's the most common differentiator by far
+        bits = [('host', self.host)]
+        # TODO: maybe always show user regardless? Explicit is good...
         if self.user != self.config.user:
-            bits.append(('user', repr(self.user)))
-        bits.append(('host', repr(self.host)))
+            bits.append(('user', self.user))
+        # TODO: harder to make case for 'always show port'; maybe if it's
+        # non-22 (even if config has overridden the local default)?
         if self.port != self.config.port:
-            bits.append(('port', repr(self.port)))
+            bits.append(('port', self.port))
         if self.gateway:
             # Displaying type because gw params would probs be too verbose
             val = 'direct-tcpip'

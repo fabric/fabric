@@ -223,37 +223,34 @@ class Connection_(Spec):
         "string representations"
         def str_displays_repr(self):
             c = Connection('meh')
-            eq_(str(c), "<Connection id={0} host='meh'>".format(id(c)))
+            eq_(str(c), "<Connection host=meh>")
 
         def displays_core_params(self):
             c = Connection(user='me', host='there', port=123)
-            template = "<Connection id={0} user='me' host='there' port=123>"
-            eq_(repr(c), template.format(id(c)))
+            template = "<Connection host=there user=me port=123>"
+            eq_(repr(c), template)
 
-        # TODO: not 100% sure I agree with this actually; might be best to
-        # always show user regardless; and maybe to show port unless 22 (even
-        # if config has set default to non-22?) ?
         def omits_default_param_values(self):
             c = Connection('justhost')
-            eq_(repr(c), "<Connection id={0} host='justhost'>".format(id(c)))
+            eq_(repr(c), "<Connection host=justhost>")
 
         def param_comparison_uses_config(self):
             conf = Config(overrides={'user': 'zerocool'})
             c = Connection(
                 user='zerocool', host='myhost', port=123, config=conf
             )
-            template = "<Connection id={0} host='myhost' port=123>"
-            eq_(repr(c), template.format(id(c)))
+            template = "<Connection host=myhost port=123>"
+            eq_(repr(c), template)
 
         def direct_tcpip_gateway_shows_type(self):
             c = Connection(host='myhost', gateway=Connection('jump'))
-            template = "<Connection id={0} host='myhost' gw=direct-tcpip>"
-            eq_(repr(c), template.format(id(c)))
+            template = "<Connection host=myhost gw=direct-tcpip>"
+            eq_(repr(c), template)
 
         def proxycommand_gateway_shows_type(self):
             c = Connection(host='myhost', gateway='netcat is cool')
-            template = "<Connection id={0} host='myhost' gw=proxy>"
-            eq_(repr(c), template.format(id(c)))
+            template = "<Connection host=myhost gw=proxy>"
+            eq_(repr(c), template)
 
     class open:
         @patch('fabric.connection.SSHClient')
