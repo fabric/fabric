@@ -165,7 +165,7 @@ class Connection(Context):
         # squashing them if the Invoke-level config already accounted for them)
         elif not isinstance(config, Config):
             config = config.clone(into=Config)
-        object.__setattr__(self, 'config', config)
+        object.__setattr__(self, '_config', config)
         # TODO: when/how to run load_files, merge, load_shell_env, etc?
         # TODO: i.e. what is the lib use case here (and honestly in invoke too)
 
