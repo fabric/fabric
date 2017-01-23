@@ -244,6 +244,9 @@ class Connection_(Spec):
             template = "<Connection id={0} user='me' host='there' port=123>"
             eq_(repr(c), template.format(id(c)))
 
+        # TODO: not 100% sure I agree with this actually; might be best to
+        # always show user regardless; and maybe to show port unless 22 (even
+        # if config has set default to non-22?) ?
         def omits_default_param_values(self):
             c = Connection('justhost')
             eq_(repr(c), "<Connection id={0} host='justhost'>".format(id(c)))
