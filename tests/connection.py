@@ -15,6 +15,28 @@ from fabric.connection import Connection, Config, Group
 from fabric.util import get_local_user
 
 
+def select_result(obj):
+    """
+    Return iterator/generator suitable for mocking a select.select() call.
+
+    Specifically one that has a single initial return value of ``obj``, and
+    then empty results thereafter.
+
+    If ``obj`` is an exception, it will be used as the sole initial
+    ``side_effect`` (as opposed to a return value among tuples).
+    """
+    # select.select() returns three N-tuples. Have it just act like a single
+    # read event happened, then quiet after. So chain a single-item iterable to
+    # a repeat(). (Mock has no built-in way to do this apparently.)
+    initial = [(obj,), tuple(), tuple()]
+    if (
+        isinstance(obj, Exception)
+        or (isinstance(obj, type) and issubclass(obj, Exception))
+    ):
+        initial = obj
+    return chain([initial], repeat([tuple(), tuple(), tuple()]))
+
+
 class Connection_(Spec):
     class basic_attributes:
         def is_connected_defaults_to_False(self):
@@ -570,7 +592,7 @@ class Connection_(Spec):
             remote_host = kwargs.get('remote_host', 'localhost')
             # These aren't part of the real sig, but this is easier than trying
             # to reconcile the mock decorators + optional-value kwargs. meh.
-            tunnel_exception = kwargs.pop('tunnel_exception', False)
+            tunnel_exception = kwargs.pop('tunnel_exception', None)
             listener_exception = kwargs.pop('listener_exception', False)
             # Mock setup
             client = Client.return_value
@@ -590,17 +612,8 @@ class Connection_(Spec):
                 [(tunnel_sock, local_addr)],
                 repeat(socket.error(errno.EAGAIN, "nothing yet")),
             )
-            # select.select() returns three N-tuples. Have it just act like a
-            # single read event happened, then quiet after. So chain a
-            # single-item iterable to a repeat(). (Mock has no built-in way to
-            # do this apparently.)
-            initial = [(tunnel_sock,), tuple(), tuple()]
-            if tunnel_exception:
-                initial = tunnel_exception
-            select.select.side_effect = chain(
-                [initial],
-                repeat([tuple(), tuple(), tuple()]),
-            )
+            obj = tunnel_sock if tunnel_exception is None else tunnel_exception
+            select.select.side_effect = select_result(obj)
             with Connection('host').forward_local(**kwargs):
                 # Make sure we give listener thread enough time to boot up :(
                 # Otherwise we might assert before it does things. (NOTE:
@@ -690,14 +703,47 @@ class Connection_(Spec):
             skip()
 
     class forward_remote:
+        @patch('fabric.connection.socket.socket')
+        @patch('fabric.tunnels.select')
         @patch('fabric.connection.SSHClient')
-        def _forward_remote(self, kwargs, Client):
-            # TODO: implement this; it'll be semi similar to _forward_local
-            # above, but distinct in that its main assertion is that
-            # `sock.connect` is called to the local end, and its .write is
-            # called with data submitted to a mock of whatever Paramiko is
-            # doing inside request_port_forward.
-            skip()
+        def _forward_remote(self, kwargs, Client, select, mocket):
+            # TODO: unhappy with how much this duplicates of the code under
+            # test, re: sig/default vals
+            # Set up parameter values/defaults
+            remote_port = kwargs['remote_port']
+            remote_host = kwargs.get('remote_host', '127.0.0.1')
+            local_port = kwargs.get('local_port', remote_port)
+            local_host = kwargs.get('local_host', 'localhost')
+            # Mock/etc setup, anything that can be prepped before the forward
+            # occurs (which is most things)
+            tun_socket = mocket.return_value
+            cxn = Connection('host')
+            # Channel that will yield data when read from
+            chan = Mock()
+            chan.recv.return_value = "data"
+            # And make select() yield it as being ready once, when called
+            select.select.side_effect = select_result(chan)
+            with cxn.forward_remote(**kwargs):
+                # At this point Connection.open() has run and generated a
+                # Transport mock for us (because SSHClient is mocked). Let's
+                # first make sure we asked it for the port forward...
+                # NOTE: this feels like it's too limited/tautological a test,
+                # until you realize that it's functionally impossible to mock
+                # out everything required for Paramiko's inner guts to run
+                # _parse_channel_open() and suchlike :(
+                call = cxn.transport.request_port_forward.call_args_list[0]
+                eq_(call[1]['address'], remote_host)
+                eq_(call[1]['port'], remote_port)
+                # Pretend the Transport called our callback with mock Channel
+                call[1]['handler'](chan, tuple(), tuple())
+                # And make sure we hooked up to the local socket OK
+                tup = (local_host, local_port)
+                tun_socket.connect.assert_called_once_with(tup)
+            # Expect that our socket got written to by the tunnel (due to the
+            # above-setup select() and channel mocking). Need to do this after
+            # tunnel shutdown or we risk thread ordering issues.
+            tun_socket.sendall.assert_called_once_with("data")
+            mocket.return_value.close.assert_called_once_with()
 
         def forwards_remote_port_to_local_end(self):
             self._forward_remote({'remote_port': 1234})
