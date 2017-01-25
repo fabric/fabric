@@ -522,7 +522,7 @@ still be used, of course.)
 
 **Default:** ``True``
 
-By default Fabric prefixes every line of ouput with either ``[hostname] out:``
+By default Fabric prefixes every line of output with either ``[hostname] out:``
 or ``[hostname] err:``. Those prefixes may be hidden by setting
 ``env.output_prefix`` to ``False``.
 
