@@ -25,20 +25,8 @@ class Config(InvokeConfig):
         documentation for the base values, such as the config subtrees
         controlling behavior of ``run`` or how ``tasks`` behave.
 
-        Values that differ from Invoke's defaults:
-
-        - ``run.replace_env``: ``True``, instead of ``False``. This is for
-          security purposes (leaking local environment data remotely by default
-          would be unsanitary) & for compatibility with the behavior of
-          OpenSSH. (See also: the warning under
-          `paramiko.channel.Channel.set_environment_variable`.)
-
-        New-to-Fabric default values:
-
-        * ``port``: TCP port number to which `.Connection` objects connect when
-          not otherwise specified. Default: ``22``.
-        * ``user``: Username given to the remote ``sshd`` when connecting.
-          Default: your local username.
+        For Fabric-specific modifications and additions to the Invoke-level
+        defaults, see our own config docs at :ref:`default-values`.
         """
         # TODO: is it worth moving all of our 'new' settings to a discrete
         # namespace for cleanliness' sake? e.g. ssh.port, ssh.user etc.

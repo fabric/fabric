@@ -40,7 +40,34 @@ The primary differences from that document are as follows:
 Default configuration values
 ============================
 
-TK
+Overrides to Invoke-level defaults
+----------------------------------
+
+- ``run.replace_env``: ``True``, instead of ``False``, so that remote commands
+  run with a 'clean', empty environment instead of inheriting a copy of the
+  current process' environment.
+
+  This is for security purposes: leaking local environment data remotely by
+  default would be unsanitary. It's also compatible with the behavior of
+  OpenSSH.
+
+  .. seealso::
+    The warning under `paramiko.channel.Channel.set_environment_variable`.
+
+New default values defined by Fabric
+------------------------------------
+
+.. note::
+    Most of these settings are also available in the constructor of
+    `.Connection`, if they only need modification on a per-connection basis.
+
+- ``port``: TCP port number used by `.Connection` objects when not otherwise
+  specified. Default: ``22``.
+- ``user``: Username given to the remote ``sshd`` when connecting. Default:
+  your local system username.
+- ``forward_agent``: Whether to attempt forwarding of your local SSH
+  authentication agent to the remote end. Default: ``False`` (same as in
+  OpenSSH.)
 
 
 .. _ssh-config:
