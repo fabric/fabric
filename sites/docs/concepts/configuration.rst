@@ -19,16 +19,34 @@ The primary differences from that document are as follows:
 * In addition to :ref:`Invoke's own default configuration values
   <invoke:default-values>`, Fabric merges in some of its own, such as the fact
   that SSH's default port number is 22. See :ref:`default-values` for details.
+* Fabric has facilities for loading SSH config files, and will automatically
+  create (or update) a configuration subtree on a per `Connection
+  <fabric.connection.Connection>` basis, loaded with the interpreted SSH
+  configuration for that specific host (since an SSH config file is only ever
+  useful via such a lens). See :ref:`ssh-config`.
 * Fabric offers a framework for managing per-host and per-host-collection
   configuration details and overrides, which lives under the top-level
-  ``hosts`` and ``groups`` config keys; see :ref:`host-configuration`. This
-  functionality also includes loading your local SSH config files.
+  ``hosts`` and ``groups`` config keys; see :ref:`host-configuration`.
+
+    * This functionality supplements that of the SSH config loading described
+      earlier; most users will find it preferable to configure as much as
+      possible via an SSH config file, but not all Fabric settings have
+      ``ssh_config`` analogues, nor do all use cases fit neatly into using such
+      files.
 
 
 .. _default-values:
 
 Default configuration values
 ============================
+
+TK
+
+
+.. _ssh-config:
+
+Loading and using ``ssh_config`` files
+======================================
 
 TK
 
@@ -63,8 +81,8 @@ TK
             * should it ALSO honor invoke files? i.e. find both? What would
               users leveraging both tools expect?
 
-        * intersect of those two, like -f finding a fabfile instead of an
-          invoke task file?
+        * override of behavior of default flags, like -f finding a fabfile
+          instead of an invoke task file?
 
 * Users who have a nontrivial, non-CLI-based setup (eg celery workers or some
   such) should manage their own 'base' Config file as well as their own
@@ -85,33 +103,3 @@ TK
 
         * What's your code/session entry point?
         * How do you share state throughout a session?
-
-* How should ssh_config (from paramiko) figure into this?
-
-    * Best is probably to just bridge it with our own stuff instead of slapping
-      the entire thing in some subset of our config?
-
-        * E.g. top level ``Port`` and ``User`` override our values
-        * Host configs should generate new semi-implicit host configs in the
-          Fabric level (however we do that...?) when none exist elsewhere in
-          the places we source from; and merge otherwise.
-
-            * Which brings us to how we DO load hosts from config files exactly
-              presumably as part of the same general config loading setup, with
-              option for loading 1+ on top of the "core" one?
-            * How to hook into config management DBs like Clusto, Chef Server?
-            * How to handle people who want their own Ansible-like setup of a
-              bunch of host, collection of host, or role config files to all
-              load in? Don't necessarily expect their setup, but make it easy
-              for them to use our API to load one...
-
-        * So say a user has some random arse yaml files they load configs from;
-          and they also have ~/.ssh/config; how do we merge these, which one
-          wins?
-
-            * Actual merging should almost definitely still use regular Config
-              merge stuff - allow arbitrary levels to be defined in between the
-              regular ones and use the same merging behavior?
-            * Then all we need to do is figure out which source comes
-              above/below which other sources. Probably ~/.ssh/config
-              below/overridden by anything more explicitly loaded?
