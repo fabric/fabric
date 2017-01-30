@@ -61,10 +61,10 @@ New default values defined by Fabric
     Most of these settings are also available in the constructor of
     `.Connection`, if they only need modification on a per-connection basis.
 
-- ``port``: TCP port number used by `.Connection` objects when not otherwise
-  specified. Default: ``22``.
 - ``user``: Username given to the remote ``sshd`` when connecting. Default:
   your local system username.
+- ``port``: TCP port number used by `.Connection` objects when not otherwise
+  specified. Default: ``22``.
 - ``forward_agent``: Whether to attempt forwarding of your local SSH
   authentication agent to the remote end. Default: ``False`` (same as in
   OpenSSH.)
@@ -75,7 +75,78 @@ New default values defined by Fabric
 Loading and using ``ssh_config`` files
 ======================================
 
-TK
+Fabric uses Paramiko's SSH config file machinery to load and parse
+``ssh_config``-format files (following OpenSSH's behavior re: which files to
+load, when possible):
+
+- An already-parsed `.SSHConfig` object may be given to `.Config.__init__` via
+  its ``ssh_config`` keyword argument; if this value is given, no files are
+  loaded, even if they exist.
+- A runtime file path may be specified via configuration itself, as the
+  ``ssh_config_path`` key; such a path will be loaded into a new `.SSHConfig`
+  object at the end of `.Config.__init__` and no other files will be sought
+  out.
+
+    - ``ssh_config_path`` is also filled in by the ``fab`` CLI tool if the
+      :option:`-F/--ssh-config <-F>` flag is given.
+
+- If no runtime config (object or path) was given to `.Config.__init__`, it
+  will automatically seek out and load ``~/.ssh/config`` and/or
+  ``/etc/ssh/ssh_config``, if they exist (and in that order.)
+
+  .. note::
+      Rules present in both files will result in the user-level file 'winning',
+      as the first rule found during lookup is always used.
+
+- If none of the above vectors yielded SSH config data, a blank/empty
+  `.SSHConfig` is the final result.
+- Regardless of how the object was generated, it is exposed as
+  `.Config.base_ssh_config`.
+
+`.Connection` objects then expose a per-host 'view' of their config's SSH data
+(obtained via `.SSHConfig.lookup`) as `.Connection.ssh_config`, which is used
+as described below. (And since Connection allows access to its config's
+attributes, they will exhibit both ``.base_ssh_config`` and ``.ssh_config``, in
+case users have some need to examine other hosts' SSH config data.)
+
+.. note::
+    Unless otherwise specified, these values override *any* regular
+    configuration values for the same keys, but may themselves be overridden by
+    `.Connection.__init__` parameters.
+
+    Take for example a ``~/.fabric.yaml``:
+
+    :: yaml
+        user: foo
+
+    Absent any other config vectors, ``Connection('myhost')`` will then connect
+    as the ``foo`` user.
+
+    If we also have an ``~/.ssh/config``::
+
+        Host *
+            User bar
+
+    then ``Connection('myhost')`` would connect as ``bar``.
+
+    However, in both cases, ``Connection('myhost', user='biz')`` will connect
+    as ``biz``.
+
+.. note::
+    We refer here to capitalized versions of ``ssh_config`` keys for easier
+    correlation with  ``man ssh_config``, but the actual `.SSHConfig` data
+    structure has been normalized to lowercase (as the config files are
+    case-insensitive).
+
+Mapping ``ssh_config`` keys to Fabric config keys:
+
+- ``User``: ``user``
+- ``Port``: ``port``
+- ``ForwardAgent``: ``forward_agent``
+
+TK: and many more...
+
+TK: merge with per-host config when it's figured out
 
 
 .. _host-configuration:
@@ -83,7 +154,18 @@ TK
 Per-host configuration settings
 ===============================
 
-TK
+
+TK:
+
+- Given `.Connection` is the base object, where even would "per-host" data be
+  stored / loaded?
+    - SSH config loading makes sense for filling uch of this
+    - What about regular config? We'd want this data to live separate from the
+      core config, so it can't really live in regular config files unless we
+      make it a special case (or truly part of the config)
+    - But then the question is, where _does_ it come from?
+        - Its own set of configuration files, e.g. ``~/.fabric-hosts.yml``
+        - Library-only, e.g. ``Config(
 
 
 ----
