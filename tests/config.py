@@ -1,8 +1,12 @@
+from os.path import join
+
 from fabric.config import Config
 from paramiko.config import SSHConfig
 
 from mock import patch
-from spec import Spec, eq_, ok_
+from spec import Spec, eq_, ok_, skip
+
+from _util import support_path
 
 
 class Config_(Spec):
@@ -52,9 +56,13 @@ class Config_(Spec):
         eq_(Config().run.replace_env, True)
 
     class ssh_config:
-        _kwargs = dict(
+        empty_kwargs = dict(
             system_ssh_path='nope/nope/nope',
             user_ssh_path='nope/noway/nuhuh',
+        )
+        both_kwargs = dict(
+            system_ssh_path=join(support_path, 'system.conf'),
+            user_ssh_path=join(support_path, 'user.conf'),
         )
         # TODO: wants same 'tweak where the system/user files are sought'
         # behavior as invoke.Config/its tests. Can't literally reuse those
@@ -64,7 +72,7 @@ class Config_(Spec):
         # TODO: ...how does invoke do this integration-wise? ugh. I bet it
         # doesn't
         def defaults_to_empty_sshconfig_obj_if_no_files_found(self):
-            c = Config(**self._kwargs)
+            c = Config(**self.empty_kwargs)
             # TODO: Currently no great public API that lets us figure out if
             # one of these is 'empty' or not. So for now, expect an empty inner
             # SSHConfig._config with just the initial default glob-rule.
@@ -72,6 +80,7 @@ class Config_(Spec):
             # both the initial empty-glob structure AND a filled-in one (from a
             # real actual 'Host *' entry, if one exists). Doesn't matter for
             # the purposes of this test, but FYI.
+            ok_(type(c.base_ssh_config) is SSHConfig)
             eq_(c.base_ssh_config._config, [{'host': ['*'], 'config': {}}])
 
         def can_be_given_explicitly_via_ssh_kwarg(self):
@@ -79,7 +88,11 @@ class Config_(Spec):
             ok_(Config(ssh_config=sc).base_ssh_config is sc)
 
         def when_config_obj_given_default_paths_are_not_sought(self):
-            skip()
+            sc = SSHConfig()
+            c = Config(ssh_config=sc, **self.both_kwargs)
+            # Empty config list -> didn't load the 'user'/'system' hosts from
+            # our dummy configs.
+            eq_(c.base_ssh_config._config, [])
 
         def config_obj_prevents_loading_runtime_path_too(self):
             skip()

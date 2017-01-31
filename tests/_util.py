@@ -12,6 +12,12 @@ from mock import patch, Mock, PropertyMock, call, ANY
 from spec import eq_, trap
 
 
+support_path = os.path.join(
+    os.path.abspath(os.path.dirname(__file__)),
+    '_support'
+)
+
+
 # TODO: figure out a non shite way to share Invoke's more beefy copy of same.
 @trap
 def expect(invocation, out, program=None, test=None):
