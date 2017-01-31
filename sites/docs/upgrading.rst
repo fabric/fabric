@@ -124,3 +124,17 @@ Networking
     "host list", where 'fab foo bar' wants 'foo' to change 'bar's context
     somehow? (Especially, what about 'fab foo bar biz baz' - can't simply tell
     'foo' to run 'bar' with some hardcoded params or anything.)
+
+Configuration
+=============
+
+- General configuration has been massively improved over the old ``fabricrc``
+  files; Fabric 2 builds on Invoke which offers a full-fledged configuration
+  hierarchy (in-code config, multiple config file locations, environment
+  variables, and CLI flags) and multiple file formats. See Invoke's
+  configuration documentation for details.
+- SSH config file loading has also improved. Fabric 1 allowed selecting a
+  single SSH config file; version 2 behaves more like OpenSSH and will seek out
+  both system and user level config files, as well as allowing a runtime config
+  file. (And advanced users may simply supply their own Paramiko SSH config
+  file.)
