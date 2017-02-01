@@ -6,7 +6,7 @@ import os
 
 from invoke.util import cd
 from mock import patch
-from spec import Spec, assert_contains, raises
+from spec import Spec, assert_contains, raises, skip
 
 from invoke import Context
 from fabric.main import program as fab_program
@@ -58,6 +58,25 @@ Available tasks:
 
 """.lstrip()
                 )
+
+    class runtime_ssh_config_path:
+        def capital_F_flag_specifies_runtime_ssh_config_file(self):
+            with cd(_support):
+                # Relies on asserts within the task, which will bubble up as
+                # it's executed in-process
+                fab_program.run("fab -c runtime_fabfile -F ssh_config/runtime.conf -H runtime runtime_ssh_config") # noqa
+
+        def long_form_flag_also_works(self):
+            skip()
+
+        def IOErrors_if_given_missing_file(self):
+            skip()
+
+        def config_only_loaded_once_per_session(self):
+            # Ensures the load happens in FabProgram and not e.g Executor
+            # TODO: Run any ol' task 2x in row with mocked SSHConfig, prove it only
+            # ran 1x
+            skip()
 
     class hosts_flag_parameterizes_tasks:
         # NOTE: many of these just rely on mock_remote's builtin

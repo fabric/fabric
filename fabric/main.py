@@ -27,6 +27,10 @@ class Fab(Program):
         core_args = super(Fab, self).core_args()
         my_args = [
             Argument(
+                names=('F', 'ssh-config'),
+                help="Path to runtime SSH config file.",
+            ),
+            Argument(
                 names=('H', 'hosts'),
                 help="Comma-separated host name(s) to execute tasks against.",
             ),
@@ -55,6 +59,14 @@ class Fab(Program):
         if not self._remainder_only:
             super(Fab, self).no_tasks_given()
 
+    def config_kwargs(self):
+        # Obtain core config kwargs - eg hide, warn, etc
+        kwargs = super(Fab, self).config_kwargs()
+        # Add our own custom Config kwargs
+        kwargs.update(dict(
+            runtime_ssh_path=self.args['ssh-config'].value,
+        ))
+        return kwargs
 
 # TODO: come up w/ a better name heh
 class FabExecutor(Executor):

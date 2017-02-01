@@ -1,3 +1,4 @@
+import copy
 import errno
 import os
 
@@ -77,6 +78,28 @@ class Config(InvokeConfig):
         # Load files from disk, if necessary
         if not explicit_obj_given:
             self.load_ssh_files()
+
+    def clone(self, *args, **kwargs):
+        # TODO: clone() at this point kinda-sorta feels like it's retreading
+        # __reduce__ and the related (un)pickling stuff...
+        # Get cloned obj
+        new = super(Config, self).clone(*args, **kwargs)
+        # Copy over our own new attributes (they're all strings or None)
+        for attr in (
+            '_runtime_ssh_path',
+            '_system_ssh_path',
+            '_user_ssh_path',
+        ):
+            setattr(new, attr, getattr(self, attr))
+        # Deepcopy our SSHConfig and replace the blank new one with the copy;
+        # it's basically just a list of slightly-nested dicts, shouldn't be
+        # anything that will get mad on a deepcopy.
+        # TODO: as with other spots, this implies SSHConfig needs a cleaner
+        # public API re: creating and updating its core data.
+        ssh_config = copy.deepcopy(self.base_ssh_config._config)
+        new.base_ssh_config._config = ssh_config
+        # All done
+        return new
 
     def load_ssh_files(self):
         """
