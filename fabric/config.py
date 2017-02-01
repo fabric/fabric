@@ -82,24 +82,39 @@ class Config(InvokeConfig):
     def clone(self, *args, **kwargs):
         # TODO: clone() at this point kinda-sorta feels like it's retreading
         # __reduce__ and the related (un)pickling stuff...
-        # Get cloned obj
+        # Get cloned obj.
+        # NOTE: Because we also extend .init_kwargs, the actual core SSHConfig
+        # data is passed in at init time (ensuring no files get loaded a 2nd,
+        # etc time) and will already be present, so we don't need to set
+        # .base_ssh_config at all.
         new = super(Config, self).clone(*args, **kwargs)
-        # Copy over our own new attributes (they're all strings or None)
+        # Copy over our custom attributes, so that the clone still resembles us
+        # re: recording where the data originally came from. (Nothing should
+        # really care, but.)
         for attr in (
             '_runtime_ssh_path',
             '_system_ssh_path',
             '_user_ssh_path',
         ):
             setattr(new, attr, getattr(self, attr))
-        # Deepcopy our SSHConfig and replace the blank new one with the copy;
-        # it's basically just a list of slightly-nested dicts, shouldn't be
-        # anything that will get mad on a deepcopy.
-        # TODO: as with other spots, this implies SSHConfig needs a cleaner
-        # public API re: creating and updating its core data.
-        ssh_config = copy.deepcopy(self.base_ssh_config._config)
-        new.base_ssh_config._config = ssh_config
         # All done
         return new
+
+    def _init_kwargs(self, *args, **kw):
+        # Parent kwargs
+        kwargs = super(Config, self)._init_kwargs(*args, **kw)
+        # Transmit our internal SSHConfig via explicit-obj kwarg, thus
+        # bypassing any file loading. (Our extension of clone() above copies
+        # over other attributes as well so that the end result looks consistent
+        # with reality.)
+        new_config = SSHConfig()
+        # TODO: as with other spots, this implies SSHConfig needs a cleaner
+        # public API re: creating and updating its core data.
+        new_config._config = copy.deepcopy(self.base_ssh_config._config)
+        return dict(
+            kwargs,
+            ssh_config=new_config,
+        )
 
     def load_ssh_files(self):
         """

@@ -9,3 +9,8 @@ def runtime_ssh_config(c):
     # automatically...
     eq_(c.ssh_config['port'], '666')
     #eq_(c.port, 666)
+
+
+@task
+def dummy(c):
+    pass

@@ -5,12 +5,14 @@ Tests concerned with the ``fab`` tool & how it overrides Invoke defaults.
 import os
 
 from invoke.util import cd
-from mock import patch
+from mock import patch, MagicMock
 from spec import Spec, assert_contains, raises, skip
 
 from invoke import Context
+from fabric.config import Config
 from fabric.main import program as fab_program
 from fabric.exceptions import NothingToDo
+from paramiko import SSHConfig
 
 from _util import expect, mock_remote, Session
 
@@ -60,11 +62,17 @@ Available tasks:
                 )
 
     class runtime_ssh_config_path:
-        def _run(self, flag='-F', file_='ssh_config/runtime.conf'):
+        def _run(
+            self,
+            flag='-F',
+            file_='ssh_config/runtime.conf',
+            tasks='runtime_ssh_config',
+        ):
             with cd(_support):
                 # Relies on asserts within the task, which will bubble up as
                 # it's executed in-process
-                fab_program.run("fab -c runtime_fabfile {} {} -H runtime runtime_ssh_config".format(flag, file_)) # noqa
+                cmd = "fab -c runtime_fabfile {} {} -H runtime {}"
+                fab_program.run(cmd.format(flag, file_, tasks))
 
         def capital_F_flag_specifies_runtime_ssh_config_file(self):
             self._run(flag='-F')
@@ -76,11 +84,17 @@ Available tasks:
         def IOErrors_if_given_missing_file(self):
             self._run(file_='nope/nothere.conf')
 
-        def config_only_loaded_once_per_session(self):
-            # Ensures the load happens in FabProgram and not e.g Executor
-            # TODO: Run any ol' task 2x in row with mocked SSHConfig, prove it only
-            # ran 1x
-            skip()
+        @patch.object(Config, '_load_ssh_file')
+        def config_only_loaded_once_per_session(self, method):
+            # Task that doesn't make assertions about the config (since the
+            # _actual_ config it gets is empty as we had to mock out the loader
+            # method...sigh)
+            self._run(tasks='dummy dummy')
+            # Called only once (initial __init__) with runtime conf, instead of
+            # that plus a few more pairs of calls against the default files
+            # (which is what happens when clone() isn't preserving the
+            # already-parsed/loaded SSHConfig)
+            method.assert_called_once_with('ssh_config/runtime.conf')
 
     class hosts_flag_parameterizes_tasks:
         # NOTE: many of these just rely on mock_remote's builtin
