@@ -15,7 +15,7 @@ from fabric.connection import Connection, Config, Group
 from fabric.util import get_local_user
 
 
-def select_result(obj):
+def _select_result(obj):
     """
     Return iterator/generator suitable for mocking a select.select() call.
 
@@ -613,7 +613,7 @@ class Connection_(Spec):
                 repeat(socket.error(errno.EAGAIN, "nothing yet")),
             )
             obj = tunnel_sock if tunnel_exception is None else tunnel_exception
-            select.select.side_effect = select_result(obj)
+            select.select.side_effect = _select_result(obj)
             with Connection('host').forward_local(**kwargs):
                 # Make sure we give listener thread enough time to boot up :(
                 # Otherwise we might assert before it does things. (NOTE:
@@ -722,7 +722,7 @@ class Connection_(Spec):
             chan = Mock()
             chan.recv.return_value = "data"
             # And make select() yield it as being ready once, when called
-            select.select.side_effect = select_result(chan)
+            select.select.side_effect = _select_result(chan)
             with cxn.forward_remote(**kwargs):
                 # At this point Connection.open() has run and generated a
                 # Transport mock for us (because SSHClient is mocked). Let's
