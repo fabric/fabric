@@ -1,3 +1,4 @@
+import os
 from StringIO import StringIO
 
 from invoke.config import Config as InvokeConfig, merge_dicts
@@ -34,13 +35,31 @@ class Config(InvokeConfig):
         :param ssh_config:
             Custom/explicit `paramiko.config.SSHConfig` object. If given,
             prevents loading of any SSH config files. Default: ``None``.
+
+        :param str runtime_ssh_path:
+            Runtime SSH config path to load. Prevents loading of system/user
+            files if given. Default: ``None``.
+
+        :param str system_ssh_path:
+            Location of the system-level SSH config file. Default:
+            ``/etc/ssh/ssh_config``.
+
+        :param str user_ssh_path:
+            Location of the user-level SSH config file. Default:
+            ``~/.ssh/config``.
         """
         # Tease out our own kwargs.
         # TODO: consider moving more stuff out of __init__ and into methods so
-        # there's less of this sort of thing? Eh.
+        # there's less of this sort of splat-args + pop thing? Eh.
         ssh_config = kwargs.pop('ssh_config', None)
-        system_ssh_path = kwargs.pop('system_ssh_path', None)
-        user_ssh_path = kwargs.pop('user_ssh_path', None)
+        # NOTE: due to how DataProxy/InvokeConfig work, setting brand new core
+        # attributes requires using object().
+        object.__setattr__(self, '_runtime_ssh_path',
+            kwargs.pop('runtime_ssh_path', None))
+        object.__setattr__(self, '_system_ssh_path',
+            kwargs.pop('system_ssh_path', '/etc/ssh/ssh_config'))
+        object.__setattr__(self, '_user_ssh_path',
+            kwargs.pop('user_ssh_path', '~/.ssh/config'))
 
         # TODO:
         # - _system_ssh_path (& param, defaults /etc/ssh/ssh_config)
@@ -51,16 +70,47 @@ class Config(InvokeConfig):
         # - load_ssh_files() method, and called after super()
         # - set base_ssh_config attr
 
+        # Super!
         super(Config, self).__init__(*args, **kwargs)
-
-        #: A `paramiko.config.SSHConfig` object based on loaded config files
-        #: and/or a manually supplied ``SSHConfig`` object.
+        
+        # Arrive at some non-None SSHConfig object.
+        explicit_obj_given = ssh_config is not None
         if ssh_config is None:
             ssh_config = SSHConfig()
-            # TODO: Paramiko's API should get cleaned up a bit so we don't have
-            # to do dumb stuff like this.
-            ssh_config.parse(StringIO())
-        self.base_ssh_config = ssh_config or SSHConfig()
+        #: A `paramiko.config.SSHConfig` object based on loaded config files
+        #: (or, if given, the value handed to the ``ssh_config`` param.)
+        object.__setattr__(self, 'base_ssh_config', ssh_config)
+
+        # Load files from disk, if necessary
+        if not explicit_obj_given:
+            self.load_ssh_files()
+
+    def load_ssh_files(self):
+        """
+        Trigger loading of configured SSH config file paths.
+
+        Expects that `base_ssh_config` has already been set to an `SSHConfig`
+        object.
+
+        :returns: ``None``.
+        """
+        if self._runtime_ssh_path is not None:
+            self._load_ssh_file(self._runtime_ssh_path)
+        else:
+            self._load_ssh_file(self._user_ssh_path)
+            self._load_ssh_file(self._system_ssh_path)
+
+    def _load_ssh_file(self, path):
+        """
+        Attempt to open and parse an SSH config file at ``path``.
+
+        Does nothing if ``path`` is not a path to a valid file.
+
+        :returns: ``None``.
+        """
+        if os.path.isfile(path):
+            with open(path) as fd:
+                self.base_ssh_config.parse(fd)
 
     @staticmethod
     def global_defaults():

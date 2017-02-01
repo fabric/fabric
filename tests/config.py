@@ -1,9 +1,10 @@
-from os.path import join
+from os.path import join, expanduser
 
 from fabric.config import Config
+from fabric.util import get_local_user
 from paramiko.config import SSHConfig
 
-from mock import patch
+from mock import patch, call
 from spec import Spec, eq_, ok_, skip
 
 from _util import support_path
@@ -56,69 +57,88 @@ class Config_(Spec):
         eq_(Config().run.replace_env, True)
 
     class ssh_config:
+        system_path = join(support_path, 'ssh_config', 'system.conf')
+        user_path = join(support_path, 'ssh_config', 'user.conf')
+        runtime_path = join(support_path, 'ssh_config', 'runtime.conf')
         empty_kwargs = dict(
             system_ssh_path='nope/nope/nope',
             user_ssh_path='nope/noway/nuhuh',
         )
-        both_kwargs = dict(
-            system_ssh_path=join(support_path, 'system.conf'),
-            user_ssh_path=join(support_path, 'user.conf'),
-        )
-        # TODO: wants same 'tweak where the system/user files are sought'
-        # behavior as invoke.Config/its tests. Can't literally reuse those
-        # prefixes (e.g. it's not /etc/ssh.config but /etc/ssh/ssh_config, and
-        # not ~/.ssh_config but ~/.ssh/config) but want same approach so we can
-        # just tweak the objects under test instead of mocking open()
-        # TODO: ...how does invoke do this integration-wise? ugh. I bet it
-        # doesn't
+
         def defaults_to_empty_sshconfig_obj_if_no_files_found(self):
             c = Config(**self.empty_kwargs)
             # TODO: Currently no great public API that lets us figure out if
             # one of these is 'empty' or not. So for now, expect an empty inner
-            # SSHConfig._config with just the initial default glob-rule.
-            # NOTE: there's a semi-bug in that NON-empty SSHConfigs can exhibit
-            # both the initial empty-glob structure AND a filled-in one (from a
-            # real actual 'Host *' entry, if one exists). Doesn't matter for
-            # the purposes of this test, but FYI.
+            # SSHConfig._config from an un-.parse()d such object. (AFAIK, such
+            # objects work fine re: .lookup, .get_hostnames etc.)
             ok_(type(c.base_ssh_config) is SSHConfig)
-            eq_(c.base_ssh_config._config, [{'host': ['*'], 'config': {}}])
+            eq_(c.base_ssh_config._config, [])
 
-        def can_be_given_explicitly_via_ssh_kwarg(self):
+        def object_can_be_given_explicitly_via_ssh_config_kwarg(self):
             sc = SSHConfig()
             ok_(Config(ssh_config=sc).base_ssh_config is sc)
 
-        def when_config_obj_given_default_paths_are_not_sought(self):
+        @patch.object(Config, '_load_ssh_file')
+        def when_config_obj_given_default_paths_are_not_sought(self, method):
             sc = SSHConfig()
-            c = Config(ssh_config=sc, **self.both_kwargs)
-            # Empty config list -> didn't load the 'user'/'system' hosts from
-            # our dummy configs.
-            eq_(c.base_ssh_config._config, [])
+            c = Config(ssh_config=sc)
+            ok_(not method.called)
 
-        def config_obj_prevents_loading_runtime_path_too(self):
-            skip()
+        @patch.object(Config, '_load_ssh_file')
+        def config_obj_prevents_loading_runtime_path_too(self, method):
+            sc = SSHConfig()
+            c = Config(ssh_config=sc, runtime_ssh_path=self.system_path)
+            ok_(not method.called)
 
-        def when_runtime_path_given_other_paths_are_not_sought(self):
-            skip()
+        @patch.object(Config, '_load_ssh_file')
+        def when_runtime_path_given_other_paths_are_not_sought(self, method):
+            Config(runtime_ssh_path=self.runtime_path)
+            method.assert_called_once_with(self.runtime_path)
 
         # TODO: skip on windows
-        def default_system_path_is_etc_ssh_ssh_config(self):
-            "default system path is /etc/ssh/ssh_config"
-            skip()
+        @patch.object(Config, '_load_ssh_file')
+        def default_file_paths_match_openssh(self, method):
+            Config()
+            method.assert_has_calls([
+                call('~/.ssh/config'),
+                call('/etc/ssh/ssh_config'),
+            ])
 
-        def default_user_path_is_HOME_ssh_config(self):
-            "default user path is $HOME/.ssh/config"
-            skip()
+        def system_path_loads_ok(self):
+            c = Config(**dict(
+                self.empty_kwargs,
+                system_ssh_path=self.system_path,
+            ))
+            eq_(
+                c.base_ssh_config.get_hostnames(),
+                set(['system', 'shared', '*']),
+            )
 
-        def system_path_loaded_if_only_file(self):
-            skip()
+        def user_path_loads_ok(self):
+            c = Config(**dict(
+                self.empty_kwargs,
+                user_ssh_path=self.user_path,
+            ))
+            eq_(
+                c.base_ssh_config.get_hostnames(),
+                set(['user', 'shared', '*']),
+            )
 
-        def user_path_loaded_if_only_file(self):
-            skip()
+        def both_paths_loaded_if_both_exist_with_user_winning(self):
+            c = Config(
+                user_ssh_path=self.user_path,
+                system_ssh_path=self.system_path,
+            )
+            eq_(
+                c.base_ssh_config.get_hostnames(),
+                set(['user', 'system', 'shared', '*']),
+            )
+            # Expect the user value (321), not the system one (123)
+            eq_(c.base_ssh_config.lookup('shared')['port'], '321')
 
-        def both_paths_loaded_if_both_exist(self):
-            skip()
-
-        def user_and_system_paths_merge_with_user_winning(self):
-            # NOTE: this _mostly_ tests SSHConfig itself, but the order we load
-            # them is still highly important, so.
-            skip()
+        @patch.object(Config, '_load_ssh_file')
+        def paths_subject_to_user_expansion(self, method):
+            # TODO: other expansion types? no real need for abspath...
+            tilded = '~/probably/not/real/tho'
+            c = Config(runtime_ssh_path=tilded)
+            method.assert_has_call(expanduser(tilded))
