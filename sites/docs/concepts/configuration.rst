@@ -120,9 +120,7 @@ load, when possible):
 
 `.Connection` objects expose a per-host 'view' of their config's SSH data
 (obtained via `.SSHConfig.lookup`) as `.Connection.ssh_config`, which is used
-as described below. (And since Connection allows access to its config's
-attributes, they will exhibit both ``.base_ssh_config`` and ``.ssh_config``, in
-case users have some need to examine other hosts' SSH config data.)
+as described below.
 
 .. note::
     Unless otherwise specified, these values override *any* regular
