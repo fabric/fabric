@@ -1,6 +1,7 @@
 import errno
 import os
-from StringIO import StringIO
+
+from invoke.vendor.six import StringIO
 
 from invoke.config import Config as InvokeConfig, merge_dicts
 from paramiko.config import SSHConfig
