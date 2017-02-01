@@ -60,11 +60,11 @@ Available tasks:
                 )
 
     class runtime_ssh_config_path:
-        def _run(self, flag):
+        def _run(self, flag='-F', file_='ssh_config/runtime.conf'):
             with cd(_support):
                 # Relies on asserts within the task, which will bubble up as
                 # it's executed in-process
-                fab_program.run("fab -c runtime_fabfile {} ssh_config/runtime.conf -H runtime runtime_ssh_config".format(flag)) # noqa
+                fab_program.run("fab -c runtime_fabfile {} {} -H runtime runtime_ssh_config".format(flag, file_)) # noqa
 
         def capital_F_flag_specifies_runtime_ssh_config_file(self):
             self._run(flag='-F')
@@ -72,8 +72,9 @@ Available tasks:
         def long_form_flag_also_works(self):
             self._run(flag='--ssh-config')
 
+        @raises(IOError)
         def IOErrors_if_given_missing_file(self):
-            skip()
+            self._run(file_='nope/nothere.conf')
 
         def config_only_loaded_once_per_session(self):
             # Ensures the load happens in FabProgram and not e.g Executor
