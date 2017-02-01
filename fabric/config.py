@@ -1,3 +1,4 @@
+import errno
 import os
 from StringIO import StringIO
 
@@ -95,10 +96,15 @@ class Config(InvokeConfig):
         :returns: ``None``.
         """
         if self._runtime_ssh_path is not None:
-            self._load_ssh_file(self._runtime_ssh_path)
+            path = self._runtime_ssh_path
+            # Manually blow up like open() (_load_ssh_file normally doesn't)
+            if not os.path.exists(path):
+                msg = "No such file or directory: {!r}".format(path)
+                raise IOError(errno.ENOENT, msg)
+            self._load_ssh_file(os.path.expanduser(path))
         else:
-            self._load_ssh_file(self._user_ssh_path)
-            self._load_ssh_file(self._system_ssh_path)
+            for path in (self._user_ssh_path, self._system_ssh_path):
+                self._load_ssh_file(os.path.expanduser(path))
 
     def _load_ssh_file(self, path):
         """

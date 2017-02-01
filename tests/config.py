@@ -1,3 +1,4 @@
+import errno
 from os.path import join, expanduser
 
 from fabric.config import Config
@@ -95,12 +96,21 @@ class Config_(Spec):
             Config(runtime_ssh_path=self.runtime_path)
             method.assert_called_once_with(self.runtime_path)
 
+        def runtime_path_does_not_die_silently(self):
+            try:
+                Config(runtime_ssh_path='sure/thing/boss/whatever/you/say')
+            except IOError as e:
+                ok_("No such file or directory" in str(e))
+                eq_(e.errno, errno.ENOENT)
+            else:
+                assert False, "Bad runtime path didn't raise IOError!"
+
         # TODO: skip on windows
         @patch.object(Config, '_load_ssh_file')
         def default_file_paths_match_openssh(self, method):
             Config()
             method.assert_has_calls([
-                call('~/.ssh/config'),
+                call(expanduser('~/.ssh/config')),
                 call('/etc/ssh/ssh_config'),
             ])
 
@@ -137,8 +147,16 @@ class Config_(Spec):
             eq_(c.base_ssh_config.lookup('shared')['port'], '321')
 
         @patch.object(Config, '_load_ssh_file')
-        def paths_subject_to_user_expansion(self, method):
+        @patch('fabric.config.os.path.exists', lambda x: True)
+        def runtime_path_subject_to_user_expansion(self, method):
             # TODO: other expansion types? no real need for abspath...
             tilded = '~/probably/not/real/tho'
             c = Config(runtime_ssh_path=tilded)
-            method.assert_has_call(expanduser(tilded))
+            method.assert_called_once_with(expanduser(tilded))
+
+        @patch.object(Config, '_load_ssh_file')
+        def user_path_subject_to_user_expansion(self, method):
+            # TODO: other expansion types? no real need for abspath...
+            tilded = '~/probably/not/real/tho'
+            c = Config(user_ssh_path=tilded)
+            method.assert_any_call(expanduser(tilded))
