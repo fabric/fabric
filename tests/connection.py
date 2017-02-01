@@ -1,7 +1,7 @@
 from itertools import chain, repeat
 from invoke.vendor.six import b
 import errno
-import os
+from os.path import join
 import socket
 import time
 
@@ -238,6 +238,19 @@ class Connection_(Spec):
                 ok_(Connection('host').client is sentinel)
 
         class ssh_config:
+            def _runtime_config(self, overrides=None):
+                runtime_path = join(support_path, 'ssh_config', 'runtime.conf')
+                if overrides is None:
+                    overrides = {}
+                config = Config(
+                    runtime_ssh_path=runtime_path,
+                    overrides=overrides,
+                )
+
+            def _runtime_cxn(self, overrides=None):
+                config = self._runtime_config(overrides=overrides)
+                return Connection('runtime', config=config)
+
             def effectively_blank_when_no_loaded_config(self):
                 c = Config(ssh_config=SSHConfig())
                 eq_(
@@ -248,15 +261,28 @@ class Connection_(Spec):
                 )
 
             def shows_result_of_lookup_when_loaded_config(self):
-                c = Config(runtime_ssh_path=os.path.join(
-                    support_path, 'ssh_config', 'runtime.conf'))
                 eq_(
-                    Connection('runtime', config=c).ssh_config,
+                    self._runtime_cxn().ssh_config,
                     {
                         'hostname': 'runtime',
                         'port': '666',
                     },
                 )
+
+            def port_wins_over_default_port(self):
+                eq_(self._runtime_cxn().port, 666)
+
+            def port_wins_over_configuration_port(self):
+                cxn = self._runtime_cxn(overrides={'port': 777})
+                eq_(cxn.port, 666)
+
+            def port_loses_to_explicit_port(self):
+                config = self._runtime_config() # Would be 666, as above
+                cxn = Connection('runtime', config=config, port=777)
+                eq_(cxn.port, 777)
+
+            # TODO: user, forward_agent, gateway/ProxyCommand, timeouts,
+            # others?
 
     class string_representation:
         "string representations"
