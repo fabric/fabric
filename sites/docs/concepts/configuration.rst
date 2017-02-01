@@ -75,6 +75,9 @@ New default values defined by Fabric
 Loading and using ``ssh_config`` files
 ======================================
 
+How files are loaded
+--------------------
+
 Fabric uses Paramiko's SSH config file machinery to load and parse
 ``ssh_config``-format files (following OpenSSH's behavior re: which files to
 load, when possible):
@@ -103,7 +106,10 @@ load, when possible):
 - Regardless of how the object was generated, it is exposed as
   `.Config.base_ssh_config`.
 
-`.Connection` objects then expose a per-host 'view' of their config's SSH data
+``Connection``'s use of ``ssh_config`` values
+---------------------------------------------
+
+`.Connection` objects expose a per-host 'view' of their config's SSH data
 (obtained via `.SSHConfig.lookup`) as `.Connection.ssh_config`, which is used
 as described below. (And since Connection allows access to its config's
 attributes, they will exhibit both ``.base_ssh_config`` and ``.ssh_config``, in
