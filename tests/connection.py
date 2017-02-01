@@ -1,18 +1,22 @@
 from itertools import chain, repeat
 from invoke.vendor.six import b
 import errno
+import os
 import socket
 import time
 
 from spec import Spec, eq_, raises, ok_, skip
 from mock import patch, Mock, call, PropertyMock
 from paramiko.client import SSHClient, AutoAddPolicy
+from paramiko import SSHConfig
 
 from invoke.config import Config as InvokeConfig
 from invoke.exceptions import ThreadException
 
 from fabric.connection import Connection, Config, Group
 from fabric.util import get_local_user
+
+from _util import support_path
 
 
 def _select_result(obj):
@@ -232,6 +236,27 @@ class Connection_(Spec):
                 sentinel = Mock()
                 Client.return_value = sentinel
                 ok_(Connection('host').client is sentinel)
+
+        class ssh_config:
+            def effectively_blank_when_no_loaded_config(self):
+                c = Config(ssh_config=SSHConfig())
+                eq_(
+                    Connection('host', config=c).ssh_config,
+                    # NOTE: paramiko always injects this even if you look up a
+                    # host that has no rules, even wildcard ones.
+                    {'hostname': 'host'},
+                )
+
+            def shows_result_of_lookup_when_loaded_config(self):
+                c = Config(runtime_ssh_path=os.path.join(
+                    support_path, 'ssh_config', 'runtime.conf'))
+                eq_(
+                    Connection('runtime', config=c).ssh_config,
+                    {
+                        'hostname': 'runtime',
+                        'port': '666',
+                    },
+                )
 
     class string_representation:
         "string representations"

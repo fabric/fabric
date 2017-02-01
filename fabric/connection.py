@@ -67,6 +67,7 @@ class Connection(Context):
     user = None
     port = None
     forward_agent = None
+    ssh_config = None
 
     # TODO: should "reopening" an existing Connection object that has been
     # closed, be allowed? (See e.g. how v1 detects closed/semi-closed
@@ -202,6 +203,8 @@ class Connection(Context):
             forward_agent = self.config.forward_agent
         #: Whether agent forwarding is enabled.
         self.forward_agent = forward_agent
+        #: The per-host SSH config data, if any. (See :ref:`ssh-config:.)
+        self.ssh_config = self.config.base_ssh_config.lookup(self.host)
         # TODO: should still allow for defining some of these via config, even
         # if it's simply inside a 'connect_kwargs' config key
         if connect_kwargs is None:
