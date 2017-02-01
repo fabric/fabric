@@ -46,6 +46,7 @@ class Config_(Spec):
                 'user': 'me',
                 'port': 22,
                 'forward_agent': False,
+                'load_ssh_configs': True,
             }
         ):
             # If our global_defaults didn't win, this would still

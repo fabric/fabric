@@ -130,7 +130,7 @@ class Config(InvokeConfig):
                 msg = "No such file or directory: {!r}".format(path)
                 raise IOError(errno.ENOENT, msg)
             self._load_ssh_file(os.path.expanduser(path))
-        else:
+        elif self.load_ssh_configs:
             for path in (self._user_ssh_path, self._system_ssh_path):
                 self._load_ssh_file(os.path.expanduser(path))
 
@@ -165,9 +165,12 @@ class Config(InvokeConfig):
         # easier for users to determine what came from which library/repo.
         defaults = InvokeConfig.global_defaults()
         ours = {
+            # New settings
             'port': 22,
             'user': get_local_user(),
             'forward_agent': False,
+            'load_ssh_configs': True,
+            # Overrides of existing settings
             'run': {
                 'replace_env': True,
             },
