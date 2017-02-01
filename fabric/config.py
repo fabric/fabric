@@ -63,15 +63,6 @@ class Config(InvokeConfig):
         object.__setattr__(self, '_user_ssh_path',
             kwargs.pop('user_ssh_path', '~/.ssh/config'))
 
-        # TODO:
-        # - _system_ssh_path (& param, defaults /etc/ssh/ssh_config)
-        #   - make clear it's a full path not a prefix or dir
-        # - _user_ssh_path (& param, defaults $HOME/.ssh/config)
-        # - ssh_config param (defaults None)
-        # - ssh_config_path param (defaults None)
-        # - load_ssh_files() method, and called after super()
-        # - set base_ssh_config attr
-
         # Super!
         super(Config, self).__init__(*args, **kwargs)
         
