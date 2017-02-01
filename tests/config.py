@@ -2,11 +2,10 @@ import errno
 from os.path import join, expanduser
 
 from fabric.config import Config
-from fabric.util import get_local_user
 from paramiko.config import SSHConfig
 
 from mock import patch, call
-from spec import Spec, eq_, ok_, skip
+from spec import Spec, eq_, ok_
 
 from _util import support_path
 
@@ -82,13 +81,13 @@ class Config_(Spec):
         @patch.object(Config, '_load_ssh_file')
         def when_config_obj_given_default_paths_are_not_sought(self, method):
             sc = SSHConfig()
-            c = Config(ssh_config=sc)
+            Config(ssh_config=sc)
             ok_(not method.called)
 
         @patch.object(Config, '_load_ssh_file')
         def config_obj_prevents_loading_runtime_path_too(self, method):
             sc = SSHConfig()
-            c = Config(ssh_config=sc, runtime_ssh_path=self.system_path)
+            Config(ssh_config=sc, runtime_ssh_path=self.system_path)
             ok_(not method.called)
 
         @patch.object(Config, '_load_ssh_file')
@@ -151,12 +150,12 @@ class Config_(Spec):
         def runtime_path_subject_to_user_expansion(self, method):
             # TODO: other expansion types? no real need for abspath...
             tilded = '~/probably/not/real/tho'
-            c = Config(runtime_ssh_path=tilded)
+            Config(runtime_ssh_path=tilded)
             method.assert_called_once_with(expanduser(tilded))
 
         @patch.object(Config, '_load_ssh_file')
         def user_path_subject_to_user_expansion(self, method):
             # TODO: other expansion types? no real need for abspath...
             tilded = '~/probably/not/real/tho'
-            c = Config(user_ssh_path=tilded)
+            Config(user_ssh_path=tilded)
             method.assert_any_call(expanduser(tilded))

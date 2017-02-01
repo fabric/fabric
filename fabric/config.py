@@ -2,8 +2,6 @@ import copy
 import errno
 import os
 
-from invoke.vendor.six import StringIO
-
 from invoke.config import Config as InvokeConfig, merge_dicts
 from paramiko.config import SSHConfig
 
@@ -66,7 +64,7 @@ class Config(InvokeConfig):
 
         # Super!
         super(Config, self).__init__(*args, **kwargs)
-        
+
         # Arrive at some non-None SSHConfig object.
         explicit_obj_given = ssh_config is not None
         if ssh_config is None:

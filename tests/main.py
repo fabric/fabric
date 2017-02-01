@@ -5,14 +5,13 @@ Tests concerned with the ``fab`` tool & how it overrides Invoke defaults.
 import os
 
 from invoke.util import cd
-from mock import patch, MagicMock
-from spec import Spec, assert_contains, raises, skip
+from mock import patch
+from spec import Spec, assert_contains, raises
 
 from invoke import Context
 from fabric.config import Config
 from fabric.main import program as fab_program
 from fabric.exceptions import NothingToDo
-from paramiko import SSHConfig
 
 from _util import expect, mock_remote, Session
 
