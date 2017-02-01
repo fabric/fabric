@@ -61,6 +61,12 @@ New default values defined by Fabric
     Most of these settings are also available in the constructor of
     `.Connection`, if they only need modification on a per-connection basis.
 
+.. warning::
+    Many of these are also configurable via :ref:`ssh_config files
+    <ssh-config>`. **Such values take precedence over those defined via the
+    core configuration**, so make sure you're aware of whether you're loading
+    such files (or :ref:`disable them to be sure <disabling-ssh-config>`).
+
 - ``user``: Username given to the remote ``sshd`` when connecting. Default:
   your local system username.
 - ``port``: TCP port number used by `.Connection` objects when not otherwise
@@ -68,6 +74,9 @@ New default values defined by Fabric
 - ``forward_agent``: Whether to attempt forwarding of your local SSH
   authentication agent to the remote end. Default: ``False`` (same as in
   OpenSSH.)
+- ``load_openssh_configs``: Whether to automatically seek out :ref:`SSH config
+  files <ssh-config>`. When ``False``, no automatic loading occurs. Default:
+  ``True``.
 
 
 .. _ssh-config:
@@ -153,6 +162,24 @@ Mapping ``ssh_config`` keys to Fabric config keys:
 TK: and many more...
 
 TK: merge with per-host config when it's figured out
+
+.. _disabling-ssh-config:
+
+Disabling (most) ``ssh_config`` loading
+---------------------------------------
+
+Users who need tighter control over how their environment gets configured may
+want to disable the automatic loading of system/user level SSH config files;
+this can prevent hard-to-expect errors such as a new user's ``~/.ssh/config``
+overriding values that are being set in the regular config hierarchy.
+
+To do so, simply set the top level config option ``load_ssh_configs`` to
+``False``.
+
+.. note::
+    Changing this setting does *not* disable loading of runtime-level config
+    files (e.g. via :option:`-F`). If a user is explicitly telling us to load
+    such a file, we assume they know what they're doing.
 
 
 .. _host-configuration:

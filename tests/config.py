@@ -159,3 +159,31 @@ class Config_(Spec):
             tilded = '~/probably/not/real/tho'
             Config(user_ssh_path=tilded)
             method.assert_any_call(expanduser(tilded))
+
+        class core_ssh_load_option_allows_skipping_ssh_config_loading:
+            @patch.object(Config, '_load_ssh_file')
+            def skips_default_paths(self, method):
+                Config(overrides={'load_ssh_configs': False})
+                ok_(not method.called)
+
+            @patch.object(Config, '_load_ssh_file')
+            def does_not_affect_explicit_object(self, method):
+                sc = SSHConfig()
+                c = Config(
+                    ssh_config=sc,
+                    overrides={'load_ssh_configs': False},
+                )
+                # Implicit loading still doesn't happen...sanity check
+                ok_(not method.called)
+                # Real test: the obj we passed in is present as usual
+                ok_(c.base_ssh_config is sc)
+
+            @patch.object(Config, '_load_ssh_file')
+            def does_not_skip_loading_runtime_path(self, method):
+                Config(
+                    runtime_ssh_path=self.runtime_path,
+                    overrides={'load_ssh_configs': False},
+                )
+                # Expect that loader method did still run (and, as usual, that
+                # it did not load any other files)
+                method.assert_called_once_with(self.runtime_path)
