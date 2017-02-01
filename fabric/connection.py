@@ -203,7 +203,7 @@ class Connection(Context):
             forward_agent = self.config.forward_agent
         #: Whether agent forwarding is enabled.
         self.forward_agent = forward_agent
-        #: The per-host SSH config data, if any. (See :ref:`ssh-config:.)
+        #: The per-host SSH config data, if any. (See :ref:`ssh-config`.)
         self.ssh_config = self.config.base_ssh_config.lookup(self.host)
         # TODO: should still allow for defining some of these via config, even
         # if it's simply inside a 'connect_kwargs' config key
