@@ -189,10 +189,14 @@ class Connection(Context):
 
         #: The hostname of the target server.
         self.host = host
+        # NOTE: we load SSH config data as early as possible as it has
+        # potential to affect nearly every other attribute.
+        #: The per-host SSH config data, if any. (See :ref:`ssh-config`.)
+        self.ssh_config = self.config.base_ssh_config.lookup(self.host)
         #: The username this connection will use to connect to the remote end.
         self.user = user or self.config.user
         #: The network port to connect on.
-        self.port = port or self.config.port
+        self.port = port or int(self.ssh_config.get('port', self.config.port))
         #: The gateway `.Connection` or ``ProxyCommand`` string to be used,
         #: if any.
         self.gateway = gateway
@@ -203,8 +207,6 @@ class Connection(Context):
             forward_agent = self.config.forward_agent
         #: Whether agent forwarding is enabled.
         self.forward_agent = forward_agent
-        #: The per-host SSH config data, if any. (See :ref:`ssh-config`.)
-        self.ssh_config = self.config.base_ssh_config.lookup(self.host)
         # TODO: should still allow for defining some of these via config, even
         # if it's simply inside a 'connect_kwargs' config key
         if connect_kwargs is None:
