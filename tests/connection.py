@@ -281,8 +281,12 @@ class Connection_(Spec):
                 cxn = Connection('runtime', config=config, port=777)
                 eq_(cxn.port, 777)
 
-            # TODO: user, forward_agent, gateway/ProxyCommand, timeouts,
-            # others?
+            # TODO:
+            # - user
+            # - forward_agent
+            # - gateway/ProxyCommand
+            # - timeouts
+            # - others?
 
     class string_representation:
         "string representations"
