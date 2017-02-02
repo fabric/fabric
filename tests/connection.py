@@ -266,6 +266,7 @@ class Connection_(Spec):
                     {
                         'hostname': 'runtime',
                         'port': '666',
+                        'user': 'abaddon',
                     },
                 )
 
@@ -282,8 +283,21 @@ class Connection_(Spec):
                     cxn = Connection('runtime', config=config, port=777)
                     eq_(cxn.port, 777)
 
+            class user:
+                def wins_over_default(self):
+                    eq_(self._runtime_cxn().user, 'abaddon')
+
+                def wins_over_configuration(self):
+                    cxn = self._runtime_cxn(overrides={'user': 'baal'})
+                    eq_(cxn.user, 'abaddon')
+
+                def loses_to_explicit(self):
+                    # Would be 'abaddon', as above
+                    config = self._runtime_config()
+                    cxn = Connection('runtime', config=config, user='set')
+                    eq_(cxn.user, 'set')
+
             # TODO:
-            # - user
             # - forward_agent
             # - gateway/ProxyCommand
             # - timeouts

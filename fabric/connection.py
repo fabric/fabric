@@ -194,7 +194,7 @@ class Connection(Context):
         #: The per-host SSH config data, if any. (See :ref:`ssh-config`.)
         self.ssh_config = self.config.base_ssh_config.lookup(self.host)
         #: The username this connection will use to connect to the remote end.
-        self.user = user or self.config.user
+        self.user = user or self.ssh_config.get('user', self.config.user)
         #: The network port to connect on.
         self.port = port or int(self.ssh_config.get('port', self.config.port))
         #: The gateway `.Connection` or ``ProxyCommand`` string to be used,
