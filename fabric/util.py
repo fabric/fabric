@@ -1,4 +1,13 @@
+import logging
 import sys
+
+
+# Ape the half-assed logging junk from Invoke, but ensuring the logger reflects
+# our name, not theirs. (Assume most contexts will rely on Invoke itself to
+# literally enable/disable logging, for now.)
+log = logging.getLogger('fabric')
+for x in ('debug',):
+    globals()[x] = getattr(log, x)
 
 
 win32 = (sys.platform == 'win32')

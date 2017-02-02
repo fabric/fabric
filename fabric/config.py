@@ -5,7 +5,7 @@ import os
 from invoke.config import Config as InvokeConfig, merge_dicts
 from paramiko.config import SSHConfig
 
-from .util import get_local_user
+from .util import get_local_user, debug
 
 
 class Config(InvokeConfig):
@@ -143,8 +143,14 @@ class Config(InvokeConfig):
         :returns: ``None``.
         """
         if os.path.isfile(path):
+            old_rules = len(self.base_ssh_config._config)
             with open(path) as fd:
                 self.base_ssh_config.parse(fd)
+            new_rules = len(self.base_ssh_config._config)
+            msg = "Loaded {0} new ssh_config rules from {1!r}"
+            debug(msg.format(new_rules - old_rules, path))
+        else:
+            debug("File not found, skipping")
 
     @staticmethod
     def global_defaults():
