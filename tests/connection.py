@@ -242,7 +242,7 @@ class Connection_(Spec):
                 runtime_path = join(support_path, 'ssh_config', 'runtime.conf')
                 if overrides is None:
                     overrides = {}
-                config = Config(
+                return Config(
                     runtime_ssh_path=runtime_path,
                     overrides=overrides,
                 )
