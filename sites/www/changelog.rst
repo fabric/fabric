@@ -2,6 +2,8 @@
 Changelog
 =========
 
+* :bug:`1294` fix text escaping for `~fabric.contrib.files.contains` and
+  `~fabric.contrib.files.append` which would fail if the text contained e.g. ``>``
 * :support:`1539` Add documentation for :ref:`env.output_prefix <output_prefix>`. Thanks ``@jphalip``.
 * :release:`1.10.5 <2016-12-05>`
 * :bug:`1470` When using `~fabric.operations.get` with glob expressions, a lack
