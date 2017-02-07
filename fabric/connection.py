@@ -212,7 +212,13 @@ class Connection(Context):
         # the ProxyCommand subprocess at init time, vs open() time.
         # TODO: make paramiko.proxy.ProxyCommand lazy instead?
         if forward_agent is None:
+            # Default to config...
             forward_agent = self.config.forward_agent
+            # But if ssh_config is present, it wins
+            if 'forwardagent' in self.ssh_config:
+                # TODO: SSHConfig really, seriously needs some love here, god
+                map_ = {'yes': True, 'no': False}
+                forward_agent = map_[self.ssh_config['forwardagent']]
         #: Whether agent forwarding is enabled.
         self.forward_agent = forward_agent
         # TODO: should still allow for defining some of these via config, even

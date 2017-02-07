@@ -163,7 +163,10 @@ class Connection_(Spec):
                 eq_(Connection('host').forward_agent, False)
 
             def accepts_configuration_value(self):
-                config = Config(overrides={'forward_agent': True})
+                config = Config(overrides={
+                    'forward_agent': True,
+                    'load_ssh_configs': False,
+                })
                 eq_(Connection('host', config=config).forward_agent, True)
 
             def may_be_given_as_kwarg(self):
@@ -197,7 +200,10 @@ class Connection_(Spec):
                 # just a base case...)
                 # TODO: adjust this if we ever switch to all our settings being
                 # namespaced...
-                vanilla = InvokeConfig(overrides={'forward_agent': True})
+                vanilla = InvokeConfig(overrides={
+                    'forward_agent': True,
+                    'load_ssh_configs': False,
+                })
                 cxn = Connection('host', config=vanilla)
                 eq_(cxn.forward_agent, True) # not False, which is default
 
@@ -267,6 +273,7 @@ class Connection_(Spec):
                         'hostname': 'runtime',
                         'port': '666',
                         'user': 'abaddon',
+                        'forwardagent': 'yes',
                     },
                 )
 
@@ -297,8 +304,25 @@ class Connection_(Spec):
                     cxn = Connection('runtime', config=config, user='set')
                     eq_(cxn.user, 'set')
 
+            class forward_agent:
+                def wins_over_default(self):
+                    eq_(self._runtime_cxn().forward_agent, True)
+
+                def wins_over_configuration(self):
+                    # Of course, this "config override" is also the same as the
+                    # default. Meh.
+                    cxn = self._runtime_cxn(overrides={'forward_agent': False})
+                    eq_(cxn.forward_agent, True)
+
+                def loses_to_explicit(self):
+                    # Would be True, as above
+                    config = self._runtime_config()
+                    cxn = Connection(
+                        'runtime', config=config, forward_agent=False,
+                    )
+                    eq_(cxn.forward_agent, False)
+
             # TODO:
-            # - forward_agent
             # - gateway/ProxyCommand
             # - timeouts
             # - others?
@@ -627,8 +651,12 @@ class Connection_(Spec):
             sentinel1, sentinel2 = object(), object()
             client.open_sftp.side_effect = [sentinel1, sentinel2]
             cxn = Connection('host')
-            ok_(cxn.sftp() is sentinel1)
-            ok_(cxn.sftp() is sentinel1)
+            first = cxn.sftp()
+            # TODO: why aren't we just asserting about calls of open_sftp???
+            err = "{!r} wasn't the sentinel object()!"
+            ok_(first is sentinel1, err.format(first))
+            second = cxn.sftp()
+            ok_(second is sentinel1, err.format(second))
 
     class get:
         @patch('fabric.connection.Transfer')
