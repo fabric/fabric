@@ -62,19 +62,28 @@ class Config(InvokeConfig):
         object.__setattr__(self, '_user_ssh_path',
             kwargs.pop('user_ssh_path', '~/.ssh/config'))
 
-        # Super!
-        super(Config, self).__init__(*args, **kwargs)
+        # Record whether we were given an explicit object (so other steps know
+        # whether to bother loading from disk or not)
+        # This needs doing before super __init__ as that calls our post_init
+        explicit = ssh_config is not None
+        object.__setattr__(self, '_given_explicit_object', explicit)
 
         # Arrive at some non-None SSHConfig object.
-        explicit_obj_given = ssh_config is not None
         if ssh_config is None:
             ssh_config = SSHConfig()
         #: A `paramiko.config.SSHConfig` object based on loaded config files
         #: (or, if given, the value handed to the ``ssh_config`` param.)
         object.__setattr__(self, 'base_ssh_config', ssh_config)
 
+        # Now that our own attributes have been prepared, we can fall up into
+        # parent __init__(), which will trigger post_init() (which needs the
+        # attributes we just set up)
+        super(Config, self).__init__(*args, **kwargs)
+
+    def post_init(self):
+        super(Config, self).post_init()
         # Load files from disk, if necessary
-        if not explicit_obj_given:
+        if not self._given_explicit_object:
             self.load_ssh_files()
 
     def clone(self, *args, **kwargs):
@@ -84,11 +93,13 @@ class Config(InvokeConfig):
         # NOTE: Because we also extend .init_kwargs, the actual core SSHConfig
         # data is passed in at init time (ensuring no files get loaded a 2nd,
         # etc time) and will already be present, so we don't need to set
-        # .base_ssh_config at all.
+        # .base_ssh_config ourselves. Similarly, there's no need to worry about
+        # how the SSH config paths may be inaccurate until below; nothing will
+        # be referencing them.
         new = super(Config, self).clone(*args, **kwargs)
         # Copy over our custom attributes, so that the clone still resembles us
-        # re: recording where the data originally came from. (Nothing should
-        # really care, but.)
+        # re: recording where the data originally came from (in case anything
+        # re-runs .load_ssh_files(), for example).
         for attr in (
             '_runtime_ssh_path',
             '_system_ssh_path',
@@ -98,9 +109,9 @@ class Config(InvokeConfig):
         # All done
         return new
 
-    def _init_kwargs(self, *args, **kw):
+    def _clone_init_kwargs(self, *args, **kw):
         # Parent kwargs
-        kwargs = super(Config, self)._init_kwargs(*args, **kw)
+        kwargs = super(Config, self)._clone_init_kwargs(*args, **kw)
         # Transmit our internal SSHConfig via explicit-obj kwarg, thus
         # bypassing any file loading. (Our extension of clone() above copies
         # over other attributes as well so that the end result looks consistent
