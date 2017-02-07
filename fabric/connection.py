@@ -59,15 +59,23 @@ class Connection(Context):
         This class rebinds `invoke.context.Context.run` to `.local` so both
         remote and local command execution can coexist.
     """
-    # NOTE: these are initialized here because they shadow config options.
-    # Otherwise there's no way to inform __setattr__ that they should be
-    # treated as real attributes instead of config proxies.
+    # NOTE: these are initialized here to hint to invoke.Config.__setattr__
+    # that they should be treated as real attributes instead of config proxies.
+    # (Additionally, we're doing this instead of using invoke.Config._set() so
+    # we can take advantage of Sphinx's attribute-doc-comment static analysis.)
     # Once an instance is created, these values will always be non-None because
     # they default to the default config values.
+    host = None
     user = None
     port = None
-    forward_agent = None
     ssh_config = None
+    gateway = None
+    forward_agent = None
+    connect_kwargs = None
+    client = None
+    transport = None
+    _sftp = None
+    _agent_handler = None
 
     # TODO: should "reopening" an existing Connection object that has been
     # closed, be allowed? (See e.g. how v1 detects closed/semi-closed
@@ -360,8 +368,8 @@ class Connection(Context):
         """
         if self.is_connected:
             self.client.close()
-            if self.forward_agent and hasattr(self, 'agent_handler'):
-                self.agent_handler.close()
+            if self.forward_agent and self._agent_handler is not None:
+                self._agent_handler.close()
 
     def __enter__(self):
         return self
@@ -373,7 +381,7 @@ class Connection(Context):
     def create_session(self):
         channel = self.transport.open_session()
         if self.forward_agent:
-            self.agent_handler = AgentRequestHandler(channel)
+            self._agent_handler = AgentRequestHandler(channel)
         return channel
 
     @opens
@@ -425,7 +433,7 @@ class Connection(Context):
         and state (such as that managed by
         `~paramiko.sftp_client.SFTPClient.chdir`) will be preserved.
         """
-        if not hasattr(self, '_sftp'):
+        if self._sftp is None:
             self._sftp = self.client.open_sftp()
         return self._sftp
 
