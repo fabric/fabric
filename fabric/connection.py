@@ -28,11 +28,15 @@ class Connection(Context):
     """
     A connection to an SSH daemon, with methods for commands and file transfer.
 
+    **Basics**
+
     This class inherits from Invoke's `~invoke.context.Context`, as it is a
     context within which commands, tasks etc can operate. It also encapsulates
     a Paramiko `~paramiko.client.SSHClient` instance, performing useful high
     level operations with that `~paramiko.client.SSHClient` and
     `~paramiko.channel.Channel` instances generated from it.
+
+    **Lifecycle**
 
     `.Connection` has a basic "`create <__init__>`, `connect/open <open>`, `do
     work <run>`, `disconnect/close <close>`" lifecycle:
@@ -58,6 +62,28 @@ class Connection(Context):
     .. note::
         This class rebinds `invoke.context.Context.run` to `.local` so both
         remote and local command execution can coexist.
+
+    **Configuration**
+
+    Most `.Connection` parameters honor :doc:`Invoke-style configuration
+    </concepts/configuration>` as well as any applicable :ref:`SSH config file
+    directives <connection-ssh-config>`. For example, to end up with a
+    connection to ``admin@myhost``, one could:
+
+    - Use any built-in config mechanism, such as ``/etc/fabric.yml``,
+      ``~/.fabric.json``, collection-driven configuration, env vars, etc,
+      stating ``user: admin`` (or ``{"user": "admin"}``, depending on config
+      format.) Then ``Connection('myhost')`` would implicitly have a ``user``
+      of ``admin``.
+    - Use an SSH config file containing ``User admin`` within any applicable
+      ``Host`` header (``Host myhost``, ``Host *``, etc.) Again,
+      ``Connection('myhost')`` will default to an ``admin`` user.
+    - Leverage host-parameter shorthand (described in `.Config.__init__`), i.e.
+      ``Connection('admin@myhost')``.
+    - Give the parameter directly: ``Connection('myhost', user='admin')``.
+
+    The same applies to agent forwarding, ProxyCommand-style gateways, and so
+    forth.
     """
     # NOTE: these are initialized here to hint to invoke.Config.__setattr__
     # that they should be treated as real attributes instead of config proxies.

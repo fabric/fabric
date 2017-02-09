@@ -115,6 +115,8 @@ load, when possible):
 - Regardless of how the object was generated, it is exposed as
   `.Config.base_ssh_config`.
 
+.. _connection-ssh-config:
+
 ``Connection``'s use of ``ssh_config`` values
 ---------------------------------------------
 
@@ -153,11 +155,9 @@ as described below.
 
 Mapping ``ssh_config`` keys to Fabric config keys:
 
-- ``User``: ``user``
-- ``Port``: ``port``
-- ``ForwardAgent``: ``forward_agent``
-
-TK: and many more...
+- ``User``: supplies the default value for ``user`` for the given host(s).
+- ``Port``: supplies default value for ``port``, as with ``user``.
+- ``ForwardAgent``: controls default behavior of ``forward_agent``.
 
 TK: merge with per-host config when it's figured out
 
