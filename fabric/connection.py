@@ -82,8 +82,7 @@ class Connection(Context):
       ``Connection('admin@myhost')``.
     - Give the parameter directly: ``Connection('myhost', user='admin')``.
 
-    The same applies to agent forwarding, ProxyCommand-style gateways, and so
-    forth.
+    The same applies to agent forwarding, gateways, and so forth.
     """
     # NOTE: these are initialized here to hint to invoke.Config.__setattr__
     # that they should be treated as real attributes instead of config proxies.
@@ -157,11 +156,13 @@ class Connection(Context):
 
             This parameter accepts one of the following:
 
-            - another `.Connection` (for a ``direct-tcpip`` gateway);
+            - another `.Connection` (for a ``ProxyJump`` style gateway);
             - a shell command string as a `str` or `unicode` (for a
-              ``ProxyCommand`` gateway).
+              ``ProxyCommand`` style style gateway).
 
-            Default: ``None``, in which case no gatewaying will occur.
+            Default: ``None``, meaning no gatewaying will occur (unless
+            otherwise configured; if one wants to override a configured gateway
+            at runtime, specify ``gateway=False``.)
 
             .. seealso:: :ref:`ssh-gateways`
 

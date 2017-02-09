@@ -23,24 +23,28 @@ At a basic level, one could ``ssh gatewayhost``, then ``ssh internalhost`` from
 the resulting shell. This works for individual long-running sessions, but
 becomes a burden when it must be done frequently.
 
-There are two gateway solutions available in Fabric: ``direct-tcpip`` (easier,
-less overhead, can be nested) or ``ProxyCommand`` (more overhead, can't be
-nested, only reads your SSH config and not any Fabric-level config, but
-sometimes more flexible).
+There are two gateway solutions available in Fabric, mirroring the
+functionality of OpenSSH's client: ``ProxyJump`` style (easier, less overhead,
+can be nested) or ``ProxyCommand`` style (more overhead, can't be nested,
+sometimes more flexible). Both support the usual range of configuration
+sources: Fabric's own config framework, SSH config files, or runtime
+parameters.
 
-``direct-tcpip``
-----------------
+``ProxyJump``
+-------------
 
-This style of gateway is so named because it uses the SSH protocol's
-``direct-tcpip`` channel type - a lightweight method of requesting that the
-gateway's ``sshd`` open a connection on our behalf to another system. These
-channel objects (instances of `paramiko.channel.Channel`) implement Python's
+This style of gateway uses the SSH protocol's ``direct-tcpip`` channel type - a
+lightweight method of requesting that the gateway's ``sshd`` open a connection
+on our behalf to another system. (This has been possible in OpenSSH server for
+a long time; support in OpenSSH's client is new as of 7.3.)
+
+Channel objects (instances of `paramiko.channel.Channel`) implement Python's
 socket API and are thus usable in place of real operating system sockets for
 nearly any Python code.
 
-``direct-tcpip`` is simple to use: create a new `.Connection` object
-parameterized for the gateway, and supply it as the ``gateway`` parameter when
-creating your inner/real `.Connection`::
+``ProxyJump`` style gatewaying is simple to use: create a new `.Connection`
+object parameterized for the gateway, and supply it as the ``gateway``
+parameter when creating your inner/real `.Connection`::
 
     from fabric import Connection
 
@@ -57,14 +61,13 @@ its own username, port number, and so forth. (This includes ``gateway`` itself
 ``ProxyCommand``
 ----------------
 
-The traditional OpenSSH command-line client offers a ``ProxyCommand`` directive
-(see `man ssh_config <http://man.openbsd.org/ssh_config>`_), which pipes the
-inner connection's input and output through an arbitrary local subprocess.
+The traditional OpenSSH command-line client has long offered a ``ProxyCommand``
+directive (see `man ssh_config <http://man.openbsd.org/ssh_config>`_), which
+pipes the inner connection's input and output through an arbitrary local
+subprocess.
 
-Compared to ``direct-tcpip`` gateways, this adds overhead (the extra
-subprocess), can't be nested, and requires that all pertinent connection
-parameters live in your OpenSSH config file (as opposed to anything read via
-Fabric's own configuration system). In trade, it allows for advanced tricks
+Compared to ``ProxyJump`` style gateways, this adds overhead (the extra
+subprocess) and can't easily be nested. In trade, it allows for advanced tricks
 like use of SOCKS proxies, or custom filtering/gatekeeping applications.
 
 ``ProxyCommand`` subprocesses are typically another ``ssh`` command, such as
@@ -72,34 +75,21 @@ like use of SOCKS proxies, or custom filtering/gatekeeping applications.
 available ``netcat``, via ``ssh gatewayhost nc %h %p``.
 
 Fabric supports ``ProxyCommand`` by accepting command string (`str` or
-`unicode`) objects in the ``gateway`` kwarg of `.Connection`; this is then used
-to populate a `paramiko.proxy.ProxyCommand` object at connection time.
-
-As with most other :ref:`SSH config directives <ssh-config>`, this will be done
-automatically on your behalf if SSH config loading is enabled and your config
-file contains an applicable ``ProxyCommand`` directive for the current
-connection.
-
-.. TODO: expand this when 'in-memory' ssh_config manipulation becomes a thing
-.. TODO: add note about ``ssh -J`` sometime
+`unicode`) objects in the ``gateway`` kwarg of `.Connection`; this is used to
+populate a `paramiko.proxy.ProxyCommand` object at connection time.
 
 Additional concerns
 -------------------
 
-If you're unsure which of the two approaches to use: use ``direct-tcpip``. It
-performs better, uses fewer resources on your local system, and has an
+If you're unsure which of the two approaches to use: use ``ProxyJump`` style.
+It performs better, uses fewer resources on your local system, and has an
 easier-to-use API.
 
 .. warning::
-    Using both types of gateways simultaneously (i.e. supplying a `.Connection`
-    as the ``gateway`` via kwarg or config, *and* loading a config file
-    containing ``ProxyCommand``) is considered an error and will result in an
-    exception.
-
-.. TODO:
-    wants an option to say "I understand that I have both active, please ignore
-    my SSH conf file". (Can't do this by default or folks unaware there's a
-    conflict will have a bad time. Also, ambiguity etc.)
+    Requesting both types of gateways simultaneously to the same host (i.e.
+    supplying a `.Connection` as the ``gateway`` via kwarg or config, *and*
+    loading a config file containing ``ProxyCommand``) is considered an error
+    and will result in an exception.
 
 
 other sections TK... (maybe nest files further??):

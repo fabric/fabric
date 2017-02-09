@@ -74,6 +74,8 @@ New default values defined by Fabric
 - ``forward_agent``: Whether to attempt forwarding of your local SSH
   authentication agent to the remote end. Default: ``False`` (same as in
   OpenSSH.)
+- ``gateway``: Used as the default value of the ``gateway`` kwarg for
+  `.Connection`. May be any value accepted by that argument. Default: ``None``.
 - ``load_openssh_configs``: Whether to automatically seek out :ref:`SSH config
   files <ssh-config>`. When ``False``, no automatic loading occurs. Default:
   ``True``.
@@ -158,7 +160,19 @@ Mapping ``ssh_config`` keys to Fabric config keys:
 - ``User``: supplies the default value for ``user`` for the given host(s).
 - ``Port``: supplies default value for ``port``, as with ``user``.
 - ``ForwardAgent``: controls default behavior of ``forward_agent``.
+- ``ProxyCommand``: supplies default (string) value for ``gateway``.
+- ``ProxyJump``: supplies default (`Connection <fabric.connection.Connection>`)
+  value for ``gateway``.
 
+.. note::
+    If both are specified for a given host, ``ProxyJump`` will override
+    ``ProxyCommand``. This is slightly different from OpenSSH, where the order
+    the directives are loaded determines which one wins. Doing so on our end
+    (where we view the config as a dictionary structure) requires additional
+    work.
+
+TK: honor ProxyJump's comma-separated variant, which should translate to
+(reverse-ordered) nested Connection-style gateways.
 TK: merge with per-host config when it's figured out
 
 .. _disabling-ssh-config:

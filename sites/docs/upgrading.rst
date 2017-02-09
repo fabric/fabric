@@ -98,18 +98,15 @@ Networking
 ==========
 
 - ``env.gateway`` is now the ``gateway`` kwarg to `.Connection`, and -- for
-  ``direct-tcpip`` style gateways -- should be another `.Connection` object
+  ``ProxyJump`` style gateways -- should be another `.Connection` object
   instead of a host string.
 
     - **New:** You may specify a runtime, non-SSH-config-driven
       ``ProxyCommand``-style string as the ``gateway`` kwarg instead, which
       will act just like a regular ``ProxyCommand``.
     - SSH-config-driven ``ProxyCommand`` continues to work as it did in v1,
-      provided SSH config loading is active.
-
-    .. TODO:
-        once that is figured out, link to it, eg "SSH configs are loaded by
-        default unless you set XYZ to False"
+      provided :ref:`SSH config <ssh-config>` loading has not been
+      :ref:`disabled <disabling-ssh-config>`.
 
 - ``fabric.context_managers.remote_tunnel`` (which forwards a locally
   visible/open port to the remote end so remote processes may connect to it) is
