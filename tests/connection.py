@@ -221,6 +221,14 @@ class Connection_(Spec):
                 c = Connection('host', gateway="meh")
                 eq_(c.gateway, "meh")
 
+            def accepts_configuration_value(self):
+                gw = Connection('jumpbox')
+                config = Config(overrides={
+                    'gateway': gw,
+                    'load_ssh_configs': False,
+                })
+                ok_(Connection('host', config=config).gateway is gw)
+
         class initializes_client:
             @patch('fabric.connection.SSHClient')
             def instantiates_empty_SSHClient(self, Client):
@@ -244,8 +252,9 @@ class Connection_(Spec):
                 ok_(Connection('host').client is sentinel)
 
         class ssh_config:
-            def _runtime_config(self, overrides=None):
-                runtime_path = join(support_path, 'ssh_config', 'runtime.conf')
+            def _runtime_config(self, overrides=None, basename='runtime'):
+                confname = "{}.conf".format(basename)
+                runtime_path = join(support_path, 'ssh_config', confname)
                 if overrides is None:
                     overrides = {}
                 return Config(
@@ -253,8 +262,8 @@ class Connection_(Spec):
                     overrides=overrides,
                 )
 
-            def _runtime_cxn(self, overrides=None):
-                config = self._runtime_config(overrides=overrides)
+            def _runtime_cxn(self, **kwargs):
+                config = self._runtime_config(**kwargs)
                 return Connection('runtime', config=config)
 
             def effectively_blank_when_no_loaded_config(self):
@@ -274,6 +283,7 @@ class Connection_(Spec):
                         'port': '666',
                         'user': 'abaddon',
                         'forwardagent': 'yes',
+                        'proxycommand': 'my gateway',
                     },
                 )
 
@@ -322,8 +332,67 @@ class Connection_(Spec):
                     )
                     eq_(cxn.forward_agent, False)
 
+            class proxy_command:
+                def wins_over_default(self):
+                    eq_(self._runtime_cxn().gateway, "my gateway")
+
+                def wins_over_configuration(self):
+                    cxn = self._runtime_cxn(overrides={'gateway': "meh gw"})
+                    eq_(cxn.gateway, "meh gw")
+
+                def loses_to_explicit(self):
+                    # Would be "my gateway", as above
+                    config = self._runtime_config()
+                    cxn = Connection(
+                        'runtime', config=config, gateway="other gateway",
+                    )
+                    eq_(cxn.gateway, "other gateway")
+
+                def explicit_False_turns_off_feature(self):
+                    # This isn't as necessary for things like user/port, which
+                    # _may not_ be None in the end - this setting could be.
+                    config = self._runtime_config()
+                    cxn = Connection(
+                        'runtime', config=config, gateway=False,
+                    )
+                    eq_(cxn.gateway, False)
+
+            class proxy_jump:
+                def setup(self):
+                    self._expected_gw = Connection('jumpuser@jumphost:373')
+
+                def wins_over_default(self):
+                    cxn = self._runtime_cxn(basename='proxyjump')
+                    eq_(cxn.gateway, self._expected_gw)
+
+                def wins_over_configuration(self):
+                    cxn = self._runtime_cxn(
+                        basename='proxyjump',
+                        overrides={'gateway': "meh gw"},
+                    )
+                    eq_(cxn.gateway, self._expected_gw)
+
+                def loses_to_explicit(self):
+                    # Would be a Connection equal to self._expected_gw, as
+                    # above
+                    config = self._runtime_config(basename='proxyjump')
+                    cxn = Connection(
+                        'runtime', config=config, gateway="other gateway",
+                    )
+                    eq_(cxn.gateway, "other gateway")
+
+                def explicit_False_turns_off_feature(self):
+                    config = self._runtime_config(basename='proxyjump')
+                    cxn = Connection(
+                        'runtime', config=config, gateway=False,
+                    )
+                    eq_(cxn.gateway, False)
+
+                def wins_over_proxycommand(self):
+                    cxn = self._runtime_cxn(basename='both_proxies')
+                    eq_(cxn.gateway, Connection('winner@everything:777'))
+
             # TODO:
-            # - gateway/ProxyCommand
             # - timeouts
             # - others?
 
@@ -350,14 +419,14 @@ class Connection_(Spec):
             template = "<Connection host=myhost port=123>"
             eq_(repr(c), template)
 
-        def direct_tcpip_gateway_shows_type(self):
+        def proxyjump_gateway_shows_type(self):
             c = Connection(host='myhost', gateway=Connection('jump'))
-            template = "<Connection host=myhost gw=direct-tcpip>"
+            template = "<Connection host=myhost gw=proxyjump>"
             eq_(repr(c), template)
 
         def proxycommand_gateway_shows_type(self):
             c = Connection(host='myhost', gateway='netcat is cool')
-            template = "<Connection host=myhost gw=proxy>"
+            template = "<Connection host=myhost gw=proxycommand>"
             eq_(repr(c), template)
 
     class comparison_and_hashing:
