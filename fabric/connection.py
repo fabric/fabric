@@ -224,12 +224,15 @@ class Connection(Context):
 
         #: The hostname of the target server.
         self.host = host
+
         # NOTE: we load SSH config data as early as possible as it has
         # potential to affect nearly every other attribute.
         #: The per-host SSH config data, if any. (See :ref:`ssh-config`.)
         self.ssh_config = self.config.base_ssh_config.lookup(self.host)
+
         #: The username this connection will use to connect to the remote end.
         self.user = user or self.ssh_config.get('user', self.config.user)
+
         #: The network port to connect on.
         self.port = port or int(self.ssh_config.get('port', self.config.port))
         #: The gateway `.Connection` or ``ProxyCommand`` string to be used,
@@ -238,6 +241,7 @@ class Connection(Context):
         # NOTE: we use string above, vs ProxyCommand obj, to avoid spinning up
         # the ProxyCommand subprocess at init time, vs open() time.
         # TODO: make paramiko.proxy.ProxyCommand lazy instead?
+
         if forward_agent is None:
             # Default to config...
             forward_agent = self.config.forward_agent
@@ -248,6 +252,7 @@ class Connection(Context):
                 forward_agent = map_[self.ssh_config['forwardagent']]
         #: Whether agent forwarding is enabled.
         self.forward_agent = forward_agent
+
         # TODO: should still allow for defining some of these via config, even
         # if it's simply inside a 'connect_kwargs' config key
         if connect_kwargs is None:
