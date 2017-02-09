@@ -75,12 +75,12 @@ Fabric supports ``ProxyCommand`` by accepting command string (`str` or
 `unicode`) objects in the ``gateway`` kwarg of `.Connection`; this is then used
 to populate a `paramiko.proxy.ProxyCommand` object at connection time.
 
-As with most other SSH config directives, this will be done automatically on
-your behalf if SSH config loading is enabled and your config file contains an
-applicable ``ProxyCommand`` directive for the current connection.
+As with most other :ref:`SSH config directives <ssh-config>`, this will be done
+automatically on your behalf if SSH config loading is enabled and your config
+file contains an applicable ``ProxyCommand`` directive for the current
+connection.
 
 .. TODO: expand this when 'in-memory' ssh_config manipulation becomes a thing
-.. TODO: link to SSH config loading toggle option when it's set up
 .. TODO: add note about ``ssh -J`` sometime
 
 Additional concerns
