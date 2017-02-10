@@ -186,6 +186,7 @@ class Config(InvokeConfig):
             'port': 22,
             'user': get_local_user(),
             'forward_agent': False,
+            'gateway': None,
             'load_ssh_configs': True,
             # Overrides of existing settings
             'run': {

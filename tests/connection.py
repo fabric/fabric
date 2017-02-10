@@ -227,7 +227,10 @@ class Connection_(Spec):
                     'gateway': gw,
                     'load_ssh_configs': False,
                 })
-                ok_(Connection('host', config=config).gateway is gw)
+                # TODO: the fact that they will be eq, but _not_ necessarily be
+                # the same object, could be problematic in some cases...
+                cxn = Connection('host', config=config)
+                eq_(cxn.gateway, gw)
 
         class initializes_client:
             @patch('fabric.connection.SSHClient')
@@ -338,7 +341,7 @@ class Connection_(Spec):
 
                 def wins_over_configuration(self):
                     cxn = self._runtime_cxn(overrides={'gateway': "meh gw"})
-                    eq_(cxn.gateway, "meh gw")
+                    eq_(cxn.gateway, "my gateway")
 
                 def loses_to_explicit(self):
                     # Would be "my gateway", as above

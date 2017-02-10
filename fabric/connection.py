@@ -235,6 +235,21 @@ class Connection(Context):
 
         #: The network port to connect on.
         self.port = port or int(self.ssh_config.get('port', self.config.port))
+
+        # Non-None values - string, Connection, even eg False - get set
+        # directly; None triggers seek in config/ssh_config
+        if gateway is None:
+            # SSH config wins over Invoke-style config
+            if 'proxyjump' in self.ssh_config:
+                # Happily, ProxyJump uses identical format to our host
+                # shorthand...
+                gateway = Connection(self.ssh_config['proxyjump'])
+            elif 'proxycommand' in self.ssh_config:
+                # Just a string, which we interpret as a proxy command..
+                gateway = self.ssh_config['proxycommand']
+            else:
+                # Neither of those? Our config value please.
+                gateway = self.config.gateway
         #: The gateway `.Connection` or ``ProxyCommand`` string to be used,
         #: if any.
         self.gateway = gateway
@@ -280,11 +295,16 @@ class Connection(Context):
         # non-22 (even if config has overridden the local default)?
         if self.port != self.config.port:
             bits.append(('port', self.port))
+        # NOTE: sometimes self.gateway may be eg False if someone wants to
+        # explicitly override a configured non-None value (as otherwise it's
+        # impossible for __init__ to tell if a None means "nothing given" or
+        # "seriously please no gatewaying". So, this must always be a vanilla
+        # truth test and not eg "is not None".
         if self.gateway:
             # Displaying type because gw params would probs be too verbose
-            val = 'direct-tcpip'
+            val = 'proxyjump'
             if isinstance(self.gateway, six.string_types):
-                val = 'proxy'
+                val = 'proxycommand'
             bits.append(('gw', val))
         return "<Connection {0}>".format(
             " ".join("{0}={1}".format(*x) for x in bits)
