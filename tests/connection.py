@@ -906,6 +906,7 @@ class Connection_(Spec):
                 # And make sure we hooked up to the local socket OK
                 tup = (local_host, local_port)
                 tun_socket.connect.assert_called_once_with(tup)
+            time.sleep(0.2)
             # Expect that our socket got written to by the tunnel (due to the
             # above-setup select() and channel mocking). Need to do this after
             # tunnel shutdown or we risk thread ordering issues.
