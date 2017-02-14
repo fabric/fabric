@@ -44,6 +44,7 @@ class Config_(Spec):
         eq_(c.forward_agent, False)
         eq_(c.sudo.prompt, "[sudo] password: ")
         eq_(c.sudo.password, None)
+        eq_(c.connect_kwargs, {})
 
     def overrides_Invoke_default_for_replace_env(self):
         # This value defaults to False in Invoke proper.

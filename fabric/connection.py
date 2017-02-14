@@ -364,9 +364,10 @@ class Connection(Context):
 
         Also saves a handle to the now-set Transport object for easier access.
 
-        The `__init__` argument ``connect_kwargs`` is used here; its contents
-        are used as keyword arguments to the
-        `paramiko.client.SSHClient.connect` call.
+        Various connect-time settings (and/or their corresponding :ref:`SSH
+        config options <ssh-config>`) are utilized here in the call to
+        `SSHClient.connect <paramiko.client.SSHClient.connect>`. (For details,
+        see :doc:`the configuration docs </concepts/configuration>`.)
         """
         if not self.is_connected:
             kwargs = dict(

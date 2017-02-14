@@ -403,9 +403,23 @@ class Connection_(Spec):
             def defaults_to_empty_dict(self):
                 eq_(Connection('host').connect_kwargs, {})
 
-            def may_be_given(self):
+            def may_be_given_explicitly(self):
                 cxn = Connection('host', connect_kwargs={'foo': 'bar'})
                 eq_(cxn.connect_kwargs, {'foo': 'bar'})
+
+            def may_be_configured(self):
+                c = Config(overrides={'connect_kwargs': {'origin': 'config'}})
+                cxn = Connection('host', config=c)
+                eq_(cxn.connect_kwargs, {'origin': 'config'})
+
+            def kwarg_wins_over_config(self):
+                c = Config(overrides={'connect_kwargs': {'origin': 'config'}})
+                cxn = Connection(
+                    'host',
+                    connect_kwargs={'origin': 'kwarg'},
+                    config=c,
+                )
+                eq_(cxn.connect_kwargs, {'origin': 'kwarg'})
 
     class string_representation:
         "string representations"
@@ -473,7 +487,7 @@ class Connection_(Spec):
             )
 
         @patch('fabric.connection.SSHClient')
-        def passes_through_init_connect_kwargs(self, Client):
+        def passes_through_connect_kwargs(self, Client):
             client = Client.return_value
             client.get_transport.return_value = Mock(active=False)
             Connection('host', connect_kwargs={'foobar': 'bizbaz'}).open()
