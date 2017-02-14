@@ -188,6 +188,7 @@ class Config(InvokeConfig):
             'forward_agent': False,
             'gateway': None,
             'load_ssh_configs': True,
+            'connect_kwargs': {},
             # Overrides of existing settings
             'run': {
                 'replace_env': True,

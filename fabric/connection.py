@@ -178,10 +178,10 @@ class Connection(Context):
 
             `.Connection` tries not to grow additional settings/kwargs of its
             own unless it is adding value of some kind; thus,
-            ``connect_kwargs`` is the right place to hand in parameters such as
-            ``pkey`` or ``key_filename``.
+            ``connect_kwargs`` is currently the right place to hand in
+            parameters such as ``pkey`` or ``key_filename``.
 
-            Default: ``{}``.
+            Default: ``config.connect_kwargs``.
 
         :raises exceptions.ValueError:
             if user or port values are given via both ``host`` shorthand *and*
@@ -268,10 +268,8 @@ class Connection(Context):
         #: Whether agent forwarding is enabled.
         self.forward_agent = forward_agent
 
-        # TODO: should still allow for defining some of these via config, even
-        # if it's simply inside a 'connect_kwargs' config key
         if connect_kwargs is None:
-            connect_kwargs = {}
+            connect_kwargs = self.config.connect_kwargs
         #: Keyword arguments given to `paramiko.client.SSHClient.connect` when
         #: `open` is called.
         self.connect_kwargs = connect_kwargs

@@ -67,6 +67,9 @@ New default values defined by Fabric
     core configuration**, so make sure you're aware of whether you're loading
     such files (or :ref:`disable them to be sure <disabling-ssh-config>`).
 
+- ``connect_kwargs``: Keyword arguments (`dict`) given to `SSHClient.connect
+  <paramiko.client.SSHClient.connect>` when `.Connection` performs that method
+  call. Default: ``{}``.
 - ``user``: Username given to the remote ``sshd`` when connecting. Default:
   your local system username.
 - ``port``: TCP port number used by `.Connection` objects when not otherwise
