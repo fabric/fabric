@@ -269,6 +269,12 @@ class Connection(Context):
         self.forward_agent = forward_agent
 
         if connect_kwargs is None:
+            # TODO: should they merge or is that too unclean?
+            # TODO: how would a user then override (or derive from ssh_config)
+            # just one setting? Feels like we want to rip out anything we
+            # explicitly support via SSHConfig, from connect_kwargs, leaving it
+            # solely for overrides/extensions. Still has the problem of wanting
+            # to override just one key some of the time, but less likely?
             connect_kwargs = self.config.connect_kwargs
         #: Keyword arguments given to `paramiko.client.SSHClient.connect` when
         #: `open` is called.
