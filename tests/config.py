@@ -19,6 +19,22 @@ class Config_(Spec):
         # From ours
         eq_(c.port, 22)
 
+    def our_global_defaults_can_override_invokes(self):
+        "our global_defaults can override Invoke's key-by-key"
+        with patch.object(
+            Config,
+            'global_defaults',
+            return_value={
+                'run': {'warn': "nope lol"},
+                # NOTE: Config requires load_ssh_configs to be present to
+                # instantiate happily
+                'load_ssh_configs': True,
+            }
+        ):
+            # If our global_defaults didn't win, this would still
+            # resolve to False.
+            eq_(Config().run.warn, "nope lol")
+
     def has_various_Fabric_specific_default_keys(self):
         # NOTE: Duplicates some other tests but we're now starting to
         # grow options not directly related to user/port stuff, so best
@@ -35,23 +51,6 @@ class Config_(Spec):
                 err = "Didn't find expected config key path '{0}'!"
                 assert key in obj, err.format(".".join(keyparts))
                 obj = obj[key]
-
-    def our_defaults_override_invokes(self):
-        "our defaults override invoke's"
-        with patch.object(
-            Config,
-            'global_defaults',
-            return_value={
-                'run': {'warn': "nope lol"},
-                'user': 'me',
-                'port': 22,
-                'forward_agent': False,
-                'load_ssh_configs': True,
-            }
-        ):
-            # If our global_defaults didn't win, this would still
-            # resolve to False.
-            eq_(Config().run.warn, "nope lol")
 
     def we_override_replace_env(self):
         # This value defaults to False in Invoke proper.
