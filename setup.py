@@ -50,7 +50,7 @@ setuptools.setup(
         # TODO: pinning
         'invoke>=0.13,<2.0',
         'paramiko>=2.1,<3.0',
-        'cryptography>=1.1',
+        'cryptography>=1.1,<2.0',
     ],
     packages=[package_name],
     entry_points={
