@@ -1,8 +1,10 @@
 import errno
 from os.path import join, expanduser
 
-from fabric.config import Config
 from paramiko.config import SSHConfig
+
+from fabric import Config
+from fabric.util import get_local_user
 
 from mock import patch, call
 from spec import Spec, eq_, ok_
@@ -36,21 +38,12 @@ class Config_(Spec):
             eq_(Config().run.warn, "nope lol")
 
     def has_various_Fabric_specific_default_keys(self):
-        # NOTE: Duplicates some other tests but we're now starting to
-        # grow options not directly related to user/port stuff, so best
-        # to have at least one test listing all expected keys.
-        for keyparts in (
-            ('port',),
-            ('user',),
-            ('forward_agent',),
-            ('sudo', 'prompt'),
-            ('sudo', 'password'),
-        ):
-            obj = Config()
-            for key in keyparts:
-                err = "Didn't find expected config key path '{0}'!"
-                assert key in obj, err.format(".".join(keyparts))
-                obj = obj[key]
+        c = Config()
+        eq_(c.port, 22)
+        eq_(c.user, get_local_user())
+        eq_(c.forward_agent, False)
+        eq_(c.sudo.prompt, "[sudo] password: ")
+        eq_(c.sudo.password, None)
 
     def we_override_replace_env(self):
         # This value defaults to False in Invoke proper.
