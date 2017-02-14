@@ -47,7 +47,6 @@ setuptools.setup(
     url='http://fabfile.org',
 
     install_requires=[
-        # TODO: pinning
         'invoke>=0.15,<2.0',
         'paramiko>=2.1,<3.0',
         'cryptography>=1.1,<2.0',
