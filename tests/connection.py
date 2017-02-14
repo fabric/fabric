@@ -399,6 +399,14 @@ class Connection_(Spec):
             # - timeouts
             # - others?
 
+        class connect_kwargs:
+            def defaults_to_empty_dict(self):
+                eq_(Connection('host').connect_kwargs, {})
+
+            def may_be_given(self):
+                cxn = Connection('host', connect_kwargs={'foo': 'bar'})
+                eq_(cxn.connect_kwargs, {'foo': 'bar'})
+
     class string_representation:
         "string representations"
         def str_displays_repr(self):
