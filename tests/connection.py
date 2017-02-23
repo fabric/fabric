@@ -290,19 +290,6 @@ class Connection_(Spec):
                     },
                 )
 
-            class port:
-                def wins_over_default(self):
-                    eq_(self._runtime_cxn().port, 666)
-
-                def wins_over_configuration(self):
-                    cxn = self._runtime_cxn(overrides={'port': 777})
-                    eq_(cxn.port, 666)
-
-                def loses_to_explicit(self):
-                    config = self._runtime_config() # Would be 666, as above
-                    cxn = Connection('runtime', config=config, port=777)
-                    eq_(cxn.port, 777)
-
             class user:
                 def wins_over_default(self):
                     eq_(self._runtime_cxn().user, 'abaddon')
@@ -316,6 +303,19 @@ class Connection_(Spec):
                     config = self._runtime_config()
                     cxn = Connection('runtime', config=config, user='set')
                     eq_(cxn.user, 'set')
+
+            class port:
+                def wins_over_default(self):
+                    eq_(self._runtime_cxn().port, 666)
+
+                def wins_over_configuration(self):
+                    cxn = self._runtime_cxn(overrides={'port': 777})
+                    eq_(cxn.port, 666)
+
+                def loses_to_explicit(self):
+                    config = self._runtime_config() # Would be 666, as above
+                    cxn = Connection('runtime', config=config, port=777)
+                    eq_(cxn.port, 777)
 
             class forward_agent:
                 def wins_over_default(self):
