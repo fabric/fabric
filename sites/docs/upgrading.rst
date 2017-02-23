@@ -104,9 +104,7 @@ Networking
     - **New:** You may specify a runtime, non-SSH-config-driven
       ``ProxyCommand``-style string as the ``gateway`` kwarg instead, which
       will act just like a regular ``ProxyCommand``.
-    - SSH-config-driven ``ProxyCommand`` continues to work as it did in v1,
-      provided :ref:`SSH config <ssh-config>` loading has not been
-      :ref:`disabled <disabling-ssh-config>`.
+    - SSH-config-driven ``ProxyCommand`` continues to work as it did in v1.
 
 - ``fabric.context_managers.remote_tunnel`` (which forwards a locally
   visible/open port to the remote end so remote processes may connect to it) is
@@ -130,8 +128,11 @@ Configuration
   hierarchy (in-code config, multiple config file locations, environment
   variables, and CLI flags) and multiple file formats. See Invoke's
   configuration documentation for details.
-- SSH config file loading has also improved. Fabric 1 allowed selecting a
-  single SSH config file; version 2 behaves more like OpenSSH and will seek out
-  both system and user level config files, as well as allowing a runtime config
-  file. (And advanced users may simply supply their own Paramiko SSH config
-  file.)
+- :ref:`SSH config file loading <ssh-config>` has also improved. Fabric 1
+  allowed selecting a single SSH config file; version 2 behaves more like
+  OpenSSH and will seek out both system and user level config files, as well as
+  allowing a runtime config file. (And advanced users may simply supply their
+  own Paramiko SSH config object they obtained however.)
+- Speaking of SSH config loading, it is **now enabled by default**, and may be
+  easily :ref:`disabled <disabling-ssh-config>` by advanced users seeking
+  purity of state.
