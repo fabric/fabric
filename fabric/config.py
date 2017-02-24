@@ -53,27 +53,23 @@ class Config(InvokeConfig):
         # TODO: consider moving more stuff out of __init__ and into methods so
         # there's less of this sort of splat-args + pop thing? Eh.
         ssh_config = kwargs.pop('ssh_config', None)
-        # NOTE: due to how DataProxy/InvokeConfig work, setting brand new core
-        # attributes requires using object().
-        object.__setattr__(self, '_runtime_ssh_path',
-            kwargs.pop('runtime_ssh_path', None))
-        object.__setattr__(self, '_system_ssh_path',
-            kwargs.pop('system_ssh_path', '/etc/ssh/ssh_config'))
-        object.__setattr__(self, '_user_ssh_path',
-            kwargs.pop('user_ssh_path', '~/.ssh/config'))
+        self._set(_runtime_ssh_path=kwargs.pop('runtime_ssh_path', None))
+        system_path = kwargs.pop('system_ssh_path', '/etc/ssh/ssh_config')
+        self._set(_system_ssh_path=system_path)
+        self._set(_user_ssh_path=kwargs.pop('user_ssh_path', '~/.ssh/config'))
 
         # Record whether we were given an explicit object (so other steps know
         # whether to bother loading from disk or not)
         # This needs doing before super __init__ as that calls our post_init
         explicit = ssh_config is not None
-        object.__setattr__(self, '_given_explicit_object', explicit)
+        self._set(_given_explicit_object=explicit)
 
         # Arrive at some non-None SSHConfig object.
         if ssh_config is None:
             ssh_config = SSHConfig()
         #: A `paramiko.config.SSHConfig` object based on loaded config files
         #: (or, if given, the value handed to the ``ssh_config`` param.)
-        object.__setattr__(self, 'base_ssh_config', ssh_config)
+        self._set(base_ssh_config=ssh_config)
 
         # Now that our own attributes have been prepared, we can fall up into
         # parent __init__(), which will trigger post_init() (which needs the

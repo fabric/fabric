@@ -196,7 +196,6 @@ class Connection(Context):
         # is set a default config (to Invoke's Config, not ours). If
         # invoke.Context grows more behavior later we may need to change this,
         # e.g. by having parent define a '_set_default_config' or whatnot.
-        # NOTE: that would also free us up from doing object.__setattr__ below.
 
         #: The .Config object referenced when handling default values (for e.g.
         #: user or port, when not explicitly given) or deciding how to behave.
@@ -207,7 +206,7 @@ class Connection(Context):
         # squashing them if the Invoke-level config already accounted for them)
         elif not isinstance(config, Config):
             config = config.clone(into=Config)
-        object.__setattr__(self, '_config', config)
+        self._set(_config=config)
         # TODO: when/how to run load_files, merge, load_shell_env, etc?
         # TODO: i.e. what is the lib use case here (and honestly in invoke too)
 
