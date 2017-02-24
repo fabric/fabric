@@ -290,18 +290,24 @@ class Connection_(Spec):
                     },
                 )
 
-            def hostname_directive(self):
-                # TODO: not 100% convinced this is the absolute most obvious
-                # API for 'translation' of given hostname to ssh-configured
-                # hostname, but it feels okay for now.
-                path = join(
-                    support_path, 'ssh_config', 'overridden_hostname.conf'
-                )
-                config = Config(runtime_ssh_path=path)
-                cxn = Connection('aliasname', config=config)
-                eq_(cxn.host, 'realname')
-                eq_(cxn.original_host, 'aliasname')
-                eq_(cxn.port, 2222)
+            class hostname:
+                def original_host_always_set(self):
+                    cxn = Connection('somehost')
+                    eq_(cxn.original_host, 'somehost')
+                    eq_(cxn.host, 'somehost')
+
+                def hostname_directive_overrides_host_attr(self):
+                    # TODO: not 100% convinced this is the absolute most
+                    # obvious API for 'translation' of given hostname to
+                    # ssh-configured hostname, but it feels okay for now.
+                    path = join(
+                        support_path, 'ssh_config', 'overridden_hostname.conf'
+                    )
+                    config = Config(runtime_ssh_path=path)
+                    cxn = Connection('aliasname', config=config)
+                    eq_(cxn.host, 'realname')
+                    eq_(cxn.original_host, 'aliasname')
+                    eq_(cxn.port, 2222)
 
             class user:
                 def wins_over_default(self):

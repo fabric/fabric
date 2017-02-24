@@ -91,6 +91,7 @@ class Connection(Context):
     # Once an instance is created, these values will usually be non-None
     # because they default to the default config values.
     host = None
+    original_host = None
     user = None
     port = None
     ssh_config = None
@@ -222,13 +223,17 @@ class Connection(Context):
                 raise ValueError(err.format('port'))
             port = shorthand['port']
 
-        #: The hostname of the target server.
-        self.host = host
-
         # NOTE: we load SSH config data as early as possible as it has
         # potential to affect nearly every other attribute.
         #: The per-host SSH config data, if any. (See :ref:`ssh-config`.)
-        self.ssh_config = self.config.base_ssh_config.lookup(self.host)
+        self.ssh_config = self.config.base_ssh_config.lookup(host)
+
+        self.original_host = host
+        #: The hostname of the target server.
+        self.host = host
+        if 'hostname' in self.ssh_config:
+            # TODO: log that this occurred?
+            self.host = self.ssh_config['hostname']
 
         #: The username this connection will use to connect to the remote end.
         self.user = user or self.ssh_config.get('user', self.config.user)
