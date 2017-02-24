@@ -126,43 +126,54 @@ load, when possible):
 ---------------------------------------------
 
 `.Connection` objects expose a per-host 'view' of their config's SSH data
-(obtained via `.SSHConfig.lookup`) as `.Connection.ssh_config`, which is used
-as described below.
+(obtained via `SSHConfig.lookup`) as `.Connection.ssh_config`. `.Connection`
+itself references these values as described in the following subsections,
+usually as simple defaults for the appropriate config key or parameter
+(``port``, ``forward_agent``, etc.)
+
+Unless otherwise specified, these values **override** regular configuration
+values for the same keys, but may themselves be overridden by
+`.Connection.__init__` parameters.
+
+Take for example a ``~/.fabric.yaml``:
+
+.. code:: yaml
+
+    user: foo
+
+Absent any other configuration, ``Connection('myhost')`` connects as the
+``foo`` user.
+
+If we also have an ``~/.ssh/config``::
+
+    Host *
+        User bar
+
+then ``Connection('myhost')`` connects as ``bar`` (the SSH config wins over
+the Fabric config.)
+
+*However*, in both cases, ``Connection('myhost', user='biz')`` will connect as
+``biz``.
 
 .. note::
-    Unless otherwise specified, these values override *any* regular
-    configuration values for the same keys, but may themselves be overridden by
-    `.Connection.__init__` parameters.
+    The below sections use capitalized versions of ``ssh_config`` keys for
+    easier correlation with ``man ssh_config``, **but** the actual `.SSHConfig`
+    data structure is normalized to lowercase keys, since SSH config files are
+    technically case-insensitive.
 
-    Take for example a ``~/.fabric.yaml``:
+Connection parameters
+~~~~~~~~~~~~~~~~~~~~~
 
-    :: yaml
-        user: foo
+- ``Hostname``: replaces the original value of ``host`` (which is preserved as
+  `Connection.original_host`.)
+- ``Port``: supplies the default value for the ``port`` config option /
+  parameter.
+- ``User``: supplies the default value for the ``user`` config option /
+  parameter.
 
-    Absent any other config vectors, ``Connection('myhost')`` will then connect
-    as the ``foo`` user.
+Proxying
+~~~~~~~~
 
-    If we also have an ``~/.ssh/config``::
-
-        Host *
-            User bar
-
-    then ``Connection('myhost')`` would connect as ``bar``.
-
-    However, in both cases, ``Connection('myhost', user='biz')`` will connect
-    as ``biz``.
-
-.. note::
-    We refer here to capitalized versions of ``ssh_config`` keys for easier
-    correlation with  ``man ssh_config``, but the actual `.SSHConfig` data
-    structure has been normalized to lowercase (as the config files are
-    case-insensitive).
-
-Mapping ``ssh_config`` keys to Fabric config keys:
-
-- ``User``: supplies the default value for ``user`` for the given host(s).
-- ``Port``: supplies default value for ``port``, as with ``user``.
-- ``ForwardAgent``: controls default behavior of ``forward_agent``.
 - ``ProxyCommand``: supplies default (string) value for ``gateway``.
 - ``ProxyJump``: supplies default (`Connection <fabric.connection.Connection>`)
   value for ``gateway``.
@@ -176,7 +187,15 @@ Mapping ``ssh_config`` keys to Fabric config keys:
 
 TK: honor ProxyJump's comma-separated variant, which should translate to
 (reverse-ordered) nested Connection-style gateways.
+
+Authentication
+~~~~~~~~~~~~~~
+
+- ``ForwardAgent``: controls default behavior of ``forward_agent``.
+
+
 TK: merge with per-host config when it's figured out
+
 
 .. _disabling-ssh-config:
 
