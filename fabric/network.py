@@ -195,14 +195,14 @@ def getproxycommand(command=None):
     from fabric.state import env, output
 
     if command is None:
-        if not 'proxycommand' in env:
+        if 'proxycommand' not in env:
             return None
 
     command = env.proxycommand
 
     if not isinstance(command, str):
         if output.debug:
-            print "Proxy command must be string"
+            print("Proxy command must be string")
         return None
 
     host_dict = parse_host_string(env.host_string)
