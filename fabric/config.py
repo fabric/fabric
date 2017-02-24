@@ -67,8 +67,6 @@ class Config(InvokeConfig):
         # Arrive at some non-None SSHConfig object.
         if ssh_config is None:
             ssh_config = SSHConfig()
-        #: A `paramiko.config.SSHConfig` object based on loaded config files
-        #: (or, if given, the value handed to the ``ssh_config`` param.)
         self._set(base_ssh_config=ssh_config)
 
         # Now that our own attributes have been prepared, we can fall up into

@@ -118,7 +118,7 @@ load, when possible):
 - If none of the above vectors yielded SSH config data, a blank/empty
   `.SSHConfig` is the final result.
 - Regardless of how the object was generated, it is exposed as
-  `.Config.base_ssh_config`.
+  ``Config.base_ssh_config``.
 
 .. _connection-ssh-config:
 
