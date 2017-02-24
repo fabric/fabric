@@ -88,8 +88,8 @@ class Connection(Context):
     # that they should be treated as real attributes instead of config proxies.
     # (Additionally, we're doing this instead of using invoke.Config._set() so
     # we can take advantage of Sphinx's attribute-doc-comment static analysis.)
-    # Once an instance is created, these values will always be non-None because
-    # they default to the default config values.
+    # Once an instance is created, these values will usually be non-None
+    # because they default to the default config values.
     host = None
     user = None
     port = None
