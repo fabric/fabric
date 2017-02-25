@@ -29,3 +29,4 @@ sites/*/_build
 /src/
 /Makefile
 /venvs/
+/.eggs/
