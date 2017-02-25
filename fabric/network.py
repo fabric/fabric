@@ -15,7 +15,7 @@ from StringIO import StringIO
 
 
 from fabric.auth import get_password, set_password
-from fabric.utils import abort, handle_prompt_abort, warn
+from fabric.utils import handle_prompt_abort, warn
 from fabric.exceptions import NetworkError
 
 try:
@@ -472,7 +472,7 @@ def connect(user, host, port, cache, seek_gateway=True):
                 sock=sock,
             )
             for suffix in ('auth', 'deleg_creds', 'kex'):
-                name = 'gss_{0}'.format(suffix)
+                name = "gss_" + suffix
                 val = env.get(name, None)
                 if val is not None:
                     kwargs[name] = val
@@ -520,9 +520,15 @@ def connect(user, host, port, cache, seek_gateway=True):
             #
             # This also holds true for rejected/unknown host keys: we have to
             # guess based on other heuristics.
-            if e.__class__ is ssh.SSHException \
-                and (password or msg.startswith('Unknown server')) \
-                and not is_key_load_error(e):
+            if (
+                e.__class__ is ssh.SSHException
+                and (
+                    password
+                    or msg.startswith('Unknown server')
+                    or "not found in known_hosts" in msg
+                )
+                and not is_key_load_error(e)
+            ):
                 raise NetworkError(msg, e)
 
             # Otherwise, assume an auth exception, and prompt for new/better
