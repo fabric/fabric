@@ -1,1 +1,1 @@
-import submodule
+from support import submodule
