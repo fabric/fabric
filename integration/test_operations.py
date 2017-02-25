@@ -1,6 +1,6 @@
 from __future__ import with_statement
 
-from StringIO import StringIO
+from six import BytesIO
 import os
 import posixpath
 import shutil
@@ -36,16 +36,16 @@ class TestOperations(Integration):
         sudo("rm -rf %s" % self.not_owned)
 
     def test_no_trailing_space_in_shell_path_in_run(self):
-        put(StringIO("#!/bin/bash\necho hi"), "%s/myapp" % self.dirpath, mode="0755")
+        put(BytesIO(b"#!/bin/bash\necho hi"), "%s/myapp" % self.dirpath, mode="0755")
         with path(self.dirpath):
             assert run('myapp').stdout == 'hi'
 
     def test_string_put_mode_arg_doesnt_error(self):
-        put(StringIO("#!/bin/bash\necho hi"), self.filepath, mode="0755")
+        put(BytesIO(b"#!/bin/bash\necho hi"), self.filepath, mode="0755")
         assert_mode(self.filepath, "755")
 
     def test_int_put_mode_works_ok_too(self):
-        put(StringIO("#!/bin/bash\necho hi"), self.filepath, mode=0o755)
+        put(BytesIO(b"#!/bin/bash\necho hi"), self.filepath, mode=0o755)
         assert_mode(self.filepath, "755")
 
     def _chown(self, target):
@@ -55,7 +55,7 @@ class TestOperations(Integration):
         # Ensure target dir prefix is not owned by our user (so we fail unless
         # the sudo part of things is working)
         self._chown(self.not_owned)
-        source = source if source else StringIO("whatever")
+        source = source if source else BytesIO(b"whatever")
         # Drop temp file into that dir, via use_sudo, + any kwargs
         return put(
             source,
@@ -142,13 +142,13 @@ class TestOperations(Integration):
         sudo("chown root:root %s" % target)
         sudo("chmod 0440 %s" % target)
         # Pull down with use_sudo, confirm contents
-        local_ = StringIO()
+        local_ = BytesIO()
         result = get(
             local_path=local_,
             remote_path=target,
             use_sudo=True,
         )
-        assert local_.getvalue() == "nope\n"
+        assert local_.getvalue() == b"nope\n"
 
     def test_get_with_use_sudo_groupowned_file(self):
         # Issue #1226: file gotten w/ use_sudo, file normally readable via
@@ -164,13 +164,13 @@ class TestOperations(Integration):
         # Same perms as bug use case (only really need group read)
         sudo("chmod 0640 %s" % target)
         # Do eet
-        local_ = StringIO()
+        local_ = BytesIO()
         result = get(
             local_path=local_,
             remote_path=target,
             use_sudo=True,
         )
-        assert local_.getvalue() == "nope\n"
+        assert local_.getvalue() == b"nope\n"
 
     def test_get_from_unreadable_dir(self):
         # Put file in dir as normal user
@@ -181,6 +181,6 @@ class TestOperations(Integration):
         sudo("chown root:root %s" % self.dirpath)
         sudo("chmod 711 %s" % self.dirpath)
         # Try gettin' it
-        local_ = StringIO()
+        local_ = BytesIO()
         get(local_path=local_, remote_path=remotepath)
-        assert local_.getvalue() == 'foo\n'
+        assert local_.getvalue() == b'foo\n'
