@@ -556,6 +556,33 @@ class Connection_(Spec):
             )
 
         @patch('fabric.connection.SSHClient')
+        def refuses_to_overwrite_connect_kwargs_with_others(self, Client):
+            client = Client.return_value
+            client.get_transport.return_value = Mock(active=False)
+            for key, value, kwargs in (
+                # Core connection args should definitely not get overwritten!
+                # NOTE: recall that these keys are the SSHClient.connect()
+                # kwarg names, NOT our own config/kwarg names!
+                ('hostname', 'nothost', {}),
+                ('port', 17, {}),
+                ('username', 'zerocool', {}),
+                ('password', 'password123', {}),
+                # These might arguably still be allowed to work, but let's head
+                # off confusion anyways.
+                ('timeout', 100, {'connect_timeout': 25}),
+            ):
+                try:
+                    Connection(
+                        'host',
+                        connect_kwargs={key: value},
+                        **kwargs
+                    ).open()
+                except ValueError as e:
+                    err = "Refusing to be ambiguous: connect() kwarg '{}' was given both via regular arg and via connect_kwargs!" # noqa
+                    eq_(str(e), err.format(key))
+                else:
+                    assert False, "Did not raise ValueError!"
+
         @patch('fabric.connection.SSHClient')
         def submits_connect_timeout(self, Client):
             client = Client.return_value
