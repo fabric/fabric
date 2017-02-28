@@ -54,6 +54,10 @@ class Config_(Spec):
 class ssh_config_loading(Spec):
     "ssh_config loading"
 
+    # NOTE: actual _behavior_ of loaded SSH configs is tested in Connection's
+    # tests; these tests just prove that the loading itself works & the data is
+    # correctly available.
+
     system_path = join(support_path, 'ssh_config', 'system.conf')
     user_path = join(support_path, 'ssh_config', 'user.conf')
     runtime_path = join(support_path, 'ssh_config', 'runtime.conf')
