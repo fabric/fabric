@@ -136,3 +136,7 @@ Configuration
 - Speaking of SSH config loading, it is **now enabled by default**, and may be
   easily :ref:`disabled <disabling-ssh-config>` by advanced users seeking
   purity of state.
+- On top of the various SSH config directives implemented in v1, v2 honors
+  ``ConnectTimeout`` and ``ProxyJump``; generally, the intention is now that
+  SSH config support is to be included in any new feature added, when
+  appropriate.

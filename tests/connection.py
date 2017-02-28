@@ -177,6 +177,25 @@ class Connection_(Spec):
                 cxn = Connection('host', forward_agent=False, config=config)
                 eq_(cxn.forward_agent, False)
 
+        class connect_timeout:
+            def defaults_to_None(self):
+                eq_(Connection('host').connect_timeout, None)
+
+            def accepts_configuration_value(self):
+                config = Config(overrides={
+                    'timeouts': {'connect': 10},
+                    'load_ssh_configs': False,
+                })
+                eq_(Connection('host', config=config).connect_timeout, 10)
+
+            def may_be_given_as_kwarg(self):
+                eq_(Connection('host', connect_timeout=15).connect_timeout, 15)
+
+            def kwarg_wins_over_config(self):
+                config = Config(overrides={'timeouts': {'connect': 20}})
+                cxn = Connection('host', connect_timeout=100, config=config)
+                eq_(cxn.connect_timeout, 100)
+
         class config:
             # NOTE: behavior local to Config itself is tested in its own test
             # module; below is solely about Connection's config kwarg and its
@@ -413,6 +432,24 @@ class Connection_(Spec):
                 def wins_over_proxycommand(self):
                     cxn = self._runtime_cxn(basename='both_proxies')
                     eq_(cxn.gateway, Connection('winner@everything:777'))
+
+            class connect_timeout:
+                def wins_over_default(self):
+                    eq_(self._runtime_cxn().connect_timeout, 15)
+
+                def wins_over_configuration(self):
+                    cxn = self._runtime_cxn(
+                        overrides={'timeouts': {'connect': 17}},
+                    )
+                    eq_(cxn.connect_timeout, 15)
+
+                def loses_to_explicit(self):
+                    config = self._runtime_config()
+                    cxn = Connection(
+                        'runtime', config=config, connect_timeout=23,
+                    )
+                    eq_(cxn.connect_timeout, 23)
+
 
             # TODO:
             # - timeouts

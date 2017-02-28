@@ -70,10 +70,6 @@ New default values defined by Fabric
 - ``connect_kwargs``: Keyword arguments (`dict`) given to `SSHClient.connect
   <paramiko.client.SSHClient.connect>` when `.Connection` performs that method
   call. Default: ``{}``.
-- ``user``: Username given to the remote ``sshd`` when connecting. Default:
-  your local system username.
-- ``port``: TCP port number used by `.Connection` objects when not otherwise
-  specified. Default: ``22``.
 - ``forward_agent``: Whether to attempt forwarding of your local SSH
   authentication agent to the remote end. Default: ``False`` (same as in
   OpenSSH.)
@@ -82,6 +78,10 @@ New default values defined by Fabric
 - ``load_openssh_configs``: Whether to automatically seek out :ref:`SSH config
   files <ssh-config>`. When ``False``, no automatic loading occurs. Default:
   ``True``.
+- ``port``: TCP port number used by `.Connection` objects when not otherwise
+  specified. Default: ``22``.
+- ``user``: Username given to the remote ``sshd`` when connecting. Default:
+  your local system username.
 
 
 .. _ssh-config:
@@ -170,6 +170,8 @@ Connection parameters
   parameter.
 - ``User``: supplies the default value for the ``user`` config option /
   parameter.
+- ``ConnectTimeout``: sets the default value for the ``timeouts.connect``
+  config option / ``timeout`` parameter.
 
 Proxying
 ~~~~~~~~
