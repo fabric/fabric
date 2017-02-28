@@ -598,6 +598,18 @@ class Connection_(Spec):
                     assert False, "Did not raise ValueError!"
 
         @patch('fabric.connection.SSHClient')
+        def connect_kwargs_protection_not_tripped_by_defaults(self, Client):
+            client = Client.return_value
+            client.get_transport.return_value = Mock(active=False)
+            Connection('host', connect_kwargs={'timeout': 300}).open()
+            client.connect.assert_called_with(
+                username=get_local_user(),
+                hostname='host',
+                port=22,
+                timeout=300,
+            )
+
+        @patch('fabric.connection.SSHClient')
         def submits_connect_timeout(self, Client):
             client = Client.return_value
             client.get_transport.return_value = Mock(active=False)
