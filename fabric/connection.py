@@ -355,14 +355,14 @@ class Connection(Context):
         )
 
     def _identity(self):
+        # TODO: consider including gateway and maybe even other init kwargs?
+        # Whether two cxns w/ same user/host/port but different
+        # gateway/keys/etc, should be considered "the same", is unclear.
         return (self.host, self.user, self.port)
 
     def __eq__(self, other):
         if not isinstance(other, Connection):
             return False
-        # TODO: consider including gateway and maybe even other init kwargs?
-        # Whether two cxns w/ same user/host/port but different
-        # gateway/keys/etc, should be considered "the same", is unclear.
         return self._identity() == other._identity()
 
     def __hash__(self):
