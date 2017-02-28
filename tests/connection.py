@@ -453,8 +453,8 @@ class Connection_(Spec):
 
 
             # TODO:
-            # - timeouts
-            # - others?
+            # - IdentityFile
+            # - What else can we quickly support as-is?
 
         class connect_kwargs:
             def defaults_to_empty_dict(self):
