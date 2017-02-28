@@ -272,9 +272,20 @@ class Connection(Context):
         if gateway is None:
             # SSH config wins over Invoke-style config
             if 'proxyjump' in self.ssh_config:
-                # Happily, ProxyJump uses identical format to our host
-                # shorthand...
-                gateway = Connection(self.ssh_config['proxyjump'])
+                # Reverse hop1,hop2,hop3 style ProxyJump directive so we start
+                # with the final (itself non-gatewayed) hop and work up to
+                # the front (actual, supplied as our own gateway) hop
+                hops = reversed(self.ssh_config['proxyjump'].split(','))
+                prev_gw = None
+                for hop in hops:
+                    # Happily, ProxyJump uses identical format to our host
+                    # shorthand...
+                    if prev_gw is None:
+                        cxn = Connection(hop)
+                    else:
+                        cxn = Connection(hop, gateway=prev_gw)
+                    prev_gw = cxn
+                gateway = prev_gw
             elif 'proxycommand' in self.ssh_config:
                 # Just a string, which we interpret as a proxy command..
                 gateway = self.ssh_config['proxycommand']
