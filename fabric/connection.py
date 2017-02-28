@@ -310,12 +310,11 @@ class Connection(Context):
         self.connect_timeout = connect_timeout
 
         if connect_kwargs is None:
-            # TODO: should they merge or is that too unclean?
-            # TODO: how would a user then override (or derive from ssh_config)
-            # just one setting? Feels like we want to rip out anything we
-            # explicitly support via SSHConfig, from connect_kwargs, leaving it
-            # solely for overrides/extensions. Still has the problem of wanting
-            # to override just one key some of the time, but less likely?
+            # TODO: is it better to pre-empt conflicts w/ manually-handled
+            # connect() kwargs (hostname, username, etc) here or in open()?
+            # We're doing open() for now in case e.g. someone manually modifies
+            # .connect_kwargs attributewise, but otherwise it feels better to
+            # do it early instead of late.
             connect_kwargs = self.config.connect_kwargs
         #: Keyword arguments given to `paramiko.client.SSHClient.connect` when
         #: `open` is called.
@@ -415,6 +414,16 @@ class Connection(Context):
         see :doc:`the configuration docs </concepts/configuration>`.)
         """
         if not self.is_connected:
+            for key in """
+                hostname
+                port
+                username
+                password
+                timeout
+            """.split():
+                if key in self.connect_kwargs:
+                    err = "Refusing to be ambiguous: connect() kwarg '{}' was given both via regular arg and via connect_kwargs!" # noqa
+                    raise ValueError(err.format(key))
             kwargs = dict(
                 self.connect_kwargs,
                 username=self.user,
