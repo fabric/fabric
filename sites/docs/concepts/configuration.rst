@@ -80,6 +80,8 @@ New default values defined by Fabric
   ``True``.
 - ``port``: TCP port number used by `.Connection` objects when not otherwise
   specified. Default: ``22``.
+- ``ssh_config_path``: Runtime SSH config path; see :ref:`ssh-config`. Default:
+  ``None``.
 - ``timeouts``: Various timeouts, specifically:
 
     - ``connect``: Connection timeout, in seconds; defaults to ``None``,
@@ -109,7 +111,7 @@ load, when possible):
   object at the end of `.Config.__init__` and no other files will be sought
   out.
 
-    - ``ssh_config_path`` is also filled in by the ``fab`` CLI tool if the
+    - It will be filled in by the ``fab`` CLI tool if the
       :option:`-F/--ssh-config <-F>` flag is given.
 
 - If no runtime config (object or path) was given to `.Config.__init__`, it

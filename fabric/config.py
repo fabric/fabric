@@ -64,7 +64,8 @@ class Config(InvokeConfig):
         explicit = ssh_config is not None
         self._set(_given_explicit_object=explicit)
 
-        # Arrive at some non-None SSHConfig object.
+        # Arrive at some non-None SSHConfig object (upon which to run .parse()
+        # later, in _load_ssh_file())
         if ssh_config is None:
             ssh_config = SSHConfig()
         self._set(base_ssh_config=ssh_config)
@@ -76,6 +77,10 @@ class Config(InvokeConfig):
 
     def post_init(self):
         super(Config, self).post_init()
+        # Now that regular config is loaded, we can update the runtime SSH
+        # config path
+        if self.ssh_config_path:
+            self._runtime_ssh_path = self.ssh_config_path
         # Load files from disk, if necessary
         if not self._given_explicit_object:
             self.load_ssh_files()
@@ -188,6 +193,7 @@ class Config(InvokeConfig):
             'timeouts': {
                 'connect': None,
             },
+            'ssh_config_path': None,
             # Overrides of existing settings
             'run': {
                 'replace_env': True,

@@ -28,9 +28,10 @@ class Config_(Spec):
             'global_defaults',
             return_value={
                 'run': {'warn': "nope lol"},
-                # NOTE: Config requires load_ssh_configs to be present to
-                # instantiate happily
+                # NOTE: Config requires these to be present to instantiate
+                # happily
                 'load_ssh_configs': True,
+                'ssh_config_path': None,
             }
         ):
             # If our global_defaults didn't win, this would still
@@ -46,6 +47,7 @@ class Config_(Spec):
         eq_(c.sudo.password, None)
         eq_(c.connect_kwargs, {})
         eq_(c.timeouts.connect, None)
+        eq_(c.ssh_config_path, None)
 
     def overrides_Invoke_default_for_replace_env(self):
         # This value defaults to False in Invoke proper.
@@ -95,6 +97,11 @@ class ssh_config_loading(Spec):
     @patch.object(Config, '_load_ssh_file')
     def when_runtime_path_given_other_paths_are_not_sought(self, method):
         Config(runtime_ssh_path=self.runtime_path)
+        method.assert_called_once_with(self.runtime_path)
+
+    @patch.object(Config, '_load_ssh_file')
+    def runtime_path_can_be_given_via_config_itself(self, method):
+        Config(overrides={'ssh_config_path': self.runtime_path})
         method.assert_called_once_with(self.runtime_path)
 
     def runtime_path_does_not_die_silently(self):
