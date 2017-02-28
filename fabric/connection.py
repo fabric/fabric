@@ -136,6 +136,24 @@ class Connection(Context):
                 prevent any attempt to derive a shorthand port number; use the
                 explicit ``port`` parameter instead.
 
+            .. note::
+                If ``host`` matches a ``Host`` clause in loaded SSH config
+                data, and that ``Host`` clause contains a ``Hostname``
+                directive, the resulting `.Connection` object will behave as if
+                ``host`` is equal to that ``Hostname`` value.
+
+                In all cases, the original value of ``host`` is preserved as
+                the ``original_host`` attribute.
+
+                Thus, given SSH config like so::
+
+                    Host myalias
+                        Hostname realhostname
+
+                a call like ``Connection(host='myalias')`` will result in an
+                object whose ``host`` attribute is ``realhostname``, and whose
+                ``original_host`` attribute is ``myalias``.
+
         :param str user:
             the login user for the remote connection. Defaults to
             ``config.user``.

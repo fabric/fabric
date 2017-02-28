@@ -165,7 +165,7 @@ Connection parameters
 ~~~~~~~~~~~~~~~~~~~~~
 
 - ``Hostname``: replaces the original value of ``host`` (which is preserved as
-  `Connection.original_host`.)
+  ``.original_host``.)
 - ``Port``: supplies the default value for the ``port`` config option /
   parameter.
 - ``User``: supplies the default value for the ``user`` config option /
