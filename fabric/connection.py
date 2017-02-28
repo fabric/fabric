@@ -425,16 +425,23 @@ class Connection(Context):
         see :doc:`the configuration docs </concepts/configuration>`.)
         """
         if not self.is_connected:
+            err = "Refusing to be ambiguous: connect() kwarg '{}' was given both via regular arg and via connect_kwargs!" # noqa
+            # These may not be given, period
             for key in """
                 hostname
                 port
                 username
                 password
-                timeout
             """.split():
                 if key in self.connect_kwargs:
-                    err = "Refusing to be ambiguous: connect() kwarg '{}' was given both via regular arg and via connect_kwargs!" # noqa
                     raise ValueError(err.format(key))
+            # These may be given one way or the other, but not both
+            if (
+                'timeout' in self.connect_kwargs
+                and self.connect_timeout is not None
+            ):
+                raise ValueError(err.format('timeout'))
+            # No conflicts -> merge 'em together
             kwargs = dict(
                 self.connect_kwargs,
                 username=self.user,
