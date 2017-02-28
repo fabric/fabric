@@ -80,6 +80,11 @@ New default values defined by Fabric
   ``True``.
 - ``port``: TCP port number used by `.Connection` objects when not otherwise
   specified. Default: ``22``.
+- ``timeouts``: Various timeouts, specifically:
+
+    - ``connect``: Connection timeout, in seconds; defaults to ``None``,
+      meaning no timeout / block forever.
+
 - ``user``: Username given to the remote ``sshd`` when connecting. Default:
   your local system username.
 

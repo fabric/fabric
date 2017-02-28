@@ -306,6 +306,7 @@ class Connection_(Spec):
                         'user': 'abaddon',
                         'forwardagent': 'yes',
                         'proxycommand': 'my gateway',
+                        'connecttimeout': '15',
                     },
                 )
 
@@ -552,6 +553,19 @@ class Connection_(Spec):
                 hostname='host',
                 port=22,
                 foobar='bizbaz',
+            )
+
+        @patch('fabric.connection.SSHClient')
+        @patch('fabric.connection.SSHClient')
+        def submits_connect_timeout(self, Client):
+            client = Client.return_value
+            client.get_transport.return_value = Mock(active=False)
+            Connection('host', connect_timeout=27).open()
+            client.connect.assert_called_with(
+                username=get_local_user(),
+                hostname='host',
+                port=22,
+                timeout=27,
             )
 
         @patch('fabric.connection.SSHClient')

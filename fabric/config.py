@@ -183,6 +183,11 @@ class Config(InvokeConfig):
             'gateway': None,
             'load_ssh_configs': True,
             'connect_kwargs': {},
+            # TODO: this becomes an override once Invoke grows execution
+            # timeouts (which should be timeouts.execute)
+            'timeouts': {
+                'connect': None,
+            },
             # Overrides of existing settings
             'run': {
                 'replace_env': True,

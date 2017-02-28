@@ -97,6 +97,7 @@ class Connection(Context):
     ssh_config = None
     gateway = None
     forward_agent = None
+    connect_timeout = None
     connect_kwargs = None
     client = None
     transport = None
@@ -118,6 +119,7 @@ class Connection(Context):
         config=None,
         gateway=None,
         forward_agent=None,
+        connect_timeout=None,
         connect_kwargs=None,
     ):
         """
@@ -189,6 +191,11 @@ class Connection(Context):
             Whether to enable SSH agent forwarding.
 
             Default: ``config.forward_agent``.
+
+        :param int connect_timeout:
+            Connection timeout, in seconds.
+
+            Default: ``config.timeouts.connect``.
 
         :param dict connect_kwargs:
             Keyword arguments handed verbatim to
@@ -289,6 +296,16 @@ class Connection(Context):
                 forward_agent = map_[self.ssh_config['forwardagent']]
         #: Whether agent forwarding is enabled.
         self.forward_agent = forward_agent
+
+        if connect_timeout is None:
+            connect_timeout = self.ssh_config.get(
+                'connecttimeout',
+                self.config.timeouts.connect
+            )
+        if connect_timeout is not None:
+            connect_timeout = int(connect_timeout)
+        #: Connection timeout
+        self.connect_timeout = connect_timeout
 
         if connect_kwargs is None:
             # TODO: should they merge or is that too unclean?
@@ -403,6 +420,8 @@ class Connection(Context):
             )
             if self.gateway:
                 kwargs['sock'] = self.open_gateway()
+            if self.connect_timeout:
+                kwargs['timeout'] = self.connect_timeout
             kwargs.update(self.connect_kwargs)
             self.client.connect(**kwargs)
             self.transport = self.client.get_transport()
