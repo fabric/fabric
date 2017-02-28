@@ -434,6 +434,21 @@ class Connection_(Spec):
                     cxn = self._runtime_cxn(basename='both_proxies')
                     eq_(cxn.gateway, Connection('winner@everything:777'))
 
+                def multi_hop_works_ok(self):
+                    cxn = self._runtime_cxn(basename='proxyjump_multi')
+                    eq_(
+                        cxn.gateway.gateway.gateway,
+                        Connection('jumpuser3@jumphost3:411')
+                    )
+                    eq_(
+                        cxn.gateway.gateway,
+                        Connection('jumpuser2@jumphost2:872')
+                    )
+                    eq_(
+                        cxn.gateway,
+                        Connection('jumpuser@jumphost:373')
+                    )
+
             class connect_timeout:
                 def wins_over_default(self):
                     eq_(self._runtime_cxn().connect_timeout, 15)
