@@ -416,6 +416,7 @@ class Connection(Context):
         """
         if not self.is_connected:
             kwargs = dict(
+                self.connect_kwargs,
                 username=self.user,
                 hostname=self.host,
                 port=self.port,
@@ -424,7 +425,6 @@ class Connection(Context):
                 kwargs['sock'] = self.open_gateway()
             if self.connect_timeout:
                 kwargs['timeout'] = self.connect_timeout
-            kwargs.update(self.connect_kwargs)
             self.client.connect(**kwargs)
             self.transport = self.client.get_transport()
 
