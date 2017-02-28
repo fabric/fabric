@@ -261,6 +261,8 @@ class Connection(Context):
 
         #: The username this connection will use to connect to the remote end.
         self.user = user or self.ssh_config.get('user', self.config.user)
+        # TODO: is it _ever_ possible to give an empty user value (e.g.
+        # user='')? E.g. do some SSH server specs allow for that?
 
         #: The network port to connect on.
         self.port = port or int(self.ssh_config.get('port', self.config.port))
