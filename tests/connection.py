@@ -451,7 +451,6 @@ class Connection_(Spec):
                     )
                     eq_(cxn.connect_timeout, 23)
 
-
             # TODO:
             # - IdentityFile
             # - What else can we quickly support as-is?
