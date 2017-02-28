@@ -188,7 +188,7 @@ class Connection(Context):
         :param bool forward_agent:
             Whether to enable SSH agent forwarding.
 
-            Default: ``False`` (same as OpenSSH).
+            Default: ``config.forward_agent``.
 
         :param dict connect_kwargs:
             Keyword arguments handed verbatim to
