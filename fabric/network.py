@@ -562,6 +562,11 @@ def connect(user, host, port, cache, seek_gateway=True):
                 # which one raised the exception. Best not to try.
                 prompt = "[%s] Passphrase for private key"
                 text = prompt % env.host_string
+                
+            # Try connecting multiple times before giving up and prompting for password
+            if not _tried_enough(tries):
+                continue
+
             password = prompt_for_password(text)
             # Update env.password, env.passwords if empty
             set_password(user, host, port, password)
