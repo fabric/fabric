@@ -35,6 +35,10 @@ class concurrency(Spec):
         queue = Queue()
         def make_worker(index):
             cxn = self.cxns[index]
+            # TODO: grab a random, idk, 10k lines from /usr/share/dict/words
+            # instead? Much more opportunity for threading shenanigans that way
+            # TODO: but see the hilarious apparent issue w/ getting the full
+            # file via cat.......sob
             cmd = 'echo {}'.format(index + 1)
             def worker():
                 queue.put(cxn.run(cmd, hide=True))
