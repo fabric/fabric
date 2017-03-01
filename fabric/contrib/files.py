@@ -227,7 +227,7 @@ def sed(filename, before, after, limit='', use_sudo=False, backup='.bak',
     # Test the OS because of differences between sed versions
 
     with hide('running', 'stdout'):
-        platform = run("uname")
+        platform = run("uname", shell=False, pty=False)
     if platform in ('NetBSD', 'OpenBSD', 'QNX'):
         # Attempt to protect against failures/collisions
         hasher = hashlib.sha1()
