@@ -580,7 +580,6 @@ class Connection_(Spec):
                 ('hostname', 'nothost', {}),
                 ('port', 17, {}),
                 ('username', 'zerocool', {}),
-                ('password', 'password123', {}),
                 # These might arguably still be allowed to work, but let's head
                 # off confusion anyways.
                 ('timeout', 100, {'connect_timeout': 25}),
