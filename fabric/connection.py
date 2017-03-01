@@ -431,7 +431,6 @@ class Connection(Context):
                 hostname
                 port
                 username
-                password
             """.split():
                 if key in self.connect_kwargs:
                     raise ValueError(err.format(key))
