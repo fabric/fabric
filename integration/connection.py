@@ -96,6 +96,23 @@ class Connection_(Spec):
             cxn.run('whoami', runner=Basic) # noqa
             cxn.run('whoami', runner=Sudo) # noqa
 
+    def large_remote_commands_finish_cleanly(self):
+        # Guards against e.g. cleanup finishing before actually reading all
+        # data from the remote end. Which is largely an issue in Invoke-level
+        # code but one that only really manifests when doing stuff over the
+        # network. Yay computers!
+        path = '/usr/share/dict/words'
+        cxn = Connection('localhost')
+        with open(path) as fd:
+            words = [x.strip() for x in fd.readlines()]
+        stdout = cxn.run('cat {}'.format(path), hide=True).stdout
+        lines = [x.strip() for x in stdout.splitlines()]
+        # When bug present, tail of observed stdout != tail of real file
+        eq_(lines[-1], words[-1])
+        # When bug present, # lines received is significantly fewer than the
+        # true count in the file (by thousands).
+        eq_(len(lines), len(words))
+
 
 class Group_(Spec):
     def simple_command_on_multiple_hosts(self):
