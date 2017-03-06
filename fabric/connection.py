@@ -1,9 +1,10 @@
 from contextlib import contextmanager
 from threading import Event
+from invoke.vendor.six import StringIO
 import socket
 
 from invoke.vendor.decorator import decorator
-from invoke.vendor import six
+from invoke.vendor.six import string_types
 
 from invoke import Context
 from invoke.exceptions import ThreadException
@@ -358,7 +359,7 @@ class Connection(Context):
         if self.gateway:
             # Displaying type because gw params would probs be too verbose
             val = 'proxyjump'
-            if isinstance(self.gateway, six.string_types):
+            if isinstance(self.gateway, string_types):
                 val = 'proxycommand'
             bits.append(('gw', val))
         return "<Connection {0}>".format(
@@ -464,13 +465,13 @@ class Connection(Context):
             was a `str` or `unicode`.
         """
         # ProxyCommand is faster to set up, so do it first.
-        if isinstance(self.gateway, six.string_types):
+        if isinstance(self.gateway, string_types):
             # Leverage a dummy SSHConfig to ensure %h/%p/etc are parsed.
             # TODO: use real SSH config once loading one properly is
             # implemented.
             ssh_conf = SSHConfig()
             dummy = "Host {0}\n    ProxyCommand {1}"
-            ssh_conf.parse(six.StringIO(dummy.format(self.host, self.gateway)))
+            ssh_conf.parse(StringIO(dummy.format(self.host, self.gateway)))
             return ProxyCommand(ssh_conf.lookup(self.host)['proxycommand'])
         # Handle inner-Connection gateway type here.
         # TODO: logging
