@@ -1124,17 +1124,32 @@ class Group_(Spec):
             Group().run()
 
 
+def make_serial_tester(cxns, index, args, kwargs):
+    args = args[:]
+    kargs = kwargs.copy()
+    def tester(*a, **k): # Don't care about doing anything with our own args.
+        predecessors = cxns[:index]
+        successors = cxns[index+1:]
+        for predecessor in predecessors:
+            predecessor.run.assert_called_with(*args, **kwargs)
+        for successor in successors:
+            ok_(not successor.run.called)
+    return tester
+
 class SerialGroup_(Spec):
     def executes_arguments_on_contents_run_serially(self):
         "executes arguments on contents' run() serially"
-        # TODO: how to actually assert _serial_ execution?
-        cxns = [Connection('host1'), Connection('host2')]
-        for cxn in cxns:
-            cxn.run = Mock()
+        cxns = [Connection('host1'), Connection('host2'), Connection('host3')]
+        args = ("command",)
+        kwargs = {'hide': True, 'warn': True}
+        for index, cxn in enumerate(cxns):
+            side_effect = make_serial_tester(cxns, index, args, kwargs)
+            cxn.run = Mock(side_effect=side_effect)
         g = SerialGroup.from_connections(cxns)
-        g.run("command", hide=True, warn=True)
+        g.run(*args, **kwargs)
+        # Even more sanity checks, e.g. in case none of them were actually run
         for cxn in cxns:
-            cxn.run.assert_called_with("command", hide=True, warn=True)
+            cxn.run.assert_called_with(*args, **kwargs)
 
 
 class ThreadingGroup_(Spec):
