@@ -818,8 +818,7 @@ class Group(list):
     def run(self, *args, **kwargs):
         # TODO: how to change method of execution across contents? subclass,
         # kwargs, additional methods, inject an executor?
-        # TODO: retval needs to be host objects or something non-string. See
-        # how tutorial mentions 'ResultSet' - useful to construct or no?
+        # TODO: Tutorial mentions 'ResultSet' - useful to construct or no?
         # TODO: also need way to deal with duplicate connections (see THOUGHTS)
         result = {}
         for cxn in self:
