@@ -206,11 +206,14 @@ straightforward approach could be to iterate over a list or tuple of
     
 This approach works, but as use cases get more complex it can be
 useful to think of a collection of hosts as a single object. Enter `.Group`, a
-class wrapping one-or-more `.Connection` objects and offering a similar API.
+class wrapping one-or-more `.Connection` objects and offering a similar API;
+specifically, you'll want to use one of its concrete subclasses like
+`.SerialGroup` or `.ThreadingGroup`.
 
-The previous example, using `.Group`, looks like this::
+The previous example, using `.Group` (`.SerialGroup` specifically), looks like
+this::
 
-    >>> from fabric import Group
+    >>> from fabric import SerialGroup as Group
     >>> results = Group('web1', 'web2', 'mac1').run('uname -s')
     >>> print(results)
     <ResultSet: {
@@ -239,7 +242,7 @@ Finally, we arrive at the most realistic use case: you've got a bundle of
 commands and/or file transfers and you want to apply it to multiple servers.
 You *could* use multiple `.Group` method calls to do this::
 
-    from fabric import Group
+    from fabric import SerialGroup as Group
     pool = Group('web1', 'web2', 'web3')
     pool.put('myfiles.tgz', '/opt/mydata')
     pool.run('tar -C /opt/mydata -xzvf /opt/mydata/myfiles.tgz')
@@ -261,7 +264,7 @@ this foregoes some benefits of using `Groups <.Group>`)::
 Alternatively, remember how we used a function in that earlier example? You can
 hand such a function to ``Group.execute`` and get the best of both worlds::
 
-    from fabric import Group
+    from fabric import SerialGroup as Group
 
     def upload_and_unpack(cxn):
         if cxn.run('test -f /opt/mydata/myfile', warn=True).failed:
