@@ -1,4 +1,5 @@
 from invoke.vendor.six.moves.queue import Queue
+from random import randint
 from threading import Thread
 
 from spec import Spec, ok_, eq_
@@ -35,11 +36,30 @@ class concurrency(Spec):
         queue = Queue()
         def make_worker(index):
             cxn = self.cxns[index]
-            # TODO: grab a random, idk, 10k lines from /usr/share/dict/words
-            # instead? Much more opportunity for threading shenanigans that way
-            cmd = 'echo {}'.format(index + 1)
             def worker():
-                queue.put(cxn.run(cmd, hide=True))
+                # Use large random slice of words dict as a crummy "make sure
+                # each thread isn't polluting things like stored stdout" sanity
+                # test
+                # TODO: skip test on Windows or find suitable alternative file
+                words = '/usr/share/dict/words'
+                # TODO: read as unicode?
+                with open(words) as fd:
+                    data = [x.strip() for x in fd.readlines()]
+                num_words = len(data)
+                # Arbitrary size - it's large enough to _maybe_ catch issues,
+                # but small enough that the chance of each thread getting a
+                # different chunk is high
+                window_size = 100000
+                start = randint(0, (num_words - window_size - 1))
+                end = start + window_size
+                tail = num_words - start
+                expected = data[start:end]
+                cmd = "tail -n {} {} | head -n {}".format(
+                    tail, words, window_size,
+                )
+                stdout = cxn.run(cmd, hide=True).stdout
+                result = [x.strip() for x in stdout.splitlines()]
+                queue.put((result, expected))
             return worker
         t1 = Thread(target=make_worker(0))
         t2 = Thread(target=make_worker(1))
@@ -49,11 +69,6 @@ class concurrency(Spec):
             t.start()
         for t in threads:
             t.join(5) # Kinda slow, but hey, maybe the test runner is hot
-        results = []
         while not queue.empty():
-            results.append(queue.get(block=False))
-        # Not really sure what a failure would look like, but let's say
-        # something getting real gummed up and two sessions getting the same
-        # command to be run, output from one appearing in another, etc?
-        outs = sorted(x.stdout.strip() for x in results)
-        eq_(outs, [u'1', u'2', u'3'])
+            result, expected = queue.get(block=False)
+            eq_(result, expected)
