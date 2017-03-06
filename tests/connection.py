@@ -13,7 +13,7 @@ from paramiko import SSHConfig
 from invoke.config import Config as InvokeConfig
 from invoke.exceptions import ThreadException
 
-from fabric.connection import Connection, Config, Group
+from fabric.connection import Connection, Config, Group, SerialGroup
 from fabric.util import get_local_user
 
 from _util import support_path
@@ -1119,24 +1119,29 @@ class Group_(Spec):
             ok_(isinstance(c, Connection))
 
     class run:
-        def executes_arguments_on_contents_run_serially(self):
-            "executes arguments on contents' run() serially"
-            cxns = [Connection('host1'), Connection('host2')]
-            for cxn in cxns:
-                cxn.run = Mock()
-            g = Group.from_connections(cxns)
-            g.run("command", hide=True, warn=True)
-            for cxn in cxns:
-                cxn.run.assert_called_with("command", hide=True, warn=True)
+        @raises(NotImplementedError)
+        def not_implemented_in_base_class(self):
+            Group().run()
 
-        def returns_map_of_Connection_object_to_result(self):
-            c1 = Connection('host1', user='foo', port=222)
-            c2 = Connection('host2')
-            cxns = [c1, c2]
-            for cxn in cxns:
-                # str() of connection seems a reasonable way to compare results
-                cxn.run = Mock(return_value=str(cxn))
-            g = Group.from_connections(cxns)
-            result = g.run("command", hide=True, warn=True)
-            eq_(result[c1], "<Connection host=host1 user=foo port=222>")
-            eq_(result[c2], "<Connection host=host2>")
+
+class SerialGroup_(Spec):
+    def executes_arguments_on_contents_run_serially(self):
+        "executes arguments on contents' run() serially"
+        # TODO: how to actually assert _serial_ execution?
+        cxns = [Connection('host1'), Connection('host2')]
+        for cxn in cxns:
+            cxn.run = Mock()
+        g = SerialGroup.from_connections(cxns)
+        g.run("command", hide=True, warn=True)
+        for cxn in cxns:
+            cxn.run.assert_called_with("command", hide=True, warn=True)
+
+
+class ThreadingGroup_(Spec):
+    def executes_arguments_on_contents_run_via_threading(self):
+        # TODO: how to assert threads were used, just...stupid "did you call
+        # the threading API"? Ugh
+        skip()
+
+    def bubbles_up_errors_within_threads(self):
+        skip()

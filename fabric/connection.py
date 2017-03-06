@@ -792,6 +792,8 @@ class Connection(Context):
 class Group(list):
     """
     A collection of `.Connection` objects whose API operates on its contents.
+
+    This is a partially abstract class; see its subclasses for details.
     """
     def __init__(self, hosts=None):
         """
@@ -817,14 +819,44 @@ class Group(list):
 
     def run(self, *args, **kwargs):
         # TODO: how to change method of execution across contents? subclass,
-        # kwargs, additional methods, inject an executor?
+        # kwargs, additional methods, inject an executor? Doing subclass for
+        # now, but not 100% sure it's the best route.
         # TODO: Tutorial mentions 'ResultSet' - useful to construct or no?
         # TODO: also need way to deal with duplicate connections (see THOUGHTS)
+        raise NotImplementedError
+
+    # TODO: how to handle sudo? Probably just an inner worker method that takes
+    # the method name to actually call (run, sudo, etc)?
+
+    # TODO: this all needs to mesh well with similar strategies applied to
+    # entire tasks - so that may still end up factored out into Executors or
+    # something lower level than both those and these?
+
+    # TODO: local? Invoke wants ability to do that on its own though, which
+    # would be distinct from Group. (May want to switch Group to use that,
+    # though, whatever it ends up being?)
+
+    # TODO: mirror Connection's close()?
+
+    # TODO: execute() as mentioned in tutorial
+
+
+class SerialGroup(Group):
+    """
+    Subclass of `.Group` which executes in simple, serial fashion.
+    """
+    def run(self, *args, **kwargs):
         result = {}
         for cxn in self:
             result[cxn] = cxn.run(*args, **kwargs)
         return result
 
-    # TODO: mirror Connection's close()?
 
-    # TODO: execute() as mentioned in tutorial
+class ThreadingGroup(Group):
+    """
+    Subclass of `.Group` which uses threading and a queue to be concurrent.
+    """
+    def run(self, *args, **kwargs):
+        # TODO: queue, threads, run, join, return
+        # TODO: use invoke's error handling thread subclass, yea?
+        pass
