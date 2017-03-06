@@ -1,5 +1,6 @@
 from contextlib import contextmanager
 from threading import Event
+from invoke.vendor.six.moves.queue import Queue
 from invoke.vendor.six import StringIO
 import socket
 
@@ -8,6 +9,7 @@ from invoke.vendor.six import string_types
 
 from invoke import Context
 from invoke.exceptions import ThreadException
+from invoke.util import ExceptionHandlingThread
 from paramiko.agent import AgentRequestHandler
 from paramiko.client import SSHClient, AutoAddPolicy
 from paramiko.config import SSHConfig

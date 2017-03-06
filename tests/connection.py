@@ -13,7 +13,9 @@ from paramiko import SSHConfig
 from invoke.config import Config as InvokeConfig
 from invoke.exceptions import ThreadException
 
-from fabric.connection import Connection, Config, Group, SerialGroup
+from fabric.connection import (
+    Connection, Config, Group, SerialGroup, ThreadingGroup,
+)
 from fabric.util import get_local_user
 
 from _util import support_path
@@ -1153,10 +1155,32 @@ class SerialGroup_(Spec):
 
 
 class ThreadingGroup_(Spec):
-    def executes_arguments_on_contents_run_via_threading(self):
-        # TODO: how to assert threads were used, just...stupid "did you call
-        # the threading API"? Ugh
-        skip()
+    @patch('fabric.connection.Queue')
+    @patch('fabric.connection.ExceptionHandlingThread')
+    def executes_arguments_on_contents_run_via_threading(self, Thread, Queue):
+        queue = Queue.return_value
+        cxns = [Connection('host1'), Connection('host2'), Connection('host3')]
+        g = ThreadingGroup.from_connections(cxns)
+        args = ("command",)
+        kwargs = {'hide': True, 'warn': True}
+        g.run(*args, **kwargs)
+        # Testing that threads were used the way we expect is mediocre but I
+        # honestly can't think of another good way to assert "threading was
+        # used & concurrency occurred"...
+        instantiations = [
+            call(target=cxn.run, args=args, kwargs=kwargs) for cxn in cxns
+        ]
+        Thread.assert_has_calls(instantiations, any_order=True)
+        # These ought to work as by default a Mock.return_value is a singleton
+        # mock object
+        for mock in (Thread.return_value.run, Thread.return_value.join):
+            eq_(mock.call_count, len(cxns))
+        # Queue was used appropriately
+        puts = [call(cxn.host) for cxn in cxns]
+        queue.put.assert_has_calls(puts, any_order=True)
+        # Sanity check, e.g. in case none of them were actually run
+        for cxn in cxns:
+            cxn.run.assert_called_with(*args, **kwargs)
 
     def bubbles_up_errors_within_threads(self):
         skip()
