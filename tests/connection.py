@@ -1139,66 +1139,74 @@ def make_serial_tester(cxns, index, args, kwargs):
     return tester
 
 class SerialGroup_(Spec):
-    def executes_arguments_on_contents_run_serially(self):
-        "executes arguments on contents' run() serially"
-        cxns = [Connection('host1'), Connection('host2'), Connection('host3')]
-        args = ("command",)
-        kwargs = {'hide': True, 'warn': True}
-        for index, cxn in enumerate(cxns):
-            side_effect = make_serial_tester(cxns, index, args, kwargs)
-            cxn.run = Mock(side_effect=side_effect)
-        g = SerialGroup.from_connections(cxns)
-        g.run(*args, **kwargs)
-        # Even more sanity checks, e.g. in case none of them were actually run
-        for cxn in cxns:
-            cxn.run.assert_called_with(*args, **kwargs)
+    class run:
+        def executes_arguments_on_contents_run_serially(self):
+            "executes arguments on contents' run() serially"
+            cxns = [Connection(x) for x in ('host1', 'host2', 'host3')]
+            args = ("command",)
+            kwargs = {'hide': True, 'warn': True}
+            for index, cxn in enumerate(cxns):
+                side_effect = make_serial_tester(cxns, index, args, kwargs)
+                cxn.run = Mock(side_effect=side_effect)
+            g = SerialGroup.from_connections(cxns)
+            g.run(*args, **kwargs)
+            # Sanity check, e.g. in case none of them were actually run
+            for cxn in cxns:
+                cxn.run.assert_called_with(*args, **kwargs)
 
-    def errors_in_execution_capture_and_continue_til_end(self):
-        # TODO: this. some sort of ResultSet like thing:
-        # - single obj with heterogenous values, as in fab 1
-        # - two-tuple of successes/results vs errors/failures
-        # - three-tuple of results, failures, errors??
-        skip()
+        def errors_in_execution_capture_and_continue_til_end(self):
+            # TODO: this. some sort of ResultSet like thing:
+            # - single obj with heterogenous values, as in fab 1
+            # - two-tuple of successes/results vs errors/failures
+            # - three-tuple of results, failures, errors??
+            skip()
 
 
 class ThreadingGroup_(Spec):
-    @patch('fabric.connection.Queue')
-    @patch('fabric.connection.ExceptionHandlingThread')
-    def executes_arguments_on_contents_run_via_threading(self, Thread, Queue):
-        queue = Queue.return_value
-        cxns = [Connection('host1'), Connection('host2'), Connection('host3')]
-        g = ThreadingGroup.from_connections(cxns)
-        args = ("command",)
-        kwargs = {'hide': True, 'warn': True}
-        g.run(*args, **kwargs)
-        # Testing that threads were used the way we expect is mediocre but I
-        # honestly can't think of another good way to assert "threading was
-        # used & concurrency occurred"...
-        instantiations = [
-            call(target=cxn.run, args=args, kwargs=kwargs) for cxn in cxns
-        ]
-        Thread.assert_has_calls(instantiations, any_order=True)
-        # These ought to work as by default a Mock.return_value is a singleton
-        # mock object
-        for mock in (Thread.return_value.run, Thread.return_value.join):
-            eq_(mock.call_count, len(cxns))
-        # Queue was used appropriately
-        puts = [call(cxn.host) for cxn in cxns]
-        queue.put.assert_has_calls(puts, any_order=True)
-        # Sanity check, e.g. in case none of them were actually run
-        for cxn in cxns:
-            cxn.run.assert_called_with(*args, **kwargs)
+    def setup(self):
+        self.cxns = [Connection(x) for x in ('host1', 'host2', 'host3')]
 
-    @patch('fabric.connection.ExceptionHandlingThread')
-    def bubbles_up_errors_within_threads(self, Thread):
-        # TODO: only, say, 1 of these should encounter an exception
-        # TODO: I feel like this is the first spot where a raw
-        # ThreadException might need tweaks, at least presentation-wise, since
-        # we're no longer dealing with truly background threads (IO workers and
-        # tunnels), but "middle-ground" threads the user is kind of expecting
-        # (and which they might expect to encounter failures).
-        cxns = [Connection('host1'), Connection('host2'), Connection('host3')]
-        g = ThreadingGroup.from_connections(cxns)
-        args = ("command",)
-        kwargs = {'hide': True, 'warn': True}
-        g.run(*args, **kwargs)
+    class run:
+        @patch('fabric.connection.Queue')
+        @patch('fabric.connection.ExceptionHandlingThread')
+        def executes_arguments_on_contents_run_via_threading(
+            self, Thread, Queue,
+        ):
+            queue = Queue.return_value
+            g = ThreadingGroup.from_connections(self.cxns)
+            args = ("command",)
+            kwargs = {'hide': True, 'warn': True}
+            # TODO: some test needs to check up the return value of this too!
+            g.run(*args, **kwargs)
+            # Testing that threads were used the way we expect is mediocre but
+            # I honestly can't think of another good way to assert "threading
+            # was used & concurrency occurred"...
+            instantiations = [
+                call(target=cxn.run, args=args, kwargs=kwargs)
+                for cxn in self.cxns
+            ]
+            Thread.assert_has_calls(instantiations, any_order=True)
+            # These ought to work as by default a Mock.return_value is a
+            # singleton mock object
+            for mock in (Thread.return_value.run, Thread.return_value.join):
+                eq_(mock.call_count, len(cxns))
+            # Queue was used appropriately
+            puts = [call(cxn.host) for cxn in self.cxns]
+            queue.put.assert_has_calls(puts, any_order=True)
+            # Sanity check, e.g. in case none of them were actually run
+            for cxn in self.cxns:
+                cxn.run.assert_called_with(*args, **kwargs)
+
+        @patch('fabric.connection.ExceptionHandlingThread')
+        def bubbles_up_errors_within_threads(self, Thread):
+            # TODO: only, say, 1 of these should encounter an exception
+            # TODO: I feel like this is the first spot where a raw
+            # ThreadException might need tweaks, at least presentation-wise,
+            # since we're no longer dealing with truly background threads (IO
+            # workers and tunnels), but "middle-ground" threads the user is
+            # kind of expecting (and which they might expect to encounter
+            # failures).
+            g = ThreadingGroup.from_connections(self.cxns)
+            args = ("command",)
+            kwargs = {'hide': True, 'warn': True}
+            g.run(*args, **kwargs)
