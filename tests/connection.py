@@ -1246,7 +1246,15 @@ class ThreadingGroup_(Spec):
             g = ThreadingGroup.from_connections(self.cxns)
             args = ("command",)
             kwargs = {'hide': True, 'warn': True}
-            g.run(*args, **kwargs)
+            try:
+                g.run(*args, **kwargs)
+            # TODO: expect actual exception, whether it is ThreadException or
+            # something else
+            except Exception as e:
+                # TODO: inspect
+                pass
+            else:
+                assert False, "Did not raise Whatever!"
 
         def returns_results_mapping(self):
             # TODO: update if/when we implement ResultSet
