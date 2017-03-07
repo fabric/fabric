@@ -1161,6 +1161,10 @@ class SerialGroup_(Spec):
             # - three-tuple of results, failures, errors??
             skip()
 
+        def returns_results_mapping(self):
+            # TODO: update if/when we implement ResultSet
+            skip()
+
 
 class ThreadingGroup_(Spec):
     def setup(self):
@@ -1176,7 +1180,6 @@ class ThreadingGroup_(Spec):
             g = ThreadingGroup.from_connections(self.cxns)
             args = ("command",)
             kwargs = {'hide': True, 'warn': True}
-            # TODO: some test needs to check up the return value of this too!
             g.run(*args, **kwargs)
             # Testing that threads were used the way we expect is mediocre but
             # I honestly can't think of another good way to assert "threading
@@ -1210,3 +1213,7 @@ class ThreadingGroup_(Spec):
             args = ("command",)
             kwargs = {'hide': True, 'warn': True}
             g.run(*args, **kwargs)
+
+        def returns_results_mapping(self):
+            # TODO: update if/when we implement ResultSet
+            skip()
