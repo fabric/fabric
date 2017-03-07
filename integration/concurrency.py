@@ -34,37 +34,35 @@ class concurrency(Spec):
         # stuff; and are there any bizarre gotchas lurking in default
         # config/context/connection state?"
         queue = Queue()
-        def make_worker(index):
-            cxn = self.cxns[index]
-            def worker():
-                # Use large random slice of words dict as a crummy "make sure
-                # each thread isn't polluting things like stored stdout" sanity
-                # test
-                # TODO: skip test on Windows or find suitable alternative file
-                words = '/usr/share/dict/words'
-                # TODO: read as unicode?
-                with open(words) as fd:
-                    data = [x.strip() for x in fd.readlines()]
-                num_words = len(data)
-                # Arbitrary size - it's large enough to _maybe_ catch issues,
-                # but small enough that the chance of each thread getting a
-                # different chunk is high
-                window_size = 100000
-                start = randint(0, (num_words - window_size - 1))
-                end = start + window_size
-                tail = num_words - start
-                expected = data[start:end]
-                cmd = "tail -n {} {} | head -n {}".format(
-                    tail, words, window_size,
-                )
-                stdout = cxn.run(cmd, hide=True).stdout
-                result = [x.strip() for x in stdout.splitlines()]
-                queue.put((result, expected))
-            return worker
-        t1 = Thread(target=make_worker(0))
-        t2 = Thread(target=make_worker(1))
-        t3 = Thread(target=make_worker(2))
-        threads = (t1, t2, t3)
+        def worker(cxn, queue):
+            # Use large random slice of words dict as a crummy "make sure
+            # each thread isn't polluting things like stored stdout" sanity
+            # test
+            # TODO: skip test on Windows or find suitable alternative file
+            words = '/usr/share/dict/words'
+            # TODO: read as unicode?
+            with open(words) as fd:
+                data = [x.strip() for x in fd.readlines()]
+            num_words = len(data)
+            # Arbitrary size - it's large enough to _maybe_ catch issues,
+            # but small enough that the chance of each thread getting a
+            # different chunk is high
+            window_size = 100000
+            start = randint(0, (num_words - window_size - 1))
+            end = start + window_size
+            tail = num_words - start
+            expected = data[start:end]
+            cmd = "tail -n {} {} | head -n {}".format(
+                tail, words, window_size,
+            )
+            stdout = cxn.run(cmd, hide=True).stdout
+            result = [x.strip() for x in stdout.splitlines()]
+            queue.put((result, expected))
+        kwargs = dict(queue=queue)
+        threads = [
+            Thread(target=worker, kwargs=dict(kwargs, cxn=cxn))
+            for cxn in self.cxns
+        ]
         for t in threads:
             t.start()
         for t in threads:
