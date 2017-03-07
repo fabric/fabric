@@ -16,5 +16,11 @@ class init(Spec):
     def Group(self):
         ok_(fabric.Group is connection.Group)
 
+    def SerialGroup(self):
+        ok_(fabric.SerialGroup is connection.SerialGroup)
+
+    def ThreadingGroup(self):
+        ok_(fabric.ThreadingGroup is connection.ThreadingGroup)
+
     def Config(self):
         ok_(fabric.Config is connection.Config)
