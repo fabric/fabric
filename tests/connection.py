@@ -1169,6 +1169,8 @@ class SerialGroup_(Spec):
 class ThreadingGroup_(Spec):
     def setup(self):
         self.cxns = [Connection(x) for x in ('host1', 'host2', 'host3')]
+        self.args = ("command",)
+        self.kwargs = {'hide': True, 'warn': True}
 
     class run:
         @patch('fabric.connection.Queue')
@@ -1178,9 +1180,7 @@ class ThreadingGroup_(Spec):
         ):
             queue = Queue.return_value
             g = ThreadingGroup.from_connections(self.cxns)
-            args = ("command",)
-            kwargs = {'hide': True, 'warn': True}
-            g.run(*args, **kwargs)
+            g.run(*self.args, **self.kwargs)
             # Testing that threads were used the way we expect is mediocre but
             # I honestly can't think of another good way to assert "threading
             # was used & concurrency occurred"...
@@ -1190,8 +1190,8 @@ class ThreadingGroup_(Spec):
                     kwargs=dict(
                         cxn=cxn,
                         queue=queue,
-                        args=args,
-                        kwargs=kwargs,
+                        args=self.args,
+                        kwargs=self.kwargs,
                     ),
                 )
                 for cxn in self.cxns
@@ -1199,14 +1199,40 @@ class ThreadingGroup_(Spec):
             Thread.assert_has_calls(instantiations, any_order=True)
             # These ought to work as by default a Mock.return_value is a
             # singleton mock object
-            for mock in (Thread.return_value.run, Thread.return_value.join):
-                eq_(mock.call_count, len(self.cxns))
-            # Queue was used appropriately
-            puts = [call(cxn.host) for cxn in self.cxns]
+            expected = len(self.cxns)
+            for name, got in (
+                ('start', Thread.return_value.start.call_count),
+                ('join', Thread.return_value.join.call_count)
+            ):
+                err = "Expected {} calls to ExceptionHandlingThread.{}, got {}"
+                err = err.format(expected, name, got)
+                eq_(expected, got, err)
+
+        @patch('fabric.connection.Queue')
+        def queue_used_to_return_results(self, Queue):
+            # Regular, explicit, mocks for Connections
+            cxns = [Mock(host=x) for x in ('host1', 'host2', 'host3')]
+            # Set up Queue with enough behavior to work / assert
+            queue = Queue.return_value
+            # Ending w/ a True will terminate a while-not-empty loop
+            queue.empty.side_effect = (False, False, False, True)
+            fakes = [(x, x.run.return_value, None) for x in cxns]
+            queue.get.side_effect = fakes[:]
+            # Execute & inspect results
+            g = ThreadingGroup.from_connections(cxns)
+            results = g.run(*self.args, **self.kwargs)
+            expected = {}
+            for cxn in cxns:
+                expected[cxn] = cxn.run.return_value
+            eq_(results, expected)
+            # Make sure queue was used as expected within worker &
+            # ThreadingGroup.run()
+            puts = [call(x) for x in fakes]
             queue.put.assert_has_calls(puts, any_order=True)
-            # Sanity check, e.g. in case none of them were actually run
-            for cxn in self.cxns:
-                cxn.run.assert_called_with(*args, **kwargs)
+            ok_(queue.empty.called)
+            gets = [call(block=False) for _ in cxns]
+            queue.get.assert_has_calls(gets)
+
 
         @patch('fabric.connection.ExceptionHandlingThread')
         def bubbles_up_errors_within_threads(self, Thread):
