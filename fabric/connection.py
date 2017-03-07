@@ -865,11 +865,60 @@ class SerialGroup(Group):
         return result
 
 
+def thread_worker(cxn, queue, args, kwargs):
+    result, exception = None, None
+    try:
+        result = cxn.run(*args, **kwargs)
+    except BaseException as e:
+        exception = e
+    # TODO: namedtuple or attrs object?
+    queue.put((cxn, result, exception))
+
 class ThreadingGroup(Group):
     """
-    Subclass of `.Group` which uses threading and a queue to be concurrent.
+    Subclass of `.Group` which uses threading to execute concurrently.
     """
     def run(self, *args, **kwargs):
-        # TODO: queue, threads, run, join, return
-        # TODO: use invoke's error handling thread subclass, yea?
-        pass
+        results = {}
+        # TODO: or do we want to implement an ExceptionHandlingThread subclass
+        # that not only stores exception data on self, but also the result of
+        # the run()? Would remove the need for a queue (as long as the stored
+        # data is only accessed by the calling thread after join(), as with
+        # .exception)
+        # TODO: _or_ do we want to have a Connection+Thread subclass? (It might
+        # need to rename run() though...heh)
+        queue = Queue()
+        threads = []
+        for cxn in self:
+            my_kwargs = dict(
+                cxn=cxn,
+                queue=queue,
+                args=args,
+                kwargs=kwargs,
+            )
+            thread = ExceptionHandlingThread(
+                target=thread_worker,
+                kwargs=my_kwargs,
+            )
+            threads.append(thread)
+        for thread in threads:
+            thread.start()
+        for thread in threads:
+            # TODO: configurable join timeout
+            # TODO: (in sudo's version) configurability around interactive
+            # prompting resulting in an exception instead, as in v1
+            thread.join()
+        # TODO: gather up thread exceptions, which will be _unexpected_, as in,
+        # not an exception incurred during the cxn.run(), but some problem in
+        # even running the thread worker body. They will need to be identified
+        # by the 'cxn' kwarg in the ThreadException's stored kwargs.
+        while not queue.empty():
+            # TODO: io-sleep? shouldn't matter if all threads are now joined
+            cxn, result, exception = queue.get(block=False)
+            # TODO: outstanding musings about how exactly aggregate results
+            # ought to operate...heterogenous obj like this, multiple objs, ??
+            # TODO: e.g. if cxn.run() returned None due to a bug, this
+            # resulting value is lossy (_both_ exception _and_ result were None
+            # but here we assume only one can be)
+            results[cxn] = exception if exception is not None else result
+        return results

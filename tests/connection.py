@@ -14,7 +14,7 @@ from invoke.config import Config as InvokeConfig
 from invoke.exceptions import ThreadException
 
 from fabric.connection import (
-    Connection, Config, Group, SerialGroup, ThreadingGroup,
+    Connection, Config, Group, SerialGroup, ThreadingGroup, thread_worker
 )
 from fabric.util import get_local_user
 
@@ -1185,14 +1185,22 @@ class ThreadingGroup_(Spec):
             # I honestly can't think of another good way to assert "threading
             # was used & concurrency occurred"...
             instantiations = [
-                call(target=cxn.run, args=args, kwargs=kwargs)
+                call(
+                    target=thread_worker,
+                    kwargs=dict(
+                        cxn=cxn,
+                        queue=queue,
+                        args=args,
+                        kwargs=kwargs,
+                    ),
+                )
                 for cxn in self.cxns
             ]
             Thread.assert_has_calls(instantiations, any_order=True)
             # These ought to work as by default a Mock.return_value is a
             # singleton mock object
             for mock in (Thread.return_value.run, Thread.return_value.join):
-                eq_(mock.call_count, len(cxns))
+                eq_(mock.call_count, len(self.cxns))
             # Queue was used appropriately
             puts = [call(cxn.host) for cxn in self.cxns]
             queue.put.assert_has_calls(puts, any_order=True)
