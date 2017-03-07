@@ -867,12 +867,51 @@ class SerialGroup(Group):
 
 def thread_worker(cxn, queue, args, kwargs):
     result, exception = None, None
-    try:
-        result = cxn.run(*args, **kwargs)
-    except BaseException as e:
-        exception = e
+    result = cxn.run(*args, **kwargs)
     # TODO: namedtuple or attrs object?
-    queue.put((cxn, result, exception))
+    # TODO: maybe we really do want a subclass that knows how to run a cxn
+    # method and attaches the result to itself; then there is only result and
+    # exception, both are taken post-join, no queue necessary. Otherwise
+    # there's this odd mismatch between how exceptions are obtained and how
+    # results are; and there's no actual reason for a queue as the result never
+    # wants to be taken before the thread is joined.
+    # TODO: when might that NOT be true? I.e. when would we want a queue?
+    # - put/get and progress bars; though having those with threads seems
+    # tricky anyways. Especially since much of the time they'd be 'buried'
+    # within concurrently executed task bodies and not called as eg
+    # Group.put().
+    #   - Which really calls the whole point of Group into question; don't we
+    #   just simply want a "run some arbitrary code parameterized, via some
+    #   strategy" setup, where the code _might_ just be a cxn.run, but it might
+    #   also be a task or whatever?
+    #   - Put another way, this split between Group-oriented API and
+    #   task-oriented, feels kind of odd; one cannot usually express the latter
+    #   in the former, but one _can_ express the former in the latter
+    #   - that all aside, I could see use cases for gated steps, where
+    #   it is "run x on all; then upload y to all; then z" (instead of "run x,
+    #   then upload y, then z - on all"). In that case, the ability to receive
+    #   info from the subthreads and display a block of progress bars, would be
+    #   very useful, and _not_ possible for the threads to do on their own.
+    #       - OTOH idk when this would come up; most situations I've run
+    #       across, want logic to run to completion independenly on each
+    #       host/parameter, i.e. it's truly parallel in nature
+    # - the master thread may need to handle logging and/or output in some
+    # manner where the threads/processes/etc are unable to. Fabric 1 relied on
+    # newlines to make that shit "just work" but it was one-way.
+    #   - This seems weak tho; what would a master thread ever want to do that
+    #   the subthread could not do on its own?
+    #   - It would always be some sort of coordination related thing only -
+    #   stop early, share data, etc - and that always feels like a "don't do it
+    #   task-at-a-time, write your own threading code" sitch??
+    # TODO: all that said, those other situations that want an in-progress
+    # queue, are _distinct from_ the need to obtain the final result of the
+    # processing - and we could always add such a queue in later for that if
+    # need be. it's orthogonal. we really should either do away with it
+    # entirely or update the other worker-only use cases to use the same
+    # tactic, having both is just odd. 
+    # TODO: so just gotta figure out how to square this with
+    # ExceptionHandlingThread.
+    queue.put((cxn, result))
 
 class ThreadingGroup(Group):
     """
@@ -912,6 +951,7 @@ class ThreadingGroup(Group):
         # not an exception incurred during the cxn.run(), but some problem in
         # even running the thread worker body. They will need to be identified
         # by the 'cxn' kwarg in the ThreadException's stored kwargs.
+        # TODO: document that REALLY WELL because it's confusing even to me
         while not queue.empty():
             # TODO: io-sleep? shouldn't matter if all threads are now joined
             cxn, result, exception = queue.get(block=False)
