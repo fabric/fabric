@@ -826,6 +826,16 @@ class Group(list):
         # now, but not 100% sure it's the best route.
         # TODO: Tutorial mentions 'ResultSet' - useful to construct or no?
         # TODO: also need way to deal with duplicate connections (see THOUGHTS)
+        # TODO: and errors - probably FailureSet? How to handle other,
+        # regular, non Failure, exceptions though? Still need an aggregate
+        # exception type either way, whether it is FailureSet or what...
+        # TODO: OTOH, users may well want to be able to operate on the hosts
+        # that did not fail (esp if failure % is low) so we really _do_ want
+        # something like a result object mixing success and failure, or maybe a
+        # golang style two-tuple of successes and failures?
+        # TODO: or keep going w/ a "return or except", but the object is
+        # largely similar (if not identical) in both situations, with the
+        # exception just being the signal that Shit Broke?
         raise NotImplementedError
 
     # TODO: how to handle sudo? Probably just an inner worker method that takes

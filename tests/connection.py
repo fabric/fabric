@@ -1153,6 +1153,13 @@ class SerialGroup_(Spec):
         for cxn in cxns:
             cxn.run.assert_called_with(*args, **kwargs)
 
+    def errors_in_execution_capture_and_continue_til_end(self):
+        # TODO: this. some sort of ResultSet like thing:
+        # - single obj with heterogenous values, as in fab 1
+        # - two-tuple of successes/results vs errors/failures
+        # - three-tuple of results, failures, errors??
+        skip()
+
 
 class ThreadingGroup_(Spec):
     @patch('fabric.connection.Queue')
@@ -1182,5 +1189,16 @@ class ThreadingGroup_(Spec):
         for cxn in cxns:
             cxn.run.assert_called_with(*args, **kwargs)
 
-    def bubbles_up_errors_within_threads(self):
-        skip()
+    @patch('fabric.connection.ExceptionHandlingThread')
+    def bubbles_up_errors_within_threads(self, Thread):
+        # TODO: only, say, 1 of these should encounter an exception
+        # TODO: I feel like this is the first spot where a raw
+        # ThreadException might need tweaks, at least presentation-wise, since
+        # we're no longer dealing with truly background threads (IO workers and
+        # tunnels), but "middle-ground" threads the user is kind of expecting
+        # (and which they might expect to encounter failures).
+        cxns = [Connection('host1'), Connection('host2'), Connection('host3')]
+        g = ThreadingGroup.from_connections(cxns)
+        args = ("command",)
+        kwargs = {'hide': True, 'warn': True}
+        g.run(*args, **kwargs)
