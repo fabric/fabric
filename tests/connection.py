@@ -1101,8 +1101,8 @@ class Group_(Spec):
         def may_be_empty(self):
             eq_(len(Group()), 0)
 
-        def takes_iterable_of_host_strings(self):
-            g = Group(('foo', 'bar'))
+        def takes_splat_arg_of_host_strings(self):
+            g = Group('foo', 'bar')
             eq_(g[0].host, 'foo')
             eq_(g[1].host, 'bar')
 
@@ -1113,7 +1113,7 @@ class Group_(Spec):
             eq_(g[1].host, 'bar')
 
     def acts_like_an_iterable_of_Connections(self):
-        g = Group(('foo', 'bar', 'biz'))
+        g = Group('foo', 'bar', 'biz')
         eq_(g[0].host, 'foo')
         eq_(g[-1].host, 'biz')
         eq_(len(g), 3)

@@ -798,24 +798,24 @@ class Group(list):
 
     This is a partially abstract class; see its subclasses for details.
     """
-    def __init__(self, hosts=None):
+    def __init__(self, *hosts):
         """
-        Create a group of connections from an iterable of shorthand strings.
+        Create a group of connections from one or more shorthand strings.
 
         See `.Connection` for details on the format of these strings - they
         will be used as the first positional argument of `.Connection`
         constructors.
         """
-        # TODO: allow splat-args form in addition to iterable arg?
         # TODO: #563, #388 (could be here or higher up in Program area)
-        if hosts:
-            self.extend(map(Connection, hosts))
+        self.extend(map(Connection, hosts))
 
     @classmethod
     def from_connections(cls, connections):
         """
         Alternate constructor accepting `.Connection` objects.
         """
+        # TODO: *args here too; or maybe just fold into __init__ and type
+        # check?
         group = cls()
         group.extend(connections)
         return group
