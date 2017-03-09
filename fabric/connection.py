@@ -8,7 +8,7 @@ from invoke.vendor.decorator import decorator
 from invoke.vendor.six import string_types
 
 from invoke import Context
-from invoke.exceptions import ThreadException
+from invoke.exceptions import ThreadException, Failure
 from invoke.util import ExceptionHandlingThread
 from paramiko.agent import AgentRequestHandler
 from paramiko.client import SSHClient, AutoAddPolicy

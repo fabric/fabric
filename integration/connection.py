@@ -1,7 +1,7 @@
 from spec import skip, Spec, ok_, eq_
 from invoke import pty_size
 
-from fabric import Connection, Group
+from fabric import Connection, ThreadingGroup as Group
 
 
 class Connection_(Spec):
@@ -119,7 +119,7 @@ class Group_(Spec):
         """
         Run command on localhost...twice!
         """
-        group = Group(['localhost', 'localhost'])
+        group = Group('localhost', 'localhost')
         result = group.run('echo foo', hide=True)
         # NOTE: currently, the result will only be 1 object, because both of
         # them will end up as the same key. Derp.
