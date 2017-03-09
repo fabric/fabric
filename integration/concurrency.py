@@ -24,8 +24,12 @@ class concurrency(Spec):
         cxn1, cxn2, cxn3 = self.cxns
         [x.open() for x in self.cxns]
         # Prove no exterior connection caching, socket reuse, etc
-        ok_(cxn1 is not cxn2 is not cxn3)
-        ok_(cxn1.client is not cxn2.client is not cxn3.client)
+        # NOTE: would phrase these as chained 'is not' but pep8 linter is being
+        # stupid :(
+        ok_(cxn1 is not cxn2)
+        ok_(cxn2 is not cxn3)
+        ok_(cxn1.client is not cxn2.client)
+        ok_(cxn2.client is not cxn3.client)
         ports = [x.transport.sock.getsockname()[1] for x in self.cxns]
         ok_(ports[0] is not ports[1] is not ports[2])
 

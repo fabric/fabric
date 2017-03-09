@@ -8,7 +8,7 @@ from invoke.vendor.decorator import decorator
 from invoke.vendor.six import string_types
 
 from invoke import Context
-from invoke.exceptions import ThreadException, Failure
+from invoke.exceptions import ThreadException
 from invoke.util import ExceptionHandlingThread
 from paramiko.agent import AgentRequestHandler
 from paramiko.client import SSHClient, AutoAddPolicy
@@ -831,8 +831,8 @@ class Group(list):
         >>> group.run("will it blend?")
         {
             <Connection host='host1'>: <Result cmd='will it blend?' exited=0>,
-            <Connection host='host2'>: <UnexpectedExit: cmd='will it blend?' exited=1>,
-            <Connection host='notahost'>: gaierror(8, 'nodename nor servname provided, or not known'),
+            <Connection host='host2'>: <UnexpectedExit: cmd='...' exited=1>,
+            <Connection host='notahost'>: gaierror(...),
         }
 
     """
@@ -907,7 +907,6 @@ class SerialGroup(Group):
 
 
 def thread_worker(cxn, queue, args, kwargs):
-    result, exception = None, None
     result = cxn.run(*args, **kwargs)
     # TODO: namedtuple or attrs object?
     queue.put((cxn, result))

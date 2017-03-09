@@ -11,7 +11,7 @@ from paramiko.client import SSHClient, AutoAddPolicy
 from paramiko import SSHConfig
 
 from invoke.config import Config as InvokeConfig
-from invoke.exceptions import ThreadException, ExceptionWrapper
+from invoke.exceptions import ThreadException
 
 from fabric.connection import (
     Connection, Config, Group, SerialGroup, ThreadingGroup, thread_worker
@@ -1128,10 +1128,10 @@ class Group_(Spec):
 
 def _make_serial_tester(cxns, index, args, kwargs):
     args = args[:]
-    kargs = kwargs.copy()
+    kwargs = kwargs.copy()
     def tester(*a, **k): # Don't care about doing anything with our own args.
         predecessors = cxns[:index]
-        successors = cxns[index+1:]
+        successors = cxns[index + 1:]
         for predecessor in predecessors:
             predecessor.run.assert_called_with(*args, **kwargs)
         for successor in successors:
