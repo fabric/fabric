@@ -11,7 +11,7 @@ from paramiko.client import SSHClient, AutoAddPolicy
 from paramiko import SSHConfig
 
 from invoke.config import Config as InvokeConfig
-from invoke.exceptions import ThreadException
+from invoke.exceptions import ThreadException, ExceptionWrapper
 
 from fabric.connection import (
     Connection, Config, Group, SerialGroup, ThreadingGroup, thread_worker
@@ -1126,7 +1126,7 @@ class Group_(Spec):
             Group().run()
 
 
-def make_serial_tester(cxns, index, args, kwargs):
+def _make_serial_tester(cxns, index, args, kwargs):
     args = args[:]
     kargs = kwargs.copy()
     def tester(*a, **k): # Don't care about doing anything with our own args.
@@ -1146,7 +1146,7 @@ class SerialGroup_(Spec):
             args = ("command",)
             kwargs = {'hide': True, 'warn': True}
             for index, cxn in enumerate(cxns):
-                side_effect = make_serial_tester(cxns, index, args, kwargs)
+                side_effect = _make_serial_tester(cxns, index, args, kwargs)
                 cxn.run = Mock(side_effect=side_effect)
             g = SerialGroup.from_connections(cxns)
             g.run(*args, **kwargs)
@@ -1163,7 +1163,13 @@ class SerialGroup_(Spec):
 
         def returns_results_mapping(self):
             # TODO: update if/when we implement ResultSet
-            skip()
+            cxns = [Mock(name=x) for x in ('host1', 'host2', 'host3')]
+            g = SerialGroup.from_connections(cxns)
+            result = g.run("whatever", hide=True)
+            expected = {}
+            for cxn in cxns:
+                expected[cxn] = cxn.run.return_value
+            eq_(result, expected)
 
 
 class ThreadingGroup_(Spec):
@@ -1180,6 +1186,10 @@ class ThreadingGroup_(Spec):
         ):
             queue = Queue.return_value
             g = ThreadingGroup.from_connections(self.cxns)
+            # Make sure .exception() doesn't yield truthy Mocks. Otherwise we
+            # end up with 'exceptions' that cause errors due to all being the
+            # same.
+            Thread.return_value.exception.return_value = None
             g.run(*self.args, **self.kwargs)
             # Testing that threads were used the way we expect is mediocre but
             # I honestly can't think of another good way to assert "threading
@@ -1216,7 +1226,7 @@ class ThreadingGroup_(Spec):
             queue = Queue.return_value
             # Ending w/ a True will terminate a while-not-empty loop
             queue.empty.side_effect = (False, False, False, True)
-            fakes = [(x, x.run.return_value, None) for x in cxns]
+            fakes = [(x, x.run.return_value) for x in cxns]
             queue.get.side_effect = fakes[:]
             # Execute & inspect results
             g = ThreadingGroup.from_connections(cxns)
@@ -1233,21 +1243,21 @@ class ThreadingGroup_(Spec):
             gets = [call(block=False) for _ in cxns]
             queue.get.assert_has_calls(gets)
 
-
         @patch('fabric.connection.ExceptionHandlingThread')
         def bubbles_up_errors_within_threads(self, Thread):
-            # TODO: only, say, 1 of these should encounter an exception
             # TODO: I feel like this is the first spot where a raw
             # ThreadException might need tweaks, at least presentation-wise,
             # since we're no longer dealing with truly background threads (IO
             # workers and tunnels), but "middle-ground" threads the user is
             # kind of expecting (and which they might expect to encounter
             # failures).
-            g = ThreadingGroup.from_connections(self.cxns)
-            args = ("command",)
-            kwargs = {'hide': True, 'warn': True}
+            cxns = [Mock(host=x) for x in ('host1', 'host2', 'host3')]
+            class OhNoz(Exception):
+                pass
+            cxns[1].run.side_effect = OhNoz
+            g = ThreadingGroup.from_connections(cxns)
             try:
-                g.run(*args, **kwargs)
+                g.run(*self.args, **self.kwargs)
             # TODO: expect actual exception, whether it is ThreadException or
             # something else
             except Exception as e:

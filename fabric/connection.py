@@ -796,7 +796,45 @@ class Group(list):
     """
     A collection of `.Connection` objects whose API operates on its contents.
 
-    This is a partially abstract class; see its subclasses for details.
+    This is a partially abstract class; see its subclasses for details on how
+    they are implemented..
+
+    Most methods in this class mirror those of `.Connection`, taking the same
+    arguments; however their return values and exception-raising behavior
+    differs:
+
+    - Return values are dicts mapping `.Connection` objects to the return
+      value for the respective connections, so e.g. `.Group.run` returns a map
+      of `.Connection` to `.Result`.
+    - If any connections encountered exceptions, a `.GroupException` is raised,
+      which is a thin wrapper around what would otherwise have been the dict
+      returned; within that dict, the excepting connections map to the
+      exception that was raised, in place of a `.Result` (as no `.Result` was
+      obtained.) Any non-excepting connections will have a `.Result` value, as
+      normal.
+
+    For example, when no exceptions occur, a session might look like this::
+
+        >>> group = Group('host1', 'host2')
+        >>> group.run("this is fine")
+        {
+            <Connection host='host1'>: <Result cmd='this is fine' exited=0>,
+            <Connection host='host2'>: <Result cmd='this is fine' exited=0>,
+        }
+
+    With exceptions (anywhere from 1 to "all of them"), it looks like so; note
+    the different exception classes, e.g. `.UnexpectedExit` for a completed
+    session whose command exited poorly, versus `socket.gaierror` for a host
+    that had DNS problems::
+
+        >>> group = Group('host1', 'host2', 'notahost')
+        >>> group.run("will it blend?")
+        {
+            <Connection host='host1'>: <Result cmd='will it blend?' exited=0>,
+            <Connection host='host2'>: <UnexpectedExit: cmd='will it blend?' exited=1>,
+            <Connection host='notahost'>: gaierror(8, 'nodename nor servname provided, or not known'),
+        }
+
     """
     def __init__(self, *hosts):
         """
@@ -861,7 +899,10 @@ class SerialGroup(Group):
     def run(self, *args, **kwargs):
         result = {}
         for cxn in self:
-            result[cxn] = cxn.run(*args, **kwargs)
+            try:
+                result[cxn] = cxn.run(*args, **kwargs)
+            except Exception as e:
+                result[cxn] = e
         return result
 
 
@@ -869,48 +910,6 @@ def thread_worker(cxn, queue, args, kwargs):
     result, exception = None, None
     result = cxn.run(*args, **kwargs)
     # TODO: namedtuple or attrs object?
-    # TODO: maybe we really do want a subclass that knows how to run a cxn
-    # method and attaches the result to itself; then there is only result and
-    # exception, both are taken post-join, no queue necessary. Otherwise
-    # there's this odd mismatch between how exceptions are obtained and how
-    # results are; and there's no actual reason for a queue as the result never
-    # wants to be taken before the thread is joined.
-    # TODO: when might that NOT be true? I.e. when would we want a queue?
-    # - put/get and progress bars; though having those with threads seems
-    # tricky anyways. Especially since much of the time they'd be 'buried'
-    # within concurrently executed task bodies and not called as eg
-    # Group.put().
-    #   - Which really calls the whole point of Group into question; don't we
-    #   just simply want a "run some arbitrary code parameterized, via some
-    #   strategy" setup, where the code _might_ just be a cxn.run, but it might
-    #   also be a task or whatever?
-    #   - Put another way, this split between Group-oriented API and
-    #   task-oriented, feels kind of odd; one cannot usually express the latter
-    #   in the former, but one _can_ express the former in the latter
-    #   - that all aside, I could see use cases for gated steps, where
-    #   it is "run x on all; then upload y to all; then z" (instead of "run x,
-    #   then upload y, then z - on all"). In that case, the ability to receive
-    #   info from the subthreads and display a block of progress bars, would be
-    #   very useful, and _not_ possible for the threads to do on their own.
-    #       - OTOH idk when this would come up; most situations I've run
-    #       across, want logic to run to completion independenly on each
-    #       host/parameter, i.e. it's truly parallel in nature
-    # - the master thread may need to handle logging and/or output in some
-    # manner where the threads/processes/etc are unable to. Fabric 1 relied on
-    # newlines to make that shit "just work" but it was one-way.
-    #   - This seems weak tho; what would a master thread ever want to do that
-    #   the subthread could not do on its own?
-    #   - It would always be some sort of coordination related thing only -
-    #   stop early, share data, etc - and that always feels like a "don't do it
-    #   task-at-a-time, write your own threading code" sitch??
-    # TODO: all that said, those other situations that want an in-progress
-    # queue, are _distinct from_ the need to obtain the final result of the
-    # processing - and we could always add such a queue in later for that if
-    # need be. it's orthogonal. we really should either do away with it
-    # entirely or update the other worker-only use cases to use the same
-    # tactic, having both is just odd. 
-    # TODO: so just gotta figure out how to square this with
-    # ExceptionHandlingThread.
     queue.put((cxn, result))
 
 class ThreadingGroup(Group):
@@ -919,13 +918,6 @@ class ThreadingGroup(Group):
     """
     def run(self, *args, **kwargs):
         results = {}
-        # TODO: or do we want to implement an ExceptionHandlingThread subclass
-        # that not only stores exception data on self, but also the result of
-        # the run()? Would remove the need for a queue (as long as the stored
-        # data is only accessed by the calling thread after join(), as with
-        # .exception)
-        # TODO: _or_ do we want to have a Connection+Thread subclass? (It might
-        # need to rename run() though...heh)
         queue = Queue()
         threads = []
         for cxn in self:
@@ -947,18 +939,26 @@ class ThreadingGroup(Group):
             # TODO: (in sudo's version) configurability around interactive
             # prompting resulting in an exception instead, as in v1
             thread.join()
-        # TODO: gather up thread exceptions, which will be _unexpected_, as in,
-        # not an exception incurred during the cxn.run(), but some problem in
-        # even running the thread worker body. They will need to be identified
-        # by the 'cxn' kwarg in the ThreadException's stored kwargs.
-        # TODO: document that REALLY WELL because it's confusing even to me
+        # Get non-exception results from queue
         while not queue.empty():
             # TODO: io-sleep? shouldn't matter if all threads are now joined
-            cxn, result, exception = queue.get(block=False)
+            cxn, result = queue.get(block=False)
             # TODO: outstanding musings about how exactly aggregate results
-            # ought to operate...heterogenous obj like this, multiple objs, ??
-            # TODO: e.g. if cxn.run() returned None due to a bug, this
-            # resulting value is lossy (_both_ exception _and_ result were None
-            # but here we assume only one can be)
-            results[cxn] = exception if exception is not None else result
+            # ought to ideally operate...heterogenous obj like this, multiple
+            # objs, ??
+            results[cxn] = result
+        # Get exceptions from the threads themselves.
+        # TODO: in a non-thread setup, this would differ, e.g.:
+        # - a queue if using multiprocessing
+        # - some other state-passing mechanism if using e.g. coroutines
+        # - ???
+        for thread in threads:
+            wrapper = thread.exception()
+            if wrapper is not None:
+                cxn = wrapper.kwargs['cxn']
+                e = wrapper.value
+                if cxn in results:
+                    err = "Somehow, {!r} has both a result ({!r}) and an exception ({!r})! What gives?" # noqa
+                    raise ValueError(err.format(cxn, results[cxn], e))
+                results[cxn] = e
         return results
