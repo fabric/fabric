@@ -71,7 +71,12 @@ class SerialGroup_(Spec):
             onoz = OhNoz()
             cxns[1].run.side_effect = onoz
             g = SerialGroup.from_connections(cxns)
-            result = g.run("whatever", hide=True)
+            try:
+                g.run("whatever", hide=True)
+            except GroupException as e:
+                result = e.result
+            else:
+                assert False, "Did not raise GroupException!"
             expected = {
                 cxns[0]: cxns[0].run.return_value,
                 cxns[1]: onoz,
@@ -174,7 +179,12 @@ class ThreadingGroup_(Spec):
             onoz = OhNoz()
             cxns[1].run.side_effect = onoz
             g = ThreadingGroup.from_connections(cxns)
-            result = g.run(*self.args, **self.kwargs)
+            try:
+                g.run(*self.args, **self.kwargs)
+            except GroupException as e:
+                result = e.result
+            else:
+                assert False, "Did not raise GroupException!"
             # TODO: switch to excepting!
             expected = {
                 cxns[0]: cxns[0].run.return_value,

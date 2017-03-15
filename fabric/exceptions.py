@@ -2,3 +2,11 @@
 # Or make it _more_ narrowly focused and stay here?
 class NothingToDo(Exception):
     pass
+
+
+class GroupException(Exception):
+    """
+    Lightweight exception wrapper for `.GroupResult` when one contains errors.
+    """
+    def __init__(self, result):
+        self.result = result

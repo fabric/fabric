@@ -230,9 +230,14 @@ this::
     mac1: Darwin
 
 Where `.Connection` methods return single ``Result`` objects (e.g.
-`fabric.runners.Result`), `.Group` methods return ``GroupResults`` -
-`dict`-like objects offering access to individual per-connection results as
-well as metadata about the entire run.
+`fabric.runners.Result`), `.Group` methods return `.GroupResult` - `dict`-like
+objects offering access to individual per-connection results as well as
+metadata about the entire run.
+
+When any individual connections within the `.Group` encounter errors, the
+`.GroupResult` is lightly wrapped in a `.GroupException`, which is raised. Thus
+the aggregate behavior resembles that of individual `.Connection` methods,
+returning a value on success or raising an exception on failure.
 
 
 Bringing it all together
