@@ -109,13 +109,13 @@ class SerialGroup(Group):
     Subclass of `.Group` which executes in simple, serial fashion.
     """
     def run(self, *args, **kwargs):
-        result = {}
+        results = GroupResult()
         for cxn in self:
             try:
-                result[cxn] = cxn.run(*args, **kwargs)
+                results[cxn] = cxn.run(*args, **kwargs)
             except Exception as e:
-                result[cxn] = e
-        return result
+                results[cxn] = e
+        return results
 
 
 def thread_worker(cxn, queue, args, kwargs):
@@ -128,7 +128,7 @@ class ThreadingGroup(Group):
     Subclass of `.Group` which uses threading to execute concurrently.
     """
     def run(self, *args, **kwargs):
-        results = {}
+        results = GroupResult()
         queue = Queue()
         threads = []
         for cxn in self:
