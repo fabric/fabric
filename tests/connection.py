@@ -1155,11 +1155,19 @@ class SerialGroup_(Spec):
                 cxn.run.assert_called_with(*args, **kwargs)
 
         def errors_in_execution_capture_and_continue_til_end(self):
-            # TODO: this. some sort of ResultSet like thing:
-            # - single obj with heterogenous values, as in fab 1
-            # - two-tuple of successes/results vs errors/failures
-            # - three-tuple of results, failures, errors??
-            skip()
+            cxns = [Mock(name=x) for x in ('host1', 'host2', 'host3')]
+            class OhNoz(Exception):
+                pass
+            onoz = OhNoz()
+            cxns[1].run.side_effect = onoz
+            g = SerialGroup.from_connections(cxns)
+            result = g.run("whatever", hide=True)
+            expected = {
+                cxns[0]: cxns[0].run.return_value,
+                cxns[1]: onoz,
+                cxns[2]: cxns[2].run.return_value,
+            }
+            eq_(result, expected)
 
         def returns_results_mapping(self):
             # TODO: update if/when we implement ResultSet
