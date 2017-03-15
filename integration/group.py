@@ -4,12 +4,10 @@ from fabric import ThreadingGroup as Group
 
 
 class Group_(Spec):
-    def simple_command_on_multiple_hosts(self):
-        """
-        Run command on localhost...twice!
-        """
-        group = Group('localhost', 'localhost')
+    def simple_command(self):
+        group = Group('localhost', '127.0.0.1')
         result = group.run('echo foo', hide=True)
-        # NOTE: currently, the result will only be 1 object, because both of
-        # them will end up as the same key. Derp.
-        eq_(result[group[0]].stdout, "foo\n")
+        eq_(
+            [x.stdout.strip() for x in result.values()],
+            ['foo', 'foo'],
+        )
