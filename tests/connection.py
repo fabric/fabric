@@ -1251,8 +1251,7 @@ class ThreadingGroup_(Spec):
             gets = [call(block=False) for _ in cxns]
             queue.get.assert_has_calls(gets)
 
-        @patch('fabric.connection.ExceptionHandlingThread')
-        def bubbles_up_errors_within_threads(self, Thread):
+        def bubbles_up_errors_within_threads(self):
             # TODO: I feel like this is the first spot where a raw
             # ThreadException might need tweaks, at least presentation-wise,
             # since we're no longer dealing with truly background threads (IO
@@ -1262,18 +1261,24 @@ class ThreadingGroup_(Spec):
             cxns = [Mock(host=x) for x in ('host1', 'host2', 'host3')]
             class OhNoz(Exception):
                 pass
-            cxns[1].run.side_effect = OhNoz
+            onoz = OhNoz()
+            cxns[1].run.side_effect = onoz
             g = ThreadingGroup.from_connections(cxns)
-            try:
-                g.run(*self.args, **self.kwargs)
-            # TODO: expect actual exception, whether it is ThreadException or
-            # something else
-            except Exception as e:
-                # TODO: inspect
-                pass
-            else:
-                assert False, "Did not raise Whatever!"
+            result = g.run(*self.args, **self.kwargs)
+            # TODO: switch to excepting!
+            expected = {
+                cxns[0]: cxns[0].run.return_value,
+                cxns[1]: onoz,
+                cxns[2]: cxns[2].run.return_value,
+            }
+            eq_(result, expected)
 
         def returns_results_mapping(self):
             # TODO: update if/when we implement ResultSet
-            skip()
+            cxns = [Mock(name=x) for x in ('host1', 'host2', 'host3')]
+            g = ThreadingGroup.from_connections(cxns)
+            result = g.run("whatever", hide=True)
+            expected = {}
+            for cxn in cxns:
+                expected[cxn] = cxn.run.return_value
+            eq_(result, expected)

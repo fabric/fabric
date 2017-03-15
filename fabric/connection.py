@@ -954,10 +954,8 @@ class ThreadingGroup(Group):
         for thread in threads:
             wrapper = thread.exception()
             if wrapper is not None:
-                cxn = wrapper.kwargs['cxn']
-                e = wrapper.value
-                if cxn in results:
-                    err = "Somehow, {!r} has both a result ({!r}) and an exception ({!r})! What gives?" # noqa
-                    raise ValueError(err.format(cxn, results[cxn], e))
-                results[cxn] = e
+                # Outer kwargs is Thread instantiation kwargs, inner is kwargs
+                # passed to thread target/body.
+                cxn = wrapper.kwargs['kwargs']['cxn']
+                results[cxn] = wrapper.value
         return results
