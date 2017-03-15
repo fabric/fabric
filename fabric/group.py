@@ -2,7 +2,7 @@ from invoke.vendor.six.moves.queue import Queue
 
 from invoke.util import ExceptionHandlingThread
 
-from fabric import Connection
+from fabric import Connection, Result
 
 
 class Group(list):
@@ -191,4 +191,29 @@ class GroupResult(dict):
       - Of note, these attributes allow high level logic, e.g. ``if
         mygroup.run('command').failed`` and so forth.
     """
-    pass
+    def __init__(self, *args, **kwargs):
+        super(dict, self).__init__(*args, **kwargs)
+        self._successes = {}
+        self._failures = {}
+
+    def _bifurcate(self):
+        # Short-circuit to avoid reprocessing every access.
+        if self._successes or self._failures:
+            return
+        # TODO: if we ever expect .succeeded/.failed to be useful before a
+        # GroupResult is fully initialized, this needs to become smarter.
+        for key, value in self.items():
+            if isinstance(value, BaseException):
+                self._failures[key] = value
+            else:
+                self._successes[key] = value
+
+    @property
+    def succeeded(self):
+        self._bifurcate()
+        return self._successes
+
+    @property
+    def failed(self):
+        self._bifurcate()
+        return self._failures
