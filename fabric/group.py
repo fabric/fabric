@@ -2,8 +2,8 @@ from invoke.vendor.six.moves.queue import Queue
 
 from invoke.util import ExceptionHandlingThread
 
-from fabric import Connection
-from fabric.exceptions import GroupException
+from .connection import Connection
+from .exceptions import GroupException
 
 
 class Group(list):
