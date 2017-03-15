@@ -27,3 +27,6 @@ class init(Spec):
 
     def ThreadingGroup(self):
         ok_(fabric.ThreadingGroup is group.ThreadingGroup)
+
+    def GroupResult(self):
+        ok_(fabric.GroupResult is group.GroupResult)

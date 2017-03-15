@@ -2,4 +2,4 @@
 from ._version import __version_info__, __version__
 from .connection import Config, Connection
 from .runners import Result
-from .group import Group, SerialGroup, ThreadingGroup
+from .group import Group, SerialGroup, ThreadingGroup, GroupResult
