@@ -126,13 +126,13 @@ Available tasks:
         def host_string_shorthand_is_passed_through(self, chan):
             fab_program.run("fab -H someuser@host1:1234 -- whoami")
 
-        class no_hosts_flag_at_all:
-            @patch('fabric.main.Context', spec=Context)
-            def calls_task_once_with_invoke_context(self, Context):
-                with cd(_support):
-                    fab_program.run("fab basic_run")
-                Context.return_value.run.assert_called_once_with('nope')
+    class no_hosts_flag:
+        @patch('fabric.main.Context', spec=Context)
+        def calls_task_once_with_invoke_context(self, Context):
+            with cd(_support):
+                fab_program.run("fab basic_run")
+            Context.return_value.run.assert_called_once_with('nope')
 
-            @raises(NothingToDo)
-            def generates_exception_if_combined_with_remainder(self):
-                fab_program.run("fab -- nope")
+        @raises(NothingToDo)
+        def generates_exception_if_combined_with_remainder(self):
+            fab_program.run("fab -- nope")
