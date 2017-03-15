@@ -1,7 +1,7 @@
 from spec import Spec, eq_, ok_
 
 import fabric
-from fabric import _version, connection
+from fabric import _version, connection, runners, group
 
 
 class init(Spec):
@@ -13,14 +13,17 @@ class init(Spec):
     def Connection(self):
         ok_(fabric.Connection is connection.Connection)
 
-    def Group(self):
-        ok_(fabric.Group is connection.Group)
-
-    def SerialGroup(self):
-        ok_(fabric.SerialGroup is connection.SerialGroup)
-
-    def ThreadingGroup(self):
-        ok_(fabric.ThreadingGroup is connection.ThreadingGroup)
+    def Result(self):
+        ok_(fabric.Result is runners.Result)
 
     def Config(self):
         ok_(fabric.Config is connection.Config)
+
+    def Group(self):
+        ok_(fabric.Group is group.Group)
+
+    def SerialGroup(self):
+        ok_(fabric.SerialGroup is group.SerialGroup)
+
+    def ThreadingGroup(self):
+        ok_(fabric.ThreadingGroup is group.ThreadingGroup)
