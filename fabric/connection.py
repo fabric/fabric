@@ -862,7 +862,6 @@ class Group(list):
         # TODO: how to change method of execution across contents? subclass,
         # kwargs, additional methods, inject an executor? Doing subclass for
         # now, but not 100% sure it's the best route.
-        # TODO: Tutorial mentions 'ResultSet' - useful to construct or no?
         # TODO: also need way to deal with duplicate connections (see THOUGHTS)
         # TODO: and errors - probably FailureSet? How to handle other,
         # regular, non Failure, exceptions though? Still need an aggregate
@@ -959,3 +958,24 @@ class ThreadingGroup(Group):
                 cxn = wrapper.kwargs['kwargs']['cxn']
                 results[cxn] = wrapper.value
         return results
+
+
+class GroupResult(dict):
+    """
+    Collection of results and/or exceptions arising from `.Group` methods.
+
+    Acts like a dict, but adds a couple convenience methods, to wit:
+
+    - Keys are the individual `.Connection` objects from within the `.Group`.
+    - Values are either return values / results from the called method (e.g.
+      `.Result` objects), *or* an exception object, if one prevented the method
+      from returning.
+    - Subclasses `dict`, so has all dict methods.
+    - Has `.succeeded` and `.failed` attributes containing sub-dicts limited to
+      just those key/value pairs that succeeded or encountered exceptions,
+      respectively.
+
+      - Of note, these attributes allow high level logic, e.g. ``if
+        mygroup.run('command').failed`` and so forth.
+    """
+    pass

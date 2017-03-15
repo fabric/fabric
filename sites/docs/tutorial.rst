@@ -216,10 +216,10 @@ this::
     >>> from fabric import SerialGroup as Group
     >>> results = Group('web1', 'web2', 'mac1').run('uname -s')
     >>> print(results)
-    <ResultSet: {
+    <GroupResult: {
         <Connection 'web1'>: <CommandResult 'uname -s'>,
         <Connection 'web2'>: <CommandResult 'uname -s'>,
-        <Connection 'mac1'>: <CommandResult 'uname -s'>
+        <Connection 'mac1'>: <CommandResult 'uname -s'>,
     }>
     >>> for connection, result in results.items():
     ...     print("{0.hostname}: {1.stdout}".format(connection, result))
@@ -230,7 +230,7 @@ this::
     mac1: Darwin
 
 Where `.Connection` methods return single ``Result`` objects (e.g.
-`fabric.runners.Result`), `.Group` methods return ``ResultSets`` -
+`fabric.runners.Result`), `.Group` methods return ``GroupResults`` -
 `dict`-like objects offering access to individual per-connection results as
 well as metadata about the entire run.
 
@@ -273,8 +273,9 @@ hand such a function to ``Group.execute`` and get the best of both worlds::
 
     Group('web1', 'web2', 'web3').execute(upload_and_unpack)
 
-``Group.execute``, like its sibling methods, returns ``ResultSet`` objects; its
-per-connection values are simply the return values of the function passed in.
+``Group.execute``, like its sibling methods, returns ``GroupResult`` objects;
+its per-connection values are simply the return values of the function passed
+in.
 
 
 Addendum: the ``fab`` command-line tool
