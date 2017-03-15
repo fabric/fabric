@@ -3,6 +3,7 @@ from spec import Spec, eq_, ok_, raises
 
 from fabric import Connection, Group, SerialGroup, ThreadingGroup, GroupResult
 from fabric.group import thread_worker
+from fabric.exceptions import GroupException
 
 
 class Group_(Spec):

@@ -3,6 +3,7 @@ from invoke.vendor.six.moves.queue import Queue
 from invoke.util import ExceptionHandlingThread
 
 from fabric import Connection, Result
+from fabric.exceptions import GroupException
 
 
 class Group(list):
@@ -110,11 +111,15 @@ class SerialGroup(Group):
     """
     def run(self, *args, **kwargs):
         results = GroupResult()
+        excepted = False
         for cxn in self:
             try:
                 results[cxn] = cxn.run(*args, **kwargs)
             except Exception as e:
                 results[cxn] = e
+                excepted = True
+        if excepted:
+            raise GroupException(results)
         return results
 
 
@@ -163,6 +168,7 @@ class ThreadingGroup(Group):
         # - a queue if using multiprocessing
         # - some other state-passing mechanism if using e.g. coroutines
         # - ???
+        excepted = False
         for thread in threads:
             wrapper = thread.exception()
             if wrapper is not None:
@@ -170,6 +176,9 @@ class ThreadingGroup(Group):
                 # passed to thread target/body.
                 cxn = wrapper.kwargs['kwargs']['cxn']
                 results[cxn] = wrapper.value
+                excepted = True
+        if excepted:
+            raise GroupException(results)
         return results
 
 
