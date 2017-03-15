@@ -1,7 +1,7 @@
 from mock import Mock, patch, call
 from spec import Spec, eq_, ok_, raises
 
-from fabric import Connection, Group, SerialGroup, ThreadingGroup
+from fabric import Connection, Group, SerialGroup, ThreadingGroup, GroupResult
 from fabric.group import thread_worker
 
 
@@ -77,22 +77,30 @@ class SerialGroup_(Spec):
                 result = e.result
             else:
                 assert False, "Did not raise GroupException!"
-            expected = {
+            succeeded = {
                 cxns[0]: cxns[0].run.return_value,
-                cxns[1]: onoz,
                 cxns[2]: cxns[2].run.return_value,
             }
+            failed = {
+                cxns[1]: onoz,
+            }
+            expected = succeeded.copy()
+            expected.update(failed)
             eq_(result, expected)
+            eq_(result.succeeded, succeeded)
+            eq_(result.failed, failed)
 
         def returns_results_mapping(self):
-            # TODO: update if/when we implement ResultSet
             cxns = [Mock(name=x) for x in ('host1', 'host2', 'host3')]
             g = SerialGroup.from_connections(cxns)
             result = g.run("whatever", hide=True)
+            ok_(isinstance(result, GroupResult))
             expected = {}
             for cxn in cxns:
                 expected[cxn] = cxn.run.return_value
             eq_(result, expected)
+            eq_(result.succeeded, expected)
+            eq_(result.failed, {})
 
 
 class ThreadingGroup_(Spec):
@@ -185,20 +193,28 @@ class ThreadingGroup_(Spec):
                 result = e.result
             else:
                 assert False, "Did not raise GroupException!"
-            # TODO: switch to excepting!
-            expected = {
+            succeeded = {
                 cxns[0]: cxns[0].run.return_value,
-                cxns[1]: onoz,
                 cxns[2]: cxns[2].run.return_value,
             }
+            failed = {
+                cxns[1]: onoz,
+            }
+            expected = succeeded.copy()
+            expected.update(failed)
             eq_(result, expected)
+            eq_(result.succeeded, succeeded)
+            eq_(result.failed, failed)
 
         def returns_results_mapping(self):
             # TODO: update if/when we implement ResultSet
             cxns = [Mock(name=x) for x in ('host1', 'host2', 'host3')]
             g = ThreadingGroup.from_connections(cxns)
             result = g.run("whatever", hide=True)
+            ok_(isinstance(result, GroupResult))
             expected = {}
             for cxn in cxns:
                 expected[cxn] = cxn.run.return_value
             eq_(result, expected)
+            eq_(result.succeeded, expected)
+            eq_(result.failed, {})
