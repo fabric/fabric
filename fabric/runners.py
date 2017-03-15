@@ -24,6 +24,8 @@ class Remote(Runner):
         # prefixing functionality, when implemented.
         # TODO: honor SendEnv from ssh_config
         self.channel.update_environment(env)
+        # TODO: pass in timeout= here when invoke grows timeout functionality
+        # in Runner/Local.
         self.channel.exec_command(command)
 
     def read_proc_stdout(self, num_bytes):
