@@ -1,7 +1,7 @@
 from spec import skip, Spec, ok_, eq_
 from invoke import pty_size
 
-from fabric import Connection, ThreadingGroup as Group
+from fabric import Connection
 
 
 class Connection_(Spec):
@@ -112,15 +112,3 @@ class Connection_(Spec):
         # When bug present, # lines received is significantly fewer than the
         # true count in the file (by thousands).
         eq_(len(lines), len(words))
-
-
-class Group_(Spec):
-    def simple_command_on_multiple_hosts(self):
-        """
-        Run command on localhost...twice!
-        """
-        group = Group('localhost', 'localhost')
-        result = group.run('echo foo', hide=True)
-        # NOTE: currently, the result will only be 1 object, because both of
-        # them will end up as the same key. Derp.
-        eq_(result[group[0]].stdout, "foo\n")
