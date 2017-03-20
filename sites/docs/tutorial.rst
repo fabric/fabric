@@ -43,7 +43,20 @@ Run commands via Connections and ``run``
 The most basic use of Fabric is to execute a shell command on a server (via
 SSH), then (optionally) interrogate the result. By default, the remote
 program's output is printed directly to your terminal, *and* captured. A basic
-example::
+example:
+
+.. testsetup:: basic
+
+    state = RemoteState(commands=(
+        Command('uname -s', out='Linux\n'),
+    ))
+    state.start()
+
+.. testcleanup:: basic
+
+    state.stop()
+
+.. doctest:: basic
 
     >>> from fabric import Connection
     >>> cxn = Connection('web1')
@@ -54,7 +67,7 @@ example::
     >>> result.command
     'uname -s'
     >>> result.stdout
-    'Linux\n'
+    u'Linux\n'
     >>> result.stderr
     ''
 

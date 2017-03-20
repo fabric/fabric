@@ -208,6 +208,67 @@ class Session(object):
         eq_(transport.return_value.open_session.call_args_list, session_opens)
 
 
+
+class RemoteState(object):
+    """
+    Class representing mocked remote state.
+
+    Set up for start/stop style patching (so it can be used in situations
+    requiring setup/teardown semantics); is then wrapped by e.g. `mock_remote`
+    to provide decorator, etc style use.
+    """
+    # TODO: make it easier to assume one session w/ >1 command?
+    def __init__(self, commands=None, sessions=None):
+        """
+        Create & start new remote state.
+
+        If `sessions` is given, they're used directly.
+
+        If `commands` is given, used to fill single anonymous `Session`.
+
+        If neither is given, a single anonymous blank `Session` is used.
+
+        If both are given, that's a paddling.
+        """
+        if commands and sessions:
+            raise ValueError("Can't give both commands & sessions, pick one!")
+        if commands:
+            sessions = [Session(commands=commands)]
+        # No given sessions -> single wide-open remote session, allowing
+        # generic "don't explode trying to talk to the network" stubbing.
+        if not (commands or sessions):
+            sessions = [Session()]
+        self.sessions = sessions
+
+    def start(self):
+        # Patch SSHClient so the sessions' generated mocks can be set as its
+        # return values
+        self.patcher = patcher = patch('fabric.connection.SSHClient')
+        SSHClient = patcher.start()
+        # Mock clients, to be inspected afterwards during sanity-checks
+        clients = []
+        for session in self.sessions:
+            session.generate_mocks()
+            clients.append(session.client)
+        # Each time the mocked SSHClient class is instantiated, it will
+        # yield one of our mocked clients (w/ mocked transport & channel)
+        # generated above.
+        SSHClient.side_effect = clients
+        # TODO: how to inject channels given this doesn't know about functions?
+        # return them?
+        #args.extend(chain.from_iterable(x.channels for x in sessions))
+
+    def stop(self):
+        # Stop patching SSHClient
+        self.patcher.stop()
+
+        # TODO: these?
+        # Post-execution sanity checks
+        #for session in sessions:
+            # Basic stuff about transport, channel etc
+        #    session.sanity_check()
+
+
 def mock_remote(*sessions):
     """
     Mock & expect one or more remote connections & command executions.
