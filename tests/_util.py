@@ -271,12 +271,9 @@ def mock_remote(*sessions):
 
             # Mock clients, to be inspected afterwards during sanity-checks
             clients = []
-            # The channels of those clients, for handing into test function
-            all_channels = []
             for session in sessions:
                 session.generate_mocks()
                 clients.append(session.client)
-                all_channels.extend(session.channels)
 
             # Each time the mocked SSHClient class is instantiated, it will
             # yield one of our mocked clients (w/ mocked transport & channel)
