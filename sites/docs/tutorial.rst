@@ -47,9 +47,7 @@ example:
 
 .. testsetup:: basic
 
-    state = RemoteState(commands=(
-        Command('uname -s', out='Linux\n'),
-    ))
+    state = MockRemote('uname -s', out='Linux\n')
     state.start()
 
 .. testcleanup:: basic

@@ -209,7 +209,7 @@ class Session(object):
 
 
 
-class RemoteState(object):
+class MockRemote(object):
     """
     Class representing mocked remote state.
 
@@ -218,26 +218,29 @@ class RemoteState(object):
     to provide decorator, etc style use.
     """
     # TODO: make it easier to assume one session w/ >1 command?
-    def __init__(self, commands=None, sessions=None):
+    def __init__(self, cmd=None, out=None, err=None, exit=None,
+        commands=None, sessions=None):
         """
         Create & start new remote state.
 
-        If `sessions` is given, they're used directly.
+        Multiple ways to instantiate:
 
-        If `commands` is given, used to fill single anonymous `Session`.
+        - no args, for basic "don't explode / touch network" stubbing
+        - pass Session args directly for a one-off anonymous session
+        - pass ``commands`` kwarg with explicit commands (put into an anonymous
+          session)
+        - pass ``sessions`` kwarg with explicit sessions
 
-        If neither is given, a single anonymous blank `Session` is used.
-
-        If both are given, that's a paddling.
+        Combining these approaches is not well defined.
         """
-        if commands and sessions:
-            raise ValueError("Can't give both commands & sessions, pick one!")
         if commands:
             sessions = [Session(commands=commands)]
-        # No given sessions -> single wide-open remote session, allowing
-        # generic "don't explode trying to talk to the network" stubbing.
-        if not (commands or sessions):
-            sessions = [Session()]
+        elif not sessions:
+            if cmd or out or err or exit:
+                session = Session(cmd=cmd, out=out, err=err, exit=exit)
+            else:
+                session = Session()
+            sessions = [session]
         self.sessions = sessions
 
     def start(self):

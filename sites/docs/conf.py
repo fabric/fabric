@@ -14,7 +14,7 @@ extensions.append('sphinx.ext.doctest')
 # Import mock tooling from unit tests' _util.py
 doctest_path = [abspath(join(dirname(__file__), '..', '..', 'tests'))]
 doctest_global_setup = r"""
-from _util import RemoteState, Session, Command
+from _util import MockRemote, Session, Command
 """
 
 # Default is 'local' building, but reference the public WWW site when building
