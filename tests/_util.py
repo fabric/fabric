@@ -219,7 +219,7 @@ class MockRemote(object):
     """
     # TODO: make it easier to assume one session w/ >1 command?
     def __init__(self, cmd=None, out=None, err=None, exit=None,
-        commands=None, sessions=None):
+        commands=None, sessions=None, autostart=True):
         """
         Create & start new remote state.
 
@@ -232,6 +232,9 @@ class MockRemote(object):
         - pass ``sessions`` kwarg with explicit sessions
 
         Combining these approaches is not well defined.
+
+        Will automatically call `start` by default; say ``autostart=False`` to
+        disable.
         """
         if commands:
             sessions = [Session(commands=commands)]
@@ -242,6 +245,8 @@ class MockRemote(object):
                 session = Session()
             sessions = [session]
         self.sessions = sessions
+        if autostart:
+            self.start()
 
     def start(self):
         # Patch SSHClient so the sessions' generated mocks can be set as its

@@ -48,7 +48,6 @@ example:
 .. testsetup:: basic
 
     state = MockRemote('uname -s', out='Linux\n')
-    state.start()
 
 .. testcleanup:: basic
 
