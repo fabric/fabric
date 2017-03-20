@@ -37,7 +37,7 @@ constructing task namespaces, you'll see ``from invoke import Collection``.
     close to 'Connection'
 
 
-Run commands via connections and ``run``
+Run commands via Connections and ``run``
 ========================================
 
 The most basic use of Fabric is to execute a shell command on a server (via
