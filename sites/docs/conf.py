@@ -5,10 +5,8 @@ sys.path.append(abspath(join(dirname(__file__), '..')))
 sys.path.append(abspath(join(dirname(__file__), '..', '..')))
 from shared_conf import *
 
-# Enable autodoc
+# Enable & configure autodoc
 extensions.append('sphinx.ext.autodoc')
-
-# Autodoc settings
 autodoc_default_flags = ['members', 'special-members']
 
 # Default is 'local' building, but reference the public WWW site when building
