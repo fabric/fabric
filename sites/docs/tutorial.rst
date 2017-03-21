@@ -47,11 +47,11 @@ example:
 
 .. testsetup:: basic
 
-    state = MockRemote('uname -s', out='Linux\n')
+    mock = MockRemote(out='Linux\n')
 
 .. testcleanup:: basic
 
-    state.stop()
+    mock.stop()
 
 .. doctest:: basic
 
