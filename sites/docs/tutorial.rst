@@ -109,9 +109,7 @@ implementations get grumpy at password-prompt time otherwise.)
 .. testsetup:: sudo-by-hand
 
     mock = MockRemote(commands=(
-        # NOTE: even tho sudo prompts are stderr, example says pty=True, so
-        # stdout it is!
-        Command(out='[sudo] password for yourusername:\n'),
+        Command(out='[sudo] password:\n'),
         Command(out='1001\n'),
     ))
 
@@ -120,16 +118,15 @@ implementations get grumpy at password-prompt time otherwise.)
     mock.stop()
 
 .. doctest:: sudo-by-hand
-    :options: ELLIPSIS
 
     >>> from fabric import Connection
     >>> cxn = Connection('db1')
     >>> cxn.run('sudo /usr/sbin/useradd mydbuser', pty=True)
-    [sudo] password for yourusername:
-    <Result ...>
+    [sudo] password:
+    <Result cmd='sudo /usr/sbin/useradd mydbuser' exited=0>
     >>> cxn.run('id -u mydbuser')
     1001
-    <Result ...>
+    <Result cmd='id -u mydbuser' exited=0>
 
 Giving passwords by hand every time can get old; thankfully Invoke's powerful
 command-execution functionality includes the ability to :ref:`auto-respond
