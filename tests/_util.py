@@ -3,7 +3,7 @@ from io import BytesIO
 import os
 import sys
 import types
-from functools import wraps, partial
+from functools import wraps
 
 from fabric import Connection
 from fabric.main import program as fab_program
