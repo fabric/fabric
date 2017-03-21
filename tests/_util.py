@@ -54,6 +54,30 @@ class Command(object):
         self.waits = waits
 
 
+class MockChannel(Mock):
+    """
+    Mock subclass that tracks state for its ``recv(_stderr)?`` methods.
+
+    Turns out abusing function closures inside MockRemote to track this state
+    only worked for 1 command per session!
+    """
+    def __init__(self, *args, **kwargs):
+        # TODO: worth accepting strings and doing the BytesIO setup ourselves?
+        object.__setattr__(self, '__stdout', kwargs.pop('stdout'))
+        object.__setattr__(self, '__stderr', kwargs.pop('stderr'))
+        super(MockChannel, self).__init__(*args, **kwargs)
+
+    def _get_child_mock(self, **kwargs):
+        # Don't return our own class on sub-mocks.
+        return Mock(**kwargs)
+
+    def recv(self, count):
+        return object.__getattribute__(self, '__stdout').read(count)
+
+    def recv_stderr(self, count):
+        return object.__getattribute__(self, '__stderr').read(count)
+
+
 class Session(object):
     """
     A mock remote session of a single connection and 1 or more command execs.
@@ -156,22 +180,18 @@ class Session(object):
 
         channels = []
         for command in self.commands:
-            channel = Mock()
+            # Mock of a Channel instance, not e.g. Channel-the-class.
+            # Specifically, one that can track individual state for recv*().
+            channel = MockChannel(
+                stdout=BytesIO(command.out),
+                stderr=BytesIO(command.err),
+            )
             channel.recv_exit_status.return_value = command.exit
 
             # If requested, make exit_status_ready return False the first N
             # times it is called in the wait() loop.
             readies = chain(repeat(False, command.waits), repeat(True))
             channel.exit_status_ready.side_effect = readies
-
-            # Real-feeling IO (not just returning whole strings)
-            out_file = BytesIO(command.out)
-            err_file = BytesIO(command.err)
-            def fakeread(count, fileno=None):
-                fd = {1: out_file, 2: err_file}[fileno]
-                return fd.read(count)
-            channel.recv.side_effect = partial(fakeread, fileno=1)
-            channel.recv_stderr.side_effect = partial(fakeread, fileno=2)
 
             channels.append(channel)
 
