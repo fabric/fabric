@@ -59,7 +59,10 @@ In order for Fabric's installation to succeed, you will need the following:
 * the `Invoke <http://pyinvoke.org>`_ command-running and task-execution
   library;
 * and the `Paramiko <http://paramiko.org>`_ SSH library (as well as its own
-  dependencies; see :doc:`its install docs <paramiko:/installing>`.)
+  dependencies; see `its install docs <http://paramiko.org/installing.html>`_.)
+
+.. TODO:
+    update above install link to use intersphinx for the paramiko www site?
 
 Development dependencies
 ------------------------
