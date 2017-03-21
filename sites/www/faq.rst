@@ -84,7 +84,8 @@ There are multiple ways to deal with this problem:
 * Override ``env.shell`` to remove the ``-l`` flag. This should tell Bash not
   to load your startup files. If you don't depend on the contents of your
   startup files (such as aliases or whatnot) this may be a good solution.
-* Pass ``pty=True`` to `run` or `sudo`, which will force allocation of a
+* Pass ``pty=True`` to `~fabric.connection.Connection.run` or
+  `~fabric.connection.Connection.sudo`, which will force allocation of a
   pseudo-tty on the remote end, and hopefully cause the offending program to be
   less cranky.
 
