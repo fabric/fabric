@@ -103,13 +103,13 @@ Fabric uses Paramiko's SSH config file machinery to load and parse
 ``ssh_config``-format files (following OpenSSH's behavior re: which files to
 load, when possible):
 
-- An already-parsed `.SSHConfig` object may be given to `.Config.__init__` via
-  its ``ssh_config`` keyword argument; if this value is given, no files are
-  loaded, even if they exist.
+- An already-parsed `~paramiko.config.SSHConfig` object may be given to
+  `.Config.__init__` via its ``ssh_config`` keyword argument; if this value is
+  given, no files are loaded, even if they exist.
 - A runtime file path may be specified via configuration itself, as the
-  ``ssh_config_path`` key; such a path will be loaded into a new `.SSHConfig`
-  object at the end of `.Config.__init__` and no other files will be sought
-  out.
+  ``ssh_config_path`` key; such a path will be loaded into a new
+  `~paramiko.config.SSHConfig` object at the end of `.Config.__init__` and no
+  other files will be sought out.
 
     - It will be filled in by the ``fab`` CLI tool if the
       :option:`-F/--ssh-config <-F>` flag is given.
@@ -123,7 +123,7 @@ load, when possible):
       as the first rule found during lookup is always used.
 
 - If none of the above vectors yielded SSH config data, a blank/empty
-  `.SSHConfig` is the final result.
+  `~paramiko.config.SSHConfig` is the final result.
 - Regardless of how the object was generated, it is exposed as
   ``Config.base_ssh_config``.
 
@@ -133,10 +133,10 @@ load, when possible):
 ---------------------------------------------
 
 `.Connection` objects expose a per-host 'view' of their config's SSH data
-(obtained via `SSHConfig.lookup`) as `.Connection.ssh_config`. `.Connection`
-itself references these values as described in the following subsections,
-usually as simple defaults for the appropriate config key or parameter
-(``port``, ``forward_agent``, etc.)
+(obtained via `~paramiko.config.SSHConfig.lookup`) as `.Connection.ssh_config`.
+`.Connection` itself references these values as described in the following
+subsections, usually as simple defaults for the appropriate config key or
+parameter (``port``, ``forward_agent``, etc.)
 
 Unless otherwise specified, these values **override** regular configuration
 values for the same keys, but may themselves be overridden by
@@ -164,9 +164,9 @@ the Fabric config.)
 
 .. note::
     The below sections use capitalized versions of ``ssh_config`` keys for
-    easier correlation with ``man ssh_config``, **but** the actual `.SSHConfig`
-    data structure is normalized to lowercase keys, since SSH config files are
-    technically case-insensitive.
+    easier correlation with ``man ssh_config``, **but** the actual
+    `~paramiko.config.SSHConfig` data structure is normalized to lowercase
+    keys, since SSH config files are technically case-insensitive.
 
 Connection parameters
 ~~~~~~~~~~~~~~~~~~~~~

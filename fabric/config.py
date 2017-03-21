@@ -128,8 +128,8 @@ class Config(InvokeConfig):
         """
         Trigger loading of configured SSH config file paths.
 
-        Expects that `base_ssh_config` has already been set to an `SSHConfig`
-        object.
+        Expects that ``base_ssh_config`` has already been set to an
+        `~paramiko.config.SSHConfig` object.
 
         :returns: ``None``.
         """
