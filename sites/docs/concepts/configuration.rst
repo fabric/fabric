@@ -241,13 +241,16 @@ TK:
 
 - Given `.Connection` is the base object, where even would "per-host" data be
   stored / loaded?
+
     - SSH config loading makes sense for filling uch of this
     - What about regular config? We'd want this data to live separate from the
       core config, so it can't really live in regular config files unless we
       make it a special case (or truly part of the config)
     - But then the question is, where _does_ it come from?
+
         - Its own set of configuration files, e.g. ``~/.fabric-hosts.yml``
-        - Library-only, e.g. ``Config(
+        - Library-only option, i.e. some argument to ``Config(...)`` or whatnot
+        - ???
 
 
 ----
