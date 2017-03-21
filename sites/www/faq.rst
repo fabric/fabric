@@ -94,11 +94,11 @@ There are multiple ways to deal with this problem:
 Why can't I run programs in the background with ``&``? It makes Fabric hang.
 ============================================================================
 
-Because Fabric executes a shell on the remote end for each invocation of
-``run`` or ``sudo`` (:ref:`see also <one-shell-per-command>`), backgrounding a
-process via the shell will not work as expected. Backgrounded processes may
-still prevent the calling shell from exiting until they stop running, and this
-in turn prevents Fabric from continuing on with its own execution.
+Because SSH executes a new shell session on the remote end for each invocation
+of ``run`` or ``sudo`` (:ref:`see also <one-shell-per-command>`), backgrounded
+processes may prevent the calling shell from exiting until the processes stop
+running, which in turn prevents Fabric from continuing on with its own
+execution.
 
 The key to fixing this is to ensure that your process' standard pipes are all
 disassociated from the calling shell, which may be done in a number of ways
