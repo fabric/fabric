@@ -249,6 +249,9 @@ class MockRemote(object):
             self.start()
 
     def start(self):
+        """
+        Start patching SSHClient with the stored sessions, returning channels.
+        """
         # Patch SSHClient so the sessions' generated mocks can be set as its
         # return values
         self.patcher = patcher = patch('fabric.connection.SSHClient')
@@ -262,19 +265,18 @@ class MockRemote(object):
         # yield one of our mocked clients (w/ mocked transport & channel)
         # generated above.
         SSHClient.side_effect = clients
-        # TODO: how to inject channels given this doesn't know about functions?
-        # return them?
-        #args.extend(chain.from_iterable(x.channels for x in sessions))
+        return chain.from_iterable(x.channels for x in self.sessions)
 
     def stop(self):
+        """
+        Stop patching SSHClient, and invoke post-run sanity tests.
+        """
         # Stop patching SSHClient
         self.patcher.stop()
 
-        # TODO: these?
-        # Post-execution sanity checks
-        #for session in sessions:
-            # Basic stuff about transport, channel etc
-        #    session.sanity_check()
+        for session in self.sessions:
+            # Basic sanity tests about transport, channel etc
+            session.sanity_check()
 
 
 def mock_remote(*sessions):
@@ -319,44 +321,32 @@ def mock_remote(*sessions):
         Most of the time, however, there is a 1:1 map between session and
         command, making this straightforward.
     """
-    # Was called as bare decorator, no args
+    # Grab func from sessions arg if called bare
     bare = (
         len(sessions) == 1
         and isinstance(sessions[0], types.FunctionType)
     )
     if bare:
-        func = sessions[0]
-        sessions = []
-    # Either bare or called with empty parens
-    if not sessions:
-        sessions = [Session()]
+        sessions = list(sessions)
+        func = sessions.pop()
 
     def decorator(f):
         @wraps(f)
-        @patch('fabric.connection.SSHClient')
         def wrapper(*args, **kwargs):
+            # Stand up a MockRemote object from closed-over sessions data.
+            # TODO: expose more of what MockRemote can handle re: commands,
+            # args etc
+            remote = MockRemote(sessions=sessions, autostart=False)
+            # Start mocking & get returned channel mocks, adding them to the
+            # called test function/method.
             args = list(args)
-            SSHClient = args.pop()
-
-            # Mock clients, to be inspected afterwards during sanity-checks
-            clients = []
-            for session in sessions:
-                session.generate_mocks()
-                clients.append(session.client)
-
-            # Each time the mocked SSHClient class is instantiated, it will
-            # yield one of our mocked clients (w/ mocked transport & channel)
-            # generated above.
-            SSHClient.side_effect = clients
-
-            # Run test, passing in the channels involved for asserts/etc
-            args.extend(chain.from_iterable(x.channels for x in sessions))
-            f(*args, **kwargs)
-
-            # Post-execution sanity checks
-            for session in sessions:
-                # Basic stuff about transport, channel etc
-                session.sanity_check()
+            args.extend(remote.start())
+            # Call that test!
+            try:
+                f(*args, **kwargs)
+            finally:
+                # Stop mocking & perform sanity tests
+                remote.stop()
         return wrapper
     # Bare decorator, no args
     if bare:
