@@ -120,22 +120,3 @@ disassociated from the calling shell, which may be done in a number of ways
   ``supervisord``-like tools).
 * Run the program under ``nohup`` or similar "in-shell" tools - note that this
   approach has seen limited success for most users.
-
-
-I'm sometimes incorrectly asked for a passphrase instead of a password.
-=======================================================================
-
-Due to a bug of sorts in our SSH layer, it's not currently possible for Fabric
-to always accurately detect the type of authentication needed. We have to try
-and guess whether we're being asked for a private key passphrase or a remote
-server password, and in some cases our guess ends up being wrong.
-
-The most common such situation is where you, the local user, appear to have an
-SSH keychain agent running, but the remote server is not able to honor your SSH
-key, e.g. you haven't yet transferred the public key over or are using an
-incorrect username. In this situation, Fabric will prompt you with "Please
-enter passphrase for private key", but the text you enter is actually being
-sent to the remote end's password authentication.
-
-We hope to address this in future releases by contributing to the
-aforementioned SSH library.
