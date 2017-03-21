@@ -9,6 +9,10 @@ This page documents the details of Fabric's optional command-line interface,
 Options & arguments
 ===================
 
+.. option:: -F, --ssh-config
+
+    Takes a path to load as a runtime SSH config file. See :ref:`ssh-config`.
+
 .. option:: -H, --hosts
 
     Takes a comma-separated string listing hostnames against which tasks
