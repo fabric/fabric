@@ -1,0 +1,5 @@
+==============
+``group``
+==============
+
+.. automodule:: fabric.group

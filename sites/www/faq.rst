@@ -2,31 +2,13 @@
 Frequently Asked/Answered Questions (FAQ)
 =========================================
 
-.. TODO: update link to usage docs
 .. TODO: general pass for new API links
 
 These are some of the most commonly encountered problems or frequently asked
 questions which we receive from users. They aren't intended as a substitute for
-reading the rest of the documentation, especially the :ref:`usage docs
-<usage-docs>`, so please make sure you check those out if your question is not
+reading the rest of the documentation, especially the :doc:`conceptual docs
+<concepts>`, so please make sure you check those out if your question is not
 answered here.
-
-
-.. _init-scripts-pty:
-
-Init scripts don't work!
-========================
-
-Init-style start/stop/restart scripts (e.g. ``/etc/init.d/apache2 start``)
-sometimes don't like Fabric's allocation of a pseudo-tty, which is active by
-default. In almost all cases, explicitly calling the command in question with
-``pty=False`` works correctly::
-
-    sudo("/etc/init.d/apache2 restart", pty=False)
-
-If you have no need for interactive behavior and run into this problem
-frequently, you may want to deactivate pty allocation globally by setting
-:ref:`env.always_use_pty <always-use-pty>` to ``False``.
 
 
 .. _one-shell-per-command:

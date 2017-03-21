@@ -1,0 +1,5 @@
+==============
+``exceptions``
+==============
+
+.. automodule:: fabric.exceptions

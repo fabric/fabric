@@ -22,7 +22,7 @@ General / conceptual
   use case is no longer a second-class citizen; instead, the library
   functionality has been designed first, with the CLI/task features built on
   top of it.
-- Invoke's design includes `explicit user-facing testing functionality
+- Invoke's design includes :ref:`explicit user-facing testing functionality
   <testing-user-code>`; if you didn't find a way to write tests for your
   Fabric-using code before, it should be much easier now.
 

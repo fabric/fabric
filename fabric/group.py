@@ -17,15 +17,16 @@ class Group(list):
     arguments; however their return values and exception-raising behavior
     differs:
 
-    - Return values are dicts mapping `.Connection` objects to the return
-      value for the respective connections, so e.g. `.Group.run` returns a map
-      of `.Connection` to `.Result`.
+    - Return values are dict-like objects (`.GroupResult`) mapping
+      `.Connection` objects to the return value for the respective connections:
+      `.Group.run` returns a map of `.Connection` to `.runners.Result`,
+      `.Group.get` returns a map of `.Connection` to `.transfer.Result`, etc.
     - If any connections encountered exceptions, a `.GroupException` is raised,
-      which is a thin wrapper around what would otherwise have been the dict
-      returned; within that dict, the excepting connections map to the
-      exception that was raised, in place of a `.Result` (as no `.Result` was
-      obtained.) Any non-excepting connections will have a `.Result` value, as
-      normal.
+      which is a thin wrapper around what would otherwise have been the
+      `.GroupResult` returned; within that wrapped `.GroupResult`, the
+      excepting connections map to the exception that was raised, in place of a
+      ``Result`` (as no ``Result`` was obtained.) Any non-excepting connections
+      will have a ``Result`` value, as normal.
 
     For example, when no exceptions occur, a session might look like this::
 
@@ -37,9 +38,9 @@ class Group(list):
         }
 
     With exceptions (anywhere from 1 to "all of them"), it looks like so; note
-    the different exception classes, e.g. `.UnexpectedExit` for a completed
-    session whose command exited poorly, versus `socket.gaierror` for a host
-    that had DNS problems::
+    the different exception classes, e.g. `~invoke.exceptions.UnexpectedExit`
+    for a completed session whose command exited poorly, versus
+    `socket.gaierror` for a host that had DNS problems::
 
         >>> group = Group('host1', 'host2', 'notahost')
         >>> group.run("will it blend?")
@@ -73,6 +74,12 @@ class Group(list):
         return group
 
     def run(self, *args, **kwargs):
+        """
+        Executes `.Connection.run` on all member `Connections <.Connection>`.
+
+        :returns: a `.GroupResult`.
+        """
+        # TODO: probably best to suck it up & match actual run() sig?
         # TODO: how to change method of execution across contents? subclass,
         # kwargs, additional methods, inject an executor? Doing subclass for
         # now, but not 100% sure it's the best route.
@@ -102,7 +109,24 @@ class Group(list):
 
     # TODO: mirror Connection's close()?
 
-    # TODO: execute() as mentioned in tutorial
+    def get(self, *args, **kwargs):
+        """
+        Executes `.Connection.get` on all member `Connections <.Connection>`.
+
+        :returns: a `.GroupResult`.
+        """
+        # TODO: probably best to suck it up & match actual get() sig?
+        # TODO: actually implement on subclasses
+        raise NotImplementedError
+
+    def execute(self, task):
+        """
+        Execute ``task`` on all member `Connections <.Connection>`.
+
+        :returns: a `.GroupResult`.
+        """
+        # TODO: implement as per tutorial
+        raise NotImplementedError
 
 
 class SerialGroup(Group):
@@ -190,8 +214,8 @@ class GroupResult(dict):
 
     - Keys are the individual `.Connection` objects from within the `.Group`.
     - Values are either return values / results from the called method (e.g.
-      `.Result` objects), *or* an exception object, if one prevented the method
-      from returning.
+      `.runners.Result` objects), *or* an exception object, if one prevented
+      the method from returning.
     - Subclasses `dict`, so has all dict methods.
     - Has `.succeeded` and `.failed` attributes containing sub-dicts limited to
       just those key/value pairs that succeeded or encountered exceptions,
@@ -219,10 +243,16 @@ class GroupResult(dict):
 
     @property
     def succeeded(self):
+        """
+        A sub-dict containing only successful results.
+        """
         self._bifurcate()
         return self._successes
 
     @property
     def failed(self):
+        """
+        A sub-dict containing only failed results.
+        """
         self._bifurcate()
         return self._failures

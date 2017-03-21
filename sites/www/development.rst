@@ -25,7 +25,7 @@ There are a number of ways to get involved with Fabric:
   `ticket tracker`_ first, though,
   when submitting feature ideas.)
 * **Report bugs or submit feature requests.** We follow `contribution-guide.org
-  <http://contribution.org>`'s guidelines, so please check them out before
+  <http://contribution.org>`_'s guidelines, so please check them out before
   visiting the `ticket tracker`_.
 
 .. _ticket tracker: https://github.com/fabric/fabric/issues
