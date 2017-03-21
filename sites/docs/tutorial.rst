@@ -106,7 +106,7 @@ implementations get grumpy at password-prompt time otherwise.)
     this is all probably still too detailed for a real tutorial; probably move
     most of it into a conceptual doc?
 
-.. testsetup:: sudo
+.. testsetup:: sudo-by-hand
 
     mock = MockRemote(commands=(
         # NOTE: even tho sudo prompts are stderr, example says pty=True, so
@@ -115,11 +115,11 @@ implementations get grumpy at password-prompt time otherwise.)
         Command(out='1001\n'),
     ))
 
-.. testcleanup:: sudo
+.. testcleanup:: sudo-by-hand
 
     mock.stop()
 
-.. doctest:: sudo
+.. doctest:: sudo-by-hand
     :options: ELLIPSIS
 
     >>> from fabric import Connection
@@ -134,12 +134,29 @@ implementations get grumpy at password-prompt time otherwise.)
 Giving passwords by hand every time can get old; thankfully Invoke's powerful
 command-execution functionality includes the ability to :ref:`auto-respond
 <autoresponding>` to program output with pre-defined input. We can use this for
-``sudo``::
+``sudo``:
 
-    >>> responses = {'[sudo] password for yourusername:': 'mypassword'}
-    >>> cxn.run('sudo whoami', pty=True, responses=responses)
-    [sudo] password for yourusername:
+.. testsetup:: sudo-with-responses
+
+    mock = MockRemote(out='[sudo] password:\nroot\n', in_='mypassword\n')
+
+.. testcleanup:: sudo-with-responses
+
+    mock.stop()
+
+.. doctest:: sudo-with-responses
+
+    >>> from invoke import Responder
+    >>> from fabric import Connection
+    >>> cxn = Connection('host')
+    >>> sudopass = Responder(
+    ...     pattern=r'\[sudo\] password:',
+    ...     response='mypassword\n',
+    ... )
+    >>> cxn.run('sudo whoami', pty=True, watchers=[sudopass])
+    [sudo] password:
     root
+    <Result cmd='sudo whoami' exited=0>
 
 It's difficult to show in a snippet, but when the above was executed, the user
 didn't need to type anything; ``mypassword`` was sent to the remote program
