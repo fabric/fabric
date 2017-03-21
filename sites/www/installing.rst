@@ -53,86 +53,21 @@ or any other ``setup.py`` related command.
 Dependencies
 ============
 
-In order for Fabric's installation to succeed, you will need four primary pieces of software:
+In order for Fabric's installation to succeed, you will need the following:
 
-* the Python programming language;
-* the ``setuptools`` packaging/installation library;
-* the Python `Paramiko <http://paramiko.org>`_ SSH library;
-* and Paramiko's dependency, `Cryptography <https://cryptography.io>`_.
-
-.. TODO: update as appropriate
-
-and, if using the :ref:`parallel execution mode <parallel-execution>`:
-
-* the `multiprocessing`_ library.
-
-Please read on for important details on each dependency -- there are a few
-gotchas.
-
-Python
-------
-
-Fabric requires `Python <http://python.org>`_ version 2.6+ or 3.3+. Python
-versions older than 2.6 are significantly more difficult to support in a dual
-Python 2 + Python 3 environment, and will never have support.
-
-setuptools
-----------
-
-`Setuptools`_ comes with most Python installations by default; if yours
-doesn't, you'll need to grab it. In such situations it's typically packaged as
-``python-setuptools``, ``py26-setuptools`` or similar.
-
-.. _setuptools: http://pypi.python.org/pypi/setuptools
-
-``multiprocessing``
--------------------
-
-.. TODO: update parallel stuff
-
-An optional dependency, the ``multiprocessing`` library is included in Python's
-standard library in version 2.6 and higher. If you're using Python 2.5 and want
-to make use of Fabric's :ref:`parallel execution features <parallel-execution>`
-you'll need to install it manually; the recommended route, as usual, is via
-``pip``.  Please see the `multiprocessing PyPI page
-<http://pypi.python.org/pypi/multiprocessing/>`_ for details.
-
-
-.. TODO: ditto
-
-.. warning::
-    Early versions of Python 2.6 (in our testing, 2.6.0 through 2.6.2) ship
-    with a buggy ``multiprocessing`` module that appears to cause Fabric to
-    hang at the end of sessions involving large numbers of concurrent hosts.
-    If you encounter this problem, either use :ref:`env.pool_size / -z
-    <pool-size>` to limit the amount of concurrency, or upgrade to Python
-    >=2.6.3.
-    
-    Python 2.5 is unaffected, as it requires the PyPI version of
-    ``multiprocessing``, which is newer than that shipped with Python <2.6.3.
+* the Python programming language, versions 2.6+ or 3.3+;
+* the `Invoke <http://pyinvoke.org>`_ command-running and task-execution
+  library;
+* and the `Paramiko <http://paramiko.org>`_ SSH library (as well as its own
+  dependencies; see :doc:`its install docs <paramiko:/installing>`.)
 
 Development dependencies
 ------------------------
 
 If you are interested in doing development work on Fabric (or even just running
-the test suite), you may also need to install some or all of the following
-packages:
-
-.. TODO: Update for modern or just nix because, really?
-
-* `git <http://git-scm.com>`_, in order to obtain some of the
-  other dependencies below;
-* `Nose <https://github.com/nose-devs/nose>`_
-* `Coverage <http://nedbatchelder.com/code/modules/coverage.html>`_
-* `PyLint <http://www.logilab.org/857>`_
-* `Fudge <http://farmdev.com/projects/fudge/index.html>`_
-* `Sphinx <http://sphinx.pocoo.org/>`_
-
-For an up-to-date list of exact testing/development requirements, including
-version numbers, please see the ``dev-requirements.txt`` file included with the
-source distribution. This file is intended to be used with ``pip``, e.g. ``pip
-install -r dev-requirements.txt``.
-
+the test suite), you'll need the libraries listed in the
+``dev-requirements.txt`` (included in the source distribution.) Usually it's
+easy to simply ``pip install -r dev-requirements.txt``.
 
 .. _downloads:
 
@@ -179,8 +114,6 @@ branches may be of interest and how you can help out, please see the
 ActivePython and PyPM
 =====================
 
-.. TODO: update example output for fab 2 versions
-
 Windows users who already have ActiveState's `ActivePython
 <http://www.activestate.com/activepython/downloads>`_ distribution installed
 may find Fabric is best installed with `its package manager, PyPM
@@ -189,12 +122,12 @@ installation of Fabric via ``pypm``::
 
     C:\> pypm install fabric
     The following packages will be installed into "%APPDATA%\Python" (2.7):
-     paramiko-1.7.8 pycrypto-2.4 fabric-1.3.0
-    Get: [pypm-free.activestate.com] fabric 1.3.0
-    Get: [pypm-free.activestate.com] paramiko 1.7.8
-    Get: [pypm-free.activestate.com] pycrypto 2.4
-    Installing paramiko-1.7.8
-    Installing pycrypto-2.4
-    Installing fabric-1.3.0
+     paramiko-2.1.1 cryptography-1.4 fabric-2.0.0
+    Get: [pypm-free.activestate.com] fabric 2.0.0
+    Get: [pypm-free.activestate.com] paramiko 2.1.1
+    Get: [pypm-free.activestate.com] cryptography 1.4
+    Installing paramiko-2.1.1
+    Installing cryptography-1.4
+    Installing fabric-2.0.0
     Fixing script %APPDATA%\Python\Scripts\fab-script.py
     C:\>
