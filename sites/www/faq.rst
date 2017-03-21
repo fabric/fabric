@@ -2,8 +2,6 @@
 Frequently Asked/Answered Questions (FAQ)
 =========================================
 
-.. TODO: general pass for new API links
-
 These are some of the most commonly encountered problems or frequently asked
 questions which we receive from users. They aren't intended as a substitute for
 reading the rest of the documentation, especially the :doc:`conceptual docs
@@ -16,48 +14,41 @@ answered here.
 My (``cd``/``workon``/``export``/etc) calls don't seem to work!
 ===============================================================
 
-
-.. TODO: change links to API
-
 While Fabric can be used for many shell-script-like tasks, there's a slightly
-unintuitive catch: each `~fabric.operations.run` or `~fabric.operations.sudo`
-call has its own distinct shell session. This is required in order for Fabric
-to reliably figure out, after your command has run, what its standard out/error
-and return codes were.
+unintuitive catch: each `~fabric.connection.Connection.run` or
+`~fabric.connection.Connection.sudo` call has its own distinct shell session.
+This is required in order for Fabric to reliably figure out, after your command
+has run, what its standard out/error and return codes were.
 
 Unfortunately, it means that code like the following doesn't behave as you
 might assume::
 
     @task
-    def deploy():
-        run("cd /path/to/application")
-        run("./update.sh")
+    def deploy(c):
+        c.run("cd /path/to/application")
+        c.run("./update.sh")
 
-If that were a shell script, the second `~fabric.operations.run` call would
-have executed with a current working directory of ``/path/to/application/`` --
-but because both commands are run in their own distinct session over SSH, it
-actually tries to execute ``$HOME/update.sh`` instead (since your remote home
-directory is the default working directory).
+If that were a shell script, the second `~fabric.connection.Connection.run`
+call would have executed with a current working directory of
+``/path/to/application/`` -- but because both commands are run in their own
+distinct session over SSH, it actually tries to execute ``$HOME/update.sh``
+instead (since your remote home directory is the default working directory).
 
 A simple workaround is to make use of shell logic operations such as ``&&``,
 which link multiple expressions together (provided the left hand side executed
 without error) like so::
 
-    def deploy():
-        run("cd /path/to/application && ./update.sh")
+    def deploy(c):
+        c.run("cd /path/to/application && ./update.sh")
 
-.. TODO: update link to whatever API replaces cd() prefix() etc
-
-Fabric provides a convenient shortcut for this specific use case, in fact:
-`~fabric.context_managers.cd`. There is also `~fabric.context_managers.prefix`
-for arbitrary prefix commands.
+.. TODO: reinsert mention of 'with cd():' if that is reimplemented
 
 .. note::
     You might also get away with an absolute path and skip directory changing
     altogether::
 
-        def deploy():
-            run("/path/to/application/update.sh")
+        def deploy(c):
+            c.run("/path/to/application/update.sh")
 
     However, this requires that the command in question makes no assumptions
     about your current working directory!
