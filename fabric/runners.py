@@ -92,7 +92,11 @@ class Remote(Runner):
 
 class Result(InvokeResult):
     """
-    A `.Result` which knows about host connections and similar metadata.
+    An `invoke.runners.Result` exposing which `.Connection` was run against.
+
+    Exposes all attributes from its superclass, then adds a ``.connection``,
+    which is simply a reference to the `.Connection` whose method yielded this
+    result.
     """
     def __init__(self, **kwargs):
         connection = kwargs.pop('connection')

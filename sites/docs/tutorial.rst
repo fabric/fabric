@@ -59,7 +59,9 @@ example:
     >>> cxn = Connection('web1')
     >>> result = cxn.run('uname -s')
     Linux
-    >>> result.host
+    >>> result.connection
+    <Connection host=web1>
+    >>> result.connection.host
     'web1'
     >>> result.command
     'uname -s'
