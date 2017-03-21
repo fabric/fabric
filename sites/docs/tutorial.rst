@@ -106,14 +106,30 @@ implementations get grumpy at password-prompt time otherwise.)
     this is all probably still too detailed for a real tutorial; probably move
     most of it into a conceptual doc?
 
-::
+.. testsetup:: sudo
+
+    mock = MockRemote(commands=(
+        # NOTE: even tho sudo prompts are stderr, example says pty=True, so
+        # stdout it is!
+        Command(out='[sudo] password for yourusername:\n'),
+        Command(out='1001\n'),
+    ))
+
+.. testcleanup:: sudo
+
+    mock.stop()
+
+.. doctest:: sudo
+    :options: ELLIPSIS
 
     >>> from fabric import Connection
     >>> cxn = Connection('db1')
     >>> cxn.run('sudo /usr/sbin/useradd mydbuser', pty=True)
     [sudo] password for yourusername:
+    <Result ...>
     >>> cxn.run('id -u mydbuser')
     1001
+    <Result ...>
 
 Giving passwords by hand every time can get old; thankfully Invoke's powerful
 command-execution functionality includes the ability to :ref:`auto-respond
