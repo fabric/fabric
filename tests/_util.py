@@ -46,10 +46,11 @@ class Command(object):
         return ``False`` before it then returns ``True``. Default: ``0``
         (``exit_status_ready`` will return ``True`` immediately).
     """
-    def __init__(self, cmd=None, out=b"", err=b"", exit=0, waits=0):
+    def __init__(self, cmd=None, out=b"", err=b"", in_=None, exit=0, waits=0):
         self.cmd = cmd
         self.out = out
         self.err = err
+        self.in_ = in_
         self.exit = exit
         self.waits = waits
 
@@ -63,8 +64,11 @@ class MockChannel(Mock):
     """
     def __init__(self, *args, **kwargs):
         # TODO: worth accepting strings and doing the BytesIO setup ourselves?
+        # Stored privately to avoid any possible collisions ever. shrug.
         object.__setattr__(self, '__stdout', kwargs.pop('stdout'))
         object.__setattr__(self, '__stderr', kwargs.pop('stderr'))
+        # Stdin less private so it can be asserted about
+        object.__setattr__(self, '_stdin', BytesIO())
         super(MockChannel, self).__init__(*args, **kwargs)
 
     def _get_child_mock(self, **kwargs):
@@ -76,6 +80,9 @@ class MockChannel(Mock):
 
     def recv_stderr(self, count):
         return object.__getattribute__(self, '__stderr').read(count)
+
+    def sendall(self, data):
+        return object.__getattribute__(self, '_stdin').write(data)
 
 
 class Session(object):
@@ -115,6 +122,7 @@ class Session(object):
         commands=None,
         cmd=None,
         out=None,
+        in_=None,
         err=None,
         exit=None,
         waits=None
@@ -138,6 +146,8 @@ class Session(object):
                 kwargs['out'] = out
             if err is not None:
                 kwargs['err'] = err
+            if in_ is not None:
+                kwargs['in_'] = in_
             if exit is not None:
                 kwargs['exit'] = exit
             if waits is not None:
@@ -223,6 +233,9 @@ class Session(object):
             session_opens.append(call())
             # Expect that the channel gets an exec_command
             channel.exec_command.assert_called_with(command.cmd or ANY)
+            # Expect written stdin, if given
+            if command.in_:
+                eq_(channel._stdin.getvalue(), command.in_)
 
         # Make sure open_session was called expected number of times.
         eq_(transport.return_value.open_session.call_args_list, session_opens)
@@ -238,7 +251,7 @@ class MockRemote(object):
     to provide decorator, etc style use.
     """
     # TODO: make it easier to assume one session w/ >1 command?
-    def __init__(self, cmd=None, out=None, err=None, exit=None,
+    def __init__(self, cmd=None, out=None, err=None, in_=None, exit=None,
         commands=None, sessions=None, autostart=True):
         """
         Create & start new remote state.
@@ -260,7 +273,9 @@ class MockRemote(object):
             sessions = [Session(commands=commands)]
         elif not sessions:
             if cmd or out or err or exit:
-                session = Session(cmd=cmd, out=out, err=err, exit=exit)
+                session = Session(
+                    cmd=cmd, out=out, err=err, in_=in_, exit=exit,
+                )
             else:
                 session = Session()
             sessions = [session]
