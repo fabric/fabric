@@ -208,17 +208,28 @@ real-world situations, you might also supply it via the configuration system
 (perhaps using environment variables, to avoid polluting config files), or
 ideally, use a secrets management system.
 
+
 Transfer files
 ==============
 
 Besides shell command execution, the other common use of SSH connections is
 file transfer; `.Connection.put` and `.Connection.get` exist to fill this need.
-For example, say you had an archive file you wanted to upload::
+For example, say you had an archive file you wanted to upload:
+
+.. testsetup:: transfers
+
+    mock = MockSFTP()
+
+.. testcleanup:: transfers
+
+    mock.stop()
+
+.. doctest:: transfers
 
     >>> from fabric import Connection
     >>> result = Connection('web1').put('myfiles.tgz', remote='/opt/mydata/')
-    >>> print("Uploaded {0.local_path} to {0.remote_path}".format(result))
-    Uploaded /home/localuser/myproject/myfiles.tgz to /opt/mydata/myfiles.tgz
+    >>> print("Uploaded {0.local} to {0.remote}".format(result))
+    Uploaded /local/myfiles.tgz to /opt/mydata/
 
 These methods typically follow the behavior of ``cp`` and ``scp``/``sftp`` in
 terms of argument evaluation - for example, in the above snippet, we omitted
