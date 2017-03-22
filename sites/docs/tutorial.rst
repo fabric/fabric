@@ -59,16 +59,16 @@ example:
     >>> cxn = Connection('web1')
     >>> result = cxn.run('uname -s')
     Linux
+    >>> result.stdout.strip() == 'Linux'
+    True
+    >>> len(result.stderr)
+    0
     >>> result.connection
     <Connection host=web1>
     >>> result.connection.host
     'web1'
     >>> result.command
     'uname -s'
-    >>> result.stdout
-    u'Linux\n'
-    >>> result.stderr
-    ''
 
 Meet `.Connection`, which represents an SSH connection and provides the core of
 Fabric's API, such as `~.Connection.run`. `.Connection` objects need at least a
