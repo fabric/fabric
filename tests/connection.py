@@ -1049,15 +1049,24 @@ class Connection_(Spec):
                 eq_(call[1]['port'], remote_port)
                 # Pretend the Transport called our callback with mock Channel
                 call[1]['handler'](chan, tuple(), tuple())
+                # Then have to sleep a bit to make sure we give the tunnel
+                # created by that callback to spin up; otherwise ~5% of the
+                # time we exit the contextmanager so fast, the tunnel's "you're
+                # done!" flag is set before it even gets a chance to select()
+                # once.
+                time.sleep(0.01)
                 # And make sure we hooked up to the local socket OK
                 tup = (local_host, local_port)
                 tun_socket.connect.assert_called_once_with(tup)
-            time.sleep(0.2)
             # Expect that our socket got written to by the tunnel (due to the
             # above-setup select() and channel mocking). Need to do this after
             # tunnel shutdown or we risk thread ordering issues.
             tun_socket.sendall.assert_called_once_with("data")
+            # Ensure we closed down the mock socket
             mocket.return_value.close.assert_called_once_with()
+            # And that the transport canceled the port forward on the remote
+            # end.
+            eq_(cxn.transport.cancel_port_forward.call_count, 1)
 
         def forwards_remote_port_to_local_end(self):
             self._forward_remote({'remote_port': 1234})
