@@ -93,18 +93,9 @@ Superuser privileges via auto-response
 
 Need to run things as the remote system's superuser? You could invoke the
 ``sudo`` program via `~.Connection.run`, and (if your remote system isn't
-configured with passwordless sudo) respond to the password prompt by hand.
-(Note how we need to request a remote pseudo-terminal; most ``sudo``
+configured with passwordless sudo) respond to the password prompt by hand, as
+below. (Note how we need to request a remote pseudo-terminal; most ``sudo``
 implementations get grumpy at password-prompt time otherwise.)
-
-.. TODO:
-    update repr() of Result a bit, insert it in the below examples. Right now a
-    real session of the below results in extra lines all
-    '<fabric.runners.Result object at 0xh3x>'.
-
-.. TODO:
-    this is all probably still too detailed for a real tutorial; probably move
-    most of it into a conceptual doc?
 
 .. testsetup:: sudo-by-hand
 
@@ -121,9 +112,9 @@ implementations get grumpy at password-prompt time otherwise.)
 
     >>> from fabric import Connection
     >>> cxn = Connection('db1')
-    >>> cxn.run('sudo /usr/sbin/useradd mydbuser', pty=True)
+    >>> cxn.run('sudo useradd mydbuser', pty=True)
     [sudo] password:
-    <Result cmd='sudo /usr/sbin/useradd mydbuser' exited=0>
+    <Result cmd='sudo useradd mydbuser' exited=0>
     >>> cxn.run('id -u mydbuser')
     1001
     <Result cmd='id -u mydbuser' exited=0>
@@ -162,31 +153,60 @@ automatically. Much easier!
 The ``sudo`` helper
 -------------------
 
-The above example using ``responses`` still has a few minor problems as a "how
-you should ``sudo``" solution:
+Using watchers/responders works well here, but it's a lot of boilerplate to set
+up every time - especially as real-world use cases need more work to detect
+failed/incorrect passwords.
 
-* Giving ``responses=`` every time would itself get pretty old;
-* Hardcoding your password in your scripts is poor security practice;
-* ``sudo`` may present different prompt text on different systems;
+To help with that, Invoke provides a `Context.sudo
+<invoke.context.Context.sudo>` method which handles most of the boilerplate for
+you (as `.Connection` subclasses `~invoke.context.Context`, it gets this method
+for free.) `~invoke.context.Context.sudo` doesn't do anything users can't do
+themselves (a frustration in version 1 of this library) but as always, common
+problems are best solved with commonly shared solutions.
 
-And so on. To prevent every user from writing their own wrapper, Fabric
-provides its own::
+All the user needs to do is ensure the ``sudo.password`` :doc:`configuration
+value </concepts/configuration>` is filled in, and `.Connection.sudo` handles
+the rest:
 
-    >>> from fabric import Connection
-    >>> cxn = Connection('db1')
+.. testsetup:: sudo
+
+    from __future__ import print_function
+    from mock import patch
+    gp_patcher = patch('getpass.getpass', side_effect=lambda x: print(x))
+    gp_patcher.start()
+    mock = MockRemote(commands=(
+        Command(out='root\n'),
+        Command(),
+        Command(out='1001\n'),
+    ))
+
+.. testcleanup:: sudo
+
+    mock.stop()
+    gp_patcher.stop()
+
+.. doctest:: sudo
+    :options: +ELLIPSIS
+
+    >>> import getpass
+    >>> from fabric import Connection, Config
+    >>> sudo_pass = getpass.getpass("What's your sudo password?")
+    What's your sudo password?
+    >>> config = Config(overrides={'sudo': {'password': sudo_pass}})
+    >>> cxn = Connection('db1', config=config)
     >>> cxn.sudo('whoami', hide='stderr')
-    No stored 'sudo' password found! Please enter it now: 
     root
-    >>> cxn.sudo('/usr/sbin/useradd mydbuser')
+    <Result cmd="...whoami" exited=0>
+    >>> cxn.sudo('useradd mydbuser')
+    <Result cmd="...useradd mydbuser" exited=0>
     >>> cxn.run('id -u mydbuser')
     1001
+    <Result cmd='id -u mydbuser' exited=0>
 
-What happened here? `~.Connection.sudo` checked to see if a sudo password had
-been loaded by the :doc:`configuration system </concepts/configuration>`. Upon
-not finding one, it prompted the user (using `getpass.getpass`) to fill that
-value in, then set up an auto-response for use by all subsequent
-`~.Connection.sudo` calls.
-
+We filled in the sudo password up-front at runtime in this example; in
+real-world situations, you might also supply it via the configuration system
+(perhaps using environment variables, to avoid polluting config files), or
+ideally, use a secrets management system.
 
 Transfer files
 ==============

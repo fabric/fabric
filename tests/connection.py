@@ -829,8 +829,7 @@ class Connection_(Spec):
     class sudo:
         @patch('fabric.connection.SSHClient')
         @patch('fabric.connection.Remote')
-        @patch('invoke.context.getpass')
-        def basic_invocation(self, getpass, Remote, Client):
+        def basic_invocation(self, Remote, Client):
             # Technically duplicates Invoke-level tests, but ensures things
             # still work correctly at our level.
             cxn = Connection('host')
