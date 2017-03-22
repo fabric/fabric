@@ -10,27 +10,39 @@ documentation <concepts>` and the :doc:`API reference <api>`.
     If you're new to Python, we **strongly** recommend checking out `Python's
     own tutorial <https://docs.python.org/2.6/tutorial/index.html>`_ first.
 
-Prelude: Fabric and its relation to Invoke
-==========================================
+A note about imports
+====================
 
-It's important to note that as of 2.0, Fabric is really two libraries working
-together:
+Fabric composes a couple of other libraries as well as providing its own layer
+on top; user code will most often import from the ``fabric`` package, but
+you'll sometimes import directly from ``invoke`` or ``paramiko`` too:
 
-* `Invoke <https://pyinvoke.org>`_, which defines general interfaces (how CLI
-  tasks work, what executing shell commands looks like, etc) and implements
-  "local"-specific functionality (executing shell commands on the local host);
-* Fabric itself, which extends Invoke's interfaces where necessary
-  (implementing remote shell execution) and adds functionality with no local
-  analogue (such as file upload/download).
+- `Invoke <https://pyinvoke.org>`_  implements CLI parsing, task organization,
+  and shell command execution (a generic framework plus specific implementation
+  for local commands.)
 
-    * Most of the network functionality uses `Paramiko <https://paramiko.org>`_
-      under the hood - but most users will never need to import anything from
-      Paramiko directly.
+    - Anything that isn't specific to remote systems tends to live in Invoke,
+      and it is often used standalone by programmers who don't need any remote
+      functionality.
+    - Fabric users will frequently import Invoke objects, in cases where Fabric
+      itself has no need to subclass or otherwise modify what Invoke provides.
 
-Because of this, most imports will be from the ``fabric`` namespace (such as
-``from fabric import Connection``) -- but occasionally you'll import directly
-from ``invoke`` when Fabric's not overriding anything. For example, when
-constructing task namespaces, you'll see ``from invoke import Collection``.
+- `Paramiko <https://paramiko.org>`_ implements low/mid level SSH
+  functionality - SSH and SFTP sessions, key management, etc.
+
+    - Fabric mostly uses this under the hood; users will only rarely import
+      from Paramiko directly.
+
+- Fabric glues the other libraries together and provides its own high level
+  objects too, e.g.:
+
+    - Subclassing Invoke's context and command-runner classes, wrapping them
+      around Paramiko-level primitives;
+    - Extending Invoke's configuration system by using Paramiko's
+      ``ssh_config`` parsing machinery;
+    - Implementing new high-level primitives of its own, such as
+      port-forwarding context managers. (These may, in time, migrate downwards
+      into Paramiko.)
 
 .. TODO:
     we should probably rename Collection to be Namespace or something; it's too
@@ -40,8 +52,8 @@ constructing task namespaces, you'll see ``from invoke import Collection``.
 Run commands via Connections and ``run``
 ========================================
 
-The most basic use of Fabric is to execute a shell command on a server (via
-SSH), then (optionally) interrogate the result. By default, the remote
+The most basic use of Fabric is to execute a shell command on a remote system
+via SSH, then (optionally) interrogate the result. By default, the remote
 program's output is printed directly to your terminal, *and* captured. A basic
 example:
 
@@ -61,14 +73,16 @@ example:
     Linux
     >>> result.stdout.strip() == 'Linux'
     True
-    >>> len(result.stderr)
+    >>> result.exited
     0
+    >>> result.ok
+    True
+    >>> result.command
+    'uname -s'
     >>> result.connection
     <Connection host=web1>
     >>> result.connection.host
     'web1'
-    >>> result.command
-    'uname -s'
 
 Meet `.Connection`, which represents an SSH connection and provides the core of
 Fabric's API, such as `~.Connection.run`. `.Connection` objects need at least a
@@ -161,8 +175,8 @@ To help with that, Invoke provides a `Context.sudo
 <invoke.context.Context.sudo>` method which handles most of the boilerplate for
 you (as `.Connection` subclasses `~invoke.context.Context`, it gets this method
 for free.) `~invoke.context.Context.sudo` doesn't do anything users can't do
-themselves (a frustration in version 1 of this library) but as always, common
-problems are best solved with commonly shared solutions.
+themselves - but as always, common problems are best solved with commonly
+shared solutions.
 
 All the user needs to do is ensure the ``sudo.password`` :doc:`configuration
 value </concepts/configuration>` is filled in, and `.Connection.sudo` handles
