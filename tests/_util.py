@@ -409,10 +409,6 @@ class MockSFTP(object):
         mock_os = self.os_patcher.start()
         Client = self.client_patcher.start()
         sftp = Client.return_value.open_sftp.return_value
-        # All mock_sftp'd tests care about a Transfer instance
-        # TODO: this bit may want to live only in the decorator; doctests need
-        # to do this part explicitly themselves
-        #transfer = Transfer(Connection('host'))
         # Handle common filepath massage actions; tests will assume these.
         def fake_abspath(path):
             return '/local/{0}'.format(path)
@@ -426,6 +422,8 @@ class MockSFTP(object):
         # Not super clear to me why the 'wraps' functionality in mock isn't
         # working for this :(
         mock_os.path.basename.side_effect = os.path.basename
+        # Return the sftp and OS mocks for use by decorator use case.
+        return sftp, mock_os
 
     def stop(self):
         self.os_patcher.stop()
@@ -448,34 +446,13 @@ def mock_sftp(expose_os=False):
     """
     def decorator(f):
         @wraps(f)
-        @patch('fabric.transfer.os')
-        @patch('fabric.connection.SSHClient')
-        def wrapper(*args, **kwargs):
-            # Obtain the mocks given us by @patch (and 'self')
-            self, Client, mock_os = args
-            # SFTP client instance mock
-            sftp = Client.return_value.open_sftp.return_value
-            # All mock_sftp'd tests care about a Transfer instance
+        def wrapper(self, **kwargs):
+            mock = MockSFTP(autostart=False)
+            sftp, mock_os = mock.start()
             transfer = Transfer(Connection('host'))
-            # Handle common filepath massage actions; tests will assume these.
-            def fake_abspath(path):
-                return '/local/{0}'.format(path)
-            mock_os.path.abspath.side_effect = fake_abspath
-            sftp.getcwd.return_value = '/remote'
-            # Ensure stat st_mode is a real number; Python 2 stat.S_IMODE
-            # doesn't appear to care if it's handed a MagicMock, but Python 3's
-            # does. (...ok?)
-            fake_mode = 0o644 # arbitrary real-ish mode
-            sftp.stat.return_value.st_mode = fake_mode
-            mock_os.stat.return_value.st_mode = fake_mode
-            # Not super clear to me why the 'wraps' functionality in mock isn't
-            # working for this :(
-            mock_os.path.basename.side_effect = os.path.basename
-            # Pass in mocks as needed
             passed_args = [self, sftp, transfer]
             if expose_os:
                 passed_args.append(mock_os)
-            # TEST!
             return f(*passed_args)
         return wrapper
     return decorator
