@@ -47,7 +47,7 @@ example:
 
 .. testsetup:: basic
 
-    mock = MockRemote(out='Linux\n')
+    mock = MockRemote(out=b'Linux\n')
 
 .. testcleanup:: basic
 
@@ -100,8 +100,8 @@ implementations get grumpy at password-prompt time otherwise.)
 .. testsetup:: sudo-by-hand
 
     mock = MockRemote(commands=(
-        Command(out='[sudo] password:\n'),
-        Command(out='1001\n'),
+        Command(out=b'[sudo] password:\n'),
+        Command(out=b'1001\n'),
     ))
 
 .. testcleanup:: sudo-by-hand
@@ -126,7 +126,7 @@ command-execution functionality includes the ability to :ref:`auto-respond
 
 .. testsetup:: sudo-with-responses
 
-    mock = MockRemote(out='[sudo] password:\nroot\n', in_='mypassword\n')
+    mock = MockRemote(out=b'[sudo] password:\nroot\n', in_=b'mypassword\n')
 
 .. testcleanup:: sudo-with-responses
 
@@ -175,9 +175,9 @@ the rest:
     gp_patcher = patch('getpass.getpass', side_effect=lambda x: print(x))
     gp_patcher.start()
     mock = MockRemote(commands=(
-        Command(out='root\n'),
+        Command(out=b'root\n'),
         Command(),
-        Command(out='1001\n'),
+        Command(out=b'1001\n'),
     ))
 
 .. testcleanup:: sudo
