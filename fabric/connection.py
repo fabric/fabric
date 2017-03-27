@@ -341,7 +341,7 @@ class Connection(Context):
         #: ``self.client.get_transport()``.
         self.transport = None
 
-    def __str__(self):
+    def __repr__(self):
         # Host comes first as it's the most common differentiator by far
         bits = [('host', self.host)]
         # TODO: maybe always show user regardless? Explicit is good...
