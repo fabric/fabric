@@ -105,12 +105,6 @@ Networking
   which is new in Fabric 2 and was not implemented in Fabric 1 at time of
   writing (though there are patches for it).
 
-.. TODO:
-    how to perform "setup" or "pre-execution" things like dynamically setting a
-    "host list", where 'fab foo bar' wants 'foo' to change 'bar's context
-    somehow? (Especially, what about 'fab foo bar biz baz' - can't simply tell
-    'foo' to run 'bar' with some hardcoded params or anything.)
-
 Configuration
 =============
 
