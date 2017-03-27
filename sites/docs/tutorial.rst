@@ -380,16 +380,16 @@ code in them, but another option is Fabric's own "network-oriented" tool,
 ``fab``.
 
 ``fab`` wraps Invoke's CLI mechanics with features like host selection, letting
-you quickly run tasks on various servers - without having to e.g. define
-``host`` kwargs on all your tasks.
+you quickly run tasks on various servers - without having to define ``host``
+kwargs on all your tasks or similar.
 
 .. note::
     This mode was the primary API of Fabric 1.x; as of 2.0 it's just a
     convenience. Whenever your use case falls outside these shortcuts, it
     should be easy to revert to the library API directly (with or without
-    Invoke's less opinionated CLI tasks).
+    Invoke's less opinionated CLI tasks wrapped around it).
 
-For a final code example, let's adapt the previous one into a ``fab`` task
+For a final code example, let's adapt the previous example into a ``fab`` task
 module called ``fabfile.py``::
 
     from invoke import task
@@ -417,9 +417,9 @@ the task once on a single server::
 
 When this occurs, ``cxn`` inside the task is set, effectively, to
 ``Connection("web1")`` - as in earlier examples. Similarly, you can give more
-than one host, which creates a `.Group` under the hood and uses its
-`~.Group.execute` method::
+than one host, which runs the task multiple times, each time with a different
+`.Connection` instance handed in::
 
     $ fab -H web1,web2,web3 upload_and_unpack
 
-This is just the start; see TODO: other docs, for details.
+This is just the start; see :doc:`/concepts` for more detailed documentation.
