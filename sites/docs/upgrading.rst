@@ -74,7 +74,9 @@ CLI tasks
       migrate to the latter when their needs grow/change.
 
 - Old-style task functions (those not decorated with ``@task``) are gone. You
-  must now always use ``@task``.
+  must now always use ``@task``. (Note that users heavily attached to old-style
+  tasks should be able to reimplement them by extending
+  `~invoke.collection.Collection`!)
 
 .. TODO:
     how to handle 'local-only' tasks exactly? have both @task decorators
