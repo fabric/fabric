@@ -60,11 +60,6 @@ API organization
   on the CLI) are implemented via `.Group` objects, which are lightweight
   wrappers around multiple Connections.
 
-.. TODO:
-    how will we support roles on the CLI or otherwise? 100% user-driven? Show
-    an example of how to implement fabric 1's roles with a basic one-level
-    dict, maybe?
-
 CLI tasks
 =========
 
