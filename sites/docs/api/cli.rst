@@ -79,14 +79,11 @@ For example, let's say you wanted kernel info for a bunch of systems::
 
     $ fab -H host1,host2,host3 -- uname -a
 
-Such a command is equivalent to the following Fabric library code (note the use
-of ``reflect=True`` to trigger printing of remote stdout/stderr)::
+Such a command is equivalent to the following Fabric library code::
 
     from fabric import Group
 
-    Group('host1', 'host2', 'host3').run("uname -a", reflect=True)
-
-.. TODO: or should we have that kick in by default when a pty is present?
+    Group('host1', 'host2', 'host3').run("uname -a")
 
 Most of the time you will want to just write out the task in your fabfile
 (anything you use once, you're likely to use again) but this feature provides a
