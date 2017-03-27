@@ -24,13 +24,14 @@ The primary differences from that document are as follows:
   <fabric.connection.Connection>` basis, loaded with the interpreted SSH
   configuration for that specific host (since an SSH config file is only ever
   useful via such a lens). See :ref:`ssh-config`.
-* Fabric offers a framework for managing per-host and per-host-collection
-  configuration details and overrides, which lives under the top-level
-  ``hosts`` and ``groups`` config keys; see :ref:`host-configuration`.
+* Fabric plans to offer a framework for managing per-host and
+  per-host-collection configuration details and overrides, which lives under
+  the top-level ``hosts`` and ``groups`` config keys; see
+  :ref:`host-configuration`.
 
-    * This functionality supplements that of the SSH config loading described
-      earlier; most users will find it preferable to configure as much as
-      possible via an SSH config file, but not all Fabric settings have
+    * This functionality will supplement that of the SSH config loading
+      described earlier; most users will find it preferable to configure as
+      much as possible via an SSH config file, but not all Fabric settings have
       ``ssh_config`` analogues, nor do all use cases fit neatly into using such
       files.
 
