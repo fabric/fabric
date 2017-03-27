@@ -56,7 +56,8 @@ its own username, port number, and so forth. (This includes ``gateway`` itself
 
 .. TODO:
     should it default to user/port from the 'outer' Connection? Some users may
-    assume it will? (Mostly user.)
+    assume it will? (Probably most likely to assume user is preserved; port
+    less so?)
 
 ``ProxyCommand``
 ----------------
