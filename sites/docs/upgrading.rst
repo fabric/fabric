@@ -78,12 +78,6 @@ CLI tasks
   tasks should be able to reimplement them by extending
   `~invoke.collection.Collection`!)
 
-.. TODO:
-    how to handle 'local-only' tasks exactly? have both @task decorators
-    imported at the same time? just use the remote one (like fabric 1
-    effectively did)? use invoke solely for CLI and import fabric solely as a
-    library? (should we recommend that?)
-
 Remote shell commands
 =====================
 
