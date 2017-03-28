@@ -6,10 +6,6 @@ This document outlines Fabric's intended development path. Please make sure
 you're reading `the latest version
 <http://fabfile.org/roadmap.html>`_ of this document! 
 
-.. warning::
-    This information is subject to change without warning, and should not be
-    used as a basis for any life- or career-altering decisions!
-
 Fabric 2.x
 ==========
 
