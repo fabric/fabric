@@ -65,7 +65,7 @@ noted here:
 * In Python3, Fabric3 implements its own version of ``contextlib.nested`` based
   on ``contextlib.ExitStack``, since it's no longer available in Python3. Please
   note that it was removed with good reason, we do not encourage you use it.
-* Fabric3 requires the `six` library for compatability.
+* Fabric3 requires the `six` library for compatibility.
 * Minimum requirements for paramiko have been bumped to 1.17.0.
 
 ChangeLog
