@@ -201,8 +201,9 @@ Proxying
     (where we view the config as a dictionary structure) requires additional
     work.
 
-TK: honor ProxyJump's comma-separated variant, which should translate to
-(reverse-ordered) nested Connection-style gateways.
+.. TODO:
+    honor ProxyJump's comma-separated variant, which should translate to
+    (reverse-ordered) nested Connection-style gateways.
 
 Authentication
 ~~~~~~~~~~~~~~
@@ -210,7 +211,7 @@ Authentication
 - ``ForwardAgent``: controls default behavior of ``forward_agent``.
 
 
-TK: merge with per-host config when it's figured out
+.. TODO: merge with per-host config when it's figured out
 
 
 .. _disabling-ssh-config:
@@ -237,18 +238,18 @@ To do so, simply set the top level config option ``load_ssh_configs`` to
 Per-host configuration settings
 ===============================
 
+TBD.
 
-TK:
+.. TODO:
+    - Given `.Connection` is the base object, where even would "per-host" data be
+      stored / loaded?
 
-- Given `.Connection` is the base object, where even would "per-host" data be
-  stored / loaded?
+        - SSH config loading makes sense for filling uch of this
+        - What about regular config? We'd want this data to live separate from the
+          core config, so it can't really live in regular config files unless we
+          make it a special case (or truly part of the config)
+        - But then the question is, where _does_ it come from?
 
-    - SSH config loading makes sense for filling uch of this
-    - What about regular config? We'd want this data to live separate from the
-      core config, so it can't really live in regular config files unless we
-      make it a special case (or truly part of the config)
-    - But then the question is, where _does_ it come from?
-
-        - Its own set of configuration files, e.g. ``~/.fabric-hosts.yml``
-        - Library-only option, i.e. some argument to ``Config(...)`` or whatnot
-        - ???
+            - Its own set of configuration files, e.g. ``~/.fabric-hosts.yml``
+            - Library-only option, i.e. some argument to ``Config(...)`` or whatnot
+            - ???

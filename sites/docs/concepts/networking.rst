@@ -93,14 +93,15 @@ easier-to-use API.
     and will result in an exception.
 
 
-other sections TK... (maybe nest files further??):
+.. TODO:
+    other sections TK... (maybe nest files further??):
 
-- connection handling / lazy connecting / closing connections / etc (possibly
-  less critical now that connections have a more explicit lifecycle?)
-- Skipping various kinds of 'bad' hosts
-- Timeouts
-- Reconnection attempts
-- Parallel connections
-- Look in fab 1 docs for more that we can already easily support
-- keepalives? other new things?
-- Should SSH host tracking live here or under 'ssh' or 'security' type section?
+    - connection handling / lazy connecting / closing connections / etc (possibly
+      less critical now that connections have a more explicit lifecycle?)
+    - Skipping various kinds of 'bad' hosts
+    - Timeouts
+    - Reconnection attempts
+    - Parallel connections
+    - Look in fab 1 docs for more that we can already easily support
+    - keepalives? other new things?
+    - Should SSH host tracking live here or under 'ssh' or 'security' type section?
