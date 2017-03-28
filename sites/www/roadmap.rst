@@ -9,26 +9,16 @@ you're reading `the latest version
 Fabric 2.x
 ==========
 
-Fabric 2.0 and above is split into a few component projects:
+Fabric 2 is currently in alpha; the short term roadmap is:
 
-* `Invoke <http://pyinvoke.org>`_ provides the API for task execution
-  (including via the CLI), namespacing, parallelism, and local shell commands.
-  It can be used on its own; if you don't need SSH functionality, you don't
-  need Fabric or its other dependencies such as Paramiko.
-* `Paramiko <http://paramiko.org>`_ implements the low level SSH API, such as
-  channels, transports, SSH configuration files, key management, and so forth.
-* Fabric itself ties the above two projects together into a high level remote
-  execution framework, focusing on concepts like server connections, file
-  transfers, and invoking & managing remote shell commands.
-* An optional component is `Patchwork <https://github.com/fabric/patchwork>`_
-  which contains "best practices" versions of common remote actions, using the
-  core Fabric API. Examples include file management, templating, wrappers
-  around the ``rsync`` tool, remote system information gathering, and much
-  more.
-
-Development therefore lives in various places depending on the specific problem
-domain - task namespacing, for example, will continue to improve in Invoke; new
-SSH key types in Paramiko; and so forth.
+- Gather feedback on overall API methodology, in case major changes seem
+  necessary;
+- Implement the most crucial of remaining 'missing features' re: parity with
+  version 1 (though anything that seems feasible to add without changing
+  existing APIs, should be left til post-2.0 feature releases);
+- Enter a beta period where the APIs are frozen and bugs are squashed (this
+  step is optional; intent is to release more often, not less often);
+- Release 2.0.0 and go from there.
 
 Fabric 1.x
 ==========
