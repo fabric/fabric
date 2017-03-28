@@ -38,14 +38,14 @@ html_sidebars = {
     ]
 }
 
-# Everything intersphinx's to Python, and to (local-or-remote) Invoke &
-# Paramiko
+# Everything intersphinx's to Python, and to (local-or-remote) Invoke
 inv_target = join(
     dirname(__file__),
     '..', '..', 'invoke', 'sites', 'docs', '_build'
 )
 if os.environ.get('READTHEDOCS') == 'True':
     inv_target = 'http://docs.pyinvoke.org/en/latest/'
+# ... and Paramiko (docs)
 para_target = join(
     dirname(__file__),
     '..', '..', 'paramiko', 'sites', 'docs', '_build'
