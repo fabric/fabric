@@ -932,7 +932,7 @@ class Connection_(Spec):
                 # Otherwise we might assert before it does things. (NOTE:
                 # doesn't need to be much, even at 0.01s, 0/100 trials failed
                 # (vs 45/100 with no sleep)
-                time.sleep(0.01)
+                time.sleep(0.015)
                 eq_(client.connect.call_args[1]['hostname'], 'host')
                 listener_sock.setsockopt.assert_called_once_with(
                     socket.SOL_SOCKET, socket.SO_REUSEADDR, 1
@@ -956,7 +956,7 @@ class Connection_(Spec):
                 if not (tunnel_exception or listener_exception):
                     channel.sendall.assert_called_once_with(data)
             # Shutdown, with another sleep because threads.
-            time.sleep(0.01)
+            time.sleep(0.015)
             if not listener_exception:
                 tunnel_sock.close.assert_called_once_with()
                 channel.close.assert_called_once_with()
