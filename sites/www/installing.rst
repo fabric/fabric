@@ -61,9 +61,6 @@ In order for Fabric's installation to succeed, you will need the following:
 * and the `Paramiko <http://paramiko.org>`_ SSH library (as well as its own
   dependencies; see `its install docs <http://paramiko.org/installing.html>`_.)
 
-.. TODO:
-    update above install link to use intersphinx for the paramiko www site?
-
 Development dependencies
 ------------------------
 
