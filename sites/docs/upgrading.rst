@@ -94,9 +94,9 @@ CLI tasks
 Remote shell commands
 =====================
 
-- There is no more built-in "use shell" or "shell" option - if your remote sshd
-  isn't wrapping commands in a shell execution (most of them do) use the new
-  command processing framework to add your own to taste.
+- There is no more built-in ``use_shell`` or ``shell`` option; the old "need"
+  to wrap with an explicit shell invocation is no longer necessary or usually
+  desirable.
 
 Networking
 ==========
