@@ -28,6 +28,8 @@ Looking to upgrade from Fabric 1.x? Use our detailed upgrade guide:
     upgrading
     
 
+.. _concepts-docs:
+
 Concepts
 --------
 
@@ -48,7 +50,7 @@ and examples of shortcuts for executing tasks across hosts or groups.
 .. toctree::
     cli
 
-.. _api:
+.. _api-docs:
 
 API
 ---
