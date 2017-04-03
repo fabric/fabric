@@ -298,6 +298,13 @@ env_options = [
         help="username to use when connecting to remote hosts"
     ),
 
+    make_option('--use-default-prompts',
+        action='store_true',
+        dest='use_default_prompts',
+        default=False,
+        help="automatically answer prompts with their default values"
+    ),
+
     make_option('-w', '--warn-only',
         action='store_true',
         default=False,
@@ -376,6 +383,7 @@ env = _AttributeDict({
     'sudo_user': None,
     'tasks': [],
     'prompts': {},
+    'use_default_prompts': None,
     'use_exceptions_for': {'network': False},
     'use_shell': True,
     'use_ssh_config': False,
