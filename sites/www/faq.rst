@@ -4,9 +4,8 @@ Frequently Asked/Answered Questions (FAQ)
 
 These are some of the most commonly encountered problems or frequently asked
 questions which we receive from users. They aren't intended as a substitute for
-reading the rest of the documentation, especially the :doc:`conceptual docs
-<concepts>`, so please make sure you check those out if your question is not
-answered here.
+reading the rest of the documentation, so please make sure you check it out if
+your question is not answered here.
 
 
 .. _one-shell-per-command:
@@ -62,8 +61,8 @@ without error) like so::
 Why do I sometimes see ``err: stdin: is not a tty``?
 ====================================================
 
-See :ref:`Invoke's FAQ <stdin-not-tty>` for this; even for Fabric v1, which is
-not based on Invoke, the answer is the same.
+See :ref:`Invoke's FAQ <stdin-not-tty>` for this; even for Fabric v1,
+which is not based on Invoke, the answer is the same.
 
 
 .. _faq-daemonize:

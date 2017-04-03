@@ -24,6 +24,8 @@ Table of contents
 
     upgrading
 
+.. _concepts-docs:
+
 * High level conceptual documentation that picks up where the tutorial leaves
   off:
 
@@ -32,6 +34,8 @@ Table of contents
       :maxdepth: 1
 
       concepts/*
+
+.. _api-docs:
 
 * The full API documentation reference:
 

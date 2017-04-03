@@ -2,11 +2,11 @@
 Contact
 =======
 
-If you've scoured the :doc:`conceptual <concepts>` and :doc:`API <api>`
-documentation and still can't find an answer to your question, below are
-various support resources that should help. We do request that you do at least
-skim the documentation before posting tickets or mailing list questions,
-however!
+If you've scoured the :ref:`conceptual <concepts-docs>` and :ref:`API
+<api-docs>` documentation and still can't find an answer to your question,
+below are various support resources that should help. We do request that you do
+at least skim the documentation before posting tickets or mailing list
+questions, however!
 
 Mailing list
 ------------
