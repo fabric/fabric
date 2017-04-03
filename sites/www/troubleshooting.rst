@@ -20,6 +20,26 @@ report.
       Fabric versions sometimes have different Paramiko dependencies - so to
       try older Paramikos you may need to downgrade Fabric as well.
 
+* **Make sure Fabric is really the problem.** If your problem is in the
+  behavior or output of a remote command, try recreating it without Fabric
+  involved:
+
+    * Find out the exact command Fabric is executing on your behalf:
+
+        - In 2.x and up, activate command echoing via the ``echo=True`` keyword
+          argument, the ``run.echo`` config setting, or the ``-e`` CLI option.
+        - In 1.x, run Fabric with ``--show=debug`` and look for ``run:`` or
+          ``sudo:`` lines.
+
+    * Execute the command in an interactive remote shell first, to make sure it
+      works for a regular human; this will catch issues such as errors in
+      command construction.
+    * If that doesn't find the issue, run the command over a non-shell SSH
+      session, e.g. ``ssh yourserver "your command"``. Depending on your
+      settings and Fabric version, you may want to use ``ssh -T`` (disable PTY)
+      or ``-t`` (enable PTY) to most closely match how Fabric is executing the
+      command.
+
 * **Enable Paramiko-level debug logging.** If your issue is in the lower level
   Paramiko library, it can help us to see the debug output Paramiko prints. At
   top level in your fabfile, add the following::
@@ -32,8 +52,3 @@ report.
   ``filename='/path/to/a/file'`` if you like.)
 
   Then submit this info to anybody helping you on IRC or in your bug report.
-
-.. TODO:
-    re-insert the "make sure it's not really fabric" line item re: wrapped vs
-    unwrapped shell commands, once our logging actually handles that? (Less of
-    an issue for anything but sudo() these days...)
