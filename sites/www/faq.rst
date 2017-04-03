@@ -59,7 +59,7 @@ without error) like so::
 
 .. TODO:
     reinstate FAQ about 'su' / running as another user, when sudo grows that
-    back
+    back. (Probably in Invoke tho.)
 
 
 Why do I sometimes see ``err: stdin: is not a tty``?
