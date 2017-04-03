@@ -6,41 +6,58 @@ This site covers Fabric's usage & API documentation. For basic info on what
 Fabric is, including its public changelog & how the project is maintained,
 please see `the main project website <http://fabfile.org>`_.
 
-Table of contents
-=================
+Getting started
+---------------
 
-* :doc:`The tutorial <tutorial>`: A basic overview of Fabric's API, using a
-  sample set of tasks one might use to deploy a generic Python web application.
-
-.. toctree::
-    :hidden:
-
-    tutorial
-
-* :doc:`upgrading`: Instructions for upgrading from Fabric 1.x.
+Many core ideas & API calls are explained in the tutorial/getting-started
+document:
 
 .. toctree::
-    :hidden:
+    :maxdepth: 2
+
+    getting_started
+
+Upgrading from 1.x
+------------------
+
+Looking to upgrade from Fabric 1.x? Use our detailed upgrade guide:
+
+.. toctree::
+    :maxdepth: 2
 
     upgrading
+    
 
-.. _concepts-docs:
+Concepts
+--------
 
-* High level conceptual documentation that picks up where the tutorial leaves
-  off:
+Dig deeper into specific topics:
 
-  .. toctree::
-      :glob:
-      :maxdepth: 1
+.. toctree::
+    :maxdepth: 2
+    :glob:
 
-      concepts/*
+    concepts/*
 
-.. _api-docs:
+The ``fab`` CLI tool
+--------------------
 
-* The full API documentation reference:
+Details on the CLI interface to Fabric, how it extends Invoke's CLI machinery,
+and examples of shortcuts for executing tasks across hosts or groups.
 
-  .. toctree::
-      :glob:
-      :maxdepth: 1
+.. toctree::
+    cli
 
-      api/*
+.. _api:
+
+API
+---
+
+Know what you're looking for & just need API details? View our auto-generated
+API documentation:
+
+.. toctree::
+    :maxdepth: 1
+    :glob:
+
+    api/*

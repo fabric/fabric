@@ -1,6 +1,6 @@
-========
-Tutorial
-========
+===============
+Getting started
+===============
 
 Welcome! This tutorial highlights Fabric's core features; for further details,
 see the links within, or the documentation index which has links to conceptual
