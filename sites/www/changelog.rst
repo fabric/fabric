@@ -2,6 +2,9 @@
 Changelog
 =========
 
+* :bug:`1574` `~fabric.contrib.project.upload_project` failed for folder in
+  current directory specified without any path separator. Thanks ``@aidanmelen``
+  for the report and Pierce Lopez for the patch.
 * :support:`1539` Add documentation for :ref:`env.output_prefix <output_prefix>`. Thanks ``@jphalip``.
 * :release:`1.10.5 <2016-12-05>`
 * :bug:`1470` When using `~fabric.operations.get` with glob expressions, a lack
