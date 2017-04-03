@@ -9,6 +9,10 @@ This page documents the details of Fabric's optional command-line interface,
 Options & arguments
 ===================
 
+.. note::
+    By default, ``fab`` honors all of the same CLI options as :ref:`Invoke's
+    'inv' program <inv>`; only additions and overrides are listed here!
+
 .. option:: -F, --ssh-config
 
     Takes a path to load as a runtime SSH config file. See :ref:`ssh-config`.
