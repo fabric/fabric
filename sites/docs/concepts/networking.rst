@@ -91,17 +91,3 @@ easier-to-use API.
     supplying a `.Connection` as the ``gateway`` via kwarg or config, *and*
     loading a config file containing ``ProxyCommand``) is considered an error
     and will result in an exception.
-
-
-.. TODO:
-    other sections TK... (maybe nest files further??):
-
-    - connection handling / lazy connecting / closing connections / etc (possibly
-      less critical now that connections have a more explicit lifecycle?)
-    - Skipping various kinds of 'bad' hosts
-    - Timeouts
-    - Reconnection attempts
-    - Parallel connections
-    - Look in fab 1 docs for more that we can already easily support
-    - keepalives? other new things?
-    - Should SSH host tracking live here or under 'ssh' or 'security' type section?
