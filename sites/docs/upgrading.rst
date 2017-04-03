@@ -20,6 +20,10 @@ General / conceptual
   organization, command execution basics, etc) has been moved to a more general
   library called `Invoke <http://pyinvoke.org>`_. Fabric 2 builds on Invoke
   (and as before, on Paramiko) to present an SSH-specific API.
+
+  .. warning::
+    Please check Invoke's documentation before filing feature request tickets!
+
 - The CLI task-oriented workflow remains a primary design goal, but the library
   use case is no longer a second-class citizen; instead, the library
   functionality has been designed first, with the CLI/task features built on
@@ -41,10 +45,17 @@ API organization
   call their methods" instead of "manipulate global state and call module-level
   functions."
 - Connections replace *host strings*, which are no longer first-order
-  primitives but simply convenient shorthand in a few spots.
+  primitives but simply convenient, optional shorthand in a few spots (such as
+  `.Connection` instantiation.)
 - Connection objects store per-connection state such as user, hostname, gateway
   config, etc, and encapsulate low-level objects from Paramiko (such as their
   ``SSHClient`` instance.)
+
+    - There is also a new ``connect_kwargs`` argument available in
+      `.Connection` that takes arbitrary kwargs intended for the Paramiko-level
+      ``connect()`` call; this means Fabric no longer needs explicit patches to
+      support individual Paramiko features.
+
 - Other configuration state (such as default desired behavior, authentication
   parameters, etc) can also be stored in these objects, and will affect how
   they operate. This configuration is also inherited from the CLI machinery
@@ -59,8 +70,8 @@ API organization
       it doesn't use any private internals any longer.
 
 - *Roles* (and other lists-of-host-strings such as the result of using ``-H``
-  on the CLI) are implemented via `.Group` objects, which are lightweight
-  wrappers around multiple Connections.
+  on the CLI) are now (or can be) implemented via `.Group` objects, which are
+  lightweight wrappers around multiple Connections.
 
 CLI tasks
 =========
@@ -94,10 +105,12 @@ Networking
   ``ProxyJump`` style gateways -- should be another `.Connection` object
   instead of a host string.
 
-    - **New:** You may specify a runtime, non-SSH-config-driven
-      ``ProxyCommand``-style string as the ``gateway`` kwarg instead, which
-      will act just like a regular ``ProxyCommand``.
+    - You may specify a runtime, non-SSH-config-driven ``ProxyCommand``-style
+      string as the ``gateway`` kwarg instead, which will act just like a
+      regular ``ProxyCommand``.
     - SSH-config-driven ``ProxyCommand`` continues to work as it did in v1.
+    - ``ProxyJump``-style gateways (using nested/inner `.Connection` objects)
+      may be nested indefinitely, as you might expect.
 
 - ``fabric.context_managers.remote_tunnel`` (which forwards a locally
   visible/open port to the remote end so remote processes may connect to it) is
