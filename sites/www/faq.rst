@@ -59,6 +59,13 @@ without error) like so::
     back
 
 
+Why do I sometimes see ``err: stdin: is not a tty``?
+====================================================
+
+See :ref:`Invoke's FAQ <stdin-not-tty>` for this; even for Fabric v1, which is
+not based on Invoke, the answer is the same.
+
+
 .. _faq-daemonize:
 
 Why can't I run programs in the background with ``&``? It makes Fabric hang.
