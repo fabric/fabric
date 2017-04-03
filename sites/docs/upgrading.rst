@@ -113,8 +113,18 @@ Configuration
 - General configuration has been massively improved over the old ``fabricrc``
   files; Fabric 2 builds on Invoke which offers a full-fledged configuration
   hierarchy (in-code config, multiple config file locations, environment
-  variables, CLI flags, and more) and multiple file formats. See Invoke's
-  configuration documentation for details.
+  variables, CLI flags, and more) and multiple file formats.
+
+    - Anytime you used to modify Fabric's config by manipulating
+      ``fabric.(api.)env`` (or using ``with settings():``), you will now be
+      using Invoke-style config manipulation and/or method keyword arguments.
+    - See :ref:`Invoke's configuration documentation <configuration>` for
+      details on how the system works, where config sources come from, etc; and
+      for non-SSH-specific settings, such as whether to hide command output.
+    - See :ref:`Fabric's specific config doc page <fab-configuration>` for the
+      modifications & additions Fabric makes in this area, such as SSH-specific
+      settings like default port number or whether to forward an SSH agent.
+
 - :ref:`SSH config file loading <ssh-config>` has also improved. Fabric 1
   allowed selecting a single SSH config file; version 2 behaves more like
   OpenSSH and will seek out both system and user level config files, as well as

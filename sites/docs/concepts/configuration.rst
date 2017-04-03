@@ -1,3 +1,5 @@
+.. _fab-configuration:
+
 =============
 Configuration
 =============
