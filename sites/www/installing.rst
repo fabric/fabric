@@ -33,7 +33,8 @@ handy ``fabric2`` PyPI entry::
 
 This upload is generated from the normal Fabric repository, but is tweaked at
 build time so that it installs a ``fabric2`` package instead of a ``fabric``
-one. The codebase is otherwise unchanged.
+one (and a ``fab2`` binary instead of a ``fab`` one.) The codebase is otherwise
+unchanged.
 
 Users working off of the Git repository can enable that same tweak with an
 environment variable, e.g.::
