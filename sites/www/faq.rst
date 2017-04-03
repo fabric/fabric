@@ -7,6 +7,9 @@ questions which we receive from users. They aren't intended as a substitute for
 reading the rest of the documentation, so please make sure you check it out if
 your question is not answered here.
 
+.. note::
+    Most API examples and links are for version 2 and up; FAQs specific to
+    version 1 will typically be marked as such.
 
 .. _one-shell-per-command:
 
@@ -15,9 +18,10 @@ My (``cd``/``workon``/``export``/etc) calls don't seem to work!
 
 While Fabric can be used for many shell-script-like tasks, there's a slightly
 unintuitive catch: each `~fabric.connection.Connection.run` or
-`~fabric.connection.Connection.sudo` call has its own distinct shell session.
-This is required in order for Fabric to reliably figure out, after your command
-has run, what its standard out/error and return codes were.
+`~fabric.connection.Connection.sudo` call (or the ``run``/``sudo`` functions in
+v1) has its own distinct shell session. This is required in order for Fabric to
+reliably figure out, after your command has run, what its standard out/error
+and return codes were.
 
 Unfortunately, it means that code like the following doesn't behave as you
 might assume::
