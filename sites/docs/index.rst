@@ -9,17 +9,34 @@ please see `the main project website <http://fabfile.org>`_.
 Table of contents
 =================
 
-* :doc:`tutorial`: A basic overview of Fabric's API, using a sample set of
-  tasks one might use to deploy a generic Python web application.
-* :doc:`concepts`: High level conceptual documentation that picks up where the
-  tutorial leaves off.
-* :doc:`api`: The full API documentation reference.
-* :doc:`upgrading`: Instructions for upgrading from Fabric 1.x.
+* :doc:`The tutorial <tutorial>`: A basic overview of Fabric's API, using a
+  sample set of tasks one might use to deploy a generic Python web application.
 
 .. toctree::
     :hidden:
 
     tutorial
-    concepts
-    api
+
+* :doc:`upgrading`: Instructions for upgrading from Fabric 1.x.
+
+.. toctree::
+    :hidden:
+
     upgrading
+
+* High level conceptual documentation that picks up where the tutorial leaves
+  off:
+
+  .. toctree::
+      :glob:
+      :maxdepth: 1
+
+      concepts/*
+
+* The full API documentation reference:
+
+  .. toctree::
+      :glob:
+      :maxdepth: 1
+
+      api/*

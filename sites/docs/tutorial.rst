@@ -2,9 +2,9 @@
 Tutorial
 ========
 
-Welcome! This tutorial highlights Fabric's core features. In-depth
-documentation (linked throughout) can be found in the :doc:`conceptual
-documentation <concepts>` and the :doc:`API reference <api>`.
+Welcome! This tutorial highlights Fabric's core features; for further details,
+see the links within, or the documentation index which has links to conceptual
+and API doc sections.
 
 .. note::
     If you're new to Python, we **strongly** recommend checking out `Python's
@@ -421,5 +421,3 @@ than one host, which runs the task multiple times, each time with a different
 `.Connection` instance handed in::
 
     $ fab -H web1,web2,web3 upload_and_unpack
-
-This is just the start; see :doc:`/concepts` for more detailed documentation.

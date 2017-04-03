@@ -1,6 +1,6 @@
-=============================
-The ``fab`` command-line tool
-=============================
+======================
+Command-line interface
+======================
 
 This page documents the details of Fabric's optional command-line interface,
 ``fab``.
