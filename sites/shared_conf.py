@@ -38,13 +38,20 @@ html_sidebars = {
     ]
 }
 
-# Everything intersphinx's to Python, and to (local-or-remote) Invoke
+# Everything intersphinx's to Python, and to (local-or-remote) Invoke (and its
+# www)
 inv_target = join(
     dirname(__file__),
     '..', '..', 'invoke', 'sites', 'docs', '_build'
 )
 if os.environ.get('READTHEDOCS') == 'True':
     inv_target = 'http://docs.pyinvoke.org/en/latest/'
+inv_www_target = join(
+    dirname(__file__),
+    '..', '..', 'invoke', 'sites', 'www', '_build'
+)
+if os.environ.get('READTHEDOCS') == 'True':
+    inv_www_target = 'http://pyinvoke.org/'
 # ... and Paramiko (docs)
 para_target = join(
     dirname(__file__),
@@ -55,6 +62,7 @@ if os.environ.get('READTHEDOCS') == 'True':
 intersphinx_mapping = {
     'python': ('http://docs.python.org/2.6', None),
     'invoke': (inv_target, None),
+    'invoke_www': (inv_www_target, None),
     'paramiko': (para_target, None),
 }
 
