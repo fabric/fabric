@@ -2,6 +2,10 @@
 Installing
 ==========
 
+.. note::
+    Users looking to install Fabric 1.x should see :doc:`installing-1.x`.
+    However, :doc:`upgrading <upgrading>` to 2.x is strongly recommended.
+
 Fabric is best installed via `pip <http://pip-installer.org>`_::
 
     $ pip install fabric
