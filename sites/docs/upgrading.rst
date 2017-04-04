@@ -231,7 +231,8 @@ emphasis on object methods instead of global functions. We only need the
 following:
 
 - `sys`, for `sys.exit` (replacing ``abort()``);
-- `@task <.task>`, as before, but coming from Invoke as it's not SSH-specific;
+- `@task <invoke.tasks.task>`, as before, but coming from Invoke as it's not
+  SSH-specific;
 - ``confirm``, which now comes from the Invocations library (also not
   SSH-specific, and Invocations is one of the descendants of
   ``fabric.contrib``, which no longer exists);
@@ -272,8 +273,8 @@ changes here (note that these are all listed above as well):
   at runtime.
 - The use of ``with settings(warn_only=True)`` can be replaced by a simple
   kwarg to the ``local()`` call.
-- That ``local()`` call is now a method call on the `.Collection`,
-  `.Collection.local`.
+- That ``local()`` call is now a method call on the `.Connection`,
+  `.Connection.local`.
 - ``capture`` is no longer a useful method; we can now capture and display at
   the same time, locally or remotely. If you don't actually *want* a local
   subprocess to mirror its stdout/err while it runs, you can simply say
@@ -329,10 +330,11 @@ Actual remote steps
 -------------------
 
 Note that up to this point, nothing truly Fabric-related has been in play -
-`.Connection.local` is just a rebinding of `.Context.run`, Invoke's local
-subprocess execution method. Now we get to the actual deploy step, which simply
-invokes `.Connection.run` instead, executing remotely (on whichever host the
-`.Connection` has been bound to).
+`.Connection.local` is just a rebinding of `Context.run
+<invoke.context.Context.run>`, Invoke's local subprocess execution method. Now
+we get to the actual deploy step, which simply invokes `.Connection.run`
+instead, executing remotely (on whichever host the `.Connection` has been bound
+to).
 
 ``with cd()`` is not yet implemented for the remote side of things, but we
 expect it will be soon. For now we fall back to command chaining with ``&&``.
