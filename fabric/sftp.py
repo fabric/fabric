@@ -280,7 +280,11 @@ class SFTP(object):
             # Temporarily nuke 'cwd' so sudo() doesn't "cd" its mv command.
             # (The target path has already been cwd-ified elsewhere.)
             with settings(hide('everything'), cwd=""):
-                sudo("mv \"%s\" \"%s\"" % (remote_path, target_path))
+                try:
+                    sudo("mv \"%s\" \"%s\"" % (remote_path, target_path))
+                except BaseException:
+                    sudo("rm -f \"%s\"" % remote_path)
+                    raise
             # Revert to original remote_path for return value's sake
             remote_path = target_path
         return remote_path
