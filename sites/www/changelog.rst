@@ -13,8 +13,8 @@ Changelog
   within ``contrib.sed``, preventing a small class of issues on some
   platforms/environments. Thanks to ``@doflink`` for the report and Pierce
   Lopez for the final patch.
-* :support:`1539` Add documentation for ``env.output_prefix``. Thanks
-  ``@jphalip``.
+* :support:`1539 backported` Add documentation for ``env.output_prefix``.
+  Thanks ``@jphalip``.
 * :bug:`1514` Compatibility with Python 2.5 was broken by using the ``format()``
   method of a string (only in 1.11+). Report by ``@pedrudehuere``.
 * :release:`1.13.1 <2016-12-09>`
