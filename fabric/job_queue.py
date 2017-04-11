@@ -6,12 +6,15 @@ items, though within Fabric itself only ``Process`` objects are used/supported.
 """
 
 from __future__ import with_statement
+from __future__ import absolute_import
+from __future__ import print_function
 import time
-import Queue
+import six.moves.queue
 from multiprocessing import Process
 
 from fabric.network import ssh
 from fabric.context_managers import settings
+from six.moves import range
 
 
 class JobQueue(object):
@@ -87,7 +90,7 @@ class JobQueue(object):
             self._queued.append(process)
             self._num_of_jobs += 1
             if self._debug:
-                print("job queue appended %s." % process.name)
+                print(("job queue appended %s." % process.name))
 
     def run(self):
         """
@@ -116,7 +119,7 @@ class JobQueue(object):
             """
             job = self._queued.pop()
             if self._debug:
-                print("Popping '%s' off the queue and starting it" % job.name)
+                print(("Popping '%s' off the queue and starting it" % job.name))
             with settings(clean_revert=True, host_string=job.name, host=job.name):
                 job.start()
             self._running.append(job)
@@ -144,13 +147,13 @@ class JobQueue(object):
                 for id, job in enumerate(self._running):
                     if not job.is_alive():
                         if self._debug:
-                            print("Job queue found finished proc: %s." %
-                                    job.name)
+                            print(("Job queue found finished proc: %s." %
+                                    job.name))
                         done = self._running.pop(id)
                         self._completed.append(done)
 
                 if self._debug:
-                    print("Job queue has %d running." % len(self._running))
+                    print(("Job queue has %d running." % len(self._running)))
 
             if not (self._queued or self._running):
                 if self._debug:
@@ -189,7 +192,7 @@ class JobQueue(object):
             try:
                 datum = self._comms_queue.get_nowait()
                 results[datum['name']]['results'] = datum['result']
-            except Queue.Empty:
+            except six.moves.queue.Empty:
                 break
 
 
@@ -214,7 +217,7 @@ def try_using(parallel_type):
         from threading import Thread as Bucket
 
     # Make a job_queue with a bubble of len 5, and have it print verbosely
-    queue = Queue.Queue()
+    queue = six.moves.queue.Queue()
     jobs = JobQueue(5, queue)
     jobs._debug = True
 

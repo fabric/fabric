@@ -2,6 +2,7 @@
 Tests covering Fabric's version number pretty-print functionality.
 """
 
+from __future__ import absolute_import
 from nose.tools import eq_
 
 import fabric.version

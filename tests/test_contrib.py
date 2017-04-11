@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import with_statement
+from __future__ import absolute_import
 import os
 
 from fabric.api import hide, get

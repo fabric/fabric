@@ -3,6 +3,7 @@ Convenience decorators for use in fabfiles.
 """
 from __future__ import with_statement
 
+from __future__ import absolute_import
 import types
 from functools import wraps
 
@@ -13,6 +14,7 @@ except ImportError:
 
 from fabric import tasks
 from .context_managers import settings
+import six
 
 
 def task(*args, **kwargs):
@@ -56,7 +58,7 @@ def _list_annotating_decorator(attribute, *values):
             return func(*args, **kwargs)
         _values = values
         # Allow for single iterable argument as well as *args
-        if len(_values) == 1 and not isinstance(_values[0], basestring):
+        if len(_values) == 1 and not isinstance(_values[0], six.string_types):
             _values = _values[0]
         setattr(inner_decorator, attribute, list(_values))
         # Don't replace @task new-style task objects with inner_decorator by

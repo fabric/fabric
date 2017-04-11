@@ -1,5 +1,6 @@
 from __future__ import with_statement
 
+from __future__ import absolute_import
 from contextlib import contextmanager
 from fudge.patcher import with_patched_object
 from functools import partial
@@ -34,7 +35,7 @@ class FabricTest(object):
         self.previous_env = copy.deepcopy(env)
         # Deepcopy doesn't work well on AliasDicts; but they're only one layer
         # deep anyways, so...
-        self.previous_output = output.items()
+        self.previous_output = list(output.items())
         # Allow hooks from subclasses here for setting env vars (so they get
         # purged correctly in teardown())
         self.env_setup()

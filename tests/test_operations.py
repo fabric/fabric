@@ -1,5 +1,6 @@
 from __future__ import with_statement
 
+from __future__ import absolute_import
 import os
 import re
 import shutil
@@ -495,7 +496,7 @@ class TestFileTransfers(FabricTest):
         """
         with hide('everything'):
             get('tree', self.tmpdir)
-        leaves = filter(lambda x: x[0].startswith('/tree'), FILES.items())
+        leaves = [x for x in list(FILES.items()) if x[0].startswith('/tree')]
         for path, contents in leaves:
             eq_contents(self.path(path[1:]), contents)
 
@@ -508,7 +509,7 @@ class TestFileTransfers(FabricTest):
         try:
             with hide('everything'):
                 get('tree')
-            leaves = filter(lambda x: x[0].startswith('/tree'), FILES.items())
+            leaves = [x for x in list(FILES.items()) if x[0].startswith('/tree')]
             for path, contents in leaves:
                 path = os.path.join(dirname, path[1:])
                 eq_contents(path, contents)
@@ -630,7 +631,7 @@ class TestFileTransfers(FabricTest):
     @server(port=2201)
     def test_get_from_multiple_servers(self):
         ports = [2200, 2201]
-        hosts = map(lambda x: '127.0.0.1:%s' % x, ports)
+        hosts = ['127.0.0.1:%s' % x for x in ports]
         with settings(all_hosts=hosts):
             for port in ports:
                 with settings(
@@ -726,7 +727,7 @@ class TestFileTransfers(FabricTest):
         with hide('everything'):
             retval = get('tree', d)
         files = ['file1.txt', 'file2.txt', 'subfolder/file3.txt']
-        eq_(map(lambda x: os.path.join(d, 'tree', x), files), retval)
+        eq_([os.path.join(d, 'tree', x) for x in files], retval)
 
     @server()
     def test_get_returns_none_for_stringio(self):

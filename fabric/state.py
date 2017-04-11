@@ -2,6 +2,7 @@
 Internal shared-state variables such as config settings and host lists.
 """
 
+from __future__ import absolute_import
 import os
 import sys
 from optparse import make_option
@@ -422,7 +423,7 @@ def default_channel():
     """
     try:
         chan = _open_session()
-    except ssh.SSHException, err:
+    except ssh.SSHException as err:
         if str(err) == 'SSH session not active':
             connections[env.host_string].close()
             del connections[env.host_string]
