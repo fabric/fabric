@@ -13,8 +13,18 @@ If you read this document carefully, it should guide you in the right direction
 until you're fully upgraded. Should anything be missing, please file a ticket
 `on Github <https://github.com/fabric/fabric>`_ and we'll update it ASAP.
 
+
+Why upgrade?
+============
+
+Because IT'S AWESOME
+
+
+Upgrade specifics
+=================
+
 General / conceptual
-====================
+--------------------
 
 - All of Fabric 1's non-SSH-specific functionality (CLI parsing, task
   organization, command execution basics, etc) has been moved to a more general
@@ -36,7 +46,7 @@ General / conceptual
       upgrade process for you & also make the process safer!
 
 API organization
-================
+----------------
 
 - There's no longer a need to import everything through ``fabric.api``; all
   useful imports are now available at the top level, e.g. ``from fabric import
@@ -81,7 +91,7 @@ API organization
       MyException("welp")`` or even ``sys.exit("Stuff broke!")``.
 
 CLI tasks
-=========
+---------
 
 - Fabric-specific command-line tasks now take a `.Connection` object as their
   first positional argument.
@@ -99,7 +109,7 @@ CLI tasks
   `~invoke.collection.Collection`!)
 
 General shell commands
-======================
+----------------------
 
 - All shell command execution is now unified; in v1, ``local()`` and
   ``run()``/``sudo()`` had significantly different signatures and behavior, but
@@ -111,14 +121,14 @@ General shell commands
   stdout or stderr while the program runs.
 
 Remote shell commands
-=====================
+---------------------
 
 - There is no more built-in ``use_shell`` or ``shell`` option; the old "need"
   to wrap with an explicit shell invocation is no longer necessary or usually
   desirable.
 
 Networking
-==========
+----------
 
 - ``env.gateway`` is now the ``gateway`` kwarg to `.Connection`, and -- for
   ``ProxyJump`` style gateways -- should be another `.Connection` object
@@ -140,7 +150,7 @@ Networking
   writing (though there are patches for it).
 
 Configuration
-=============
+-------------
 
 - General configuration has been massively improved over the old ``fabricrc``
   files; Fabric 2 builds on Invoke which offers a full-fledged configuration
