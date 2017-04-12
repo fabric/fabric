@@ -228,6 +228,10 @@ Configuration
 Example upgrade process
 =======================
 
+This section goes over upgrading a small but nontrivial Fabric 1 fabfile to
+work with Fabric 2. Unlike the previous section, it's not meant to be
+exhaustive, merely illustrative.
+
 Sample original fabfile
 -----------------------
 
