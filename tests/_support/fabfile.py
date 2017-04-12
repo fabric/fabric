@@ -25,3 +25,11 @@ def expect_mutation_to_fail(c):
     c.config.foo = 'bar'
 
 
+@task
+def mutate(c):
+    c.foo = 'bar'
+
+
+@task
+def expect_mutation(c):
+    assert c.foo == 'bar'

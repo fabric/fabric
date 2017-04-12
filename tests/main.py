@@ -56,7 +56,9 @@ Available tasks:
   basic_run
   build
   deploy
+  expect_mutation
   expect_mutation_to_fail
+  mutate
 
 """.lstrip()
                 )
@@ -143,3 +145,9 @@ Available tasks:
         @raises(NothingToDo)
         def generates_exception_if_combined_with_remainder(self):
             fab_program.run("fab -- nope")
+
+        def invokelike_multitask_invocation_preserves_config_mutation(self):
+            # Mostly a guard against Executor subclass tweaks breaking Invoke
+            # behavior added in pyinvoke/invoke#309
+            with cd(_support):
+                fab_program.run("fab mutate expect_mutation")
