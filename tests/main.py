@@ -56,6 +56,7 @@ Available tasks:
   basic_run
   build
   deploy
+  expect_mutation_to_fail
 
 """.lstrip()
                 )
@@ -125,6 +126,12 @@ Available tasks:
         @mock_remote(Session(user='someuser', host='host1', port=1234))
         def host_string_shorthand_is_passed_through(self, chan):
             fab_program.run("fab -H someuser@host1:1234 -- whoami")
+
+        # NOTE: no mocking because no actual run() under test, only
+        # parameterization
+        def config_mutation_not_preserved(self):
+            with cd(_support):
+                fab_program.run("fab -H host1,host2 expect_mutation_to_fail")
 
     class no_hosts_flag:
         @patch('fabric.executor.Context', spec=Context)
