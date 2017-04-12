@@ -17,7 +17,35 @@ until you're fully upgraded. Should anything be missing, please file a ticket
 Why upgrade?
 ============
 
-Because IT'S AWESOME
+While this is not a replacement for the detailed lists in the next section,
+we'd like to call out, in no particular order, some specific improvements in
+Fabric 2 that might make it worth your time to make the jump.
+
+.. note::
+    These are all listed in the next section as well, so if you're already
+    sold, just skip there.
+
+- Python 3 compatibility (specifically, 2.6+ and 3.3+);
+- Thread-safe - no more requirement on multiprocessing for concurrency;
+- API reorganized around `.Connection` objects instead of global module state;
+- Command-line parser overhauled to allow for regular GNU/POSIX style flags and
+  options on a per-task basis (no more ``fab mytask:weird=custom,arg=format``);
+- Task organization far more explicit and flexible / has far less 'magic';
+- Tasks can declare other tasks to always be run before or after themselves;
+- Configuration massively expanded to allow for multiple config files &
+  formats, env vars, per-user/project/module configs, and much more;
+- SSH config file loading enabled by default & has been fleshed out re:
+  system/user/runtime file selection;
+- Shell command execution API consistent across local and remote method calls -
+  no more differentiation between ``local()`` and ``run()``;
+- Shell commands significantly more flexible re: interactive behavior,
+  simultaneous capture & display (now applies to local subprocesses, not just
+  remote), and auto-responding;
+- Improved flexibility in how Paramiko is used - `.Connection` allows for
+  arbitrary control over the kwargs given to `SSHClient.connect
+  <paramiko.client.SSHClient.connect>`;
+- Gateway/jump-host functionality offers a ``ProxyJump`` style 'native' (no
+  proxy-command subprocesses) option, which can be nested infinitely;
 
 
 Upgrade specifics
@@ -34,6 +62,8 @@ General / conceptual
   .. warning::
     Please check Invoke's documentation before filing feature request tickets!
 
+- Fabric 2 is fully Python 3 compatible; as a cost, Python 2.5 support has been
+  dropped (Python 2.6 remains supported, for the time being.)
 - The CLI task-oriented workflow remains a primary design goal, but the library
   use case is no longer a second-class citizen; instead, the library
   functionality has been designed first, with the CLI/task features built on
@@ -107,6 +137,20 @@ CLI tasks
   must now always use ``@task``. (Note that users heavily attached to old-style
   tasks should be able to reimplement them by extending
   `~invoke.collection.Collection`!)
+- Task organization is much more explicit; instead of crawling imports, the
+  system expects you to declare a root 'namespace' task collection which is
+  composed of tasks and/or sub-collections.
+
+    - A simple single top-level ``tasks.py`` can remain a "pile of tasks",
+      without requiring a namespace, but any deeper organization must be done
+      explicitly.)
+
+- Tasks can declare "pre-tasks" and "post-tasks" that behave a lot like
+  Makefile target dependencies; e.g. you can now state that a given task
+  requires another to be run prior to itself anytime it is invoked.
+- Nearly all task-related functionality is implemented in Invoke; for more
+  details see its :ref:`execution <task-execution>` and :ref:`namespaces
+  <task-namespaces>` documentation.
 
 General shell commands
 ----------------------
