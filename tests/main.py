@@ -127,7 +127,7 @@ Available tasks:
             fab_program.run("fab -H someuser@host1:1234 -- whoami")
 
     class no_hosts_flag:
-        @patch('fabric.main.Context', spec=Context)
+        @patch('fabric.executor.Context', spec=Context)
         def calls_task_once_with_invoke_context(self, Context):
             with cd(_support):
                 fab_program.run("fab basic_run")
