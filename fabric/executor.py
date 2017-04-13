@@ -1,4 +1,4 @@
-from invoke import Call, Context, Executor, Task
+from invoke import Call, Executor, Task
 from invoke.util import debug
 
 from . import Connection
@@ -7,7 +7,7 @@ from .exceptions import NothingToDo
 
 # TODO: come up w/ a better name heh
 class FabExecutor(Executor):
-    def expand_calls(self, calls, config):
+    def expand_calls(self, calls):
         # Generate new call list with per-host variants & Connections inserted
         ret = []
         # TODO: mesh well with Invoke list-type args helper (inv #132)
@@ -23,7 +23,6 @@ class FabExecutor(Executor):
                 ret.append(self.parameterize(call, host))
             # Deal with lack of hosts arg (acts same as `inv` in that case)
             if not hosts:
-                call.context = Context(config=config)
                 ret.append(call)
         # Add remainder as anonymous task
         if self.core.remainder:
@@ -38,21 +37,19 @@ class FabExecutor(Executor):
             # TODO: will likely need to refactor that logic some more so it can
             # be used both there and here.
             for host in hosts:
-                ret.append(self.parameterize(anon, host, config, True))
+                ret.append(self.parameterize(anon, host))
         return ret
 
-    def parameterize(self, call, host, config, remainder=False):
+    def parameterize(self, call, host):
         """
-        Parameterize a Call with a given host.
-
-        Involves cloning the call in question & updating its config w/ host.
+        Parameterize a Call with its Context set to a per-host Config.
         """
         debug("Parameterizing {0!r} for host {1!r}".format(call, host))
-        clone = call.clone()
-        # Generate a new config so they aren't shared
-        config = self.config_for(clone, config, anonymous=remainder)
-        # Make a new connection from the current host & config, set as context
-        clone.context = Connection(host=host, config=config)
+        # Generate a custom ConnectionCall that knows how to yield a Connection
+        # in its make_context(), specifically one to the host requested here.
+        clone = call.clone(into=ConnectionCall)
+        # TODO: using bag-of-attrs is mildly gross but whatever, I'll take it.
+        clone.host = host
         return clone
 
     def dedupe(self, tasks):
@@ -61,3 +58,11 @@ class FabExecutor(Executor):
         # TODO: might want some deduplication later on though - falls under
         # "how to mesh parameterization with pre/post/etc deduping".
         return tasks
+
+
+class ConnectionCall(Call):
+    """
+    Subclass of `invoke.tasks.Call` that generates `Connections <.Connection>`.
+    """
+    def make_context(self, config):
+        return Connection(host=self.host, config=config)
