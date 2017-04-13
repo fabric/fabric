@@ -43,6 +43,10 @@ Invoke .+
             # performed in @mock_remote.
             fab_program.run("fab -H myhost -- whoami", exit=False)
 
+        def uses_FABRIC_env_prefix(self):
+            # NOTE: see also the more unit-y tests in tests/config.py
+            assert False
+
     class filenames:
         def loads_fabfile_not_tasks(self):
             "Loads fabfile.py, not tasks.py"
@@ -61,6 +65,12 @@ Available tasks:
   mutate
 
 """.lstrip())
+
+        def loads_fabric_config_files_not_invoke_ones(self):
+            # NOTE: see also the more unit-y tests in tests/config.py
+            for type_ in ('yaml', 'json', 'py'):
+                with cd(os.path.join(_support, '{}_conf'.format(type_))):
+                    fab_program.run("fab expect_conf_value")
 
     class runtime_ssh_config_path:
         def _run(

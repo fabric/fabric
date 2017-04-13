@@ -53,6 +53,14 @@ class Config_(Spec):
         # This value defaults to False in Invoke proper.
         eq_(Config().run.replace_env, True)
 
+    def uses_Fabric_env_prefix(self):
+        # NOTE: see also the integration-esque tests in tests/main.py
+        assert False
+
+    def loads_fabric_config_file_names(self):
+        # NOTE: see also the integration-esque tests in tests/main.py
+        assert False
+
 
 class ssh_config_loading(Spec):
     "ssh_config loading"
