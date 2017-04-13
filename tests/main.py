@@ -43,7 +43,7 @@ Invoke .+
             # performed in @mock_remote.
             fab_program.run("fab -H myhost -- whoami", exit=False)
 
-    class fabfiles:
+    class filenames:
         def loads_fabfile_not_tasks(self):
             "Loads fabfile.py, not tasks.py"
             with cd(_support):
@@ -60,8 +60,7 @@ Available tasks:
   expect_vanilla_Context
   mutate
 
-""".lstrip()
-                )
+""".lstrip())
 
     class runtime_ssh_config_path:
         def _run(
