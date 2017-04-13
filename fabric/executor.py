@@ -16,9 +16,11 @@ class FabExecutor(Executor):
         for call in calls:
             # TODO: roles, other non-runtime host parameterizations, etc
             for host in hosts:
-                # TODO: handle pre/post, which we are currently ignoring
-                #   (see parent class' implementation)
-                ret.append(self.parameterize(call, host, config))
+                # TODO: handle pre/post, which we are currently ignoring,
+                # because it's poorly defined right now: does each
+                # parameterized per-host task run its own pre/posts, or do they
+                # run before/after the 'set' of per-host tasks? and etc
+                ret.append(self.parameterize(call, host))
             # Deal with lack of hosts arg (acts same as `inv` in that case)
             if not hosts:
                 call.context = Context(config=config)
