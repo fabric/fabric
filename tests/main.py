@@ -58,6 +58,7 @@ Available tasks:
   deploy
   expect_mutation
   expect_mutation_to_fail
+  expect_vanilla_Context
   mutate
 
 """.lstrip()
@@ -142,11 +143,9 @@ Available tasks:
                 fab_program.run("fab -H host1,host2 expect_mutation_to_fail")
 
     class no_hosts_flag:
-        @patch('fabric.executor.Context', spec=Context)
-        def calls_task_once_with_invoke_context(self, Context):
+        def calls_task_once_with_invoke_context(self):
             with cd(_support):
-                fab_program.run("fab basic_run")
-            Context.return_value.run.assert_called_once_with('nope')
+                fab_program.run("fab expect_vanilla_Context")
 
         @raises(NothingToDo)
         def generates_exception_if_combined_with_remainder(self):

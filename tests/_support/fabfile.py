@@ -1,4 +1,5 @@
-from invoke import task
+from invoke import task, Context
+from fabric import Connection
 
 
 @task
@@ -14,6 +15,12 @@ def deploy(c):
 @task
 def basic_run(c):
     c.run("nope")
+
+
+@task
+def expect_vanilla_Context(c):
+    assert isinstance(c, Context)
+    assert not isinstance(c, Connection)
 
 
 @task
