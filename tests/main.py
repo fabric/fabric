@@ -8,7 +8,6 @@ from invoke.util import cd
 from mock import patch
 from spec import Spec, assert_contains, raises, skip
 
-from invoke import Context
 from fabric.config import Config
 from fabric.main import program as fab_program
 from fabric.exceptions import NothingToDo
