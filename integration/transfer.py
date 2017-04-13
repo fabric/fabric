@@ -58,10 +58,14 @@ class Transfer_(Spec):
             ok_(result.local is fd)
 
         def mode_preservation(self):
-            # This file has an unusual, highly unlikely to be default umask,
-            # set of permissions (oct 641, aka -rw-r----x)
+            # Use a dummy file in our support dir which is given an unusual,
+            # highly unlikely to be default umask, set of permissions (oct 641,
+            # aka -rw-r----x)
+            # NOTE: have to do this at test time because git only tracks +x
+            # flags and not the rest...boo!
             local = self._tmp('funky-perms.txt')
             remote = self._support('funky-perms.txt')
+            os.chmod(remote, 0o641)
             self.c.get(remote=remote, local=local)
             eq_(stat.S_IMODE(os.stat(local).st_mode), 0o641)
 
@@ -105,5 +109,6 @@ class Transfer_(Spec):
             # set of permissions (oct 641, aka -rw-r----x)
             local = self._support('funky-perms.txt')
             remote = self._tmp('funky-perms.txt')
+            os.chmod(local, 0o641)
             self.c.put(remote=remote, local=local)
             eq_(stat.S_IMODE(os.stat(remote).st_mode), 0o641)
