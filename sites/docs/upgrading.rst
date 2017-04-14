@@ -17,7 +17,7 @@ until you're fully upgraded. Should anything be missing, please file a ticket
 Why upgrade?
 ============
 
-While this is not a replacement for the detailed lists in the next section,
+While this is not a replacement for the detailed lists later in the document,
 we'd like to call out, in no particular order, some specific improvements in
 Fabric 2 that might make it worth your time to make the jump.
 
@@ -46,6 +46,33 @@ Fabric 2 that might make it worth your time to make the jump.
   <paramiko.client.SSHClient.connect>`;
 - Gateway/jump-host functionality offers a ``ProxyJump`` style 'native' (no
   proxy-command subprocesses) option, which can be nested infinitely;
+
+
+Upgrading piecemeal
+===================
+
+A quick note that Fabric 2 is being offered in two flavors to make gradual
+upgrades less painful:
+
+- As versions 2.0+ of the ``fabric`` package, which if installed, will replace
+  Fabric 1 (aka versions 1.x of ``fabric``);
+- And as the ``fabric2`` package, which is identical to the former in every
+  way, save for the name exposed to Python's packaging and import systems.
+
+Thus, if you have a large codebase and don't want to make the jump to 2.x in
+one leap, it's possible to have both Fabric 1 (as ``fabric``, as you presumably
+had it installed previously) and Fabric 2 (as ``fabric2``) resident in your
+Python environment simultaneously.
+
+.. note::
+    We strongly recommend that you eventually migrate all code using Fabric 1,
+    to version 2 or above, so that you can move back to installing and
+    importing under the ``fabric`` name. ``fabric2`` as a distinct package and
+    module is intended to be a stopgap, and there will not be any ``fabric3``
+    or above.
+
+For details on how to obtain the ``fabric2`` version of the package, see
+:ref:`installing-as-fabric2`.
 
 
 Upgrade specifics

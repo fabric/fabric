@@ -26,6 +26,9 @@ are typically older and harder to support), typically called ``fabric`` or
 
     $ sudo apt-get install fabric
 
+
+.. _installing-as-fabric2:
+
 Installing Fabric 2.x as ``fabric2``
 ====================================
 
@@ -45,15 +48,21 @@ environment variable, e.g.::
 
     $ PACKAGE_AS_FABRIC2=yes pip install -e .
 
-or::
-
-    $ PACKAGE_AS_FABRIC2=yes python setup.py develop
-
-or any other ``setup.py`` related command.
+or most other ``setup.py`` related commands.
 
 .. note::
     The value of the environment variable doesn't matter, as long as it is not
     empty.
+
+.. warning::
+    You may encounter issues if *both* versions of Fabric are installed via
+    ``pip install -e``, due to how that functionality works (tl;dr it just adds
+    the checkout directories to ``sys.path``, regardless of whether you wanted
+    to "install" all packages within them - so Fabric 2's ``fabric/`` package
+    still ends up visible to the import system alongside ``fabric2/``).
+
+    To avoid this, we recommend you install Fabric 1 'normally' (i.e. ``pip
+    install fabric`` or ``pip install /path/to/fabric/checkout``, no ``-e``).
 
 Dependencies
 ============
