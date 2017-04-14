@@ -4,13 +4,13 @@ import os
 import sys
 import types
 
-from invoke.vendor.six import wraps
+from invoke.vendor.six import wraps, iteritems
 
 from fabric import Connection
 from fabric.main import program as fab_program
 from fabric.transfer import Transfer
 from mock import patch, Mock, PropertyMock, call, ANY
-from spec import eq_, trap
+from spec import eq_, trap, Spec
 
 
 support_path = os.path.join(
@@ -457,3 +457,24 @@ def mock_sftp(expose_os=False):
             return f(*passed_args)
         return wrapper
     return decorator
+
+
+# TODO: mostly copied from invoke's suite; unify sometime
+support = os.path.join(os.path.dirname(__file__), '_support')
+
+class IntegrationSpec(Spec):
+    def setup(self):
+        # Preserve environment for later restore
+        self.old_environ = os.environ.copy()
+
+    def teardown(self):
+        # Nuke changes to environ
+        os.environ.clear()
+        os.environ.update(self.old_environ)
+        # Strip any test-support task collections from sys.modules to prevent
+        # state bleed between tests; otherwise tests can incorrectly pass
+        # despite not explicitly loading/cd'ing to get the tasks they call
+        # loaded.
+        for name, module in iteritems(sys.modules.copy()):
+            if module and support in getattr(module, '__file__', ''):
+                del sys.modules[name]

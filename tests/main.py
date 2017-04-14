@@ -6,19 +6,19 @@ import os
 
 from invoke.util import cd
 from mock import patch
-from spec import Spec, assert_contains, raises, skip
+from spec import assert_contains, raises, skip
 
 from fabric.config import Config
 from fabric.main import program as fab_program
 from fabric.exceptions import NothingToDo
 
-from _util import expect, mock_remote, Session
+from _util import expect, mock_remote, Session, IntegrationSpec
 
 
 _support = os.path.join(os.path.dirname(__file__), '_support')
 
 
-class Fab_(Spec):
+class Fab_(IntegrationSpec):
     class core_program_behavior:
         def version_output_contains_our_name_plus_deps(self):
             expect(
