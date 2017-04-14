@@ -67,9 +67,10 @@ Available tasks:
 """.lstrip())
 
         def loads_fabric_config_files_not_invoke_ones(self):
-            # NOTE: see also the more unit-y tests in tests/config.py
             for type_ in ('yaml', 'json', 'py'):
                 with cd(os.path.join(_support, '{}_conf'.format(type_))):
+                    # This task, in each subdir, expects data present in a
+                    # fabric.<ext> nearby to show up in the config.
                     fab_program.run("fab expect_conf_value")
 
     class runtime_ssh_config_path:
