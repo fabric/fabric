@@ -44,8 +44,9 @@ Invoke .+
             fab_program.run("fab -H myhost -- whoami", exit=False)
 
         def uses_FABRIC_env_prefix(self):
-            # NOTE: see also the more unit-y tests in tests/config.py
-            assert False
+            os.environ['FABRIC_RUN_ECHO'] = '1'
+            with cd(_support):
+                fab_program.run("fab expect_from_env")
 
     class filenames:
         def loads_fabfile_not_tasks(self):
@@ -59,6 +60,7 @@ Available tasks:
   basic_run
   build
   deploy
+  expect_from_env
   expect_mutation
   expect_mutation_to_fail
   expect_vanilla_Context

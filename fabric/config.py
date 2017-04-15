@@ -19,6 +19,9 @@ class Config(InvokeConfig):
       default settings (see its documentation, below, for details);
     - it accepts additional instantiation arguments related to loading
       ``ssh_config`` files.
+    - it triggers loading of Fabric-specific env vars (e.g.
+      ``FABRIC_RUN_HIDE=true`` instead of ``INVOKE_RUN_HIDE=true``) and
+      filenames (e.g. ``/etc/fabric.yaml`` instead of ``/etc/invoke.yaml``).
 
     Intended for use with `.Connection`, as using vanilla
     `invoke.config.Config` objects would require users to manually define
@@ -26,6 +29,8 @@ class Config(InvokeConfig):
 
     .. seealso:: :doc:`/concepts/configuration`, :ref:`ssh-config`
     """
+    prefix = 'fabric'
+
     def __init__(self, *args, **kwargs):
         """
         Creates a new Fabric-specific config object.

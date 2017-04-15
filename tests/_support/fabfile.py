@@ -24,6 +24,11 @@ def expect_vanilla_Context(c):
 
 
 @task
+def expect_from_env(c):
+    assert c.config.run.echo == True
+
+
+@task
 def expect_mutation_to_fail(c):
     # If user level config changes are preserved between parameterized per-host
     # task calls, this would assert on subsequent invocations...
