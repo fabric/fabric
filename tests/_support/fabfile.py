@@ -25,7 +25,7 @@ def expect_vanilla_Context(c):
 
 @task
 def expect_from_env(c):
-    assert c.config.run.echo == True
+    assert c.config.run.echo is True
 
 
 @task
