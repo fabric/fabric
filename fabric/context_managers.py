@@ -6,6 +6,9 @@ Context managers for use with the ``with`` statement.
     the ``with`` statement (which is a regular, non ``__future__`` feature of
     Python 2.6+.)
 
+.. note:: Before using e.g. ``with hide`` you have to import it before with
+    ``from fabric.api import hide``
+
 .. note:: If you are using multiple directly nested ``with`` statements, it can
     be convenient to use multiple context expressions in one single with
     statement. Instead of writing::
