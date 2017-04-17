@@ -40,8 +40,11 @@ def _shell_escape(string):
         >>> _shell_escape('"')
         '\\\\"'
     """
-    for char in ('"', '$', '`'):
-        string = string.replace(char, '\%s' % char)
+    # Backslash comes first in tuple because backslashes must be escaped first.
+    # Otherwise, we'd escape the backslashes that were introduced by the other
+    # escapes.
+    for char in ('\\', '"', '$', '`'):
+        string = string.replace(char, '\\%s' % char)
     return string
 
 
