@@ -46,6 +46,9 @@ before_script:
   # Make sure sudouser can write to travis' homedir (used for some config
   # tests)
   - sudo chmod g+w /home/travis
+  # Allow us to SSH passwordless to localhost
+  - ssh-keygen -f ~/.ssh/id_rsa -N ""
+  - cp ~/.ssh/{id_rsa.pub,authorized_keys}
 script:
   # Run unit and integration tests, generating coverage report (skipping html).
   # NOTE: Using the above-created passworded sudo-capable user so that
