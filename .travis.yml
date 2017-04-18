@@ -47,6 +47,7 @@ before_script:
   # tests)
   - sudo chmod g+w /home/travis
   # Allow us to SSH passwordless to localhost
+  - rm ~/.ssh/id_rsa*
   - ssh-keygen -f ~/.ssh/id_rsa -N ""
   - cp ~/.ssh/{id_rsa.pub,authorized_keys}
 script:
