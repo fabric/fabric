@@ -51,7 +51,9 @@ class concurrency(Spec):
             # Arbitrary size - it's large enough to _maybe_ catch issues,
             # but small enough that the chance of each thread getting a
             # different chunk is high
-            window_size = 100000
+            # EDIT: was using 100k on OS X but dict on Travis' Trusty builds is
+            # only 99k in total, so...ugh. 15k it is.
+            window_size = 15000
             err = "Dict size only {0} words!".format(num_words)
             assert num_words > window_size, err
             start = randint(0, (num_words - window_size - 1))
