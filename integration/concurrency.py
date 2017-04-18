@@ -52,6 +52,8 @@ class concurrency(Spec):
             # but small enough that the chance of each thread getting a
             # different chunk is high
             window_size = 100000
+            err = "Dict size only {0} words!".format(num_words)
+            assert num_words > window_size, err
             start = randint(0, (num_words - window_size - 1))
             end = start + window_size
             tail = num_words - start
