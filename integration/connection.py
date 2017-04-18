@@ -3,7 +3,7 @@ import os
 from spec import skip, Spec, ok_, eq_
 from invoke import pty_size
 
-from fabric import Connection
+from fabric import Connection, Config
 
 
 def skip_outside_travis():
