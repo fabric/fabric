@@ -1,0 +1,91 @@
+language: python
+sudo: required
+dist: trusty
+cache:
+  directories:
+    - $HOME/.cache/pip
+python:
+  - "2.6"
+  - "2.7"
+  - "3.3"
+  - "3.4"
+  - "3.5"
+  - "3.6"
+  - "pypy"
+  - "pypy3"
+matrix:
+  # pypy3 (as of 2.4.0) has a wacky arity issue in its source loader. Allow it
+  # to fail until we can test on, and require, PyPy3.3+. See
+  # pyinvoke/invoke#358.
+  allow_failures:
+    - python: pypy3
+  fast_finish: true
+install:
+  # Self & self runtime requirements
+  - pip install -e .
+  # Dev requirements
+  # TODO: follow invoke and split it up a bit so we're not pulling down
+  # conflicting or unused-by-travis deps?
+  - pip install -r dev-requirements.txt
+  # Sanity test of the Invoke layer, if that's busted everything is
+  - inv --list
+  # Sanity test of Fabric itself
+  - fab --version
+before_script:
+  # Create passworded sudoable user for sudo autoresponse testing. Put it in
+  # the Travis user's group so it can read /home/travis for virtualenv etc.
+  - sudo useradd sudouser -G travis
+  - "echo sudouser:mypass | sudo chpasswd"
+  - "sudo sh -c \"echo 'sudouser   ALL=(ALL:ALL) PASSWD:ALL' > /etc/sudoers.d/passworded\""
+  # Make sure sudouser can write to travis' homedir (used for some config
+  # tests)
+  - sudo chmod g+w /home/travis
+script:
+  # Run unit and integration tests, generating coverage report (skipping html).
+  # NOTE: Using the above-created passworded sudo-capable user so that
+  # sudo-related integration tests work as expected. (Otherwise, sudo prompt
+  # response will not be properly tested!)
+  # NOTE: This command will fail if the tests fail.
+  - "sudo -u sudouser bash -c \"source $VIRTUAL_ENV/bin/activate && inv coverage --no-html\""
+  # Websites build OK? (Not on PyPy3, Sphinx is all "who the hell are you?" =/
+  - "[[ $TRAVIS_PYTHON_VERSION != 'pypy3' ]] && inv sites"
+  # Did we break setup.py?
+  - pip uninstall -y fabric # To undo the implicit -e install from above
+  - pip install . # NO -e!
+  - fab --version # Sanity check
+  # I have this in my git pre-push hook, but contributors probably don't
+  - flake8
+after_success:
+  # TODO: this should all become a task, sheesh
+  # Test distribution builds.
+  # Have to use env var to override our normal config defaults. Ho hum.
+  - "INVOKE_PACKAGING_SIGN=0 inv release.publish --dry-run --directory=tmp"
+  # Wheel
+  - pip uninstall -y fabric
+  - pip install tmp/dist/*.whl
+  - fab --version
+  # Source distribution
+  - pip uninstall -y fabric
+  - pip install tmp/dist/*.tar.gz
+  - fab --version
+  # Again, but as 'fabric2'
+  - rm -rf tmp
+  - "INVOKE_PACKAGING_SIGN=0 PACKAGE_AS_FABRIC2=yes inv release.publish --dry-run --directory=tmp"
+  - pip uninstall -y fabric
+  - pip install tmp/dist/*.whl
+  - fab2 --version
+  - pip uninstall -y fabric2
+  - pip install tmp/dist/*.tar.gz
+  - fab2 --version
+after_script:
+  # Upload coverage data to codecov
+  - codecov
+notifications:
+  # TODO: enable
+  #  irc:
+  #    channels: "irc.freenode.org#fabric"
+  #    template:
+  #      - "%{repository}@%{branch}: %{message} (%{build_url})"
+  #    on_success: change
+  #    on_failure: change
+  email: false
