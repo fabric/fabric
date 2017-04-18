@@ -5,14 +5,30 @@ Upgrading from Fabric 1.x
 =========================
 
 Fabric 2 represents a near-total reimplementation & reorganization of the
-software. It's been broken in two, cleaned up, made more explicit, and so
-forth. In some cases, upgrading requires only basic search & replace; in
-others, more work is needed.
+software. It's been :ref:`broken in two <invoke-split-from-fabric>`, cleaned
+up, made more explicit, and so forth. In some cases, upgrading requires only
+basic search & replace; in others, more work is needed.
 
 If you read this document carefully, it should guide you in the right direction
 until you're fully upgraded. Should anything be missing, please file a ticket
 `on Github <https://github.com/fabric/fabric>`_ and we'll update it ASAP.
 
+
+Upgrading by not upgrading
+==========================
+
+We linked to a note about this above, but to be explicit: Fabric 2 is really
+two separate libraries, and anything not strictly SSH or network related has
+been :ref:`split out into the Invoke project <invoke-split-from-fabric>`.
+
+This means that if you're in the group of users leveraging Fabric solely for
+its task execution, and never used ``run()``, ``put()`` or similar - **you
+don't need to use Fabric itself anymore** and can simply **'sidegrade' to using
+Invoke instead**.
+
+You'll still want to read over this document to get a sense of how things have
+changed, but just be aware that you can get away with ``pip install invoke``
+and won't need Fabric, Paramiko, cryptography dependencies, or anything else.
 
 Why upgrade?
 ============
