@@ -75,27 +75,34 @@ class Connection_(Spec):
         eq_(result.stdout, 'foo\n')
 
     class sudo:
+        def setup(self):
+            # NOTE: assumes a user configured for passworded (NOT
+            # passwordless)_sudo, whose password is 'mypass', is executing the
+            # test suite. I.e. our travis-ci setup.
+            config = Config({
+                'sudo': {
+                    'password': 'mypass',
+                },
+                'run': {
+                    'hide': True,
+                },
+            })
+            self.cxn = Connection('localhost', config=config)
+
         def sudo_command(self):
             """
             Run command via sudo on host localhost
             """
             skip_outside_travis()
-            eq_(
-                Connection('localhost').sudo('whoami').stdout,
-                'root\n',
-            )
+            eq_(self.cxn.sudo('whoami').stdout.strip(), 'root')
 
         def mixed_sudo_and_normal_commands(self):
             """
             Run command via sudo, and not via sudo, on localhost
             """
             skip_outside_travis()
-            cxn = Connection('localhost')
-            cxn.run('whoami')
-            cxn.sudo('whoami')
-            # Alternately...
-            cxn.run('whoami', runner=Basic) # noqa
-            cxn.run('whoami', runner=Sudo) # noqa
+            eq_(self.cxn.run('whoami').stdout.strip(), os.getlogin())
+            eq_(self.cxn.sudo('whoami').stdout.strip(), 'root')
 
     def large_remote_commands_finish_cleanly(self):
         # Guards against e.g. cleanup finishing before actually reading all
