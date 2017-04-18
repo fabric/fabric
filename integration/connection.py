@@ -1,7 +1,14 @@
+import os
+
 from spec import skip, Spec, ok_, eq_
 from invoke import pty_size
 
 from fabric import Connection
+
+
+def skip_outside_travis():
+    if not os.environ.get('TRAVIS', False):
+        skip()
 
 
 class Connection_(Spec):
@@ -68,17 +75,11 @@ class Connection_(Spec):
         eq_(result.stdout, 'foo\n')
 
     class sudo:
-        # TODO: set up the Travis-level changes from
-        # https://github.com/pyinvoke/invoke/issues/366 - tl;dr these tests
-        # get skipped when run on a workstation but get run under Travis, and
-        # require the test suite to be set up with a known-password,
-        # passworded-sudo user.
-
         def sudo_command(self):
             """
             Run command via sudo on host localhost
             """
-            skip()
+            skip_outside_travis()
             eq_(
                 Connection('localhost').sudo('whoami').stdout,
                 'root\n',
@@ -88,7 +89,7 @@ class Connection_(Spec):
             """
             Run command via sudo, and not via sudo, on localhost
             """
-            skip()
+            skip_outside_travis()
             cxn = Connection('localhost')
             cxn.run('whoami')
             cxn.sudo('whoami')
