@@ -40,23 +40,24 @@ install:
 before_script:
   # Create passworded sudoable user for sudo autoresponse testing. Put it in
   # the Travis user's group so it can read /home/travis for virtualenv etc.
-  - sudo useradd sudouser -G travis
+  # Make sure to create its home directory as it must host SSH files.
+  - sudo useradd sudouser -m -G travis
   - "echo sudouser:mypass | sudo chpasswd"
   - "sudo sh -c \"echo 'sudouser   ALL=(ALL:ALL) PASSWD:ALL' > /etc/sudoers.d/passworded\""
   # Make sure sudouser can write to travis' homedir (used for some config
   # tests)
   - sudo chmod g+w /home/travis
   # Allow us to SSH passwordless to localhost
-  - rm ~/.ssh/id_rsa*
-  - ssh-keygen -f ~/.ssh/id_rsa -N ""
-  - cp ~/.ssh/{id_rsa.pub,authorized_keys}
+  - sudo -u sudouser ssh-keygen -f ~sudouser/.ssh/id_rsa -N ""
+  - cp ~sudouser/.ssh/{id_rsa.pub,authorized_keys}
 script:
   # Run unit and integration tests, generating coverage report (skipping html).
   # NOTE: Using the above-created passworded sudo-capable user so that
   # sudo-related integration tests work as expected. (Otherwise, sudo prompt
   # response will not be properly tested!)
+  # NOTE: using sudo -H to enforce target user homedir use for e.g SSH keys
   # NOTE: This command will fail if the tests fail.
-  - "sudo -u sudouser bash -c \"source $VIRTUAL_ENV/bin/activate && inv coverage --no-html\""
+  - "sudo -H -u sudouser bash -c \"source $VIRTUAL_ENV/bin/activate && inv coverage --no-html\""
   # Websites build OK? (Not on PyPy3, Sphinx is all "who the hell are you?" =/
   - "[[ $TRAVIS_PYTHON_VERSION != 'pypy3' ]] && inv sites"
   # Did we break setup.py?
