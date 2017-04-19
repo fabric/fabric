@@ -81,8 +81,8 @@ script:
   - fab --version
   # Again, but as 'fabric2'
   - rm -rf tmp
-  - "INVOKE_PACKAGING_SIGN=0 PACKAGE_AS_FABRIC2=yes inv release.publish --dry-run --directory=tmp"
   - pip uninstall -y fabric
+  - "INVOKE_PACKAGING_SIGN=0 PACKAGE_AS_FABRIC2=yes inv release.publish --dry-run --directory=tmp"
   - "pip install tmp/dist/*.whl"
   - fab2 --version
   - pip uninstall -y fabric2
