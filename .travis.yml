@@ -49,7 +49,7 @@ before_script:
   - sudo chmod g+w /home/travis
   # Allow us to SSH passwordless to localhost
   - sudo -u sudouser ssh-keygen -f ~sudouser/.ssh/id_rsa -N ""
-  - cp ~sudouser/.ssh/{id_rsa.pub,authorized_keys}
+  - sudo cp ~sudouser/.ssh/{id_rsa.pub,authorized_keys}
 script:
   # Run unit and integration tests, generating coverage report (skipping html).
   # NOTE: Using the above-created passworded sudo-capable user so that
