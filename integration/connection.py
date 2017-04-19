@@ -45,10 +45,11 @@ class Connection_(Spec):
             # Most Unix systems should have stty, which asplodes when not run
             # under a pty, and prints useful info otherwise
             result = Connection('localhost').run(
-                'stty -a', hide=True, pty=True,
+                'stty size', hide=True, pty=True,
             )
+            found = result.stdout.strip().split()
             cols, rows = pty_size()
-            ok_("{0} rows; {1} columns;".format(rows, cols) in result.stdout)
+            eq_(tuple(map(int, found)), (rows, cols))
             # PTYs use \r\n, not \n, line separation
             ok_("\r\n" in result.stdout)
             eq_(result.pty, True)
@@ -115,8 +116,6 @@ class Connection_(Spec):
             words = [x.strip() for x in fd.readlines()]
         stdout = cxn.run('cat {}'.format(path), hide=True).stdout
         lines = [x.strip() for x in stdout.splitlines()]
-        # When bug present, tail of observed stdout != tail of real file
-        eq_(lines[-1], words[-1])
         # When bug present, # lines received is significantly fewer than the
         # true count in the file (by thousands).
         eq_(len(lines), len(words))

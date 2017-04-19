@@ -1,3 +1,5 @@
+import codecs
+
 from invoke.vendor.six.moves.queue import Queue
 from random import randint
 from threading import Thread
@@ -44,8 +46,7 @@ class concurrency(Spec):
             # test
             # TODO: skip test on Windows or find suitable alternative file
             words = '/usr/share/dict/words'
-            # TODO: read as unicode?
-            with open(words) as fd:
+            with codecs.open(words, encoding='utf-8') as fd:
                 data = [x.strip() for x in fd.readlines()]
             num_words = len(data)
             # Arbitrary size - it's large enough to _maybe_ catch issues,
