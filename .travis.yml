@@ -67,7 +67,6 @@ script:
   - fab --version # Sanity check
   # I have this in my git pre-push hook, but contributors probably don't
   - flake8
-after_success:
   # TODO: this should all become a task, sheesh
   # Test distribution builds.
   # Have to use env var to override our normal config defaults. Ho hum.
@@ -89,7 +88,7 @@ after_success:
   - pip uninstall -y fabric2
   - pip install tmp/dist/*.tar.gz
   - fab2 --version
-after_script:
+after_success:
   # Upload coverage data to codecov
   - codecov
 notifications:
