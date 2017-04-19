@@ -38,26 +38,30 @@ html_sidebars = {
     ]
 }
 
+on_rtd = os.environ.get('READTHEDOCS') == 'True'
+on_travis = os.environ.get('TRAVIS', False)
+on_dev = not (on_rtd or on_travis)
+
 # Everything intersphinx's to Python, and to (local-or-remote) Invoke (and its
 # www)
 inv_target = join(
     dirname(__file__),
     '..', '..', 'invoke', 'sites', 'docs', '_build'
 )
-if os.environ.get('READTHEDOCS') == 'True':
+if not on_dev:
     inv_target = 'http://docs.pyinvoke.org/en/latest/'
 inv_www_target = join(
     dirname(__file__),
     '..', '..', 'invoke', 'sites', 'www', '_build'
 )
-if os.environ.get('READTHEDOCS') == 'True':
+if not on_dev:
     inv_www_target = 'http://pyinvoke.org/'
 # ... and Paramiko (docs)
 para_target = join(
     dirname(__file__),
     '..', '..', 'paramiko', 'sites', 'docs', '_build'
 )
-if os.environ.get('READTHEDOCS') == 'True':
+if not on_dev:
     para_target = 'http://docs.paramiko.org/en/latest/'
 intersphinx_mapping = {
     'python': ('http://docs.python.org/2.6', None),

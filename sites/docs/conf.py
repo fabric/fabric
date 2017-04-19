@@ -20,7 +20,7 @@ from _util import MockRemote, MockSFTP, Session, Command
 # Default is 'local' building, but reference the public WWW site when building
 # under RTD.
 target = join(dirname(__file__), '..', 'www', '_build')
-if os.environ.get('READTHEDOCS') == 'True':
+if on_rtd:
     target = 'http://www.fabfile.org/'
 www = (target, None)
 # Intersphinx connection to www site

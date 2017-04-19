@@ -16,7 +16,7 @@ extensions.append('sphinx.ext.intersphinx')
 # Default is 'local' building, but reference the public docs site when building
 # under RTD.
 target = join(dirname(__file__), '..', 'docs', '_build')
-if os.environ.get('READTHEDOCS') == 'True':
+if on_rtd:
     target = 'http://docs.fabfile.org/en/latest/'
 intersphinx_mapping.update({
     'docs': (target, None),
