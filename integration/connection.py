@@ -102,7 +102,7 @@ class Connection_(Spec):
             Run command via sudo, and not via sudo, on localhost
             """
             skip_outside_travis()
-            eq_(self.cxn.run('whoami').stdout.strip(), os.getlogin())
+            eq_(self.cxn.run('whoami').stdout.strip(), os.environ['LOGNAME'])
             eq_(self.cxn.sudo('whoami').stdout.strip(), 'root')
 
     def large_remote_commands_finish_cleanly(self):
