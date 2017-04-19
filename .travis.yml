@@ -60,6 +60,7 @@ script:
   - "sudo -H -u sudouser bash -c \"source $VIRTUAL_ENV/bin/activate && inv coverage --no-html\""
   # Websites build OK? (Not on PyPy3, Sphinx is all "who the hell are you?" =/
   - "[[ $TRAVIS_PYTHON_VERSION != 'pypy3' ]] && inv sites"
+  - "[[ $TRAVIS_PYTHON_VERSION != 'pypy3' ]] && inv docs.doctest"
   # Did we break setup.py?
   - pip uninstall -y fabric # To undo the implicit -e install from above
   - pip install . # NO -e!
