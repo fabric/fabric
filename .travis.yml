@@ -73,20 +73,20 @@ script:
   - "INVOKE_PACKAGING_SIGN=0 inv release.publish --dry-run --directory=tmp"
   # Wheel
   - pip uninstall -y fabric
-  - pip install tmp/dist/*.whl
+  - "pip install tmp/dist/*.whl"
   - fab --version
   # Source distribution
   - pip uninstall -y fabric
-  - pip install tmp/dist/*.tar.gz
+  - "pip install tmp/dist/*.tar.gz"
   - fab --version
   # Again, but as 'fabric2'
   - rm -rf tmp
   - "INVOKE_PACKAGING_SIGN=0 PACKAGE_AS_FABRIC2=yes inv release.publish --dry-run --directory=tmp"
   - pip uninstall -y fabric
-  - pip install tmp/dist/*.whl
+  - "pip install tmp/dist/*.whl"
   - fab2 --version
   - pip uninstall -y fabric2
-  - pip install tmp/dist/*.tar.gz
+  - "pip install tmp/dist/*.tar.gz"
   - fab2 --version
 after_success:
   # Upload coverage data to codecov
