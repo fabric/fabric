@@ -4,7 +4,7 @@ from invoke.vendor.six.moves.queue import Queue
 from random import randint
 from threading import Thread
 
-from spec import Spec, ok_, eq_
+from spec import Spec, ok_
 
 from fabric import Connection
 
@@ -78,4 +78,6 @@ class concurrency(Spec):
             t.join(5) # Kinda slow, but hey, maybe the test runner is hot
         while not queue.empty():
             result, expected = queue.get(block=False)
-            eq_(result, expected)
+            for resultword, expectedword in zip(result, expected):
+                err = "{0!r} != {1!r}".format(resultword, expectedword)
+                assert resultword == expectedword, err
