@@ -86,6 +86,7 @@ script:
   - "pip install tmp/dist/*.whl"
   - fab2 --version
   - pip uninstall -y fabric2
+  - ls -l tmp/dist
   - "pip install tmp/dist/*.tar.gz"
   - fab2 --version
 after_success:
