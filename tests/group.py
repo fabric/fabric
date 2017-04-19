@@ -146,7 +146,7 @@ class ThreadingGroup_(Spec):
                 ('start', Thread.return_value.start.call_count),
                 ('join', Thread.return_value.join.call_count)
             ):
-                err = "Expected {} calls to ExceptionHandlingThread.{}, got {}"
+                err = "Expected {0} calls to ExceptionHandlingThread.{1}, got {2}" # noqa
                 err = err.format(expected, name, got)
                 eq_(expected, got, err)
 

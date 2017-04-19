@@ -275,7 +275,7 @@ class Connection_(Spec):
 
         class ssh_config:
             def _runtime_config(self, overrides=None, basename='runtime'):
-                confname = "{}.conf".format(basename)
+                confname = "{0}.conf".format(basename)
                 runtime_path = join(support_path, 'ssh_config', confname)
                 if overrides is None:
                     overrides = {}
@@ -591,7 +591,7 @@ class Connection_(Spec):
                         **kwargs
                     ).open()
                 except ValueError as e:
-                    err = "Refusing to be ambiguous: connect() kwarg '{}' was given both via regular arg and via connect_kwargs!" # noqa
+                    err = "Refusing to be ambiguous: connect() kwarg '{0}' was given both via regular arg and via connect_kwargs!" # noqa
                     eq_(str(e), err.format(key))
                 else:
                     assert False, "Did not raise ValueError!"
@@ -868,7 +868,7 @@ class Connection_(Spec):
             cxn = Connection('host')
             first = cxn.sftp()
             # TODO: why aren't we just asserting about calls of open_sftp???
-            err = "{!r} wasn't the sentinel object()!"
+            err = "{0!r} wasn't the sentinel object()!"
             ok_(first is sentinel1, err.format(first))
             second = cxn.sftp()
             ok_(second is sentinel1, err.format(second))
@@ -989,20 +989,20 @@ class Connection_(Spec):
             try:
                 self._forward_local({
                     'local_port': 1234,
-                    '{}_exception'.format(which): Sentinel,
+                    '{0}_exception'.format(which): Sentinel,
                 })
             except ThreadException as e:
                 # NOTE: ensures that we're getting what we expected and not
                 # some deeper, test-bug related error
                 eq_(len(e.exceptions), 1)
                 inner = e.exceptions[0]
-                err = "Expected wrapped exception to be Sentinel, was {}"
+                err = "Expected wrapped exception to be Sentinel, was {0}"
                 ok_(inner.type is Sentinel, err.format(inner.type.__name__))
             else:
                 # no exception happened :( implies the thread went boom but
                 # nobody noticed
-                err = "Failed to get ThreadException on {} error".format(which)
-                assert False, err
+                err = "Failed to get ThreadException on {0} error"
+                assert False, err.format(which)
 
         def tunnel_errors_bubble_up(self):
             self._thread_error('tunnel')

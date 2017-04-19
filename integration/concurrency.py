@@ -61,7 +61,7 @@ class concurrency(Spec):
             end = start + window_size
             tail = num_words - start
             expected = data[start:end]
-            cmd = "tail -n {} {} | head -n {}".format(
+            cmd = "tail -n {0} {1} | head -n {2}".format(
                 tail, words, window_size,
             )
             stdout = cxn.run(cmd, hide=True).stdout

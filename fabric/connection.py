@@ -426,7 +426,7 @@ class Connection(Context):
         see :doc:`the configuration docs </concepts/configuration>`.)
         """
         if not self.is_connected:
-            err = "Refusing to be ambiguous: connect() kwarg '{}' was given both via regular arg and via connect_kwargs!" # noqa
+            err = "Refusing to be ambiguous: connect() kwarg '{0}' was given both via regular arg and via connect_kwargs!" # noqa
             # These may not be given, period
             for key in """
                 hostname
