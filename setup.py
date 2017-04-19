@@ -5,19 +5,34 @@ import setuptools
 
 # Enable the option of building/installing Fabric 2.x as "fabric2". This allows
 # users migrating from 1.x to 2.x to have both in the same process space and
-# migrate piecemeal. It leverages the fact that the Git repository holds a
-# symbolic link from 'fabric' to 'fabric2' (so it effectively has a 'copy' of
-# the code under either name).
+# migrate piecemeal.
 #
-# NOTE: this only works when one is executing setup.py directly (e.g. it cannot
-# be triggered when installing a wheel or other binary archive); the
-# maintainers take care of triggering this explicitly at build time so that two
-# different wheels & PyPI entries are in play.
+# NOTE: this requires some irritating tomfoolery; to wit:
+# - the repo has a fabric2/ symlink to fabric/ so that things looking for
+# fabric2/<whatever> will find it OK, whether that's code in here or deeper in
+# setuptools/wheel/etc
+# - wheels do _not_ execute this on install, only on generation, so maintainers
+# just build wheels with the env var below turned on, and those wheels install
+# 'fabric2' no problem
+# - sdists execute this _both_ on package creation _and_ on install, so the env
+# var only helps with inbound package metadata; on install by a user, if they
+# don't have the env var, they'd end up with errors because this file tries to
+# look in fabric/, not fabric2/
+# - thus, we use a different test that looks locally to see if only one dir
+# is present, and that overrides the env var test.
 #
 # See also sites/www/installing.txt.
+
+env_wants_v2 = os.environ.get('PACKAGE_AS_FABRIC2', False)
+
+here = os.path.abspath(os.path.dirname(__file__))
+fabric2_present = os.path.isdir(os.path.join(here, 'fabric2'))
+fabric_present = os.path.isdir(os.path.join(here, 'fabric'))
+only_v2_present = fabric2_present and not fabric_present
+
 package_name = 'fabric'
 binary_name = 'fab'
-if os.environ.get('PACKAGE_AS_FABRIC2', None):
+if env_wants_v2 or only_v2_present:
     package_name = 'fabric2'
     binary_name = 'fab2'
 
