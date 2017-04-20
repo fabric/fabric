@@ -1,12 +1,25 @@
 import codecs
+from itertools import izip_longest
 
 from invoke.vendor.six.moves.queue import Queue
-from random import randint
-from threading import Thread
 
+from invoke.util import ExceptionHandlingThread
+from more_itertools import chunked
 from spec import Spec, ok_
 
 from fabric import Connection
+
+
+_words = '/usr/share/dict/words'
+
+def _worker(queue, cxn, start, num_words, count, expected):
+    tail = num_words - start
+    cmd = "tail -n {0} {1} | head -n {2}".format(
+        tail, _words, count,
+    )
+    stdout = cxn.run(cmd, hide=True).stdout
+    result = [x.strip() for x in stdout.splitlines()]
+    queue.put((result, expected))
 
 
 class concurrency(Spec):
@@ -39,45 +52,34 @@ class concurrency(Spec):
         # Kind of silly but a nice base case for "how would someone thread this
         # stuff; and are there any bizarre gotchas lurking in default
         # config/context/connection state?"
+        # Specifically, cut up the local (usually 100k's long) words dict into
+        # per-thread chunks, then read those chunks via shell command, as a
+        # crummy "make sure each thread isn't polluting things like stored
+        # stdout" sanity test
         queue = Queue()
-        def worker(cxn, queue):
-            # Use large random slice of words dict as a crummy "make sure
-            # each thread isn't polluting things like stored stdout" sanity
-            # test
-            # TODO: skip test on Windows or find suitable alternative file
-            words = '/usr/share/dict/words'
-            with codecs.open(words, encoding='utf-8') as fd:
-                data = [x.strip() for x in fd.readlines()]
-            num_words = len(data)
-            # Arbitrary size - it's large enough to _maybe_ catch issues,
-            # but small enough that the chance of each thread getting a
-            # different chunk is high
-            # EDIT: was using 100k on OS X but dict on Travis' Trusty builds is
-            # only 99k in total, so...ugh. 15k it is.
-            window_size = 15000
-            err = "Dict size only {0} words!".format(num_words)
-            assert num_words > window_size, err
-            start = randint(0, (num_words - window_size - 1))
-            end = start + window_size
-            tail = num_words - start
-            expected = data[start:end]
-            cmd = "tail -n {0} {1} | head -n {2}".format(
-                tail, words, window_size,
+        # TODO: skip test on Windows or find suitable alternative file
+        with codecs.open(_words, encoding='utf-8') as fd:
+            data = [x.strip() for x in fd.readlines()]
+        threads = []
+        num_words = len(data)
+        chunksize = len(data) / len(self.cxns) # will be an int, which is fine
+        for cxn, chunk in zip(self.cxns, chunked(data, chunksize)):
+            kwargs = dict(
+                queue=queue,
+                cxn=cxn,
+                start=data.index(chunk[0]),
+                num_words=num_words,
+                count=len(chunk),
+                expected=chunk,
             )
-            stdout = cxn.run(cmd, hide=True).stdout
-            result = [x.strip() for x in stdout.splitlines()]
-            queue.put((result, expected))
-        kwargs = dict(queue=queue)
-        threads = [
-            Thread(target=worker, kwargs=dict(kwargs, cxn=cxn))
-            for cxn in self.cxns
-        ]
+            thread = ExceptionHandlingThread(target=_worker, kwargs=kwargs)
+            threads.append(thread)
         for t in threads:
             t.start()
         for t in threads:
             t.join(5) # Kinda slow, but hey, maybe the test runner is hot
         while not queue.empty():
             result, expected = queue.get(block=False)
-            for resultword, expectedword in zip(result, expected):
+            for resultword, expectedword in izip_longest(result, expected):
                 err = "{0!r} != {1!r}".format(resultword, expectedword)
                 assert resultword == expectedword, err
