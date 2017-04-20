@@ -1,10 +1,9 @@
 import codecs
-from itertools import izip_longest
 
 from invoke.vendor.six.moves.queue import Queue
+from invoke.vendor.six.moves import zip_longest
 
 from invoke.util import ExceptionHandlingThread
-from more_itertools import chunked
 from spec import Spec, ok_, skip
 
 from fabric import Connection
@@ -66,11 +65,14 @@ class concurrency(Spec):
         threads = []
         num_words = len(data)
         chunksize = len(data) / len(self.cxns) # will be an int, which is fine
-        for cxn, chunk in zip(self.cxns, chunked(data, chunksize)):
+        for i, cxn in enumerate(self.cxns):
+            start = i * chunksize
+            end = max([start + chunksize, num_words])
+            chunk = data[start:end]
             kwargs = dict(
                 queue=queue,
                 cxn=cxn,
-                start=data.index(chunk[0]),
+                start=start,
                 num_words=num_words,
                 count=len(chunk),
                 expected=chunk,
@@ -83,7 +85,7 @@ class concurrency(Spec):
             t.join(5) # Kinda slow, but hey, maybe the test runner is hot
         while not queue.empty():
             cxn, result, expected = queue.get(block=False)
-            for resultword, expectedword in izip_longest(result, expected):
+            for resultword, expectedword in zip_longest(result, expected):
                 err = u"({2!r}, {3!r}->{4!r}) {0!r} != {1!r}".format(
                     resultword, expectedword, cxn, expected[0], expected[-1],
                 )
