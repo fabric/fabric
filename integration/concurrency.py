@@ -19,7 +19,7 @@ def _worker(queue, cxn, start, num_words, count, expected):
     )
     stdout = cxn.run(cmd, hide=True).stdout
     result = [x.strip() for x in stdout.splitlines()]
-    queue.put((result, expected))
+    queue.put((cxn, result, expected))
 
 
 class concurrency(Spec):
@@ -79,7 +79,9 @@ class concurrency(Spec):
         for t in threads:
             t.join(5) # Kinda slow, but hey, maybe the test runner is hot
         while not queue.empty():
-            result, expected = queue.get(block=False)
+            cxn, result, expected = queue.get(block=False)
             for resultword, expectedword in izip_longest(result, expected):
-                err = "{0!r} != {1!r}".format(resultword, expectedword)
+                err = u"({2!r}, {3!r}->{4!r}) {0!r} != {1!r}".format(
+                    resultword, expectedword, cxn, expected[0], expected[-1],
+                )
                 assert resultword == expectedword, err
