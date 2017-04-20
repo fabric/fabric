@@ -5,7 +5,7 @@ from invoke.vendor.six.moves.queue import Queue
 
 from invoke.util import ExceptionHandlingThread
 from more_itertools import chunked
-from spec import Spec, ok_
+from spec import Spec, ok_, skip
 
 from fabric import Connection
 
@@ -49,6 +49,9 @@ class concurrency(Spec):
         ok_(ports[0] is not ports[1] is not ports[2])
 
     def manual_threading_works_okay(self):
+        # TODO: needs https://github.com/pyinvoke/invoke/issues/438 fixed
+        # before it will reliably pass
+        skip()
         # Kind of silly but a nice base case for "how would someone thread this
         # stuff; and are there any bizarre gotchas lurking in default
         # config/context/connection state?"
