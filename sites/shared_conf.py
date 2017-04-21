@@ -20,7 +20,11 @@ html_theme_options = {
     'github_user': 'fabric',
     'github_repo': 'fabric',
     'travis_button': True,
-    'codecov_button': True,
+    # TODO: enable once one of the two happens:
+    # - 2.0.0 becomes master branch in repo
+    # - alabaster grows that arbitrary button functionality so we can aim it at
+    # v2 specifically
+    #'codecov_button': True,
     'gittip_user': 'bitprophet',
     'analytics_id': 'UA-18486793-1',
 
