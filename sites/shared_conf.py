@@ -8,6 +8,7 @@ import alabaster
 # Alabaster theme + mini-extension
 html_theme_path = [alabaster.get_path()]
 extensions = ['alabaster', 'sphinx.ext.intersphinx']
+
 # Paths relative to invoking conf.py - not this shared file
 html_static_path = [join('..', '_shared_static')]
 html_theme = 'alabaster'
@@ -19,6 +20,7 @@ html_theme_options = {
     'github_user': 'fabric',
     'github_repo': 'fabric',
     'travis_button': True,
+    'codecov_button': True,
     'gittip_user': 'bitprophet',
     'analytics_id': 'UA-18486793-1',
 
