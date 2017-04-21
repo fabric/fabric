@@ -32,7 +32,7 @@ install:
   # Dev requirements
   # TODO: follow invoke and split it up a bit so we're not pulling down
   # conflicting or unused-by-travis deps?
-  - pip install -r dev-requirements.txt
+  - pip install -r requirements.txt
   # Sanity test of the Invoke layer, if that's busted everything is
   - inv --list
   # Sanity test of Fabric itself
