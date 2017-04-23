@@ -195,7 +195,6 @@ class ThreadingGroup(Group):
         results = GroupResult()
         queue = Queue()
         threads = []
-        old_configs = {}
         for cxn in self:
             my_kwargs = dict(
                 cxn=cxn,
