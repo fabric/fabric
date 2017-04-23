@@ -135,6 +135,10 @@ class ThreadingGroup_(Spec):
         self.cxns = [Connection(x) for x in ('host1', 'host2', 'host3')]
         self.args = ("command",)
         self.kwargs = {'hide': True, 'warn': True}
+        @task
+        def task_function(ctx, command):
+            return ctx.run(command)
+        self.task_function = task_function
 
     class run:
         @patch('fabric.group.Queue')
@@ -246,3 +250,45 @@ class ThreadingGroup_(Spec):
             eq_(result, expected)
             eq_(result.succeeded, expected)
             eq_(result.failed, {})
+
+    class execute:
+        @patch('fabric.group.Queue')
+        @patch('fabric.group.ExceptionHandlingThread')
+        def executes_task_with_args_via_threading(
+            self, Thread, Queue,
+        ):
+            queue = Queue.return_value
+            g = ThreadingGroup.from_connections(self.cxns)
+            # Make sure .exception() doesn't yield truthy Mocks. Otherwise we
+            # end up with 'exceptions' that cause errors due to all being the
+            # same.
+            Thread.return_value.exception.return_value = None
+            g.execute(self.task_function, *self.args, **self.kwargs)
+            # Testing that threads were used the way we expect is mediocre but
+            # I honestly can't think of another good way to assert "threading
+            # was used & concurrency occurred"...
+            instantiations = [
+                call(
+                    target=thread_worker,
+                    kwargs=dict(
+                        cxn=cxn,
+                        task=self.task_function,
+                        queue=queue,
+                        args=self.args,
+                        kwargs=self.kwargs,
+                    ),
+                )
+                for cxn in self.cxns
+            ]
+            Thread.assert_has_calls(instantiations, any_order=True)
+            # These ought to work as by default a Mock.return_value is a
+            # singleton mock object
+            expected = len(self.cxns)
+            for name, got in (
+                ('start', Thread.return_value.start.call_count),
+                ('join', Thread.return_value.join.call_count)
+            ):
+                err = "Expected {0} calls to ExceptionHandlingThread.{1}, got {2}" # noqa
+                err = err.format(expected, name, got)
+                eq_(expected, got, err)
+
