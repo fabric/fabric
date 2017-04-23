@@ -1,4 +1,5 @@
 from invoke.vendor.six.moves.queue import Queue
+from invoke.vendor.six import iteritems
 
 from invoke.util import ExceptionHandlingThread
 
@@ -129,16 +130,41 @@ class Group(list):
         raise NotImplementedError
 
 
+def _execute_task(cxn, task, args, kwargs):
+    """
+    Executes task, filtering special run kwargs.
+
+    cxn's Config is temporarily modified.
+    """
+    # Back up existing config
+    old_config = cxn.config.clone()
+    # only pass non-config kwargs
+    task_kwargs = {}
+    # doing this for each connection ensures that any config kwargs are
+    # properly preserved, even if we get a snowflake Connection object.
+    for key, value in iteritems(kwargs):
+        if key in cxn.config.run:
+            cxn.config.run[key] = value
+        else:
+            task_kwargs[key] = value
+    result = task(cxn, *args, **task_kwargs)
+    cxn.config = old_config
+    return result
+
+
 class SerialGroup(Group):
     """
     Subclass of `.Group` which executes in simple, serial fashion.
     """
-    def run(self, *args, **kwargs):
+    def _work(self, task, *args, **kwargs):
         results = GroupResult()
         excepted = False
         for cxn in self:
             try:
-                results[cxn] = cxn.run(*args, **kwargs)
+                if task is None:
+                    results[cxn] = cxn.run(*args, **kwargs)
+                else:
+                    results[cxn] = _execute_task(cxn, task, args, kwargs)
             except Exception as e:
                 results[cxn] = e
                 excepted = True
@@ -146,9 +172,18 @@ class SerialGroup(Group):
             raise GroupException(results)
         return results
 
+    def run(self, *args, **kwargs):
+        return self._work(None, *args, **kwargs)
 
-def thread_worker(cxn, queue, args, kwargs):
-    result = cxn.run(*args, **kwargs)
+    def execute(self, task, *args, **kwargs):
+        return self._work(task, *args, **kwargs)
+
+
+def thread_worker(cxn, task, queue, args, kwargs):
+    if task is None:
+        result = cxn.run(*args, **kwargs)
+    else:
+        result = _execute_task(cxn, task, args, kwargs)
     # TODO: namedtuple or attrs object?
     queue.put((cxn, result))
 
@@ -156,13 +191,15 @@ class ThreadingGroup(Group):
     """
     Subclass of `.Group` which uses threading to execute concurrently.
     """
-    def run(self, *args, **kwargs):
+    def _work(self, task, *args, **kwargs):
         results = GroupResult()
         queue = Queue()
         threads = []
+        old_configs = {}
         for cxn in self:
             my_kwargs = dict(
                 cxn=cxn,
+                task=task,
                 queue=queue,
                 args=args,
                 kwargs=kwargs,
@@ -204,6 +241,12 @@ class ThreadingGroup(Group):
         if excepted:
             raise GroupException(results)
         return results
+
+    def run(self, *args, **kwargs):
+        return self._work(None, *args, **kwargs)
+
+    def execute(self, task, *args, **kwargs):
+        return self._work(task, *args, **kwargs)
 
 
 class GroupResult(dict):

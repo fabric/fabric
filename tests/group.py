@@ -5,6 +5,8 @@ from fabric import Connection, Group, SerialGroup, ThreadingGroup, GroupResult
 from fabric.group import thread_worker
 from fabric.exceptions import GroupException
 
+from invoke import task
+
 
 class Group_(Spec):
     class init:
@@ -103,6 +105,30 @@ class SerialGroup_(Spec):
             eq_(result.succeeded, expected)
             eq_(result.failed, {})
 
+    class execute:
+        def executes_task_with_args_serially(self):
+            "executes task with arguments serially"
+            @task
+            def task_function(ctx, command, keyword=None):
+                return ctx.run(command, keyword=keyword)
+            cxns = [Connection(x) for x in ('host1', 'host2', 'host3')]
+            args = ("command",)
+            task_kwargs = {'keyword': True}
+            kwargs = {'hide': True, 'warn': True}
+            kwargs.update(task_kwargs)
+            for index, cxn in enumerate(cxns):
+                side_effect = _make_serial_tester(
+                    cxns,
+                    index,
+                    args,
+                    task_kwargs
+                )
+                cxn.run = Mock(side_effect=side_effect)
+            g = SerialGroup.from_connections(cxns)
+            g.execute(task_function, *args, **kwargs)
+            for cxn in cxns:
+                cxn.run.assert_called_with(*args, **task_kwargs)
+
 
 class ThreadingGroup_(Spec):
     def setup(self):
@@ -131,6 +157,7 @@ class ThreadingGroup_(Spec):
                     target=thread_worker,
                     kwargs=dict(
                         cxn=cxn,
+                        task=None,
                         queue=queue,
                         args=self.args,
                         kwargs=self.kwargs,
