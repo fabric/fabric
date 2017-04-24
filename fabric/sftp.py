@@ -1,10 +1,10 @@
 from __future__ import with_statement
 
-import hashlib
 import os
 import posixpath
 import stat
 import re
+import uuid
 from fnmatch import filter as fnfilter
 
 from fabric.state import output, connections, env
@@ -158,11 +158,7 @@ class SFTP(object):
         # path in the default remote CWD (which, typically, the login user will
         # have write permissions on) in order to sudo(cp) it.
         if use_sudo:
-            target_path = remote_path
-            hasher = hashlib.sha1()
-            hasher.update(env.host_string)
-            hasher.update(target_path)
-            target_path = posixpath.join(temp_dir, hasher.hexdigest())
+            target_path = posixpath.join(temp_dir, uuid.uuid4().hex)
             # Temporarily nuke 'cwd' so sudo() doesn't "cd" its mv command.
             # (The target path has already been cwd-ified elsewhere.)
             with settings(hide('everything'), cwd=""):
@@ -250,10 +246,7 @@ class SFTP(object):
         # have write permissions on) in order to sudo(mv) it later.
         if use_sudo:
             target_path = remote_path
-            hasher = hashlib.sha1()
-            hasher.update(env.host_string)
-            hasher.update(target_path)
-            remote_path = posixpath.join(temp_dir, hasher.hexdigest())
+            remote_path = posixpath.join(temp_dir, uuid.uuid4().hex)
         # Read, ensuring we handle file-like objects correct re: seek pointer
         putter = self.ftp.put
         if not local_is_path:

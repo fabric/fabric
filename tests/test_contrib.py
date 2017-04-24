@@ -73,7 +73,7 @@ class TestContrib(FabricTest):
             assert result == False
 
     @server(responses={
-        'egrep "Include\\ other\\.conf" "$(echo /etc/apache2/apache2.conf)"': "Include other.conf"
+        r'egrep "Include other\\.conf" "$(echo /etc/apache2/apache2.conf)"': "Include other.conf"
     })
     def test_contains_performs_case_sensitive_search(self):
         """
@@ -85,7 +85,7 @@ class TestContrib(FabricTest):
             assert result == True
 
     @server(responses={
-        'egrep -i "include\ Other\.CONF" "$(echo /etc/apache2/apache2.conf)"': "Include other.conf"
+        r'egrep -i "include Other\\.CONF" "$(echo /etc/apache2/apache2.conf)"': "Include other.conf"
     })
     def test_contains_performs_case_insensitive_search(self):
         """

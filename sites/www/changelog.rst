@@ -2,6 +2,10 @@
 Changelog
 =========
 
+* :bug:`1555` Multiple simultaneous `~fabric.operations.get` and/or
+  `~fabric.operations.put` with ``use_sudo=True`` and for the same remote host
+  and path could fail unnecessarily. Thanks ``@arnimarj`` for the report and
+  Pierce Lopez for the patch.
 * :bug:`1427` (via :issue:`1428`) Locate ``.pyc`` files when searching for
   fabfiles to load; previously we only used the presence of ``.py`` files to
   determine whether loading should be attempted. Credit: Ray Chen.
