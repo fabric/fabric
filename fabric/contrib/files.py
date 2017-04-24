@@ -5,7 +5,6 @@ Module providing easy API for working with remote files and folders.
 from __future__ import with_statement
 
 import hashlib
-import re
 import os
 from StringIO import StringIO
 from functools import partial
@@ -351,7 +350,7 @@ def contains(filename, text, exact=False, use_sudo=False, escape=True,
     added.)
 
     The ``shell`` argument will be eventually passed to ``run/sudo``. See
-    description of the same argumnet in ``~fabric.contrib.sed`` for details.
+    description of the same argument in ``~fabric.contrib.sed`` for details.
 
     If ``case_sensitive`` is False, the `-i` flag will be passed to ``egrep``.
 
@@ -433,14 +432,22 @@ def append(filename, text, use_sudo=False, partial=False, escape=True,
 
 def _escape_for_regex(text):
     """Escape ``text`` to allow literal matching using egrep"""
-    regex = re.escape(text)
-    # Seems like double escaping is needed for \
-    regex = regex.replace('\\\\', '\\\\\\')
-    # Triple-escaping seems to be required for $ signs
-    regex = regex.replace(r'\$', r'\\\$')
-    # Whereas single quotes should not be escaped
-    regex = regex.replace(r"\'", "'")
-    return regex
+    re_specials = '\\^$|(){}[]*+?.'
+    sh_specials = '\\$`"'
+    re_chars = []
+    sh_chars = []
+
+    for c in text:
+        if c in re_specials:
+            re_chars.append('\\')
+        re_chars.append(c)
+
+    for c in re_chars:
+        if c in sh_specials:
+            sh_chars.append('\\')
+        sh_chars.append(c)
+
+    return ''.join(sh_chars)
 
 def is_win():
     """
