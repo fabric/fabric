@@ -2,6 +2,10 @@
 Changelog
 =========
 
+* :bug:`1542` (via :issue:`1543`) Catch Paramiko-level gateway connection
+  errors (``ChannelError``) when raising ``NetworkError``; this prevents an
+  issue where gateway related issues were being treated as authentication
+  errors. Thanks to Charlie Stanley for catch & patch.
 * :bug:`1555` Multiple simultaneous `~fabric.operations.get` and/or
   `~fabric.operations.put` with ``use_sudo=True`` and for the same remote host
   and path could fail unnecessarily. Thanks ``@arnimarj`` for the report and
