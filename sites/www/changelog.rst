@@ -2,6 +2,12 @@
 Changelog
 =========
 
+* :support:`1590 backported` Replace a reference to ``fab`` in a test
+  subprocess, to use the ``python -m <package>`` style instead; this allows
+  ``python setup.py test`` to run the test suite without having Fabric already
+  installed. Thanks to ``@BenSturmfels`` for catch & patch.
+* :support:`- backported` Backport :issue:`1462` to 1.12.x (was previously only
+  backported to 1.13.x.)
 * :support:`1416 backported` Add explicit "Python 2 only" note to ``setup.py``
   trove classifiers to help signal that fact to various info-gathering tools.
   Patch courtesy of Gavin Bisesi.
