@@ -2,10 +2,10 @@
 Changelog
 =========
 
-* :support:`1416` Add explicit "Python 2 only" note to ``setup.py`` trove
-  classifiers to help signal that fact to various info-gathering tools. Patch
-  courtesy of Gavin Bisesi.
-* :support:`1539` Add documentation for :ref:`env.output_prefix
+* :support:`1416 backported` Add explicit "Python 2 only" note to ``setup.py``
+  trove classifiers to help signal that fact to various info-gathering tools.
+  Patch courtesy of Gavin Bisesi.
+* :support:`1539 backported` Add documentation for :ref:`env.output_prefix
   <output_prefix>`. Thanks ``@jphalip``.
 * :bug:`1514` Compatibility with Python 2.5 was broken by using the ``format()``
   method of a string (only in 1.11+). Report by ``@pedrudehuere``.
