@@ -291,4 +291,3 @@ class ThreadingGroup_(Spec):
                 err = "Expected {0} calls to ExceptionHandlingThread.{1}, got {2}" # noqa
                 err = err.format(expected, name, got)
                 eq_(expected, got, err)
-
