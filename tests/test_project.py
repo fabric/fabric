@@ -104,7 +104,23 @@ class UploadProjectTestCase(unittest.TestCase):
         # local() is called more than once so we need an extra next_call()
         # otherwise fudge compares the args to the last call to local()
         self.fake_local.with_args(
-            arg.endswith("-C %s %s" % os.path.split(project_path))
+            arg.endswith("-C path/to/my project")
+        ).next_call()
+
+        # Exercise
+        project.upload_project(local_dir=project_path)
+
+
+    @fudge.with_fakes
+    def test_path_to_local_project_no_separator(self):
+        """Local folder can have no path separator (in current directory)."""
+
+        project_path = "testpath"
+
+        # local() is called more than once so we need an extra next_call()
+        # otherwise fudge compares the args to the last call to local()
+        self.fake_local.with_args(
+            arg.endswith("-C . testpath")
         ).next_call()
 
         # Exercise

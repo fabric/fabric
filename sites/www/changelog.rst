@@ -2,6 +2,9 @@
 Changelog
 =========
 
+* :bug:`1574` `~fabric.contrib.project.upload_project` failed for folder in
+  current directory specified without any path separator. Thanks ``@aidanmelen``
+  for the report and Pierce Lopez for the patch.
 * :support:`1590 backported` Replace a reference to ``fab`` in a test
   subprocess, to use the ``python -m <package>`` style instead; this allows
   ``python setup.py test`` to run the test suite without having Fabric already
