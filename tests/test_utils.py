@@ -93,7 +93,7 @@ def test_abort_message_only_printed_once():
     # perform when they are allowed to bubble all the way to the top. So, we
     # invoke a subprocess and look at its stderr instead.
     with quiet():
-        result = local("python -m fabric -f tests/support/aborts.py kaboom", capture=True)
+        result = local("python -m fabric.__main__ -f tests/support/aborts.py kaboom", capture=True)
     # When error in #1318 is present, this has an extra "It burns!" at end of
     # stderr string.
     eq_(result.stderr, "Fatal error: It burns!\n\nAborting.")
