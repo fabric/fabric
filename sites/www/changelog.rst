@@ -2,6 +2,7 @@
 Changelog
 =========
 
+* :release:`1.12.2 <2017-04-24>`
 * :bug:`1542` (via :issue:`1543`) Catch Paramiko-level gateway connection
   errors (``ChannelError``) when raising ``NetworkError``; this prevents an
   issue where gateway related issues were being treated as authentication
