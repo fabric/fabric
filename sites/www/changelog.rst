@@ -2,6 +2,9 @@
 Changelog
 =========
 
+* :support:`1065 backported` Fix incorrect SSH config reference in the docs for
+  ``env.keepalive``; it corresponds to ``ClientAliveInterval``, not
+  ``ServerAliveInterval``. Credit: Harry Percival.
 * :bug:`1574` `~fabric.contrib.project.upload_project` failed for folder in
   current directory specified without any path separator. Thanks ``@aidanmelen``
   for the report and Pierce Lopez for the patch.
