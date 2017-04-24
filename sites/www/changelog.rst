@@ -2,6 +2,9 @@
 Changelog
 =========
 
+* :support:`1416 backported` Add explicit "Python 2 only" note to ``setup.py``
+  trove classifiers to help signal that fact to various info-gathering tools.
+  Patch courtesy of Gavin Bisesi.
 * :bug:`1526` Disable use of PTY and shell for a background command execution
   within `contrib.sed <fabric.contrib.files.sed>`, preventing a small class of
   issues on some platforms/environments. Thanks to ``@doflink`` for the report
