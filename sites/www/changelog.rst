@@ -2,6 +2,9 @@
 Changelog
 =========
 
+* :bug:`1294` fix text escaping for `~fabric.contrib.files.contains` and
+  `~fabric.contrib.files.append` which would fail if the text contained e.g.
+  ``>``. Thanks to ``@ecksun`` for report & Pierce Lopez for the patch.
 * :support:`1065 backported` Fix incorrect SSH config reference in the docs for
   ``env.keepalive``; it corresponds to ``ClientAliveInterval``, not
   ``ServerAliveInterval``. Credit: Harry Percival.
