@@ -3,6 +3,7 @@ from __future__ import with_statement
 import copy
 from functools import partial
 from operator import isMappingType
+import os.path
 import sys
 
 from fudge import Fake, patched_context
@@ -10,7 +11,7 @@ from nose.tools import ok_, eq_
 
 from fabric.decorators import hosts, roles, task
 from fabric.context_managers import settings
-from fabric.main import (parse_arguments, _escape_split,
+from fabric.main import (parse_arguments, _escape_split, find_fabfile,
         load_fabfile as _load_fabfile, list_commands, _task_names,
         COMMANDS_HEADER, NESTED_REMINDER)
 import fabric.state
@@ -357,6 +358,33 @@ def test_lazy_roles():
     def command():
         pass
     eq_hosts(command, ['a', 'b'], env={'roledefs': lazy_role})
+
+
+#
+# Fabfile finding
+#
+
+class TestFindFabfile(FabricTest):
+    """Test Fabric's fabfile discovery mechanism."""
+    def test_find_fabfile_can_discovery_package(self):
+        """Fabric should be capable of loading a normal package."""
+        path = self.mkfile("__init__.py", "")
+        name = os.path.dirname(path)
+        assert find_fabfile([name,]) is not None
+
+    def test_find_fabfile_can_discovery_package_with_pyc_only(self):
+        """
+        Fabric should be capable of loading a package with __init__.pyc only.
+        """
+        path = self.mkfile("__init__.pyc", "")
+        name = os.path.dirname(path)
+        assert find_fabfile([name,]) is not None
+
+    def test_find_fabfile_should_refuse_fake_package(self):
+        """Fabric should refuse to load a non-package directory."""
+        path = self.mkfile("foo.py", "")
+        name = os.path.dirname(path)
+        assert find_fabfile([name,]) is None
 
 
 #
