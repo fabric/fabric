@@ -2,6 +2,9 @@
 Changelog
 =========
 
+* :bug:`1427` (via :issue:`1428`) Locate ``.pyc`` files when searching for
+  fabfiles to load; previously we only used the presence of ``.py`` files to
+  determine whether loading should be attempted. Credit: Ray Chen.
 * :bug:`1294` fix text escaping for `~fabric.contrib.files.contains` and
   `~fabric.contrib.files.append` which would fail if the text contained e.g.
   ``>``. Thanks to ``@ecksun`` for report & Pierce Lopez for the patch.
