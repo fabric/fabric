@@ -763,19 +763,16 @@ class TestFileTransfers(FabricTest):
         """
         get(use_sudo=True) works by copying to a temporary path, downloading it and then removing it at the end
         """
-        # the sha1 hash is the unique filename of the file being downloaded. sha1(<filename>)
-        name = "229a29e5693876645e39de0cb0532e43ad73311a"
         fake_run = Fake('_run_command', callable=True, expect_call=True).with_matching_args(
-            'cp -p "/etc/apache2/apache2.conf" "%s"' % name, True, True, None,
+            fudge_arg.startswith('cp -p "/etc/apache2/apache2.conf" "'), True, True, None
         ).next_call().with_matching_args(
-            'chown username "%s"' % name, True, True, None,
+            fudge_arg.startswith('chown username "'), True, True, None,
         ).next_call().with_matching_args(
-            'chmod 400 "%s"' % name, True, True, None,
+            fudge_arg.startswith('chmod 400 "'), True, True, None,
         ).next_call().with_matching_args(
-            'rm -f "%s"' % name, True, True, None,
+            fudge_arg.startswith('rm -f "'), True, True, None,
         )
-        fake_get = Fake('get', callable=True, expect_call=True).with_args(
-            name, fudge_arg.any_value())
+        fake_get = Fake('get', callable=True, expect_call=True)
 
         with hide('everything'):
             with patched_context('fabric.operations', '_run_command', fake_run):
@@ -788,21 +785,19 @@ class TestFileTransfers(FabricTest):
     @with_fakes
     def test_get_use_sudo_temp_dir(self):
         """
-        get(use_sudo=True, temp_dir="/tmp") works by copying to a /tmp/sha1_hash, downloading it and then removing it at the end
+        get(use_sudo=True, temp_dir="/tmp") works by copying to /tmp/..., downloading it and then removing it at the end
         """
-        # the sha1 hash is the unique filename of the file being downloaded. sha1(<filename>)
-        name = "229a29e5693876645e39de0cb0532e43ad73311a"
         fake_run = Fake('_run_command', callable=True, expect_call=True).with_matching_args(
-            'cp -p "/etc/apache2/apache2.conf" "/tmp/%s"' % name, True, True, None,
+            fudge_arg.startswith('cp -p "/etc/apache2/apache2.conf" "/tmp/'), True, True, None,
         ).next_call().with_matching_args(
-            'chown username "/tmp/%s"' % name, True, True, None,
+            fudge_arg.startswith('chown username "/tmp/'), True, True, None,
         ).next_call().with_matching_args(
-            'chmod 400 "/tmp/%s"' % name, True, True, None,
+            fudge_arg.startswith('chmod 400 "/tmp/'), True, True, None,
         ).next_call().with_matching_args(
-            'rm -f "/tmp/%s"' % name, True, True, None,
+            fudge_arg.startswith('rm -f "/tmp/'), True, True, None,
         )
         fake_get = Fake('get', callable=True, expect_call=True).with_args(
-            '/tmp/%s' % name, fudge_arg.any_value())
+            fudge_arg.startswith('/tmp/'), fudge_arg.any_value())
 
         with hide('everything'):
             with patched_context('fabric.operations', '_run_command', fake_run):
@@ -963,12 +958,10 @@ class TestFileTransfers(FabricTest):
         """
         put(use_sudo=True) works by uploading a the `local_path` to a temporary path and then moving it to a `remote_path`
         """
-        # the sha1 hash is the unique filename of the file being downloaded. sha1(<filename>)
         fake_run = Fake('_run_command', callable=True, expect_call=True).with_matching_args(
-            'mv "7c91837ec0b3570264a325df6b7ef949ee22bc56" "/foobar.txt"', True, True, None,
+            fudge_arg.startswith('mv "'), True, True, None,
         )
-        fake_put = Fake('put', callable=True, expect_call=True).with_args(fudge_arg.any_value(),
-                                                                          '7c91837ec0b3570264a325df6b7ef949ee22bc56')
+        fake_put = Fake('put', callable=True, expect_call=True)
 
         local_path = self.mkfile('foobar.txt', "baz")
         with hide('everything'):
@@ -986,10 +979,9 @@ class TestFileTransfers(FabricTest):
         """
         # the sha1 hash is the unique filename of the file being downloaded. sha1(<filename>)
         fake_run = Fake('_run_command', callable=True, expect_call=True).with_matching_args(
-            'mv "/tmp/7c91837ec0b3570264a325df6b7ef949ee22bc56" "/foobar.txt"', True, True, None,
+            fudge_arg.startswith('mv "'), True, True, None,
         )
-        fake_put = Fake('put', callable=True, expect_call=True).with_args(fudge_arg.any_value(),
-                                                                          '/tmp/7c91837ec0b3570264a325df6b7ef949ee22bc56')
+        fake_put = Fake('put', callable=True, expect_call=True)
 
         local_path = self.mkfile('foobar.txt', "baz")
         with hide('everything'):
