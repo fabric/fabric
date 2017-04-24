@@ -2,6 +2,8 @@
 Changelog
 =========
 
+* :support:`- backported` Backport :issue:`1462` to 1.12.x (was previously only
+  backported to 1.13.x.)
 * :support:`1416 backported` Add explicit "Python 2 only" note to ``setup.py``
   trove classifiers to help signal that fact to various info-gathering tools.
   Patch courtesy of Gavin Bisesi.
