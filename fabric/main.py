@@ -197,7 +197,11 @@ def load_tasks_from_module(imported):
     # dictionary of callables only (and don't include Fab operations or
     # underscored callables)
     new_style, classic, default = extract_tasks(imported_vars)
-    return imported.__doc__, new_style, classic, default
+    try:
+        imported_doc = imported.__doc__
+    except AttributeError:
+        imported_doc = ''
+    return imported_doc, new_style, classic, default
 
 
 def extract_tasks(imported_vars):
