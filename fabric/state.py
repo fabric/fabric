@@ -49,7 +49,7 @@ def _get_system_username():
             import win32security # noqa
             import win32profile # noqa
             username = win32api.GetUserName()
-    return username
+    return username.strip()
 
 def _rc_path():
     """
