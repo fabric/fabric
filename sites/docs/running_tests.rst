@@ -46,3 +46,26 @@ you can also run::
     fab test
 
 This adds additional flags which enable running doctests & adds nice coloration.
+
+
+Testing against multiple versions of Python
+===========================================
+
+In order to make testing against multiple versions of Python easier, the
+testsuite can also be executed using tox_ (outside the virtualenv you created
+above).  Tox will handle all the virtual environments for you out of the box.
+
+To execute the whole test suite against Python 2.5 - 2.7 you can simply run::
+
+    tox
+
+If you just want to run the tests specified in, for instance,
+``tests/test_parallel.py`` against Python 2.7 run::
+
+    tox -e py27 -- tests/test_parallel.py
+
+Note that tox won't install the various Python versions for you. So if you want
+to test against Python 2.5 you have to have that installed prior to running
+tests against it.
+
+.. _tox: https://tox.readthedocs.org/
