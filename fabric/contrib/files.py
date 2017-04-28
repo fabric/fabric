@@ -433,7 +433,15 @@ def _escape_for_regex(text):
     re_chars = []
     sh_chars = []
 
+    # Removes newline characters.
+    # egrep does not support multi-line patterns, so they should not be used
+    # with these functions. But, this might as well remain consistent with
+    # its original behavior regarding newlines, which was to escape them,
+    # causing the shell to ignore/omit them.
+
     for c in text:
+        if c == '\n':
+            continue
         if c in re_specials:
             re_chars.append('\\')
         re_chars.append(c)
