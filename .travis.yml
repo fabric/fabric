@@ -45,13 +45,8 @@ before_script:
   # Allow us to SSH passwordless to localhost
   - inv travis.make_sshable
 script:
-  # Run unit and integration tests, generating coverage report (skipping html).
-  # NOTE: Using the above-created passworded sudo-capable user so that
-  # sudo-related integration tests work as expected. (Otherwise, sudo prompt
-  # response will not be properly tested!)
-  # NOTE: using sudo -H to enforce target user homedir use for e.g SSH keys
-  # NOTE: This command will fail if the tests fail.
-  - "sudo -H -u sudouser bash -c \"source $VIRTUAL_ENV/bin/activate && inv coverage --no-html\""
+  # Execute full test suite + coverage, as the new sudo-capable user
+  - inv travis.sudo_coverage
   # Websites build OK? (Not on PyPy3, Sphinx is all "who the hell are you?" =/
   - "[[ $TRAVIS_PYTHON_VERSION != 'pypy3' ]] && inv sites"
   - "[[ $TRAVIS_PYTHON_VERSION != 'pypy3' ]] && inv docs.doctest"
