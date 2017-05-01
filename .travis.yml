@@ -38,18 +38,10 @@ install:
   # Sanity test of Fabric itself
   - fab --version
 before_script:
-  # Create passworded sudoable user for sudo autoresponse testing. Put it in
-  # the Travis user's group so it can read /home/travis for virtualenv etc.
-  # Make sure to create its home directory as it must host SSH files.
-  - sudo useradd sudouser -m -G travis
-  - "echo sudouser:mypass | sudo chpasswd"
-  - "sudo sh -c \"echo 'sudouser   ALL=(ALL:ALL) PASSWD:ALL' > /etc/sudoers.d/passworded\""
-  # Make sure sudouser can write to travis' homedir (used for some config
-  # tests)
-  - sudo chmod g+w /home/travis
+  # Create 'sudouser' w/ sudo password & perms on Travis' homedir
+  - inv travis.make_sudouser
   # Allow us to SSH passwordless to localhost
-  - sudo -u sudouser ssh-keygen -f ~sudouser/.ssh/id_rsa -N ""
-  - sudo cp ~sudouser/.ssh/{id_rsa.pub,authorized_keys}
+  - inv travis.make_sshable
 script:
   # Run unit and integration tests, generating coverage report (skipping html).
   # NOTE: Using the above-created passworded sudo-capable user so that
