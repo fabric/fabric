@@ -23,4 +23,12 @@ ns.configure({
         'wheel': True,
         'check_desc': True,
     },
+    # TODO: perhaps move this into a tertiary, non automatically loaded, conf
+    # file so that both this & the code under test can reference it? Meh.
+    'travis': {
+        'sudo': {
+            'user': 'sudouser',
+            'password': 'mypass',
+        },
+    },
 })

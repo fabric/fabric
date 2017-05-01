@@ -25,6 +25,8 @@ install:
   # and/or paramiko versions, released versions, etc
   # Invoke from master for parity
   - "pip install -e git+https://github.com/pyinvoke/invoke#egg=invoke"
+  # And invocations, ditto
+  - "pip install -e git+https://github.com/pyinvoke/invocations#egg=invocations"
   # Paramiko ditto
   - "pip install -e git+https://github.com/paramiko/paramiko#egg=paramiko"
   # Self
