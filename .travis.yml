@@ -51,7 +51,7 @@ script:
   - "[[ $TRAVIS_PYTHON_VERSION != 'pypy3' ]] && inv sites"
   - "[[ $TRAVIS_PYTHON_VERSION != 'pypy3' ]] && inv docs.doctest"
   # Did we break setup.py?
-  - inv travis.test_installation fabric --sanity="fab --version"
+  - inv travis.test_installation --package=fabric --sanity="fab --version"
   # I have this in my git pre-push hook, but contributors probably don't
   - flake8
   # TODO: this should all become a task, sheesh
