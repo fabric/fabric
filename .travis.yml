@@ -54,7 +54,6 @@ script:
   - inv travis.test_installation --package=fabric --sanity="fab --version"
   # I have this in my git pre-push hook, but contributors probably don't
   - flake8
-  # TODO: this should all become a task, sheesh
   # Test distribution builds.
   - inv travis.test_packaging --package=fabric --sanity="fab --version"
   # Again, but as 'fabric2'
