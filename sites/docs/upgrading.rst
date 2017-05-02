@@ -272,8 +272,8 @@ expect it will be soon. For now we fall back to command chaining with ``&&``.
         if not c.run("test -d {}".format(code_dir), warn=True):
             cmd = "git clone user@vcshost:/path/to/repo/.git {}"
             c.run(cmd.format(code_dir))
-        run("cd {} && git pull".format(code_dir))
-        run("cd {} && touch app.wsgi".format(code_dir))
+        c.run("cd {} && git pull".format(code_dir))
+        c.run("cd {} && touch app.wsgi".format(code_dir))
 
 
 The whole thing
@@ -312,8 +312,8 @@ Now we have the entire, upgraded fabfile that will work with Fabric 2::
         if not c.run("test -d {}".format(code_dir), warn=True):
             cmd = "git clone user@vcshost:/path/to/repo/.git {}"
             c.run(cmd.format(code_dir))
-        run("cd {} && git pull".format(code_dir))
-        run("cd {} && touch app.wsgi".format(code_dir))
+        c.run("cd {} && git pull".format(code_dir))
+        c.run("cd {} && touch app.wsgi".format(code_dir))
 
 
 .. _upgrade-specifics:

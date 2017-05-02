@@ -79,9 +79,9 @@ Development dependencies
 ------------------------
 
 If you are interested in doing development work on Fabric (or even just running
-the test suite), you'll need the libraries listed in the
-``dev-requirements.txt`` (included in the source distribution.) Usually it's
-easy to simply ``pip install -r dev-requirements.txt``.
+the test suite), you'll need the libraries listed in the ``requirements.txt``
+(included in the source distribution.) Usually it's easy to simply ``pip
+install -r requirements.txt``.
 
 .. _downloads:
 

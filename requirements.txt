@@ -7,8 +7,6 @@ nose==1.3.0
 six==1.6.1
 # Mock for test mocking
 mock==1.0.1
-# Other libs used by the test suite
-more-itertools==3.0.0
 # Linting!
 flake8==2.4.0
 # Coverage!
