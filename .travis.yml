@@ -56,25 +56,11 @@ script:
   - flake8
   # TODO: this should all become a task, sheesh
   # Test distribution builds.
-  # Have to use env var to override our normal config defaults. Ho hum.
-  - "INVOKE_PACKAGING_SIGN=0 inv release.publish --dry-run --directory=tmp"
-  # Wheel
-  - pip uninstall -y fabric
-  - "pip install tmp/dist/*.whl"
-  - fab --version
-  # Source distribution
-  - pip uninstall -y fabric
-  - "pip install tmp/dist/*.tar.gz"
-  - fab --version
+  - inv travis.test_packaging --package=fabric --sanity="fab --version"
   # Again, but as 'fabric2'
   - rm -rf tmp
   - pip uninstall -y fabric
-  - "INVOKE_PACKAGING_SIGN=0 PACKAGE_AS_FABRIC2=yes inv release.publish --dry-run --directory=tmp"
-  - "pip install tmp/dist/*.whl"
-  - fab2 --version
-  - pip uninstall -y fabric2
-  - "pip install tmp/dist/*.tar.gz"
-  - fab2 --version
+  - "PACKAGE_AS_FABRIC2=yes inv travis.test_packaging --package=fabric --sanity=\"fab2 --version\""
 after_success:
   # Upload coverage data to codecov
   - codecov
