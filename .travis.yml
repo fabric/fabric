@@ -51,9 +51,7 @@ script:
   - "[[ $TRAVIS_PYTHON_VERSION != 'pypy3' ]] && inv sites"
   - "[[ $TRAVIS_PYTHON_VERSION != 'pypy3' ]] && inv docs.doctest"
   # Did we break setup.py?
-  - pip uninstall -y fabric # To undo the implicit -e install from above
-  - pip install . # NO -e!
-  - fab --version # Sanity check
+  - inv travis.test_installation fabric --sanity="fab --version"
   # I have this in my git pre-push hook, but contributors probably don't
   - flake8
   # TODO: this should all become a task, sheesh
