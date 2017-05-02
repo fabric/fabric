@@ -1,3 +1,7 @@
+# Ensure stable setuptools, setuptools 34+ have some wonky corner cases; in our
+# case they prevent tweaking the verison of 'six' under Python 3.6 (and only
+# then...LOL?) See https://github.com/pypa/setuptools/issues/951
+setuptools<34
 # Invoke implicitly required by self/pip install -e .
 # Invocations for common project tasks
 invocations>=0.17,<2.0
