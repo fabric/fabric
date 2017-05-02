@@ -60,7 +60,7 @@ script:
   # Again, but as 'fabric2'
   - rm -rf tmp
   - pip uninstall -y fabric
-  - "PACKAGE_AS_FABRIC2=yes inv travis.test_packaging --package=fabric --sanity=\"fab2 --version\""
+  - "PACKAGE_AS_FABRIC2=yes inv travis.test_packaging --package=fabric2 --sanity=\"fab2 --version\""
 after_success:
   # Upload coverage data to codecov
   - codecov
