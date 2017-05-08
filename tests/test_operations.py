@@ -16,7 +16,7 @@ from paramiko.sftp_client import SFTPClient  # for patching
 
 from fabric.state import env, output
 from fabric.operations import require, prompt, _sudo_prefix, _shell_wrap, \
-    _shell_escape
+    _shell_escape, _prefix_env_vars
 from fabric.api import get, put, hide, show, cd, lcd, local, run, sudo, quiet
 from fabric.context_managers import settings
 from fabric.exceptions import CommandTimeout
@@ -193,6 +193,18 @@ def test_prompt_with_default():
     d = "default!"
     prompt(s, default=d)
     eq_(sys.stdout.getvalue(), "%s [%s] " % (s, d))
+
+
+def test_prefix_env_vars_non_strings():
+    """
+    _prefix_env_vars() test int, float, bool as env variable
+    """
+    values = [123, u'123', 1.11, True, False]
+    expect = ['123', '123', '1.11', 'True', 'False']
+    for index, value in enumerate(values):
+        env.shell_env = dict(VAR=value)
+        # NOTE: if we ever run tests on windows, add a condition here to test both
+        eq_(_prefix_env_vars('foo'), 'export VAR="%s" && foo' % expect[index])
 
 
 #
