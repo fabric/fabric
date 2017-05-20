@@ -6,8 +6,12 @@ from __future__ import with_statement
 
 import hashlib
 import os
-from StringIO import StringIO
 from functools import partial
+
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 
 from fabric.api import run, sudo, hide, settings, env, put, abort
 from fabric.utils import apply_lcwd

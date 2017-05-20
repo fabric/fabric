@@ -21,5 +21,8 @@ class ThreadHandler(object):
 
     def raise_if_needed(self):
         if self.exception:
-            e = self.exception
-            raise e[0], e[1], e[2]
+            (e_type, e_value, e_tb) = self.exception
+            print('Unexpected exception: {}'.format(e_type))
+            print('Exception value: {!r}'.format(e_value))
+            print('Traceback: {}'.format(e_tb))
+            raise
