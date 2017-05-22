@@ -309,7 +309,7 @@ this::
         <Connection 'mac1'>: <CommandResult 'uname -s'>,
     }>
     >>> for connection, result in results.items():
-    ...     print("{0.hostname}: {1.stdout}".format(connection, result))
+    ...     print("{0.host}: {1.stdout}".format(connection, result))
     ...
     ...
     web1: Linux
