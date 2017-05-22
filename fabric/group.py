@@ -11,9 +11,9 @@ class Group(list):
     A collection of `.Connection` objects whose API operates on its contents.
 
     .. warning::
-        **This is a partially abstract class**; see its subclasses (such as
-        `.SerialGroup` and `.ThreadingGroup`) for details on how they are
-        implemented..
+        **This is a partially abstract class**; you need to use one of its
+        concrete subclasses (such as `.SerialGroup` or `.ThreadingGroup`) or
+        you'll get ``NotImplementedError`` on most of the methods.
 
     Most methods in this class mirror those of `.Connection`, taking the same
     arguments; however their return values and exception-raising behavior
