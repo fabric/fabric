@@ -10,8 +10,10 @@ class Group(list):
     """
     A collection of `.Connection` objects whose API operates on its contents.
 
-    This is a partially abstract class; see its subclasses for details on how
-    they are implemented..
+    .. warning::
+        **This is a partially abstract class**; see its subclasses (such as
+        `.SerialGroup` and `.ThreadingGroup`) for details on how they are
+        implemented..
 
     Most methods in this class mirror those of `.Connection`, taking the same
     arguments; however their return values and exception-raising behavior
