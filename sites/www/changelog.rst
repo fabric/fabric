@@ -2,6 +2,9 @@
 Changelog
 =========
 
+* :feature:`1493` Add a ``timeout`` kwarg to the reboot function to allow
+  overriding of the sleep timeout. Report by ``@linfenghuaster`` and patch
+  by ``@kaplanlior`` and ``@mikebarkas``.
 * :release:`1.13.2 <2017-04-24>`
 * :release:`1.12.2 <2017-04-24>`
 * :bug:`1542` (via :issue:`1543`) Catch Paramiko-level gateway connection
