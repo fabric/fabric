@@ -1243,7 +1243,7 @@ def local(command, capture=False, shell=None):
 
 
 @needs_host
-def reboot(wait=120, command='reboot', use_sudo=True):
+def reboot(wait=120, command='reboot', use_sudo=True, timeout=5):
     """
     Reboot the remote system.
 
@@ -1270,9 +1270,9 @@ def reboot(wait=120, command='reboot', use_sudo=True):
     .. versionchanged:: 1.11
         Added ``use_sudo`` as a kwarg. Maintained old functionality by setting
         the default value to True.
+    .. versionchanged:: 1.14
+        Added ``timeout`` as a kwarg. Allow overriding the timeout if needed.
     """
-    # Shorter timeout for a more granular cycle than the default.
-    timeout = 5
     # Use 'wait' as max total wait time
     attempts = int(round(float(wait) / float(timeout)))
     # Don't bleed settings, since this is supposed to be self-contained.
@@ -1285,7 +1285,7 @@ def reboot(wait=120, command='reboot', use_sudo=True):
     ):
         (sudo if use_sudo else run)(command)
         # Try to make sure we don't slip in before pre-reboot lockdown
-        time.sleep(5)
+        time.sleep(timeout)
         # This is actually an internal-ish API call, but users can simply drop
         # it in real fabfile use -- the next run/sudo/put/get/etc call will
         # automatically trigger a reconnect.
