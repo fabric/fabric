@@ -29,7 +29,7 @@ def exists(path, use_sudo=False, verbose=False):
         cross-platform (e.g. Windows) compatibility.
     """
     func = use_sudo and sudo or run
-    cmd = 'stat %s' % _expand_path(path)
+    cmd = 'stat %s' % path.replace(' ', r'\ ')
     # If verbose, run normally
     if verbose:
         with settings(warn_only=True):
@@ -49,7 +49,7 @@ def is_link(path, use_sudo=False, verbose=False):
     change this.
     """
     func = sudo if use_sudo else run
-    cmd = 'test -L "$(echo %s)"' % path
+    cmd = 'test -L %s' % path.replace(' ', r'\ ')
     args, kwargs = [], {'warn_only': True}
     if not verbose:
         args = [hide('everything')]
@@ -120,7 +120,7 @@ def upload_template(filename, destination, context=None, use_jinja=False,
         func = partial(func, pty=pty)
     # Normalize destination to be an actual filename, due to using StringIO
     with settings(hide('everything'), warn_only=True):
-        if func('test -d %s' % _expand_path(destination)).succeeded:
+        if func('test -d %s' % destination.replace(' ', r'\ ')).succeeded:
             sep = "" if destination.endswith('/') else "/"
             destination += sep + os.path.basename(filename)
 
@@ -161,7 +161,7 @@ def upload_template(filename, destination, context=None, use_jinja=False,
 
     # Back up original file
     if backup and exists(destination):
-        func("cp %s{,.bak}" % _expand_path(destination))
+        func("cp %s{,.bak}" % destination.replace(' ', r'\ '))
 
     # Upload the file.
     return put(
@@ -220,7 +220,7 @@ def sed(filename, before, after, limit='', use_sudo=False, backup='.bak',
         limit = r'/%s/ ' % limit
     context = {
         'script': r"'%ss/%s/%s/%sg'" % (limit, before, after, flags),
-        'filename': _expand_path(filename),
+        'filename': filename.replace(' ', r'\ '),
         'backup': backup
     }
     # Test the OS because of differences between sed versions
@@ -373,7 +373,7 @@ def contains(filename, text, exact=False, use_sudo=False, escape=True,
         if exact:
             text = "^%s$" % text
     with settings(hide('everything'), warn_only=True):
-        egrep_cmd = 'egrep "%s" %s' % (text, _expand_path(filename))
+        egrep_cmd = 'egrep "%s" %s' % (text, filename.replace(' ', r'\ '))
         if not case_sensitive:
             egrep_cmd = egrep_cmd.replace('egrep', 'egrep -i', 1)
         return func(egrep_cmd, shell=shell).succeeded
@@ -428,7 +428,7 @@ def append(filename, text, use_sudo=False, partial=False, escape=True,
                          shell=shell)):
             continue
         line = line.replace("'", r"'\\''") if escape else line
-        func("echo '%s' >> %s" % (line, _expand_path(filename)))
+        func("echo '%s' >> %s" % (line, filename.replace(' ', r'\ ')))
 
 def _escape_for_regex(text):
     """Escape ``text`` to allow literal matching using egrep"""
@@ -448,26 +448,3 @@ def _escape_for_regex(text):
         sh_chars.append(c)
 
     return ''.join(sh_chars)
-
-def is_win():
-    """
-    Return True if remote SSH server is running Windows, False otherwise.
-
-    The idea is based on echoing quoted text: \*NIX systems will echo quoted
-    text only, while Windows echoes quotation marks as well.
-    """
-    with settings(hide('everything'), warn_only=True):
-        return '"' in run('echo "Will you echo quotation marks"')
-
-def _expand_path(path):
-    """
-    Return a path expansion
-
-    E.g.    ~/some/path     ->  /home/myuser/some/path
-            /user/\*/share   ->  /user/local/share
-    More examples can be found here: http://linuxcommand.org/lc3_lts0080.php
-
-    .. versionchanged:: 1.0
-        Avoid breaking remote Windows commands which does not support expansion.
-    """
-    return path if is_win() else '"$(echo %s)"' % path

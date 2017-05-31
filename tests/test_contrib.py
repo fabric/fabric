@@ -14,7 +14,7 @@ class TestContrib(FabricTest):
     # Make sure it knows / is a directory.
     # This is in lieu of starting down the "actual honest to god fake operating
     # system" road...:(
-    @server(responses={'test -d "$(echo /)"': ""})
+    @server(responses={'test -d /': ""})
     def test_upload_template_uses_correct_remote_filename(self):
         """
         upload_template() shouldn't munge final remote filename
@@ -73,7 +73,7 @@ class TestContrib(FabricTest):
             assert result == False
 
     @server(responses={
-        r'egrep "Include other\\.conf" "$(echo /etc/apache2/apache2.conf)"': "Include other.conf"
+        r'egrep "Include other\\.conf" /etc/apache2/apache2.conf': "Include other.conf"
     })
     def test_contains_performs_case_sensitive_search(self):
         """
@@ -85,7 +85,7 @@ class TestContrib(FabricTest):
             assert result == True
 
     @server(responses={
-        r'egrep -i "include Other\\.CONF" "$(echo /etc/apache2/apache2.conf)"': "Include other.conf"
+        r'egrep -i "include Other\\.CONF" /etc/apache2/apache2.conf': "Include other.conf"
     })
     def test_contains_performs_case_insensitive_search(self):
         """
