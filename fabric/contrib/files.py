@@ -449,6 +449,8 @@ def _escape_for_regex(text):
 
     return ''.join(sh_chars)
 
+_is_win_cache = {}
+
 def is_win():
     """
     Return True if remote SSH server is running Windows, False otherwise.
@@ -456,8 +458,11 @@ def is_win():
     The idea is based on echoing quoted text: \*NIX systems will echo quoted
     text only, while Windows echoes quotation marks as well.
     """
-    with settings(hide('everything'), warn_only=True):
-        return '"' in run('echo "Will you echo quotation marks"')
+    if env.host not in _is_win_cache:
+        with settings(hide('everything'), warn_only=True):
+            _is_win_cache[env.host] = '"' in run('echo "test shell quotes"')
+
+    return _is_win_cache[env.host]
 
 def _expand_path(path):
     """
