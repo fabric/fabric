@@ -10,11 +10,19 @@ to individuals leveraging Fabric as a library, should be kept elsewhere.
 """
 import getpass
 import inspect
-from operator import isMappingType
-from optparse import OptionParser
 import os
 import sys
 import types
+from optparse import OptionParser
+
+try:
+    from operator import isMappingType
+except ImportError:
+    import collections
+    isMappingType = lambda obj: isinstance(obj, collections.Mapping)
+
+if not hasattr(__builtins__, 'reduce'):
+    from functools import reduce
 
 # For checking callables against the API, & easy mocking
 from fabric import api, state, colors
@@ -30,7 +38,7 @@ from fabric.utils import abort, indent, warn, _pty_size
 # One-time calculation of "all internal callables" to avoid doing this on every
 # check of a given fabfile callable (in is_classic_task()).
 _modules = [api, project, files, console, colors]
-_internals = reduce(lambda x, y: x + filter(callable, vars(y).values()),
+_internals = reduce(lambda x, y: x + list(filter(callable, vars(y).values())),
     _modules,
     []
 )

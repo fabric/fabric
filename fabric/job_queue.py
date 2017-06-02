@@ -6,9 +6,14 @@ items, though within Fabric itself only ``Process`` objects are used/supported.
 """
 
 from __future__ import with_statement
+
 import time
-import Queue
 from multiprocessing import Process
+
+try:
+    import Queue
+except ImportError:
+    from queue import Queue
 
 from fabric.network import ssh
 from fabric.context_managers import settings
