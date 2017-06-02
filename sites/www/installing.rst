@@ -31,12 +31,13 @@ dependency)::
 Dependencies
 ============
 
-In order for Fabric's installation to succeed, you will need four primary pieces of software:
+In order for Fabric's installation to succeed, you will need three primary pieces of software:
 
 * the Python programming language;
 * the ``setuptools`` packaging/installation library;
-* the Python `Paramiko <http://paramiko.org>`_ SSH library;
-* and Paramiko's dependency, the PyCrypto cryptography library.
+* and the Python `Paramiko <http://paramiko.org>`_ SSH library. Paramiko's dependencies differ
+  significantly between the 1.x and 2.x releases. See the `Paramiko installation docs
+  <http://www.paramiko.org/installing.html>`_ for more info.
 
 and, if using the :ref:`parallel execution mode <parallel-execution>`:
 
