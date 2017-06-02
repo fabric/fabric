@@ -221,7 +221,7 @@ class Session(object):
         self.client.connect.assert_called_once_with(
             username=self.user or ANY,
             hostname=self.host or ANY,
-            port=self.port or ANY
+            port=self.port or ANY,
         )
 
         # Calls to open_session will be 1-per-command but are on transport, not
