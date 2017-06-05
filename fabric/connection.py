@@ -530,11 +530,8 @@ class Connection(Context):
             settings/behaviors; they are documented under
             `.Config.global_defaults`.
         """
-        # TODO: should superclass' run() (our local()) grow more in its body
-        # than simply prefix_commands, it will need to be broken up more so we
-        # can reuse what it does more readily.
-        command = self.prefix_commands(command)
-        return self.config.runners.remote(self).run(command, **kwargs)
+        runner = self.config.runners.remote(self)
+        return self._run(runner, command, **kwargs)
 
     def sudo(self, command, **kwargs):
         """
@@ -545,11 +542,8 @@ class Connection(Context):
         configuration overrides in addition to the generic/global ones. Thus,
         for example, per-host sudo passwords may be configured.
         """
-        # TODO: if we never end up needing to modify this, is there a non shite
-        # way to tell Sphinx to just use the docstring for the parent class'
-        # sudo()? :inherited-members: adds waaaay too much garbage :(
-        # NOTE: no need to open(), can rely on run()'s.
-        return super(Connection, self).sudo(command, **kwargs)
+        runner = self.config.runners.remote(self)
+        return self._sudo(runner, command, **kwargs)
 
     def local(self, *args, **kwargs):
         """
@@ -558,10 +552,8 @@ class Connection(Context):
         This method is effectively a wrapper of `invoke.run`; see its docs for
         details and call signature.
         """
-        # Call super's run() directly, to gain everything it does (such as
-        # command prefixing). That method references the config value
-        # runners.local, which is typically the same (Local) in both contexts,
-        # and thus 'just works'.
+        # Superclass run() uses runners.local, so we can literally just call it
+        # straight.
         return super(Connection, self).run(*args, **kwargs)
 
     @opens
