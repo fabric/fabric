@@ -29,7 +29,7 @@ Core use cases for Fabric include (but are not limited to):
 * Single commands across multiple hosts (via varying methodologies: serial,
   parallel, etc)::
 
-      >>> Group(['web1', 'web2', 'db1']).run('df -h')
+      >>> Group('web1', 'web2', 'db1').run('df -h')
       {<Host>: <Result>, ...}
 
 * Python code blocks (functions/methods) on individual hosts::
@@ -50,7 +50,7 @@ Core use cases for Fabric include (but are not limited to):
       >>> def disk_free(ctx):
       ...     # ...
       ...
-      >>> Group(['db1', 'db2', 'web1', 'lb1']).execute(disk_free)
+      >>> Group('db1', 'db2', 'web1', 'lb1').execute(disk_free)
       {<Host>: "33%", ...}
 
 In addition to these library-oriented use cases, Fabric makes it easy to
