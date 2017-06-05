@@ -833,6 +833,14 @@ class Connection_(Spec):
     class sudo:
         @patch('fabric.connection.SSHClient')
         @patch(remote_path)
+        def calls_open_for_you(self, Remote, Client):
+            c = Connection('host')
+            c.open = Mock()
+            c.sudo("command")
+            ok_(c.open.called)
+
+        @patch('fabric.connection.SSHClient')
+        @patch(remote_path)
         def basic_invocation(self, Remote, Client):
             # Technically duplicates Invoke-level tests, but ensures things
             # still work correctly at our level.
