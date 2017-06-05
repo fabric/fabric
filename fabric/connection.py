@@ -14,7 +14,6 @@ from paramiko.config import SSHConfig
 from paramiko.proxy import ProxyCommand
 
 from .config import Config
-from .runners import Remote
 from .transfer import Transfer
 from .tunnels import TunnelManager, Tunnel
 

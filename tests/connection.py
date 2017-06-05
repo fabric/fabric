@@ -850,8 +850,7 @@ class Connection_(Spec):
             # Technically duplicates Invoke-level tests, but ensures things
             # still work correctly at our level.
             cxn = Connection('host')
-            expected = Remote.return_value.run.return_value
-            result = cxn.sudo('foo')
+            cxn.sudo('foo')
             cmd = "sudo -S -p '{0}' foo".format(cxn.config.sudo.prompt)
             # NOTE: this is another spot where Mock.call_args is inexplicably
             # None despite call_args_list being populated. WTF. (Also,
