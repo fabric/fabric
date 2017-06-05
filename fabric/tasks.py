@@ -399,6 +399,12 @@ def execute(task, *args, **kwargs):
             if state.env.eagerly_disconnect:
                 disconnect_all()
 
+        failed = False
+        failed_messages = []
+
+        def failed_instance(message):
+            failed_messages.append(message.replace("\n", " "))
+
         # If running in parallel, block until job queue is emptied
         if jobs:
             err = "One or more hosts failed while executing task '%s'" % (
@@ -411,14 +417,23 @@ def execute(task, *args, **kwargs):
             ran_jobs = jobs.run()
             for name, d in ran_jobs.iteritems():
                 if d['exit_code'] != 0:
-                    if isinstance(d['results'], NetworkError) and \
-                            _is_network_error_ignored():
-                        error(d['results'].message, func=warn, exception=d['results'].wrapped)
+                    if (
+                        isinstance(d['results'], NetworkError) and
+                        _is_network_error_ignored()
+                    ):
+                        error(
+                            d['results'].message, func=failed_instance,
+                            exception=d['results'].wrapped
+                        )
                     elif isinstance(d['results'], BaseException):
-                        error(err, exception=d['results'])
+                        failed = True
+                        error(name, func=failed_instance, exception=d['results'])
                     else:
-                        error(err)
+                        failed = True
+                        error(name + "experienced an unknown error", func=failed_instance)
                 results[name] = d['results']
+            if failed:
+                error(err + "\n\n" + "\n".join(failed_messages) + "\n\n...........................")
 
     # Or just run once for local-only
     else:
