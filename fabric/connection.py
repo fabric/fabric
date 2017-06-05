@@ -218,10 +218,10 @@ class Connection(Context):
             http://zen-of-python.info/
             in-the-face-of-ambiguity-refuse-the-temptation-to-guess.html#12
         """
-        # NOTE: for now, we don't call our parent __init__, since all it does
-        # is set a default config (to Invoke's Config, not ours). If
-        # invoke.Context grows more behavior later we may need to change this,
-        # e.g. by having parent define a '_set_default_config' or whatnot.
+        # NOTE: parent __init__ sets self._config; for now we simply overwrite
+        # that below. If it's somehow problematic we would want to break parent
+        # __init__ up in a manner that is more cleanly overrideable.
+        super(Connection, self).__init__(config=config)
 
         #: The .Config object referenced when handling default values (for e.g.
         #: user or port, when not explicitly given) or deciding how to behave.
