@@ -19,6 +19,10 @@ from fabric.util import get_local_user
 from _util import support_path
 
 
+# Remote is woven in as a config default, so must be patched there
+remote_path = 'fabric.config.Remote'
+
+
 def _select_result(obj):
     """
     Return iterator/generator suitable for mocking a select.select() call.
@@ -792,7 +796,7 @@ class Connection_(Spec):
         # tests. Here we are just testing the outer interface a bit.
 
         @patch('fabric.connection.SSHClient')
-        @patch('fabric.connection.Remote')
+        @patch(remote_path)
         def calls_open_for_you(self, Remote, Client):
             c = Connection('host')
             c.open = Mock()
@@ -800,7 +804,7 @@ class Connection_(Spec):
             ok_(c.open.called)
 
         @patch('fabric.connection.SSHClient')
-        @patch('fabric.connection.Remote')
+        @patch(remote_path)
         def calls_Remote_run_with_command_and_kwargs_and_returns_its_result(
             self, Remote, Client
         ):
@@ -821,14 +825,14 @@ class Connection_(Spec):
     class local:
         # NOTE: most tests for this functionality live in Invoke's runner
         # tests.
-        @patch('invoke.context.Local')
+        @patch('invoke.config.Local')
         def calls_invoke_Local_run(self, Local):
             Connection('host').local('foo')
             Local.return_value.run.assert_called_with('foo')
 
     class sudo:
         @patch('fabric.connection.SSHClient')
-        @patch('fabric.connection.Remote')
+        @patch(remote_path)
         def basic_invocation(self, Remote, Client):
             # Technically duplicates Invoke-level tests, but ensures things
             # still work correctly at our level.

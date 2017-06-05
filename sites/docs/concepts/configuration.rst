@@ -43,7 +43,7 @@ The primary differences from that document are as follows:
 Default configuration values
 ============================
 
-Overrides to Invoke-level defaults
+Overrides of Invoke-level defaults
 ----------------------------------
 
 - ``run.replace_env``: ``True``, instead of ``False``, so that remote commands
@@ -56,6 +56,13 @@ Overrides to Invoke-level defaults
 
   .. seealso::
     The warning under `paramiko.channel.Channel.set_environment_variable`.
+
+Extensions to Invoke-level defaults
+-----------------------------------
+
+- ``runners.remote``: In Invoke, the ``runners`` tree has a single subkey,
+  ``local`` (mapping to `~invoke.runners.Local`). Fabric adds this new subkey,
+  ``remote``, which is mapped to `~fabric.runners.Remote`.
 
 New default values defined by Fabric
 ------------------------------------

@@ -530,7 +530,11 @@ class Connection(Context):
             settings/behaviors; they are documented under
             `.Config.global_defaults`.
         """
-        return Remote(context=self).run(command, **kwargs)
+        # TODO: should superclass' run() (our local()) grow more in its body
+        # than simply prefix_commands, it will need to be broken up more so we
+        # can reuse what it does more readily.
+        command = self.prefix_commands(command)
+        return self.config.runners.remote(self).run(command, **kwargs)
 
     def sudo(self, command, **kwargs):
         """
@@ -551,9 +555,13 @@ class Connection(Context):
         """
         Execute a shell command on the local system.
 
-        This method is a straight wrapper of `invoke.run`; see its docs for
+        This method is effectively a wrapper of `invoke.run`; see its docs for
         details and call signature.
         """
+        # Call super's run() directly, to gain everything it does (such as
+        # command prefixing). That method references the config value
+        # runners.local, which is typically the same (Local) in both contexts,
+        # and thus 'just works'.
         return super(Connection, self).run(*args, **kwargs)
 
     @opens
