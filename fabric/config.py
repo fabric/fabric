@@ -187,22 +187,21 @@ class Config(InvokeConfig):
         defaults = InvokeConfig.global_defaults()
         ours = {
             # New settings
-            'port': 22,
-            'user': get_local_user(),
+            'connect_kwargs': {},
             'forward_agent': False,
             'gateway': None,
             'load_ssh_configs': True,
-            'connect_kwargs': {},
-            # TODO: this becomes an override once Invoke grows execution
+            'port': 22,
+            'run': {
+                'replace_env': True,
+            },
+            'ssh_config_path': None,
+            # TODO: this becomes an override/extend once Invoke grows execution
             # timeouts (which should be timeouts.execute)
             'timeouts': {
                 'connect': None,
             },
-            'ssh_config_path': None,
-            # Overrides of existing settings
-            'run': {
-                'replace_env': True,
-            },
+            'user': get_local_user(),
         }
         merge_dicts(defaults, ours)
         return defaults
