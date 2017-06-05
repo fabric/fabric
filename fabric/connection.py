@@ -533,6 +533,7 @@ class Connection(Context):
         runner = self.config.runners.remote(self)
         return self._run(runner, command, **kwargs)
 
+    @opens
     def sudo(self, command, **kwargs):
         """
         Execute a shell command, via ``sudo``, on the remote end.
