@@ -342,11 +342,9 @@ def remote():
     Fixture allowing setup of a mocked remote session & access to sub-mocks.
 
     Yields a `MockRemote` object (which may need to be updated via
-    `MockRemote.expect_session`; otherwise a default session will be used) &
-    calls `MockRemote.stop` on teardown.
+    `MockRemote.expect`, `MockRemote.expect_sessions`, etc; otherwise a default
+    session will be used) & calls `MockRemote.stop` on teardown.
     """
-    # TODO: how to disable capturing inside here, or otherwise tell pytest not
-    # to raise its frickin IOError?
     remote = MockRemote()
     yield remote
     remote.stop()
@@ -519,7 +517,9 @@ support = os.path.join(os.path.dirname(__file__), '_support')
 #        os.environ.clear()
 #        os.environ.update(self.old_environ)
 #        # TODO: make this another fixture? global setup/teardown? what is
-#        # 'pytest-y' for this?
+#        # 'pytest-y' for this? I think a non-funcarg fixture that is attached
+#        to test classes via decorator? then it maps closely to how
+#        IntegrationSpec was used prior, actually...
 #        # Strip any test-support task collections from sys.modules to prevent
 #        # state bleed between tests; otherwise tests can incorrectly pass
 #        # despite not explicitly loading/cd'ing to get the tasks they call
