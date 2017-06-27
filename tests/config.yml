@@ -1,0 +1,9 @@
+#
+# Settings overrides for test-executed Invoke code. Test code typically tries
+# specifying this via the -f CLI flag or the runtime arguments to Config().
+#
+
+run:
+  # Disable all stdin mirroring by default. Otherwise, pytest's capture plugin
+  # gets all upset. It looks difficult to change that, too.
+  in_stream: false

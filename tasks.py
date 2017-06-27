@@ -1,7 +1,5 @@
 from invocations.docs import docs, www, sites, watch_docs
-from invocations.testing import (
-    test, integration, coverage, watch_tests, count_errors,
-)
+from invocations.pytest import test, integration, coverage
 from invocations.packaging import release
 from invocations import travis
 
@@ -10,11 +8,19 @@ from invoke.util import LOG_FORMAT
 
 
 ns = Collection(
-    docs, www, test, coverage, integration, sites, watch_docs,
-    watch_tests, count_errors, release, travis,
+    coverage,
+    docs,
+    integration,
+    release,
+    sites,
+    test,
+    travis,
+    watch_docs,
+    www,
 )
 ns.configure({
     'tests': {
+        # TODO: have pytest tasks honor these?
         'package': 'fabric',
         'logformat': LOG_FORMAT,
     },
@@ -23,8 +29,9 @@ ns.configure({
         'wheel': True,
         'check_desc': True,
     },
-    # TODO: perhaps move this into a tertiary, non automatically loaded, conf
-    # file so that both this & the code under test can reference it? Meh.
+    # TODO: perhaps move this into a tertiary, non automatically loaded,
+    # conf file so that both this & the code under test can reference it?
+    # Meh.
     'travis': {
         'sudo': {
             'user': 'sudouser',

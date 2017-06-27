@@ -1,16 +1,20 @@
 from itertools import chain, repeat
 from io import BytesIO
 import os
+import re
 import sys
 import types
 
 from invoke.vendor.six import wraps, iteritems
 
+from mock import patch, Mock, PropertyMock, call, ANY
+from pytest import fixture
+from pytest_relaxed import trap
+
 from fabric import Connection
 from fabric.main import program as fab_program
 from fabric.transfer import Transfer
-from mock import patch, Mock, PropertyMock, call, ANY
-from spec import eq_, trap, Spec
+
 
 
 support_path = os.path.join(
@@ -19,13 +23,26 @@ support_path = os.path.join(
 )
 
 
-# TODO: figure out a non shite way to share Invoke's more beefy copy of same.
+# TODO: revert to asserts
+def eq_(got, expected):
+    assert got == expected
+
+
 @trap
-def expect(invocation, out, program=None, test=None):
+def expect(invocation, out, program=None, test='equals'):
     if program is None:
         program = fab_program
     program.run("fab {}".format(invocation), exit=False)
-    (test or eq_)(sys.stdout.getvalue(), out)
+    output = sys.stdout.getvalue()
+    if test == 'equals':
+        assert output == out
+    elif test == 'contains':
+        assert out in output
+    elif test == 'regex':
+        assert re.match(out, output)
+    else:
+        err = "Don't know how to expect that <stdout> {} <expected>!"
+        assert False, err.format(test)
 
 
 class Command(object):
@@ -247,41 +264,39 @@ class MockRemote(object):
     Class representing mocked remote state.
 
     Set up for start/stop style patching (so it can be used in situations
-    requiring setup/teardown semantics); is then wrapped by e.g. `mock_remote`
-    to provide decorator, etc style use.
+    requiring setup/teardown semantics); is then wrapped by the `remote`
+    fixture.
+
+    Defaults to a single anonymous `Session`, so it can be used as a "request &
+    forget" pytest fixture. Users requiring detailed remote session
+    expectations can call methods like `expect`, which wipe that anonymous
+    Session & set up a new one instead.
     """
+    def __init__(self):
+        self.expect_session(Session())
+
     # TODO: make it easier to assume one session w/ >1 command?
-    def __init__(self, cmd=None, out=None, err=None, in_=None, exit=None,
-        commands=None, sessions=None, autostart=True):
+
+    # TODO: look at use of MockRemote; now that it's being used as a fixture,
+    # suspect we can do away with the "list of sessions OR args for a single
+    # session", just have 2x methods instead
+    def expect(self, host, cmd):
         """
-        Create & start new remote state.
-
-        Multiple ways to instantiate:
-
-        - no args, for basic "don't explode / touch network" stubbing
-        - pass Session args directly for a one-off anonymous session
-        - pass ``commands`` kwarg with explicit commands (put into an anonymous
-          session)
-        - pass ``sessions`` kwarg with explicit sessions
-
-        Combining these approaches is not well defined.
-
-        Will automatically call `start` by default; say ``autostart=False`` to
-        disable.
+        Set up and start mocking a remote session.
         """
-        if commands:
-            sessions = [Session(commands=commands)]
-        elif not sessions:
-            if cmd or out or err or exit:
-                session = Session(
-                    cmd=cmd, out=out, err=err, in_=in_, exit=exit,
-                )
-            else:
-                session = Session()
-            sessions = [session]
-        self.sessions = sessions
-        if autostart:
-            self.start()
+        session = Session(
+            host=host, cmd=cmd, # out=out, err=err, in_=in_, exit=exit,
+        )
+        self.expect_session(session)
+
+    def expect_session(self, session):
+        # First, stop the default session to clean up its state, if it seems to
+        # be running.
+        self.stop()
+        # Update sessions list with new session
+        self.sessions = [session]
+        # And start patching again
+        self.start()
 
     def start(self):
         """
@@ -306,6 +321,9 @@ class MockRemote(object):
         """
         Stop patching SSHClient.
         """
+        # Short circuit if we don't seem to have start()ed yet.
+        if not hasattr(self, 'patcher'):
+            return
         # Stop patching SSHClient
         self.patcher.stop()
 
@@ -316,6 +334,22 @@ class MockRemote(object):
         for session in self.sessions:
             # Basic sanity tests about transport, channel etc
             session.sanity_check()
+
+
+@fixture
+def remote():
+    """
+    Fixture allowing setup of a mocked remote session & access to sub-mocks.
+
+    Yields a `MockRemote` object (which may need to be updated via
+    `MockRemote.expect_session`; otherwise a default session will be used) &
+    calls `MockRemote.stop` on teardown.
+    """
+    # TODO: how to disable capturing inside here, or otherwise tell pytest not
+    # to raise its frickin IOError?
+    remote = MockRemote()
+    yield remote
+    remote.stop()
 
 
 def mock_remote(*sessions):
@@ -472,19 +506,24 @@ def mock_sftp(expose_os=False):
 # TODO: mostly copied from invoke's suite; unify sometime
 support = os.path.join(os.path.dirname(__file__), '_support')
 
-class IntegrationSpec(Spec):
-    def setup(self):
-        # Preserve environment for later restore
-        self.old_environ = os.environ.copy()
-
-    def teardown(self):
-        # Nuke changes to environ
-        os.environ.clear()
-        os.environ.update(self.old_environ)
-        # Strip any test-support task collections from sys.modules to prevent
-        # state bleed between tests; otherwise tests can incorrectly pass
-        # despite not explicitly loading/cd'ing to get the tasks they call
-        # loaded.
-        for name, module in iteritems(sys.modules.copy()):
-            if module and support in getattr(module, '__file__', ''):
-                del sys.modules[name]
+#class IntegrationSpec(Spec):
+#    def setup(self):
+#        # TODO: move that environ fixture in relaxed's own test suite to be
+#        # part of its public API, then apply fixture to all tests doing environ
+#        # shit.
+#        # Preserve environment for later restore
+#        self.old_environ = os.environ.copy()
+#
+#    def teardown(self):
+#        # Nuke changes to environ
+#        os.environ.clear()
+#        os.environ.update(self.old_environ)
+#        # TODO: make this another fixture? global setup/teardown? what is
+#        # 'pytest-y' for this?
+#        # Strip any test-support task collections from sys.modules to prevent
+#        # state bleed between tests; otherwise tests can incorrectly pass
+#        # despite not explicitly loading/cd'ing to get the tasks they call
+#        # loaded.
+#        for name, module in iteritems(sys.modules.copy()):
+#            if module and support in getattr(module, '__file__', ''):
+#                del sys.modules[name]

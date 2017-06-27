@@ -6,19 +6,28 @@ import os
 
 from invoke.util import cd
 from mock import patch
-from spec import assert_contains, raises, skip
+from pytest import skip
+from pytest_relaxed import raises
 
 from fabric.config import Config
 from fabric.main import program as fab_program
 from fabric.exceptions import NothingToDo
 
-from _util import expect, mock_remote, Session, IntegrationSpec
+from _util import expect, mock_remote, Session, remote
 
 
-_support = os.path.join(os.path.dirname(__file__), '_support')
+_here = os.path.dirname(__file__)
+_support = os.path.join(_here, '_support')
+_conf = os.path.abspath(os.path.join(_here, 'config.yml'))
 
 
-class Fab_(IntegrationSpec):
+# Crappy helper to inject a test-only runtime config into test invocations.
+# TODO: consider e.g. having Invoke grow something like INVOKE_RUNTIME_CONF=xxx
+def _run_fab(argstr, **kwargs):
+    return fab_program.run("fab -f {0} {1}".format(_conf, argstr), **kwargs)
+
+
+class Fab_:
     class core_program_behavior:
         def version_output_contains_our_name_plus_deps(self):
             expect(
@@ -28,25 +37,23 @@ Fabric .+
 Paramiko .+
 Invoke .+
 """.strip(),
-                test=assert_contains
+                test='regex'
             )
 
         def help_output_says_fab(self):
-            expect("--help", "Usage: fab", test=assert_contains)
+            expect("--help", "Usage: fab", test='contains')
 
         def exposes_hosts_flag_in_help(self):
-            expect("--help", "-H STRING, --hosts=STRING", test=assert_contains)
+            expect("--help", "-H STRING, --hosts=STRING", test='contains')
 
-        @mock_remote(Session('myhost', cmd='whoami'))
-        def executes_remainder_as_anonymous_task(self, chan):
-            # All useful asserts re: host connection & command exec are
-            # performed in @mock_remote.
-            fab_program.run("fab -H myhost -- whoami", exit=False)
+        def executes_remainder_as_anonymous_task(self, remote):
+            remote.expect(host='myhost', cmd='whoami')
+            _run_fab("-H myhost -- whoami", exit=False)
 
-        def uses_FABRIC_env_prefix(self):
-            os.environ['FABRIC_RUN_ECHO'] = '1'
+        def uses_FABRIC_env_prefix(self, environ):
+            environ['FABRIC_RUN_ECHO'] = '1'
             with cd(_support):
-                fab_program.run("fab expect-from-env")
+                _run_fab("expect-from-env")
 
     class filenames:
         def loads_fabfile_not_tasks(self):
@@ -75,7 +82,7 @@ Available tasks:
                 with cd(os.path.join(_support, '{}_conf'.format(type_))):
                     # This task, in each subdir, expects data present in a
                     # fabric.<ext> nearby to show up in the config.
-                    fab_program.run("fab expect-conf-value")
+                    _run_fab("expect-conf-value")
 
     class runtime_ssh_config_path:
         def _run(
@@ -88,7 +95,7 @@ Available tasks:
                 # Relies on asserts within the task, which will bubble up as
                 # it's executed in-process
                 cmd = "fab -c runtime_fabfile {} {} -H runtime {}"
-                fab_program.run(cmd.format(flag, file_, tasks))
+                _run_fab(cmd.format(flag, file_, tasks))
 
         def capital_F_flag_specifies_runtime_ssh_config_file(self):
             self._run(flag='-F')
@@ -116,13 +123,13 @@ Available tasks:
         # NOTE: many of these just rely on mock_remote's builtin
         # "channel.exec_command called with given command string" asserts.
 
-        @mock_remote(Session('myhost', cmd='nope'))
-        def single_string_is_single_host_and_single_exec(self, chan):
+        def single_string_is_single_host_and_single_exec(self, remote):
+            remote.expect(host='myhost', cmd='nope')
             # In addition to just testing a base case, this checks for a really
             # dumb bug where one appends to, instead of replacing, the task
             # list during parameterization/expansion XD
             with cd(_support):
-                fab_program.run("fab -H myhost basic-run")
+                _run_fab("-H myhost basic-run")
 
         @mock_remote(
             Session('host1', cmd='nope'),
@@ -130,18 +137,18 @@ Available tasks:
         )
         def comma_separated_string_is_multiple_hosts(self, chan1, chan2):
             with cd(_support):
-                fab_program.run("fab -H host1,host2 basic-run")
+                _run_fab("-H host1,host2 basic-run")
 
         @mock_remote(
             Session('host1', cmd='whoami'),
             Session('host2', cmd='whoami'),
         )
         def multiple_hosts_works_with_remainder_too(self, chan1, chan2):
-            fab_program.run("fab -H host1,host2 -- whoami")
+            _run_fab("-H host1,host2 -- whoami")
 
         @mock_remote(Session(user='someuser', host='host1', port=1234))
         def host_string_shorthand_is_passed_through(self, chan):
-            fab_program.run("fab -H someuser@host1:1234 -- whoami")
+            _run_fab("-H someuser@host1:1234 -- whoami")
 
         # NOTE: no mocking because no actual run() under test, only
         # parameterization
@@ -153,22 +160,22 @@ Available tasks:
             # and we're not using it for --hosts, so it's not broken...yet.
             skip()
             with cd(_support):
-                fab_program.run("fab -H host1,host2 expect-mutation-to-fail")
+                -run-fab("-H host1,host2 expect-mutation-to-fail")
 
     class no_hosts_flag:
         def calls_task_once_with_invoke_context(self):
             with cd(_support):
-                fab_program.run("fab expect-vanilla-Context")
+                _run_fab("expect-vanilla-Context")
 
         @raises(NothingToDo)
         def generates_exception_if_combined_with_remainder(self):
-            fab_program.run("fab -- nope")
+            _run_fab("-- nope")
 
         def invokelike_multitask_invocation_preserves_config_mutation(self):
             # Mostly a guard against Executor subclass tweaks breaking Invoke
             # behavior added in pyinvoke/invoke#309
             with cd(_support):
-                fab_program.run("fab mutate expect-mutation")
+                _run_fab("mutate expect-mutation")
 
     class runtime_identity_file:
         def dash_i_supplies_default_connect_kwarg_key_filename(self):
@@ -177,14 +184,12 @@ Available tasks:
             # relying on other tests to prove connect_kwargs makes its way into
             # that context.
             with cd(_support):
-                fab_program.run("fab -i identity.key expect-identity")
+                _run_fab("-i identity.key expect-identity")
 
         def double_dash_identity_also_works(self):
             with cd(_support):
-                fab_program.run("fab --identity identity.key expect-identity")
+                _run_fab("--identity identity.key expect-identity")
 
         def may_be_given_multiple_times(self):
             with cd(_support):
-                fab_program.run(
-                    "fab -i identity.key -i identity2.key expect-identities"
-                )
+                _run_fab("-i identity.key -i identity2.key expect-identities")

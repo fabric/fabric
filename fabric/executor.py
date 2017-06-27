@@ -34,7 +34,8 @@ class FabExecutor(Executor):
             if not hosts:
                 raise NothingToDo("Was told to run a command, but not given any hosts to run it on!") # noqa
             def anonymous(c):
-                c.run(self.core.remainder)
+                # TODO: how to make all our tests configure in_stream=False?
+                c.run(self.core.remainder, in_stream=False)
             anon = Call(Task(body=anonymous))
             # TODO: see above TODOs about non-parameterized setups, roles etc
             # TODO: will likely need to refactor that logic some more so it can
