@@ -131,23 +131,23 @@ Available tasks:
             with cd(_support):
                 _run_fab("-H myhost basic-run")
 
-        @mock_remote(
-            Session('host1', cmd='nope'),
-            Session('host2', cmd='nope'),
-        )
-        def comma_separated_string_is_multiple_hosts(self, chan1, chan2):
+        def comma_separated_string_is_multiple_hosts(self, remote):
+            remote.expect_sessions(
+                Session('host1', cmd='nope'),
+                Session('host2', cmd='nope'),
+            )
             with cd(_support):
                 _run_fab("-H host1,host2 basic-run")
 
-        @mock_remote(
-            Session('host1', cmd='whoami'),
-            Session('host2', cmd='whoami'),
-        )
-        def multiple_hosts_works_with_remainder_too(self, chan1, chan2):
+        def multiple_hosts_works_with_remainder_too(self, remote):
+            remote.expect_sessions(
+                Session('host1', cmd='whoami'),
+                Session('host2', cmd='whoami'),
+            )
             _run_fab("-H host1,host2 -- whoami")
 
-        @mock_remote(Session(user='someuser', host='host1', port=1234))
-        def host_string_shorthand_is_passed_through(self, chan):
+        def host_string_shorthand_is_passed_through(self, remote):
+            remote.expect(host='host1', port=1234, user='someuser')
             _run_fab("-H someuser@host1:1234 -- whoami")
 
         # NOTE: no mocking because no actual run() under test, only

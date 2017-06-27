@@ -25,6 +25,7 @@ class FabExecutor(Executor):
                 # the raw 'one of these each with host=a, host=b, ... plz'
                 ret.append(self.parameterize(call, host))
             # Deal with lack of hosts arg (acts same as `inv` in that case)
+            # TODO: no tests for this branch?
             if not hosts:
                 ret.append(call)
         # Add remainder as anonymous task

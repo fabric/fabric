@@ -273,28 +273,25 @@ class MockRemote(object):
     Session & set up a new one instead.
     """
     def __init__(self):
-        self.expect_session(Session())
+        self.expect_sessions(Session())
 
-    # TODO: make it easier to assume one session w/ >1 command?
+    # TODO: make it easier to assume single session w/ >1 command?
 
-    # TODO: look at use of MockRemote; now that it's being used as a fixture,
-    # suspect we can do away with the "list of sessions OR args for a single
-    # session", just have 2x methods instead
-    def expect(self, host, cmd):
+    def expect(self, *args, **kwargs):
         """
-        Set up and start mocking a remote session.
+        Convenience method for creating & 'expect'ing a single Session.
         """
-        session = Session(
-            host=host, cmd=cmd, # out=out, err=err, in_=in_, exit=exit,
-        )
-        self.expect_session(session)
+        self.expect_sessions(Session(*args, **kwargs))
 
-    def expect_session(self, session):
+    def expect_sessions(self, *sessions):
+        """
+        Sets the mocked remote environment to expect the given ``sessions``.
+        """
         # First, stop the default session to clean up its state, if it seems to
         # be running.
         self.stop()
-        # Update sessions list with new session
-        self.sessions = [session]
+        # Update sessions list with new session(s)
+        self.sessions = sessions
         # And start patching again
         self.start()
 
