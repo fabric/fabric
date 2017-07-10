@@ -1,6 +1,5 @@
 from invoke.vendor.six import StringIO
 
-from spec import Spec, ok_, eq_
 from invoke import pty_size, Result
 
 from fabric.connection import Connection
@@ -14,10 +13,10 @@ from _util import mock_remote, Session
 CMD = "nope"
 
 
-class Remote_(Spec):
+class Remote_:
     def needs_handle_on_a_Connection(self):
         c = Connection('host')
-        ok_(Remote(context=c).context is c)
+        assert Remote(context=c).context is c
 
     class run:
         @mock_remote
@@ -36,7 +35,7 @@ class Remote_(Spec):
             r = Remote(context=c)
             fakeout = StringIO()
             r.run(CMD, out_stream=fakeout)
-            eq_(fakeout.getvalue(), "hello yes this is dog")
+            assert fakeout.getvalue() == "hello yes this is dog"
 
         @mock_remote
         def pty_True_uses_paramiko_get_pty(self, chan):
@@ -51,12 +50,12 @@ class Remote_(Spec):
             c = Connection('host')
             r = Remote(context=c)
             result = r.run(CMD)
-            ok_(isinstance(result, Result))
+            assert isinstance(result, Result)
             # Mild sanity test for other Result superclass bits
-            eq_(result.ok, True)
-            eq_(result.exited, 0)
+            assert result.ok is True
+            assert result.exited == 0
             # Test the attr our own subclass adds
-            ok_(result.connection is c)
+            assert result.connection is c
 
         @mock_remote
         def channel_is_closed_normally(self, chan):

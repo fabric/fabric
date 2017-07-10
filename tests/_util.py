@@ -333,20 +333,6 @@ class MockRemote(object):
             session.sanity_check()
 
 
-@fixture
-def remote():
-    """
-    Fixture allowing setup of a mocked remote session & access to sub-mocks.
-
-    Yields a `MockRemote` object (which may need to be updated via
-    `MockRemote.expect`, `MockRemote.expect_sessions`, etc; otherwise a default
-    session will be used) & calls `MockRemote.stop` on teardown.
-    """
-    remote = MockRemote()
-    yield remote
-    remote.stop()
-
-
 def mock_remote(*sessions):
     """
     Mock & expect one or more remote connections & command executions.

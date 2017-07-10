@@ -1,7 +1,7 @@
 from invoke.vendor.six import StringIO
 
 from mock import Mock, call
-from spec import Spec, ok_, eq_, raises
+from pytest_relaxed import raises
 from paramiko import SFTPAttributes
 
 from fabric import Connection
@@ -13,7 +13,7 @@ from _util import mock_sftp
 # TODO: pull in all edge/corner case tests from fabric v1
 
 
-class Transfer_(Spec):
+class Transfer_:
     class init:
         "__init__"
         def requires_connection(self):
@@ -26,7 +26,7 @@ class Transfer_(Spec):
                 assert False, "Did not raise ArgumentError"
             # Transfer(Connection()) -> happy, exposes an attribute
             cxn = Connection('host')
-            ok_(Transfer(cxn).connection is cxn)
+            assert Transfer(cxn).connection is cxn
 
 
     class get:
@@ -56,22 +56,22 @@ class Transfer_(Spec):
             def returns_rich_Result_object(self, sftp, transfer, mock_os):
                 cxn = Connection('host')
                 result = Transfer(cxn).get('file')
-                eq_(result.orig_remote, 'file')
-                eq_(result.remote, '/remote/file')
-                eq_(result.orig_local, None)
-                eq_(result.local, '/local/file')
-                ok_(result.connection is cxn)
+                assert result.orig_remote == 'file'
+                assert result.remote == '/remote/file'
+                assert result.orig_local is None
+                assert result.local == '/local/file'
+                assert result.connection is cxn
                 # TODO: timing info
                 # TODO: bytes-transferred info
 
         class path_arg_edge_cases:
             @mock_sftp()
             def local_None_uses_remote_filename(self, sftp, transfer):
-                eq_(transfer.get('file').local, '/local/file')
+                assert transfer.get('file').local == '/local/file'
 
             @mock_sftp()
             def local_empty_string_uses_remote_filename(self, sftp, transfer):
-                eq_(transfer.get('file', local='').local, '/local/file')
+                assert transfer.get('file', local='').local == '/local/file'
 
             @mock_sftp()
             @raises(TypeError)
@@ -106,8 +106,8 @@ class Transfer_(Spec):
 
             def result_contains_fd_for_local_path(self):
                 result, fd = self._get_to_stringio()
-                eq_(result.remote, '/remote/file')
-                ok_(result.local is fd)
+                assert result.remote == '/remote/file'
+                assert result.local is fd
 
         class mode_concerns:
             def setup(self):
@@ -131,7 +131,7 @@ class Transfer_(Spec):
             ):
                 sftp.stat.return_value = self.attrs
                 transfer.get('file', local='meh', preserve_mode=False)
-                ok_(not mock_os.chmod.called)
+                assert not mock_os.chmod.called
 
 
     class put:
@@ -161,22 +161,22 @@ class Transfer_(Spec):
             def returns_rich_Result_object(self, sftp, transfer, mock_os):
                 cxn = Connection('host')
                 result = Transfer(cxn).put('file')
-                eq_(result.orig_remote, None)
-                eq_(result.remote, '/remote/file')
-                eq_(result.orig_local, 'file')
-                eq_(result.local, '/local/file')
-                ok_(result.connection is cxn)
+                assert result.orig_remote is None
+                assert result.remote == '/remote/file'
+                assert result.orig_local == 'file'
+                assert result.local == '/local/file'
+                assert result.connection is cxn
                 # TODO: timing info
                 # TODO: bytes-transferred info
 
         class path_arg_edge_cases:
             @mock_sftp()
             def remote_None_uses_local_filename(self, sftp, transfer):
-                eq_(transfer.put('file').remote, '/remote/file')
+                assert transfer.put('file').remote == '/remote/file'
 
             @mock_sftp()
             def remote_empty_string_uses_local_filename(self, sftp, transfer):
-                eq_(transfer.put('file', remote='').remote, '/remote/file')
+                assert transfer.put('file', remote='').remote == '/remote/file'
 
             @mock_sftp()
             @raises(ValueError)
@@ -220,12 +220,12 @@ class Transfer_(Spec):
                 fd.tell.return_value = 17
                 transfer.put(fd, remote='file')
                 seek_calls = fd.seek.call_args_list
-                eq_(seek_calls, [call(0), call(17)])
+                assert seek_calls, [call(0) == call(17)]
 
             def result_contains_fd_for_local_path(self):
                 result, fd = self._put_from_stringio()
-                eq_(result.remote, '/remote/file')
-                ok_(result.local is fd)
+                assert result.remote == '/remote/file'
+                assert result.local is fd
 
         class mode_concerns:
             @mock_sftp(expose_os=True)
@@ -241,4 +241,4 @@ class Transfer_(Spec):
                 self, sftp, transfer, mock_os
             ):
                 transfer.put('file', preserve_mode=False)
-                ok_(not sftp.chmod.called)
+                assert not sftp.chmod.called

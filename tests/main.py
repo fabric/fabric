@@ -13,7 +13,7 @@ from fabric.config import Config
 from fabric.main import program as fab_program
 from fabric.exceptions import NothingToDo
 
-from _util import expect, mock_remote, Session, remote
+from _util import expect, Session
 
 
 _here = os.path.dirname(__file__)

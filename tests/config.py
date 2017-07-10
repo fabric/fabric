@@ -7,19 +7,18 @@ from fabric import Config
 from fabric.util import get_local_user
 
 from mock import patch, call
-from spec import Spec, eq_, ok_
 
 from _util import support_path
 
 
-class Config_(Spec):
+class Config_:
     def defaults_to_merger_of_global_defaults(self):
         # I.e. our global_defaults + Invoke's global_defaults
         c = Config()
         # From invoke's global_defaults
-        eq_(c.run.warn, False)
+        assert c.run.warn is False
         # From ours
-        eq_(c.port, 22)
+        assert c.port == 22
 
     def our_global_defaults_can_override_invokes(self):
         "our global_defaults can override Invoke's key-by-key"
@@ -36,30 +35,30 @@ class Config_(Spec):
         ):
             # If our global_defaults didn't win, this would still
             # resolve to False.
-            eq_(Config().run.warn, "nope lol")
+            assert Config().run.warn == "nope lol"
 
     def has_various_Fabric_specific_default_keys(self):
         c = Config()
-        eq_(c.port, 22)
-        eq_(c.user, get_local_user())
-        eq_(c.forward_agent, False)
-        eq_(c.connect_kwargs, {})
-        eq_(c.timeouts.connect, None)
-        eq_(c.ssh_config_path, None)
+        assert c.port == 22
+        assert c.user == get_local_user()
+        assert c.forward_agent is False
+        assert c.connect_kwargs == {}
+        assert c.timeouts.connect is None
+        assert c.ssh_config_path is None
 
     def overrides_some_Invoke_defaults(self):
         config = Config()
         # This value defaults to False in Invoke proper.
-        eq_(config.run.replace_env, True)
-        eq_(config.tasks.collection_name, 'fabfile')
+        assert config.run.replace_env is True
+        assert config.tasks.collection_name == 'fabfile'
 
     def uses_Fabric_prefix(self):
         # NOTE: see also the integration-esque tests in tests/main.py; this
         # just tests the underlying data/attribute driving the behavior.
-        eq_(Config().prefix, 'fabric')
+        assert Config().prefix == 'fabric'
 
 
-class ssh_config_loading(Spec):
+class ssh_config_loading:
     "ssh_config loading"
 
     # NOTE: actual _behavior_ of loaded SSH configs is tested in Connection's
@@ -80,26 +79,24 @@ class ssh_config_loading(Spec):
         # one of these is 'empty' or not. So for now, expect an empty inner
         # SSHConfig._config from an un-.parse()d such object. (AFAIK, such
         # objects work fine re: .lookup, .get_hostnames etc.)
-        ok_(type(c.base_ssh_config) is SSHConfig)
-        eq_(c.base_ssh_config._config, [])
+        assert type(c.base_ssh_config) is SSHConfig
+        assert c.base_ssh_config._config == []
 
     def object_can_be_given_explicitly_via_ssh_config_kwarg(self):
         sc = SSHConfig()
-        ok_(Config(ssh_config=sc).base_ssh_config is sc)
+        assert Config(ssh_config=sc).base_ssh_config is sc
 
     @patch.object(Config, '_load_ssh_file')
     def when_config_obj_given_default_paths_are_not_sought(self, method):
         sc = SSHConfig()
         Config(ssh_config=sc)
-        ok_(not method.called)
+        assert not method.called
 
     @patch.object(Config, '_load_ssh_file')
     def config_obj_prevents_loading_runtime_path_too(self, method):
-        Config(
-            ssh_config=SSHConfig(),
-            runtime_ssh_path=self.system_path,
-        )
-        ok_(not method.called)
+        sc = SSHConfig()
+        Config(ssh_config=sc, runtime_ssh_path=self.system_path)
+        assert not method.called
 
     @patch.object(Config, '_load_ssh_file')
     def when_runtime_path_given_other_paths_are_not_sought(self, method):
@@ -115,8 +112,8 @@ class ssh_config_loading(Spec):
         try:
             Config(runtime_ssh_path='sure/thing/boss/whatever/you/say')
         except IOError as e:
-            ok_("No such file or directory" in str(e))
-            eq_(e.errno, errno.ENOENT)
+            assert "No such file or directory" in str(e)
+            assert e.errno == errno.ENOENT
         else:
             assert False, "Bad runtime path didn't raise IOError!"
 
@@ -134,32 +131,27 @@ class ssh_config_loading(Spec):
             self.empty_kwargs,
             system_ssh_path=self.system_path,
         ))
-        eq_(
-            c.base_ssh_config.get_hostnames(),
-            {'system', 'shared', '*'},
-        )
+        names = c.base_ssh_config.get_hostnames(),
+        assert names == {'system', 'shared', '*'}
 
     def user_path_loads_ok(self):
         c = Config(**dict(
             self.empty_kwargs,
             user_ssh_path=self.user_path,
         ))
-        eq_(
-            c.base_ssh_config.get_hostnames(),
-            {'user', 'shared', '*'},
-        )
+        names = c.base_ssh_config.get_hostnames(),
+        assert names == {'user', 'shared', '*'}
 
     def both_paths_loaded_if_both_exist_with_user_winning(self):
         c = Config(
             user_ssh_path=self.user_path,
             system_ssh_path=self.system_path,
         )
-        eq_(
-            c.base_ssh_config.get_hostnames(),
-            {'user', 'system', 'shared', '*'},
-        )
+        names = c.base_ssh_config.get_hostnames(),
+        expected = {'user', 'system', 'shared', '*'}
+        assert names == expected
         # Expect the user value (321), not the system one (123)
-        eq_(c.base_ssh_config.lookup('shared')['port'], '321')
+        assert c.base_ssh_config.lookup('shared')['port'] == '321'
 
     @patch.object(Config, '_load_ssh_file')
     @patch('fabric.config.os.path.exists', lambda x: True)
@@ -180,7 +172,7 @@ class ssh_config_loading(Spec):
         @patch.object(Config, '_load_ssh_file')
         def skips_default_paths(self, method):
             Config(overrides={'load_ssh_configs': False})
-            ok_(not method.called)
+            assert not method.called
 
         @patch.object(Config, '_load_ssh_file')
         def does_not_affect_explicit_object(self, method):
@@ -190,9 +182,9 @@ class ssh_config_loading(Spec):
                 overrides={'load_ssh_configs': False},
             )
             # Implicit loading still doesn't happen...sanity check
-            ok_(not method.called)
+            assert not method.called
             # Real test: the obj we passed in is present as usual
-            ok_(c.base_ssh_config is sc)
+            assert c.base_ssh_config is sc
 
         @patch.object(Config, '_load_ssh_file')
         def does_not_skip_loading_runtime_path(self, method):
