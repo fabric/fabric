@@ -1,6 +1,6 @@
 from pytest import fixture
 
-from ._util import MockRemote
+from _util import MockRemote
 
 
 @fixture

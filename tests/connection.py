@@ -432,7 +432,7 @@ class Connection_:
 
                 def multi_hop_works_ok(self):
                     cxn = self._runtime_cxn(basename='proxyjump_multi')
-                    innermost = cxn.gateway.gateway.gateway,
+                    innermost = cxn.gateway.gateway.gateway
                     middle = cxn.gateway.gateway
                     outermost = cxn.gateway
                     assert innermost == Connection('jumpuser3@jumphost3:411')

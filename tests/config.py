@@ -65,16 +65,16 @@ class ssh_config_loading:
     # tests; these tests just prove that the loading itself works & the data is
     # correctly available.
 
-    system_path = join(support_path, 'ssh_config', 'system.conf')
-    user_path = join(support_path, 'ssh_config', 'user.conf')
-    runtime_path = join(support_path, 'ssh_config', 'runtime.conf')
-    empty_kwargs = dict(
+    _system_path = join(support_path, 'ssh_config', 'system.conf')
+    _user_path = join(support_path, 'ssh_config', 'user.conf')
+    _runtime_path = join(support_path, 'ssh_config', 'runtime.conf')
+    _empty_kwargs = dict(
         system_ssh_path='nope/nope/nope',
         user_ssh_path='nope/noway/nuhuh',
     )
 
     def defaults_to_empty_sshconfig_obj_if_no_files_found(self):
-        c = Config(**self.empty_kwargs)
+        c = Config(**self._empty_kwargs)
         # TODO: Currently no great public API that lets us figure out if
         # one of these is 'empty' or not. So for now, expect an empty inner
         # SSHConfig._config from an un-.parse()d such object. (AFAIK, such
@@ -95,18 +95,18 @@ class ssh_config_loading:
     @patch.object(Config, '_load_ssh_file')
     def config_obj_prevents_loading_runtime_path_too(self, method):
         sc = SSHConfig()
-        Config(ssh_config=sc, runtime_ssh_path=self.system_path)
+        Config(ssh_config=sc, runtime_ssh_path=self._system_path)
         assert not method.called
 
     @patch.object(Config, '_load_ssh_file')
     def when_runtime_path_given_other_paths_are_not_sought(self, method):
-        Config(runtime_ssh_path=self.runtime_path)
-        method.assert_called_once_with(self.runtime_path)
+        Config(runtime_ssh_path=self._runtime_path)
+        method.assert_called_once_with(self._runtime_path)
 
     @patch.object(Config, '_load_ssh_file')
     def runtime_path_can_be_given_via_config_itself(self, method):
-        Config(overrides={'ssh_config_path': self.runtime_path})
-        method.assert_called_once_with(self.runtime_path)
+        Config(overrides={'ssh_config_path': self._runtime_path})
+        method.assert_called_once_with(self._runtime_path)
 
     def runtime_path_does_not_die_silently(self):
         try:
@@ -128,26 +128,26 @@ class ssh_config_loading:
 
     def system_path_loads_ok(self):
         c = Config(**dict(
-            self.empty_kwargs,
-            system_ssh_path=self.system_path,
+            self._empty_kwargs,
+            system_ssh_path=self._system_path,
         ))
-        names = c.base_ssh_config.get_hostnames(),
+        names = c.base_ssh_config.get_hostnames()
         assert names == {'system', 'shared', '*'}
 
     def user_path_loads_ok(self):
         c = Config(**dict(
-            self.empty_kwargs,
-            user_ssh_path=self.user_path,
+            self._empty_kwargs,
+            user_ssh_path=self._user_path,
         ))
-        names = c.base_ssh_config.get_hostnames(),
+        names = c.base_ssh_config.get_hostnames()
         assert names == {'user', 'shared', '*'}
 
     def both_paths_loaded_if_both_exist_with_user_winning(self):
         c = Config(
-            user_ssh_path=self.user_path,
-            system_ssh_path=self.system_path,
+            user_ssh_path=self._user_path,
+            system_ssh_path=self._system_path,
         )
-        names = c.base_ssh_config.get_hostnames(),
+        names = c.base_ssh_config.get_hostnames()
         expected = {'user', 'system', 'shared', '*'}
         assert names == expected
         # Expect the user value (321), not the system one (123)
@@ -189,7 +189,7 @@ class ssh_config_loading:
         @patch.object(Config, '_load_ssh_file')
         def does_not_skip_loading_runtime_path(self, method):
             Config(
-                runtime_ssh_path=self.runtime_path,
+                runtime_ssh_path=self._runtime_path,
                 overrides={'load_ssh_configs': False},
             )
             # Expect that loader method did still run (and, as usual, that
