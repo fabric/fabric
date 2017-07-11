@@ -279,21 +279,25 @@ class MockRemote(object):
 
     def expect(self, *args, **kwargs):
         """
-        Convenience method for creating & 'expect'ing a single Session.
+        Convenience method for creating & 'expect'ing a single `Session`.
+
+        Returns the single `MockChannel` yielded by that Session.
         """
-        self.expect_sessions(Session(*args, **kwargs))
+        return self.expect_sessions(Session(*args, **kwargs))[0]
 
     def expect_sessions(self, *sessions):
         """
         Sets the mocked remote environment to expect the given ``sessions``.
+
+        Returns a list of `MockChannel` objects, one per input `Session`.
         """
         # First, stop the default session to clean up its state, if it seems to
         # be running.
         self.stop()
         # Update sessions list with new session(s)
         self.sessions = sessions
-        # And start patching again
-        self.start()
+        # And start patching again, returning mocked channels
+        return self.start()
 
     def start(self):
         """
@@ -312,7 +316,7 @@ class MockRemote(object):
         # yield one of our mocked clients (w/ mocked transport & channel)
         # generated above.
         SSHClient.side_effect = clients
-        return chain.from_iterable(x.channels for x in self.sessions)
+        return list(chain.from_iterable(x.channels for x in self.sessions))
 
     def stop(self):
         """
