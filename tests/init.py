@@ -11,6 +11,9 @@ class init:
     def Connection(self):
         assert fabric.Connection is connection.Connection
 
+    def Remote(self):
+        assert fabric.Remote is runners.Remote
+
     def Result(self):
         assert fabric.Result is runners.Result
 
