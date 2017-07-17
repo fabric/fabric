@@ -202,9 +202,9 @@ def test_prefix_env_vars_non_strings():
     values = [123, u'123', 1.11, True, False]
     expect = ['123', '123', '1.11', 'True', 'False']
     for index, value in enumerate(values):
-        env.shell_env = dict(VAR=value)
-        # NOTE: if we ever run tests on windows, add a condition here to test both
-        eq_(_prefix_env_vars('foo'), 'export VAR="%s" && foo' % expect[index])
+        with settings(shell_env=dict(VAR=value)):
+            # NOTE: if we ever run tests on windows, add a condition here to test both
+            eq_(_prefix_env_vars('foo'), 'export VAR="%s" && foo' % expect[index])
 
 
 #
