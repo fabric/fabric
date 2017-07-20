@@ -103,6 +103,7 @@ class Connection(Context):
     connect_kwargs = None
     client = None
     transport = None
+    local = None
     _sftp = None
     _agent_handler = None
 
@@ -223,6 +224,10 @@ class Connection(Context):
         # that below. If it's somehow problematic we would want to break parent
         # __init__ up in a manner that is more cleanly overrideable.
         super(Connection, self).__init__(config=config)
+
+        #: A handle for a local Context that allows local commands to be ran
+        #: independently of the Connection's context.
+        self.local = Context(self.config.clone())
 
         #: The .Config object referenced when handling default values (for e.g.
         #: user or port, when not explicitly given) or deciding how to behave.
@@ -586,19 +591,6 @@ class Connection(Context):
         """
         runner = self.config.runners.remote(self)
         return self._sudo(runner, command, **kwargs)
-
-    def local(self, *args, **kwargs):
-        """
-        Execute a shell command on the local system.
-
-        This method is effectively a wrapper of `invoke.run`; see its docs for
-        details and call signature.
-
-        .. versionadded:: 2.0
-        """
-        # Superclass run() uses runners.local, so we can literally just call it
-        # straight.
-        return super(Connection, self).run(*args, **kwargs)
 
     @opens
     def sftp(self):
