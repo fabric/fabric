@@ -13,6 +13,7 @@ from pytest import skip, param
 from pytest_relaxed import raises
 
 from invoke.config import Config as InvokeConfig
+from invoke.context import Context as InvokeContext
 from invoke.exceptions import ThreadException
 
 from fabric.connection import Connection, Config
@@ -23,6 +24,8 @@ from _util import support
 
 # Remote is woven in as a config default, so must be patched there
 remote_path = 'fabric.config.Remote'
+
+local_path = 'invoke.config.Local'
 
 
 def _select_result(obj):
@@ -858,11 +861,64 @@ class Connection_:
     class local:
         # NOTE: most tests for this functionality live in Invoke's runner
         # tests.
-        @patch('invoke.config.Local')
+        def local_context_proxy(self):
+            local = Connection('host').local
+            assert isinstance(local, InvokeContext)
+
+        @patch(local_path)
         def calls_invoke_Local_run(self, Local):
-            Connection('host').local('foo')
-            # NOTE: yet another casualty of the bizarre mock issues
-            assert call().run('foo') in Local.mock_calls
+            Connection('host').local.run('foo')
+
+            local = Local.return_value
+            local.run.assert_called_once_with('foo')
+
+    class context_managers:
+        # NOTE: these context managers are inherited from invoke.Context and
+        # are more extensively tested there.
+        @patch('fabric.connection.SSHClient')
+        @patch(remote_path)
+        def cd_should_apply_to_run(self, Remote, Client):
+            remote = Remote.return_value
+
+            c = Connection('host')
+            with c.cd('foo'):
+                c.run('whoami')
+
+            cmd = "cd foo && whoami"
+            remote.run.assert_called_once_with(cmd)
+
+        @patch('fabric.connection.SSHClient')
+        @patch(remote_path)
+        def prefixes_should_apply_to_run(self, Remote, Client):
+            remote = Remote.return_value
+
+            c = Connection('host')
+            with c.prefix('cd foo'):
+                c.run('whoami')
+
+            cmd = "cd foo && whoami"
+            remote.run.assert_called_once_with(cmd)
+
+        @patch('fabric.connection.SSHClient')
+        @patch(remote_path)
+        @patch(local_path)
+        def remote_and_local_dont_interact(self, Local, Remote, Client):
+            local = Local.return_value
+            remote = Remote.return_value
+
+            conn = Connection('host')
+            with conn.cd('foo'):
+                conn.run('whoami')
+
+                ctx = conn.local
+                with ctx.cd('bar'):
+                    ctx.run('whoami')
+
+            cmd = "cd foo && whoami"
+            remote.run.assert_called_once_with(cmd)
+
+            cmd = "cd bar && whoami"
+            local.run.assert_called_once_with(cmd)
 
     class sudo:
         @patch(remote_path)
