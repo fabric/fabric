@@ -47,9 +47,11 @@ class Config_(Spec):
         eq_(c.timeouts.connect, None)
         eq_(c.ssh_config_path, None)
 
-    def overrides_Invoke_default_for_replace_env(self):
+    def overrides_some_Invoke_defaults(self):
+        config = Config()
         # This value defaults to False in Invoke proper.
-        eq_(Config().run.replace_env, True)
+        eq_(config.run.replace_env, True)
+        eq_(config.tasks.collection_name, 'fabfile')
 
     def uses_Fabric_prefix(self):
         # NOTE: see also the integration-esque tests in tests/main.py; this

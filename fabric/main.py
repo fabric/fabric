@@ -11,7 +11,6 @@ from paramiko import __version__ as paramiko
 from . import __version__ as fabric
 from . import Config
 from .executor import FabExecutor
-from .loader import FabfileLoader
 
 
 class Fab(Program):
@@ -69,7 +68,6 @@ class Fab(Program):
 program = Fab(
     name="Fabric",
     version=fabric,
-    loader_class=FabfileLoader,
     executor_class=FabExecutor,
     config_class=Config,
 )

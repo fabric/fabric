@@ -200,6 +200,9 @@ class Config(InvokeConfig):
                 'remote': Remote,
             },
             'ssh_config_path': None,
+            'tasks': {
+                'collection_name': 'fabfile',
+            },
             # TODO: this becomes an override/extend once Invoke grows execution
             # timeouts (which should be timeouts.execute)
             'timeouts': {
