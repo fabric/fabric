@@ -43,8 +43,6 @@ class Config_(Spec):
         eq_(c.port, 22)
         eq_(c.user, get_local_user())
         eq_(c.forward_agent, False)
-        eq_(c.sudo.prompt, "[sudo] password: ")
-        eq_(c.sudo.password, None)
         eq_(c.connect_kwargs, {})
         eq_(c.timeouts.connect, None)
         eq_(c.ssh_config_path, None)
