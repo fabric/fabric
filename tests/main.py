@@ -69,7 +69,7 @@ Available tasks:
 """.lstrip())
 
         def loads_fabric_config_files_not_invoke_ones(self):
-            for type_ in ('yaml', 'json', 'py'):
+            for type_ in ('yaml', 'yml', 'json', 'py'):
                 with cd(os.path.join(_support, '{0}_conf'.format(type_))):
                     # This task, in each subdir, expects data present in a
                     # fabric.<ext> nearby to show up in the config.
