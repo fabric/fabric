@@ -243,7 +243,7 @@ def key_from_env(passphrase=None):
             except Exception as e:
                 # File is valid key, but is encrypted: raise it, this will
                 # cause cxn loop to prompt for passphrase & retry
-                if 'Private key file is encrypted' in e:
+                if 'Private key file is encrypted' in str(e):
                     raise
                 # Otherwise, it probably means it wasn't a valid key of this
                 # type, so try the next one.
