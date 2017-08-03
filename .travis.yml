@@ -41,25 +41,25 @@ install:
   - fab --version
 before_script:
   # Create 'sudouser' w/ sudo password & perms on Travis' homedir
-  - inv travis.make_sudouser
+  - inv travis.make-sudouser
   # Allow us to SSH passwordless to localhost
-  - inv travis.make_sshable
+  - inv travis.make-sshable
 script:
   # Execute full test suite + coverage, as the new sudo-capable user
-  - inv travis.sudo_coverage
+  - inv travis.sudo-coverage
   # Websites build OK? (Not on PyPy3, Sphinx is all "who the hell are you?" =/
   - "[[ $TRAVIS_PYTHON_VERSION != 'pypy3' ]] && inv sites"
   - "[[ $TRAVIS_PYTHON_VERSION != 'pypy3' ]] && inv docs.doctest"
   # Did we break setup.py?
-  - inv travis.test_installation --package=fabric --sanity="fab --version"
+  - inv travis.test-installation --package=fabric --sanity="fab --version"
   # I have this in my git pre-push hook, but contributors probably don't
   - flake8
   # Test distribution builds.
-  - inv travis.test_packaging --package=fabric --sanity="fab --version"
+  - inv travis.test-packaging --package=fabric --sanity="fab --version"
   # Again, but as 'fabric2'
   - rm -rf tmp
   - pip uninstall -y fabric
-  - "PACKAGE_AS_FABRIC2=yes inv travis.test_packaging --package=fabric2 --sanity=\"fab2 --version\""
+  - "PACKAGE_AS_FABRIC2=yes inv travis.test-packaging --package=fabric2 --sanity=\"fab2 --version\""
 after_success:
   # Upload coverage data to codecov
   - codecov
