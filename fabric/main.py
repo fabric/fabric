@@ -45,6 +45,10 @@ class Fab(Program):
         # module, makes no sense. But we want that capability for testing &
         # things like 'fab -H x,y,z -- mycommand'.
         if self._remainder_only:
+            # TODO: hm we're probably not honoring project-specific configs in
+            # this branch; is it worth having it assume CWD==project, since
+            # that's often what users expect? Even tho no task collection to
+            # honor the real "lives by task coll"?
             self.collection = Collection()
         else:
             super(Fab, self).load_collection()
