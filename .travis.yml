@@ -31,6 +31,10 @@ install:
   - "pip install -e git+https://github.com/paramiko/paramiko#egg=paramiko"
   # Self
   - pip install -e .
+  # Limit setuptools as some newer versions have Issues(tm). This needs doing
+  # as its own step; trying to do it via dev-requirements.txt isn't always
+  # sufficient.
+  - pip install "setuptools<34"
   # Dev requirements
   # TODO: follow invoke and split it up a bit so we're not pulling down
   # conflicting or unused-by-travis deps?
