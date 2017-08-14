@@ -59,14 +59,30 @@ class Fab(Program):
         if not self._remainder_only:
             super(Fab, self).no_tasks_given()
 
-    def config_kwargs(self):
-        # Obtain core config kwargs - eg hide, warn, etc
-        kwargs = super(Fab, self).config_kwargs()
-        # Add our own custom Config kwargs
-        kwargs.update(dict(
-            runtime_ssh_path=self.args['ssh-config'].value,
-        ))
-        return kwargs
+    def create_config(self):
+        # Create config, as parent does, but with lazy=True to avoid our own
+        # SSH config autoload. (Otherwise, we can't correctly load _just_ the
+        # runtime file if one's being given later.)
+        self.config = self.config_class(lazy=True)
+        # However, we don't really want the parent class' lazy behavior (which
+        # skips loading system/global invoke-type conf files) so we manually do
+        # that here to match upstream behavior.
+        self.config.load_base_conf_files()
+        # And merge again so that data is available.
+        # TODO: really need to either A) stop giving fucks about calling
+        # merge() "too many times", or B) make merge() itself determine whether
+        # it needs to run and/or just merge stuff that's changed, so log spam
+        # isn't as bad.
+        self.config.merge()
+
+    def update_config(self):
+        # NOTE: must do parent before our work, in case users want to disable
+        # SSH config loading within a runtime-level conf file/flag.
+        super(Fab, self).update_config(merge=False)
+        self.config.set_runtime_ssh_path(self.args['ssh-config'].value)
+        self.config.load_ssh_config()
+        # Since we gave merge=False above, we must do it ourselves here.
+        self.config.merge()
 
 
 program = Fab(

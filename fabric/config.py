@@ -18,11 +18,12 @@ class Config(InvokeConfig):
 
     - its `global_defaults` staticmethod has been extended to add/modify some
       default settings (see its documentation, below, for details);
-    - it accepts additional instantiation arguments related to loading
-      ``ssh_config`` files.
     - it triggers loading of Fabric-specific env vars (e.g.
       ``FABRIC_RUN_HIDE=true`` instead of ``INVOKE_RUN_HIDE=true``) and
       filenames (e.g. ``/etc/fabric.yaml`` instead of ``/etc/invoke.yaml``).
+    - it extends the API to account for loading ``ssh_config`` files (which are
+      stored as additional attributes and have no direct relation to the
+      regular config data/hierarchy.)
 
     Intended for use with `.Connection`, as using vanilla
     `invoke.config.Config` objects would require users to manually define
@@ -54,12 +55,20 @@ class Config(InvokeConfig):
         :param str user_ssh_path:
             Location of the user-level SSH config file. Default:
             ``~/.ssh/config``.
+
+        :param bool lazy:
+            Has the same meaning as the parent class' ``lazy``, but additionall
+            controls whether SSH config file loading is deferred (requires
+            manually calling `load_ssh_config` sometime.) For example, one may
+            need to wait for user input before calling `set_runtime_ssh_path`,
+            which will inform exactly what `load_ssh_config` does.
         """
         # Tease out our own kwargs.
         # TODO: consider moving more stuff out of __init__ and into methods so
         # there's less of this sort of splat-args + pop thing? Eh.
         ssh_config = kwargs.pop('ssh_config', None)
-        self._set(_runtime_ssh_path=kwargs.pop('runtime_ssh_path', None))
+        lazy = kwargs.get('lazy', False)
+        self.set_runtime_ssh_path(kwargs.pop('runtime_ssh_path', None))
         system_path = kwargs.pop('system_ssh_path', '/etc/ssh/ssh_config')
         self._set(_system_ssh_path=system_path)
         self._set(_user_ssh_path=kwargs.pop('user_ssh_path', '~/.ssh/config'))
@@ -76,20 +85,33 @@ class Config(InvokeConfig):
             ssh_config = SSHConfig()
         self._set(base_ssh_config=ssh_config)
 
-        # Now that our own attributes have been prepared, we can fall up into
-        # parent __init__(), which will trigger post_init() (which needs the
-        # attributes we just set up)
+        # Now that our own attributes have been prepared & kwargs yanked, we
+        # can fall up into parent __init__()
         super(Config, self).__init__(*args, **kwargs)
 
-    def post_init(self):
-        super(Config, self).post_init()
-        # Now that regular config is loaded, we can update the runtime SSH
-        # config path
+        # And finally perform convenience non-lazy bits if needed
+        if not lazy:
+            self.load_ssh_config()
+
+    def set_runtime_ssh_path(self, path):
+        """
+        Configure a runtime-level SSH config file path.
+
+        If set, this will cause `load_ssh_config` to skip system and user
+        files, as OpenSSH does.
+        """
+        self._set(_runtime_ssh_path=path)
+
+    def load_ssh_config(self):
+        # Update the runtime SSH config path (assumes enough regular config
+        # levels have been loaded that anyone wanting to transmit this info
+        # from a 'vanilla' Invoke config, has gotten it set.)
         if self.ssh_config_path:
             self._runtime_ssh_path = self.ssh_config_path
-        # Load files from disk, if necessary
+        # Load files from disk if we weren't given an explicit SSHConfig in
+        # __init__
         if not self._given_explicit_object:
-            self.load_ssh_files()
+            self._load_ssh_files()
 
     def clone(self, *args, **kwargs):
         # TODO: clone() at this point kinda-sorta feels like it's retreading
@@ -104,13 +126,16 @@ class Config(InvokeConfig):
         new = super(Config, self).clone(*args, **kwargs)
         # Copy over our custom attributes, so that the clone still resembles us
         # re: recording where the data originally came from (in case anything
-        # re-runs .load_ssh_files(), for example).
+        # re-runs ._load_ssh_files(), for example).
         for attr in (
             '_runtime_ssh_path',
             '_system_ssh_path',
             '_user_ssh_path',
         ):
             setattr(new, attr, getattr(self, attr))
+        # Load SSH configs, in case they weren't prior to now (e.g. a vanilla
+        # Invoke clone(into), instead of a us-to-us clone.)
+        self.load_ssh_config()
         # All done
         return new
 
@@ -130,7 +155,7 @@ class Config(InvokeConfig):
             ssh_config=new_config,
         )
 
-    def load_ssh_files(self):
+    def _load_ssh_files(self):
         """
         Trigger loading of configured SSH config file paths.
 
@@ -139,6 +164,9 @@ class Config(InvokeConfig):
 
         :returns: ``None``.
         """
+        # TODO: does this want to more closely ape the behavior of
+        # InvokeConfig.load_files? re: having a _found attribute for each that
+        # determines whether to load or skip
         if self._runtime_ssh_path is not None:
             path = self._runtime_ssh_path
             # Manually blow up like open() (_load_ssh_file normally doesn't)

@@ -95,8 +95,10 @@ class ssh_config_loading(Spec):
 
     @patch.object(Config, '_load_ssh_file')
     def config_obj_prevents_loading_runtime_path_too(self, method):
-        sc = SSHConfig()
-        Config(ssh_config=sc, runtime_ssh_path=self.system_path)
+        config = Config(
+            ssh_config=SSHConfig(),
+            runtime_ssh_path=self.system_path,
+        )
         ok_(not method.called)
 
     @patch.object(Config, '_load_ssh_file')
@@ -200,4 +202,13 @@ class ssh_config_loading(Spec):
             )
             # Expect that loader method did still run (and, as usual, that
             # it did not load any other files)
+            method.assert_called_once_with(self.runtime_path)
+
+    class lazy_loading_and_explicit_methods:
+        @patch.object(Config, '_load_ssh_file')
+        def may_use_lazy_plus_explicit_methods_to_control_flow(self, method):
+            c = Config(lazy=True)
+            assert not method.called
+            c.set_runtime_ssh_path(self.runtime_path)
+            c.load_ssh_config()
             method.assert_called_once_with(self.runtime_path)

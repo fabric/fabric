@@ -46,7 +46,7 @@ Invoke .+
         def uses_FABRIC_env_prefix(self):
             os.environ['FABRIC_RUN_ECHO'] = '1'
             with cd(_support):
-                fab_program.run("fab expect_from_env")
+                fab_program.run("fab expect-from-env")
 
     class filenames:
         def loads_fabfile_not_tasks(self):
@@ -57,13 +57,13 @@ Invoke .+
                     """
 Available tasks:
 
-  basic_run
+  basic-run
   build
   deploy
-  expect_from_env
-  expect_mutation
-  expect_mutation_to_fail
-  expect_vanilla_Context
+  expect-from-env
+  expect-mutation
+  expect-mutation-to-fail
+  expect-vanilla-Context
   mutate
 
 """.lstrip())
@@ -73,14 +73,14 @@ Available tasks:
                 with cd(os.path.join(_support, '{0}_conf'.format(type_))):
                     # This task, in each subdir, expects data present in a
                     # fabric.<ext> nearby to show up in the config.
-                    fab_program.run("fab expect_conf_value")
+                    fab_program.run("fab expect-conf-value")
 
     class runtime_ssh_config_path:
         def _run(
             self,
             flag='-F',
             file_='ssh_config/runtime.conf',
-            tasks='runtime_ssh_config',
+            tasks='runtime-ssh-config',
         ):
             with cd(_support):
                 # Relies on asserts within the task, which will bubble up as
@@ -120,7 +120,7 @@ Available tasks:
             # dumb bug where one appends to, instead of replacing, the task
             # list during parameterization/expansion XD
             with cd(_support):
-                fab_program.run("fab -H myhost basic_run")
+                fab_program.run("fab -H myhost basic-run")
 
         @mock_remote(
             Session('host1', cmd='nope'),
@@ -128,7 +128,7 @@ Available tasks:
         )
         def comma_separated_string_is_multiple_hosts(self, chan1, chan2):
             with cd(_support):
-                fab_program.run("fab -H host1,host2 basic_run")
+                fab_program.run("fab -H host1,host2 basic-run")
 
         @mock_remote(
             Session('host1', cmd='whoami'),
@@ -151,12 +151,12 @@ Available tasks:
             # and we're not using it for --hosts, so it's not broken...yet.
             skip()
             with cd(_support):
-                fab_program.run("fab -H host1,host2 expect_mutation_to_fail")
+                fab_program.run("fab -H host1,host2 expect-mutation-to-fail")
 
     class no_hosts_flag:
         def calls_task_once_with_invoke_context(self):
             with cd(_support):
-                fab_program.run("fab expect_vanilla_Context")
+                fab_program.run("fab expect-vanilla-Context")
 
         @raises(NothingToDo)
         def generates_exception_if_combined_with_remainder(self):
@@ -166,4 +166,4 @@ Available tasks:
             # Mostly a guard against Executor subclass tweaks breaking Invoke
             # behavior added in pyinvoke/invoke#309
             with cd(_support):
-                fab_program.run("fab mutate expect_mutation")
+                fab_program.run("fab mutate expect-mutation")

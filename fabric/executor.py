@@ -20,6 +20,9 @@ class FabExecutor(Executor):
                 # because it's poorly defined right now: does each
                 # parameterized per-host task run its own pre/posts, or do they
                 # run before/after the 'set' of per-host tasks? and etc
+                # TODO: tie into whatever DAG stuff we do in Invoke; ideally
+                # this all gets pushed down to that level and we simply hand in
+                # the raw 'one of these each with host=a, host=b, ... plz'
                 ret.append(self.parameterize(call, host))
             # Deal with lack of hosts arg (acts same as `inv` in that case)
             if not hosts:
