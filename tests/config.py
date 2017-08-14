@@ -95,7 +95,7 @@ class ssh_config_loading(Spec):
 
     @patch.object(Config, '_load_ssh_file')
     def config_obj_prevents_loading_runtime_path_too(self, method):
-        config = Config(
+        Config(
             ssh_config=SSHConfig(),
             runtime_ssh_path=self.system_path,
         )
