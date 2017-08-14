@@ -242,7 +242,6 @@ class Session(object):
         eq_(transport.return_value.open_session.call_args_list, session_opens)
 
 
-
 class MockRemote(object):
     """
     Class representing mocked remote state.
@@ -305,11 +304,15 @@ class MockRemote(object):
 
     def stop(self):
         """
-        Stop patching SSHClient, and invoke post-run sanity tests.
+        Stop patching SSHClient.
         """
         # Stop patching SSHClient
         self.patcher.stop()
 
+    def sanity(self):
+        """
+        Run post-execution sanity checks (usually 'was X called' tests.)
+        """
         for session in self.sessions:
             # Basic sanity tests about transport, channel etc
             session.sanity_check()
@@ -380,9 +383,16 @@ def mock_remote(*sessions):
             # Call that test!
             try:
                 f(*args, **kwargs)
-            finally:
-                # Stop mocking & perform sanity tests
+            # Exceptions? Stop patching, but don't run sanity tests (lest they
+            # mask whatever made us except in the test body!) and then reraise
+            # whatever happened.
+            except:
                 remote.stop()
+                raise
+            # No exceptions? Stop the remote, _and_ run sanity tests.
+            else:
+                remote.stop()
+                remote.sanity()
         return wrapper
     # Bare decorator, no args
     if bare:
