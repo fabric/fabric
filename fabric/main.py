@@ -30,6 +30,10 @@ class Fab(Program):
                 names=('H', 'hosts'),
                 help="Comma-separated host name(s) to execute tasks against.",
             ),
+            Argument(
+                names=('i', 'identity'),
+                help="Path to runtime SSH identity (key) file.",
+            ),
         ]
         return core_args + my_args
 
@@ -76,12 +80,22 @@ class Fab(Program):
         self.config.merge()
 
     def update_config(self):
+        # Note runtime SSH path, if given, and load SSH configurations.
         # NOTE: must do parent before our work, in case users want to disable
         # SSH config loading within a runtime-level conf file/flag.
         super(Fab, self).update_config(merge=False)
         self.config.set_runtime_ssh_path(self.args['ssh-config'].value)
         self.config.load_ssh_config()
-        # Since we gave merge=False above, we must do it ourselves here.
+        # Load -i identity file, if given, into connect_kwargs, at overrides
+        # level. TODO: this feels a little gross, but since the parent has
+        # already called load_overrides, this is best we can do for now w/o
+        # losing data. Still feels correct; just might be cleaner to have even
+        # more Config API members around this sort of thing. Shrug.
+        path = self.args['identity'].value
+        if path is not None:
+            self.config._overrides['connect_kwargs'] = {'key_filename': path}
+        # Since we gave merge=False above, we must do it ourselves here. (Also
+        # allows us to 'compile' our overrides manipulation.)
         self.config.merge()
 
 
