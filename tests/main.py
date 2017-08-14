@@ -61,6 +61,7 @@ Available tasks:
   build
   deploy
   expect-from-env
+  expect-identity
   expect-mutation
   expect-mutation-to-fail
   expect-vanilla-Context
@@ -167,3 +168,19 @@ Available tasks:
             # behavior added in pyinvoke/invoke#309
             with cd(_support):
                 fab_program.run("fab mutate expect-mutation")
+
+    class runtime_identity_file:
+        def dash_i_supplies_default_connect_kwarg_key_filename(self):
+            # NOTE: task asserts about its view on config.connect_kwargs,
+            # relying on other tests to prove connect_kwargs makes its way to
+            # SSHClient.connect().
+            with cd(_support):
+                fab_program.run("fab -i identity.key expect-identity")
+
+        def double_dash_identity_also_works(self):
+            with cd(_support):
+                fab_program.run("fab --identity identity.key expect-identity")
+
+        def may_be_given_multiple_times_building_a_list(self):
+            # TODO: when multiple-at-once is implemented in Invoke parser
+            skip()

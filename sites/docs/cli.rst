@@ -22,6 +22,18 @@ Options & arguments
     Takes a comma-separated string listing hostnames against which tasks
     should be executed, in serial. See :ref:`runtime-hosts`.
 
+.. option:: -i, --identity
+
+    Takes a file path string, which is used to fill the ``key_filename`` value
+    in the ``connect_kwargs`` config setting (which is read by `.Connection`,
+    and eventually makes its way into Paramiko; see the docstring for
+    `.Connection` for details.)
+
+    Typically this can be thought of as identical to ``ssh -i <path>``, i.e.
+    supplying a specific, runtime private key file.
+
+    Default:: ``None``.
+
 
 Seeking & loading tasks
 =======================

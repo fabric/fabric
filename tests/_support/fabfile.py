@@ -45,3 +45,8 @@ def mutate(c):
 @task
 def expect_mutation(c):
     assert c.foo == 'bar'
+
+
+@task
+def expect_identity(c):
+    assert c.config.connect_kwargs['key_filename'] == 'identity.key'
