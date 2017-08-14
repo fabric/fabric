@@ -75,12 +75,6 @@ Available tasks:
                     # fabric.<ext> nearby to show up in the config.
                     fab_program.run("fab expect_conf_value")
 
-        def honors_task_collection_name_config_option(self):
-            # Conf file in this dir says to load 'myfabtasks' collections,
-            # and that's the name of the .py file containing 'def hello'.
-            with cd(os.path.join(_support, 'alt_collection_name')):
-                fab_program.run("fab hello")
-
     class runtime_ssh_config_path:
         def _run(
             self,
