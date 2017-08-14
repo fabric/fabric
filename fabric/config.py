@@ -103,6 +103,12 @@ class Config(InvokeConfig):
         self._set(_runtime_ssh_path=path)
 
     def load_ssh_config(self):
+        """
+        Load SSH config file(s) from disk.
+
+        Also (beforehand) ensures that Invoke-level config re: runtime SSH
+        config file paths, is accounted for.
+        """
         # Update the runtime SSH config path (assumes enough regular config
         # levels have been loaded that anyone wanting to transmit this info
         # from a 'vanilla' Invoke config, has gotten it set.)
