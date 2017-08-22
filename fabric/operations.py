@@ -411,7 +411,7 @@ def put(local_path=None, remote_path=None, use_sudo=False,
 
 
 @needs_host
-def get(remote_path, local_path=None, use_sudo=False, temp_dir=""):
+def get(remote_path, local_path=None, use_sudo=False, mirror_remote_mode=False, temp_dir=""):
     """
     Download one or more files from a remote host.
 
@@ -576,13 +576,13 @@ def get(remote_path, local_path=None, use_sudo=False, temp_dir=""):
 
             for remote_path in names:
                 if ftp.isdir(remote_path):
-                    result = ftp.get_dir(remote_path, local_path, use_sudo, temp_dir)
+                    result = ftp.get_dir(remote_path, local_path, use_sudo, mirror_remote_mode, temp_dir)
                     local_files.extend(result)
                 else:
                     # Perform actual get. If getting to real local file path,
                     # add result (will be true final path value) to
                     # local_files. File-like objects are omitted.
-                    result = ftp.get(remote_path, local_path, use_sudo, local_is_path, os.path.basename(remote_path), temp_dir)
+                    result = ftp.get(remote_path, local_path, use_sudo, mirror_remote_mode, local_is_path, os.path.basename(remote_path), temp_dir)
                     if local_is_path:
                         local_files.append(result)
 

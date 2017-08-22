@@ -113,7 +113,7 @@ class SFTP(object):
         else:
             self.ftp.mkdir(path)
 
-    def get(self, remote_path, local_path, use_sudo, local_is_path, rremote=None, temp_dir=""):
+    def get(self, remote_path, local_path, use_sudo, mirror_remote_mode, local_is_path, rremote=None, temp_dir=""):
         from fabric.api import sudo, hide
 
         # rremote => relative remote path, so get(/var/log) would result in
@@ -177,6 +177,11 @@ class SFTP(object):
                 local_path.seek(0)
                 getter = self.ftp.getfo
             getter(remote_path, local_path)
+            # Retain remote file permissions on local file
+            if mirror_remote_mode and not use_sudo and local_is_path:
+                remote_permissions = self.ftp.stat(remote_path).st_mode
+                os.chmod(local_path, remote_permissions)
+
         finally:
             # try to remove the temporary file after the download
             if use_sudo:
@@ -187,7 +192,7 @@ class SFTP(object):
         # to know.)
         return local_path
 
-    def get_dir(self, remote_path, local_path, use_sudo, temp_dir):
+    def get_dir(self, remote_path, local_path, use_sudo, mirror_remote_mode, temp_dir):
         # Decide what needs to be stripped from remote paths so they're all
         # relative to the given remote_path
         if os.path.basename(remote_path):
@@ -223,7 +228,7 @@ class SFTP(object):
                     lpath = local_path
                 # Now we can make a call to self.get() with specific file paths
                 # on both ends.
-                result.append(self.get(rpath, lpath, use_sudo, True, rremote, temp_dir))
+                result.append(self.get(rpath, lpath, use_sudo, mirror_remote_mode, True, rremote, temp_dir))
         return result
 
     def put(self, local_path, remote_path, use_sudo, mirror_local_mode, mode,
