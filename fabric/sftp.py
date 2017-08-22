@@ -178,10 +178,12 @@ class SFTP(object):
                 getter = self.ftp.getfo
             getter(remote_path, local_path)
             # Retain remote file permissions on local file
-            if mirror_remote_mode and not use_sudo and local_is_path:
-                remote_permissions = self.ftp.stat(remote_path).st_mode
-                os.chmod(local_path, remote_permissions)
-
+            if local_is_path and mirror_remote_mode:
+                rmode = self.ftp.stat(remote_path).st_mode
+                # Cast to octal integer in case of string
+                if isinstance(rmode, basestring):
+                    rmode = int(rmode, 8)
+                os.chmod(local_path, rmode)
         finally:
             # try to remove the temporary file after the download
             if use_sudo:

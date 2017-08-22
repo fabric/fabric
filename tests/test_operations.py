@@ -457,6 +457,33 @@ class TestFileTransfers(FabricTest):
             get(remote, local)
         eq_contents(local, FILES[remote])
 
+    @server()
+    def test_get_single_file_with_default_permissions(self):
+        """
+        get() with a single non-globbed filename
+        By default, local files retrieved by get() have -rw-rw-r-- permissions (0664)
+        """
+        remote = 'file.txt'
+        local = self.path(remote)
+        with hide('everything'):
+            get(remote, local)
+        assert oct(os.stat(local).st_mode)[-4:] == '0664'
+        eq_contents(local, FILES[remote])
+
+    @server()
+    @raises(IOError)
+    def test_get_single_file_with_remote_permissions(self):
+        """
+        get() with a single non-globbed filename, with the remote file's permissions
+        By default, FakeFile has no permissions set (0000)
+        """
+        remote = 'file.txt'
+        local = self.path(remote)
+        with hide('everything'):
+            get(remote, local, mirror_remote_mode=True)
+        assert oct(os.stat(local).st_mode)[-4:] == '0000'
+        eq_contents(local, FILES[remote])
+
     @server(files={'/base/dir with spaces/file': 'stuff!'})
     def test_get_file_from_relative_path_with_spaces(self):
         """
