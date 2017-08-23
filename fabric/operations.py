@@ -452,6 +452,11 @@ def get(remote_path, local_path=None, use_sudo=False, mirror_remote_mode=False, 
     (defaults to remote user's ``$HOME``; this may be overridden via ``temp_dir``),
     and then download them to ``local_path``.
 
+    ``mirror_remote_mode`` is a flag that allows you to retain the permissions of
+    the remote file if set to True. Otherwise, if False, then the file that is
+    downloaded via `get` will have -rw-rw-r-- permissions.
+    By default, ``mirror_remote_mode`` is set to False.
+
     .. note::
         When ``remote_path`` is an absolute directory path, only the inner
         directories will be recreated locally and passed into the above

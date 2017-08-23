@@ -2,6 +2,9 @@
 Changelog
 =========
 
+* :feature:`1649` Add a `mirror_remote_mode` parameter to
+  `~fabric.operations.get` to allow users to download files via `get` and
+  keep the permissions set on the remote file.
 * :release:`1.13.2 <2017-04-24>`
 * :release:`1.12.2 <2017-04-24>`
 * :bug:`1542` (via :issue:`1543`) Catch Paramiko-level gateway connection
