@@ -2,6 +2,16 @@
 Changelog
 =========
 
+* :feature:`1475` Honor ``env.timeout`` when opening new remote sessions (as
+  opposed to the initial overall connection, which already honored timeout
+  settings.) Thanks to ``@EugeniuZ`` for the report & ``@jrmsgit`` for the
+  first draft of the patch.
+
+  .. note::
+    This feature only works with Paramiko 1.14.3 and above; if your Paramiko
+    version is older, no timeout can be set, and the previous behavior will
+    occur instead.
+
 * :release:`1.13.2 <2017-04-24>`
 * :release:`1.12.2 <2017-04-24>`
 * :bug:`1542` (via :issue:`1543`) Catch Paramiko-level gateway connection
