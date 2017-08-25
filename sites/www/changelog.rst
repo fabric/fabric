@@ -2,6 +2,7 @@
 Changelog
 =========
 
+* :release:`1.14.0 <2017-08-25>`
 * :feature:`1475` Honor ``env.timeout`` when opening new remote sessions (as
   opposed to the initial overall connection, which already honored timeout
   settings.) Thanks to ``@EugeniuZ`` for the report & ``@jrmsgit`` for the
