@@ -2,6 +2,17 @@
 Changelog
 =========
 
+* :release:`1.14.0 <2017-08-25>`
+* :feature:`1475` Honor ``env.timeout`` when opening new remote sessions (as
+  opposed to the initial overall connection, which already honored timeout
+  settings.) Thanks to ``@EugeniuZ`` for the report & ``@jrmsgit`` for the
+  first draft of the patch.
+
+  .. note::
+    This feature only works with Paramiko 1.14.3 and above; if your Paramiko
+    version is older, no timeout can be set, and the previous behavior will
+    occur instead.
+
 * :feature:`1649` Add a `mirror_remote_mode` parameter to
   `~fabric.operations.get` to allow users to download files via `get` and
   keep the permissions set on the remote file.
