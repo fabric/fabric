@@ -289,7 +289,7 @@ def parse_options():
     )
 
     # Control behavior of --list
-    LIST_FORMAT_OPTIONS = ('short', 'normal', 'nested')
+    LIST_FORMAT_OPTIONS = ('short', 'normal', 'nested', 'local')
     parser.add_option('-F', '--list-format',
         choices=LIST_FORMAT_OPTIONS,
         default='normal',
@@ -402,10 +402,9 @@ def _print_docstring(docstrings, name):
         return docstring
 
 
-def _normal_list(docstrings=True):
-    result = []
-    task_names = _task_names(state.commands)
+def _list_formatter(task_names, docstrings=True):
     # Want separator between name, description to be straight col
+    result = []
     max_len = reduce(lambda a, b: max(a, len(b)), task_names, 0)
     sep = '  '
     trail = '...'
@@ -426,6 +425,16 @@ def _normal_list(docstrings=True):
             output = name
         result.append(indent(output))
     return result
+
+
+def _local_list(docstrings=True):
+    task_names, _ = _sift_tasks(state.commands)
+    return _list_formatter(task_names, docstrings)
+
+
+def _normal_list(docstrings=True):
+    task_names = _task_names(state.commands)
+    return _list_formatter(task_names, docstrings)
 
 
 def _nested_list(mapping, level=1):
@@ -452,7 +461,7 @@ def list_commands(docstring, format_):
     If ``docstring`` is non-empty, it will be printed before the task list.
 
     ``format_`` should conform to the options specified in
-    ``LIST_FORMAT_OPTIONS``, e.g. ``"short"``, ``"normal"``.
+    ``LIST_FORMAT_OPTIONS``, e.g. ``"short"``, ``"normal"``, ``"local"``.
     """
     # Short-circuit with simple short output
     if format_ == "short":
@@ -467,7 +476,13 @@ def list_commands(docstring, format_):
     if format_ == "nested":
         header += NESTED_REMINDER
     result.append(header + ":\n")
-    c = _normal_list() if format_ == "normal" else _nested_list(state.commands)
+    if format_ == "local":
+        c = _local_list()
+    elif format_ == "normal":
+        c = _normal_list()
+    else:
+        c = _nested_list(state.commands)
+    # c = _normal_list() if format_ == "normal" else _nested_list(state.commands)
     result.extend(c)
     return result
 
