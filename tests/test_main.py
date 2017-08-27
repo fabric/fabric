@@ -12,7 +12,7 @@ from nose.tools import ok_, eq_
 from fabric.decorators import hosts, roles, task
 from fabric.context_managers import settings
 from fabric.main import (parse_arguments, _escape_split, find_fabfile,
-        load_fabfile as _load_fabfile, list_commands, _task_names,
+        load_fabfile as _load_fabfile, list_commands, _task_names, _local_list,
         COMMANDS_HEADER, NESTED_REMINDER)
 import fabric.state
 from fabric.tasks import Task, WrappedCallableTask
@@ -595,6 +595,8 @@ def test_list_output():
         ("shorthand (& with namespacing)", 'deep', 'short', "submodule.subsubmodule.deeptask"),
         ("normal (& with namespacing)", 'deep', 'normal', normal_head + "submodule.subsubmodule.deeptask"),
         ("normal (with docstring)", 'docstring', 'normal', normal_head + "foo  Foos!"),
+        ("local (& with namespacing)", 'deep', 'local', COMMANDS_HEADER+':\n'),
+        ("local (with docstring)", 'docstring', 'local', normal_head + "foo  Foos!"),
         ("nested (leaf only)", 'deep', 'nested', nested_head + """submodule:
         subsubmodule:
             deeptask"""),
