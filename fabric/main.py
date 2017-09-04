@@ -282,6 +282,12 @@ def parse_options():
     # --version)
     #
 
+    # Display progress bar
+    parser.add_option('-b', '--progress',
+        help="print progress bar",
+        action='store_true',
+        default=False
+    )
     # Display info about a specific command
     parser.add_option('-d', '--display',
         metavar='NAME',
@@ -633,6 +639,8 @@ def main(fabfile_locations=None):
         for key in ['hosts', 'roles', 'exclude_hosts']:
             if key in state.env and isinstance(state.env[key], basestring):
                 state.env[key] = state.env[key].split(',')
+
+        state.env['progress'] = options.progress
 
         # Feed the env.tasks : tasks that are asked to be executed.
         state.env['tasks'] = arguments

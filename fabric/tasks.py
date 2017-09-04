@@ -11,6 +11,8 @@ from fabric.context_managers import settings
 from fabric.job_queue import JobQueue
 from fabric.task_utils import crawl, merge, parse_kwargs
 from fabric.exceptions import NetworkError
+from progress_bar import stdout_redirect_to_tqdm
+from tqdm import tqdm
 
 if sys.version_info[:2] == (2, 5):
     # Python 2.5 inspect.getargspec returns a tuple
@@ -170,7 +172,8 @@ class WrappedCallableTask(Task):
         return self.run(*args, **kwargs)
 
     def run(self, *args, **kwargs):
-        return self.wrapped(*args, **kwargs)
+        result = self.wrapped(*args, **kwargs)
+        return result
 
     def __getattr__(self, k):
         return getattr(self.wrapped, k)
@@ -209,7 +212,7 @@ def _is_network_error_ignored():
     return not state.env.use_exceptions_for['network'] and state.env.skip_bad_hosts
 
 
-def _execute(task, host, my_env, args, kwargs, jobs, queue, multiprocessing):
+def _execute(task, host, my_env, args, kwargs, jobs, queue, multiprocessing, pbar):
     """
     Primary single-host work body of execute()
     """
@@ -273,7 +276,10 @@ def _execute(task, host, my_env, args, kwargs, jobs, queue, multiprocessing):
     # Handle serial execution
     else:
         with settings(**local_env):
-            return task.run(*args, **kwargs)
+            result = task.run(*args, **kwargs)
+            if pbar:
+                pbar.update()
+            return result
 
 def _is_task(task):
     return isinstance(task, Task)
@@ -372,7 +378,12 @@ def execute(task, *args, **kwargs):
     pool_size = task.get_pool_size(my_env['all_hosts'], state.env.pool_size)
     # Set up job queue in case parallel is needed
     queue = multiprocessing.Queue() if parallel else None
-    jobs = JobQueue(pool_size, queue)
+    if state.env.progress:
+        with stdout_redirect_to_tqdm() as save_stdout:
+            pbar = tqdm(total=len(my_env['all_hosts']), ascii=True, file=save_stdout, dynamic_ncols=True)
+    else:
+        pbar = None
+    jobs = JobQueue(pool_size, queue, pbar)
     if state.output.debug:
         jobs._debug = True
 
@@ -381,10 +392,11 @@ def execute(task, *args, **kwargs):
         # Attempt to cycle on hosts, skipping if needed
         for host in my_env['all_hosts']:
             try:
-                results[host] = _execute(
-                    task, host, my_env, args, new_kwargs, jobs, queue,
-                    multiprocessing
-                )
+                with stdout_redirect_to_tqdm():
+                    results[host] = _execute(
+                        task, host, my_env, args, new_kwargs, jobs, queue,
+                        multiprocessing, pbar
+                    )
             except NetworkError, e:
                 results[host] = e
                 # Backwards compat test re: whether to use an exception or
