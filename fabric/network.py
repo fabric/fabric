@@ -22,7 +22,7 @@ try:
     import warnings
     warnings.simplefilter('ignore', DeprecationWarning)
     import paramiko as ssh
-except ImportError, e:
+except ImportError:
     import traceback
     traceback.print_exc()
     msg = """
