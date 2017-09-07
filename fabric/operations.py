@@ -1199,18 +1199,18 @@ def local(command, capture=False, shell=None):
     """
     given_command = command
     # Apply cd(), path() etc, and set the SHELL env var to be consistent
-    set_shell = env.shell_env.get('SHELL')
-    env.shell_env['SHELL'] = shell or '/bin/sh'
     with_env = _prefix_env_vars(command, local=True)
-    if set_shell is None:
-        del env.shell_env['SHELL']
-    else:
-        env.shell_env['SHELL'] = set_shell
     wrapped_command = _prefix_commands(with_env, 'local')
     if output.debug:
         print("[localhost] local: %s" % (wrapped_command))
     elif output.running:
         print("[localhost] local: " + given_command)
+
+    # Explicitly set the SHELL env var for consistent behavior.
+    sub_env = os.environ.copy()
+    if not win32:
+        sub_env['SHELL'] = shell or '/bin/sh'
+
     # Tie in to global output controls as best we can; our capture argument
     # takes precedence over the output settings.
     dev_null = None
@@ -1224,9 +1224,9 @@ def local(command, capture=False, shell=None):
         err_stream = None if output.stderr else dev_null
     try:
         cmd_arg = wrapped_command if win32 else [wrapped_command]
-        p = subprocess.Popen(cmd_arg, shell=True, stdout=out_stream,
-                             stderr=err_stream, executable=shell,
-                             close_fds=(not win32))
+        p = subprocess.Popen(cmd_arg, env=sub_env, shell=True,
+                             stdout=out_stream, stderr=err_stream,
+                             executable=shell, close_fds=(not win32))
         (stdout, stderr) = p.communicate()
     finally:
         if dev_null is not None:
