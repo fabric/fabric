@@ -1200,7 +1200,7 @@ def local(command, capture=False, shell=None):
     given_command = command
     # Apply cd(), path() etc, and set the SHELL env var to be consistent
     set_shell = env.shell_env.get('SHELL')
-    env.shell_env['SHELL'] = set_shell or shell or '/bin/sh'
+    env.shell_env['SHELL'] = shell or '/bin/sh'
     with_env = _prefix_env_vars(command, local=True)
     if set_shell is None:
         del env.shell_env['SHELL']
