@@ -125,6 +125,19 @@ def test_cd_prefix():
         eq_(command_out, 'cd %s >/dev/null && foo' % some_path)
 
 
+#
+# prefix $SHELL
+#
+
+def test_prefix_shell_variable():
+    """
+    prefix should set the $SHELL varible for consistent behavior
+    """
+    with prefix('cd'):
+        shell_value = local('echo $SHELL', capture=True)
+        command_value = local('echo $0', capture=True)
+        eq_(shell_value, command_value)
+
 # def test_cd_prefix_on_win32():
 #     """
 #     cd prefix should NOT direct output to /dev/null on win32
