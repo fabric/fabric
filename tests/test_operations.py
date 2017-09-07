@@ -1115,6 +1115,18 @@ def test_local_output_and_capture():
                     yield local, "echo 'foo' >/dev/null", capture
                     del local.description
 
+#
+# local $SHELL
+#
+
+def test_local_shell_variable():
+    """
+    local should set the $SHELL varible for consistent behavior
+    """
+    shell_value = local('echo $SHELL', capture=True)
+    command_value = local('echo $0', capture=True)
+    eq_(shell_value, command_value)
+
 
 class TestRunSudoReturnValues(FabricTest):
     @server()
