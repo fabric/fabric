@@ -1198,8 +1198,14 @@ def local(command, capture=False, shell=None):
         The return value attributes ``.command`` and ``.real_command``.
     """
     given_command = command
-    # Apply cd(), path() etc
+    # Apply cd(), path() etc, and set the SHELL env var to be consistent
+    set_shell = env.shell_env.get('SHELL')
+    env.shell_env['SHELL'] = set_shell or shell or '/bin/sh'
     with_env = _prefix_env_vars(command, local=True)
+    if set_shell is None:
+        del env.shell_env['SHELL']
+    else:
+        env.shell_env['SHELL'] = set_shell
     wrapped_command = _prefix_commands(with_env, 'local')
     if output.debug:
         print("[localhost] local: %s" % (wrapped_command))
