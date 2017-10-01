@@ -97,11 +97,14 @@ class Task(object):
     def run(self):
         raise NotImplementedError
 
-    def get_complete_roles(self, env=None):
+    def get_complete_roles(self, arg_roles, env=None):
         func_complete_roles = getattr(self, 'complete_roles', [])
         roledefs = env.get('roledefs', {})
         if func_complete_roles:
             return [roledefs[role] for role in func_complete_roles]
+        if arg_roles:
+            return [roledefs[role] for role in arg_roles]
+
 
     def get_hosts_and_effective_roles(self, arg_hosts, arg_roles, arg_exclude_hosts, env=None):
         """
@@ -353,12 +356,12 @@ def execute(task, *args, **kwargs):
     if not _is_task(task):
         task = WrappedCallableTask(task)
     # Filter out hosts/roles kwargs
-    new_kwargs, hosts, roles, exclude_hosts = parse_kwargs(kwargs)
+    new_kwargs, hosts, roles, exclude_hosts, complete_roles = parse_kwargs(kwargs)
     # Set up host list
     my_env['all_hosts'], my_env['effective_roles'] = task.get_hosts_and_effective_roles(hosts, roles,
                                                                                         exclude_hosts, state.env)
 
-    complete_roles = task.get_complete_roles(state.env)
+    complete_roles = task.get_complete_roles(complete_roles, state.env)
 
     parallel = requires_parallel(task)
     if parallel:

@@ -80,6 +80,7 @@ def parse_kwargs(kwargs):
     new_kwargs = {}
     hosts = []
     roles = []
+    complete_roles = []
     exclude_hosts = []
     for key, value in kwargs.iteritems():
         if key == 'host':
@@ -92,6 +93,10 @@ def parse_kwargs(kwargs):
             roles = value
         elif key == 'exclude_hosts':
             exclude_hosts = value
+        elif key == 'complete_roles':
+            complete_roles = value
         else:
             new_kwargs[key] = value
-    return new_kwargs, hosts, roles, exclude_hosts
+    return new_kwargs, hosts, roles, exclude_hosts, complete_roles
+
+
