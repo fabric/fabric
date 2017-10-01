@@ -97,6 +97,12 @@ class Task(object):
     def run(self):
         raise NotImplementedError
 
+    def get_complete_roles(self, env=None):
+        func_complete_roles = getattr(self, 'complete_roles', [])
+        roledefs = env.get('roledefs', {})
+        if func_complete_roles:
+            return [roledefs[role] for role in func_complete_roles]
+
     def get_hosts_and_effective_roles(self, arg_hosts, arg_roles, arg_exclude_hosts, env=None):
         """
         Return a tuple containing the host list the given task should be using
@@ -115,6 +121,7 @@ class Task(object):
         # Decorator-specific hosts/roles go next
         func_hosts = getattr(self, 'hosts', [])
         func_roles = getattr(self, 'roles', [])
+
         if func_hosts or func_roles:
             return merge(func_hosts, func_roles, arg_exclude_hosts, roledefs), func_roles
         # Finally, the env is checked (which might contain globally set lists
@@ -351,6 +358,8 @@ def execute(task, *args, **kwargs):
     my_env['all_hosts'], my_env['effective_roles'] = task.get_hosts_and_effective_roles(hosts, roles,
                                                                                         exclude_hosts, state.env)
 
+    complete_roles = task.get_complete_roles(state.env)
+
     parallel = requires_parallel(task)
     if parallel:
         # Import multiprocessing if needed, erroring out usefully
@@ -376,8 +385,54 @@ def execute(task, *args, **kwargs):
     if state.output.debug:
         jobs._debug = True
 
+    if complete_roles:
+        for role in complete_roles:
+            hosts = role['hosts']
+            for host in hosts:
+                my_env['user'] = role['user']
+                my_env['password'] = role['password']
+                try:
+                    results[host] = _execute(
+                        task, host, my_env, args, new_kwargs, jobs, queue,
+                        multiprocessing
+                    )
+                except NetworkError, e:
+                    results[host] = e
+                    # Backwards compat test re: whether to use an exception or
+                    # abort
+                    if not state.env.use_exceptions_for['network']:
+                        func = warn if state.env.skip_bad_hosts else abort
+                        error(e.message, func=func, exception=e.wrapped)
+                    else:
+                        raise
+
+                # If requested, clear out connections here and not just at the end.
+                if state.env.eagerly_disconnect:
+                    disconnect_all()
+
+        # If running in parallel, block until job queue is emptied
+        if jobs:
+            err = "One or more hosts failed while executing task '%s'" % (
+                my_env['command']
+            )
+            jobs.close()
+            # Abort if any children did not exit cleanly (fail-fast).
+            # This prevents Fabric from continuing on to any other tasks.
+            # Otherwise, pull in results from the child run.
+            ran_jobs = jobs.run()
+            for name, d in ran_jobs.iteritems():
+                if d['exit_code'] != 0:
+                    if isinstance(d['results'], NetworkError) and \
+                            _is_network_error_ignored():
+                        error(d['results'].message, func=warn, exception=d['results'].wrapped)
+                    elif isinstance(d['results'], BaseException):
+                        error(err, exception=d['results'])
+                    else:
+                        error(err)
+                results[name] = d['results'] 
+
     # Call on host list
-    if my_env['all_hosts']:
+    elif my_env['all_hosts']:
         # Attempt to cycle on hosts, skipping if needed
         for host in my_env['all_hosts']:
             try:

@@ -121,6 +121,9 @@ def roles(*role_list):
     """
     return _list_annotating_decorator('roles', *role_list)
 
+def complete_roles(*role_list):
+    return _list_annotating_decorator('complete_roles', *role_list)
+
 
 def runs_once(func):
     """
