@@ -87,10 +87,11 @@ class Fab(Program):
         self.config.set_runtime_ssh_path(self.args['ssh-config'].value)
         self.config.load_ssh_config()
         # Load -i identity file, if given, into connect_kwargs, at overrides
-        # level. TODO: this feels a little gross, but since the parent has
-        # already called load_overrides, this is best we can do for now w/o
-        # losing data. Still feels correct; just might be cleaner to have even
-        # more Config API members around this sort of thing. Shrug.
+        # level.
+        # TODO: this feels a little gross, but since the parent has already
+        # called load_overrides, this is best we can do for now w/o losing
+        # data. Still feels correct; just might be cleaner to have even more
+        # Config API members around this sort of thing. Shrug.
         path = self.args['identity'].value
         if path is not None:
             self.config._overrides['connect_kwargs'] = {'key_filename': path}
