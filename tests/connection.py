@@ -305,12 +305,12 @@ class Connection_(Spec):
                 eq_(
                     self._runtime_cxn().ssh_config,
                     {
+                        'connecttimeout': '15',
+                        'forwardagent': 'yes',
                         'hostname': 'runtime',
                         'port': '666',
-                        'user': 'abaddon',
-                        'forwardagent': 'yes',
                         'proxycommand': 'my gateway',
-                        'connecttimeout': '15',
+                        'user': 'abaddon',
                     },
                 )
 
