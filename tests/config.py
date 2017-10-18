@@ -136,7 +136,7 @@ class ssh_config_loading(Spec):
         ))
         eq_(
             c.base_ssh_config.get_hostnames(),
-            set(['system', 'shared', '*']),
+            {'system', 'shared', '*'},
         )
 
     def user_path_loads_ok(self):
@@ -146,7 +146,7 @@ class ssh_config_loading(Spec):
         ))
         eq_(
             c.base_ssh_config.get_hostnames(),
-            set(['user', 'shared', '*']),
+            {'user', 'shared', '*'},
         )
 
     def both_paths_loaded_if_both_exist_with_user_winning(self):
@@ -156,7 +156,7 @@ class ssh_config_loading(Spec):
         )
         eq_(
             c.base_ssh_config.get_hostnames(),
-            set(['user', 'system', 'shared', '*']),
+            {'user', 'system', 'shared', '*'},
         )
         # Expect the user value (321), not the system one (123)
         eq_(c.base_ssh_config.lookup('shared')['port'], '321')
