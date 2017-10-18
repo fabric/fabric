@@ -171,9 +171,10 @@ Available tasks:
 
     class runtime_identity_file:
         def dash_i_supplies_default_connect_kwarg_key_filename(self):
-            # NOTE: task asserts about its view on config.connect_kwargs,
-            # relying on other tests to prove connect_kwargs makes its way to
-            # SSHClient.connect().
+            # NOTE: the expect-identity task in tests/_support/fabfile.py
+            # performs asserts about its context's .connect_kwargs value,
+            # relying on other tests to prove connect_kwargs makes its way into
+            # that context.
             with cd(_support):
                 fab_program.run("fab -i identity.key expect-identity")
 
