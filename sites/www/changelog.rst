@@ -4,7 +4,7 @@ Changelog
 
 * :support:`- backported` Update packaging metadata so wheel archives include
   the ``LICENSE`` file.
-* :support:`1539` Add documentation for :ref:`env.output_prefix
+* :support:`1539 backported` Add documentation for :ref:`env.output_prefix
   <output_prefix>`. Thanks ``@jphalip``.
 * :bug:`1514` Compatibility with Python 2.5 was broken by using the ``format()``
   method of a string (only in 1.11+). Report by ``@pedrudehuere``.
