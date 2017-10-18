@@ -30,6 +30,7 @@ You'll still want to read over this document to get a sense of how things have
 changed, but just be aware that you can get away with ``pip install invoke``
 and won't need Fabric, Paramiko, cryptography dependencies, or anything else.
 
+
 Why upgrade?
 ============
 
@@ -236,7 +237,6 @@ the global ``local()`` function::
     def push(c):
         c.local("git push")
 
-
 Calling tasks from other tasks
 ------------------------------
 
@@ -249,7 +249,6 @@ difference is that we want to pass along our context object::
         test(c)
         commit(c)
         push(c)
-
 
 Actual remote steps
 -------------------
@@ -274,7 +273,6 @@ expect it will be soon. For now we fall back to command chaining with ``&&``.
             c.run(cmd.format(code_dir))
         c.run("cd {} && git pull".format(code_dir))
         c.run("cd {} && touch app.wsgi".format(code_dir))
-
 
 The whole thing
 ---------------
