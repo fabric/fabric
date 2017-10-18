@@ -424,35 +424,38 @@ class Connection(Context):
         `SSHClient.connect <paramiko.client.SSHClient.connect>`. (For details,
         see :doc:`the configuration docs </concepts/configuration>`.)
         """
-        if not self.is_connected:
-            err = "Refusing to be ambiguous: connect() kwarg '{0}' was given both via regular arg and via connect_kwargs!" # noqa
-            # These may not be given, period
-            for key in """
-                hostname
-                port
-                username
-            """.split():
-                if key in self.connect_kwargs:
-                    raise ValueError(err.format(key))
-            # These may be given one way or the other, but not both
-            if (
-                'timeout' in self.connect_kwargs
-                and self.connect_timeout is not None
-            ):
-                raise ValueError(err.format('timeout'))
-            # No conflicts -> merge 'em together
-            kwargs = dict(
-                self.connect_kwargs,
-                username=self.user,
-                hostname=self.host,
-                port=self.port,
-            )
-            if self.gateway:
-                kwargs['sock'] = self.open_gateway()
-            if self.connect_timeout:
-                kwargs['timeout'] = self.connect_timeout
-            self.client.connect(**kwargs)
-            self.transport = self.client.get_transport()
+        # Short-circuit
+        if self.is_connected:
+            return
+        err = "Refusing to be ambiguous: connect() kwarg '{0}' was given both via regular arg and via connect_kwargs!" # noqa
+        # These may not be given, period
+        for key in """
+            hostname
+            port
+            username
+        """.split():
+            if key in self.connect_kwargs:
+                raise ValueError(err.format(key))
+        # These may be given one way or the other, but not both
+        if (
+            'timeout' in self.connect_kwargs
+            and self.connect_timeout is not None
+        ):
+            raise ValueError(err.format('timeout'))
+        # No conflicts -> merge 'em together
+        kwargs = dict(
+            self.connect_kwargs,
+            username=self.user,
+            hostname=self.host,
+            port=self.port,
+        )
+        if self.gateway:
+            kwargs['sock'] = self.open_gateway()
+        if self.connect_timeout:
+            kwargs['timeout'] = self.connect_timeout
+        # Actually connect!
+        self.client.connect(**kwargs)
+        self.transport = self.client.get_transport()
 
     def open_gateway(self):
         """
