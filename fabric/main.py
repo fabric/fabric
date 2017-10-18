@@ -32,7 +32,10 @@ class Fab(Program):
             ),
             Argument(
                 names=('i', 'identity'),
-                help="Path to runtime SSH identity (key) file.",
+                kind=list, # Same as OpenSSH, can give >1 key
+                # TODO: automatically add hint about iterable-ness to Invoke
+                # help display machinery?
+                help="Path to runtime SSH identity (key) file. May be given multiple times.", # noqa
             ),
         ]
         return core_args + my_args

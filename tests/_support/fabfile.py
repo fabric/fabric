@@ -49,4 +49,12 @@ def expect_mutation(c):
 
 @task
 def expect_identity(c):
-    assert c.config.connect_kwargs['key_filename'] == 'identity.key'
+    assert c.config.connect_kwargs['key_filename'] == ['identity.key']
+
+
+@task
+def expect_identities(c):
+    assert c.config.connect_kwargs['key_filename'] == [
+        'identity.key',
+        'identity2.key',
+    ]

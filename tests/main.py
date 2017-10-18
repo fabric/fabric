@@ -61,6 +61,7 @@ Available tasks:
   build
   deploy
   expect-from-env
+  expect-identities
   expect-identity
   expect-mutation
   expect-mutation-to-fail
@@ -182,6 +183,8 @@ Available tasks:
             with cd(_support):
                 fab_program.run("fab --identity identity.key expect-identity")
 
-        def may_be_given_multiple_times_building_a_list(self):
-            # TODO: when multiple-at-once is implemented in Invoke parser
-            skip()
+        def may_be_given_multiple_times(self):
+            with cd(_support):
+                fab_program.run(
+                    "fab -i identity.key -i identity2.key expect-identities"
+                )

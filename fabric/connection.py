@@ -453,6 +453,9 @@ class Connection(Context):
             kwargs['sock'] = self.open_gateway()
         if self.connect_timeout:
             kwargs['timeout'] = self.connect_timeout
+        # Strip out empty defaults for less noisy debugging
+        if 'key_filename' in kwargs and not kwargs['key_filename']:
+            del kwargs['key_filename']
         # Actually connect!
         self.client.connect(**kwargs)
         self.transport = self.client.get_transport()
