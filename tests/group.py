@@ -96,9 +96,7 @@ class SerialGroup_(Spec):
             g = SerialGroup.from_connections(cxns)
             result = g.run("whatever", hide=True)
             ok_(isinstance(result, GroupResult))
-            expected = {}
-            for cxn in cxns:
-                expected[cxn] = cxn.run.return_value
+            expected = {x: x.run.return_value for x in cxns}
             eq_(result, expected)
             eq_(result.succeeded, expected)
             eq_(result.failed, {})
@@ -163,9 +161,7 @@ class ThreadingGroup_(Spec):
             # Execute & inspect results
             g = ThreadingGroup.from_connections(cxns)
             results = g.run(*self.args, **self.kwargs)
-            expected = {}
-            for cxn in cxns:
-                expected[cxn] = cxn.run.return_value
+            expected = {x: x.run.return_value for x in cxns}
             eq_(results, expected)
             # Make sure queue was used as expected within worker &
             # ThreadingGroup.run()
@@ -213,9 +209,7 @@ class ThreadingGroup_(Spec):
             g = ThreadingGroup.from_connections(cxns)
             result = g.run("whatever", hide=True)
             ok_(isinstance(result, GroupResult))
-            expected = {}
-            for cxn in cxns:
-                expected[cxn] = cxn.run.return_value
+            expected = {x: x.run.return_value for x in cxns}
             eq_(result, expected)
             eq_(result.succeeded, expected)
             eq_(result.failed, {})
