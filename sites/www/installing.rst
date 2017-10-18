@@ -69,7 +69,7 @@ Dependencies
 
 In order for Fabric's installation to succeed, you will need the following:
 
-* the Python programming language, versions 2.6+ or 3.3+;
+* the Python programming language, versions 2.7 or 3.4+;
 * the `Invoke <http://pyinvoke.org>`_ command-running and task-execution
   library;
 * and the `Paramiko <http://paramiko.org>`_ SSH library (as well as its own

@@ -8,7 +8,7 @@ and API doc sections.
 
 .. note::
     If you're new to Python, we **strongly** recommend checking out `Python's
-    own tutorial <https://docs.python.org/2.6/tutorial/index.html>`_ first.
+    own tutorial <https://docs.python.org/tutorial/index.html>`_ first.
 
 A note about imports
 ====================

@@ -70,7 +70,7 @@ para_target = join(
 if not on_dev:
     para_target = 'http://docs.paramiko.org/en/latest/'
 intersphinx_mapping = {
-    'python': ('http://docs.python.org/2.6', None),
+    'python': ('http://docs.python.org/', None),
     'invoke': (inv_target, None),
     'invoke_www': (inv_www_target, None),
     'paramiko': (para_target, None),

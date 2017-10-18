@@ -42,7 +42,7 @@ Fabric 2 that might make it worth your time to make the jump.
     These are all listed in the next section as well, so if you're already
     sold, just skip there.
 
-- Python 3 compatibility (specifically, 2.6+ and 3.3+);
+- Python 3 compatibility (specifically, we now support 2.7 and 3.4+);
 - Thread-safe - no more requirement on multiprocessing for concurrency;
 - API reorganized around `.Connection` objects instead of global module state;
 - Command-line parser overhauled to allow for regular GNU/POSIX style flags and
@@ -331,7 +331,7 @@ General / conceptual
     Please check Invoke's documentation before filing feature request tickets!
 
 - Fabric 2 is fully Python 3 compatible; as a cost, Python 2.5 support has been
-  dropped (Python 2.6 remains supported, for the time being.)
+  dropped - in fact, we've dropped support for anything older than Python 2.7.
 - The CLI task-oriented workflow remains a primary design goal, but the library
   use case is no longer a second-class citizen; instead, the library
   functionality has been designed first, with the CLI/task features built on
