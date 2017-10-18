@@ -2,7 +2,10 @@
 Changelog
 =========
 
-* :support:`1539` Add documentation for :ref:`env.output_prefix <output_prefix>`. Thanks ``@jphalip``.
+* :support:`- backported` Update packaging metadata so wheel archives include
+  the ``LICENSE`` file.
+* :support:`1539` Add documentation for :ref:`env.output_prefix
+  <output_prefix>`. Thanks ``@jphalip``.
 * :release:`1.10.5 <2016-12-05>`
 * :bug:`1470` When using `~fabric.operations.get` with glob expressions, a lack
   of matches for the glob would result in an empty file named after the glob
