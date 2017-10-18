@@ -24,7 +24,7 @@ support_path = os.path.join(
 def expect(invocation, out, program=None, test=None):
     if program is None:
         program = fab_program
-    program.run("fab {0}".format(invocation), exit=False)
+    program.run("fab {}".format(invocation), exit=False)
     (test or eq_)(sys.stdout.getvalue(), out)
 
 
@@ -422,7 +422,7 @@ class MockSFTP(object):
         sftp = Client.return_value.open_sftp.return_value
         # Handle common filepath massage actions; tests will assume these.
         def fake_abspath(path):
-            return '/local/{0}'.format(path)
+            return '/local/{}'.format(path)
         mock_os.path.abspath.side_effect = fake_abspath
         sftp.getcwd.return_value = '/remote'
         # Ensure stat st_mode is a real number; Python 2 stat.S_IMODE doesn't

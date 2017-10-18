@@ -47,7 +47,7 @@ long_description = """
 To find out what's new in this version of Fabric, please see `the changelog
 <http://fabfile.org/changelog.html>`_.
 
-{0}
+{}
 """.format(open('README.rst').read())
 
 setuptools.setup(
@@ -69,7 +69,7 @@ setuptools.setup(
     packages=[package_name],
     entry_points={
         'console_scripts': [
-            '{0} = {1}.main:program.run'.format(binary_name, package_name),
+            '{} = {}.main:program.run'.format(binary_name, package_name),
         ]
     },
 

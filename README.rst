@@ -39,7 +39,7 @@ Core use cases for Fabric include (but are not limited to):
       >>>     if 'Linux' in uname:
       ...         command = "df -h / | tail -n1 | awk '{print $5}'"
       ...         return ctx.run(command).stdout
-      ...     err = "No idea how to get disk space on {0}!".format(uname)
+      ...     err = "No idea how to get disk space on {}!".format(uname)
       ...     raise Exception(err)
       ...
       >>> Connection('web1').execute(disk_free)

@@ -72,7 +72,7 @@ Available tasks:
 
         def loads_fabric_config_files_not_invoke_ones(self):
             for type_ in ('yaml', 'yml', 'json', 'py'):
-                with cd(os.path.join(_support, '{0}_conf'.format(type_))):
+                with cd(os.path.join(_support, '{}_conf'.format(type_))):
                     # This task, in each subdir, expects data present in a
                     # fabric.<ext> nearby to show up in the config.
                     fab_program.run("fab expect-conf-value")
@@ -87,7 +87,7 @@ Available tasks:
             with cd(_support):
                 # Relies on asserts within the task, which will bubble up as
                 # it's executed in-process
-                cmd = "fab -c runtime_fabfile {0} {1} -H runtime {2}"
+                cmd = "fab -c runtime_fabfile {} {} -H runtime {}"
                 fab_program.run(cmd.format(flag, file_, tasks))
 
         def capital_F_flag_specifies_runtime_ssh_config_file(self):

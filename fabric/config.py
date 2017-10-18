@@ -197,7 +197,7 @@ class Config(InvokeConfig):
             with open(path) as fd:
                 self.base_ssh_config.parse(fd)
             new_rules = len(self.base_ssh_config._config)
-            msg = "Loaded {0} new ssh_config rules from {1!r}"
+            msg = "Loaded {} new ssh_config rules from {!r}"
             debug(msg.format(new_rules - old_rules, path))
         else:
             debug("File not found, skipping")

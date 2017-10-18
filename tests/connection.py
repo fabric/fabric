@@ -98,7 +98,7 @@ class Connection_(Spec):
                     eq_(c.user, get_local_user())
                     eq_(c.host, addr)
                     eq_(c.port, 123)
-                    c2 = Connection("somebody@{0}".format(addr), port=123)
+                    c2 = Connection("somebody@{}".format(addr), port=123)
                     eq_(c2.user, "somebody")
                     eq_(c2.host, addr)
                     eq_(c2.port, 123)
@@ -279,7 +279,7 @@ class Connection_(Spec):
 
         class ssh_config:
             def _runtime_config(self, overrides=None, basename='runtime'):
-                confname = "{0}.conf".format(basename)
+                confname = "{}.conf".format(basename)
                 runtime_path = join(support_path, 'ssh_config', confname)
                 if overrides is None:
                     overrides = {}
@@ -595,7 +595,7 @@ class Connection_(Spec):
                         **kwargs
                     ).open()
                 except ValueError as e:
-                    err = "Refusing to be ambiguous: connect() kwarg '{0}' was given both via regular arg and via connect_kwargs!" # noqa
+                    err = "Refusing to be ambiguous: connect() kwarg '{}' was given both via regular arg and via connect_kwargs!" # noqa
                     eq_(str(e), err.format(key))
                 else:
                     assert False, "Did not raise ValueError!"
@@ -851,7 +851,7 @@ class Connection_(Spec):
             # still work correctly at our level.
             cxn = Connection('host')
             cxn.sudo('foo')
-            cmd = "sudo -S -p '{0}' foo".format(cxn.config.sudo.prompt)
+            cmd = "sudo -S -p '{}' foo".format(cxn.config.sudo.prompt)
             # NOTE: this is another spot where Mock.call_args is inexplicably
             # None despite call_args_list being populated. WTF. (Also,
             # Remote.return_value is two different Mocks now, despite Remote's
@@ -1014,19 +1014,19 @@ class Connection_(Spec):
             try:
                 self._forward_local({
                     'local_port': 1234,
-                    '{0}_exception'.format(which): Sentinel,
+                    '{}_exception'.format(which): Sentinel,
                 })
             except ThreadException as e:
                 # NOTE: ensures that we're getting what we expected and not
                 # some deeper, test-bug related error
                 eq_(len(e.exceptions), 1)
                 inner = e.exceptions[0]
-                err = "Expected wrapped exception to be Sentinel, was {0}"
+                err = "Expected wrapped exception to be Sentinel, was {}"
                 ok_(inner.type is Sentinel, err.format(inner.type.__name__))
             else:
                 # no exception happened :( implies the thread went boom but
                 # nobody noticed
-                err = "Failed to get ThreadException on {0} error"
+                err = "Failed to get ThreadException on {} error"
                 assert False, err.format(which)
 
         def tunnel_errors_bubble_up(self):

@@ -16,8 +16,8 @@ from .executor import FabExecutor
 class Fab(Program):
     def print_version(self):
         super(Fab, self).print_version()
-        print("Paramiko {0}".format(paramiko))
-        print("Invoke {0}".format(invoke))
+        print("Paramiko {}".format(paramiko))
+        print("Invoke {}".format(invoke))
 
     def core_args(self):
         core_args = super(Fab, self).core_args()

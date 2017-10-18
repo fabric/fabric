@@ -284,7 +284,7 @@ straightforward approach could be to iterate over a list or tuple of
     >>> from fabric import Connection
     >>> for host in ('web1', 'web2', 'mac1'):
     >>>     result = Connection(host).run('uname -s')
-    ...     print("{0}: {1}".format(host, result.stdout.strip()))
+    ...     print("{}: {}".format(host, result.stdout.strip()))
     ...
     ...
     web1: Linux

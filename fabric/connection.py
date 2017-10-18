@@ -237,7 +237,7 @@ class Connection(Context):
 
         shorthand = self.derive_shorthand(host)
         host = shorthand['host']
-        err = "You supplied the {0} via both shorthand and kwarg! Please pick one." # noqa
+        err = "You supplied the {} via both shorthand and kwarg! Please pick one." # noqa
         if shorthand['user'] is not None:
             if user is not None:
                 raise ValueError(err.format('user'))
@@ -361,8 +361,8 @@ class Connection(Context):
             if isinstance(self.gateway, string_types):
                 val = 'proxycommand'
             bits.append(('gw', val))
-        return "<Connection {0}>".format(
-            " ".join("{0}={1}".format(*x) for x in bits)
+        return "<Connection {}>".format(
+            " ".join("{}={}".format(*x) for x in bits)
         )
 
     def _identity(self):
@@ -427,7 +427,7 @@ class Connection(Context):
         # Short-circuit
         if self.is_connected:
             return
-        err = "Refusing to be ambiguous: connect() kwarg '{0}' was given both via regular arg and via connect_kwargs!" # noqa
+        err = "Refusing to be ambiguous: connect() kwarg '{}' was given both via regular arg and via connect_kwargs!" # noqa
         # These may not be given, period
         for key in """
             hostname
@@ -475,7 +475,7 @@ class Connection(Context):
             # TODO: use real SSH config once loading one properly is
             # implemented.
             ssh_conf = SSHConfig()
-            dummy = "Host {0}\n    ProxyCommand {1}"
+            dummy = "Host {}\n    ProxyCommand {}"
             ssh_conf.parse(StringIO(dummy.format(self.host, self.gateway)))
             return ProxyCommand(ssh_conf.lookup(self.host)['proxycommand'])
         # Handle inner-Connection gateway type here.

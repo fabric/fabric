@@ -13,7 +13,7 @@ _words = '/usr/share/dict/words'
 
 def _worker(queue, cxn, start, num_words, count, expected):
     tail = num_words - start
-    cmd = "tail -n {0} {1} | head -n {2}".format(
+    cmd = "tail -n {} {} | head -n {}".format(
         tail, _words, count,
     )
     stdout = cxn.run(cmd, hide=True).stdout
