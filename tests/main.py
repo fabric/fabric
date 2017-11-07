@@ -24,7 +24,7 @@ _conf = os.path.abspath(os.path.join(_here, 'config.yml'))
 # Crappy helper to inject a test-only runtime config into test invocations.
 # TODO: consider e.g. having Invoke grow something like INVOKE_RUNTIME_CONF=xxx
 def _run_fab(argstr, **kwargs):
-    return fab_program.run("fab -f {0} {1}".format(_conf, argstr), **kwargs)
+    return fab_program.run("fab -f {} {}".format(_conf, argstr), **kwargs)
 
 
 class Fab_:
@@ -94,7 +94,7 @@ Available tasks:
             with cd(_support):
                 # Relies on asserts within the task, which will bubble up as
                 # it's executed in-process
-                cmd = "fab -c runtime_fabfile {} {} -H runtime {}"
+                cmd = "-c runtime_fabfile {} {} -H runtime {}"
                 _run_fab(cmd.format(flag, file_, tasks))
 
         def capital_F_flag_specifies_runtime_ssh_config_file(self):

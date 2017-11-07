@@ -194,13 +194,13 @@ class ssh_config_loading:
             )
             # Expect that loader method did still run (and, as usual, that
             # it did not load any other files)
-            method.assert_called_once_with(self.runtime_path)
+            method.assert_called_once_with(self._runtime_path)
 
     class lazy_loading_and_explicit_methods:
         @patch.object(Config, '_load_ssh_file')
         def may_use_lazy_plus_explicit_methods_to_control_flow(self, method):
             c = Config(lazy=True)
             assert not method.called
-            c.set_runtime_ssh_path(self.runtime_path)
+            c.set_runtime_ssh_path(self._runtime_path)
             c.load_ssh_config()
-            method.assert_called_once_with(self.runtime_path)
+            method.assert_called_once_with(self._runtime_path)
