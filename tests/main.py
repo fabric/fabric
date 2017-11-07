@@ -6,7 +6,7 @@ import os
 
 from invoke.util import cd
 from mock import patch
-from pytest import skip
+import pytest # because WHY would you expose @skip normally? -_-
 from pytest_relaxed import raises
 
 from fabric.config import Config
@@ -120,7 +120,7 @@ Available tasks:
             method.assert_called_once_with('ssh_config/runtime.conf')
 
     class hosts_flag_parameterizes_tasks:
-        # NOTE: many of these just rely on mock_remote's builtin
+        # NOTE: many of these just rely on MockRemote's builtin
         # "channel.exec_command called with given command string" asserts.
 
         def single_string_is_single_host_and_single_exec(self, remote):
@@ -152,15 +152,15 @@ Available tasks:
 
         # NOTE: no mocking because no actual run() under test, only
         # parameterization
+        # TODO: avoiding for now because implementing this requires more work
+        # at the Invoke level re: deciding when to _not_ pass in the
+        # session-global config object (Executor's self.config). At the moment,
+        # our threading-concurrency API is oriented around Group, and we're not
+        # using it for --hosts, so it's not broken...yet.
+        @pytest.mark.skip
         def config_mutation_not_preserved(self):
-            # TODO: avoiding for now because implementing this requires more
-            # work at the Invoke level re: deciding when to _not_ pass in the
-            # session-global config object (Executor's self.config). At the
-            # moment, our threading-concurrency API is oriented around Group,
-            # and we're not using it for --hosts, so it's not broken...yet.
-            skip()
             with cd(_support):
-                -run-fab("-H host1,host2 expect-mutation-to-fail")
+                _run_fab("-H host1,host2 expect-mutation-to-fail")
 
     class no_hosts_flag:
         def calls_task_once_with_invoke_context(self):

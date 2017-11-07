@@ -3,17 +3,11 @@ from io import BytesIO
 import os
 import re
 import sys
-import types
-
-from invoke.vendor.six import wraps, iteritems
 
 from mock import patch, Mock, PropertyMock, call, ANY
-from pytest import fixture
 from pytest_relaxed import trap
 
-from fabric import Connection
 from fabric.main import program as fab_program
-from fabric.transfer import Transfer
 
 
 
@@ -108,8 +102,8 @@ class Session(object):
     A mock remote session of a single connection and 1 or more command execs.
 
     Allows quick configuration of expected remote state, and also helps
-    generate the necessary test mocks used by `.mock_remote` itself. Only
-    useful when handed into `.mock_remote`.
+    generate the necessary test mocks used by `MockRemote` itself. Only useful
+    when handed into `MockRemote`.
 
     The parameters ``cmd``, ``out``, ``err``, ``exit`` and ``waits`` are all
     shorthand for the same constructor arguments for a single anonymous
@@ -337,98 +331,14 @@ class MockRemote(object):
             session.sanity_check()
 
 
-def mock_remote(*sessions):
-    """
-    Mock & expect one or more remote connections & command executions.
-
-    With no parameterization (``@mock_remote``) or empty parameterization
-    (``@mock_remote()``) a single default connection+execution is implied, i.e,
-    equivalent to ``@mock_remote(Session())``.
-
-    When parameterized, takes `.Session` objects (see warning below about
-    ordering).
-
-    .. warning::
-        Due to ``SSHClient``'s API, we must expect connections in the order
-        that they are made. If you run into failures caused by explicitly
-        expecting hosts in this manner, **make sure** the order of sessions
-        and commands you're giving ``@mock_remote`` matches the order in
-        which the code under test is creating new ``SSHClient`` objects!
-
-    The wrapped test function must accept a positional argument for each
-    command in ``*sessions``, which are used to hand in the mock channel
-    objects that are created (so that the test function may make asserts with
-    them).
-
-    .. note::
-        The actual logic involved is a flattening of all commands across the
-        sessions, to make accessing them within the tests fast and easy. E.g.
-        in this test setup::
-
-            @mock_remote(
-                Session(Command('whoami'), Command('uname')),
-                Session(host='foo', cmd='ls /'),
-            )
-
-        you would want to set up the test signature for 3 command channels::
-
-            @mock_remote(...)
-            def mytest(self, chan_whoami, chan_uname, chan_ls):
-                pass
-
-        Most of the time, however, there is a 1:1 map between session and
-        command, making this straightforward.
-    """
-    # Grab func from sessions arg if called bare
-    bare = (
-        len(sessions) == 1
-        and isinstance(sessions[0], types.FunctionType)
-    )
-    if bare:
-        sessions = list(sessions)
-        func = sessions.pop()
-
-    def decorator(f):
-        @wraps(f)
-        def wrapper(*args, **kwargs):
-            # Stand up a MockRemote object from closed-over sessions data.
-            # TODO: expose more of what MockRemote can handle re: commands,
-            # args etc
-            remote = MockRemote(sessions=sessions, autostart=False)
-            # Start mocking & get returned channel mocks, adding them to the
-            # called test function/method.
-            args = list(args)
-            args.extend(remote.start())
-            # Call that test!
-            try:
-                f(*args, **kwargs)
-            # Exceptions? Stop patching, but don't run sanity tests (lest they
-            # mask whatever made us except in the test body!) and then reraise
-            # whatever happened.
-            except:
-                remote.stop()
-                raise
-            # No exceptions? Stop the remote, _and_ run sanity tests.
-            else:
-                remote.stop()
-                remote.sanity()
-        return wrapper
-    # Bare decorator, no args
-    if bare:
-        return decorator(func)
-    # Args were given
-    else:
-        return decorator
-
-
 # TODO: unify with the stuff in paramiko itself (now in its tests/conftest.py),
 # they're quite distinct and really shouldn't be.
 class MockSFTP(object):
     """
     Class managing mocked SFTP remote state.
 
-    Used in start/stop fashion in eg doctests, wrapped in the `mock_sftp`
-    decorator for regular test use.
+    Used in start/stop fashion in eg doctests; wrapped in the SFTP fixtures in
+    conftest.py for main use.
     """
     def __init__(self, autostart=True):
         if autostart:
@@ -462,57 +372,5 @@ class MockSFTP(object):
         self.client_patcher.stop()
 
 
-# TODO: dig harder into spec setup() treatment to figure out why it seems to be
-# double-running setup() or having one mock created per nesting level...then we
-# won't need this probably.
-def mock_sftp(expose_os=False):
-    """
-    Mock SFTP things, including 'os' & handy ref to SFTPClient instance.
-
-    By default, hands decorated tests a reference to the mocked SFTPClient
-    instance and an instantiated Transfer instance, so their signature needs to
-    be: ``def xxx(self, sftp, transfer):``.
-
-    If ``expose_os=True``, the mocked ``os`` module is handed in, turning the
-    signature to: ``def xxx(self, sftp, transfer, mock_os):``.
-    """
-    def decorator(f):
-        @wraps(f)
-        def wrapper(self, **kwargs):
-            mock = MockSFTP(autostart=False)
-            sftp, mock_os = mock.start()
-            transfer = Transfer(Connection('host'))
-            passed_args = [self, sftp, transfer]
-            if expose_os:
-                passed_args.append(mock_os)
-            return f(*passed_args)
-        return wrapper
-    return decorator
-
-
 # TODO: mostly copied from invoke's suite; unify sometime
 support = os.path.join(os.path.dirname(__file__), '_support')
-
-#class IntegrationSpec(Spec):
-#    def setup(self):
-#        # TODO: move that environ fixture in relaxed's own test suite to be
-#        # part of its public API, then apply fixture to all tests doing environ
-#        # shit.
-#        # Preserve environment for later restore
-#        self.old_environ = os.environ.copy()
-#
-#    def teardown(self):
-#        # Nuke changes to environ
-#        os.environ.clear()
-#        os.environ.update(self.old_environ)
-#        # TODO: make this another fixture? global setup/teardown? what is
-#        # 'pytest-y' for this? I think a non-funcarg fixture that is attached
-#        to test classes via decorator? then it maps closely to how
-#        IntegrationSpec was used prior, actually...
-#        # Strip any test-support task collections from sys.modules to prevent
-#        # state bleed between tests; otherwise tests can incorrectly pass
-#        # despite not explicitly loading/cd'ing to get the tasks they call
-#        # loaded.
-#        for name, module in iteritems(sys.modules.copy()):
-#            if module and support in getattr(module, '__file__', ''):
-#                del sys.modules[name]

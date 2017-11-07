@@ -4,8 +4,6 @@ from invoke import pty_size, Result
 
 from fabric import Config, Connection, Remote
 
-from _util import mock_remote, Session
-
 
 # On most systems this will explode if actually executed as a shell command;
 # this lets us detect holes in our network mocking.
