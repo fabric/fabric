@@ -1,6 +1,9 @@
 from pytest import fixture
 
-from _util import MockRemote
+from fabric import Connection
+from fabric.transfer import Transfer
+
+from _util import MockRemote, MockSFTP
 
 
 @fixture
@@ -15,3 +18,17 @@ def remote():
     remote = MockRemote()
     yield remote
     remote.stop()
+
+
+@fixture
+def sftp():
+    """
+    Fixture allowing setup of a mocked remote SFTP session.
+
+    Yields a 3-tuple of: Transfer() object, SFTP client, and mocked OS module.
+    """
+    mock = MockSFTP(autostart=False)
+    client, mock_os = mock.start()
+    transfer = Transfer(Connection('host'))
+    yield transfer, client, mock_os
+    # TODO: old mock_sftp() lacked any 'stop'...why? feels bad man

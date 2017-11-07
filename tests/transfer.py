@@ -31,12 +31,10 @@ class Transfer_:
 
     class get:
         class basics:
-            @mock_sftp(expose_os=True)
-            def accepts_single_remote_path_posarg(
-                self, sftp, transfer, mock_os
-            ):
+            def accepts_single_remote_path_posarg(self, sftp):
+                transfer, client, _ = sftp
                 transfer.get('file')
-                sftp.get.assert_called_with(
+                client.get.assert_called_with(
                     localpath='/local/file',
                     remotepath='/remote/file',
                 )
