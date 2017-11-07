@@ -421,6 +421,8 @@ def mock_remote(*sessions):
         return decorator
 
 
+# TODO: unify with the stuff in paramiko itself (now in its tests/conftest.py),
+# they're quite distinct and really shouldn't be.
 class MockSFTP(object):
     """
     Class managing mocked SFTP remote state.
