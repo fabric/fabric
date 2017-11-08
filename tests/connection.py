@@ -461,7 +461,8 @@ class Connection_:
                 expected = ['whatever.key', 'some-other.key']
 
                 def wins_over_default(self):
-                    # In this case, the 'default' is an empty list...
+                    # In this case, the 'default' is that the key itself isn't
+                    # even set (so will fail with KeyError.)
                     value = self._runtime_cxn().connect_kwargs['key_filename']
                     assert value == self.expected
 
