@@ -463,8 +463,6 @@ class Connection_:
                 def wins_over_default(self):
                     # In this case, the 'default' is an empty list...
                     value = self._runtime_cxn().connect_kwargs['key_filename']
-                    # TODO: does paramiko abspath() these? should it? does that
-                    # happen within connect() or at config load time?
                     assert value == self.expected
 
                 def wins_over_configuration(self):
