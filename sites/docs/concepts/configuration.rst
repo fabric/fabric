@@ -34,7 +34,7 @@ The primary differences from that document are as follows:
     * This functionality will supplement that of the SSH config loading
       described earlier; most users will find it preferable to configure as
       much as possible via an SSH config file, but not all Fabric settings have
-      ``ssh_config`` analogues, nor do all use cases fit neatly into using such
+      ``ssh_config`` analogues, nor do all use cases fit neatly into such
       files.
 
 
@@ -218,6 +218,10 @@ Authentication
 ~~~~~~~~~~~~~~
 
 - ``ForwardAgent``: controls default behavior of ``forward_agent``.
+- ``IdentityFile``: appends to the ``key_filename`` key within
+  ``connect_kwargs``. As with ``ssh``, identity files given via this
+  configuration option are effectively merged with any given to
+  :option:`--identity`.
 
 
 .. TODO: merge with per-host config when it's figured out

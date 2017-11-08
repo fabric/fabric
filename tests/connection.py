@@ -300,6 +300,7 @@ class Connection_:
                     'connecttimeout': '15',
                     'forwardagent': 'yes',
                     'hostname': 'runtime',
+                    'identityfile': ['whatever.key', 'some-other.key'],
                     'port': '666',
                     'proxycommand': 'my gateway',
                     'user': 'abaddon',
@@ -456,9 +457,47 @@ class Connection_:
                     )
                     assert cxn.connect_timeout == 23
 
-            # TODO:
-            # - IdentityFile
-            # - What else can we quickly support as-is?
+            class identity_file:
+                expected = ['whatever.key', 'some-other.key']
+
+                def wins_over_default(self):
+                    # In this case, the 'default' is an empty list...
+                    value = self._runtime_cxn().connect_kwargs['key_filename']
+                    # TODO: does paramiko abspath() these? should it? does that
+                    # happen within connect() or at config load time?
+                    assert value == self.expected
+
+                def wins_over_configuration(self):
+                    # TODO: is this right? if it is, find best place to
+                    # document the fact that "SSHConfig values will win over
+                    # values configured into connect_kwargs".
+                    # TODO: and also, shouldn't we merge them instead, since
+                    # that's what happens between -i and ssh_config? If users
+                    # really want to "override" they ought to be configuring
+                    # things on a more per-host level, as they'd have to with
+                    # normal `ssh`?
+                    cxn = self._runtime_cxn(
+                        # TODO: paramiko connect() key_filename can be a string
+                        # too, right? how to handle that? it should get
+                        # normalized as early as possible...maybe add another
+                        # test with that in mind (giving a string here)
+                        overrides={
+                            'connect_kwargs': {
+                                'key_filename': ['incorrect.key'],
+                            },
+                        },
+                    )
+                    assert cxn.connect_kwargs['key_filename'] == self.expected
+
+                def loses_to_explicit(self):
+                    # TODO: does it? see above. should merge probably.
+                    config = self._runtime_config()
+                    cxn = Connection(
+                        'runtime', config=config, connect_kwargs={
+                            'key_filename': ['nope.key'],
+                        },
+                    )
+                    assert cxn.connect_kwargs['key_filename'] == self.expected
 
         class connect_kwargs:
             def defaults_to_empty_dict(self):
