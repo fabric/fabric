@@ -16,9 +16,8 @@ from fabric.exceptions import NothingToDo
 from _util import expect, Session
 
 
-_here = os.path.dirname(__file__)
-_support = os.path.join(_here, '_support')
-_conf = os.path.abspath(os.path.join(_here, 'config.yml'))
+_support = os.path.join(os.path.dirname(__file__), '_support')
+_conf = os.path.abspath(os.path.join(_support, 'config.yml'))
 
 
 # Crappy helper to inject a test-only runtime config into test invocations.
