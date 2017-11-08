@@ -8,7 +8,7 @@ from fabric.util import get_local_user
 
 from mock import patch, call
 
-from _util import support_path
+from _util import support
 
 
 class Config_:
@@ -65,9 +65,9 @@ class ssh_config_loading:
     # tests; these tests just prove that the loading itself works & the data is
     # correctly available.
 
-    _system_path = join(support_path, 'ssh_config', 'system.conf')
-    _user_path = join(support_path, 'ssh_config', 'user.conf')
-    _runtime_path = join(support_path, 'ssh_config', 'runtime.conf')
+    _system_path = join(support, 'ssh_config', 'system.conf')
+    _user_path = join(support, 'ssh_config', 'user.conf')
+    _runtime_path = join(support, 'ssh_config', 'runtime.conf')
     _empty_kwargs = dict(
         system_ssh_path='nope/nope/nope',
         user_ssh_path='nope/noway/nuhuh',

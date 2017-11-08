@@ -13,17 +13,14 @@ from fabric.config import Config
 from fabric.main import program as fab_program
 from fabric.exceptions import NothingToDo
 
-from _util import expect, Session
-
-
-_support = os.path.join(os.path.dirname(__file__), '_support')
-_conf = os.path.abspath(os.path.join(_support, 'config.yml'))
+from _util import expect, Session, support, config_file
 
 
 # Crappy helper to inject a test-only runtime config into test invocations.
 # TODO: consider e.g. having Invoke grow something like INVOKE_RUNTIME_CONF=xxx
 def _run_fab(argstr, **kwargs):
-    return fab_program.run("fab -f {} {}".format(_conf, argstr), **kwargs)
+    cmd = "fab -f {} {}".format(config_file, argstr)
+    return fab_program.run(cmd, **kwargs)
 
 
 class Fab_:
@@ -51,13 +48,13 @@ Invoke .+
 
         def uses_FABRIC_env_prefix(self, environ):
             environ['FABRIC_RUN_ECHO'] = '1'
-            with cd(_support):
+            with cd(support):
                 _run_fab("expect-from-env")
 
     class filenames:
         def loads_fabfile_not_tasks(self):
             "Loads fabfile.py, not tasks.py"
-            with cd(_support):
+            with cd(support):
                 expect(
                     "--list",
                     """
@@ -78,7 +75,7 @@ Available tasks:
 
         def loads_fabric_config_files_not_invoke_ones(self):
             for type_ in ('yaml', 'yml', 'json', 'py'):
-                with cd(os.path.join(_support, '{}_conf'.format(type_))):
+                with cd(os.path.join(support, '{}_conf'.format(type_))):
                     # This task, in each subdir, expects data present in a
                     # fabric.<ext> nearby to show up in the config.
                     _run_fab("expect-conf-value")
@@ -90,7 +87,7 @@ Available tasks:
             file_='ssh_config/runtime.conf',
             tasks='runtime-ssh-config',
         ):
-            with cd(_support):
+            with cd(support):
                 # Relies on asserts within the task, which will bubble up as
                 # it's executed in-process
                 cmd = "-c runtime_fabfile {} {} -H runtime {}"
@@ -127,7 +124,7 @@ Available tasks:
             # In addition to just testing a base case, this checks for a really
             # dumb bug where one appends to, instead of replacing, the task
             # list during parameterization/expansion XD
-            with cd(_support):
+            with cd(support):
                 _run_fab("-H myhost basic-run")
 
         def comma_separated_string_is_multiple_hosts(self, remote):
@@ -135,7 +132,7 @@ Available tasks:
                 Session('host1', cmd='nope'),
                 Session('host2', cmd='nope'),
             )
-            with cd(_support):
+            with cd(support):
                 _run_fab("-H host1,host2 basic-run")
 
         def multiple_hosts_works_with_remainder_too(self, remote):
@@ -158,12 +155,12 @@ Available tasks:
         # using it for --hosts, so it's not broken...yet.
         @pytest.mark.skip
         def config_mutation_not_preserved(self):
-            with cd(_support):
+            with cd(support):
                 _run_fab("-H host1,host2 expect-mutation-to-fail")
 
     class no_hosts_flag:
         def calls_task_once_with_invoke_context(self):
-            with cd(_support):
+            with cd(support):
                 _run_fab("expect-vanilla-Context")
 
         @raises(NothingToDo)
@@ -173,7 +170,7 @@ Available tasks:
         def invokelike_multitask_invocation_preserves_config_mutation(self):
             # Mostly a guard against Executor subclass tweaks breaking Invoke
             # behavior added in pyinvoke/invoke#309
-            with cd(_support):
+            with cd(support):
                 _run_fab("mutate expect-mutation")
 
     class runtime_identity_file:
@@ -182,13 +179,13 @@ Available tasks:
             # performs asserts about its context's .connect_kwargs value,
             # relying on other tests to prove connect_kwargs makes its way into
             # that context.
-            with cd(_support):
+            with cd(support):
                 _run_fab("-i identity.key expect-identity")
 
         def double_dash_identity_also_works(self):
-            with cd(_support):
+            with cd(support):
                 _run_fab("--identity identity.key expect-identity")
 
         def may_be_given_multiple_times(self):
-            with cd(_support):
+            with cd(support):
                 _run_fab("-i identity.key -i identity2.key expect-identities")

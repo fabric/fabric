@@ -11,10 +11,8 @@ from fabric.main import program as fab_program
 
 
 
-support_path = os.path.join(
-    os.path.abspath(os.path.dirname(__file__)),
-    '_support'
-)
+support = os.path.join(os.path.abspath(os.path.dirname(__file__)), '_support')
+config_file = os.path.abspath(os.path.join(support, 'config.yml'))
 
 
 # TODO: revert to asserts
@@ -370,7 +368,3 @@ class MockSFTP(object):
     def stop(self):
         self.os_patcher.stop()
         self.client_patcher.stop()
-
-
-# TODO: mostly copied from invoke's suite; unify sometime
-support = os.path.join(os.path.dirname(__file__), '_support')

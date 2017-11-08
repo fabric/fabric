@@ -17,7 +17,7 @@ from invoke.exceptions import ThreadException
 from fabric.connection import Connection, Config
 from fabric.util import get_local_user
 
-from _util import support_path
+from _util import support
 
 
 # Remote is woven in as a config default, so must be patched there
@@ -275,7 +275,7 @@ class Connection_:
         class ssh_config:
             def _runtime_config(self, overrides=None, basename='runtime'):
                 confname = "{}.conf".format(basename)
-                runtime_path = join(support_path, 'ssh_config', confname)
+                runtime_path = join(support, 'ssh_config', confname)
                 if overrides is None:
                     overrides = {}
                 return Config(
@@ -317,7 +317,7 @@ class Connection_:
                     # obvious API for 'translation' of given hostname to
                     # ssh-configured hostname, but it feels okay for now.
                     path = join(
-                        support_path, 'ssh_config', 'overridden_hostname.conf'
+                        support, 'ssh_config', 'overridden_hostname.conf'
                     )
                     config = Config(runtime_ssh_path=path)
                     cxn = Connection('aliasname', config=config)
