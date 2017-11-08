@@ -148,9 +148,9 @@ load, when possible):
 subsections, usually as simple defaults for the appropriate config key or
 parameter (``port``, ``forward_agent``, etc.)
 
-Unless otherwise specified, these values **override** regular configuration
-values for the same keys, but may themselves be overridden by
-`.Connection.__init__` parameters.
+Unless otherwise specified, these values override regular configuration values
+for the same keys, but may themselves be overridden by `.Connection.__init__`
+parameters.
 
 Take for example a ``~/.fabric.yaml``:
 
