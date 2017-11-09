@@ -437,7 +437,7 @@ Remote shell commands
 
 - There is no more built-in ``use_shell`` or ``shell`` option; the old "need"
   to wrap with an explicit shell invocation is no longer necessary or usually
-  desirable.
+  desirable. TODO: this isn't 100% true actually, it depends :(
 
 Networking
 ----------
