@@ -458,7 +458,8 @@ class Connection_:
                     assert cxn.connect_timeout == 23
 
             class identity_file:
-                expected = ['whatever.key', 'some-other.key']
+                def setup(self):
+                    self.expected = ['whatever.key', 'some-other.key']
 
                 def wins_over_default(self):
                     # In this case, the 'default' is that the key itself isn't
