@@ -219,10 +219,7 @@ Authentication
 
 - ``ForwardAgent``: controls default behavior of ``forward_agent``.
 - ``IdentityFile``: appends to the ``key_filename`` key within
-  ``connect_kwargs``. As with ``ssh``, identity files given via this
-  configuration option are effectively merged with any given to
-  :option:`--identity`.
-
+  ``connect_kwargs`` (similar to :option:`--identity`.)
 
 .. TODO: merge with per-host config when it's figured out
 

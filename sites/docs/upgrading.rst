@@ -399,8 +399,8 @@ API organization
     - For example, instead of ``abort("oh no!")``, you may just want to ``raise
       MyException("welp")`` or even ``sys.exit("Stuff broke!")``.
 
-CLI tasks
----------
+Tasks
+-----
 
 - Fabric-specific command-line tasks now take a `.Connection` object as their
   first positional argument.
@@ -430,6 +430,18 @@ CLI tasks
 - Nearly all task-related functionality is implemented in Invoke; for more
   details see its :ref:`execution <task-execution>` and :ref:`namespaces
   <task-namespaces>` documentation.
+
+CLI arguments and options
+-------------------------
+
+- ``-I``/``--initial-password-prompt`` is now :option:`--prompt-for-password`
+  and/or :option:`--prompt-for-passphrase`, depending on whether you were using
+  the former to fill in passwords or key passphrases (or both.)
+- ``-a``/``--no_agent`` has not been ported over from v1, since OpenSSH lacks a
+  similar CLI option. We may add it back in the future; for now, unset
+  ``SSH_AUTH_SOCK`` in the hosting shell environment or configure
+  ``connect_kwargs.allow_agent`` to be ``False``.
+- TODO: rest of this
 
 General shell commands
 ----------------------
@@ -471,6 +483,38 @@ Networking
   `.Connection.forward_remote` (forwards a remotely visible port locally),
   which is new in Fabric 2 and was not implemented in Fabric 1 at time of
   writing (though there are patches for it).
+
+Authentication
+--------------
+
+- Most ``env`` keys from v1 were simply passthroughs to Paramiko's
+  ``connect()`` method, and thus in v2 should be set in the ``connect_kwargs``
+  :doc:`configuration </concepts/configuration>` tree:
+
+    - ``gss_auth``, ``gss_deleg`` and ``gss_kex``
+    - ``key_filename``
+    - ``password`` (v1 used this for both sudo and connection-level passwords;
+      in v2 it is *only* used to fill in ``connect()``. Paramiko itself (in
+      versions 1.x and 2.x) uses this value for both password auth and key
+      decryption.
+
+- Some other ``env`` keys that aren't direct passthroughs:
+
+    - ``key``: was used to automatically instantiate one of a couple `PKey
+      <paramiko.pkey.PKey>` subclasses and hand the result to ``connect()``'s
+      ``pkey`` kwarg. This has been dropped; users should themselves know which
+      type of key they're dealing with and instantiate a ``PKey`` subclass
+      themselves, and place the result in ``connect_kwargs.pkey``.
+    - ``no_agent``: this was simply a renaming/inversion of the ``allow_agent``
+      kwarg to ``connect()``. Users who were setting this to ``True`` should
+      now simply set ``connect_kwargs.allow_agent`` to ``False``.
+    - ``no_keys``: similar to ``no_agent``, this was just an inversion of
+      ``look_for_keys``, so migrate to using ``connect_kwargs.look_for_keys``
+      instead.
+    - ``passwords``: has been moved into :ref:`host-configuration`.
+
+- ``IdentityFile`` (via :ref:`ssh_config <ssh-config>` files) is honored in v2,
+  same as it was in v1.
 
 Configuration
 -------------

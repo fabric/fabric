@@ -34,6 +34,21 @@ Options & arguments
 
     Default:: ``None``.
 
+.. option:: --prompt-for-passphrase
+
+    Causes Fabric to prompt 'up front' for a value to store as the
+    ``connect_kwargs.passphrase`` config setting (used by Paramiko to decrypt
+    private key files.) Useful if you do not want to configure such values in
+    on-disk conf files or via shell environment variables.
+
+.. option:: --prompt-for-password
+
+    Causes Fabric to prompt 'up front' for a value to store as the
+    ``connect_kwargs.password`` config setting (used by Paramiko when
+    authenticating via passwords and, in some versions, also used for key
+    passphrases.) Useful if you do not want to configure such values in on-disk
+    conf files or via shell environment variables.
+
 
 Seeking & loading tasks
 =======================
