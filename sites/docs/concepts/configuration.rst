@@ -79,7 +79,9 @@ New default values defined by Fabric
 
 - ``connect_kwargs``: Keyword arguments (`dict`) given to `SSHClient.connect
   <paramiko.client.SSHClient.connect>` when `.Connection` performs that method
-  call. Default: ``{}``.
+  call. This is the primary configuration vector for many SSH-related options,
+  such as selecting private keys, toggling forwarding of SSH agents, etc.
+  Default: ``{}``.
 - ``forward_agent``: Whether to attempt forwarding of your local SSH
   authentication agent to the remote end. Default: ``False`` (same as in
   OpenSSH.)
