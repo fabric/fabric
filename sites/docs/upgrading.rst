@@ -336,6 +336,17 @@ General / conceptual
   use case is no longer a second-class citizen; instead, the library
   functionality has been designed first, with the CLI/task features built on
   top of it.
+- Additionally, within the CLI use case, version 1 placed too much emphasis on
+  'lazy' interactive prompts for authentication secrets or even connection
+  parameters, driven in part by a lack of strong configuration mechanisms. Over
+  time it became clear this wasn't worth the tradeoffs of confusing
+  noninteractive behavior and difficult debugging or testing procedures.
+
+  Version 2 takes an arguably cleaner approach (based on functionality added to
+  v1 over time) where users are encouraged to leverage the configuration system
+  and/or request prompts for runtime secrets at the start of the process; if
+  the system determines it's missing information partway through, it raises
+  exceptions instead of prompting.
 - Invoke's design includes :ref:`explicit user-facing testing functionality
   <testing-user-code>`; if you didn't find a way to write tests for your
   Fabric-using code before, it should be much easier now.
