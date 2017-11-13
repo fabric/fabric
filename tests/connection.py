@@ -624,18 +624,13 @@ class Connection_:
                 # fact that --identity is an override, and thus overrides eg
                 # invoke config file values is part of invoke's config test
                 # suite)
-                overrides={
-                    'connect_kwargs': {
-                        'key_filename': ['configured.key'],
-                    },
-                },
-            )
-            # And put a value in Connection connect_kwargs kwarg
-            cxn = Connection('runtime', config=conf, connect_kwargs={
+                overrides={'connect_kwargs': {
+                    'key_filename': ['configured.key'],
+                }})
+            # Put a value in Connection connect_kwargs kwarg, and open()
+            Connection('runtime', config=conf, connect_kwargs={
                 'key_filename': ['kwarg.key']
-            })
-            # Call open()
-            cxn.open()
+            }).open()
             # Ensure contents & ordering of final key_filenames connect kwarg
             # is config -> kwarg -> ssh_config
             # TODO: it'd be nice for it to end up CLI -> kwarg -> config ->
@@ -647,12 +642,7 @@ class Connection_:
                 'ssh-config-B.key',
                 'ssh-config-A.key',
             ]
-            client.connect.assert_called_once_with(
-                hostname='runtime',
-                username='abaddon',
-                port=666,
-                key_filename=expected,
-            )
+            assert client.connect.call_args[1]['key_filename'] == expected
 
         @patch('fabric.connection.SSHClient')
         def submits_connect_timeout(self, Client):
