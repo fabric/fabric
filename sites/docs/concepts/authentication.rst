@@ -20,16 +20,21 @@ Private key files
 =================
 
 Private keys stored on-disk are probably the most common auth mechanism for
-SSH. Fabric offers multiple methods of configuring which paths to use, all of
+SSH. Fabric offers multiple methods of configuring which paths to use, most of
 which end up merged into one list of paths handed to
-``SSHClient.connect(key_filenames=[...])``:
+``SSHClient.connect(key_filenames=[...])``, in the following order:
 
-- The config setting ``connect_kwargs.key_filenames`` is the most direct, and
-  allows you to override via a hierarchy of sources.
+- If a ``key_filenames`` key exists in the ``connect_kwargs`` argument to
+  `.Connection`, they come first in the list. (This is basically the "runtime"
+  option for non-CLI users.)
+- The config setting ``connect_kwargs.key_filenames`` can be set in a number of
+  ways (as per the :doc:`config docs </concepts/configuration>`) including via
+  the :option:`--identity` CLI flag (which sets the ``overrides`` level of the
+  config; so when this flag is used, key filename values from other config
+  sources will be overridden.) This value comes next in the overall list.
 - Using an :ref:`ssh_config <ssh-config>` file with ``IdentityFile``
-  directives is a great way to share configuration with other SSH clients.
-- The command-line :option:`--identity` option is best for temporarily
-  selecting a different private key at runtime.
+  directives lets you share configuration with other SSH clients; such values
+  come last.
 
 Encryption passphrases
 ----------------------

@@ -458,46 +458,14 @@ class Connection_:
                     assert cxn.connect_timeout == 23
 
             class identity_file:
-                def setup(self):
-                    self.expected = ['whatever.key', 'some-other.key']
-
-                def wins_over_default(self):
-                    # In this case, the 'default' is that the key itself isn't
-                    # even set (so will fail with KeyError.)
+                # NOTE: ssh_config value gets merged w/ (instead of overridden
+                # by) config and kwarg values; that is tested in the tests for
+                # open().
+                def basic_loading_of_value(self):
+                    # By default, key_filename will be empty, and the data from
+                    # the runtime ssh config will be all that appears.
                     value = self._runtime_cxn().connect_kwargs['key_filename']
-                    assert value == self.expected
-
-                def wins_over_configuration(self):
-                    # TODO: is this right? if it is, find best place to
-                    # document the fact that "SSHConfig values will win over
-                    # values configured into connect_kwargs".
-                    # TODO: and also, shouldn't we merge them instead, since
-                    # that's what happens between -i and ssh_config? If users
-                    # really want to "override" they ought to be configuring
-                    # things on a more per-host level, as they'd have to with
-                    # normal `ssh`?
-                    cxn = self._runtime_cxn(
-                        # TODO: paramiko connect() key_filename can be a string
-                        # too, right? how to handle that? it should get
-                        # normalized as early as possible...maybe add another
-                        # test with that in mind (giving a string here)
-                        overrides={
-                            'connect_kwargs': {
-                                'key_filename': ['incorrect.key'],
-                            },
-                        },
-                    )
-                    assert cxn.connect_kwargs['key_filename'] == self.expected
-
-                def loses_to_explicit(self):
-                    # TODO: does it? see above. should merge probably.
-                    config = self._runtime_config()
-                    cxn = Connection(
-                        'runtime', config=config, connect_kwargs={
-                            'key_filename': ['nope.key'],
-                        },
-                    )
-                    assert cxn.connect_kwargs['key_filename'] == self.expected
+                    assert value == ['whatever.key', 'some-other.key']
 
         class connect_kwargs:
             def defaults_to_empty_dict(self):
@@ -513,6 +481,7 @@ class Connection_:
                 assert cxn.connect_kwargs == {'origin': 'config'}
 
             def kwarg_wins_over_config(self):
+                # TODO: should this be more of a merge-down?
                 c = Config(overrides={'connect_kwargs': {'origin': 'config'}})
                 cxn = Connection(
                     'host',
@@ -639,6 +608,50 @@ class Connection_:
                 hostname='host',
                 port=22,
                 timeout=300,
+            )
+
+        @patch('fabric.connection.SSHClient')
+        def key_filename_is_merge_of_config_ssh_config_and_kwarg(self, Client):
+            # TODO: this boilerplate should become a fixture...
+            client = Client.return_value
+            client.get_transport.return_value = Mock(active=False)
+            conf = Config(
+                # SSH config with 2x IdentityFile directives.
+                runtime_ssh_path=join(
+                    support, 'ssh_config', 'runtime_identity.conf'
+                ),
+                # Use overrides config level to mimic --identity use NOTE: (the
+                # fact that --identity is an override, and thus overrides eg
+                # invoke config file values is part of invoke's config test
+                # suite)
+                overrides={
+                    'connect_kwargs': {
+                        'key_filename': ['configured.key'],
+                    },
+                },
+            )
+            # And put a value in Connection connect_kwargs kwarg
+            cxn = Connection('runtime', config=conf, connect_kwargs={
+                'key_filename': ['kwarg.key']
+            })
+            # Call open()
+            cxn.open()
+            # Ensure contents & ordering of final key_filenames connect kwarg
+            # is config -> kwarg -> ssh_config
+            # TODO: it'd be nice for it to end up CLI -> kwarg -> config ->
+            # ssh_config, but that's hard given how CLI just sets config for
+            # now.
+            expected = [
+                'configured.key',
+                'kwarg.key',
+                'ssh-config-B.key',
+                'ssh-config-A.key',
+            ]
+            client.connect.assert_called_once_with(
+                hostname='runtime',
+                username='abaddon',
+                port=666,
+                key_filename=expected,
             )
 
         @patch('fabric.connection.SSHClient')
