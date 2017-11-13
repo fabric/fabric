@@ -727,14 +727,14 @@ class Connection_:
         def uses_proxycommand_as_sock_for_Client_connect(self, moxy, Client):
             "uses ProxyCommand from gateway as 'sock' arg to SSHClient.connect"
             # Setup
-            cxn = Mock()
-            Client.return_value = cxn
+            client = Mock()
+            Client.return_value = client
             main = Connection('host', gateway="net catty %h %p")
             main.open()
             # Expect ProxyCommand instantiation
             moxy.assert_called_once_with("net catty host 22")
             # Expect result of that as sock arg to connect()
-            sock_arg = cxn.connect.call_args[1]['sock']
+            sock_arg = client.connect.call_args[1]['sock']
             assert sock_arg is moxy.return_value
 
         # TODO: all the various connect-time options such as agent forwarding,
