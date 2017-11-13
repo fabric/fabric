@@ -2,6 +2,7 @@ from pytest import fixture
 
 from fabric import Connection
 from fabric.transfer import Transfer
+from mock import Mock, patch
 
 from _util import MockRemote, MockSFTP
 
@@ -50,3 +51,43 @@ def transfer(sftp):
     Wrapper for `sftp` which only yields the Transfer object.
     """
     yield sftp[0]
+
+
+@fixture
+def client():
+    """
+    Yields a mocked-out SSHClient for testing calls to connect() & co.
+
+    It updates get_transport to return a mock that appears active on first
+    check, then inactive after, matching most tests' needs by default:
+
+    - `Connection` instantiates, with a None ``.transport``.
+    - Calls to ``.open()`` test ``.is_connected``, which returns ``False`` when
+      ``.transport`` is falsey, and so the first open will call
+      ``SSHClient.connect`` regardless.
+    - ``.open()`` then sets ``.transport`` to ``SSHClient.get_transport()``, so
+      ``Connection.transport`` is effectively ``client.get_transport.return_value``.
+    - Subsequent activity will want to think the mocked SSHClient is
+      "connected", meaning we want the mocked transport's ``.active`` to be
+      ``True``.
+    - This includes ``Connection.close``, which short-circuits if
+      ``.is_connected``; having a statically ``True`` active flag means a full
+      open -> close cycle will run without error. (Only tests that double-close
+      or double-open should have issues here.)
+
+    End result is that:
+
+    - ``.is_connected`` behaves False after instantiation and before ``.open``,
+      then True after ``.open``
+    - ``.close`` will work normally on 1st call
+    - ``.close will behave "incorrectly" on subsequent calls (since it'll think
+      connection is still live.) Tests that check the idempotency of ``.close``
+      will need to tweak their mock mid-test.
+
+    For 'full' fake remote session interaction (i.e. stdout/err
+    reading/writing, channel opens, etc) see `remote`.
+    """
+    with patch('fabric.connection.SSHClient') as SSHClient:
+        client = SSHClient.return_value
+        client.get_transport.return_value = Mock(active=True)
+        yield client

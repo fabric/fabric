@@ -543,15 +543,11 @@ class Connection_:
             assert hash(Connection('host')) == hash(Connection('host'))
 
     class open:
-        @patch('fabric.connection.SSHClient')
-        def has_no_required_args_and_returns_None(self, Client):
+        def has_no_required_args_and_returns_None(self, client):
             assert Connection('host').open() is None
 
-        @patch('fabric.connection.SSHClient')
-        def calls_SSHClient_connect(self, Client):
+        def calls_SSHClient_connect(self, client):
             "calls paramiko.SSHClient.connect() with correct args"
-            client = Client.return_value
-            client.get_transport.return_value = Mock(active=False)
             Connection('host').open()
             client.connect.assert_called_with(
                 username=get_local_user(),
@@ -559,10 +555,7 @@ class Connection_:
                 port=22,
             )
 
-        @patch('fabric.connection.SSHClient')
-        def passes_through_connect_kwargs(self, Client):
-            client = Client.return_value
-            client.get_transport.return_value = Mock(active=False)
+        def passes_through_connect_kwargs(self, client):
             Connection('host', connect_kwargs={'foobar': 'bizbaz'}).open()
             client.connect.assert_called_with(
                 username=get_local_user(),
@@ -571,10 +564,7 @@ class Connection_:
                 foobar='bizbaz',
             )
 
-        @patch('fabric.connection.SSHClient')
-        def refuses_to_overwrite_connect_kwargs_with_others(self, Client):
-            client = Client.return_value
-            client.get_transport.return_value = Mock(active=False)
+        def refuses_to_overwrite_connect_kwargs_with_others(self, client):
             for key, value, kwargs in (
                 # Core connection args should definitely not get overwritten!
                 # NOTE: recall that these keys are the SSHClient.connect()
@@ -598,10 +588,7 @@ class Connection_:
                 else:
                     assert False, "Did not raise ValueError!"
 
-        @patch('fabric.connection.SSHClient')
-        def connect_kwargs_protection_not_tripped_by_defaults(self, Client):
-            client = Client.return_value
-            client.get_transport.return_value = Mock(active=False)
+        def connect_kwargs_protection_not_tripped_by_defaults(self, client):
             Connection('host', connect_kwargs={'timeout': 300}).open()
             client.connect.assert_called_with(
                 username=get_local_user(),
@@ -610,11 +597,7 @@ class Connection_:
                 timeout=300,
             )
 
-        @patch('fabric.connection.SSHClient')
-        def key_filename_is_merge_of_config_ssh_config_and_kwarg(self, Client):
-            # TODO: this boilerplate should become a fixture...
-            client = Client.return_value
-            client.get_transport.return_value = Mock(active=False)
+        def key_filename_is_merge_of_config_ssh_config_and_kwarg(self, client):
             conf = Config(
                 # SSH config with 2x IdentityFile directives.
                 runtime_ssh_path=join(
@@ -644,10 +627,7 @@ class Connection_:
             ]
             assert client.connect.call_args[1]['key_filename'] == expected
 
-        @patch('fabric.connection.SSHClient')
-        def submits_connect_timeout(self, Client):
-            client = Client.return_value
-            client.get_transport.return_value = Mock(active=False)
+        def submits_connect_timeout(self, client):
             Connection('host', connect_timeout=27).open()
             client.connect.assert_called_with(
                 username=get_local_user(),
@@ -656,50 +636,38 @@ class Connection_:
                 timeout=27,
             )
 
-        @patch('fabric.connection.SSHClient')
-        def is_connected_True_when_successful(self, Client):
-            # Ensure the parts of Paramiko we test act like things are cool
-            client = Client.return_value
-            client.get_transport.return_value = Mock(active=True)
+        def is_connected_True_when_successful(self, client):
             c = Connection('host')
             c.open()
             assert c.is_connected is True
 
-        @patch('fabric.connection.SSHClient')
-        def has_no_effect_if_already_connected(self, Client):
+        def short_circuits_if_already_connected(self, client):
             cxn = Connection('host')
-            client = Client.return_value
-            # First open() never gets to .active; subsequently it needs to
-            # appear connected, so True.
-            client.get_transport.return_value.active = True
+            # First call will set self.transport to fixture's mock
             cxn.open()
+            # Second call will check .is_connected which will see active==True,
+            # and short circuit
             cxn.open()
             assert client.connect.call_count == 1
 
-        @patch('fabric.connection.SSHClient')
-        def is_connected_still_False_when_connect_fails(self, Client):
-            cxn = Connection('host')
-            client = Client.return_value
-            client.get_transport.return_value = Mock(active=False)
+        def is_connected_still_False_when_connect_fails(self, client):
             client.connect.side_effect = socket.error
+            cxn = Connection('host')
             try:
                 cxn.open()
             except socket.error:
                 pass
             assert cxn.is_connected is False
 
-        @patch('fabric.connection.SSHClient')
-        def uses_configured_user_host_and_port(self, Client):
-            cxn = Connection(user='myuser', host='myhost', port=9001)
-            client = Client.return_value
-            client.get_transport.return_value = Mock(active=False)
-            cxn.open()
+        def uses_configured_user_host_and_port(self, client):
+            Connection(user='myuser', host='myhost', port=9001).open()
             client.connect.assert_called_once_with(
                 username='myuser',
                 hostname='myhost',
                 port=9001,
             )
 
+        # NOTE: does more involved stuff so can't use "client" fixture
         @patch('fabric.connection.SSHClient')
         def uses_gateway_channel_as_sock_for_SSHClient_connect(self, Client):
             "uses Connection gateway as 'sock' arg to SSHClient.connect"
@@ -745,19 +713,16 @@ class Connection_:
         # defaults at initialization time...
 
     class close:
-        @patch('fabric.connection.SSHClient')
-        def has_no_required_args_and_returns_None(self, Client):
+        def has_no_required_args_and_returns_None(self, client):
             c = Connection('host')
             c.open()
             assert c.close() is None
 
-        @patch('fabric.connection.SSHClient')
-        def calls_SSHClient_close(self, Client):
+        def calls_SSHClient_close(self, client):
             "calls paramiko.SSHClient.close()"
             c = Connection('host')
             c.open()
             c.close()
-            client = Client.return_value
             client.close.assert_called_with()
 
         @patch('fabric.connection.SSHClient')
@@ -770,44 +735,20 @@ class Connection_:
             # to run multiple handlers at once
             Handler.return_value.close.assert_called_once_with()
 
-        @patch('fabric.connection.SSHClient')
-        def has_no_effect_if_already_closed(self, Client):
-            client = Client.return_value
+        def short_circuits_if_not_connected(self, client):
             c = Connection('host')
-            # Expected flow:
-            # - Connection.open() asks is_connected which checks
-            # self.transport, which is initially None, so .active isn't even
-            # checked.
-            # - First Connection.close() asks is_connected and that needs to be
-            # True, so we want .active to retuen True.
-            # - Second Connection.close() also asks is_connected which needs to
-            # False this time.
-            prop = PropertyMock(side_effect=[True, False])
-            type(client.get_transport.return_value).active = prop
-            c.open()
+            # Won't trigger close() on client because it'll already think it's
+            # closed (due to no .transport & the behavior of .is_connected)
             c.close()
-            c.close()
-            client.close.assert_called_once_with()
+            assert not client.close.called
 
-        @patch('fabric.connection.SSHClient')
-        def is_connected_becomes_False(self, Client):
-            client = Client.return_value
-            client.get_transport.return_value = None
-            c = Connection('host')
-            c.open()
-            c.close()
-            assert c.is_connected is False
-
-        @patch('fabric.connection.SSHClient')
-        def class_works_as_a_closing_contextmanager(self, Client):
-            client = Client.return_value
+        def class_works_as_a_closing_contextmanager(self, client):
             with Connection('host') as c:
                 c.open()
             client.close.assert_called_once_with()
 
     class create_session:
-        @patch('fabric.connection.SSHClient')
-        def calls_open_for_you(self, Client):
+        def calls_open_for_you(self, client):
             c = Connection('host')
             c.open = Mock()
             c.transport = Mock() # so create_session no asplode
@@ -906,18 +847,14 @@ class Connection_:
             skip()
 
     class sftp:
-        @patch('fabric.connection.SSHClient')
-        def returns_result_of_client_open_sftp(self, SSHClient):
+        def returns_result_of_client_open_sftp(self, client):
             "returns result of client.open_sftp()"
-            client = SSHClient.return_value
             sentinel = object()
             client.open_sftp.return_value = sentinel
             assert Connection('host').sftp() == sentinel
             client.open_sftp.assert_called_with()
 
-        @patch('fabric.connection.SSHClient')
-        def lazily_caches_result(self, SSHClient):
-            client = SSHClient.return_value
+        def lazily_caches_result(self, client):
             sentinel1, sentinel2 = object(), object()
             client.open_sftp.side_effect = [sentinel1, sentinel2]
             cxn = Connection('host')
