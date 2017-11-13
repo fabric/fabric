@@ -37,14 +37,12 @@ def sftp():
     yield transfer, client, mock_os
     # TODO: old mock_sftp() lacked any 'stop'...why? feels bad man
 
-
 @fixture
 def sftp_objs(sftp):
     """
     Wrapper for `sftp` which only yields the Transfer and SFTPClient.
     """
     yield sftp[:2]
-
 
 @fixture
 def transfer(sftp):
