@@ -8,7 +8,8 @@ import time
 from mock import patch, Mock, call, PropertyMock, ANY
 from paramiko.client import SSHClient, AutoAddPolicy
 from paramiko import SSHConfig
-from pytest import skip
+import pytest # for mark
+from pytest import skip, param
 from pytest_relaxed import raises
 
 from invoke.config import Config as InvokeConfig
@@ -679,44 +680,97 @@ class Connection_:
     class connect_kwargs_key_filename:
         "connect_kwargs(key_filename=...)"
 
-        def key_filename_is_merge_of_config_ssh_config_and_kwarg(self, client):
-            conf = Config(
+        # TODO: it'd be nice to truly separate CLI from regular (non override
+        # level) invoke config; as it is, invoke config comes first in expected
+        # outputs since otherwise there's no way for --identity to "come
+        # first".
+        @pytest.mark.parametrize("ssh, invoke, kwarg, expected", [
+            param(
+                True, True, True,
+                [
+                    'configured.key',
+                    'kwarg.key',
+                    'ssh-config-B.key', 'ssh-config-A.key',
+                ],
+                id="All sources",
+            ),
+            param(
+                False, False, False,
+                [],
+                id="No sources",
+            ),
+            param(
+                True, False, False,
+                ['ssh-config-B.key', 'ssh-config-A.key'],
+                id="ssh_config only",
+            ),
+            param(
+                False, True, False,
+                ['configured.key'],
+                id="Invoke-level config only",
+            ),
+            param(
+                False, False, True,
+                ['kwarg.key'],
+                id="Connection kwarg only",
+            ),
+            param(
+                True, True, False,
+                [
+                    'configured.key',
+                    'ssh-config-B.key', 'ssh-config-A.key',
+                ],
+                id="ssh_config + invoke config, no kwarg",
+            ),
+            param(
+                True, False, True,
+                [
+                    'kwarg.key',
+                    'ssh-config-B.key', 'ssh-config-A.key',
+                ],
+                id="ssh_config + kwarg, no Invoke-level config",
+            ),
+            param(
+                False, True, True,
+                [
+                    'configured.key',
+                    'kwarg.key',
+                ],
+                id="Invoke-level config + kwarg, no ssh_config",
+            ),
+        ])
+        def merges_sources(self, client, ssh, invoke, kwarg, expected):
+            config_kwargs = {}
+            if ssh:
                 # SSH config with 2x IdentityFile directives.
-                runtime_ssh_path=join(
+                config_kwargs['runtime_ssh_path'] = join(
                     support, 'ssh_config', 'runtime_identity.conf'
-                ),
+                )
+            if invoke:
                 # Use overrides config level to mimic --identity use NOTE: (the
                 # fact that --identity is an override, and thus overrides eg
                 # invoke config file values is part of invoke's config test
                 # suite)
-                overrides={'connect_kwargs': {
+                config_kwargs['overrides'] = {'connect_kwargs': {
                     'key_filename': ['configured.key'],
-                }})
-            # Put a value in Connection connect_kwargs kwarg, and open()
-            Connection('runtime', config=conf, connect_kwargs={
-                'key_filename': ['kwarg.key']
-            }).open()
-            # Ensure contents & ordering of final key_filenames connect kwarg
-            # is config -> kwarg -> ssh_config
-            # TODO: it'd be nice for it to end up CLI -> kwarg -> config ->
-            # ssh_config, but that's hard given how CLI just sets config for
-            # now.
-            expected = [
-                'configured.key',
-                'kwarg.key',
-                'ssh-config-B.key',
-                'ssh-config-A.key',
-            ]
-            assert client.connect.call_args[1]['key_filename'] == expected
-
-        # TODO: other permutations of key filename merging (maybe experiment
-        # with pytest feature for this shit?):
-        # - nothing
-        # - config only
-        # - kwarg only
-        # - config + kwarg
-        # - config + ssh_config
-        # - kwarg + ssh_config
+                }}
+            conf = Config(**config_kwargs)
+            connect_kwargs = {}
+            if kwarg:
+                # Stitch in connect_kwargs value
+                connect_kwargs = {'key_filename': ['kwarg.key']}
+            # Tie in all sources that were configured & open()
+            Connection(
+                'runtime', config=conf, connect_kwargs=connect_kwargs,
+            ).open()
+            # Ensure we got the expected list of keys
+            kwargs = client.connect.call_args[1]
+            if expected:
+                assert kwargs['key_filename'] == expected
+            else:
+                # No key filenames -> it's not even passed in as connect_kwargs
+                # is gonna be a blank dict
+                assert 'key_filename' not in kwargs
 
     class close:
         def has_no_required_args_and_returns_None(self, client):
