@@ -4,6 +4,8 @@ CLI entrypoint & parser configuration.
 Builds on top of Invoke's core functionality for same.
 """
 
+import getpass
+
 from invoke import Argument, Collection, Program
 from invoke import __version__ as invoke
 from paramiko import __version__ as paramiko
@@ -36,6 +38,17 @@ class Fab(Program):
                 # TODO: automatically add hint about iterable-ness to Invoke
                 # help display machinery?
                 help="Path to runtime SSH identity (key) file. May be given multiple times.", # noqa
+            ),
+            # TODO: worth having short flags for these prompt args?
+            Argument(
+                names=('prompt-for-password',),
+                kind=bool,
+                help="Request an upfront SSH-auth password prompt.",
+            ),
+            Argument(
+                names=('prompt-for-passphrase',),
+                kind=bool,
+                help="Request an upfront SSH key passphrase prompt.",
             ),
         ]
         return core_args + my_args
@@ -95,9 +108,21 @@ class Fab(Program):
         # called load_overrides, this is best we can do for now w/o losing
         # data. Still feels correct; just might be cleaner to have even more
         # Config API members around this sort of thing. Shrug.
+        connect_kwargs = {}
         path = self.args['identity'].value
         if path is not None:
-            self.config._overrides['connect_kwargs'] = {'key_filename': path}
+            connect_kwargs['key_filename'] = path
+        # Secrets prompts that want to happen at handoff time instead of
+        # later/at user-time.
+        # TODO: should this become part of Invoke proper in case other
+        # downstreams have need of it? E.g. a prompt Argument 'type'?
+        if self.args['prompt-for-password'].value:
+            prompt = "Enter password for use with SSH auth: "
+            connect_kwargs['password'] = getpass.getpass(prompt)
+        if self.args['prompt-for-passphrase'].value:
+            prompt = "Enter passphrase for use unlocking SSH keys: "
+            connect_kwargs['passphrase'] = getpass.getpass(prompt)
+        self.config._overrides['connect_kwargs'] = connect_kwargs
         # Since we gave merge=False above, we must do it ourselves here. (Also
         # allows us to 'compile' our overrides manipulation.)
         self.config.merge()

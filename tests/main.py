@@ -189,3 +189,30 @@ Available tasks:
         def may_be_given_multiple_times(self):
             with cd(support):
                 _run_fab("-i identity.key -i identity2.key expect-identities")
+
+    class secrets_prompts:
+        @patch('fabric.main.getpass.getpass')
+        def _expect_prompt(self, getpass, flag, key, value, prompt):
+            getpass.return_value = value
+            with cd(support):
+                # Expect that the given key was found in the context.
+                cmd = "-c prompting {} expect-connect-kwarg --key {} --val {}"
+                _run_fab(cmd.format(flag, key, value))
+            # Then we also expect that getpass was called w/ expected prompt
+            getpass.assert_called_once_with(prompt)
+
+        def password_prompt_updates_connect_kwargs(self):
+            self._expect_prompt(
+                flag='--prompt-for-password',
+                key='password',
+                value='mypassword',
+                prompt="Enter password for use with SSH auth: ",
+            )
+
+        def passphrase_prompt_updates_connect_kwargs(self):
+            self._expect_prompt(
+                flag='--prompt-for-passphrase',
+                key='passphrase',
+                value='mypassphrase',
+                prompt="Enter passphrase for use unlocking SSH keys: ",
+            )
