@@ -320,16 +320,9 @@ class Connection(Context):
         #: Connection timeout
         self.connect_timeout = connect_timeout
 
-        if connect_kwargs is None:
-            # TODO: is it better to pre-empt conflicts w/ manually-handled
-            # connect() kwargs (hostname, username, etc) here or in open()?
-            # We're doing open() for now in case e.g. someone manually modifies
-            # .connect_kwargs attributewise, but otherwise it feels better to
-            # do it early instead of late.
-            connect_kwargs = self.config.connect_kwargs
         #: Keyword arguments given to `paramiko.client.SSHClient.connect` when
         #: `open` is called.
-        self.connect_kwargs = connect_kwargs
+        self.connect_kwargs = self.resolve_connect_kwargs(connect_kwargs)
 
         #: The `paramiko.client.SSHClient` instance this connection wraps.
         client = SSHClient()
@@ -339,6 +332,35 @@ class Connection(Context):
         #: A convenience handle onto the return value of
         #: ``self.client.get_transport()``.
         self.transport = None
+
+    def resolve_connect_kwargs(self, connect_kwargs):
+        # Grab connect_kwargs from config if not explicitly given.
+        if connect_kwargs is None:
+            # TODO: is it better to pre-empt conflicts w/ manually-handled
+            # connect() kwargs (hostname, username, etc) here or in open()?
+            # We're doing open() for now in case e.g. someone manually modifies
+            # .connect_kwargs attributewise, but otherwise it feels better to
+            # do it early instead of late.
+            connect_kwargs = self.config.connect_kwargs
+        # Special case: key_filenames gets merged instead of overridden.
+        # TODO: probably want some sorta smart merging generally, special cases
+        # are bad.
+        elif 'key_filename' in self.config.connect_kwargs:
+            kwarg_val = connect_kwargs.get('key_filename', [])
+            conf_val = self.config.connect_kwargs['key_filename']
+            # Config value comes before kwarg value (because it may contain
+            # CLI flag value.)
+            connect_kwargs['key_filename'] = conf_val + kwarg_val
+
+        # SSH config identityfile values come last in the key_filenames
+        # 'hierarchy'.
+        if 'identityfile' in self.ssh_config:
+            connect_kwargs.setdefault('key_filename', [])
+            connect_kwargs['key_filename'].extend(
+                self.ssh_config['identityfile']
+            )
+
+        return connect_kwargs
 
     def __repr__(self):
         # Host comes first as it's the most common differentiator by far
