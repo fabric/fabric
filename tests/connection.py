@@ -594,36 +594,6 @@ class Connection_:
                 timeout=300,
             )
 
-        def key_filename_is_merge_of_config_ssh_config_and_kwarg(self, client):
-            conf = Config(
-                # SSH config with 2x IdentityFile directives.
-                runtime_ssh_path=join(
-                    support, 'ssh_config', 'runtime_identity.conf'
-                ),
-                # Use overrides config level to mimic --identity use NOTE: (the
-                # fact that --identity is an override, and thus overrides eg
-                # invoke config file values is part of invoke's config test
-                # suite)
-                overrides={'connect_kwargs': {
-                    'key_filename': ['configured.key'],
-                }})
-            # Put a value in Connection connect_kwargs kwarg, and open()
-            Connection('runtime', config=conf, connect_kwargs={
-                'key_filename': ['kwarg.key']
-            }).open()
-            # Ensure contents & ordering of final key_filenames connect kwarg
-            # is config -> kwarg -> ssh_config
-            # TODO: it'd be nice for it to end up CLI -> kwarg -> config ->
-            # ssh_config, but that's hard given how CLI just sets config for
-            # now.
-            expected = [
-                'configured.key',
-                'kwarg.key',
-                'ssh-config-B.key',
-                'ssh-config-A.key',
-            ]
-            assert client.connect.call_args[1]['key_filename'] == expected
-
         def submits_connect_timeout(self, client):
             Connection('host', connect_timeout=27).open()
             client.connect.assert_called_with(
@@ -705,6 +675,48 @@ class Connection_:
         # of a Connection object, should it ever disconnect/reconnect.
         # TODO: though some/all of those things might want to be set to
         # defaults at initialization time...
+
+    class connect_kwargs_key_filename:
+        "connect_kwargs(key_filename=...)"
+
+        def key_filename_is_merge_of_config_ssh_config_and_kwarg(self, client):
+            conf = Config(
+                # SSH config with 2x IdentityFile directives.
+                runtime_ssh_path=join(
+                    support, 'ssh_config', 'runtime_identity.conf'
+                ),
+                # Use overrides config level to mimic --identity use NOTE: (the
+                # fact that --identity is an override, and thus overrides eg
+                # invoke config file values is part of invoke's config test
+                # suite)
+                overrides={'connect_kwargs': {
+                    'key_filename': ['configured.key'],
+                }})
+            # Put a value in Connection connect_kwargs kwarg, and open()
+            Connection('runtime', config=conf, connect_kwargs={
+                'key_filename': ['kwarg.key']
+            }).open()
+            # Ensure contents & ordering of final key_filenames connect kwarg
+            # is config -> kwarg -> ssh_config
+            # TODO: it'd be nice for it to end up CLI -> kwarg -> config ->
+            # ssh_config, but that's hard given how CLI just sets config for
+            # now.
+            expected = [
+                'configured.key',
+                'kwarg.key',
+                'ssh-config-B.key',
+                'ssh-config-A.key',
+            ]
+            assert client.connect.call_args[1]['key_filename'] == expected
+
+        # TODO: other permutations of key filename merging (maybe experiment
+        # with pytest feature for this shit?):
+        # - nothing
+        # - config only
+        # - kwarg only
+        # - config + kwarg
+        # - config + ssh_config
+        # - kwarg + ssh_config
 
     class close:
         def has_no_required_args_and_returns_None(self, client):
