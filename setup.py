@@ -63,7 +63,7 @@ setuptools.setup(
 
     install_requires=[
         'invoke>=0.15',
-        'paramiko>=2.1',
+        'paramiko>=2.4',
         'cryptography>=1.1',
     ],
     packages=[package_name],
