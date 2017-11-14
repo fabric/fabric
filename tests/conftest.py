@@ -66,7 +66,8 @@ def client():
       ``.transport`` is falsey, and so the first open will call
       ``SSHClient.connect`` regardless.
     - ``.open()`` then sets ``.transport`` to ``SSHClient.get_transport()``, so
-      ``Connection.transport`` is effectively ``client.get_transport.return_value``.
+      ``Connection.transport`` is effectively
+      ``client.get_transport.return_value``.
     - Subsequent activity will want to think the mocked SSHClient is
       "connected", meaning we want the mocked transport's ``.active`` to be
       ``True``.

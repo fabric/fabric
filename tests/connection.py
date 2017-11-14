@@ -5,7 +5,7 @@ from os.path import join
 import socket
 import time
 
-from mock import patch, Mock, call, PropertyMock, ANY
+from mock import patch, Mock, call, ANY
 from paramiko.client import SSHClient, AutoAddPolicy
 from paramiko import SSHConfig
 import pytest # for mark
