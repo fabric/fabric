@@ -256,21 +256,18 @@ class Connection_:
                 Connection('host')
                 Client.assert_called_once_with()
 
-            @patch('fabric.connection.SSHClient')
             @patch('fabric.connection.AutoAddPolicy')
-            def sets_missing_host_key_policy(self, Policy, Client):
+            def sets_missing_host_key_policy(self, Policy, client):
                 # TODO: should make the policy configurable early on
                 sentinel = Mock()
                 Policy.return_value = sentinel
                 Connection('host')
-                set_policy = Client.return_value.set_missing_host_key_policy
+                set_policy = client.set_missing_host_key_policy
                 set_policy.assert_called_once_with(sentinel)
 
-            @patch('fabric.connection.SSHClient')
-            def is_made_available_as_client_attr(self, Client):
-                sentinel = Mock()
-                Client.return_value = sentinel
-                assert Connection('host').client is sentinel
+            def is_made_available_as_client_attr(self, client):
+                # NOTE: client is SSHClient.return_value
+                assert Connection('host').client is client
 
         class ssh_config:
             def _runtime_config(self, overrides=None, basename='runtime'):
@@ -690,13 +687,10 @@ class Connection_:
             sock_arg = mock_main.connect.call_args[1]['sock']
             assert sock_arg is open_channel.return_value
 
-        @patch('fabric.connection.SSHClient')
         @patch('fabric.connection.ProxyCommand')
-        def uses_proxycommand_as_sock_for_Client_connect(self, moxy, Client):
+        def uses_proxycommand_as_sock_for_Client_connect(self, moxy, client):
             "uses ProxyCommand from gateway as 'sock' arg to SSHClient.connect"
             # Setup
-            client = Mock()
-            Client.return_value = client
             main = Connection('host', gateway="net catty %h %p")
             main.open()
             # Expect ProxyCommand instantiation
@@ -725,9 +719,8 @@ class Connection_:
             c.close()
             client.close.assert_called_with()
 
-        @patch('fabric.connection.SSHClient')
         @patch('fabric.connection.AgentRequestHandler')
-        def calls_agent_handler_close_if_enabled(self, Handler, Client):
+        def calls_agent_handler_close_if_enabled(self, Handler, client):
             c = Connection('host', forward_agent=True)
             c.create_session()
             c.close()
@@ -755,10 +748,9 @@ class Connection_:
             c.create_session()
             assert c.open.called
 
-        @patch('fabric.connection.SSHClient')
         @patch('fabric.connection.AgentRequestHandler')
         def activates_paramiko_agent_forwarding_if_configured(
-            self, Handler, Client
+            self, Handler, client
         ):
             c = Connection('host', forward_agent=True)
             chan = c.create_session()
@@ -768,18 +760,16 @@ class Connection_:
         # NOTE: most actual run related tests live in the runners module's
         # tests. Here we are just testing the outer interface a bit.
 
-        @patch('fabric.connection.SSHClient')
         @patch(remote_path)
-        def calls_open_for_you(self, Remote, Client):
+        def calls_open_for_you(self, Remote, client):
             c = Connection('host')
             c.open = Mock()
             c.run("command")
             assert c.open.called
 
-        @patch('fabric.connection.SSHClient')
         @patch(remote_path)
         def calls_Remote_run_with_command_and_kwargs_and_returns_its_result(
-            self, Remote, Client
+            self, Remote, client
         ):
             remote = Remote.return_value
             sentinel = object()
@@ -809,17 +799,15 @@ class Connection_:
             assert call().run('foo') in Local.mock_calls
 
     class sudo:
-        @patch('fabric.connection.SSHClient')
         @patch(remote_path)
-        def calls_open_for_you(self, Remote, Client):
+        def calls_open_for_you(self, Remote, client):
             c = Connection('host')
             c.open = Mock()
             c.sudo("command")
             assert c.open.called
 
-        @patch('fabric.connection.SSHClient')
         @patch(remote_path)
-        def basic_invocation(self, Remote, Client):
+        def basic_invocation(self, Remote, client):
             # Technically duplicates Invoke-level tests, but ensures things
             # still work correctly at our level.
             cxn = Connection('host')
