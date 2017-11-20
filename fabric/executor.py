@@ -7,24 +7,33 @@ from .exceptions import NothingToDo
 
 # TODO: come up w/ a better name heh
 class FabExecutor(Executor):
-    def expand_calls(self, calls):
+    def expand_calls(self, calls, apply_hosts=True):
         # Generate new call list with per-host variants & Connections inserted
         ret = []
         # TODO: mesh well with Invoke list-type args helper (inv #132)
-        hosts = self.core[0].args.hosts.value
-        hosts = hosts.split(',') if hosts else []
+        hosts = []
+        host_str = self.core[0].args.hosts.value
+        if apply_hosts and host_str:
+            hosts = host_str.split(',')
         for call in calls:
+            if isinstance(call, Task):
+                call = Call(task=call)
             # TODO: expand this to allow multiple types of execution plans,
             # pending outcome of invoke#461 (which, if flexible enough to
             # handle intersect of dependencies+parameterization, just becomes
             # 'honor that new feature of Invoke')
             # TODO: roles, other non-runtime host parameterizations, etc
+            # Pre-tasks get added only once, not once per host.
+            ret.extend(self.expand_calls(call.pre, apply_hosts=False))
+            # Main task, per host
             for host in hosts:
                 ret.append(self.parameterize(call, host))
             # Deal with lack of hosts arg (acts same as `inv` in that case)
             # TODO: no tests for this branch?
             if not hosts:
                 ret.append(call)
+            # Post-tasks added once, not once per host.
+            ret.extend(self.expand_calls(call.post, apply_hosts=False))
         # Add remainder as anonymous task
         if self.core.remainder:
             # TODO: this will need to change once there are more options for
