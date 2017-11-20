@@ -20,6 +20,8 @@ def eq_(got, expected):
     assert got == expected
 
 
+# TODO: this could become a fixture in conftest.py, presumably, and just yield
+# stdout, allowing the tests themselves to assert more naturally
 @trap
 def expect(invocation, out, program=None, test='equals'):
     if program is None:
