@@ -51,6 +51,14 @@ Invoke .+
             with cd(support):
                 _run_fab("expect-from-env")
 
+        def basic_pre_and_post_tasks_still_work(self):
+            with cd(support):
+                # Sanity
+                expect("first", "First!\n")
+                expect("third", "Third!\n")
+                # Real test
+                expect("second", "First!\nSecond!\nThird!\n")
+
     class filenames:
         def loads_fabfile_not_tasks(self):
             "Loads fabfile.py, not tasks.py"
@@ -69,7 +77,10 @@ Available tasks:
   expect-mutation
   expect-mutation-to-fail
   expect-vanilla-Context
+  first
   mutate
+  second
+  third
 
 """.lstrip())
 

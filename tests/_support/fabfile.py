@@ -58,3 +58,16 @@ def expect_identities(c):
         'identity.key',
         'identity2.key',
     ]
+
+
+@task
+def first(c):
+    print("First!")
+
+@task
+def third(c):
+    print("Third!")
+
+@task(pre=[first], post=[third])
+def second(c):
+    print("Second!")

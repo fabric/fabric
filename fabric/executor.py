@@ -14,15 +14,12 @@ class FabExecutor(Executor):
         hosts = self.core[0].args.hosts.value
         hosts = hosts.split(',') if hosts else []
         for call in calls:
+            # TODO: expand this to allow multiple types of execution plans,
+            # pending outcome of invoke#461 (which, if flexible enough to
+            # handle intersect of dependencies+parameterization, just becomes
+            # 'honor that new feature of Invoke')
             # TODO: roles, other non-runtime host parameterizations, etc
             for host in hosts:
-                # TODO: handle pre/post, which we are currently ignoring,
-                # because it's poorly defined right now: does each
-                # parameterized per-host task run its own pre/posts, or do they
-                # run before/after the 'set' of per-host tasks? and etc
-                # TODO: tie into whatever DAG stuff we do in Invoke; ideally
-                # this all gets pushed down to that level and we simply hand in
-                # the raw 'one of these each with host=a, host=b, ... plz'
                 ret.append(self.parameterize(call, host))
             # Deal with lack of hosts arg (acts same as `inv` in that case)
             # TODO: no tests for this branch?
