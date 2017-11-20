@@ -3,6 +3,7 @@ Tests concerned with the ``fab`` tool & how it overrides Invoke defaults.
 """
 
 import os
+import sys
 
 from invoke.util import cd
 from mock import patch
@@ -13,7 +14,7 @@ from fabric.config import Config
 from fabric.main import program as fab_program
 from fabric.exceptions import NothingToDo
 
-from _util import expect, Session, support, config_file
+from _util import expect, Session, support, config_file, trap
 
 
 # Crappy helper to inject a test-only runtime config into test invocations.
@@ -168,6 +169,22 @@ Available tasks:
         def config_mutation_not_preserved(self):
             with cd(support):
                 _run_fab("-H host1,host2 expect-mutation-to-fail")
+
+        @trap
+        def pre_post_tasks_are_not_parameterized_across_hosts(self):
+            with cd(support):
+                _run_fab("-H hostA,hostB,hostC second --show-host")
+                output = sys.stdout.getvalue()
+                # Expect pre once, 3x main, post once, as opposed to e.g. both
+                # pre and main task
+                expected = """
+First!
+Second: hostA
+Second: hostB
+Second: hostC
+Third!
+""".lstrip()
+                assert output == expected
 
     class no_hosts_flag:
         def calls_task_once_with_invoke_context(self):

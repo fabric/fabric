@@ -69,5 +69,8 @@ def third(c):
     print("Third!")
 
 @task(pre=[first], post=[third])
-def second(c):
-    print("Second!")
+def second(c, show_host=False):
+    if show_host:
+        print("Second: {}".format(c.host))
+    else:
+        print("Second!")
