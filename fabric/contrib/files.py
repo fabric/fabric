@@ -68,7 +68,8 @@ def first(*args, **kwargs):
             return directory
 
 
-def upload_template(filename, destination, context=None, use_jinja=False,
+def upload_template(filename, destination, context=None, use_jinja=False, use_fmt=False,
+                    fmt_obj=None, fmt_func='safe_substitute',
     template_dir=None, use_sudo=False, backup=True, mirror_local_mode=False,
     mode=None, pty=None, keep_trailing_newline=False, temp_dir=''):
     """
@@ -157,7 +158,10 @@ def upload_template(filename, destination, context=None, use_jinja=False,
         with open(os.path.expanduser(filename)) as inputfile:
             text = inputfile.read()
         if context:
-            text = text % context
+            if use_fmt:
+                text = getattr(fmt_obj(text), fmt_func)(context) if fmt_obj else text.format(**context)
+            else:
+                text = text % context
 
     # Back up original file
     if backup and exists(destination):
