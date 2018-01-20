@@ -511,9 +511,10 @@ def connect(user, host, port, cache, seek_gateway=True):
                     raise NetworkError(msg, e)
                 continue
 
-            # While using huge concurrent connections, some connection may not
-            # handle MSG_NEWKEYS yet unexpectedly.  Then SSHClient.connect()
-            # will raise this exception.  Just retry would be helpful.
+            # While using huge concurrent connections through bastions, some
+            # connections may not handle MSG_NEWKEYS yet unexpectedly.  Then
+            # SSHClient.connect() will raise this exception.  Just retry would
+            # be helpful.
             if (e.__class__ is ssh.SSHException \
                 and msg == 'No existing session'):
                 if _tried_enough(tries):
