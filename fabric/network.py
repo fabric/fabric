@@ -511,6 +511,15 @@ def connect(user, host, port, cache, seek_gateway=True):
                     raise NetworkError(msg, e)
                 continue
 
+            # While using huge concurrent connections, some connection may not
+            # handle MSG_NEWKEYS yet unexpectedly.  Then SSHClient.connect()
+            # will raise this exception.  Just retry would be helpful.
+            if (e.__class__ is ssh.SSHException \
+                and msg == 'No existing session'):
+                if _tried_enough(tries):
+                    raise NetworkError(msg, e)
+                continue
+
             # For whatever reason, empty password + no ssh key or agent
             # results in an SSHException instead of an
             # AuthenticationException. Since it's difficult to do
