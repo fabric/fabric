@@ -227,7 +227,7 @@ class SFTP(object):
         return result
 
     def put(self, local_path, remote_path, use_sudo, mirror_local_mode, mode,
-        local_is_path, temp_dir):
+        local_is_path, temp_dir, preserve_timestamps):
 
         from fabric.api import sudo, hide
         pre = self.ftp.getcwd()
@@ -256,13 +256,21 @@ class SFTP(object):
         rattrs = putter(local_path, remote_path)
         if not local_is_path:
             local_path.seek(old_pointer)
+
+        # Preserve modification and access times
+        if local_is_path:
+            st = os.stat(local_path)
+            if mirror_local_mode:
+                mode = st.st_mode
+            if preserve_timestamps:
+                self.ftp.utime(remote_path, (st.st_atime, st.st_mtime))
+
         # Handle modes if necessary
-        if (local_is_path and mirror_local_mode) or (mode is not None):
-            lmode = os.stat(local_path).st_mode if mirror_local_mode else mode
+        if mode is not None:
             # Cast to octal integer in case of string
-            if isinstance(lmode, basestring):
-                lmode = int(lmode, 8)
-            lmode = lmode & 07777
+            if isinstance(mode, basestring):
+                mode = int(mode, 8)
+            lmode = mode & 07777
             rmode = rattrs.st_mode
             # Only bitshift if we actually got an rmode
             if rmode is not None:
@@ -286,7 +294,7 @@ class SFTP(object):
         return remote_path
 
     def put_dir(self, local_path, remote_path, use_sudo, mirror_local_mode,
-        mode, temp_dir):
+        mode, temp_dir, preserve_timestamps):
         if os.path.basename(local_path):
             strip = os.path.dirname(local_path)
         else:
@@ -313,6 +321,6 @@ class SFTP(object):
                 local_path = os.path.join(context, f)
                 n = posixpath.join(rcontext, f)
                 p = self.put(local_path, n, use_sudo, mirror_local_mode, mode,
-                    True, temp_dir)
+                    True, temp_dir, preserve_timestamps)
                 remote_paths.append(p)
         return remote_paths
