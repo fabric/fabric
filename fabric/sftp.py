@@ -113,7 +113,8 @@ class SFTP(object):
         else:
             self.ftp.mkdir(path)
 
-    def get(self, remote_path, local_path, use_sudo, local_is_path, rremote=None, temp_dir=""):
+    def get(self, remote_path, local_path, use_sudo, local_is_path, rremote=None,
+            temp_dir="", preserve_timestamps=False):
         from fabric.api import sudo, hide
 
         # rremote => relative remote path, so get(/var/log) would result in
@@ -170,6 +171,8 @@ class SFTP(object):
                 remote_path = target_path
 
         try:
+            if preserve_timestamps:
+                times = self.ftp.stat(remote_path)
             # File-like objects: reset to file seek 0 (to ensure full overwrite)
             # and then use Paramiko's getfo() directly
             getter = self.ftp.get
@@ -177,6 +180,8 @@ class SFTP(object):
                 local_path.seek(0)
                 getter = self.ftp.getfo
             getter(remote_path, local_path)
+            if preserve_timestamps:
+                os.stat(local_path, (times.st_atime, times.st_mtime))
         finally:
             # try to remove the temporary file after the download
             if use_sudo:
@@ -187,7 +192,7 @@ class SFTP(object):
         # to know.)
         return local_path
 
-    def get_dir(self, remote_path, local_path, use_sudo, temp_dir):
+    def get_dir(self, remote_path, local_path, use_sudo, temp_dir, preserve_timestamps):
         # Decide what needs to be stripped from remote paths so they're all
         # relative to the given remote_path
         if os.path.basename(remote_path):
@@ -223,7 +228,8 @@ class SFTP(object):
                     lpath = local_path
                 # Now we can make a call to self.get() with specific file paths
                 # on both ends.
-                result.append(self.get(rpath, lpath, use_sudo, True, rremote, temp_dir))
+                result.append(self.get(rpath, lpath, use_sudo, True, rremote,
+                                       temp_dir, preserve_timestamps))
         return result
 
     def put(self, local_path, remote_path, use_sudo, mirror_local_mode, mode,
