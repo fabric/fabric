@@ -109,8 +109,6 @@ class Group(list):
     # would be distinct from Group. (May want to switch Group to use that,
     # though, whatever it ends up being?)
 
-    # TODO: mirror Connection's close()?
-
     def get(self, *args, **kwargs):
         """
         Executes `.Connection.get` on all member `Connections <.Connection>`.
@@ -130,6 +128,12 @@ class Group(list):
         # TODO: implement as per tutorial
         raise NotImplementedError
 
+    def close(self):
+        """
+        Executes `.Connection.close` on all member `Connections <.Connection>`.
+        """
+        raise NotImplementedError
+
 
 class SerialGroup(Group):
     """
@@ -147,6 +151,10 @@ class SerialGroup(Group):
         if excepted:
             raise GroupException(results)
         return results
+
+    def close(self):
+        for cxn in self:
+            cxn.close()
 
 
 def thread_worker(cxn, queue, args, kwargs):
@@ -206,6 +214,10 @@ class ThreadingGroup(Group):
         if excepted:
             raise GroupException(results)
         return results
+
+    def close(self):
+        for cxn in self:
+            cxn.close()
 
 
 class GroupResult(dict):
