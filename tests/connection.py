@@ -23,9 +23,9 @@ from _util import support
 
 
 # Remote is woven in as a config default, so must be patched there
-remote_path = 'fabric.config.Remote'
+remote_path = 'fabric.connection.Remote'
 
-local_path = 'invoke.config.Local'
+local_path = 'invoke.context.Local'
 
 
 def _select_result(obj):

@@ -14,6 +14,7 @@ from paramiko.config import SSHConfig
 from paramiko.proxy import ProxyCommand
 
 from .config import Config
+from .runners import Remote
 from .transfer import Transfer
 from .tunnels import TunnelManager, Tunnel
 
@@ -222,6 +223,7 @@ class Connection(Context):
         # that below. If it's somehow problematic we would want to break parent
         # __init__ up in a manner that is more cleanly overrideable.
         super(Connection, self).__init__(config=config)
+        self._set(runner=Remote)
 
         #: A handle for a local Context that allows local commands to be ran
         #: independently of the Connection's context.
@@ -562,8 +564,7 @@ class Connection(Context):
             settings/behaviors; they are documented under
             `.Config.global_defaults`.
         """
-        runner = self.config.runners.remote(self)
-        return self._run(runner, command, **kwargs)
+        return super(Connection, self).run(command, **kwargs)
 
     @opens
     def sudo(self, command, **kwargs):
@@ -575,8 +576,7 @@ class Connection(Context):
         configuration overrides in addition to the generic/global ones. Thus,
         for example, per-host sudo passwords may be configured.
         """
-        runner = self.config.runners.remote(self)
-        return self._sudo(runner, command, **kwargs)
+        return super(Connection, self).sudo(command, **kwargs)
 
     @opens
     def sftp(self):
