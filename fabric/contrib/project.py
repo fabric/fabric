@@ -148,7 +148,7 @@ def rsync_project(
     if host.count(':') > 1:
         # Square brackets are mandatory for IPv6 rsync address,
         # even if port number is not specified
-        remote_prefix = "[%s@%s]" % (user, host)
+        remote_prefix = "%s@[%s]" % (user, host)
     else:
         remote_prefix = "%s@%s" % (user, host)
     if upload:
