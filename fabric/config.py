@@ -5,7 +5,6 @@ import os
 from invoke.config import Config as InvokeConfig, merge_dicts
 from paramiko.config import SSHConfig
 
-from .runners import Remote
 from .util import get_local_user, debug
 
 
@@ -244,9 +243,6 @@ class Config(InvokeConfig):
             'port': 22,
             'run': {
                 'replace_env': True,
-            },
-            'runners': {
-                'remote': Remote,
             },
             'ssh_config_path': None,
             'tasks': {
