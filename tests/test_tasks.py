@@ -13,7 +13,7 @@ from fabric.api import run, env, settings, hosts, roles, hide, parallel, task, r
 from fabric.exceptions import NetworkError
 
 from mock_streams import mock_streams
-from utils import FabricTest, aborts, support
+from utils import eq_, FabricTest, aborts, support
 from server import server
 
 

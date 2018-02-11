@@ -1,3 +1,5 @@
+from __future__ import with_statement
+
 import sys
 from unittest import TestCase
 
@@ -6,7 +8,7 @@ from fudge.patcher import with_patched_object
 from nose.tools import eq_, raises
 
 from fabric.state import output
-from fabric.utils import warn, indent, abort, puts, fastprint, error, RingBuffer
+from fabric.utils import warn, indent, abort, puts, fastprint, error
 from fabric import utils  # For patching
 from fabric.api import local, quiet
 from fabric.context_managers import settings, hide
