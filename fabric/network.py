@@ -31,7 +31,7 @@ Please make sure all dependencies are installed and importable.
 
 
 ipv6_regex = re.compile(
-    '^\[?(?P<host>[0-9A-Fa-f:]+(?:%[a-z]+\d+)?)\]?(:(?P<port>\d+))?$')
+    r'^\[?(?P<host>[0-9A-Fa-f:]+(?:%[a-z]+\d+)?)\]?(:(?P<port>\d+))?$')
 
 
 def direct_tcpip(client, host, port):
@@ -243,7 +243,7 @@ def key_from_env(passphrase=None):
             except Exception as e:
                 # File is valid key, but is encrypted: raise it, this will
                 # cause cxn loop to prompt for passphrase & retry
-                if 'Private key file is encrypted' in e:
+                if 'Private key file is encrypted' in str(e):
                     raise
                 # Otherwise, it probably means it wasn't a valid key of this
                 # type, so try the next one.

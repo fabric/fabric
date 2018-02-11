@@ -3,7 +3,7 @@ streamlining the use of SSH for application deployment or systems
 administration tasks. This is a fork of the original
 `Fabric <http://www.fabfile.org/>`_ (`git <https://github.com/fabric/fabric>`_) with
 the intention of providing support for Python3, while maintaining support for
-all non-archaic versions if Python2.  Please see below for known differences
+all non-archaic versions of Python2.  Please see below for known differences
 with the upstream version of Fabric. To switch to Fabric3, simply do::
 
    pip uninstall Fabric
@@ -65,7 +65,7 @@ noted here:
 * In Python3, Fabric3 implements its own version of ``contextlib.nested`` based
   on ``contextlib.ExitStack``, since it's no longer available in Python3. Please
   note that it was removed with good reason, we do not encourage you use it.
-* Fabric3 requires the `six` library for compatability.
+* Fabric3 requires the `six` library for compatibility.
 * Minimum requirements for paramiko have been bumped to 1.17.0.
 
 ChangeLog

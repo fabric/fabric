@@ -326,7 +326,7 @@ def lcd(path):
 
 
 def _change_cwd(which, path):
-    path = path.replace(' ', '\ ')
+    path = path.replace(' ', r'\ ')
     if state.env.get(which) and not path.startswith('/') and not path.startswith('~'):
         new_cwd = state.env.get(which) + '/' + path
     else:
