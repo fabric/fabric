@@ -1,11 +1,12 @@
 import sys
+from unittest import TestCase
 
 from fudge import Fake, patched_context, with_fakes
 from fudge.patcher import with_patched_object
 from nose.tools import eq_, raises
 
 from fabric.state import output
-from fabric.utils import warn, indent, abort, puts, fastprint, error
+from fabric.utils import warn, indent, abort, puts, fastprint, error, RingBuffer
 from fabric import utils  # For patching
 from fabric.api import local, quiet
 from fabric.context_managers import settings, hide
@@ -25,19 +26,19 @@ def test_warn():
 
 
 def test_indent():
-    for description, input, output_str in (
+    for description, input_, output_ in (
         ("Sanity check: 1 line string",
             'Test', '    Test'),
         ("List of strings turns in to strings joined by \\n",
             ["Test", "Test"], '    Test\n    Test'),
     ):
         eq_.description = "indent(): %s" % description
-        yield eq_, indent(input), output_str
+        yield eq_, indent(input_), output_
         del eq_.description
 
 
 def test_indent_with_strip():
-    for description, input, output_str in (
+    for description, input_, output_ in (
         ("Sanity check: 1 line string",
             indent('Test', strip=True), '    Test'),
         ("Check list of strings",
@@ -47,7 +48,7 @@ def test_indent_with_strip():
             '    Test\n    Test'),
     ):
         eq_.description = "indent(strip=True): %s" % description
-        yield eq_, input, output_str
+        yield eq_, input_, output_
         del eq_.description
 
 
@@ -90,7 +91,7 @@ def test_abort_message_only_printed_once():
     # perform when they are allowed to bubble all the way to the top. So, we
     # invoke a subprocess and look at its stderr instead.
     with quiet():
-        result = local("fab -f tests/support/aborts.py kaboom", capture=True)
+        result = local("python -m fabric.__main__ -f tests/support/aborts.py kaboom", capture=True)
     # When error in #1318 is present, this has an extra "It burns!" at end of
     # stderr string.
     eq_(result.stderr, "Fatal error: It burns!\n\nAborting.")

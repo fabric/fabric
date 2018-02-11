@@ -46,8 +46,8 @@ def _get_system_username():
     except ImportError:
         if win32:
             import win32api
-            import win32security
-            import win32profile
+            import win32security # noqa
+            import win32profile # noqa
             username = win32api.GetUserName()
     return username
 
@@ -413,7 +413,18 @@ connections = HostConnectionCache()
 
 
 def _open_session():
-    return connections[env.host_string].get_transport().open_session()
+    transport = connections[env.host_string].get_transport()
+    # Try passing session-open timeout for Paramiko versions which support it
+    # (1.14.3+)
+    try:
+        session = transport.open_session(timeout=env.timeout)
+    # Revert to old call behavior if we seem to have hit arity error.
+    # TODO: consider introspecting the exception to avoid masking other
+    # TypeErrors; but this is highly fragile, especially when taking i18n into
+    # account.
+    except TypeError: # Assume arity error
+        session = transport.open_session()
+    return session
 
 
 def default_channel():

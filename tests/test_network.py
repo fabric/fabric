@@ -1,3 +1,5 @@
+from __future__ import with_statement
+
 import sys
 
 from nose.tools import ok_
@@ -6,7 +8,7 @@ from fudge import (Fake, patch_object, with_patched_object, patched_context,
 
 from fabric.context_managers import settings, hide, show
 from fabric.network import (HostConnectionCache, join_host_strings, normalize,
-    denormalize, key_filenames, ssh)
+                            denormalize, key_filenames, ssh, NetworkError, connect)
 import fabric.network  # So I can call patch_object correctly. Sigh.
 from fabric.state import env, output, _get_system_username
 from fabric.operations import run, sudo, prompt
@@ -15,10 +17,14 @@ from fabric.api import parallel
 from fabric import utils # for patching
 
 from mock_streams import mock_streams
-from utils import (FabricTest, eq_, password_response, aborts, support, patched_input,
-                   assert_contains)
+#from utils import (FabricTest, eq_, password_response, aborts, support, patched_input,
+#                   assert_contains)
+#from server import (server, RESPONSES, PASSWORDS, CLIENT_PRIVKEY, USER,
+#    CLIENT_PRIVKEY_PASSPHRASE)
 from server import (server, RESPONSES, PASSWORDS, CLIENT_PRIVKEY, USER,
-    CLIENT_PRIVKEY_PASSPHRASE)
+                    CLIENT_PRIVKEY_PASSPHRASE)
+from utils import (FabricTest, aborts, assert_contains, eq_, password_response,
+                   patched_input, support)
 
 
 #
@@ -230,6 +236,34 @@ class TestNetwork(FabricTest):
         with password_response(PASSWORDS[env.user], times_called=1):
             cache = HostConnectionCache()
             cache[env.host_string]
+
+    @with_fakes
+    @raises(NetworkError)
+    def test_connect_does_not_prompt_password_when_ssh_raises_channel_exception(self):
+        def raise_channel_exception_once(*args, **kwargs):
+            if raise_channel_exception_once.should_raise_channel_exception:
+                raise_channel_exception_once.should_raise_channel_exception = False
+                raise ssh.ChannelException(2, 'Connect failed')
+        raise_channel_exception_once.should_raise_channel_exception = True
+
+        def generate_fake_client():
+            fake_client = Fake('SSHClient', allows_any_call=True, expect_call=True)
+            fake_client.provides('connect').calls(raise_channel_exception_once)
+            return fake_client
+
+        fake_ssh = Fake('ssh', allows_any_call=True)
+        fake_ssh.provides('SSHClient').calls(generate_fake_client)
+        # We need the real exceptions here to preserve the inheritence structure
+        fake_ssh.SSHException = ssh.SSHException
+        fake_ssh.ChannelException = ssh.ChannelException
+        patched_connect = patch_object('fabric.network', 'ssh', fake_ssh)
+        patched_password = patch_object('fabric.network', 'prompt_for_password', Fake('prompt_for_password', callable = True).times_called(0))
+        try:
+            connect('user', 'localhost', 22, HostConnectionCache())
+        finally:
+            # Restore ssh
+            patched_connect.restore()
+            patched_password.restore()
 
 
     @mock_streams('stdout')
@@ -531,6 +565,24 @@ class TestConnections(FabricTest):
         """
         with settings(hide('everything'), skip_bad_hosts=True):
             execute(subtask, hosts=['nope.nonexistent.com'])
+
+    @server()
+    def test_host_not_in_known_hosts_exception(self):
+        """
+        Check reject_unknown_hosts exception
+        """
+        with settings(
+            hide('everything'), password=None, reject_unknown_hosts=True,
+            disable_known_hosts=True, abort_on_prompts=True,
+        ):
+            try:
+                run("echo foo")
+            except NetworkError as exc:
+                exp = "Server '[127.0.0.1]:2200' not found in known_hosts"
+                assert str(exc) == exp, "%s != %s" % (exc, exp)
+            else:
+                raise AssertionError("Host connected without valid "
+                                     "fingerprint.")
 
 
 @parallel

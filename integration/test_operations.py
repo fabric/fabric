@@ -6,7 +6,7 @@ import posixpath
 import shutil
 
 from fabric.api import (
-    run, path, put, sudo, abort, warn_only, env, cd, local, settings, get
+    run, path, put, sudo, env, cd, local, settings, get
 )
 from fabric.contrib.files import exists
 
@@ -143,7 +143,7 @@ class TestOperations(Integration):
         sudo("chmod 0440 %s" % target)
         # Pull down with use_sudo, confirm contents
         local_ = BytesIO()
-        result = get(
+        get(
             local_path=local_,
             remote_path=target,
             use_sudo=True,
@@ -165,7 +165,7 @@ class TestOperations(Integration):
         sudo("chmod 0640 %s" % target)
         # Do eet
         local_ = BytesIO()
-        result = get(
+        get(
             local_path=local_,
             remote_path=target,
             use_sudo=True,

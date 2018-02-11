@@ -18,29 +18,26 @@ Advanced users wanting to install a development version may use ``pip`` to grab
 the latest master branch (as well as the dev version of the Paramiko
 dependency)::
 
-    $ pip install paramiko==dev
-    $ pip install fabric==dev
-
-Or, to install an editable version for debugging/hacking, execute ``pip
-install -e .`` (or ``python setup.py develop``) inside a :ref:`downloaded
-<downloads>` or :ref:`cloned <source-code-checkouts>` copy of the source code.
+    $ pip install -e git+https://github.com/paramiko/paramiko/#egg=paramiko
+    $ pip install -e git+https://github.com/fabric/fabric/#egg=fabric
 
 .. warning::
 
-    Any development installs of Fabric (whether via ``==dev`` or ``install
-    -e``) require the development version of Paramiko to be installed
-    beforehand, or Fabric's installation may fail.
+    Development installs of Fabric, regardless of whether they involve source
+    checkouts or direct ``pip`` installs, require the development version of
+    Paramiko to be installed beforehand or Fabric's installation may fail.
 
 
 Dependencies
 ============
 
-In order for Fabric's installation to succeed, you will need four primary pieces of software:
+In order for Fabric's installation to succeed, you will need three primary pieces of software:
 
 * the Python programming language;
 * the ``setuptools`` packaging/installation library;
-* the Python `Paramiko <http://paramiko.org>`_ SSH library;
-* and Paramiko's dependency, the PyCrypto cryptography library.
+* and the Python `Paramiko <http://paramiko.org>`_ SSH library. Paramiko's dependencies differ
+  significantly between the 1.x and 2.x releases. See the `Paramiko installation docs
+  <http://www.paramiko.org/installing.html>`_ for more info.
 
 and, if using the :ref:`parallel execution mode <parallel-execution>`:
 

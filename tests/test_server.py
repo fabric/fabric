@@ -6,13 +6,14 @@ targeting it on the command-line. Rationale: not really testing Fabric itself,
 no need to pollute Fab's own test suite. (Yes, if these tests fail, it's likely
 that the Fabric tests using the test server may also have issues, but still.)
 """
-__test__ = False
 
 from nose.tools import eq_, ok_
 
 from fabric.network import ssh
 
 from server import FakeSFTPServer
+
+__test__ = False
 
 
 class AttrHolder(object):

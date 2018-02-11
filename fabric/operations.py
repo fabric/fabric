@@ -3,6 +3,9 @@
 Functions to be used in fabfiles and other non-core code, such as run()/sudo().
 """
 
+from __future__ import with_statement
+
+import errno
 import os
 import os.path
 import posixpath
@@ -561,12 +564,13 @@ def get(remote_path, local_path=None, use_sudo=False, temp_dir=""):
         failed_remote_files = []
 
         try:
-            # Glob remote path if it's a directory; otherwise use as-is
-            if (
-                ftp.isdir(remote_path)
-                or '*' in remote_path or '?' in remote_path
-            ):
+            # Glob remote path if necessary
+            if '*' in remote_path or '?' in remote_path:
                 names = ftp.glob(remote_path)
+                # Handle "file not found" errors (like Paramiko does if we
+                # explicitly try to grab a glob-like filename).
+                if not names:
+                    raise IOError(errno.ENOENT, "No such file")
             else:
                 names = [remote_path]
 

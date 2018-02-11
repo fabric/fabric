@@ -193,6 +193,7 @@ def upload_project(local_dir=None, remote_dir="", use_sudo=False):
     local_dir = local_dir.rstrip(os.sep)
 
     local_path, local_name = os.path.split(local_dir)
+    local_path = local_path or '.'
     tar_file = "%s.tar.gz" % local_name
     target_tar = os.path.join(remote_dir, tar_file)
     tmp_folder = mkdtemp()

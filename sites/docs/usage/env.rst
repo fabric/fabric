@@ -515,6 +515,19 @@ still be used, of course.)
 .. versionadded:: 0.9.1
 .. seealso:: :option:`-k`
 
+.. _output_prefix:
+
+``output_prefix``
+-----------------
+
+**Default:** ``True``
+
+By default Fabric prefixes every line of output with either ``[hostname] out:``
+or ``[hostname] err:``. Those prefixes may be hidden by setting
+``env.output_prefix`` to ``False``.
+
+.. versionadded:: 1.0.0
+
 .. _env-parallel:
 
 ``parallel``

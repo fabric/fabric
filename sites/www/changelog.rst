@@ -2,6 +2,56 @@
 Changelog
 =========
 
+* :release:`1.14.0 <2017-08-25>`
+* :feature:`1475` Honor ``env.timeout`` when opening new remote sessions (as
+  opposed to the initial overall connection, which already honored timeout
+  settings.) Thanks to ``@EugeniuZ`` for the report & ``@jrmsgit`` for the
+  first draft of the patch.
+
+  .. note::
+    This feature only works with Paramiko 1.14.3 and above; if your Paramiko
+    version is older, no timeout can be set, and the previous behavior will
+    occur instead.
+
+* :release:`1.13.2 <2017-04-24>`
+* :release:`1.12.2 <2017-04-24>`
+* :bug:`1542` (via :issue:`1543`) Catch Paramiko-level gateway connection
+  errors (``ChannelError``) when raising ``NetworkError``; this prevents an
+  issue where gateway related issues were being treated as authentication
+  errors. Thanks to Charlie Stanley for catch & patch.
+* :bug:`1555` Multiple simultaneous `~fabric.operations.get` and/or
+  `~fabric.operations.put` with ``use_sudo=True`` and for the same remote host
+  and path could fail unnecessarily. Thanks ``@arnimarj`` for the report and
+  Pierce Lopez for the patch.
+* :bug:`1427` (via :issue:`1428`) Locate ``.pyc`` files when searching for
+  fabfiles to load; previously we only used the presence of ``.py`` files to
+  determine whether loading should be attempted. Credit: Ray Chen.
+* :bug:`1294` fix text escaping for `~fabric.contrib.files.contains` and
+  `~fabric.contrib.files.append` which would fail if the text contained e.g.
+  ``>``. Thanks to ``@ecksun`` for report & Pierce Lopez for the patch.
+* :support:`1065 backported` Fix incorrect SSH config reference in the docs for
+  ``env.keepalive``; it corresponds to ``ServerAliveInterval``, not
+  ``ClientAliveInterval``. Credit: Harry Percival.
+* :bug:`1574` `~fabric.contrib.project.upload_project` failed for folder in
+  current directory specified without any path separator. Thanks ``@aidanmelen``
+  for the report and Pierce Lopez for the patch.
+* :support:`1590 backported` Replace a reference to ``fab`` in a test
+  subprocess, to use the ``python -m <package>`` style instead; this allows
+  ``python setup.py test`` to run the test suite without having Fabric already
+  installed. Thanks to ``@BenSturmfels`` for catch & patch.
+* :support:`- backported` Backport :issue:`1462` to 1.12.x (was previously only
+  backported to 1.13.x.)
+* :support:`1416 backported` Add explicit "Python 2 only" note to ``setup.py``
+  trove classifiers to help signal that fact to various info-gathering tools.
+  Patch courtesy of Gavin Bisesi.
+* :bug:`1526` Disable use of PTY and shell for a background command execution
+  within `contrib.sed <fabric.contrib.files.sed>`, preventing a small class of
+  issues on some platforms/environments. Thanks to ``@doflink`` for the report
+  and Pierce Lopez for the final patch.
+* :support:`1539 backported` Add documentation for :ref:`env.output_prefix
+  <output_prefix>`. Thanks ``@jphalip``.
+* :bug:`1514` Compatibility with Python 2.5 was broken by using the ``format()``
+  method of a string (only in 1.11+). Report by ``@pedrudehuere``.
 * :release:`1.13.1 <2016-12-09>`
 * :bug:`1462` Make a PyCrypto-specific import and method call optional to avoid
   ``ImportError`` problems under Paramiko 2.x. Thanks to Alex Gaynor for catch
@@ -17,6 +67,30 @@ Changelog
     changed; please see Paramiko's installation docs for details:
     http://www.paramiko.org/installing.html
 
+* :release:`1.12.1 <2016-12-05>`
+* :release:`1.11.3 <2016-12-05>`
+* :release:`1.10.5 <2016-12-05>`
+* :bug:`1470` When using `~fabric.operations.get` with glob expressions, a lack
+  of matches for the glob would result in an empty file named after the glob
+  expression (in addition to raising an error). This has been fixed so the
+  empty file is no longer generated. Thanks to Georgy Kibardin for the catch &
+  initial patch.
+* :feature:`1495` Update the internals of `~fabric.contrib.files` so its
+  members work with SSH servers running on Windows. Thanks to Hamdi Sahloul for
+  the patch.
+* :support:`1483 backported` (also re: :issue:`1386`, :issue:`1374`,
+  :issue:`1300`) Add :ref:`an FAQ <faq-csh>` about quote problems in remote
+  ``csh`` causing issues with Fabric's shell-wrapping and quote-escaping.
+  Thanks to Michael Radziej for the update.
+* :support:`1379 backported` (also :issue:`1464`) Clean up a lot of unused
+  imports and similar cruft (many found via ``flake8 --select E4``). Thanks to
+  Mathias Ertl for the original patches.
+* :bug:`1458` Detect ``known_hosts``-related instances of
+  ``paramiko.SSHException`` and prevent them from being handled like
+  authentication errors (which is the default behavior). This fixes
+  issues with incorrect password prompts or prompt-related exceptions when
+  using ``reject_unknown_hosts`` and encountering missing or bad
+  ``known_hosts`` entries. Thanks to Lukáš Doktor for catch & patch.
 * :release:`1.12.0 <2016-07-25>`
 * :release:`1.11.2 <2016-07-25>`
 * :release:`1.10.4 <2016-07-25>`

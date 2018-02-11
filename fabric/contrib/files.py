@@ -3,16 +3,13 @@ Module providing easy API for working with remote files and folders.
 """
 
 import hashlib
-import re
 import os
 import six
 
 from functools import partial
 
-from fabric.context_managers import hide, settings
-from fabric.operations import put, run, sudo
-from fabric.state import env
-from fabric.utils import abort, apply_lcwd
+from fabric.api import run, sudo, hide, settings, env, put, abort
+from fabric.utils import apply_lcwd
 
 
 def exists(path, use_sudo=False, verbose=False):
@@ -231,7 +228,7 @@ def sed(filename, before, after, limit='', use_sudo=False, backup='.bak',
     # Test the OS because of differences between sed versions
 
     with hide('running', 'stdout'):
-        platform = run("uname")
+        platform = run("uname", shell=False, pty=False)
     if platform in ('NetBSD', 'OpenBSD', 'QNX'):
         # Attempt to protect against failures/collisions
         hasher = hashlib.sha1()
@@ -355,7 +352,7 @@ def contains(filename, text, exact=False, use_sudo=False, escape=True,
     added.)
 
     The ``shell`` argument will be eventually passed to ``run/sudo``. See
-    description of the same argumnet in ``~fabric.contrib.sed`` for details.
+    description of the same argument in ``~fabric.contrib.sed`` for details.
 
     If ``case_sensitive`` is False, the `-i` flag will be passed to ``egrep``.
 
@@ -437,14 +434,32 @@ def append(filename, text, use_sudo=False, partial=False, escape=True,
 
 def _escape_for_regex(text):
     """Escape ``text`` to allow literal matching using egrep"""
-    regex = re.escape(text)
-    # Seems like double escaping is needed for \
-    regex = regex.replace('\\\\', '\\\\\\')
-    # Triple-escaping seems to be required for $ signs
-    regex = regex.replace(r'\$', r'\\\$')
-    # Whereas single quotes should not be escaped
-    regex = regex.replace(r"\'", "'")
-    return regex
+    re_specials = '\\^$|(){}[]*+?.'
+    sh_specials = '\\$`"'
+    re_chars = []
+    sh_chars = []
+
+    for c in text:
+        if c in re_specials:
+            re_chars.append('\\')
+        re_chars.append(c)
+
+    for c in re_chars:
+        if c in sh_specials:
+            sh_chars.append('\\')
+        sh_chars.append(c)
+
+    return ''.join(sh_chars)
+
+def is_win():
+    """
+    Return True if remote SSH server is running Windows, False otherwise.
+
+    The idea is based on echoing quoted text: \*NIX systems will echo quoted
+    text only, while Windows echoes quotation marks as well.
+    """
+    with settings(hide('everything'), warn_only=True):
+        return '"' in run('echo "Will you echo quotation marks"')
 
 def is_win():
     """
