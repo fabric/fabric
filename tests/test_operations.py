@@ -6,8 +6,6 @@ import shutil
 import six
 import sys
 
-from contextlib import nested
-
 from nose.tools import ok_, raises
 from fudge import patched_context, with_fakes, Fake
 from fudge.inspector import arg as fudge_arg
@@ -15,7 +13,7 @@ from mock_streams import mock_streams
 from paramiko.sftp_client import SFTPClient  # for patching
 
 from fabric.state import env
-from fabric.context_managers import settings
+from fabric.context_managers import nested, settings
 from fabric.operations import require, prompt, _sudo_prefix, _shell_wrap, \
     _shell_escape
 from fabric.api import get, put, hide, show, cd, lcd, local, run, sudo, quiet
