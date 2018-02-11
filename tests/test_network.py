@@ -2,7 +2,7 @@ from __future__ import with_statement
 
 import sys
 
-from nose.tools import ok_
+from nose.tools import ok_, raises
 from fudge import (Fake, patch_object, with_patched_object, patched_context,
                    with_fakes)
 
@@ -17,10 +17,6 @@ from fabric.api import parallel
 from fabric import utils # for patching
 
 from mock_streams import mock_streams
-#from utils import (FabricTest, eq_, password_response, aborts, support, patched_input,
-#                   assert_contains)
-#from server import (server, RESPONSES, PASSWORDS, CLIENT_PRIVKEY, USER,
-#    CLIENT_PRIVKEY_PASSPHRASE)
 from server import (server, RESPONSES, PASSWORDS, CLIENT_PRIVKEY, USER,
                     CLIENT_PRIVKEY_PASSPHRASE)
 from utils import (FabricTest, aborts, assert_contains, eq_, password_response,
