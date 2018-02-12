@@ -6,7 +6,7 @@ import socket
 from invoke.vendor.decorator import decorator
 from invoke.vendor.six import string_types
 
-from invoke import Context
+from invoke.context import BaseContext, Context
 from invoke.exceptions import ThreadException
 from paramiko.agent import AgentRequestHandler
 from paramiko.client import SSHClient, AutoAddPolicy
@@ -25,7 +25,7 @@ def opens(method, self, *args, **kwargs):
     return method(self, *args, **kwargs)
 
 
-class Connection(Context):
+class Connection(BaseContext):
     """
     A connection to an SSH daemon, with methods for commands and file transfer.
 
