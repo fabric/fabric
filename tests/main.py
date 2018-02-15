@@ -187,7 +187,7 @@ Third!
                 assert output == expected
 
     class no_hosts_flag:
-        def calls_task_once_with_invoke_context(self):
+        def calls_local_task_once_with_invoke_context(self):
             with cd(support):
                 _run_fab("expect-vanilla-Context")
 

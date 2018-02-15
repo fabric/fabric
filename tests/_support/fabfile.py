@@ -1,5 +1,5 @@
-from invoke import task, Context
-from fabric import Connection
+from invoke import Context
+from fabric import local_task, task, Connection
 
 
 @task
@@ -17,7 +17,7 @@ def basic_run(c):
     c.run("nope")
 
 
-@task
+@local_task
 def expect_vanilla_Context(c):
     assert isinstance(c, Context)
     assert not isinstance(c, Connection)
@@ -64,9 +64,11 @@ def expect_identities(c):
 def first(c):
     print("First!")
 
+
 @task
 def third(c):
     print("Third!")
+
 
 @task(pre=[first], post=[third])
 def second(c, show_host=False):
