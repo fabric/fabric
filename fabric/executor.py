@@ -1,7 +1,7 @@
-from invoke import Call, Executor, Task
+from invoke import Call, Context, Executor
 from invoke.util import debug
 
-from . import Config, Connection
+from . import Config, Connection, LocalTask, Task
 from .exceptions import NothingToDo
 
 
@@ -60,12 +60,16 @@ class FabExecutor(Executor):
         Parameterize a Call with its Context set to a per-host Config.
         """
         debug("Parameterizing {!r} for host {!r}".format(call, host))
-        # Generate a custom ConnectionCall that knows how to yield a Connection
-        # in its make_context(), specifically one to the host requested here.
-        clone = call.clone(into=ConnectionCall)
+        clone = call.clone()
         # TODO: using bag-of-attrs is mildly gross but whatever, I'll take it.
         clone.host = host
         return clone
+
+    def make_context(self, call, config):
+        if isinstance(call.task, LocalTask):
+            return Context(config=config)
+        elif isinstance(call.task, Task):
+            return Connection(host=call.host, config=config)
 
     def dedupe(self, tasks):
         # Don't perform deduping, we will often have "duplicate" tasks w/
@@ -73,11 +77,3 @@ class FabExecutor(Executor):
         # TODO: might want some deduplication later on though - falls under
         # "how to mesh parameterization with pre/post/etc deduping".
         return tasks
-
-
-class ConnectionCall(Call):
-    """
-    Subclass of `invoke.tasks.Call` that generates `Connections <.Connection>`.
-    """
-    def make_context(self, config):
-        return Connection(host=self.host, config=config)
