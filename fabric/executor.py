@@ -22,6 +22,8 @@ class FabExecutor(Executor):
         for call in calls:
             if isinstance(call, Task):
                 call = Call(task=call)
+            if not hasattr(call, 'host'):
+                call.host = None
             # TODO: expand this to allow multiple types of execution plans,
             # pending outcome of invoke#461 (which, if flexible enough to
             # handle intersect of dependencies+parameterization, just becomes
