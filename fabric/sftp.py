@@ -82,7 +82,7 @@ class SFTP(object):
             # Note that listdir and error are globals in this module due to
             # earlier import-*.
             names = self.ftp.listdir(top)
-        except Exception, err:
+        except Exception as err:
             if onerror is not None:
                 onerror(err)
             return
