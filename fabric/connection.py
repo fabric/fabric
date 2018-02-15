@@ -224,25 +224,24 @@ class Connection(BaseContext):
         # NOTE: parent __init__ sets self._config; for now we simply overwrite
         # that below. If it's somehow problematic we would want to break parent
         # __init__ up in a manner that is more cleanly overrideable.
+        if config is None:
+            config = Config()
+        assert isinstance(config, Config)
+        # config = config.clone(into=Config)
+
+        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        # NOTE: the above line fixes a few tests related to config testing, but breaks
+        # breaks config sharing. See: `invokelike_multitask_invocation_preserves_config_mutation`
+
+        # TODO: when/how to run load_files, merge, load_shell_env, etc?
+        # TODO: i.e. what is the lib use case here (and honestly in invoke too)
+
         super(Connection, self).__init__(config=config)
         self._set(runner=Remote)
 
         #: A handle for a local Context that allows local commands to be ran
         #: independently of the Connection's context.
         self.local = Context(self.config.clone())
-
-        #: The .Config object referenced when handling default values (for e.g.
-        #: user or port, when not explicitly given) or deciding how to behave.
-        if config is None:
-            config = Config()
-        # Handle 'vanilla' Invoke config objects, which need cloning 'into' one
-        # of our own Configs (which grants the new defaults, etc, while not
-        # squashing them if the Invoke-level config already accounted for them)
-        elif not isinstance(config, Config):
-            config = config.clone(into=Config)
-        self._set(_config=config)
-        # TODO: when/how to run load_files, merge, load_shell_env, etc?
-        # TODO: i.e. what is the lib use case here (and honestly in invoke too)
 
         shorthand = self.derive_shorthand(host)
         host = shorthand['host']
