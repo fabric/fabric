@@ -410,6 +410,9 @@ class Connection(BaseContext):
         return hash(self._identity())
 
     def derive_shorthand(self, host_string):
+        if host_string is None:
+            return {'user': '', 'host': '', 'port': ''}
+
         user_hostport = host_string.rsplit('@', 1)
         hostport = user_hostport.pop()
         user = user_hostport[0] if user_hostport and user_hostport[0] else None
