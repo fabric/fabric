@@ -1,12 +1,16 @@
 from invoke import Call, Executor, Task
 from invoke.util import debug
 
-from . import Connection
+from . import Config, Connection
 from .exceptions import NothingToDo
 
 
 # TODO: come up w/ a better name heh
 class FabExecutor(Executor):
+    def __init__(self, collection, config=None, core=None):
+        super(FabExecutor, self).__init__(collection, config, core)
+        self.config = self.config.clone(into=Config)
+
     def expand_calls(self, calls, apply_hosts=True):
         # Generate new call list with per-host variants & Connections inserted
         ret = []
