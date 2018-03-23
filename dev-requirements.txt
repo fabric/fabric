@@ -17,4 +17,4 @@ invocations>=0.12,<0.13
 alabaster>=0.6.1
 semantic_version==2.4
 wheel==0.24
-twine==1.9.1
+twine==1.11.0
