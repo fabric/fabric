@@ -614,8 +614,10 @@ def connect(user, host, port, cache, seek_gateway=True):
         # Ensure that if we terminated without connecting and we were given an
         # explicit socket, close it out.
         finally:
-            if not connected and sock is not None:
-                sock.close()
+            if not connected:
+                if sock is not None:
+                    sock.close()
+                client.close()
 
 
 def _password_prompt(prompt, stream):
