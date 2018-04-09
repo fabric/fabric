@@ -378,19 +378,18 @@ def contains(filename, text, exact=False, use_sudo=False, escape=True,
 def append(filename, text, use_sudo=False, partial=False, escape=True,
     shell=False):
     """
-    Append string (or list of strings) ``text`` to ``filename``.
+    Append line (or list of lines) ``text`` to ``filename``, if not present.
 
-    When a list is given, each string inside is handled independently (but in
-    the order given.)
+    When a list is given, each line is handled independently, in order.
 
-    If ``text`` is already found in ``filename``, the append is not run, and
-    None is returned immediately. Otherwise, the given text is appended to the
-    end of the given ``filename`` via e.g. ``echo '$text' >> $filename``.
+    If ``text`` is already found in ``filename``, the append is not run.
+    Otherwise, the given line is appended to the end of the given ``filename``
+    with ``echo '$text' >> $filename``. This adds a trailing newline. Do not
+    include a newline in ``text``.
 
-    The test for whether ``text`` already exists defaults to a full line match,
-    e.g. ``^<text>$``, as this seems to be the most sensible approach for the
-    "append lines to a file" use case. You may override this and force partial
-    searching (e.g. ``^<text>``) by specifying ``partial=True``.
+    The test for whether ``text`` already exists defaults to a full-line match
+    (``^<text>$``), or you can specify ``partial=True`` for start-of-line
+    matching (``^<text>``).
 
     Because ``text`` is single-quoted, single quotes will be transparently
     backslash-escaped. This can be disabled with ``escape=False``.
@@ -398,7 +397,7 @@ def append(filename, text, use_sudo=False, partial=False, escape=True,
     If ``use_sudo`` is True, will use `sudo` instead of `run`.
 
     The ``shell`` argument will be eventually passed to ``run/sudo``. See
-    description of the same argumnet in ``~fabric.contrib.sed`` for details.
+    description of the same argument in `~fabric.contrib.files.sed` for details.
 
     .. versionchanged:: 0.9.1
         Added the ``partial`` keyword argument.
@@ -433,7 +432,15 @@ def _escape_for_regex(text):
     re_chars = []
     sh_chars = []
 
+    # Removes newline characters.
+    # egrep does not support multi-line patterns, so they should not be used
+    # with these functions. But, this might as well remain consistent with
+    # its original behavior regarding newlines, which was to escape them,
+    # causing the shell to ignore/omit them.
+
     for c in text:
+        if c == '\n':
+            continue
         if c in re_specials:
             re_chars.append('\\')
         re_chars.append(c)
