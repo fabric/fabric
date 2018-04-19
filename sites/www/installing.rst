@@ -61,8 +61,19 @@ or most other ``setup.py`` related commands.
     to "install" all packages within them - so Fabric 2's ``fabric/`` package
     still ends up visible to the import system alongside ``fabric2/``).
 
-    To avoid this, we recommend you install Fabric 1 'normally' (i.e. ``pip
-    install fabric`` or ``pip install /path/to/fabric/checkout``, no ``-e``).
+    Thus, you may only have one of the local copies of Fabric installed in
+    'editable' fashion at a time, and the other must be repeatedly reinstalled
+    via ``pip install`` (no ``-e``) if you need to make edits to it.
+
+.. warning::
+    When installing Fabric 1 and 2 side by side, with one of them in pip's
+    'editable' mode, you must install the 'editable' version first, and then
+    the 'static' version second. For example, if you're migrating from some
+    public release of Fabric 1 to a checkout of Fabric 2::
+
+        $ PACKAGE_AS_FABRIC2=yes pip install -e /path/to/fabric2
+        $ pip install fabric==1.14.0
+
 
 Dependencies
 ============
