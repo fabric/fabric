@@ -215,6 +215,13 @@ class Config(InvokeConfig):
         For Fabric-specific modifications and additions to the Invoke-level
         defaults, see our own config docs at :ref:`default-values`.
         """
+        # TODO: hrm should the run-related things actually be derived from the
+        # runner_class? E.g. Local defines local stuff, Remote defines remote
+        # stuff? Doesn't help with the final config tree tho...
+        # TODO: as to that, this is a core problem, Fabric wants split
+        # local/remote stuff, eg replace_env wants to be False for local and
+        # True remotely; shell wants to differ depending on target (and either
+        # way, does not want to use local interrogation for remote)
         # TODO: is it worth moving all of our 'new' settings to a discrete
         # namespace for cleanliness' sake? e.g. ssh.port, ssh.user etc.
         # It wouldn't actually simplify this code any, but it would make it
