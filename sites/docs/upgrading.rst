@@ -14,21 +14,21 @@ until you're fully upgraded. Should anything be missing, please file a ticket
 `on Github <https://github.com/fabric/fabric>`_ and we'll update it ASAP.
 
 
-Upgrading by not upgrading
-==========================
+'Sidegrading' to Invoke
+=======================
 
 We linked to a note about this above, but to be explicit: Fabric 2 is really
 two separate libraries, and anything not strictly SSH or network related has
 been :ref:`split out into the Invoke project <invoke-split-from-fabric>`.
 
 This means that if you're in the group of users leveraging Fabric solely for
-its task execution, and never used ``run()``, ``put()`` or similar - **you
-don't need to use Fabric itself anymore** and can simply **'sidegrade' to using
-Invoke instead**.
+its task execution or ``local()``, and never used ``run()``, ``put()`` or
+similar - **you don't need to use Fabric itself anymore** and can simply
+**'sidegrade' to Invoke instead**.
 
 You'll still want to read over this document to get a sense of how things have
-changed, but just be aware that you can get away with ``pip install invoke``
-and won't need Fabric, Paramiko, cryptography dependencies, or anything else.
+changed, but be aware that you can get away with ``pip install invoke`` and
+won't need Fabric, Paramiko, cryptography dependencies, or anything else.
 
 
 Why upgrade?
@@ -47,19 +47,20 @@ Fabric 2 that might make it worth your time to make the jump.
 - API reorganized around `.Connection` objects instead of global module state;
 - Command-line parser overhauled to allow for regular GNU/POSIX style flags and
   options on a per-task basis (no more ``fab mytask:weird=custom,arg=format``);
-- Task organization far more explicit and flexible / has far less 'magic';
+- Task organization is more explicit and flexible / has less 'magic';
 - Tasks can declare other tasks to always be run before or after themselves;
 - Configuration massively expanded to allow for multiple config files &
   formats, env vars, per-user/project/module configs, and much more;
 - SSH config file loading enabled by default & has been fleshed out re:
   system/user/runtime file selection;
 - Shell command execution API consistent across local and remote method calls -
-  no more differentiation between ``local()`` and ``run()``;
+  no more differentiation between ``local()`` and ``run()`` (besides where the
+  command runs, of course!);
 - Shell commands significantly more flexible re: interactive behavior,
   simultaneous capture & display (now applies to local subprocesses, not just
-  remote), and auto-responding;
-- Improved flexibility in how Paramiko is used - `.Connection` allows for
-  arbitrary control over the kwargs given to `SSHClient.connect
+  remote), encoding control, and auto-responding;
+- Use of Paramiko's APIs for the SSH layer much more transparent - e.g.
+  `.Connection` allows control over the kwargs given to `SSHClient.connect
   <paramiko.client.SSHClient.connect>`;
 - Gateway/jump-host functionality offers a ``ProxyJump`` style 'native' (no
   proxy-command subprocesses) option, which can be nested infinitely;
@@ -68,16 +69,12 @@ Fabric 2 that might make it worth your time to make the jump.
 Upgrading piecemeal
 ===================
 
-A quick note that Fabric 2 is being offered in two flavors to make gradual
-upgrades less painful:
-
-- As versions 2.0+ of the ``fabric`` package, which if installed, will replace
-  Fabric 1 (aka versions 1.x of ``fabric``);
-- And as the ``fabric2`` package, which is identical to the former in every
-  way, save for the name exposed to Python's packaging and import systems.
+To help with gradual upgrades, Fabric 2 may be installed under the name
+``fabric2`` (in addition to being made available "normally" as version 2.0+ of
+``fabric``) and can live alongside installations of version 1.x.
 
 Thus, if you have a large codebase and don't want to make the jump to 2.x in
-one leap, it's possible to have both Fabric 1 (as ``fabric``, as you presumably
+one leap, it's possible to have both Fabric 1 (``fabric``, as you presumably
 had it installed previously) and Fabric 2 (as ``fabric2``) resident in your
 Python environment simultaneously.
 
@@ -86,7 +83,7 @@ Python environment simultaneously.
     to version 2 or above, so that you can move back to installing and
     importing under the ``fabric`` name. ``fabric2`` as a distinct package and
     module is intended to be a stopgap, and there will not be any ``fabric3``
-    or above.
+    or above (not least because some of those names are already taken!)
 
 For details on how to obtain the ``fabric2`` version of the package, see
 :ref:`installing-as-fabric2`.
