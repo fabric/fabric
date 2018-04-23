@@ -34,13 +34,12 @@ won't need Fabric, Paramiko, cryptography dependencies, or anything else.
 Why upgrade?
 ============
 
-While this is not a replacement for the detailed lists later in the document,
-we'd like to call out, in no particular order, some specific improvements in
-Fabric 2 that might make it worth your time to make the jump.
+We'd like to call out, in no particular order, some specific improvements in
+Fabric 2 that might make upgrading worth your time.
 
 .. note::
     These are all listed in the next section as well, so if you're already
-    sold, just skip there.
+    sold, just skip there. TK: double check that this is still true!
 
 - Python 3 compatibility (specifically, we now support 2.7 and 3.4+);
 - Thread-safe - no more requirement on multiprocessing for concurrency;
@@ -347,7 +346,7 @@ Networking
         (You may specify a runtime, non-SSH-config-driven
         ``ProxyCommand``-style string as the ``gateway`` kwarg instead, which
         will act just like a regular ``ProxyCommand``.)
-    * - SSH config file-driven ``ProxyCommand`` support
+    * - ``ssh_config``-driven ``ProxyCommand`` support
       - Ported
       - This continues to work as it did in v1.
     * - ``with remote_tunnel(...):`` port forwarding
@@ -435,8 +434,6 @@ Invoke's setup; see :ref:`Fabric 2's specific config doc page
     ``env`` setting, as many have moved outside the configuration system into
     object or method keyword arguments.
 
-Details in table format follow:
-
 .. list-table::
     :widths: 40 10 50
 
@@ -455,19 +452,18 @@ Details in table format follow:
         The remaining such use cases have been turned into context-manager
         methods of `.Connection` (or its parent class, `.Context`), or have
         such methods pending.
+    * - SSH config file loading (off by default, limited to ``~/.ssh/config``
+        only unless configured to a different, single path)
+      - Ported
+      - Much improved: SSH config file loading is **on** by default (which
+        :ref:`can be changed <disabling-ssh-config>`), multiple sources are
+        loaded and merged just like OpenSSH, and more besides; see
+        :ref:`ssh-config`.
 
-- :ref:`SSH config file loading <ssh-config>` has also improved. Fabric 1
-  allowed selecting a single SSH config file; version 2 behaves more like
-  OpenSSH and will seek out both system and user level config files, as well as
-  allowing a runtime config file. (And advanced users may simply supply their
-  own Paramiko SSH config object they obtained however.)
-- Speaking of SSH config loading, it is **now enabled by default**, and may be
-  easily :ref:`disabled <disabling-ssh-config>` by advanced users seeking
-  purity of state.
-- On top of the various SSH config directives implemented in v1, v2 honors
-  ``ConnectTimeout`` and ``ProxyJump``; generally, the intention is now that
-  SSH config support is to be included in any new feature added, when
-  appropriate.
+        In addition, we've added support for some ``ssh_config`` directives
+        which were ignored by v1, such as ``ConnectTimeout`` and
+        ``ProxyCommand``, and going forwards we intend to support as much of
+        ``ssh_config`` as is reasonably possible.
 
 .. _upgrading-env:
 
@@ -486,8 +482,11 @@ viewer.
       - Pending
       - As noted in :ref:`upgrading-api`, roles as a concept were ported to
         `.Group`, but there's no central clearinghouse in which to store them.
+
         We *may* delegate this to userland forever, but seems likely a
-        common-best-practice option will appear in early 2.x.
+        common-best-practice option (such as creating `.Groups` from some
+        configuration subtree and storing them as a `.Context` attribute) will
+        appear in early 2.x.
 
 
 Example upgrade process
