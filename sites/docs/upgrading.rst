@@ -232,8 +232,9 @@ Task functions & decorators
         auto-added to the task tree.
 
         However, the root ``fabfile.py`` *is* automatically loaded (using
-        `.Collection.load_module`), preserving the simple/common case. See
-        :ref:`task-namespaces` for details.
+        `Collection.from_module <invoke.collection.Collection.from_module>`),
+        preserving the simple/common case. See :ref:`task-namespaces` for
+        details.
 
         We may reinstate import (opt-in) module scanning later, since the use
         of explicit namespace objects still allows users control over the tree
@@ -280,8 +281,8 @@ Shell command execution (``local``/``run``/``sudo``)
       - All command execution is now unified; all three functions (now
         methods on `.Connection`, though ``local`` is also available as
         `invoke.run` for standalone use) have the same underlying protocol and
-        logic (the `.Runner` class hierarchy), with only low-level details like
-        process creation and pipe consumption differing.
+        logic (the `~invoke.runners.Runner` class hierarchy), with only
+        low-level details like process creation and pipe consumption differing.
 
         For example, in v1 ``local`` required you to choose between displaying
         and capturing subprocess output; v2's is like ``run`` and does both at
@@ -310,10 +311,11 @@ Shell command execution (``local``/``run``/``sudo``)
     * - ``fabric.context_managers.cd``/``lcd`` (and ``prefix``) allow scoped
         mutation of executed comments
       - Mixed
-      - These are now methods on `.Context` (`~.Context.cd`,
-        `~.Context.prefix`) but need work in its subclass `.Connection` (quite
-        possibly including recreating ``lcd``) so that local vs remote state
-        are separated.
+      - These are now methods on `~invoke.context.Context` (`Context.cd
+        <invoke.context.Context.cd>`, `Context.prefix
+        <invoke.context.Context.prefix>`) but need work in its subclass
+        `.Connection` (quite possibly including recreating ``lcd``) so that
+        local vs remote state are separated.
     * - ``fabric.context_managers.shell_env`` and its specific expression
         ``path``, for modifying remote environment variables (locally, one
         would just modify `os.environ`.)
@@ -468,8 +470,8 @@ Invoke's setup; see :ref:`Fabric 2's specific config doc page
         design antipattern which is now gone.
 
         The remaining such use cases have been turned into context-manager
-        methods of `.Connection` (or its parent class, `.Context`), or have
-        such methods pending.
+        methods of `.Connection` (or its parent class), or have such methods
+        pending.
     * - SSH config file loading (off by default, limited to ``~/.ssh/config``
         only unless configured to a different, single path)
       - Ported
@@ -502,9 +504,9 @@ viewer.
         `.Group`, but there's no central clearinghouse in which to store them.
 
         We *may* delegate this to userland forever, but seems likely a
-        common-best-practice option (such as creating `.Groups` from some
-        configuration subtree and storing them as a `.Context` attribute) will
-        appear in early 2.x.
+        common-best-practice option (such as creating `Groups <.Group>` from
+        some configuration subtree and storing them as a
+        `~invoke.context.Context` attribute) will appear in early 2.x.
 
 
 Example upgrade process

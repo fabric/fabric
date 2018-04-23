@@ -209,7 +209,7 @@ class Connection(Context):
 
             Default: ``config.connect_kwargs``.
 
-        :raises exceptions.ValueError:
+        :raises ValueError:
             if user or port values are given via both ``host`` shorthand *and*
             their own arguments. (We `refuse the temptation to guess`_).
 

@@ -75,9 +75,9 @@ like use of SOCKS proxies, or custom filtering/gatekeeping applications.
 ``ssh -W %h:%p gatewayhost``; or (on SSH versions lacking ``-W``) the widely
 available ``netcat``, via ``ssh gatewayhost nc %h %p``.
 
-Fabric supports ``ProxyCommand`` by accepting command string (`str` or
-`unicode`) objects in the ``gateway`` kwarg of `.Connection`; this is used to
-populate a `paramiko.proxy.ProxyCommand` object at connection time.
+Fabric supports ``ProxyCommand`` by accepting command string objects in the
+``gateway`` kwarg of `.Connection`; this is used to populate a
+`paramiko.proxy.ProxyCommand` object at connection time.
 
 Additional concerns
 -------------------
