@@ -89,6 +89,407 @@ For details on how to obtain the ``fabric2`` version of the package, see
 :ref:`installing-as-fabric2`.
 
 
+.. _upgrade-specifics:
+
+Upgrade specifics
+=================
+
+This is (intended to be) an exhaustive list of *all* Fabric 1.x functionality,
+as well as new-to-Invoke-or-Fabric-2 functionality not present in 1.x; it
+specifies whether upgrading is necessary, how to upgrade if so, and tracks
+features which haven't been implemented in version 2 yet.
+
+Most sections are broken down in table form, as follows:
+
+.. list-table::
+
+    * - Fabric 1 feature or behavior
+      - Status, see below for breakdown
+      - Migration notes, removal rationale, etc
+
+The 'status' field will be one of the following:
+
+- **Ported**: available already in v2, possibly renamed or moved (frequently,
+  moved into the `Invoke <http://pyinvoke.org>`_ codebase.)
+- **Pending**: would fit in v2, but has not yet been ported, good candidate for
+  a patch (but please check for a ticket first!)
+- **Mixed**: some aspects ported or moved to Invoke, some aspects still
+  pending.
+- **Removed**: explicitly *not* ported (no longer fits with vision, had too
+  poor a maintenance-to-value ratio, etc) and unlikely to be reinstated;
+
+Here's a quick local table of contents for navigation purposes:
+
+.. contents::
+    :local:
+
+General / conceptual
+--------------------
+
+- Fabric 2 is fully Python 3 compatible; as a cost, Python 2.5 support has been
+  dropped - in fact, we've dropped support for anything older than Python 2.7.
+- The CLI task-oriented workflow remains a primary design goal, but the library
+  use case is no longer a second-class citizen; instead, the library
+  functionality has been designed first, with the CLI/task features built on
+  top of it.
+- Additionally, within the CLI use case, version 1 placed too much emphasis on
+  'lazy' interactive prompts for authentication secrets or even connection
+  parameters, driven in part by a lack of strong configuration mechanisms. Over
+  time it became clear this wasn't worth the tradeoffs of having confusing
+  noninteractive behavior and difficult debugging/testing procedures.
+
+  Version 2 takes an arguably cleaner approach (based on functionality added to
+  v1 over time) where users are encouraged to leverage the configuration system
+  and/or serve the user prompts for runtime secrets at the *start* of the
+  process; if the system determines it's missing information partway through,
+  it raises exceptions instead of prompting.
+- Invoke's design includes :ref:`explicit user-facing testing functionality
+  <testing-user-code>`; if you didn't find a way to write tests for your
+  Fabric-using code before, it should be much easier now.
+
+    - We recommend trying to write tests early on; they will help clarify the
+      upgrade process for you & also make the process safer!
+
+.. _upgrading-api:
+
+API organization
+----------------
+
+High level code flow and API member concerns.
+
+.. list-table::
+    :widths: 40 10 50
+
+    * - Import everything via ``fabric.api``
+      - Removed
+      - All useful imports are now available at the top level, e.g. ``from
+        fabric import Connection``.
+    * - Configure connection parameters globally (via ``env.host_string``) and
+        call global methods which reference them (``run``/``sudo``/etc)
+      - Ported
+      - The primary API is now properly OOP: instantiate `.Connection` objects
+        and call their methods. These objects encapsulate all connection state
+        (user, host, gateway, etc) and have their own SSH client instances.
+    * - Emphasis on serialized "host strings" as method of setting user, host,
+        port, etc
+      - Ported
+      - `.Connection` *can* accept a shorthand "host string"-like argument, but
+        the primary API is now explicit user, host, port, etc keyword
+        arguments.
+    * - Use of "roles" as global named lists of host strings
+      - Ported
+      - This need is now served by `.Group` objects (which wrap some number of
+        `.Connection` instances with "do a thing to all members" methods.)
+        Users can create & organize these any way they want.
+        
+        See the line items for ``--roles`` (:ref:`upgrading-cli`),
+        ``env.roles`` (:ref:`upgrading-env`) and ``@roles``
+        (:ref:`upgrading-tasks`) for the status of those specifics.
+
+.. _upgrading-tasks:
+
+Task functions & decorators
+---------------------------
+
+.. note::
+    Nearly all task-related functionality is implemented in Invoke; for more
+    details see its :ref:`execution <task-execution>` and :ref:`namespaces
+    <task-namespaces>` documentation.
+
+.. list-table::
+    :widths: 40 10 50
+
+    * - "Classic" style implicit tasks w/o a ``@task`` decorator
+      - Removed
+      - These were on the way out even in v1, and arbitrary task/namespace
+        creation is more explicitly documented now, via Invoke's
+        `~invoke.tasks.Task` and `~invoke.collection.Collection`.
+    * - "New" style ``@task``-decorated, module-level task functions
+      - Ported
+      - Largely the same, though now with superpowers - `@task
+        <invoke.tasks.task>` can still be used without any parentheses, but
+        where v1 only had a single ``task_class`` argument, Invoke has a number
+        of various namespace and parser hints as well as execution related
+        options.
+    * - Completely arbitrary task function arguments (i.e. ``def mytask(any,
+        thing, at, all)``)
+      - Mixed
+      - This gets its own line item because: Fabric-level task functions must
+        now take a `.Connection` object as their first positional argument.
+        (The rest of the function signature is, as before, totally up to the
+        user & will get automatically turned into CLI flags.)
+
+        This sacrifices a small bit of the "quick DSL" of v1 in exchange for a
+        cleaner, easier to understand/debug, and more user-overrideable API
+        structure.
+
+        As a side effect, it lessens the distinction between "module of
+        functions" and "class of methods"; users can more easily start with the
+        former and migrate to the latter when their needs grow/change.
+    * - Implicit task tree generation via import-crawling
+      - Mixed
+      - Namespace construction is now more explicit; for example, imported
+        modules in your ``fabfile.py`` are no longer auto-scanned and
+        auto-added to the task tree.
+        
+        However, the root ``fabfile.py`` *is* automatically loaded (using
+        `.Collection.load_module`), preserving the simple/common case. See
+        :ref:`task-namespaces` for details.
+
+        We may reinstate import (opt-in) module scanning later, since the use
+        of explicit namespace objects still allows users control over the tree
+        that results.
+
+.. _upgrading-cli:
+
+CLI arguments, options and behavior
+-----------------------------------
+
+.. list-table::
+    :header-rows: 1
+    :widths: 40 10 50
+
+    * - Behavior
+      - Status
+      - Notes
+    * - ``python -m fabric`` as stand-in for ``fab``
+      - Pending
+      - Should be trivial to port this over.
+    * - ``-a``/``--no_agent``
+      - Removed
+      - To disable use of an agent permanently, set config value
+        ``connect_kwargs.allow_agent`` to ``False``; to disable temporarily,
+        unset the ``SSH_AUTH_SOCK`` env var.
+    * - ``-I``/``--initial-password-prompt``
+      - Ported
+      - It's now :option:`--prompt-for-password` and/or
+        :option:`--prompt-for-passphrase`, depending on whether you were using
+        the former to fill in passwords or key passphrases (or both.)
+    * - TODO: rest of this
+      - Pending
+      - Yup
+
+Shell command execution (``local``/``run``/``sudo``)
+----------------------------------------------------
+
+.. list-table::
+    :widths: 40 10 50
+
+    * - ``local`` and ``run``/``sudo`` have wildly differing APIs and
+        implementations
+      - Removed
+      - All command execution is now unified; all three functions (now
+        methods on `.Connection`, though ``local`` is also available as
+        `invoke.run` for standalone use) have the same underlying protocol and
+        logic (the `.Runner` class hierarchy), with only low-level details like
+        process creation and pipe consumption differing.
+
+        For example, in v1 ``local`` required you to choose between displaying
+        and capturing subprocess output; v2's is like ``run`` and does both at
+        the same time.
+    * - ``local``
+      - Ported
+      - TK: Details specific to ``local``, including any of its args. Maybe
+        make a table for each function with rows being args?
+    * - ``run``
+      - Ported
+      - TK: see above.
+
+        Also, there is no more built-in ``use_shell`` or ``shell`` option; the
+        old "need" to wrap with an explicit shell invocation is no longer
+        necessary or usually desirable. TODO: this isn't 100% true actually, it
+        depends :(
+    * - Prompt auto-response, via ``env.prompts`` and/or ``sudo``'s internals
+      - Ported
+      - The ``env.prompts`` functionality has been significantly fleshed out,
+        into a framework of :ref:`Watchers <autoresponding>` which operate on
+        any (local or remote!) running command's input and output streams.
+
+        In addition, ``sudo`` has been rewritten to use that framework; while
+        still useful enough to offer an implementation in core, it no longer
+        does anything users cannot do themselves using public APIs.
+
+.. _upgrading-utility:
+
+Utility functions
+-----------------
+
+.. list-table::
+    :widths: 40 10 50
+
+    * - Error handling via ``abort()`` and ``warn()``
+      - Ported
+      - The old functionality leaned too far in the "everything is a DSL"
+        direction & didn't offer enough value to offset how it gets in the way
+        of experienced Pythonistas.
+        
+        These functions have been removed in favor of "just raise an exception"
+        (with one useful option being Invoke's `~invoke.exceptions.Exit`) as
+        exception handling feels more Pythonic than thin wrappers around
+        ``sys.exit`` or having to ``except SystemExit:`` and hope it was a
+        `SystemExit` your own code raised!
+
+.. _upgrading-networking:
+
+Networking
+----------
+
+.. list-table::
+    :widths: 40 10 50
+
+    * - ``env.gateway`` for setting an SSH jump gateway
+      - Ported
+      - This is now the ``gateway`` kwarg to `.Connection`, and -- for the
+        newly supported ``ProxyJump`` style gateways, which can be nested
+        indefinitely! -- should be another `.Connection` object instead of a
+        host string.
+
+        (You may specify a runtime, non-SSH-config-driven
+        ``ProxyCommand``-style string as the ``gateway`` kwarg instead, which
+        will act just like a regular ``ProxyCommand``.)
+    * - SSH config file-driven ``ProxyCommand`` support
+      - Ported
+      - This continues to work as it did in v1.
+    * - ``with remote_tunnel(...):`` port forwarding
+      - Ported
+      - This is now `.Connection.forward_local`, since it's used to *forward* a
+        *local* port to the remote end. (New in v2 is the logical inverse,
+        `.Connection.forward_remote`.)
+
+Authentication
+--------------
+
+.. note::
+    Some ``env`` keys from v1 were simply passthroughs to Paramiko's
+    `SSHClient.connect <paramiko.client.SSHClient.connect>` method. Fabric 2
+    gives you explicit control over the arguments it passes to that method, via
+    the ``connect_kwargs`` :doc:`configuration </concepts/configuration>`
+    subtree, and the below table will frequently refer you to that approach.
+
+.. list-table::
+    :widths: 40 10 50
+
+    * - ``env.key_filename``
+      - Ported
+      - Use ``connect_kwargs``.
+    * - ``env.password``
+      - Ported
+      - Use ``connect_kwargs``.
+        
+        Also note that this used to perform double duty as connection *and*
+        sudo password; the latter is now found in the ``sudo.password``
+        setting.
+    * - ``env.gss_(auth|deleg|kex)``
+      - Ported
+      - Use ``connect_kwargs``.
+    * - ``env.key``, a string or file object holding private key data, whose
+        specific type is auto-determined and instantiated for use as the
+        ``pkey`` connect kwarg
+      - Removed
+      - This has been dropped as unnecessary (& bug-prone) obfuscation of
+        Paramiko-level APIs; users should already know which type of key
+        they're dealing with and instantiate a ``PKey`` subclass themselves,
+        placing the result in ``connect_kwargs.pkey``.
+    * - ``env.no_agent``, simply a renaming/inversion of the ``allow_agent``
+        connect kwarg
+      - Ported
+      - Users who were setting this to ``True`` should now simply set
+        ``connect_kwargs.allow_agent`` to ``False`` instead.
+    * - ``env.no_keys``, similar to ``no_agent``, just an inversion of
+        the ``look_for_keys`` connect kwarg
+      - Ported
+      - Use ``connect_kwargs.look_for_keys`` instead (setting it to ``False``
+        to disable Paramiko's default key-finding behavior.)
+    * - ``env.passwords`` stores connection passwords in a dict keyed by host
+        strings
+      - Mixed
+      - Each `.Connection` object may be configured with its own
+        ``connect_kwargs`` given at instantiation time, allowing for per-host
+        password configuration already.
+        
+        However, we expect users may want a simpler way to set configuration
+        values that are turned into implicit `.Connection` objects
+        automatically; such a feature is still pending.
+    * - Configuring ``IdentityFile`` in one's ``ssh_config``
+      - Ported
+      - Still honored in v2, along with a bunch of newly honored ``ssh_config``
+        settings; see :ref:`ssh-config`.
+
+Configuration
+-------------
+
+In general, configuration has been massively improved over the old ``fabricrc``
+files; most config logic comes from :ref:`Invoke's configuration system
+<configuration>`, which offers a full-fledged configuration hierarchy (in-code
+config, multiple config file locations, environment variables, CLI flags, and
+more) and multiple file formats. Nearly all configuration avenues in Fabric 1
+become, in v2, manipulation of whatever part of the config hierarchy is most
+appropriate for your needs.
+
+Fabric 2 itself only makes minor modifications to (or parameterizations of)
+Invoke's setup; see :ref:`Fabric 2's specific config doc page
+<fab-configuration>` for details.
+
+.. note::
+    Make sure to look elsewhere in this document for details on any given v1
+    ``env`` setting, as many have moved outside the configuration system into
+    object or method keyword arguments.
+
+Details in table format follow:
+
+.. list-table::
+    :widths: 40 10 50
+
+    * - Modifying ``fabric.(api.)env`` directly
+      - Ported
+      - To effect truly global-scale config changes, use config files,
+        task-collection-level config data, or the invoking shell's environment
+        variables. 
+    * - Making locally scoped ``env`` changes via ``with settings(...):``
+      - Mixed
+      - Most of the use cases surrounding ``with settings`` are now served by
+        the fact that `.Connection` objects keep per-host/connection state -
+        the pattern of switching the implicit global context around was a
+        design antipattern which is now gone.
+
+        The remaining such use cases have been turned into context-manager
+        methods of `.Connection` (or its parent class, `.Context`), or have
+        such methods pending.
+
+- :ref:`SSH config file loading <ssh-config>` has also improved. Fabric 1
+  allowed selecting a single SSH config file; version 2 behaves more like
+  OpenSSH and will seek out both system and user level config files, as well as
+  allowing a runtime config file. (And advanced users may simply supply their
+  own Paramiko SSH config object they obtained however.)
+- Speaking of SSH config loading, it is **now enabled by default**, and may be
+  easily :ref:`disabled <disabling-ssh-config>` by advanced users seeking
+  purity of state.
+- On top of the various SSH config directives implemented in v1, v2 honors
+  ``ConnectTimeout`` and ``ProxyJump``; generally, the intention is now that
+  SSH config support is to be included in any new feature added, when
+  appropriate.
+
+.. _upgrading-env:
+
+``fabric.env`` reference
+------------------------
+
+Many/most of the members in v1's ``fabric.env`` are covered in the above
+per-topic sections; any that are *not* covered elsewhere, live here. All are
+explicitly noted as ``env.<name>`` for ease of searching in your browser or
+viewer.
+
+.. list-table::
+    :widths: 40 10 50
+
+    * - ``env.roles``
+      - Pending
+      - As noted in :ref:`upgrading-api`, roles as a concept were ported to
+        `.Group`, but there's no central clearinghouse in which to store them.
+        We *may* delegate this to userland forever, but seems likely a
+        common-best-practice option will appear in early 2.x.
+
+
 Example upgrade process
 =======================
 
@@ -309,237 +710,3 @@ Now we have the entire, upgraded fabfile that will work with Fabric 2::
             c.run(cmd.format(code_dir))
         c.run("cd {} && git pull".format(code_dir))
         c.run("cd {} && touch app.wsgi".format(code_dir))
-
-
-.. _upgrade-specifics:
-
-Upgrade specifics
-=================
-
-General / conceptual
---------------------
-
-- All of Fabric 1's non-SSH-specific functionality (CLI parsing, task
-  organization, command execution basics, etc) has been moved to a more general
-  library called `Invoke <http://pyinvoke.org>`_. Fabric 2 builds on Invoke
-  (and as before, on Paramiko) to present an SSH-specific API.
-
-  .. warning::
-    Please check Invoke's documentation before filing feature request tickets!
-
-- Fabric 2 is fully Python 3 compatible; as a cost, Python 2.5 support has been
-  dropped - in fact, we've dropped support for anything older than Python 2.7.
-- The CLI task-oriented workflow remains a primary design goal, but the library
-  use case is no longer a second-class citizen; instead, the library
-  functionality has been designed first, with the CLI/task features built on
-  top of it.
-- Additionally, within the CLI use case, version 1 placed too much emphasis on
-  'lazy' interactive prompts for authentication secrets or even connection
-  parameters, driven in part by a lack of strong configuration mechanisms. Over
-  time it became clear this wasn't worth the tradeoffs of confusing
-  noninteractive behavior and difficult debugging or testing procedures.
-
-  Version 2 takes an arguably cleaner approach (based on functionality added to
-  v1 over time) where users are encouraged to leverage the configuration system
-  and/or request prompts for runtime secrets at the start of the process; if
-  the system determines it's missing information partway through, it raises
-  exceptions instead of prompting.
-- Invoke's design includes :ref:`explicit user-facing testing functionality
-  <testing-user-code>`; if you didn't find a way to write tests for your
-  Fabric-using code before, it should be much easier now.
-
-    - We recommend trying to write tests early on; they will help clarify the
-      upgrade process for you & also make the process safer!
-
-API organization
-----------------
-
-- There's no longer a need to import everything through ``fabric.api``; all
-  useful imports are now available at the top level, e.g. ``from fabric import
-  Connection``.
-- Speaking of: the primary API is now "instantiate `.Connection` objects and
-  call their methods" instead of "manipulate global state and call module-level
-  functions."
-- Connections replace *host strings*, which are no longer first-order
-  primitives but simply convenient, optional shorthand in a few spots (such as
-  `.Connection` instantiation.)
-- Connection objects store per-connection state such as user, hostname, gateway
-  config, etc, and encapsulate low-level objects from Paramiko (such as their
-  ``SSHClient`` instance.)
-
-    - There is also a new ``connect_kwargs`` argument available in
-      `.Connection` that takes arbitrary kwargs intended for the Paramiko-level
-      ``connect()`` call; this means Fabric no longer needs explicit patches to
-      support individual Paramiko features.
-
-- Other configuration state (such as default desired behavior, authentication
-  parameters, etc) can also be stored in these objects, and will affect how
-  they operate. This configuration is also inherited from the CLI machinery
-  when the latter is in use.
-- The basic "respond to prompts" functionality found as Fabric 1's
-  ``env.prompts`` dictionary option, has been significantly fleshed out into a
-  framework of :ref:`Watchers <autoresponding>` which operate on a running
-  command's input and output streams.
-
-    - In addition, ``sudo`` has been rewritten to use that framework; while
-      it's still useful to have implemented in Fabric (actually Invoke) itself,
-      it doesn't use any private internals any longer.
-
-- *Roles* (and other lists-of-host-strings such as the result of using ``-H``
-  on the CLI) are now (or can be) implemented via `.Group` objects, which are
-  lightweight wrappers around multiple Connections.
-- v1's desire to tightly control program state (such as using ``abort()`` and
-  ``warn()`` to exit and/or warn users) has been scaled back; instead you
-  should simply use whatever methods you want in order to exit, log, and so
-  forth.
-
-    - For example, instead of ``abort("oh no!")``, you may just want to ``raise
-      MyException("welp")`` or even ``sys.exit("Stuff broke!")``.
-
-Tasks
------
-
-- Fabric-specific command-line tasks now take a `.Connection` object as their
-  first positional argument.
-
-    - This sacrifices some of the "quick DSL" of v1 in exchange for a
-      significantly cleaner, easier to understand/debug, and more
-      user-overrideable, API structure.
-    - It also lessens the distinction between "a module of functions" and "a
-      class of methods"; users can more easily start with the former and
-      migrate to the latter when their needs grow/change.
-
-- Old-style task functions (those not decorated with ``@task``) are gone. You
-  must now always use ``@task``. (Note that users heavily attached to old-style
-  tasks should be able to reimplement them by extending
-  `~invoke.collection.Collection`!)
-- Task organization is much more explicit; instead of crawling imports, the
-  system expects you to declare a root 'namespace' task collection which is
-  composed of tasks and/or sub-collections.
-
-    - A simple single top-level ``tasks.py`` can remain a "pile of tasks",
-      without requiring a namespace, but any deeper organization must be done
-      explicitly.)
-
-- Tasks can declare "pre-tasks" and "post-tasks" that behave a lot like
-  Makefile target dependencies; e.g. you can now state that a given task
-  requires another to be run prior to itself anytime it is invoked.
-- Nearly all task-related functionality is implemented in Invoke; for more
-  details see its :ref:`execution <task-execution>` and :ref:`namespaces
-  <task-namespaces>` documentation.
-
-CLI arguments and options
--------------------------
-
-- ``-I``/``--initial-password-prompt`` is now :option:`--prompt-for-password`
-  and/or :option:`--prompt-for-passphrase`, depending on whether you were using
-  the former to fill in passwords or key passphrases (or both.)
-- ``-a``/``--no_agent`` has not been ported over from v1, since OpenSSH lacks a
-  similar CLI option. We may add it back in the future; for now, unset
-  ``SSH_AUTH_SOCK`` in the hosting shell environment or configure
-  ``connect_kwargs.allow_agent`` to be ``False``.
-- TODO: rest of this
-
-General shell commands
-----------------------
-
-- All shell command execution is now unified; in v1, ``local()`` and
-  ``run()``/``sudo()`` had significantly different signatures and behavior, but
-  in v2 they all use the same underlying protocol and logic, with only details
-  like process creation and pipe consumption differing.
-- Thus, where ``local()`` required you to choose between displaying and
-  capturing program output, that dichotomy no longer exists; both local and
-  remote execution always captures, and either may conditionally show or hide
-  stdout or stderr while the program runs.
-
-Remote shell commands
----------------------
-
-- There is no more built-in ``use_shell`` or ``shell`` option; the old "need"
-  to wrap with an explicit shell invocation is no longer necessary or usually
-  desirable. TODO: this isn't 100% true actually, it depends :(
-
-Networking
-----------
-
-- ``env.gateway`` is now the ``gateway`` kwarg to `.Connection`, and -- for
-  ``ProxyJump`` style gateways -- should be another `.Connection` object
-  instead of a host string.
-
-    - You may specify a runtime, non-SSH-config-driven ``ProxyCommand``-style
-      string as the ``gateway`` kwarg instead, which will act just like a
-      regular ``ProxyCommand``.
-    - SSH-config-driven ``ProxyCommand`` continues to work as it did in v1.
-    - ``ProxyJump``-style gateways (using nested/inner `.Connection` objects)
-      may be nested indefinitely, as you might expect.
-
-- ``fabric.context_managers.remote_tunnel`` (which forwards a locally
-  visible/open port to the remote end so remote processes may connect to it) is
-  now `.Connection.forward_local`.
-- Accompanying `.Connection.forward_local` is the logical inversion,
-  `.Connection.forward_remote` (forwards a remotely visible port locally),
-  which is new in Fabric 2 and was not implemented in Fabric 1 at time of
-  writing (though there are patches for it).
-
-Authentication
---------------
-
-- Most ``env`` keys from v1 were simply passthroughs to Paramiko's
-  ``connect()`` method, and thus in v2 should be set in the ``connect_kwargs``
-  :doc:`configuration </concepts/configuration>` tree:
-
-    - ``gss_auth``, ``gss_deleg`` and ``gss_kex``
-    - ``key_filename``
-    - ``password`` (v1 used this for both sudo and connection-level passwords;
-      in v2 it is *only* used to fill in ``connect()``. Paramiko itself (in
-      versions 1.x and 2.x) uses this value for both password auth and key
-      decryption.
-
-- Some other ``env`` keys that aren't direct passthroughs:
-
-    - ``key``: was used to automatically instantiate one of a couple `PKey
-      <paramiko.pkey.PKey>` subclasses and hand the result to ``connect()``'s
-      ``pkey`` kwarg. This has been dropped; users should themselves know which
-      type of key they're dealing with and instantiate a ``PKey`` subclass
-      themselves, and place the result in ``connect_kwargs.pkey``.
-    - ``no_agent``: this was simply a renaming/inversion of the ``allow_agent``
-      kwarg to ``connect()``. Users who were setting this to ``True`` should
-      now simply set ``connect_kwargs.allow_agent`` to ``False``.
-    - ``no_keys``: similar to ``no_agent``, this was just an inversion of
-      ``look_for_keys``, so migrate to using ``connect_kwargs.look_for_keys``
-      instead.
-    - ``passwords``: has been moved into :ref:`host-configuration`.
-
-- ``IdentityFile`` (via :ref:`ssh_config <ssh-config>` files) is honored in v2,
-  same as it was in v1.
-
-Configuration
--------------
-
-- General configuration has been massively improved over the old ``fabricrc``
-  files; Fabric 2 builds on Invoke which offers a full-fledged configuration
-  hierarchy (in-code config, multiple config file locations, environment
-  variables, CLI flags, and more) and multiple file formats.
-
-    - Anytime you used to modify Fabric's config by manipulating
-      ``fabric.(api.)env`` (or using ``with settings():``), you will now be
-      using Invoke-style config manipulation and/or method keyword arguments.
-    - See :ref:`Invoke's configuration documentation <configuration>` for
-      details on how the system works, where config sources come from, etc; and
-      for non-SSH-specific settings, such as whether to hide command output.
-    - See :ref:`Fabric's specific config doc page <fab-configuration>` for the
-      modifications & additions Fabric makes in this area, such as SSH-specific
-      settings like default port number or whether to forward an SSH agent.
-
-- :ref:`SSH config file loading <ssh-config>` has also improved. Fabric 1
-  allowed selecting a single SSH config file; version 2 behaves more like
-  OpenSSH and will seek out both system and user level config files, as well as
-  allowing a runtime config file. (And advanced users may simply supply their
-  own Paramiko SSH config object they obtained however.)
-- Speaking of SSH config loading, it is **now enabled by default**, and may be
-  easily :ref:`disabled <disabling-ssh-config>` by advanced users seeking
-  purity of state.
-- On top of the various SSH config directives implemented in v1, v2 honors
-  ``ConnectTimeout`` and ``ProxyJump``; generally, the intention is now that
-  SSH config support is to be included in any new feature added, when
-  appropriate.
