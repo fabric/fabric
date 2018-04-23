@@ -178,8 +178,8 @@ class Connection(Context):
             This parameter accepts one of the following:
 
             - another `.Connection` (for a ``ProxyJump`` style gateway);
-            - a shell command string as a `str` or `unicode` (for a
-              ``ProxyCommand`` style style gateway).
+            - a shell command string (for a ``ProxyCommand`` style style
+              gateway).
 
             Default: ``None``, meaning no gatewaying will occur (unless
             otherwise configured; if one wants to override a configured gateway
@@ -489,7 +489,7 @@ class Connection(Context):
         :returns:
             A ``direct-tcpip`` `paramiko.channel.Channel`, if `gateway` was a
             `.Connection`; or a `~paramiko.proxy.ProxyCommand`, if `gateway`
-            was a `str` or `unicode`.
+            was a string.
         """
         # ProxyCommand is faster to set up, so do it first.
         if isinstance(self.gateway, string_types):
