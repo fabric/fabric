@@ -347,6 +347,18 @@ Utility functions
         exception handling feels more Pythonic than thin wrappers around
         ``sys.exit`` or having to ``except SystemExit:`` and hope it was a
         `SystemExit` your own code raised!
+    * - ANSI color helpers in ``fabric.colors`` allowed users to easily print
+        ANSI colored text without a standalone library
+      - Removed
+      - There seemed no point to poorly replicating one of the many fine
+        terminal-massaging libraries out there (such as those listed in the
+        description of `#101 <https://github.com/fabric/fabric/issues/101>`_)
+        in the rewrite, so we didn't.
+
+        That said, it seems highly plausible we'll end up vendoring such a
+        library in the future to offer internal color support, at which point
+        "baked-in" color helpers would again be within easy reach.
+
 
 .. _upgrading-networking:
 
