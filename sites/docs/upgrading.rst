@@ -112,10 +112,10 @@ The 'status' field will be one of the following:
   moved into the `Invoke <http://pyinvoke.org>`_ codebase.)
 - **Pending**: would fit in v2, but has not yet been ported, good candidate for
   a patch (but please check for a ticket first!)
-- **Mixed**: some aspects ported or moved to Invoke, some aspects still
-  pending.
 - **Removed**: explicitly *not* ported (no longer fits with vision, had too
-  poor a maintenance-to-value ratio, etc) and unlikely to be reinstated;
+  poor a maintenance-to-value ratio, etc) and unlikely to be reinstated.
+- **Mixed**: some combination of the above, such as a feature set that is
+  partly ported and partly pending.
 
 Here's a quick local table of contents for navigation purposes:
 
@@ -180,7 +180,7 @@ High level code flow and API member concerns.
       - This need is now served by `.Group` objects (which wrap some number of
         `.Connection` instances with "do a thing to all members" methods.)
         Users can create & organize these any way they want.
-        
+
         See the line items for ``--roles`` (:ref:`upgrading-cli`),
         ``env.roles`` (:ref:`upgrading-env`) and ``@roles``
         (:ref:`upgrading-tasks`) for the status of those specifics.
@@ -230,7 +230,7 @@ Task functions & decorators
       - Namespace construction is now more explicit; for example, imported
         modules in your ``fabfile.py`` are no longer auto-scanned and
         auto-added to the task tree.
-        
+
         However, the root ``fabfile.py`` *is* automatically loaded (using
         `.Collection.load_module`), preserving the simple/common case. See
         :ref:`task-namespaces` for details.
@@ -307,6 +307,24 @@ Shell command execution (``local``/``run``/``sudo``)
         In addition, ``sudo`` has been rewritten to use that framework; while
         still useful enough to offer an implementation in core, it no longer
         does anything users cannot do themselves using public APIs.
+    * - ``fabric.context_managers.cd``/``lcd`` (and ``prefix``) allow scoped
+        mutation of executed comments
+      - Mixed
+      - These are now methods on `.Context` (`~.Context.cd`,
+        `~.Context.prefix`) but need work in its subclass `.Connection` (quite
+        possibly including recreating ``lcd``) so that local vs remote state
+        are separated.
+    * - ``fabric.context_managers.shell_env`` and its specific expression
+        ``path``, for modifying remote environment variables (locally, one
+        would just modify `os.environ`.)
+      - Mixed
+      - The context managers were the only way to set environment variables at
+        any scope; in modern Fabric, per-call subprocess shell environment is
+        controllable directly in `.Connection.run` and its siblings via an
+        ``env`` argument.
+
+        Reinstating the contextmanager version for making env changes which
+        affect multiple calls, is pending.
 
 .. _upgrading-utility:
 
@@ -321,7 +339,7 @@ Utility functions
       - The old functionality leaned too far in the "everything is a DSL"
         direction & didn't offer enough value to offset how it gets in the way
         of experienced Pythonistas.
-        
+
         These functions have been removed in favor of "just raise an exception"
         (with one useful option being Invoke's `~invoke.exceptions.Exit`) as
         exception handling feels more Pythonic than thin wrappers around
@@ -374,7 +392,7 @@ Authentication
     * - ``env.password``
       - Ported
       - Use ``connect_kwargs``.
-        
+
         Also note that this used to perform double duty as connection *and*
         sudo password; the latter is now found in the ``sudo.password``
         setting.
@@ -405,7 +423,7 @@ Authentication
       - Each `.Connection` object may be configured with its own
         ``connect_kwargs`` given at instantiation time, allowing for per-host
         password configuration already.
-        
+
         However, we expect users may want a simpler way to set configuration
         values that are turned into implicit `.Connection` objects
         automatically; such a feature is still pending.
@@ -441,7 +459,7 @@ Invoke's setup; see :ref:`Fabric 2's specific config doc page
       - Ported
       - To effect truly global-scale config changes, use config files,
         task-collection-level config data, or the invoking shell's environment
-        variables. 
+        variables.
     * - Making locally scoped ``env`` changes via ``with settings(...):``
       - Mixed
       - Most of the use cases surrounding ``with settings`` are now served by
@@ -657,7 +675,7 @@ we get to the actual deploy step, which simply invokes `.Connection.run`
 instead, executing remotely (on whichever host the `.Connection` has been bound
 to).
 
-``with cd()`` is not yet implemented for the remote side of things, but we
+``with cd()`` is not fully implemented for the remote side of things, but we
 expect it will be soon. For now we fall back to command chaining with ``&&``.
 
 ::
