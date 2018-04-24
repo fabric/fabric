@@ -164,7 +164,8 @@ High level code flow and API member concerns.
       - All useful imports are now available at the top level, e.g. ``from
         fabric import Connection``.
     * - Configure connection parameters globally (via ``env.host_string``) and
-        call global methods which reference them (``run``/``sudo``/etc)
+        call global methods which implicitly reference them
+        (``run``/``sudo``/etc)
       - Ported
       - The primary API is now properly OOP: instantiate `.Connection` objects
         and call their methods. These objects encapsulate all connection state
@@ -344,7 +345,8 @@ Shell command execution (``local``/``run``/``sudo``)
     * - Controlling subprocess output & other activity display text by
         manipulating ``fabric.state.output`` (directly or via
         ``fabric.context_managers.hide``, ``show`` or ``quiet`` as well as the
-        ``quiet`` kwarg to ``run``/``sudo``)
+        ``quiet`` kwarg to ``run``/``sudo``; plus
+        ``utils.puts``/``fastprint``)
       - Mixed
       - The core concept of "output levels" is gone, likely to be replaced in
         the near term by a logging module (stdlib or other) which output levels
@@ -399,6 +401,15 @@ Utilities
       - Pending
       - This has not been ported yet, nor have we checked to see if it actually
         needs to be, but we suspect a new/ported version of it may be useful.
+    * - ``network.normalize``/``denormalize``/``parse_host_string``, ostensibly
+        internals but sometimes exposed to users for dealing with host strings
+      - Removed
+      - As with other host-string-related tools, these are gone and serve no
+        purpose. `.Connection` is now the primary API focus and has individual
+        attributes for all "host string" components.
+    * - ``utils.indent`` for indenting/wrapping text (uncommonly used)
+      - Pending
+      - Not ported yet; ideally we'll just vendor a third party lib in Invoke.
 
 .. _upgrading-networking:
 
