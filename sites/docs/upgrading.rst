@@ -269,6 +269,8 @@ CLI arguments, options and behavior
       - Pending
       - Yup
 
+.. _upgrading-commands:
+
 Shell command execution (``local``/``run``/``sudo``)
 ----------------------------------------------------
 
@@ -371,7 +373,6 @@ Utility functions
         That said, it seems highly plausible we'll end up vendoring such a
         library in the future to offer internal color support, at which point
         "baked-in" color helpers would again be within easy reach.
-
 
 .. _upgrading-networking:
 
