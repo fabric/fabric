@@ -464,6 +464,8 @@ Authentication
       - Still honored in v2, along with a bunch of newly honored ``ssh_config``
         settings; see :ref:`ssh-config`.
 
+.. _upgrading-configuration:
+
 Configuration
 -------------
 
