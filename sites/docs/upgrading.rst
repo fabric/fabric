@@ -239,6 +239,20 @@ Task functions & decorators
         We may reinstate import (opt-in) module scanning later, since the use
         of explicit namespace objects still allows users control over the tree
         that results.
+    * - ``@hosts`` and ``@roles`` for determining the default list of host or
+        group-of-host targets a given task uses
+      - Pending
+      - These decorators were very much in the "DSL" vein of Fabric 1 and have
+        not been prioritized for the rewrite, though they are likely to return
+        in some form, and probably sooner instead of later.
+    * - ``@serial``/``@parallel``/``@runs_once``
+      - Mixed
+      - Parallel execution is currently offered at the API level via `.Group`
+        subclasses such as `.ThreadingGroup`; however, designating entire
+        sessions and/or tasks to run in parallel (or to exempt from
+        parallelism) has not been solved yet. The problem needs solving at a
+        higher level than just SSH targets, as well (see e.g. `invoke#63
+        <https://github.com/pyinvoke/invoke/issues/63>`_.)
 
 .. _upgrading-cli:
 
@@ -327,7 +341,6 @@ Shell command execution (``local``/``run``/``sudo``)
         controllable per-call (directly in `.Connection.run` and siblings
         via an ``env`` kwarg) *and* across multiple calls (by manipulating the
         configuration system, statically or at runtime.)
-
     * - Controlling subprocess output & other activity display text by
         manipulating ``fabric.state.output`` (directly or via
         ``fabric.context_managers.hide``, ``show`` or ``quiet`` as well as the
@@ -342,6 +355,10 @@ Shell command execution (``local``/``run``/``sudo``)
         terminal, and an ``echo`` kwarg controlling whether commands are
         printed before execution. All of these also honor the configuration
         system.
+    * - ``CommandTimeout`` raised when a command exceeded configured timeout
+      - Pending
+      - Command timeouts have not been ported yet, but will likely be added (at
+        the Invoke layer) in future.
 
 .. _upgrading-utility:
 
@@ -377,6 +394,11 @@ Utilities
         character buffered
       - Ported
       - This is now `~invoke.terminals.character_buffered`.
+    * - ``docs.unwrap_tasks`` for extracting docstrings from wrapped task
+        functions
+      - Pending
+      - This has not been ported yet, nor have we checked to see if it actually
+        needs to be, but we suspect a new/ported version of it may be useful.
 
 .. _upgrading-networking:
 
@@ -404,6 +426,13 @@ Networking
       - This is now `.Connection.forward_local`, since it's used to *forward* a
         *local* port to the remote end. (New in v2 is the logical inverse,
         `.Connection.forward_remote`.)
+    * - ``NetworkError`` raised on some network related errors
+      - Removed
+      - In v1 this was simply a (partially implemented) stepping-back from the
+        original "just sys.exit on any error!" behavior. Modern Fabric is
+        significantly more exception-friendly; situations that would raise
+        ``NetworkError`` in v1 now simply become the real underlying
+        exceptions, typically from Paramiko or the stdlib.
 
 Authentication
 --------------
@@ -494,9 +523,10 @@ Invoke's setup; see :ref:`Fabric 2's specific config doc page
       - To effect truly global-scale config changes, use config files,
         task-collection-level config data, or the invoking shell's environment
         variables.
-    * - Making locally scoped ``env`` changes via ``with settings(...):``
+    * - Making locally scoped ``fabric.env`` changes via ``with
+        settings(...):`` or its decorator equivalent, ``@with_settings``
       - Mixed
-      - Most of the use cases surrounding ``with settings`` are now served by
+      - Most of the use cases surrounding ``settings()`` are now served by
         the fact that `.Connection` objects keep per-host/connection state -
         the pattern of switching the implicit global context around was a
         design antipattern which is now gone.
