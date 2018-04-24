@@ -517,6 +517,72 @@ Invoke's setup; see :ref:`Fabric 2's specific config doc page
         ``ProxyCommand``, and going forwards we intend to support as much of
         ``ssh_config`` as is reasonably possible.
 
+.. _upgrading-contrib:
+
+``contrib``
+-----------
+
+The old ``contrib`` module represented "best practice" functions that did not,
+themselves, require core support from the rest of Fabric but were built using
+the same primitives available to users.
+
+In modern Fabric, that responsibility has been removed from the core library
+into other standalone libraries which have their own identity & release
+process, typically either `invocations
+<https://github.com/pyinvoke/invocations>`_ (local-oriented code that does not
+use SSH) or `patchwork <https://github.com/fabric/patchwork>`_ (remote-oriented
+code.)
+
+Those libraries are still a work in progress, not least because we still need
+to identify the best way to bridge the gap between them (as many operations are
+not intrinsically local-or-remote but can work on either end.)
+
+Since they are by definition built on the core APIs available to all users,
+they currently get less development focus; users can always implement their own
+versions without sacrificing much (something less true for the core libraries.)
+We expect to put more work into curating these collections once the core APIs
+have settled down.
+
+Details about what happened to each individual chunk of ``fabric.contrib`` are
+in the below table:
+
+.. list-table::
+    :widths: 40 10 50
+
+    * - ``console.confirm`` for easy bool-returning confirmation prompts
+      - Ported
+      - Moved to ``invocations.console.confirm``, with minor signature tweaks.
+    * - ``django.*``, supporting integration with a local Django project re:
+        importing and using Django models and other code
+      - Removed
+      - We aren't even sure if this is useful a decade after it was written,
+        given how much Django has surely changed since then. If you're reading
+        and are sad that this is gone, let us know!
+    * - ``files.*`` (e.g. ``exists``, ``append``, ``contains`` etc) for
+        interrogating and modifying remote files
+      - Mixed
+      - Many of the more useful functions in this file have been ported to
+        ``patchwork.files`` but are still in an essentially alpha state.
+
+        Others, such as ``is_link``, ``comment``/``uncomment``, etc have not
+        been ported yet. If they are, the are likely to end up in the same
+        place.
+
+        Of note, even the ones that have been alpha-ported may be removed; for
+        example, ``append`` is an antipattern (it's significantly safer and
+        more maintainable to upload a rendered template or static file) and we
+        don't wish to encourage those when possible.
+    * - ``project.rsync_project`` for rsyncing the entire host project remotely
+      - Ported
+      - Now ``patchwork.transfers.rsync``, with some modifications.
+    * - ``project.rsync_project`` for uploading host project via archive file
+        and scp
+      - Removed
+      - This did not seem worth porting; the overall pattern of "copy my local
+        bits remotely" is already arguably an antipattern (vs repeatable
+        deploys of artifacts, or at least remote checkout of a VCS tag) and if
+        one is going down that road anyways, rsync is a much smarter choice.
+
 .. _upgrading-env:
 
 ``fabric.env`` reference
