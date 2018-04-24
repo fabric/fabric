@@ -319,14 +319,27 @@ Shell command execution (``local``/``run``/``sudo``)
     * - ``fabric.context_managers.shell_env`` and its specific expression
         ``path``, for modifying remote environment variables (locally, one
         would just modify `os.environ`.)
-      - Mixed
+      - Ported
       - The context managers were the only way to set environment variables at
-        any scope; in modern Fabric, per-call subprocess shell environment is
-        controllable directly in `.Connection.run` and its siblings via an
-        ``env`` argument.
+        any scope; in modern Fabric, subprocess shell environment is
+        controllable per-call (directly in `.Connection.run` and siblings
+        via an ``env`` kwarg) *and* across multiple calls (by manipulating the
+        configuration system, statically or at runtime.)
 
-        Reinstating the contextmanager version for making env changes which
-        affect multiple calls, is pending.
+    * - Controlling subprocess output & other activity display text by
+        manipulating ``fabric.state.output`` (directly or via
+        ``fabric.context_managers.hide``, ``show`` or ``quiet`` as well as the
+        ``quiet`` kwarg to ``run``/``sudo``)
+      - Mixed
+      - The core concept of "output levels" is gone, likely to be replaced in
+        the near term by a logging module (stdlib or other) which output levels
+        poorly reimplemented.
+
+        Command execution methods like `~invoke.runners.Runner.run` retain a
+        ``hide`` kwarg controlling which subprocess streams are copied to your
+        terminal, and an ``echo`` kwarg controlling whether commands are
+        printed before execution. All of these also honor the configuration
+        system.
 
 .. _upgrading-utility:
 
