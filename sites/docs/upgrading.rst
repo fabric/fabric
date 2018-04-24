@@ -345,8 +345,8 @@ Shell command execution (``local``/``run``/``sudo``)
 
 .. _upgrading-utility:
 
-Utility functions
------------------
+Utilities
+---------
 
 .. list-table::
     :widths: 40 10 50
@@ -373,6 +373,10 @@ Utility functions
         That said, it seems highly plausible we'll end up vendoring such a
         library in the future to offer internal color support, at which point
         "baked-in" color helpers would again be within easy reach.
+    * - ``with char_buffered`` context manager for forcing a local stream to be
+        character buffered
+      - Ported
+      - This is now `~invoke.terminals.character_buffered`.
 
 .. _upgrading-networking:
 
