@@ -254,6 +254,20 @@ Task functions & decorators
         parallelism) has not been solved yet. The problem needs solving at a
         higher level than just SSH targets, as well (see e.g. `invoke#63
         <https://github.com/pyinvoke/invoke/issues/63>`_.)
+    * - ``execute()`` for calling named tasks from other tasks while honoring
+        decorators and other execution mechanics (as opposed to calling them
+        simply as functions)
+      - Pending
+      - This is one of the top "missing features" from the rewrite; see
+        `invoke#170 <https://github.com/pyinvoke/invoke/issues/170>`_ for
+        details.
+    * - ``Task`` class for programmatic creation of tasks (as opposed to using
+        some function object and the ``@task`` decorator)
+      - Ported
+      - While not sharing many implementation details with v1, modern Fabric
+        (via Invoke) has a publicly exposed `~invoke.tasks.Task` class, which
+        alongside `~invoke.collection.Collection` allow full programmatic
+        creation of task trees, no decorator needed.
 
 .. _upgrading-cli:
 
@@ -503,6 +517,60 @@ Authentication
       - Ported
       - Still honored in v2, along with a bunch of newly honored ``ssh_config``
         settings; see :ref:`ssh-config`.
+
+.. _upgrading-transfers:
+
+File transfer
+-------------
+
+The below feature breakdown applies to the ``put`` and/or ``get`` "operation"
+functions from v1.
+
+.. list-table::
+    :widths: 40 10 50
+
+    * - Transferring individual files owned by the local and remote user
+      - Ported
+      - Basic file transfer in either direction works and is offered as
+        `.Connection.get`/`.Connection.put` (though the code is split out
+        into a separate-responsibility class, `.Transfer`.)
+
+        The signature of these methods has been cleaned up compared to v1,
+        though their positional-argument essence (``get(remote, local)`` and
+        ``put(local, remote)`` remains the same.
+    * - Omit the 'destination' argument for implicit 'relative to local
+        context' behavior (e.g. ``put('local.txt')`` implicitly uploading to
+        remote ``$HOME/local.txt``.)
+      - Ported
+      - You should probably still be explicit, because this is Python.
+    * - Use either file paths *or* file-like objects on either side of
+        the transfer operation (e.g. uploading a `StringIO` instead of an
+        on-disk file)
+      - Ported
+      - This was a useful enough and simple enough trick to keep around.
+    * - Preservation of source file mode at destination (e.g. ensuring an
+        executable bit that would otherwise be dropped by the destination's
+        umask, is re-added.)
+      - Ported
+      - Not only was this ported, but it is now the default behavior. It may be
+        disabled via kwarg if desired.
+    * - Bundled ``sudo`` operations as part of file transfer
+      - Removed
+      - This was one of the absolute buggiest parts of v1 and never truly did
+        anything users could not do themselves with a followup call to
+        ``sudo``, so we opted not to port it.
+
+        Should enough users pine for its loss, we *may* reconsider, but if we
+        do it will be with a serious eye towards simplification and/or an
+        approach not involving intermediate files.
+    * - Recursive multi-file transfer (e.g. ``put(a_directory)`` uploads entire
+        directory and all its contents)
+      - Removed
+      - This was *another* one of the buggiest parts of v1, and over time it
+        became clear that its maintenance burden far outweighed the fact that
+        it was poorly reinventing ``rsync`` and/or the use of archival file
+        tools like ye olde ``tar``+``gzip``.
+
 
 .. _upgrading-configuration:
 
