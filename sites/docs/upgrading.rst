@@ -425,6 +425,18 @@ Utilities
     * - ``utils.indent`` for indenting/wrapping text (uncommonly used)
       - Pending
       - Not ported yet; ideally we'll just vendor a third party lib in Invoke.
+    * - ``reboot`` for rebooting and reconnecting to a remote system
+      - Removed
+      - No equivalent has been written for modern Fabric; now that the
+        connection/client objects are made explicit, one can simply
+        instantiate a new object with the same parameters (potentially with
+        sufficient timeout parameters to get past the reboot, if one doesn't
+        want to manually call something like `time.sleep`.)
+
+        There is a small chance it will return if there appears to be enough
+        need; if so, it's likely to be a more generic reconnection related
+        `.Connection` method, where the user is responsible for issuing the
+        restart shell command via `.Connnection.sudo` themselves.
 
 .. _upgrading-networking:
 
