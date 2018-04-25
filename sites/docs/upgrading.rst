@@ -22,7 +22,7 @@ really two separate libraries, and anything not strictly SSH or network related
 has been :ref:`split out into the Invoke project <invoke-split-from-fabric>`.
 
 This means that if you're in the group of users leveraging Fabric solely for
-its task execution or ``local()``, and never used ``run()``, ``put()`` or
+its task execution or ``local``, and never used ``run``, ``put`` or
 similar - **you don't need to use Fabric itself anymore** and can simply
 **'sidegrade' to Invoke instead**.
 
@@ -53,7 +53,7 @@ modern Fabric that might make upgrading worth your time.
 - SSH config file loading enabled by default & has been fleshed out re:
   system/user/runtime file selection;
 - Shell command execution API consistent across local and remote method calls -
-  no more differentiation between ``local()`` and ``run()`` (besides where the
+  no more differentiation between ``local`` and ``run`` (besides where the
   command runs, of course!);
 - Shell commands significantly more flexible re: interactive behavior,
   simultaneous capture & display (now applies to local subprocesses, not just
@@ -255,7 +255,7 @@ Task functions & decorators
         parallelism) has not been solved yet. The problem needs solving at a
         higher level than just SSH targets, as well (see e.g. `invoke#63
         <https://github.com/pyinvoke/invoke/issues/63>`_.)
-    * - ``execute()`` for calling named tasks from other tasks while honoring
+    * - ``execute`` for calling named tasks from other tasks while honoring
         decorators and other execution mechanics (as opposed to calling them
         simply as functions)
       - Pending
@@ -385,7 +385,7 @@ Utilities
 .. list-table::
     :widths: 40 10 50
 
-    * - Error handling via ``abort()`` and ``warn()``
+    * - Error handling via ``abort`` and ``warn``
       - Ported
       - The old functionality leaned too far in the "everything is a DSL"
         direction & didn't offer enough value to offset how it gets in the way
@@ -607,7 +607,7 @@ page <fab-configuration>` for details.
     * - Making locally scoped ``fabric.env`` changes via ``with
         settings(...):`` or its decorator equivalent, ``@with_settings``
       - Mixed
-      - Most of the use cases surrounding ``settings()`` are now served by
+      - Most of the use cases surrounding ``settings`` are now served by
         the fact that `.Connection` objects keep per-host/connection state -
         the pattern of switching the implicit global context around was a
         design antipattern which is now gone.
@@ -782,7 +782,7 @@ In this case, we don't need to import nearly as many functions, due to the
 emphasis on object methods instead of global functions. We only need the
 following:
 
-- `sys`, for `sys.exit` (replacing ``abort()``);
+- `sys`, for `sys.exit` (replacing ``abort``);
 - `@task <invoke.tasks.task>`, as before, but coming from Invoke as it's not
   SSH-specific;
 - ``confirm``, which now comes from the Invocations library (also not
@@ -824,8 +824,8 @@ changes here (note that these are all listed above as well):
   explicit initial context argument, whose value will be a `.Connection` object
   at runtime.
 - The use of ``with settings(warn_only=True)`` can be replaced by a simple
-  kwarg to the ``local()`` call.
-- That ``local()`` call is now a method call on the `.Connection`,
+  kwarg to the ``local`` call.
+- That ``local`` call is now a method call on the `.Connection`,
   `.Connection.local`.
 - ``capture`` is no longer a useful method; we can now capture and display at
   the same time, locally or remotely. If you don't actually *want* a local
@@ -836,10 +836,10 @@ changes here (note that these are all listed above as well):
   truthy if the command exited cleanly, and falsey otherwise. In terms of
   attributes exhibited, most of the same info is available, in fact typically
   more in modern editions than in v1.
-- ``abort()`` is gone; you should use exceptions or builtins like ``sys.exit``
+- ``abort`` is gone; you should use exceptions or builtins like ``sys.exit``
   instead.
 
-.. TODO: check up on modern-Fabric compatible patchwork for confirm()
+.. TODO: check up on modern-Fabric compatible patchwork for confirm
 
 The result::
 
@@ -853,7 +853,7 @@ Other simple tasks
 ------------------
 
 The next two tasks are simple one-liners, and you've already seen what replaced
-the global ``local()`` function::
+the global ``local`` function::
 
     @task
     def commit(c):
@@ -886,7 +886,7 @@ we get to the actual deploy step, which simply invokes `.Connection.run`
 instead, executing remotely (on whichever host the `.Connection` has been bound
 to).
 
-``with cd()`` is not fully implemented for the remote side of things, but we
+``with cd`` is not fully implemented for the remote side of things, but we
 expect it will be soon. For now we fall back to command chaining with ``&&``.
 
 ::
