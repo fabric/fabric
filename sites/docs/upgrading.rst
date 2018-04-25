@@ -376,6 +376,13 @@ Shell command execution (``local``/``run``/``sudo``)
       - Pending
       - Command timeouts have not been ported yet, but will likely be added (at
         the Invoke layer) in future.
+    * - ``open_shell`` for obtaining interactive-friendly remote shell sessions
+        (something that ``run`` historically was bad at )
+      - Ported
+      - Technically "removed", but only because the new version of
+        `.Runner.run` is vastly improved and can deal with interactive sessions
+        at least as well as the old ``open_shell`` did, if not moreso.
+        ``c.run("/my/favorite/shell", pty=True)`` should be all you need.
 
 .. _upgrading-utility:
 
@@ -437,6 +444,20 @@ Utilities
         need; if so, it's likely to be a more generic reconnection related
         `.Connection` method, where the user is responsible for issuing the
         restart shell command via `.Connnection.sudo` themselves.
+    * - ``require`` for ensuring certain key(s) in ``env`` have values set,
+        optionally by noting they can be ``provided_by=`` a list of setup tasks
+      - Mixed
+      - This has not been ported, in part because the maintainers never used it
+        themselves, and is unlikely to be directly reimplemented. However, its
+        core use case of "require certain data to be available to run a given
+        task" is likely to return within the upcoming dependency framework.
+    * - ``prompt`` for prompting the user & storing the entered data
+        (optionally with validation) directly into ``env``
+      - Removed
+      - Like ``require``, this seemed like a less-used feature (especially
+        compared to its sibling ``confirm``) and was not ported. If it returns
+        it's likely to be via ``invocations``, which is where ``confirm`` ended
+        up.
 
 .. _upgrading-networking:
 
