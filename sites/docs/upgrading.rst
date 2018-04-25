@@ -214,7 +214,7 @@ Task functions & decorators
         options.
     * - Completely arbitrary task function arguments (i.e. ``def mytask(any,
         thing, at, all)``)
-      - Mixed
+      - Ported
       - This gets its own line item because: Fabric-level task functions must
         now take a `.Connection` object as their first positional argument.
         (The rest of the function signature is, as before, totally up to the
@@ -446,11 +446,11 @@ Utilities
         restart shell command via `.Connnection.sudo` themselves.
     * - ``require`` for ensuring certain key(s) in ``env`` have values set,
         optionally by noting they can be ``provided_by=`` a list of setup tasks
-      - Mixed
+      - Removed
       - This has not been ported, in part because the maintainers never used it
         themselves, and is unlikely to be directly reimplemented. However, its
         core use case of "require certain data to be available to run a given
-        task" is likely to return within the upcoming dependency framework.
+        task" may return within the upcoming dependency framework.
     * - ``prompt`` for prompting the user & storing the entered data
         (optionally with validation) directly into ``env``
       - Removed
