@@ -304,6 +304,9 @@ CLI arguments, options and behavior
 Shell command execution (``local``/``run``/``sudo``)
 ----------------------------------------------------
 
+General
+~~~~~~~
+
 .. list-table::
     :widths: 40 10 50
 
@@ -319,18 +322,6 @@ Shell command execution (``local``/``run``/``sudo``)
         For example, in v1 ``local`` required you to choose between displaying
         and capturing subprocess output; modern ``local`` is like ``run`` and
         does both at the same time.
-    * - ``local``
-      - Ported
-      - TK: Details specific to ``local``, including any of its args. Maybe
-        make a table for each function with rows being args?
-    * - ``run``
-      - Ported
-      - TK: see above.
-
-        Also, there is no more built-in ``use_shell`` or ``shell`` option; the
-        old "need" to wrap with an explicit shell invocation is no longer
-        necessary or usually desirable. TODO: this isn't 100% true actually, it
-        depends :(
     * - Prompt auto-response, via ``env.prompts`` and/or ``sudo``'s internals
       - Ported
       - The ``env.prompts`` functionality has been significantly fleshed out,
@@ -383,6 +374,103 @@ Shell command execution (``local``/``run``/``sudo``)
         `.Runner.run` is vastly improved and can deal with interactive sessions
         at least as well as the old ``open_shell`` did, if not moreso.
         ``c.run("/my/favorite/shell", pty=True)`` should be all you need.
+
+``run``
+~~~~~~~
+
+.. list-table::
+    :widths: 40 10 50
+
+    * - ``shell`` / ``env.use_shell`` designating whether or not to wrap
+        commands within an explicit call to e.g. ``/bin/sh -c 'real command'``;
+        plus their attendant options like ``shell_escape``
+      - Removed
+      - Non-``sudo`` remote execution never truly required an explicit shell
+        wrapper: the remote SSH daemon hands your command string off to the
+        connecting user's login shell in almost all cases. Since wrapping is
+        otherwise extremely error-prone and requires frustrating escaping
+        rules, we dropped it for this use case.
+
+        See the matching line items for ``local`` and ``sudo`` as their
+        situations differ. (For now, because they all share the same
+        underpinnings, `.Connection.run` does accept a ``shell`` kwarg - it
+        just doesn't do anything with it.)
+    * - ``pty`` kwarg and ``env.always_use_pty``, controlling whether commands
+        run in a pseudo-terminal or are invoked directly
+      - Ported
+      - This has been thoroughly ported (and its behavior often improved)
+        including preservation of the ``pty`` kwarg and updating the config
+        value to be simply ``run.pty``. However, a major change is that pty
+        allocation is now ``False`` by default instead of ``True``.
+
+        Fabric 0.x and 1.x already changed this value around; during Fabric 1's
+        long lifetime it became clear that neither default works for all or
+        even most users, so we opted to return the default to ``False`` as it's
+        cleaner and less wasteful.
+    * - ``combine_stderr`` (kwarg and setting) controlling whether Paramiko
+        weaves remote stdout and stderr into the stdout stream
+      - Removed
+      - This wasn't terrifically useful, and often caused conceptual problems
+        in tandem with ``pty`` (as pseudo-terminals by their nature always
+        combine the two streams.)
+
+        We recommend users who really need both streams to be merged, either
+        use shell redirection in their command, or set ``pty=True``.
+    * - ``warn_only`` kwarg for preventing automatic abort on non-zero return
+        codes
+      - Ported
+      - This is now just ``warn``, both kwarg and config value. It continues to
+        default to ``False``.
+    * - Return values are string-like objects with extra attributes like
+        ``succeeded`` and ``return_code`` sprinkled on top
+      - Ported
+      - Return values are no longer string-a-likes with a semi-private API, but
+        are full fledged regular objects of type `~invoke.runners.Result`. They
+        expose all of the same info as the old "attribute strings", and only
+        really differ in that they don't pretend to be strings themselves.
+
+        They do, however, still behave as booleans - just ones reflecting the
+        exit code's relation to zero instead of whether there was any stdout.
+
+``sudo``
+~~~~~~~~
+
+Unless otherwise noted, all common ``run``+``sudo`` args/functionality (e.g.
+``pty``, ``warn_only`` etc) are covered above in the section on ``run``; the
+below are ``sudo`` specific.
+
+.. list-table::
+    :widths: 40 10 50
+
+    * - ``shell`` / ``env.use_shell`` designating whether or not to wrap
+        commands within an explicit call to e.g. ``/bin/sh -c 'real command'``
+      - Mixed
+      - See the note above under ``run`` for details on shell wrapping
+        as a general strategy; unfortunately for ``sudo``, some sort of manual
+        wrapping is still necessary for nontrivial commands (i.e. anything
+        using actual shell syntax as opposed to a single program's argv) due to
+        how the command string is handed off to the ``sudo`` program.
+
+        We hope to upgrade ``sudo`` soon so it can perform a common-best-case,
+        no-escaping-required shell wrapping on your behalf; see `invoke#459
+        <https://github.com/pyinvoke/invoke/issues/459>`_.
+
+``local``
+~~~~~~~~~
+
+See the 'general' notes at top of this section for most details about the new
+``local``. A few specific extras are below.
+
+.. list-table::
+    :widths: 40 10 50
+
+    * - ``shell`` kwarg designating which shell to ask `subprocess.Popen` to
+        use
+      - Ported
+      - Basically the same as in v1, though there are now situations where
+        `os.execve` (or similar) is used instead of `subprocess.Popen`.
+        Behavior is much the same: no shell wrapping (as in legacy ``run``),
+        just informing the operating system what actual program to run.
 
 .. _upgrading-utility:
 
