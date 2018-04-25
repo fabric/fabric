@@ -4,10 +4,10 @@
 Upgrading from Fabric 1.x
 =========================
 
-Fabric 2 represents a near-total reimplementation & reorganization of the
-software. It's been :ref:`broken in two <invoke-split-from-fabric>`, cleaned
-up, made more explicit, and so forth. In some cases, upgrading requires only
-basic search & replace; in others, more work is needed.
+Modern Fabric (2+) represents a near-total reimplementation & reorganization of
+the software. It's been :ref:`broken in two <invoke-split-from-fabric>`,
+cleaned up, made more explicit, and so forth. In some cases, upgrading requires
+only basic search & replace; in others, more work is needed.
 
 If you read this document carefully, it should guide you in the right direction
 until you're fully upgraded. Should anything be missing, please file a ticket
@@ -17,9 +17,9 @@ until you're fully upgraded. Should anything be missing, please file a ticket
 'Sidegrading' to Invoke
 =======================
 
-We linked to a note about this above, but to be explicit: Fabric 2 is really
-two separate libraries, and anything not strictly SSH or network related has
-been :ref:`split out into the Invoke project <invoke-split-from-fabric>`.
+We linked to a note about this above, but to be explicit: modern Fabric is
+really two separate libraries, and anything not strictly SSH or network related
+has been :ref:`split out into the Invoke project <invoke-split-from-fabric>`.
 
 This means that if you're in the group of users leveraging Fabric solely for
 its task execution or ``local()``, and never used ``run()``, ``put()`` or
@@ -35,7 +35,7 @@ Why upgrade?
 ============
 
 We'd like to call out, in no particular order, some specific improvements in
-Fabric 2 that might make upgrading worth your time.
+modern Fabric that might make upgrading worth your time.
 
 .. note::
     These are all listed in the next section as well, so if you're already
@@ -68,18 +68,18 @@ Fabric 2 that might make upgrading worth your time.
 Upgrading piecemeal
 ===================
 
-To help with gradual upgrades, Fabric 2 may be installed under the name
-``fabric2`` (in addition to being made available "normally" as version 2.0+ of
+To help with gradual upgrades, modern Fabric may be installed under the name
+``fabric2`` (in addition to being made available "normally" as versions 2.0+ of
 ``fabric``) and can live alongside installations of version 1.x.
 
-Thus, if you have a large codebase and don't want to make the jump to 2.x in
-one leap, it's possible to have both Fabric 1 (``fabric``, as you presumably
-had it installed previously) and Fabric 2 (as ``fabric2``) resident in your
-Python environment simultaneously.
+Thus, if you have a large codebase and don't want to make the jump to modern
+versions in one leap, it's possible to have both Fabric 1 (``fabric``, as you
+presumably had it installed previously) and modern Fabric (as ``fabric2``)
+resident in your Python environment simultaneously.
 
 .. note::
     We strongly recommend that you eventually migrate all code using Fabric 1,
-    to version 2 or above, so that you can move back to installing and
+    to versions 2 or above, so that you can move back to installing and
     importing under the ``fabric`` name. ``fabric2`` as a distinct package and
     module is intended to be a stopgap, and there will not be any ``fabric3``
     or above (not least because some of those names are already taken!)
@@ -96,7 +96,7 @@ Upgrade specifics
 This is (intended to be) an exhaustive list of *all* Fabric 1.x functionality,
 as well as new-to-Invoke-or-Fabric-2 functionality not present in 1.x; it
 specifies whether upgrading is necessary, how to upgrade if so, and tracks
-features which haven't been implemented in version 2 yet.
+features which haven't been implemented in modern versions yet.
 
 Most sections are broken down in table form, as follows:
 
@@ -108,10 +108,10 @@ Most sections are broken down in table form, as follows:
 
 The 'status' field will be one of the following:
 
-- **Ported**: available already in v2, possibly renamed or moved (frequently,
-  moved into the `Invoke <http://pyinvoke.org>`_ codebase.)
-- **Pending**: would fit in v2, but has not yet been ported, good candidate for
-  a patch (but please check for a ticket first!)
+- **Ported**: available already, possibly renamed or moved (frequently, moved
+  into the `Invoke <http://pyinvoke.org>`_ codebase.)
+- **Pending**: would fit, but has not yet been ported, good candidate for a
+  patch (but please check for a ticket first!)
 - **Removed**: explicitly *not* ported (no longer fits with vision, had too
   poor a maintenance-to-value ratio, etc) and unlikely to be reinstated.
 - **Mixed**: some combination of the above, such as a feature set that is
@@ -125,8 +125,9 @@ Here's a quick local table of contents for navigation purposes:
 General / conceptual
 --------------------
 
-- Fabric 2 is fully Python 3 compatible; as a cost, Python 2.5 support has been
-  dropped - in fact, we've dropped support for anything older than Python 2.7.
+- Modern Fabric is fully Python 3 compatible; as a cost, Python 2.5 support (a
+  longstanding feature of Fabric 1) has been dropped - in fact, we've dropped
+  support for anything older than Python 2.7.
 - The CLI task-oriented workflow remains a primary design goal, but the library
   use case is no longer a second-class citizen; instead, the library
   functionality has been designed first, with the CLI/task features built on
@@ -137,11 +138,11 @@ General / conceptual
   time it became clear this wasn't worth the tradeoffs of having confusing
   noninteractive behavior and difficult debugging/testing procedures.
 
-  Version 2 takes an arguably cleaner approach (based on functionality added to
-  v1 over time) where users are encouraged to leverage the configuration system
-  and/or serve the user prompts for runtime secrets at the *start* of the
-  process; if the system determines it's missing information partway through,
-  it raises exceptions instead of prompting.
+  Modern Fabric takes an arguably cleaner approach (based on functionality
+  added to v1 over time) where users are encouraged to leverage the
+  configuration system and/or serve the user prompts for runtime secrets at the
+  *start* of the process; if the system determines it's missing information
+  partway through, it raises exceptions instead of prompting.
 - Invoke's design includes :ref:`explicit user-facing testing functionality
   <testing-user-code>`; if you didn't find a way to write tests for your
   Fabric-using code before, it should be much easier now.
@@ -316,8 +317,8 @@ Shell command execution (``local``/``run``/``sudo``)
         low-level details like process creation and pipe consumption differing.
 
         For example, in v1 ``local`` required you to choose between displaying
-        and capturing subprocess output; v2's is like ``run`` and does both at
-        the same time.
+        and capturing subprocess output; modern ``local`` is like ``run`` and
+        does both at the same time.
     * - ``local``
       - Ported
       - TK: Details specific to ``local``, including any of its args. Maybe
@@ -449,7 +450,7 @@ Networking
     * - ``with remote_tunnel(...):`` port forwarding
       - Ported
       - This is now `.Connection.forward_local`, since it's used to *forward* a
-        *local* port to the remote end. (New in v2 is the logical inverse,
+        *local* port to the remote end. (Newly added is the logical inverse,
         `.Connection.forward_remote`.)
     * - ``NetworkError`` raised on some network related errors
       - Removed
@@ -464,10 +465,11 @@ Authentication
 
 .. note::
     Some ``env`` keys from v1 were simply passthroughs to Paramiko's
-    `SSHClient.connect <paramiko.client.SSHClient.connect>` method. Fabric 2
-    gives you explicit control over the arguments it passes to that method, via
-    the ``connect_kwargs`` :doc:`configuration </concepts/configuration>`
-    subtree, and the below table will frequently refer you to that approach.
+    `SSHClient.connect <paramiko.client.SSHClient.connect>` method. Modern
+    Fabric gives you explicit control over the arguments it passes to that
+    method, via the ``connect_kwargs`` :doc:`configuration
+    </concepts/configuration>` subtree, and the below table will frequently
+    refer you to that approach.
 
 .. list-table::
     :widths: 40 10 50
@@ -515,7 +517,7 @@ Authentication
         automatically; such a feature is still pending.
     * - Configuring ``IdentityFile`` in one's ``ssh_config``
       - Ported
-      - Still honored in v2, along with a bunch of newly honored ``ssh_config``
+      - Still honored, along with a bunch of newly honored ``ssh_config``
         settings; see :ref:`ssh-config`.
 
 .. _upgrading-transfers:
@@ -582,12 +584,12 @@ files; most config logic comes from :ref:`Invoke's configuration system
 <configuration>`, which offers a full-fledged configuration hierarchy (in-code
 config, multiple config file locations, environment variables, CLI flags, and
 more) and multiple file formats. Nearly all configuration avenues in Fabric 1
-become, in v2, manipulation of whatever part of the config hierarchy is most
-appropriate for your needs.
+become, in modern Fabric, manipulation of whatever part of the config hierarchy
+is most appropriate for your needs.
 
-Fabric 2 itself only makes minor modifications to (or parameterizations of)
-Invoke's setup; see :ref:`Fabric 2's specific config doc page
-<fab-configuration>` for details.
+Modern versions of Fabric only make minor modifications to (or
+parameterizations of) Invoke's setup; see :ref:`our locally-specific config doc
+page <fab-configuration>` for details.
 
 .. note::
     Make sure to look elsewhere in this document for details on any given v1
@@ -720,8 +722,8 @@ Example upgrade process
 =======================
 
 This section goes over upgrading a small but nontrivial Fabric 1 fabfile to
-work with Fabric 2. It's not meant to be exhaustive, merely illustrative; for a
-full list of how to upgrade individual features or concepts, see the last
+work with modern Fabric. It's not meant to be exhaustive, merely illustrative;
+for a full list of how to upgrade individual features or concepts, see the last
 section, :ref:`upgrade-specifics`.
 
 Sample original fabfile
@@ -829,15 +831,15 @@ changes here (note that these are all listed above as well):
   the same time, locally or remotely. If you don't actually *want* a local
   subprocess to mirror its stdout/err while it runs, you can simply say
   ``hide=True``.
-- Result objects are pretty similar in v1 and v2; v2's no longer pretend to
-  "be" strings, but instead act more like booleans, acting truthy if the
-  command exited cleanly, and falsey otherwise. In terms of attributes
-  exhibited, most of the same info is available, with v2 typically exposing
-  more than v1.
+- Result objects are pretty similar between versions; modern Fabric's results
+  no longer pretend to "be" strings, but instead act more like booleans, acting
+  truthy if the command exited cleanly, and falsey otherwise. In terms of
+  attributes exhibited, most of the same info is available, in fact typically
+  more in modern editions than in v1.
 - ``abort()`` is gone; you should use exceptions or builtins like ``sys.exit``
   instead.
 
-.. TODO: check up on Fabric 2 compatible patchwork for confirm()
+.. TODO: check up on modern-Fabric compatible patchwork for confirm()
 
 The result::
 
@@ -901,7 +903,7 @@ expect it will be soon. For now we fall back to command chaining with ``&&``.
 The whole thing
 ---------------
 
-Now we have the entire, upgraded fabfile that will work with Fabric 2::
+Now we have the entire, upgraded fabfile that will work with modern Fabric::
 
     import sys
 

@@ -4,27 +4,20 @@ Development roadmap
 
 This document outlines Fabric's intended development path. Please make sure
 you're reading `the latest version <http://fabfile.org/roadmap.html>`_ of this
-document, and also see the page about :ref:`upgrading <upgrading>`.
+document, and also see the page about :ref:`upgrading <upgrading>` if you are
+migrating from version 1 to versions 2 or above.
 
-Fabric 2.x
-==========
+Fabric 2 and above
+==================
 
-Fabric 2 is currently in alpha; the short term roadmap is:
+Modern Fabric versions (2+) receive active feature development. At the present
+time, version 2 has only recently been released and we are still porting some
+functionality present in 1.x that was not part of 2.0. (See :ref:`upgrading`
+for feature-by-feature status info.)
 
-- Gather feedback on overall API methodology, in case major changes seem
-  necessary;
-- Implement the most crucial of remaining 'missing features' re: parity with
-  version 1 (though anything that seems feasible to add without changing
-  APIs already written, should be left til post-2.0 feature releases);
-- Enter a beta period where the APIs are frozen and bugs are squashed (this
-  step is optional; intent is to release more often, not less often);
-- Release Fabric 2.0.0; ideally by, during or soon after PyCon US 2017 sprints.
-- Prioritize 'missing features' that were left for additive feature releases,
-  and put them out as 2.1, 2.2, 2.3 etc.
-- If necessary (e.g. if real-world use exposes serious problems with the 2.0
-  APIs), make backwards incompatible tweaks and release 3.0, 4.0, etc - without
-  multi-year gaps in between. Ideally, never have more than a small amount of
-  backwards incompatibility in any given jump.
+Versions 3, 4 and so forth will consist of small sets of backwards
+incompatible changes to the 2.x codebase, and will not be long-period full
+rewrites as the 1 to 2 process was.
 
 Fabric 1.x
 ==========

@@ -29,10 +29,10 @@ are typically older and harder to support), typically called ``fabric`` or
 
 .. _installing-as-fabric2:
 
-Installing Fabric 2.x as ``fabric2``
-====================================
+Installing modern Fabric as ``fabric2``
+=======================================
 
-Users who are migrating from Fabric 1 to Fabric 2 may find it useful to have
+Users who are migrating from Fabric 1 to Fabric 2+ may find it useful to have
 both versions installed side-by-side. The easiest way to do this is to use the
 handy ``fabric2`` PyPI entry::
 
@@ -58,7 +58,7 @@ or most other ``setup.py`` related commands.
     You may encounter issues if *both* versions of Fabric are installed via
     ``pip install -e``, due to how that functionality works (tl;dr it just adds
     the checkout directories to ``sys.path``, regardless of whether you wanted
-    to "install" all packages within them - so Fabric 2's ``fabric/`` package
+    to "install" all packages within them - so Fabric 2+'s ``fabric/`` package
     still ends up visible to the import system alongside ``fabric2/``).
 
     Thus, you may only have one of the local copies of Fabric installed in
@@ -69,7 +69,7 @@ or most other ``setup.py`` related commands.
     When installing Fabric 1 and 2 side by side, with one of them in pip's
     'editable' mode, you must install the 'editable' version first, and then
     the 'static' version second. For example, if you're migrating from some
-    public release of Fabric 1 to a checkout of Fabric 2::
+    public release of Fabric 1 to a checkout of modern Fabric::
 
         $ PACKAGE_AS_FABRIC2=yes pip install -e /path/to/fabric2
         $ pip install fabric==1.14.0
