@@ -425,8 +425,8 @@ differences.
         (something that ``run`` historically was bad at )
       - Ported
       - Technically "removed", but only because the new version of
-        `.Runner.run` is vastly improved and can deal with interactive sessions
-        at least as well as the old ``open_shell`` did, if not moreso.
+        ``run`` is vastly improved and can deal with interactive sessions at
+        least as well as the old ``open_shell`` did, if not moreso.
         ``c.run("/my/favorite/shell", pty=True)`` should be all you need.
 
 ``run``
@@ -557,7 +557,7 @@ Utilities
         There is a small chance it will return if there appears to be enough
         need; if so, it's likely to be a more generic reconnection related
         `.Connection` method, where the user is responsible for issuing the
-        restart shell command via `.Connnection.sudo` themselves.
+        restart shell command via ``sudo`` themselves.
     * - ``require`` for ensuring certain key(s) in ``env`` have values set,
         optionally by noting they can be ``provided_by=`` a list of setup tasks
       - Removed
@@ -693,7 +693,7 @@ functions from v1.
       - Ported
       - You should probably still be explicit, because this is Python.
     * - Use either file paths *or* file-like objects on either side of
-        the transfer operation (e.g. uploading a `StringIO` instead of an
+        the transfer operation (e.g. uploading a ``StringIO`` instead of an
         on-disk file)
       - Ported
       - This was a useful enough and simple enough trick to keep around.
