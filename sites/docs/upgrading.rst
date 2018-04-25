@@ -472,6 +472,14 @@ below are ``sudo`` specific.
         We hope to upgrade ``sudo`` soon so it can perform a common-best-case,
         no-escaping-required shell wrapping on your behalf; see `invoke#459
         <https://github.com/pyinvoke/invoke/issues/459>`_.
+    * - ``user`` argument allowing invocation via ``sudo -u <user>`` (instead
+        of defaulting to root)
+      - Ported
+      - This is still here, and still called ``user``.
+    * - ``group`` argument controlling the effective group of the sudo'd
+        command
+      - Pending
+      - This has not been ported yet.
 
 ``local``
 ~~~~~~~~~
