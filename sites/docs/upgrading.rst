@@ -307,6 +307,10 @@ Shell command execution (``local``/``run``/``sudo``)
 General
 ~~~~~~~
 
+Behaviors shared across either ``run``/``sudo``, or all of
+``run``/``sudo``/``local``. Subsequent sections go into per-function
+differences.
+
 .. list-table::
     :widths: 40 10 50
 
@@ -363,10 +367,60 @@ General
         terminal, and an ``echo`` kwarg controlling whether commands are
         printed before execution. All of these also honor the configuration
         system.
-    * - ``CommandTimeout`` raised when a command exceeded configured timeout
+    * - ``timeout`` kwarg and the ``CommandTimeout`` exception raised when said
+        command-runtime timeout was violated
       - Pending
       - Command timeouts have not been ported yet, but will likely be added (at
         the Invoke layer) in future.
+    * - ``pty`` kwarg and ``env.always_use_pty``, controlling whether commands
+        run in a pseudo-terminal or are invoked directly
+      - Ported
+      - This has been thoroughly ported (and its behavior often improved)
+        including preservation of the ``pty`` kwarg and updating the config
+        value to be simply ``run.pty``. However, a major change is that pty
+        allocation is now ``False`` by default instead of ``True``.
+
+        Fabric 0.x and 1.x already changed this value around; during Fabric 1's
+        long lifetime it became clear that neither default works for all or
+        even most users, so we opted to return the default to ``False`` as it's
+        cleaner and less wasteful.
+    * - ``combine_stderr`` (kwarg and setting) controlling whether Paramiko
+        weaves remote stdout and stderr into the stdout stream
+      - Removed
+      - This wasn't terrifically useful, and often caused conceptual problems
+        in tandem with ``pty`` (as pseudo-terminals by their nature always
+        combine the two streams.)
+
+        We recommend users who really need both streams to be merged, either
+        use shell redirection in their command, or set ``pty=True``.
+    * - ``warn_only`` kwarg for preventing automatic abort on non-zero return
+        codes
+      - Ported
+      - This is now just ``warn``, both kwarg and config value. It continues to
+        default to ``False``.
+    * - ``stdout`` and ``stderr`` kwargs for reassigning default stdout/err
+        mirroring targets, which otherwise default to the appropriate `sys`
+        members
+      - Ported
+      - These are now ``out_stream`` and ``err_stream`` but otherwise remain
+        similar in nature. They are also accompanied by the new, rather obvious
+        in hindsight ``in_stream``.
+    * - ``capture_buffer_size`` arg & use of a ring buffer for storing captured
+        stdout/stderr to limit total size
+      - Pending
+      - Existing `~invoke.runners.Runner` implementation uses regular lists for
+        capture buffers, but we fully expect to upgrade this to a ring buffer
+        or similar at some point.
+    * - Return values are string-like objects with extra attributes like
+        ``succeeded`` and ``return_code`` sprinkled on top
+      - Ported
+      - Return values are no longer string-a-likes with a semi-private API, but
+        are full fledged regular objects of type `~invoke.runners.Result`. They
+        expose all of the same info as the old "attribute strings", and only
+        really differ in that they don't pretend to be strings themselves.
+
+        They do, however, still behave as booleans - just ones reflecting the
+        exit code's relation to zero instead of whether there was any stdout.
     * - ``open_shell`` for obtaining interactive-friendly remote shell sessions
         (something that ``run`` historically was bad at )
       - Ported
@@ -395,42 +449,6 @@ General
         situations differ. (For now, because they all share the same
         underpinnings, `.Connection.run` does accept a ``shell`` kwarg - it
         just doesn't do anything with it.)
-    * - ``pty`` kwarg and ``env.always_use_pty``, controlling whether commands
-        run in a pseudo-terminal or are invoked directly
-      - Ported
-      - This has been thoroughly ported (and its behavior often improved)
-        including preservation of the ``pty`` kwarg and updating the config
-        value to be simply ``run.pty``. However, a major change is that pty
-        allocation is now ``False`` by default instead of ``True``.
-
-        Fabric 0.x and 1.x already changed this value around; during Fabric 1's
-        long lifetime it became clear that neither default works for all or
-        even most users, so we opted to return the default to ``False`` as it's
-        cleaner and less wasteful.
-    * - ``combine_stderr`` (kwarg and setting) controlling whether Paramiko
-        weaves remote stdout and stderr into the stdout stream
-      - Removed
-      - This wasn't terrifically useful, and often caused conceptual problems
-        in tandem with ``pty`` (as pseudo-terminals by their nature always
-        combine the two streams.)
-
-        We recommend users who really need both streams to be merged, either
-        use shell redirection in their command, or set ``pty=True``.
-    * - ``warn_only`` kwarg for preventing automatic abort on non-zero return
-        codes
-      - Ported
-      - This is now just ``warn``, both kwarg and config value. It continues to
-        default to ``False``.
-    * - Return values are string-like objects with extra attributes like
-        ``succeeded`` and ``return_code`` sprinkled on top
-      - Ported
-      - Return values are no longer string-a-likes with a semi-private API, but
-        are full fledged regular objects of type `~invoke.runners.Result`. They
-        expose all of the same info as the old "attribute strings", and only
-        really differ in that they don't pretend to be strings themselves.
-
-        They do, however, still behave as booleans - just ones reflecting the
-        exit code's relation to zero instead of whether there was any stdout.
 
 ``sudo``
 ~~~~~~~~
