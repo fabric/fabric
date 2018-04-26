@@ -14,23 +14,6 @@ until you're fully upgraded. Should anything be missing, please file a ticket
 `on Github <https://github.com/fabric/fabric>`_ and we'll update it ASAP.
 
 
-'Sidegrading' to Invoke
-=======================
-
-We linked to a note about this above, but to be explicit: modern Fabric is
-really two separate libraries, and anything not strictly SSH or network related
-has been :ref:`split out into the Invoke project <invoke-split-from-fabric>`.
-
-This means that if you're in the group of users leveraging Fabric solely for
-its task execution or ``local``, and never used ``run``, ``put`` or
-similar - **you don't need to use Fabric itself anymore** and can simply
-**'sidegrade' to Invoke instead**.
-
-You'll still want to read over this document to get a sense of how things have
-changed, but be aware that you can get away with ``pip install invoke`` and
-won't need Fabric, Paramiko, cryptography dependencies, or anything else.
-
-
 Why upgrade?
 ============
 
@@ -38,8 +21,8 @@ We'd like to call out, in no particular order, some specific improvements in
 modern Fabric that might make upgrading worth your time.
 
 .. note::
-    These are all listed in the next section as well, so if you're already
-    sold, just skip there. TK: double check that this is still true!
+    These are all listed in the rest of the doc too, so if you're already sold,
+    just skip there.
 
 - Python 3 compatibility (specifically, we now support 2.7 and 3.4+);
 - Thread-safe - no more requirement on multiprocessing for concurrency;
@@ -65,8 +48,25 @@ modern Fabric that might make upgrading worth your time.
   proxy-command subprocesses) option, which can be nested infinitely;
 
 
-Upgrading piecemeal
-===================
+'Sidegrading' to Invoke
+=======================
+
+We linked to a note about this above, but to be explicit: modern Fabric is
+really two separate libraries, and anything not strictly SSH or network related
+has been :ref:`split out into the Invoke project <invoke-split-from-fabric>`.
+
+This means that if you're in the group of users leveraging Fabric solely for
+its task execution or ``local``, and never used ``run``, ``put`` or
+similar - **you don't need to use Fabric itself anymore** and can simply
+**'sidegrade' to Invoke instead**.
+
+You'll still want to read over this document to get a sense of how things have
+changed, but be aware that you can get away with ``pip install invoke`` and
+won't need Fabric, Paramiko, cryptography dependencies, or anything else.
+
+
+Running both versions simultaneously
+====================================
 
 To help with gradual upgrades, modern Fabric may be installed under the name
 ``fabric2`` (in addition to being made available "normally" as versions 2.0+ of
