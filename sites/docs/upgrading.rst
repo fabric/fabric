@@ -296,7 +296,7 @@ CLI arguments, options and behavior
     * - Exposure of task arguments as custom colon/comma delimited CLI
         arguments, e.g. ``fab mytask:posarg,kwarg=val``
       - Removed
-      - CLI arguments are now proper POSIX-style long and short flags,
+      - CLI arguments are now proper GNU/POSIX-style long and short flags,
         including globbing shortflags together, space or equals signs to attach
         values, optional values, and much more. See :ref:`cli-args`.
     * - Ability to invoke multiple tasks in a single command line, e.g. ``fab
@@ -328,7 +328,8 @@ CLI arguments, options and behavior
       - Ported
       - ``--config`` lives on, but the short flag is now ``-f`` (``-c`` now
         determines which collection module name is sought by the task loader.)
-    * - ``--colorize-errors`` to enable ANSI coloring of error output
+    * - ``--colorize-errors`` (and ``env.colorize_errors``) to enable ANSI
+        coloring of error output
       - Pending
       - Very little color work has been done yet and this is one of the
         potentially missing pieces. We're unsure how often this was used in v1
@@ -342,8 +343,9 @@ CLI arguments, options and behavior
         loading of user-level ``known_hosts`` files
       - Pending
       - Not ported yet, probably will be.
-    * - ``-e``/``--eagerly-disconnect`` which tells the execution system to
-        disconnect from hosts as soon as a task is done running
+    * - ``-e``/``--eagerly-disconnect`` (and ``env.eagerly_disconnect``) which
+        tells the execution system to disconnect from hosts as soon as a task
+        is done running
       - Pending
       - Not ported yet.
     * - ``-f``/``--fabfile`` to select alternate fabfile location
@@ -560,8 +562,8 @@ differences.
         long lifetime it became clear that neither default works for all or
         even most users, so we opted to return the default to ``False`` as it's
         cleaner and less wasteful.
-    * - ``combine_stderr`` (kwarg and setting) controlling whether Paramiko
-        weaves remote stdout and stderr into the stdout stream
+    * - ``combine_stderr`` (kwarg and ``env.combine_stderr``) controlling
+        whether Paramiko weaves remote stdout and stderr into the stdout stream
       - Removed
       - This wasn't terrifically useful, and often caused conceptual problems
         in tandem with ``pty`` (as pseudo-terminals by their nature always
