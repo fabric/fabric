@@ -13,6 +13,14 @@ If you read this document carefully, it should guide you in the right direction
 until you're fully upgraded. Should anything be missing, please file a ticket
 `on Github <https://github.com/fabric/fabric>`_ and we'll update it ASAP.
 
+.. warning::
+    As of the 2.0 release line, Fabric 2 is **not** at 100% feature parity with
+    1.x! Some features have been explicitly dropped, but others simply have not
+    been ported over yet, either due to time constraints or because said
+    features need to be re-examined in a modern context.
+
+    Please review the information below, including the :ref:`upgrade-specifics`
+    section which contains a very detailed list, before filing bug reports!
 
 Why upgrade?
 ============
