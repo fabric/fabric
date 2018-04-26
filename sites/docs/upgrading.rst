@@ -721,8 +721,9 @@ Utilities
       - Pending
       - This has not been ported yet, nor have we checked to see if it actually
         needs to be, but we suspect a new/ported version of it may be useful.
-    * - ``network.normalize``/``denormalize``/``parse_host_string``, ostensibly
-        internals but sometimes exposed to users for dealing with host strings
+    * - ``network.normalize``, ``denormalize`` and ``parse_host_string``,
+        ostensibly internals but sometimes exposed to users for dealing with
+        host strings
       - Removed
       - As with other host-string-related tools, these are gone and serve no
         purpose. `.Connection` is now the primary API focus and has individual
@@ -1157,7 +1158,7 @@ implicitly private; those are not represented here.
     * - ``env.version`` exposing current Fabric version number
       - Removed
       - Just ``import fabric`` and reference ``fabric.__version__`` (string) or
-        ``fabric.__version_info__ (tuple).
+        ``fabric.__version_info__`` (tuple).
 
 
 Example upgrade process
