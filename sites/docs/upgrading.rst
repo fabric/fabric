@@ -170,9 +170,9 @@ High level code flow and API member concerns.
       - Removed
       - All useful imports are now available at the top level, e.g. ``from
         fabric import Connection``.
-    * - Configure connection parameters globally (via ``env.host_string``) and
-        call global methods which implicitly reference them
-        (``run``/``sudo``/etc)
+    * - Configure connection parameters globally (via ``env.host_string``,
+        ``env.host``, ``env.port``, ``env.user``) and call global methods which
+        implicitly reference them (``run``/``sudo``/etc)
       - Removed
       - The primary API is now properly OOP: instantiate `.Connection` objects
         and call their methods. These objects encapsulate all connection state
@@ -352,13 +352,14 @@ CLI arguments, options and behavior
       - Ported
       - This is now split up into ``-c``/``--collection`` and
         ``-r``/``--search-root``; see :ref:`loading-collections`.
-    * - ``-g``/``--gateway`` for selecting a global SSH gateway host string
+    * - ``-g``/``--gateway`` (and ``env.gateway``) for selecting a global SSH
+        gateway host string
       - Mixed
       - Not ported, but it's possible to set this via the config system and
         environment variables. As with most other connection params there's
         less emphasis on these things being defined globally.
-    * - ``--gss-auth``/``--gss-deleg``/``--gss-kex`` for GSSAPI parameter
-        tuning
+    * - ``--gss-auth``/``--gss-deleg``/``--gss-kex`` (and ``env.gss_auth``,
+        ``env.gss_deleg``, ``env.gss_kex``) for GSSAPI parameter tuning
       - Pending
       - Not ported yet.
     * - ``--hide``/``--show`` for tweaking output display globally
@@ -439,14 +440,17 @@ CLI arguments, options and behavior
       - Ported
       - See ``--list``/``--list-format`` - there's now a JSON format instead.
         No point reinventing the wheel.
-    * - ``--skip-bad-hosts`` to bypass problematic hosts
+    * - ``--skip-bad-hosts`` (and ``env.skip_bad_hosts``) to bypass problematic
+        hosts
       - Pending
       - Not ported yet.
-    * - ``--skip-unknown-tasks``
+    * - ``--skip-unknown-tasks`` and ``env.skip_unknown_tasks`` for silently
+        skipping past bogus task names on CLI invocation
       - Removed
       - This felt mostly like bloat to us and could require nontrivial parser
         changes to reimplement, so it's out for now.
-    * - ``--ssh-config-path``
+    * - ``--ssh-config-path`` and ``env.ssh_config_path`` for selecting an SSH
+        config file
       - Ported
       - This is now ``-F``/``--ssh-config``.
     * - ``--system-known-hosts`` to trigger loading systemwide ``known_hosts``
@@ -467,7 +471,8 @@ CLI arguments, options and behavior
     * - ``-w``/``--warn-only`` to toggle warn-vs-abort behavior
       - Ported
       - Ported as-is, no changes.
-    * - ``-x``/``--exclude-hosts`` for excluding otherwise selected targets
+    * - ``-x``/``--exclude-hosts`` (and ``env.exclude_hosts``) for excluding
+        otherwise selected targets
       - Pending
       - Not ported yet, is pending an in depth rework of global (vs
         hand-instantiated) connection/group selection.
@@ -522,8 +527,9 @@ differences.
         `.Connection` (quite possibly including recreating ``lcd``) so that
         local vs remote state are separated.
     * - ``fabric.context_managers.shell_env`` and its specific expression
-        ``path``, for modifying remote environment variables (locally, one
-        would just modify `os.environ`.)
+        ``path`` (plus ``env.shell_env``, ``env.path`` and
+        ``env.path_behavior``), for modifying remote environment variables
+        (locally, one would just modify `os.environ`.)
       - Ported
       - The context managers were the only way to set environment variables at
         any scope; in modern Fabric, subprocess shell environment is
@@ -650,8 +656,8 @@ below are ``sudo`` specific.
         We hope to upgrade ``sudo`` soon so it can perform a common-best-case,
         no-escaping-required shell wrapping on your behalf; see `invoke#459
         <https://github.com/pyinvoke/invoke/issues/459>`_.
-    * - ``user`` argument allowing invocation via ``sudo -u <user>`` (instead
-        of defaulting to root)
+    * - ``user`` argument (and ``env.sudo_user``) allowing invocation via
+        ``sudo -u <user>`` (instead of defaulting to root)
       - Ported
       - This is still here, and still called ``user``.
     * - ``group`` argument controlling the effective group of the sudo'd
@@ -830,8 +836,8 @@ Authentication
       - Ported
       - Use ``connect_kwargs.look_for_keys`` instead (setting it to ``False``
         to disable Paramiko's default key-finding behavior.)
-    * - ``env.passwords`` stores connection passwords in a dict keyed by host
-        strings
+    * - ``env.passwords`` (and ``env.sudo_passwords``) stores connection/sudo
+        passwords in a dict keyed by host strings
       - Mixed
       - Each `.Connection` object may be configured with its own
         ``connect_kwargs`` given at instantiation time, allowing for per-host
@@ -1029,10 +1035,93 @@ per-topic sections; any that are *not* covered elsewhere, live here. All are
 explicitly noted as ``env.<name>`` for ease of searching in your browser or
 viewer.
 
+A small handful of env vars were never publicly documented & were thus
+implicitly private; those are not represented here.
+
 .. list-table::
     :widths: 40 10 50
 
-    * - ``env.roles``
+    * - ``env.abort_exception`` for setting which exception is used to abort
+      - Removed
+      - Aborting as a concept is gone, just raise whatever exception seems most
+        reasonable to surface to an end user, or use `~invoke.exceptions.Exit`.
+        See also :ref:`upgrading-utility`.
+    * - ``env.all_hosts`` and ``env.tasks`` listing execution targets
+      - Mixed
+      - Fabric's `~invoke.executor.Executor` subclass stores references to all
+        CLI parsing results (including the value of :option:`--hosts`, the
+        tasks requested and their args, etc) and the intent is for users to
+        have access to that information.
+        
+        However, the details for that API (e.g. exposing the executor via a
+        task's `~invoke.context.Context`/`.Connection`) are still in flux.
+    * - ``env.command`` noting currently executing task name (in hindsight,
+        quite the misnomer...)
+      - Mixed
+      - See the notes for ``env.all_hosts`` above - same applies here re: user
+        visibility into CLI parsing results.
+    * - ``env.command_prefixes`` for visibility into (arguably also mutation
+        of) the shell command prefixes to be applied to ``run``/``sudo``
+      - Ported
+      - This is now `~invoke.context.Context.command_prefixes`.
+    * - ``env.cwd`` noting current intended working directory
+      - Ported
+      - This is now `~invoke.context.Context.command_cwds` (a list, not a
+        single string, to more properly model the intended
+        contextmanager-driven use case.)
+        
+        Note that remote-vs-local context for this data isn't yet set up; see
+        the notes about ``with cd`` under :ref:`upgrading-commands`.
+    * - ``env.dedupe_hosts`` controlling whether duplicate hosts in merged host
+        lists get deduplicated or not
+      - Pending
+      - Not ported yet.
+    * - ``env.echo_stdin`` (undocumented) for turning off the default echoing
+        of standard input
+      - Ported
+      - Is now a config option under the ``run`` tree, with much the same
+        behavior.
+    * - ``env.local_user`` for read-only access to the discovered local
+        username
+      - Removed
+      - We're not entirely sure why v1 felt this was worth caching in the
+        config; if you need this info, just import and call
+        `fabric.util.get_local_user`.
+    * - ``env.output_prefix`` determining whether or not line-by-line
+        host-string prefixes are displayed
+      - Pending
+      - Differentiating parallel stdout/err is still a work in progress; we may
+        end up reusing line-by-line logging and prefixing (ideally via actual
+        logging) or we may try for something cleaner such as streaming to
+        per-connection log files.
+    * - ``env.prompts`` controlling prompt auto-response
+      - Ported
+      - Prompt auto-response is now publicly implemented as the
+        `~invoke.watchers.StreamWatcher` and `~invoke.watchers.Responder` class
+        hierarchy, instances of which can be handed to ``run`` via kwarg or
+        stored globally in the config as ``run.watchers``.
+    * - ``env.real_fabfile`` storing read-only fabfile path which was loaded by
+        the CLI machinery
+      - Ported
+      - The loaded task `~invoke.collection.Collection` is stored on both the
+        top level `~invoke.program.Program` object as well as the
+        `~invoke.executor.Executor` which calls tasks; and
+        `~invoke.collection.Collection` has a ``loaded_from`` attribute with
+        this information.
+    * - ``env.remote_interrupt`` controlling how interrupts (i.e. a local
+        `KeyboardInterrupt` are caught, forwarded or other
+      - Mixed
+      - Invoke's interrupt capture behavior is currently "always just send the
+        interrupt character to the subprocess and continue", allowing
+        subprocesses to handle ``^C`` however they need to, which is an
+        improvement over Fabric 1 and roughly equivalent to setting
+        ``env.remote_interrupt = True``.
+
+        Allowing users to change this behavior via config is not yet
+        implemented, though it is technically possible to do so by subclassing
+        and overriding `invoke.runners.Runner.send_interrupt`.
+    * - ``env.roles``, ``env.roledefs`` and ``env.effective_roles``
+        controlling/exposing what roles are available or currently in play
       - Pending
       - As noted in :ref:`upgrading-api`, roles as a concept were ported to
         `.Group`, but there's no central clearinghouse in which to store them.
@@ -1041,6 +1130,34 @@ viewer.
         common-best-practice option (such as creating `Groups <.Group>` from
         some configuration subtree and storing them as a
         `~invoke.context.Context` attribute) will appear in early 2.x.
+    * - ``env.ok_ret_codes`` for overriding the default "0 good, non-0 bad"
+        error detection for subprocess commands
+      - Pending
+      - Not ported yet, but should involve some presumably minor updates to
+        `invoke.runners.Runner.generate_result` and `~invoke.runners.Result`.
+    * - ``env.sudo_prefix`` determining the sudo binary name + its flags used
+        when creating ``sudo`` command strings
+      - Pending
+      - Sudo command construction does not currently look at the config for
+        anything but the actual sudo prompt.
+    * - ``env.sudo_prompt`` for setting the prompt string handed to ``sudo``
+        (and then expected in return for auto-replying with a configured
+        password)
+      - Ported
+      - Is now ``sudo.prompt`` in the configuration system.
+    * - ``env.use_exceptions_for`` to note which actions raise exceptions
+      - Removed
+      - As with most other functionality surrounding Fabric 1's "jump straight
+        to `sys.exit`" design antipattern, this is gone - modern Fabric will
+        not be hiding any exceptions from user-level code.
+    * - ``env.use_ssh_config`` to enable off-by-default SSH config loading
+      - Ported
+      - SSH config loading is now on by default, but an option remains to
+        disable it. See :ref:`upgrading-configuration` for more.
+    * - ``env.version`` exposing current Fabric version number
+      - Removed
+      - Just ``import fabric`` and reference ``fabric.__version__`` (string) or
+        ``fabric.__version_info__ (tuple).
 
 
 Example upgrade process
