@@ -30,13 +30,13 @@ install:
   # Self
   - pip install -e .
   # Limit setuptools as some newer versions have Issues(tm). This needs doing
-  # as its own step; trying to do it via dev-requirements.txt isn't always
+  # as its own step; trying to do it via requirements.txt isn't always
   # sufficient.
   - pip install "setuptools<34"
   # Dev requirements
   # TODO: follow invoke and split it up a bit so we're not pulling down
   # conflicting or unused-by-travis deps?
-  - pip install -r dev-requirements.txt
+  - pip install -r requirements.txt
   # Sanity test of the Invoke layer, if that's busted everything is
   - inv --list
   # Sanity test of Fabric itself
