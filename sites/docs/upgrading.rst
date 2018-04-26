@@ -106,9 +106,11 @@ Most sections are broken down in table form, as follows:
       - Status, see below for breakdown
       - Migration notes, removal rationale, etc
 
-These are the typical values for the 'status' column (though unfortunately,
-they bleed into one another frequently, so make sure to read the notes column
-in all cases!):
+Below are the typical values for the 'status' column, though some of them are a
+bit loose - make sure to read the notes column in all cases! Also note that
+things are not ironclad - eg any 'removed' item has some chance of returning if
+enough users request it or use cases are made that workarounds are
+insufficient.
 
 - **Ported**: available already, possibly renamed or moved (frequently, moved
   into the `Invoke <http://pyinvoke.org>`_ codebase.)
@@ -382,11 +384,41 @@ CLI arguments, options and behavior
         files such as ``~/.ssh/id_rsa``
       - Pending
       - Not ported yet.
+    * - ``--keepalive`` for setting network keepalive
+      - Pending
+      - Not ported yet.
     * - ``-l``/``--list`` for listing tasks, plus ``-F``/``--list-format`` for
         tweaking list display format
       - Ported
       - Now with bonus JSON list-format! Which incidentally replaces ``-F
         short``/``--shortlist``.
+    * - ``--linewise`` for buffering output line by line instead of roughly
+        byte by byte
+      - Removed
+      - This doesn't really fit with the way modern command execution code
+        views the world, so it's gone.
+    * - ``-n``/``--connection-attempts`` controlling multiple connect retries
+      - Pending
+      - Not ported yet.
+    * - ``--no-pty`` to disable automatic PTY allocation in ``run``, etc
+      - Ported
+      - Is now ``-p``/``--pty`` as the default behavior was switched around.
+    * - ``--password``/``--sudo-password`` for specifying login/sudo password
+        values
+      - Removed
+      - This is typically not very secure to begin with, and there are now many
+        other avenues for setting the related configuration values, so
+        they're gone at least for now.
+    * - ``-P``/``--parallel`` for activating global parallelism
+      - Pending
+      - See the notes around ``@parallel`` in :ref:`upgrading-tasks`.
+    * - ``--port`` to set default SSH port
+      - Mixed
+      - Our gut says this is best left up to the configuration system or use of
+        the ``port`` kwarg on `.Connection`; however it may find its way back.
+    * - ``r``/``--reject-unknown-hosts`` to modify Paramiko known host behavior
+      - Pending
+      - Not ported yet.
     * - ``-R``/``--roles`` for global list-of-hosts target selection
       - Pending
       - As noted under :ref:`upgrading-api`, role lists are only partially
@@ -398,14 +430,50 @@ CLI arguments, options and behavior
         variables (just do ``INVOKE_KEY=value fab mytask`` or similar), but
         it's possible a CLI flag method of setting config values will reappear
         later.
+    * - ``-s``/``--shell`` to override default shell path
+      - Removed
+      - Use the configuration system for this.
     * - ``--shortlist`` for short/computer-friendly list output
       - Ported
       - See ``--list``/``--list-format`` - there's now a JSON format instead.
         No point reinventing the wheel.
+    * - ``--skip-bad-hosts`` to bypass problematic hosts
+      - Pending
+      - Not ported yet.
+    * - ``--skip-unknown-tasks``
+      - Removed
+      - This felt mostly like bloat to us and could require nontrivial parser
+        changes to reimplement, so it's out for now.
+    * - ``--ssh-config-path``
+      - Ported
+      - This is now ``-F``/``--ssh-config``.
+    * - ``--system-known-hosts`` to trigger loading systemwide ``known_hosts``
+        files
+      - Mixed
+      - This isn't super likely to come back as a CLI flag but it may well
+        return as a configuration value.
+    * - ``-t``/``--timeout`` controlling connection timeout
+      - Pending
+      - Not ported yet.
+    * - ``-T``/``--command-timeout``
+      - Pending
+      - See notes in :ref:`upgrading-commands` around the ``timeout`` kwarg.
+    * - ``-u``/``--user`` to set global default username
+      - Mixed
+      - Most of the time, config env vars should be used for this, but it may
+        return.
+    * - ``-w``/``--warn-only`` to toggle warn-vs-abort behavior
+      - Ported
+      - Ported as-is, no changes.
     * - ``-x``/``--exclude-hosts`` for excluding otherwise selected targets
       - Pending
       - Not ported yet, is pending an in depth rework of global (vs
         hand-instantiated) connection/group selection.
+    * - ``-z``/``--pool-size`` for setting parallel-mode job queue pool size
+      - Removed
+      - There's no job queue anymore, or at least at present. Whatever replaces
+        it (besides the already-implemented threading model) is likely to look
+        pretty different.
 
 .. _upgrading-commands:
 
