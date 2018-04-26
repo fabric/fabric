@@ -106,7 +106,9 @@ Most sections are broken down in table form, as follows:
       - Status, see below for breakdown
       - Migration notes, removal rationale, etc
 
-The 'status' field will be one of the following:
+These are the typical values for the 'status' column (though unfortunately,
+they bleed into one another frequently, so make sure to read the notes column
+in all cases!):
 
 - **Ported**: available already, possibly renamed or moved (frequently, moved
   into the `Invoke <http://pyinvoke.org>`_ codebase.)
@@ -121,6 +123,8 @@ Here's a quick local table of contents for navigation purposes:
 
 .. contents::
     :local:
+
+.. _upgrading-general:
 
 General / conceptual
 --------------------
@@ -167,13 +171,13 @@ High level code flow and API member concerns.
     * - Configure connection parameters globally (via ``env.host_string``) and
         call global methods which implicitly reference them
         (``run``/``sudo``/etc)
-      - Ported
+      - Removed
       - The primary API is now properly OOP: instantiate `.Connection` objects
         and call their methods. These objects encapsulate all connection state
         (user, host, gateway, etc) and have their own SSH client instances.
     * - Emphasis on serialized "host strings" as method of setting user, host,
         port, etc
-      - Ported
+      - Mixed
       - `.Connection` *can* accept a shorthand "host string"-like argument, but
         the primary API is now explicit user, host, port, etc keyword
         arguments.
@@ -200,7 +204,14 @@ Task functions & decorators
 .. list-table::
     :widths: 40 10 50
 
-    * - "Classic" style implicit tasks w/o a ``@task`` decorator
+    * - By default, tasks are loaded from a ``fabfile.py`` which is sought up
+        towards filesystem root from the user's current working directory
+      - Ported
+      - This behavior is basically identical today, with minor modifications
+        and enhancements (such as tighter control over the load process, and
+        API hooks for implementing custom loader logic - see
+        :ref:`loading-collections`.)
+    * - "Classic" style implicit task functions lacking a ``@task`` decorator
       - Removed
       - These were on the way out even in v1, and arbitrary task/namespace
         creation is more explicitly documented now, via Invoke's
@@ -212,13 +223,14 @@ Task functions & decorators
         where v1 only had a single ``task_class`` argument, Invoke has a number
         of various namespace and parser hints as well as execution related
         options.
-    * - Completely arbitrary task function arguments (i.e. ``def mytask(any,
-        thing, at, all)``)
+    * - Arbitrary task function arguments (i.e. ``def mytask(any, thing, at,
+        all)``)
       - Ported
-      - This gets its own line item because: Fabric-level task functions must
-        now take a `.Connection` object as their first positional argument.
-        (The rest of the function signature is, as before, totally up to the
-        user & will get automatically turned into CLI flags.)
+      - This gets its own line item because: tasks must now take a
+        `~invoke.context.Context` (vanilla Invoke) or `.Connection` (Fabric)
+        object as their first positional argument. The rest of the function
+        signature is, as before, totally up to the user & will get
+        automatically turned into CLI flags.
 
         This sacrifices a small bit of the "quick DSL" of v1 in exchange for a
         cleaner, easier to understand/debug, and more user-overrideable API
@@ -238,9 +250,9 @@ Task functions & decorators
         preserving the simple/common case. See :ref:`task-namespaces` for
         details.
 
-        We may reinstate import (opt-in) module scanning later, since the use
-        of explicit namespace objects still allows users control over the tree
-        that results.
+        We may reinstate (in an opt-in fashion) imported module scanning later,
+        since the use of explicit namespace objects still allows users control
+        over the tree that results.
     * - ``@hosts`` and ``@roles`` for determining the default list of host or
         group-of-host targets a given task uses
       - Pending
@@ -279,25 +291,121 @@ CLI arguments, options and behavior
     :header-rows: 1
     :widths: 40 10 50
 
-    * - Behavior
-      - Status
-      - Notes
+    * - Exposure of task arguments as custom colon/comma delimited CLI
+        arguments, e.g. ``fab mytask:posarg,kwarg=val``
+      - Removed
+      - CLI arguments are now proper POSIX-style long and short flags,
+        including globbing shortflags together, space or equals signs to attach
+        values, optional values, and much more. See :ref:`cli-args`.
+    * - Ability to invoke multiple tasks in a single command line, e.g. ``fab
+        task1 task2``
+      - Ported
+      - Works great!
     * - ``python -m fabric`` as stand-in for ``fab``
       - Pending
       - Should be trivial to port this over.
-    * - ``-a``/``--no_agent``
+    * - ``-a``/``--no_agent`` for disabling automatic SSH agent key selection
       - Removed
       - To disable use of an agent permanently, set config value
         ``connect_kwargs.allow_agent`` to ``False``; to disable temporarily,
         unset the ``SSH_AUTH_SOCK`` env var.
-    * - ``-I``/``--initial-password-prompt``
+    * - ``-A``/``--forward-agent`` for enabling agent forwarding to the remote
+        end
+      - Pending
+      - The config and kwarg versions of this are ported, but there is
+        currently no CLI flag. Usual "you can set the config value at runtime
+        with a shell env variable" clause is in effect, so this *may* not get
+        ported, depending.
+    * - ``--abort-on-prompts`` to turn interactive prompts into exceptions
+        (helps avoid 'hanging' sessions)
+      - Removed
+      - See the notes about interactive prompts going away in
+        :ref:`upgrading-general`. Without mid-session prompts, there's no need
+        for this option.
+    * - ``-c``/``--config`` for specifying an alternate config file path
+      - Ported
+      - ``--config`` lives on, but the short flag is now ``-f`` (``-c`` now
+        determines which collection module name is sought by the task loader.)
+    * - ``--colorize-errors`` to enable ANSI coloring of error output
+      - Pending
+      - Very little color work has been done yet and this is one of the
+        potentially missing pieces. We're unsure how often this was used in v1
+        so it's possible it won't show up again, but generally, we like using
+        color as an additional output vector, so...
+    * - ``-d``/``--display`` for showing info on a given command
+      - Ported
+      - This is now the more standard ``-h``/``--help``, and can be given in
+        either "direction": ``fab -h mytask`` or ``fab mytask -h``.
+    * - ``-D``/``--disable-known-hosts`` to turn off Paramiko's automatic
+        loading of user-level ``known_hosts`` files
+      - Pending
+      - Not ported yet, probably will be.
+    * - ``-e``/``--eagerly-disconnect`` which tells the execution system to
+        disconnect from hosts as soon as a task is done running
+      - Pending
+      - Not ported yet.
+    * - ``-f``/``--fabfile`` to select alternate fabfile location
+      - Ported
+      - This is now split up into ``-c``/``--collection`` and
+        ``-r``/``--search-root``; see :ref:`loading-collections`.
+    * - ``-g``/``--gateway`` for selecting a global SSH gateway host string
+      - Mixed
+      - Not ported, but it's possible to set this via the config system and
+        environment variables. As with most other connection params there's
+        less emphasis on these things being defined globally.
+    * - ``--gss-auth``/``--gss-deleg``/``--gss-kex`` for GSSAPI parameter
+        tuning
+      - Pending
+      - Not ported yet.
+    * - ``--hide``/``--show`` for tweaking output display globally
+      - Removed
+      - This is configurable via the config system and env vars.
+    * - ``-H``/``--hosts``
+      - Ported
+      - Works basically the same as before - if given, is shorthand for
+        executing any given tasks once per host.
+    * - ``-i`` for SSH key filename selection
+      - Ported
+      - Works same as v1, including ability to give multiple times to build a
+        list of keys to try.
+    * - ``-I``/``--initial-password-prompt`` for requesting an initial
+        pre-execution password prompt
       - Ported
       - It's now :option:`--prompt-for-password` and/or
         :option:`--prompt-for-passphrase`, depending on whether you were using
         the former to fill in passwords or key passphrases (or both.)
-    * - TODO: rest of this
+    * - ``--initial-sudo-password-prompt`` for requesting an initial
+        pre-execution sudo password prompt
       - Pending
-      - Yup
+      - We kinda forgot about this when implementing ``--prompt-for-password``.
+    * - ``-k``/``--no-keys`` which prevents Paramiko's automatic loading of key
+        files such as ``~/.ssh/id_rsa``
+      - Pending
+      - Not ported yet.
+    * - ``-l``/``--list`` for listing tasks, plus ``-F``/``--list-format`` for
+        tweaking list display format
+      - Ported
+      - Now with bonus JSON list-format! Which incidentally replaces ``-F
+        short``/``--shortlist``.
+    * - ``-R``/``--roles`` for global list-of-hosts target selection
+      - Pending
+      - As noted under :ref:`upgrading-api`, role lists are only partially
+        applicable to the new API and we're still feeling out whether/how they
+        would work at a global or CLI level.
+    * - ``--set key=value`` for setting ``fabric.state.env`` vars at runtime
+      - Mixed
+      - This is largely obviated by the new support for shell environment
+        variables (just do ``INVOKE_KEY=value fab mytask`` or similar), but
+        it's possible a CLI flag method of setting config values will reappear
+        later.
+    * - ``--shortlist`` for short/computer-friendly list output
+      - Ported
+      - See ``--list``/``--list-format`` - there's now a JSON format instead.
+        No point reinventing the wheel.
+    * - ``-x``/``--exclude-hosts`` for excluding otherwise selected targets
+      - Pending
+      - Not ported yet, is pending an in depth rework of global (vs
+        hand-instantiated) connection/group selection.
 
 .. _upgrading-commands:
 
@@ -642,13 +750,13 @@ Authentication
         Paramiko-level APIs; users should already know which type of key
         they're dealing with and instantiate a ``PKey`` subclass themselves,
         placing the result in ``connect_kwargs.pkey``.
-    * - ``env.no_agent``, simply a renaming/inversion of the ``allow_agent``
-        connect kwarg
+    * - ``env.no_agent``, which is a renaming/inversion of Paramiko's
+        ``allow_agent`` connect kwarg
       - Ported
       - Users who were setting this to ``True`` should now simply set
         ``connect_kwargs.allow_agent`` to ``False`` instead.
-    * - ``env.no_keys``, similar to ``no_agent``, just an inversion of
-        the ``look_for_keys`` connect kwarg
+    * - ``env.no_keys``, similar to ``no_agent``, just an inversion of the
+        ``look_for_keys`` connect kwarg
       - Ported
       - Use ``connect_kwargs.look_for_keys`` instead (setting it to ``False``
         to disable Paramiko's default key-finding behavior.)
