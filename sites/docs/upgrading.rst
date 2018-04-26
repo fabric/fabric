@@ -1166,8 +1166,8 @@ Example upgrade process
 
 This section goes over upgrading a small but nontrivial Fabric 1 fabfile to
 work with modern Fabric. It's not meant to be exhaustive, merely illustrative;
-for a full list of how to upgrade individual features or concepts, see the last
-section, :ref:`upgrade-specifics`.
+for a full list of how to upgrade individual features or concepts, see
+:ref:`upgrade-specifics`.
 
 Sample original fabfile
 -----------------------
@@ -1225,29 +1225,29 @@ In this case, we don't need to import nearly as many functions, due to the
 emphasis on object methods instead of global functions. We only need the
 following:
 
-- `sys`, for `sys.exit` (replacing ``abort``);
+- `~invoke.exceptions.Exit`, a friendlier way of requesting a `sys.exit`;
 - `@task <invoke.tasks.task>`, as before, but coming from Invoke as it's not
   SSH-specific;
 - ``confirm``, which now comes from the Invocations library (also not
-  SSH-specific, and Invocations is one of the descendants of
+  SSH-specific; though Invocations is one of the descendants of
   ``fabric.contrib``, which no longer exists);
 
 ::
 
-    import sys
-
-    from invoke import task
+    from invoke import task, Exit
     from invocations.console import confirm
 
 Host list
 ---------
 
-The idea of a global host lists is gone; there is currently no direct
+The idea of a predefined global host list is gone; there is currently no direct
 replacement. Instead, we expect users to set up their own execution context,
 creating explicit `.Connection` and/or `.Group` objects as needed, even if
-that's simply by mocking v1's built-in "roles" map.
+that's simply by mocking v1's built-in "roles" map. For simple use cases, the
+:option:`--hosts` core option is still available.
 
-This is an area under active development, so feedback is welcomed.
+.. note::
+    This is an area under active development, so feedback is welcomed.
 
 For now, given the source snippet hardcoded a hostname of ``my_server``, we'll
 assume this fabfile will be invoked as e.g. ``fab -H my_server taskname``, and
@@ -1261,7 +1261,7 @@ Test task
 ---------
 
 The first task in the fabfile uses a good spread of the API. We'll outline the
-changes here (note that these are all listed above as well):
+changes here (though again, all details are in :ref:`upgrade-specifics`):
 
 - Declaring a function as a task is nearly the same as before, but with an
   explicit initial context argument, whose value will be a `.Connection` object
@@ -1270,17 +1270,18 @@ changes here (note that these are all listed above as well):
   kwarg to the ``local`` call.
 - That ``local`` call is now a method call on the `.Connection`,
   `.Connection.local`.
-- ``capture`` is no longer a useful method; we can now capture and display at
+- ``capture`` is no longer a useful argument; we can now capture and display at
   the same time, locally or remotely. If you don't actually *want* a local
   subprocess to mirror its stdout/err while it runs, you can simply say
-  ``hide=True``.
+  ``hide=True`` (or ``hide='stdout'`` or etc.)
 - Result objects are pretty similar between versions; modern Fabric's results
   no longer pretend to "be" strings, but instead act more like booleans, acting
   truthy if the command exited cleanly, and falsey otherwise. In terms of
-  attributes exhibited, most of the same info is available, in fact typically
-  more in modern editions than in v1.
-- ``abort`` is gone; you should use exceptions or builtins like ``sys.exit``
-  instead.
+  attributes exhibited, most of the same info is available, and more besides.
+- ``abort`` is gone; you should use whatever exceptions you feel are
+  appropriate, or `~invoke.exceptions.Exit` for a `sys.exit` equivalent. (Or
+  just call `sys.exit` if you want a no-questions-asked immediate exit that
+  even our CLI machinery won't touch.)
 
 .. TODO: check up on modern-Fabric compatible patchwork for confirm
 
@@ -1290,7 +1291,7 @@ The result::
     def test(c):
         result = c.local('./manage.py test my_app', warn=True)
         if not result and not confirm("Tests failed. Continue anyway?"):
-            sys.exit("Aborting at user request.")
+            raise Exit("Aborting at user request.")
 
 Other simple tasks
 ------------------
@@ -1311,7 +1312,8 @@ Calling tasks from other tasks
 
 This is another area that is in flux at the Invoke level, but for now, we can
 simply call the other tasks as functions, just as was done in v1. The main
-difference is that we want to pass along our context object::
+difference is that we want to pass along our context object to preserve the
+configuration context (such as loaded config files or CLI flags)::
 
     @task
     def prepare_deploy(c):
@@ -1325,9 +1327,8 @@ Actual remote steps
 Note that up to this point, nothing truly Fabric-related has been in play -
 `.Connection.local` is just a rebinding of `Context.run
 <invoke.context.Context.run>`, Invoke's local subprocess execution method. Now
-we get to the actual deploy step, which simply invokes `.Connection.run`
-instead, executing remotely (on whichever host the `.Connection` has been bound
-to).
+we get to the actual deploy step, which invokes `.Connection.run` instead,
+executing remotely (on whichever host the `.Connection` has been bound to).
 
 ``with cd`` is not fully implemented for the remote side of things, but we
 expect it will be soon. For now we fall back to command chaining with ``&&``.
@@ -1348,16 +1349,14 @@ The whole thing
 
 Now we have the entire, upgraded fabfile that will work with modern Fabric::
 
-    import sys
-
-    from invoke import task
+    from invoke import task, Exit
     from invocations.console import confirm
 
     @task
     def test(c):
         result = c.local('./manage.py test my_app', warn=True)
         if not result and not confirm("Tests failed. Continue anyway?"):
-            sys.exit("Aborting at user request.")
+            raise Exit("Aborting at user request.")
 
     @task
     def commit(c):
