@@ -22,6 +22,8 @@ until you're fully upgraded. Should anything be missing, please file a ticket
     Please review the information below, including the :ref:`upgrade-specifics`
     section which contains a very detailed list, before filing bug reports!
 
+    Also see :ref:`the roadmap <roadmap>`.
+
 Why upgrade?
 ============
 
