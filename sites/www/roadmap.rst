@@ -11,13 +11,21 @@ Fabric 2 and above
 ==================
 
 Modern Fabric versions (2+) receive active feature development. At the present
-time, version 2 has only recently been released and we are still porting some
-functionality present in 1.x that was not part of 2.0. (See :ref:`upgrading`
-for feature-by-feature status info.)
+time, version 2 has only recently been released and we are still porting 
+functionality from 1.x that was not part of 2.0 -- see :ref:`upgrading` for
+details. This will make up the early 2.x feature releases: 2.1, 2.2, 2.3, etc.
 
-Versions 3, 4 and so forth will consist of small sets of backwards
-incompatible changes to the 2.x codebase, and will not be long-period full
-rewrites as the 1 to 2 process was.
+As things mature and/or we tackle larger features, we may need to make
+backwards incompatible changes -- which will generate Fabric 3.0, 4.0 etc.
+These will *not* be rewrites, and the scope of these changes will be kept
+minimal so that upgrading is relatively easy.
+
+.. note::
+    Many features that you may use via Fabric will only need development in the
+    libraries Fabric wraps -- `Invoke <http://pyinvoke.org>`_ and `Paramiko
+    <http://paramiko.org>`_ -- and unless Fabric itself needs changes to match,
+    you can often get away with only upgrading one of them at a time. Make sure
+    to check the other projects' changelogs periodically!
 
 Fabric 1.x
 ==========
