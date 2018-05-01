@@ -210,7 +210,7 @@ Task functions & decorators
 
 .. note::
     Nearly all task-related functionality is implemented in Invoke; for more
-    details see its :ref:`execution <task-execution>` and :ref:`namespaces
+    details see its :ref:`execution <invoking-tasks>` and :ref:`namespaces
     <task-namespaces>` documentation.
 
 .. list-table::
@@ -308,7 +308,7 @@ CLI arguments, options and behavior
       - Removed
       - CLI arguments are now proper GNU/POSIX-style long and short flags,
         including globbing shortflags together, space or equals signs to attach
-        values, optional values, and much more. See :ref:`cli-args`.
+        values, optional values, and much more. See :ref:`invoking-tasks`.
     * - Ability to invoke multiple tasks in a single command line, e.g. ``fab
         task1 task2``
       - Ported
