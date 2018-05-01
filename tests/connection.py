@@ -956,6 +956,7 @@ class Connection_:
             # Mock setup
             client = Client.return_value
             listener_sock = Mock(name='listener_sock')
+            listener_sock.getsockname.return_value = (local_host, local_port)
             if listener_exception:
                 listener_sock.bind.side_effect = listener_exception
             data = b("Some data")
@@ -1030,6 +1031,7 @@ class Connection_:
             })
 
         def _thread_error(self, which):
+            # Assert that an exception on a thread bubbles up.
             class Sentinel(Exception):
                 pass
             try:
@@ -1053,8 +1055,26 @@ class Connection_:
         def tunnel_errors_bubble_up(self):
             self._thread_error('tunnel')
 
+        def _error(self, which):
+            class Sentinel(Exception):
+                pass
+            try:
+                self._forward_local({
+                    'local_port': 1234,
+                    '{}_exception'.format(which): Sentinel,
+                })
+            except Sentinel as e:
+                # NOTE: ensures that we're getting what we expected and not
+                # some deeper, test-bug related error
+                err = "Expected wrapped exception to be Sentinel, was {}"
+                assert type(e) is Sentinel, err.format(str(type(e)))
+            else:
+                # no exception happened :(
+                err = "Failed to get Sentinel Exception on {} error"
+                assert False, err.format(which)
+
         def tunnel_manager_errors_bubble_up(self):
-            self._thread_error('listener')
+            self._error('listener')
 
         # TODO: these require additional refactoring of _forward_local to be
         # more like the decorators in _util

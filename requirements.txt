@@ -4,6 +4,10 @@ invocations>=0.17,<2.0
 # pytest-relaxed for test organization, display etc tweaks
 pytest-relaxed==1.0.0
 pytest==3.1.2
+# for testing TunnelManagers
+requests==2.18.4
+PySocks==1.6.8
+pytest-localserver==0.4.1
 # pytest-cov for coverage
 pytest-cov==2.5.1
 six==1.10.0

@@ -15,7 +15,7 @@ from paramiko.proxy import ProxyCommand
 
 from .config import Config
 from .transfer import Transfer
-from .tunnels import TunnelManager, Tunnel
+from .tunnels import TunnelManager, SocksTunnelManager, Tunnel
 
 
 @decorator
@@ -842,3 +842,108 @@ class Connection(Context):
                 address=remote_host,
                 port=remote_port,
             )
+
+    @contextmanager
+    @opens
+    def socks_proxy(
+            self,
+            local_port=0,
+            local_host='localhost',
+            authenticate=False,
+            export=True
+
+    ):
+        """
+        Open a socks 4/5 proxy that dynamically tunnels through the connection.
+
+        For example, similar to ``forward_local``, you want to access a host
+        that is accessible to your server's connection, but instead of
+        forwarding individual local ports to specific remote host/port
+        combinations, you'd rather use the socks5 protocol to establish those
+        connections dynamically::
+
+            import requests
+            from fabric import Connection
+
+            # See http://docs.python-requests.org/en/master/user/advanced/
+            # for documentation on socks support in the requests library. The
+            # installation of an additional third-party library is required:
+            # pip install requests[socks]
+
+            with Connection('my-bastion-server').socks_proxy():
+                r = requests.get('http://consul-server:8500/v1/status/leader')
+                r.raise_for_status()
+                leader = r.json()
+                # Do things with the consul leader
+
+        This method is analogous to using the ``DynamicForward`` or ``-D``
+        option of OpenSSH's ``ssh`` program.
+
+        :param int local_port: The local port on which to listen. Default:
+            ``0``, which will use any free port.
+
+        :param str local_host:
+            The local hostname/interface on which to listen. Default:
+            ``localhost``.
+
+        :param authenticate: If evaluates to True, require socks5
+            username/password authentication. If ``authenticate`` is a tuple,
+            use it as a username and password pair, otherwise, generate
+            a random username/password. In both cases, socks4 connections will
+            be refused. Default: ``False``
+
+            Note per RFC 1929: "Since the request carries the password in
+            cleartext, this subnegotiation is not recommended for environments
+            where "sniffing" is possible and practical."
+        :type authenticate: bool or tuple
+
+        :param bool export:
+            Export http_proxy and https_proxy to a URI to this proxy. Default:
+            ``True``. Many http/https libraries will consult the http(s)_proxy
+            envvar when creating new connections. If ``export`` is ``True``,
+            these envvars will be exported within the context manager and
+            restored afterward.
+
+            The exported URI reflects the options specified for this proxy.
+            For example, ``socks5://aUser:aPassword@localhost:52323/``
+
+        :returns:
+            Nothing; this method is only useful as a context manager affecting
+            local operating system state. However, a URI to this proxy will be
+            yielded. This is the same URI that is exported if ``export`` is
+            ``True``.
+        """
+
+        # TunnelManager does all of the work, sitting in the background (so we
+        # can yield) and spawning threads every time somebody connects to our
+        # local port.
+        finished = Event()
+        manager = SocksTunnelManager(
+            local_port=local_port, local_host=local_host,
+            authenticate=authenticate,
+            transport=self.transport, finished=finished,
+        )
+        manager.start()
+
+        # Return control to caller now that things ought to be operational
+        try:
+            if export:
+                with self.local_environ(
+                        http_proxy=manager.proxy_uri,
+                        https_proxy=manager.proxy_uri):
+                    yield manager.proxy_uri
+            else:
+                yield manager.proxy_uri
+
+        # Teardown once user exits block
+        finally:
+            # Signal to manager that it should close all open tunnels
+            finished.set()
+            # Then wait for it to do so
+            manager.join()
+            wrapper = manager.exception()
+            if wrapper is not None:
+                if wrapper.type is ThreadException:
+                    raise wrapper.value
+                else:
+                    raise ThreadException([wrapper])

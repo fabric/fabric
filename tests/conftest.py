@@ -92,3 +92,12 @@ def client():
         client = SSHClient.return_value
         client.get_transport.return_value = Mock(active=True)
         yield client
+
+@fixture(scope='session')
+def ok_httpserver(request):
+    from pytest_localserver import http
+    server = http.ContentServer()
+    server.start()
+    request.addfinalizer(server.stop)
+    server.serve_content('ok', 200)
+    return server
