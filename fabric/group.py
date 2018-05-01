@@ -52,6 +52,7 @@ class Group(list):
             <Connection host='notahost'>: gaierror(...),
         }
 
+    .. versionadded:: 2.0
     """
     def __init__(self, *hosts):
         """
@@ -68,6 +69,8 @@ class Group(list):
     def from_connections(cls, connections):
         """
         Alternate constructor accepting `.Connection` objects.
+
+        .. versionadded:: 2.0
         """
         # TODO: *args here too; or maybe just fold into __init__ and type
         # check?
@@ -80,6 +83,8 @@ class Group(list):
         Executes `.Connection.run` on all member `Connections <.Connection>`.
 
         :returns: a `.GroupResult`.
+
+        .. versionadded:: 2.0
         """
         # TODO: probably best to suck it up & match actual run() sig?
         # TODO: how to change method of execution across contents? subclass,
@@ -116,6 +121,8 @@ class Group(list):
         Executes `.Connection.get` on all member `Connections <.Connection>`.
 
         :returns: a `.GroupResult`.
+
+        .. versionadded:: 2.0
         """
         # TODO: probably best to suck it up & match actual get() sig?
         # TODO: actually implement on subclasses
@@ -126,6 +133,8 @@ class Group(list):
         Execute ``task`` on all member `Connections <.Connection>`.
 
         :returns: a `.GroupResult`.
+
+        .. versionadded:: 2.0
         """
         # TODO: implement as per tutorial
         raise NotImplementedError
@@ -134,6 +143,8 @@ class Group(list):
 class SerialGroup(Group):
     """
     Subclass of `.Group` which executes in simple, serial fashion.
+
+    .. versionadded:: 2.0
     """
     def run(self, *args, **kwargs):
         results = GroupResult()
@@ -157,6 +168,8 @@ def thread_worker(cxn, queue, args, kwargs):
 class ThreadingGroup(Group):
     """
     Subclass of `.Group` which uses threading to execute concurrently.
+
+    .. versionadded:: 2.0
     """
     def run(self, *args, **kwargs):
         results = GroupResult()
@@ -225,6 +238,8 @@ class GroupResult(dict):
 
       - Of note, these attributes allow high level logic, e.g. ``if
         mygroup.run('command').failed`` and so forth.
+
+    .. versionadded:: 2.0
     """
     def __init__(self, *args, **kwargs):
         super(dict, self).__init__(*args, **kwargs)
@@ -247,6 +262,8 @@ class GroupResult(dict):
     def succeeded(self):
         """
         A sub-dict containing only successful results.
+
+        .. versionadded:: 2.0
         """
         self._bifurcate()
         return self._successes
@@ -255,6 +272,8 @@ class GroupResult(dict):
     def failed(self):
         """
         A sub-dict containing only failed results.
+
+        .. versionadded:: 2.0
         """
         self._bifurcate()
         return self._failures

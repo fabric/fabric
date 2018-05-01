@@ -16,6 +16,8 @@ win32 = (sys.platform == 'win32')
 def get_local_user():
     """
     Return the local executing username, or ``None`` if one can't be found.
+
+    .. versionadded:: 2.0
     """
     # TODO: I don't understand why these lines were added outside the
     # try/except, since presumably it means the attempt at catching ImportError

@@ -89,6 +89,8 @@ class TunnelManager(ExceptionHandlingThread):
 class Tunnel(ExceptionHandlingThread):
     """
     Bidirectionally forward data between an SSH channel and local socket.
+
+    .. versionadded:: 2.0
     """
     def __init__(self, channel, sock, finished):
         self.channel = channel
@@ -122,6 +124,8 @@ class Tunnel(ExceptionHandlingThread):
         Read ``chunk_size`` from ``reader``, writing result to ``writer``.
 
         Returns ``None`` if successful, or ``True`` if the read was empty.
+
+        .. versionadded:: 2.0
         """
         data = reader.recv(chunk_size)
         if len(data) == 0:

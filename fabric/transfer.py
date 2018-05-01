@@ -19,6 +19,8 @@ from invoke.util import debug # TODO: actual logging! LOL
 class Transfer(object):
     """
     `.Connection`-wrapping class responsible for managing file upload/download.
+
+    .. versionadded:: 2.0
     """
     # TODO: SFTP clear default, but how to do SCP? subclass? init kwarg?
 
@@ -65,6 +67,8 @@ class Transfer(object):
             file's mode (default: ``True``).
 
         :returns: A `.Result` object.
+
+        .. versionadded:: 2.0
         """
         # TODO: how does this API change if we want to implement
         # remote-to-remote file transfer? (Is that even realistic?)
@@ -159,6 +163,8 @@ class Transfer(object):
             mode (default: ``True``).
 
         :returns: A `.Result` object.
+
+        .. versionadded:: 2.0
         """
         # TODO: preserve honoring of  "name" attribute of file-like objects as
         # in v1, so one CAN just upload to a directory? did we just make that
@@ -240,6 +246,8 @@ class Result(object):
         If a file transfer fails, some exception will be raised, either an
         `OSError` or an error from within Paramiko (such as when the local copy
         of the file is not the same size as the remote).
+
+    .. versionadded:: 2.0
     """
     # TODO: how does this differ from put vs get? field stating which? (feels
     # meh) distinct classes differing, for now, solely by name? (also meh)

@@ -7,6 +7,8 @@ class NothingToDo(Exception):
 class GroupException(Exception):
     """
     Lightweight exception wrapper for `.GroupResult` when one contains errors.
+
+    .. versionadded:: 2.0
     """
     def __init__(self, result):
         self.result = result

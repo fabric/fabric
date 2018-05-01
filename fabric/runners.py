@@ -11,6 +11,8 @@ class Remote(Runner):
     .. note::
         `.Remote`'s ``__init__`` method expects a `.Connection` (or subclass)
         instance for its ``context`` argument.
+
+    .. versionadded:: 2.0
     """
     def start(self, command, shell, env):
         self.channel = self.context.create_session()
@@ -97,6 +99,8 @@ class Result(InvokeResult):
     Exposes all attributes from its superclass, then adds a ``.connection``,
     which is simply a reference to the `.Connection` whose method yielded this
     result.
+
+    .. versionadded:: 2.0
     """
     def __init__(self, **kwargs):
         connection = kwargs.pop('connection')

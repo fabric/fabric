@@ -83,6 +83,8 @@ class Connection(Context):
     - Give the parameter directly: ``Connection('myhost', user='admin')``.
 
     The same applies to agent forwarding, gateways, and so forth.
+
+    .. versionadded:: 2.0
     """
     # NOTE: these are initialized here to hint to invoke.Config.__setattr__
     # that they should be treated as real attributes instead of config proxies.
@@ -429,6 +431,8 @@ class Connection(Context):
     def is_connected(self):
         """
         Whether or not this connection is actually open.
+
+        .. versionadded:: 2.0
         """
         return self.transport.active if self.transport else False
 
@@ -445,6 +449,8 @@ class Connection(Context):
         config options <ssh-config>`) are utilized here in the call to
         `SSHClient.connect <paramiko.client.SSHClient.connect>`. (For details,
         see :doc:`the configuration docs </concepts/configuration>`.)
+
+        .. versionadded:: 2.0
         """
         # Short-circuit
         if self.is_connected:
@@ -490,6 +496,8 @@ class Connection(Context):
             A ``direct-tcpip`` `paramiko.channel.Channel`, if `gateway` was a
             `.Connection`; or a `~paramiko.proxy.ProxyCommand`, if `gateway`
             was a string.
+
+        .. versionadded:: 2.0
         """
         # ProxyCommand is faster to set up, so do it first.
         if isinstance(self.gateway, string_types):
@@ -525,6 +533,8 @@ class Connection(Context):
         Terminate the network connection to the remote end, if open.
 
         If no connection is open, this method does nothing.
+
+        .. versionadded:: 2.0
         """
         if self.is_connected:
             self.client.close()
@@ -556,6 +566,8 @@ class Connection(Context):
             There are a few spots where Fabric departs from Invoke's default
             settings/behaviors; they are documented under
             `.Config.global_defaults`.
+
+        .. versionadded:: 2.0
         """
         runner = self.config.runners.remote(self)
         return self._run(runner, command, **kwargs)
@@ -569,6 +581,8 @@ class Connection(Context):
         except in that -- like `run` -- it honors per-host/per-connection
         configuration overrides in addition to the generic/global ones. Thus,
         for example, per-host sudo passwords may be configured.
+
+        .. versionadded:: 2.0
         """
         runner = self.config.runners.remote(self)
         return self._sudo(runner, command, **kwargs)
@@ -579,6 +593,8 @@ class Connection(Context):
 
         This method is effectively a wrapper of `invoke.run`; see its docs for
         details and call signature.
+
+        .. versionadded:: 2.0
         """
         # Superclass run() uses runners.local, so we can literally just call it
         # straight.
@@ -593,6 +609,8 @@ class Connection(Context):
         given `.Connection` instance will only ever have a single SFTP client,
         and state (such as that managed by
         `~paramiko.sftp_client.SFTPClient.chdir`) will be preserved.
+
+        .. versionadded:: 2.0
         """
         if self._sftp is None:
             self._sftp = self.client.open_sftp()
@@ -604,6 +622,8 @@ class Connection(Context):
 
         Simply a wrapper for `.Transfer.get`. Please see its documentation for
         all details.
+
+        .. versionadded:: 2.0
         """
         return Transfer(self).get(*args, **kwargs)
 
@@ -613,6 +633,8 @@ class Connection(Context):
 
         Simply a wrapper for `.Transfer.put`. Please see its documentation for
         all details.
+
+        .. versionadded:: 2.0
         """
         return Transfer(self).put(*args, **kwargs)
 
@@ -665,6 +687,8 @@ class Connection(Context):
         :returns:
             Nothing; this method is only useful as a context manager affecting
             local operating system state.
+
+        .. versionadded:: 2.0
         """
         if not remote_port:
             remote_port = local_port
@@ -763,6 +787,8 @@ class Connection(Context):
         :returns:
             Nothing; this method is only useful as a context manager affecting
             local operating system state.
+
+        .. versionadded:: 2.0
         """
         if not local_port:
             local_port = remote_port

@@ -30,6 +30,8 @@ class Config(InvokeConfig):
     ``port``, ``user`` and so forth.
 
     .. seealso:: :doc:`/concepts/configuration`, :ref:`ssh-config`
+
+    .. versionadded:: 2.0
     """
     prefix = 'fabric'
 
@@ -99,6 +101,8 @@ class Config(InvokeConfig):
 
         If set, this will cause `load_ssh_config` to skip system and user
         files, as OpenSSH does.
+
+        .. versionadded:: 2.0
         """
         self._set(_runtime_ssh_path=path)
 
@@ -108,6 +112,8 @@ class Config(InvokeConfig):
 
         Also (beforehand) ensures that Invoke-level config re: runtime SSH
         config file paths, is accounted for.
+
+        .. versionadded:: 2.0
         """
         # Update the runtime SSH config path (assumes enough regular config
         # levels have been loaded that anyone wanting to transmit this info
@@ -214,6 +220,8 @@ class Config(InvokeConfig):
 
         For Fabric-specific modifications and additions to the Invoke-level
         defaults, see our own config docs at :ref:`default-values`.
+
+        .. versionadded:: 2.0
         """
         # TODO: hrm should the run-related things actually be derived from the
         # runner_class? E.g. Local defines local stuff, Remote defines remote
