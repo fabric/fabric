@@ -25,7 +25,7 @@ class Fab(Program):
         core_args = super(Fab, self).core_args()
         my_args = [
             Argument(
-                names=('F', 'ssh-config'),
+                names=('S', 'ssh-config'),
                 help="Path to runtime SSH config file.",
             ),
             Argument(

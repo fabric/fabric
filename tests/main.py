@@ -95,7 +95,7 @@ Available tasks:
     class runtime_ssh_config_path:
         def _run(
             self,
-            flag='-F',
+            flag='-S',
             file_='ssh_config/runtime.conf',
             tasks='runtime-ssh-config',
         ):
@@ -106,7 +106,7 @@ Available tasks:
                 _run_fab(cmd.format(flag, file_, tasks))
 
         def capital_F_flag_specifies_runtime_ssh_config_file(self):
-            self._run(flag='-F')
+            self._run(flag='-S')
 
         def long_form_flag_also_works(self):
             self._run(flag='--ssh-config')
