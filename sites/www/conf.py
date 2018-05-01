@@ -9,6 +9,7 @@ from shared_conf import *
 
 # Releases changelog extension
 extensions.append('releases')
+releases_document_name = ['changelog', 'changelog-v1']
 releases_github_path = "fabric/fabric"
 
 # Intersphinx for referencing API/usage docs

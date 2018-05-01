@@ -19,6 +19,7 @@ documentation site, `docs.fabfile.org <http://docs.fabfile.org>`_.
     :hidden:
 
     changelog
+    changelog-v1
     FAQs <faq>
     installing
     installing-1.x
