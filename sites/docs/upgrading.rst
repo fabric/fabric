@@ -983,8 +983,9 @@ In modern Fabric, that responsibility has been removed from the core library
 into other standalone libraries which have their own identity & release
 process, typically either `invocations
 <https://github.com/pyinvoke/invocations>`_ (local-oriented code that does not
-use SSH) or `patchwork <https://github.com/fabric/patchwork>`_ (remote-oriented
-code.)
+use SSH) or `patchwork <https://github.com/fabric/patchwork>`_ (primarily
+remote-oriented code, though anything not explicitly dealing with both ends of
+the connection will work just as well locally.)
 
 Those libraries are still a work in progress, not least because we still need
 to identify the best way to bridge the gap between them (as many operations are
@@ -1020,11 +1021,6 @@ in the below table:
         Others, such as ``is_link``, ``comment``/``uncomment``, etc have not
         been ported yet. If they are, the are likely to end up in the same
         place.
-
-        Of note, even the ones that have been alpha-ported may be removed; for
-        example, ``append`` is an antipattern (it's significantly safer and
-        more maintainable to upload a rendered template or static file) and we
-        don't wish to encourage those when possible.
     * - ``project.rsync_project`` for rsyncing the entire host project remotely
       - Ported
       - Now ``patchwork.transfers.rsync``, with some modifications.
@@ -1292,8 +1288,6 @@ changes here (though again, all details are in :ref:`upgrade-specifics`):
   appropriate, or `~invoke.exceptions.Exit` for a `sys.exit` equivalent. (Or
   just call `sys.exit` if you want a no-questions-asked immediate exit that
   even our CLI machinery won't touch.)
-
-.. TODO: check up on modern-Fabric compatible patchwork for confirm
 
 The result::
 
