@@ -21,7 +21,6 @@ html_theme_options = {
     'github_repo': 'fabric',
     'travis_button': True,
     'codecov_button': True,
-    'gittip_user': 'bitprophet',
     'analytics_id': 'UA-18486793-1',
 
     'link': '#3782BE',
@@ -44,8 +43,7 @@ on_rtd = os.environ.get('READTHEDOCS') == 'True'
 on_travis = os.environ.get('TRAVIS', False)
 on_dev = not (on_rtd or on_travis)
 
-# Everything intersphinx's to Python, and to (local-or-remote) Invoke (and its
-# www)
+# Invoke (docs + www)
 inv_target = join(
     dirname(__file__),
     '..', '..', 'invoke', 'sites', 'docs', '_build'
@@ -58,7 +56,7 @@ inv_www_target = join(
 )
 if not on_dev:
     inv_www_target = 'http://pyinvoke.org/'
-# ... and Paramiko (docs)
+# Paramiko (docs)
 para_target = join(
     dirname(__file__),
     '..', '..', 'paramiko', 'sites', 'docs', '_build'
