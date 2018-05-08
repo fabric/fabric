@@ -66,11 +66,10 @@ after_success:
   # Upload coverage data to codecov
   - codecov
 notifications:
-  # TODO: enable
-  #  irc:
-  #    channels: "irc.freenode.org#fabric"
-  #    template:
-  #      - "%{repository}@%{branch}: %{message} (%{build_url})"
-  #    on_success: change
-  #    on_failure: change
+  irc:
+    channels: "irc.freenode.org#fabric"
+    template:
+      - "%{repository}@%{branch}: %{message} (%{build_url})"
+    on_success: change
+    on_failure: change
   email: false
