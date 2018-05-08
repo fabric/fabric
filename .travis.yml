@@ -17,7 +17,8 @@ matrix:
   # pyinvoke/invoke#358.
   allow_failures:
     - python: pypy3
-  fast_finish: true
+  # Disabled per https://github.com/travis-ci/travis-ci/issues/1696
+  # fast_finish: true
 install:
   # TODO: real test matrix with at least some cells combining different invoke
   # and/or paramiko versions, released versions, etc
