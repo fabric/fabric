@@ -38,24 +38,14 @@ feel the change is a good fit.
 Support of older releases
 =========================
 
-Major and minor releases do not mark the end of the previous line or lines of
-development:
+Major and minor releases do not usually mark the end of the previous line or
+lines of development:
 
-* The two most recent minor release branches will continue to receive critical
-  bugfixes. For example, if 2.4 were the latest minor release, it and 2.3 would
-  get bugfixes, but not 2.2 or earlier; and once 2.5 came out, this window
-  would then only extend back to 2.4.
+* Recent minor release branches typically continue to receive critical
+  bugfixes, often extending back two or three release lines (so e.g. if 2.4 was
+  the currently active release line, 2.3 and perhaps even 2.2 might get
+  patches).
 * Depending on the nature of bugs found and the difficulty in backporting them,
   older release lines may also continue to get bugfixes -- but there's no
-  longer a guarantee of any kind. Thus, if a bug were found in 2.4 that
-  affected 2.1 and could be easily applied, a new 2.1.x version *might* be
-  released.
-* This policy may change in the future to accommodate more branches, depending
-  on development speed.
-
-We hope that this policy will allow us to have a rapid minor release cycle (and
-thus keep new features coming out frequently) without causing users to feel too
-much pressure to upgrade right away. At the same time, the backwards
-compatibility guarantee means that users should still feel comfortable
-upgrading to the next minor release in order to stay within this sliding
-support window.
+  guarantee of any kind. Thus, if a bug were found in 2.4 that affected 2.1 and
+  could be easily applied, a new 2.1.x version *might* be released.
