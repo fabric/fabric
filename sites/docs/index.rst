@@ -15,7 +15,7 @@ document:
 .. toctree::
     :maxdepth: 2
 
-    getting_started
+    getting-started
 
 Upgrading from 1.x
 ------------------
