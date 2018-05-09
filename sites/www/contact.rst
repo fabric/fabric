@@ -21,8 +21,12 @@ Twitter
 -------
 
 Fabric has an official Twitter account, `@pyfabric
-<http://twitter.com/pyfabric>`_, which is used for announcements and occasional
+<https://twitter.com/pyfabric>`_, which is used for announcements and occasional
 related news tidbits (e.g. "Hey, check out this neat article on Fabric!").
+
+You may also want to follow the principal developer, `@bitprophet
+<https://twitter.com/bitprophet>`_, for development updates and colorful
+commentary.
 
 .. _bugs:
 
