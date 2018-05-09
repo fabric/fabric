@@ -42,7 +42,8 @@ report.
 
 * **Enable Paramiko-level debug logging.** If your issue is in the lower level
   Paramiko library, it can help us to see the debug output Paramiko prints. At
-  top level in your fabfile, add the following::
+  top level in your fabfile (or in an appropriate module, if not using a
+  fabfile), add the following::
 
       import logging
       logging.basicConfig(level=logging.DEBUG)
