@@ -124,7 +124,7 @@ load, when possible):
   other files will be sought out.
 
     - It will be filled in by the ``fab`` CLI tool if the
-      :option:`-F/--ssh-config <-F>` flag is given.
+      :option:`--ssh-config` flag is given.
 
 - If no runtime config (object or path) was given to `.Config.__init__`, it
   will automatically seek out and load ``~/.ssh/config`` and/or

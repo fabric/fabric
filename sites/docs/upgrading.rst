@@ -463,7 +463,7 @@ CLI arguments, options and behavior
     * - ``--ssh-config-path`` and ``env.ssh_config_path`` for selecting an SSH
         config file
       - Ported
-      - This is now ``-F``/``--ssh-config``.
+      - This is now ``-S``/``--ssh-config``.
     * - ``--system-known-hosts`` to trigger loading systemwide ``known_hosts``
         files
       - Mixed

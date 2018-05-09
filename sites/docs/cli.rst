@@ -13,7 +13,7 @@ Options & arguments
     By default, ``fab`` honors all of the same CLI options as :ref:`Invoke's
     'inv' program <inv>`; only additions and overrides are listed here!
 
-.. option:: -F, --ssh-config
+.. option:: -S, --ssh-config
 
     Takes a path to load as a runtime SSH config file. See :ref:`ssh-config`.
 
