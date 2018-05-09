@@ -1,3 +1,10 @@
+"""
+Tunnel and connection forwarding internals.
+
+If you're looking for simple, end-user-focused connection forwarding, please
+see `.Connection`, e.g. `.Connection.forward_local`.
+"""
+
 import errno
 import select
 import socket
@@ -9,6 +16,19 @@ from invoke.util import ExceptionHandlingThread
 
 
 class TunnelManager(ExceptionHandlingThread):
+    """
+    Thread subclass for tunnelling connections over SSH between two endpoints.
+
+    Specifically, one instance of this class is sufficient to sit around
+    forwarding any number of individual connections made to one end of the
+    tunnel or the other. If you need to forward connections between more than
+    one set of ports, you'll end up instantiating multiple TunnelManagers.
+
+    Wraps a `~paramiko.transport.Transport`, which should already be connected
+    to the remote server.
+
+    .. versionadded:: 2.0
+    """
     def __init__(self,
         local_host, local_port,
         remote_host, remote_port,
