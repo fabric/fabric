@@ -63,7 +63,7 @@ setuptools
 doesn't, you'll need to grab it. In such situations it's typically packaged as
 ``python-setuptools``, ``py26-setuptools`` or similar.
 
-.. _setuptools: http://pypi.python.org/pypi/setuptools
+.. _setuptools: https://pypi.org/project/setuptools
 
 ``multiprocessing``
 -------------------
@@ -72,7 +72,7 @@ An optional dependency, the ``multiprocessing`` library is included in Python's
 standard library in version 2.6 and higher. If you're using Python 2.5 and want
 to make use of Fabric's parallel execution features you'll need to install it
 manually; the recommended route, as usual, is via ``pip``.  Please see the
-`multiprocessing PyPI page <http://pypi.python.org/pypi/multiprocessing/>`_ for
+`multiprocessing PyPI page <https://pypi.org/project/multiprocessing/>`_ for
 details.
 
 

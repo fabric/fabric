@@ -712,7 +712,7 @@ Changelog (1.x)
 * :release:`1.0.5 <2011-10-23>`
 * :support:`275` To support an edge use case of the features released in
   :issue:`19`, and to lay the foundation for :issue:`275`, we have forked
-  Paramiko into the `Python 'ssh' library <http://pypi.python.org/pypi/ssh/>`_
+  Paramiko into the `Python 'ssh' library <https://pypi.org/project/ssh/>`_
   and changed our dependency to it for Fabric 1.3 and higher. This may have
   implications for the more uncommon install use cases, and package
   maintainers, but we hope to iron out any issues as they come up.

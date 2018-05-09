@@ -102,9 +102,8 @@ Downloads
 =========
 
 To obtain a tar.gz or zip archive of the Fabric source code, you may visit
-`Fabric's PyPI page <http://pypi.python.org/pypi/Fabric>`_, which offers manual
-downloads in addition to being the entry point for ``pip`` and
-``easy-install``.
+`Fabric's PyPI page <https://pypi.org/project/fabric>`_, which offers manual
+downloads in addition to being the entry point for ``pip``.
 
 
 .. _source-code-checkouts:
