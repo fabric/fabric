@@ -11,10 +11,10 @@ commands remotely over SSH, yielding useful Python objects in return::
     Ran "uname -s" on web1.example.com, got this stdout:
     Linux
 
-It builds on top of `Invoke <http://pyinvoke.org>`_ (command execution
-interfaces and optional command-line features) and `Paramiko
-<http://paramiko.org>`_ (SSH protocol implementation), extending their APIs to
-complement one another and provide additional functionality.
+It builds on top of `Invoke <http://pyinvoke.org>`_ (subprocess command
+execution and command-line features) and `Paramiko <http://paramiko.org>`_ (SSH
+protocol implementation), extending their APIs to complement one another and
+provide additional functionality.
 
 How is it used?
 ---------------
@@ -32,7 +32,7 @@ Core use cases for Fabric include (but are not limited to):
       >>> Group('web1', 'web2', 'db1').run('df -h')
       {<Host>: <Result>, ...}
 
-* Python code blocks (functions/methods) on individual hosts::
+* Python code blocks (functions/methods) targeted at individual connections::
 
       >>> def disk_free(ctx):
       >>>     uname = ctx.run('uname -s')
@@ -67,3 +67,11 @@ binary stub:
   deploy``;
 * Much more - all other Invoke functionality is supported - see `its
   documentation <http://docs.pyinvoke.org>`_ for details.
+
+I'm a user of Fabric 1, how do I upgrade?
+-----------------------------------------
+
+We've packaged modern Fabric in a manner that allows installation alongside
+Fabric 1, so you can upgrade at whatever pace your use case requires. There are
+multiple possible approaches -- see our :ref:`detailed upgrade documentation
+<upgrading>` for details.
