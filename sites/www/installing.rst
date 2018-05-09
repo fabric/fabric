@@ -66,10 +66,12 @@ or most other ``setup.py`` related commands.
     via ``pip install`` (no ``-e``) if you need to make edits to it.
 
 .. warning::
-    When installing Fabric 1 and 2 side by side, with one of them in pip's
-    'editable' mode, you must install the 'editable' version first, and then
-    the 'static' version second. For example, if you're migrating from some
-    public release of Fabric 1 to a checkout of modern Fabric::
+    Due to the same pip quirk mentioned above, if either of your Fabric
+    versions are installed in 'editable' mode, you **must** install the
+    'editable' version first, and then install the 'static' version second.
+
+    For example, if you're migrating from some public release of Fabric 1 to a
+    checkout of modern Fabric::
 
         $ PACKAGE_AS_FABRIC2=yes pip install -e /path/to/fabric2
         $ pip install fabric==1.14.0
