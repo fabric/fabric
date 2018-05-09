@@ -55,7 +55,7 @@ class FabExecutor(Executor):
         """
         Parameterize a Call with its Context set to a per-host Config.
         """
-        debug("Parameterizing {0!r} for host {1!r}".format(call, host))
+        debug("Parameterizing {!r} for host {!r}".format(call, host))
         # Generate a custom ConnectionCall that knows how to yield a Connection
         # in its make_context(), specifically one to the host requested here.
         clone = call.clone(into=ConnectionCall)

@@ -183,7 +183,7 @@ class Config(InvokeConfig):
             path = self._runtime_ssh_path
             # Manually blow up like open() (_load_ssh_file normally doesn't)
             if not os.path.exists(path):
-                msg = "No such file or directory: {0!r}".format(path)
+                msg = "No such file or directory: {!r}".format(path)
                 raise IOError(errno.ENOENT, msg)
             self._load_ssh_file(os.path.expanduser(path))
         elif self.load_ssh_configs:

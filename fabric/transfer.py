@@ -183,11 +183,11 @@ class Transfer(object):
                 raise ValueError("Must give non-empty remote path when local is a file-like object!") # noqa
             else:
                 remote = os.path.basename(local)
-                debug("Massaged empty remote path into {0!r}".format(remote))
+                debug("Massaged empty remote path into {!r}".format(remote))
         prejoined_remote = remote
         remote = posixpath.join(sftp.getcwd() or sftp.normalize('.'), remote)
         if remote != prejoined_remote:
-            msg = "Massaged relative remote path {0!r} into {1!r}"
+            msg = "Massaged relative remote path {!r} into {!r}"
             debug(msg.format(prejoined_remote, remote))
 
         # Massage local path
@@ -195,7 +195,7 @@ class Transfer(object):
         if not is_file_like:
             local = os.path.abspath(local)
             if local != orig_local:
-                debug("Massaged relative local path {0!r} into {1!r}".format(orig_local, local)) # noqa
+                debug("Massaged relative local path {!r} into {!r}".format(orig_local, local)) # noqa
 
         # Run Paramiko-level .put() (side-effects only. womp.)
         # TODO: push some of the path handling into Paramiko; it should be
@@ -205,7 +205,7 @@ class Transfer(object):
         #
         # If local appears to be a file-like object, use sftp.putfo, not put
         if is_file_like:
-            msg = "Uploading file-like object {0!r} to {1!r}"
+            msg = "Uploading file-like object {!r} to {!r}"
             debug(msg.format(local, remote))
             pointer = local.tell()
             try:
@@ -214,7 +214,7 @@ class Transfer(object):
             finally:
                 local.seek(pointer)
         else:
-            debug("Uploading {0!r} to {1!r}".format(local, remote))
+            debug("Uploading {!r} to {!r}".format(local, remote))
             sftp.put(localpath=local, remotepath=remote)
             # Set mode to same as local end
             # TODO: Push this down into SFTPClient sometime (requires backwards
