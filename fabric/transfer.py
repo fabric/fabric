@@ -242,10 +242,10 @@ class Result(object):
 
     .. note::
         Unlike similar classes such as `invoke.runners.Result` or
-        `fabric.runners.Result`, this class has no useful truthiness behavior.
-        If a file transfer fails, some exception will be raised, either an
-        `OSError` or an error from within Paramiko (such as when the local copy
-        of the file is not the same size as the remote).
+        `fabric.runners.Result` (which have a concept of "warn and return
+        anyways on failure") this class has no useful truthiness behavior. If a
+        file transfer fails, some exception will be raised, either an `OSError`
+        or an error from within Paramiko.
 
     .. versionadded:: 2.0
     """
