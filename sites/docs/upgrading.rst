@@ -10,8 +10,9 @@ cleaned up, made more explicit, and so forth. In some cases, upgrading requires
 only basic search & replace; in others, more work is needed.
 
 If you read this document carefully, it should guide you in the right direction
-until you're fully upgraded. Should anything be missing, please file a ticket
-`on Github <https://github.com/fabric/fabric>`_ and we'll update it ASAP.
+until you're fully upgraded. If any functionality you're using in Fabric 1
+isn't listed here, please file a ticket `on Github
+<https://github.com/fabric/fabric>`_ and we'll update it ASAP.
 
 .. warning::
     As of the 2.0 release line, Fabric 2 is **not** at 100% feature parity with
