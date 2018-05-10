@@ -79,4 +79,4 @@ I'm a user of Fabric 1, how do I upgrade?
 We've packaged modern Fabric in a manner that allows installation alongside
 Fabric 1, so you can upgrade at whatever pace your use case requires. There are
 multiple possible approaches -- see our `detailed upgrade documentation
-<http://fabfile.org/en/latest/upgrading.html>`_ for details.
+<http://docs.fabfile.org/en/latest/upgrading.html>`_ for details.
