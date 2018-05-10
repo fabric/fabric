@@ -62,7 +62,7 @@ setuptools.setup(
     url='http://fabfile.org',
 
     install_requires=[
-        'invoke>=0.15',
+        'invoke>=1.0,<2.0',
         'paramiko>=2.4',
         'cryptography>=1.1',
     ],
