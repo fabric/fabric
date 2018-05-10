@@ -6,9 +6,6 @@ Welcome! This tutorial highlights Fabric's core features; for further details,
 see the links within, or the documentation index which has links to conceptual
 and API doc sections.
 
-.. note::
-    If you're new to Python, we **strongly** recommend checking out `Python's
-    own tutorial <https://docs.python.org/tutorial/index.html>`_ first.
 
 A note about imports
 ====================
