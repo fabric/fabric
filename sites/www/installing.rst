@@ -52,27 +52,37 @@ environment variable, e.g.::
     The value of the environment variable doesn't matter, as long as it is not
     empty.
 
-.. warning::
-    You may encounter issues if *both* versions of Fabric are installed via
-    ``pip install -e``, due to how that functionality works (tl;dr it just adds
-    the checkout directories to ``sys.path``, regardless of whether you wanted
-    to "install" all packages within them - so Fabric 2+'s ``fabric/`` package
-    still ends up visible to the import system alongside ``fabric2/``).
+Inability to ``pip install -e`` both versions
+---------------------------------------------
 
-    Thus, you may only have one of the local copies of Fabric installed in
-    'editable' fashion at a time, and the other must be repeatedly reinstalled
-    via ``pip install`` (no ``-e``) if you need to make edits to it.
+You may encounter issues if *both* versions of Fabric are installed via ``pip
+install -e``, due to how that functionality works (tl;dr it just adds the
+checkout directories to ``sys.path``, regardless of whether you wanted to
+"install" all packages within them - so Fabric 2+'s ``fabric/`` package still
+ends up visible to the import system alongside ``fabric2/``).
 
-.. warning::
-    Due to the same pip quirk mentioned above, if either of your Fabric
-    versions are installed in 'editable' mode, you **must** install the
-    'editable' version first, and then install the 'static' version second.
+Thus, you may only have one of the local copies of Fabric installed in
+'editable' fashion at a time, and the other must be repeatedly reinstalled via
+``pip install`` (no ``-e``) if you need to make edits to it.
 
-    For example, if you're migrating from some public release of Fabric 1 to a
-    checkout of modern Fabric::
+Order of installations
+----------------------
 
-        $ PACKAGE_AS_FABRIC2=yes pip install -e /path/to/fabric2
-        $ pip install fabric==1.14.0
+Due to the same pip quirk mentioned above, if either of your Fabric versions
+are installed in 'editable' mode, you **must** install the 'editable' version
+first, and then install the 'static' version second.
+
+For example, if you're migrating from some public release of Fabric 1 to a
+checkout of modern Fabric::
+
+    $ PACKAGE_AS_FABRIC2=yes pip install -e /path/to/fabric2
+    $ pip install fabric==1.14.0
+
+You may see some warnings on that second ``pip install`` (eg ``Not uninstalling
+fabric`` or ``Can't uninstall 'fabric'``) but as long as it exits cleanly and
+says something like ``Successfully installed fabric-1.14.0``, you should be
+okay. Double check with e.g. ``pip list`` and you should have entries for both
+``fabric`` and ``fabric2``.
 
 
 Dependencies
