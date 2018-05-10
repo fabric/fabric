@@ -48,8 +48,6 @@ environment variable, e.g.::
 
     $ PACKAGE_AS_FABRIC2=yes pip install -e .
 
-or most other ``setup.py`` related commands.
-
 .. note::
     The value of the environment variable doesn't matter, as long as it is not
     empty.
