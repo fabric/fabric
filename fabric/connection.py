@@ -55,9 +55,9 @@ class Connection(Context):
       This can be accomplished by manually calling `close`, or by using the
       object as a contextmanager::
 
-        with Connection('host') as cxn:
-            cxn.run('command')
-            cxn.put('file')
+        with Connection('host') as c:
+            c.run('command')
+            c.put('file')
 
     .. note::
         This class rebinds `invoke.context.Context.run` to `.local` so both
@@ -760,9 +760,9 @@ class Connection(Context):
 
             from fabric import Connection
 
-            cxn = Connection('my-remote-server')
-            with cxn.forward_remote(8080):
-                cxn.run("remote-data-writer --port 8080")
+            c = Connection('my-remote-server')
+            with c.forward_remote(8080):
+                c.run("remote-data-writer --port 8080")
                 # Assuming remote-data-writer runs until interrupted, this will
                 # stay open until you Ctrl-C...
 

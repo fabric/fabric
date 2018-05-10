@@ -66,8 +66,8 @@ example:
 .. doctest:: basic
 
     >>> from fabric import Connection
-    >>> cxn = Connection('web1')
-    >>> result = cxn.run('uname -s')
+    >>> c = Connection('web1')
+    >>> result = c.run('uname -s')
     Linux
     >>> result.stdout.strip() == 'Linux'
     True
@@ -124,11 +124,11 @@ implementations get grumpy at password-prompt time otherwise.)
 .. doctest:: sudo-by-hand
 
     >>> from fabric import Connection
-    >>> cxn = Connection('db1')
-    >>> cxn.run('sudo useradd mydbuser', pty=True)
+    >>> c = Connection('db1')
+    >>> c.run('sudo useradd mydbuser', pty=True)
     [sudo] password:
     <Result cmd='sudo useradd mydbuser' exited=0>
-    >>> cxn.run('id -u mydbuser')
+    >>> c.run('id -u mydbuser')
     1001
     <Result cmd='id -u mydbuser' exited=0>
 
@@ -150,12 +150,12 @@ command-execution functionality includes the ability to :ref:`auto-respond
 
     >>> from invoke import Responder
     >>> from fabric import Connection
-    >>> cxn = Connection('host')
+    >>> c = Connection('host')
     >>> sudopass = Responder(
     ...     pattern=r'\[sudo\] password:',
     ...     response='mypassword\n',
     ... )
-    >>> cxn.run('sudo whoami', pty=True, watchers=[sudopass])
+    >>> c.run('sudo whoami', pty=True, watchers=[sudopass])
     [sudo] password:
     root
     <Result cmd='sudo whoami' exited=0>
@@ -210,13 +210,13 @@ library/shell user performs their own `getpass`-based password prompt:
     >>> sudo_pass = getpass.getpass("What's your sudo password?")
     What's your sudo password?
     >>> config = Config(overrides={'sudo': {'password': sudo_pass}})
-    >>> cxn = Connection('db1', config=config)
-    >>> cxn.sudo('whoami', hide='stderr')
+    >>> c = Connection('db1', config=config)
+    >>> c.sudo('whoami', hide='stderr')
     root
     <Result cmd="...whoami" exited=0>
-    >>> cxn.sudo('useradd mydbuser')
+    >>> c.sudo('useradd mydbuser')
     <Result cmd="...useradd mydbuser" exited=0>
-    >>> cxn.run('id -u mydbuser')
+    >>> c.run('id -u mydbuser')
     1001
     <Result cmd='id -u mydbuser' exited=0>
 
@@ -261,16 +261,16 @@ typically needs multiple steps to do anything interesting. At the most basic
 level, you could do this by calling `.Connection` methods multiple times::
 
     from fabric import Connection
-    cxn = Connection('web1')
-    cxn.put('myfiles.tgz', '/opt/mydata')
-    cxn.run('tar -C /opt/mydata -xzvf /opt/mydata/myfiles.tgz')
+    c = Connection('web1')
+    c.put('myfiles.tgz', '/opt/mydata')
+    c.run('tar -C /opt/mydata -xzvf /opt/mydata/myfiles.tgz')
 
 You could (but don't have to) turn such blocks of code into functions,
 parameterized with a `.Connection` object from the caller, to encourage reuse::
 
-    def upload_and_unpack(cxn):
-        cxn.put('myfiles.tgz', '/opt/mydata')
-        cxn.run('tar -C /opt/mydata -xzvf /opt/mydata/myfiles.tgz')
+    def upload_and_unpack(c):
+        c.put('myfiles.tgz', '/opt/mydata')
+        c.run('tar -C /opt/mydata -xzvf /opt/mydata/myfiles.tgz')
         
 As you'll see below, such functions can be handed to other API methods to
 enable more complex use cases as well.
@@ -351,20 +351,20 @@ this foregoes some benefits of using `Groups <.Group>`)::
 
     from fabric import Connection
     for host in ('web1', 'web2', 'web3'):
-        cxn = Connection(host)
-        if cxn.run('test -f /opt/mydata/myfile', warn=True).failed:
-            cxn.put('myfiles.tgz', '/opt/mydata')
-            cxn.run('tar -C /opt/mydata -xzvf /opt/mydata/myfiles.tgz')
+        c = Connection(host)
+        if c.run('test -f /opt/mydata/myfile', warn=True).failed:
+            c.put('myfiles.tgz', '/opt/mydata')
+            c.run('tar -C /opt/mydata -xzvf /opt/mydata/myfiles.tgz')
 
 Alternatively, remember how we used a function in that earlier example? You can
 go that route instead::
 
     from fabric import SerialGroup as Group
 
-    def upload_and_unpack(cxn):
-        if cxn.run('test -f /opt/mydata/myfile', warn=True).failed:
-            cxn.put('myfiles.tgz', '/opt/mydata')
-            cxn.run('tar -C /opt/mydata -xzvf /opt/mydata/myfiles.tgz')
+    def upload_and_unpack(c):
+        if c.run('test -f /opt/mydata/myfile', warn=True).failed:
+            c.put('myfiles.tgz', '/opt/mydata')
+            c.run('tar -C /opt/mydata -xzvf /opt/mydata/myfiles.tgz')
 
     for connection in Group('web1', 'web2', 'web3'):
         upload_and_unpack(connection)
@@ -400,10 +400,10 @@ module called ``fabfile.py``::
     from invoke import task
 
     @task
-    def upload_and_unpack(cxn):
-        if cxn.run('test -f /opt/mydata/myfile', warn=True).failed:
-            cxn.put('myfiles.tgz', '/opt/mydata')
-            cxn.run('tar -C /opt/mydata -xzvf /opt/mydata/myfiles.tgz')
+    def upload_and_unpack(c):
+        if c.run('test -f /opt/mydata/myfile', warn=True).failed:
+            c.put('myfiles.tgz', '/opt/mydata')
+            c.run('tar -C /opt/mydata -xzvf /opt/mydata/myfiles.tgz')
 
 Not hard - all we did was copy our temporary task function into a file and slap
 a decorator on it. `~invoke.tasks.task` tells the CLI machinery to expose the
@@ -420,7 +420,7 @@ the task once on a single server::
 
     $ fab -H web1 upload_and_unpack
 
-When this occurs, ``cxn`` inside the task is set, effectively, to
+When this occurs, ``c`` inside the task is set, effectively, to
 ``Connection("web1")`` - as in earlier examples. Similarly, you can give more
 than one host, which runs the task multiple times, each time with a different
 `.Connection` instance handed in::

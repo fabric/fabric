@@ -48,7 +48,7 @@ parameter when creating your inner/real `.Connection`::
 
     from fabric import Connection
 
-    cxn = Connection('internalhost', gateway=Connection('gatewayhost'))
+    c = Connection('internalhost', gateway=Connection('gatewayhost'))
 
 As with any other `.Connection`, the gateway connection may be configured with
 its own username, port number, and so forth. (This includes ``gateway`` itself
