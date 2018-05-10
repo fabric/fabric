@@ -387,13 +387,15 @@ CLI arguments, options and behavior
     * - ``-I``/``--initial-password-prompt`` for requesting an initial
         pre-execution password prompt
       - Ported
-      - It's now :option:`--prompt-for-password` and/or
+      - It's now :option:`--prompt-for-login-password`,
+        :ref:`--prompt-for-sudo-password <prompt-for-sudo-password>` or
         :option:`--prompt-for-passphrase`, depending on whether you were using
         the former to fill in passwords or key passphrases (or both.)
     * - ``--initial-sudo-password-prompt`` for requesting an initial
         pre-execution sudo password prompt
-      - Pending
-      - We kinda forgot about this when implementing ``--prompt-for-password``.
+      - Ported
+      - This is now :option:`--prompt-for-sudo-password`. Still a bit of a
+        mouthful but still 4 characters shorter!
     * - ``-k``/``--no-keys`` which prevents Paramiko's automatic loading of key
         files such as ``~/.ssh/id_rsa``
       - Pending

@@ -41,7 +41,7 @@ class Fab(Program):
             ),
             # TODO: worth having short flags for these prompt args?
             Argument(
-                names=('prompt-for-password',),
+                names=('prompt-for-login-password',),
                 kind=bool,
                 help="Request an upfront SSH-auth password prompt.",
             ),
@@ -115,9 +115,10 @@ class Fab(Program):
         # Secrets prompts that want to happen at handoff time instead of
         # later/at user-time.
         # TODO: should this become part of Invoke proper in case other
-        # downstreams have need of it? E.g. a prompt Argument 'type'?
-        if self.args['prompt-for-password'].value:
-            prompt = "Enter password for use with SSH auth: "
+        # downstreams have need of it? E.g. a prompt Argument 'type'? We're
+        # already doing a similar thing there for sudo password...
+        if self.args['prompt-for-login-password'].value:
+            prompt = "Enter login password for use with SSH auth: "
             connect_kwargs['password'] = getpass.getpass(prompt)
         if self.args['prompt-for-passphrase'].value:
             prompt = "Enter passphrase for use unlocking SSH keys: "

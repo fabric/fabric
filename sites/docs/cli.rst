@@ -13,6 +13,12 @@ Options & arguments
     By default, ``fab`` honors all of the same CLI options as :ref:`Invoke's
     'inv' program <inv>`; only additions and overrides are listed here!
 
+    For example, Fabric implements :option:`--prompt-for-passphrase` and
+    :option:`--prompt-for-login-password` because they are SSH specific, but
+    it inherits a related option -- :ref:`--prompt-for-sudo-password
+    <prompt-for-sudo-password>` -- from Invoke, which handles sudo autoresponse
+    concerns.
+
 .. option:: -S, --ssh-config
 
     Takes a path to load as a runtime SSH config file. See :ref:`ssh-config`.
@@ -41,7 +47,7 @@ Options & arguments
     private key files.) Useful if you do not want to configure such values in
     on-disk conf files or via shell environment variables.
 
-.. option:: --prompt-for-password
+.. option:: --prompt-for-login-password
 
     Causes Fabric to prompt 'up front' for a value to store as the
     ``connect_kwargs.password`` config setting (used by Paramiko when

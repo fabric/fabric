@@ -231,10 +231,10 @@ Third!
 
         def password_prompt_updates_connect_kwargs(self):
             self._expect_prompt(
-                flag='--prompt-for-password',
+                flag='--prompt-for-login-password',
                 key='password',
                 value='mypassword',
-                prompt="Enter password for use with SSH auth: ",
+                prompt="Enter login password for use with SSH auth: ",
             )
 
         def passphrase_prompt_updates_connect_kwargs(self):

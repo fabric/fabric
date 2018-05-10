@@ -81,7 +81,7 @@ Password authentication is relatively straightforward:
 
 - You can configure it via ``connect_kwargs.password`` directly.
 - If you want to be prompted for it at the start of a session, specify
-  :option:`--prompt-for-password`.
+  :option:`--prompt-for-login-password`.
 
 .. TODO: host-configuration hooks are very important here, when implemented
 
