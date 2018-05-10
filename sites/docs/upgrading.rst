@@ -64,8 +64,9 @@ modern Fabric that might make upgrading worth your time.
 =======================
 
 We linked to a note about this above, but to be explicit: modern Fabric is
-really two separate libraries, and anything not strictly SSH or network related
-has been :ref:`split out into the Invoke project <invoke-split-from-fabric>`.
+really a few separate libraries, and anything not strictly SSH or network
+related has been :ref:`split out into the Invoke project
+<invoke-split-from-fabric>`.
 
 This means that if you're in the group of users leveraging Fabric solely for
 its task execution or ``local``, and never used ``run``, ``put`` or
@@ -77,8 +78,26 @@ changed, but be aware that you can get away with ``pip install invoke`` and
 won't need Fabric, Paramiko, cryptography dependencies, or anything else.
 
 
-Running both versions simultaneously
-====================================
+Using modern Fabric from within Invoke
+======================================
+
+We intend to enhance modern Fabric until it encompasses the bulk of Fabric 1's
+use cases, such that you can use ``fab`` and fabfiles on their own without
+caring too much about how it's built on top of Invoke.
+
+However, prior to that point -- and very useful on its own for
+intermediate-to-advanced users -- is the fact that modern Fabric is
+designed with library or direct API use in mind. **It's entirely possible, and
+in some cases preferable, to use Invoke for your CLI needs and Fabric as a pure
+API within your Invoke tasks.**
+
+In other words, you can eschew ``fab``/fabfiles entirely unless you find
+yourself strongly needing the conveniences it wraps around ad-hoc sessions,
+such as :option:`--hosts` and the like.
+
+
+Running both Fabric versions simultaneously
+===========================================
 
 To help with gradual upgrades, modern Fabric may be installed under the name
 ``fabric2`` (in addition to being made available "normally" as versions 2.0+ of
