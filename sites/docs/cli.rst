@@ -2,8 +2,7 @@
 Command-line interface
 ======================
 
-This page documents the details of Fabric's optional command-line interface,
-``fab``.
+This page documents the details of Fabric's command-line interface, ``fab``.
 
 
 Options & arguments

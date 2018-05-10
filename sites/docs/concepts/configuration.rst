@@ -27,13 +27,13 @@ The primary differences from that document are as follows:
   configuration for that specific host (since an SSH config file is only ever
   useful via such a lens). See :ref:`ssh-config`.
 * Fabric plans to offer a framework for managing per-host and
-  per-host-collection configuration details and overrides, which lives under
-  the top-level ``hosts`` and ``groups`` config keys; see
-  :ref:`host-configuration`.
+  per-host-collection configuration details and overrides, though this is not
+  yet implemented (it will be analogous to, but improved upon, the
+  ``env.hosts`` and ``env.roles`` structures from Fabric 1.x).
 
     * This functionality will supplement that of the SSH config loading
-      described earlier; most users will find it preferable to configure as
-      much as possible via an SSH config file, but not all Fabric settings have
+      described earlier; we expect most users will prefer to configure as much
+      as possible via an SSH config file, but not all Fabric settings have
       ``ssh_config`` analogues, nor do all use cases fit neatly into such
       files.
 
@@ -243,11 +243,3 @@ To do so, simply set the top level config option ``load_ssh_configs`` to
     Changing this setting does *not* disable loading of runtime-level config
     files (e.g. via :option:`-F`). If a user is explicitly telling us to load
     such a file, we assume they know what they're doing.
-
-
-.. _host-configuration:
-
-Per-host configuration settings
-===============================
-
-TBD.

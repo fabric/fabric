@@ -179,8 +179,10 @@ themselves - but as always, common problems are best solved with commonly
 shared solutions.
 
 All the user needs to do is ensure the ``sudo.password`` :doc:`configuration
-value </concepts/configuration>` is filled in, and `.Connection.sudo` handles
-the rest:
+value </concepts/configuration>` is filled in (via config file, environment
+variable, or :option:`--prompt-for-sudo-password`) and `.Connection.sudo`
+handles the rest. For the sake of clarity, here's an example where a
+library/shell user performs their own `getpass`-based password prompt:
 
 .. testsetup:: sudo
 
@@ -355,7 +357,7 @@ this foregoes some benefits of using `Groups <.Group>`)::
             cxn.run('tar -C /opt/mydata -xzvf /opt/mydata/myfiles.tgz')
 
 Alternatively, remember how we used a function in that earlier example? You can
-hand such a function to ``Group.execute`` and get the best of both worlds::
+go that route instead::
 
     from fabric import SerialGroup as Group
 
@@ -364,11 +366,13 @@ hand such a function to ``Group.execute`` and get the best of both worlds::
             cxn.put('myfiles.tgz', '/opt/mydata')
             cxn.run('tar -C /opt/mydata -xzvf /opt/mydata/myfiles.tgz')
 
-    Group('web1', 'web2', 'web3').execute(upload_and_unpack)
+    for connection in Group('web1', 'web2', 'web3'):
+        upload_and_unpack(connection)
 
-``Group.execute``, like its sibling methods, returns ``GroupResult`` objects;
-its per-connection values are simply the return values of the function passed
-in.
+The only convenience this final approach lacks is a useful analogue to
+`.Group.run` - if you want to track the results of all the
+``upload_and_unpack`` call as an aggregate, you have to do that yourself. Look
+to future feature releases for more in this space!
 
 
 Addendum: the ``fab`` command-line tool

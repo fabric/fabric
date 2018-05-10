@@ -23,35 +23,40 @@ Core use cases for Fabric include (but are not limited to):
 
 * Single commands on individual hosts::
 
-      >>> Connection('web1').run('whoami')
-      <Result>
+      >>> result = Connection('web1').run('hostname')
+      web1
+      >>> result
+      <Result cmd='hostname' exited=0>
 
 * Single commands across multiple hosts (via varying methodologies: serial,
   parallel, etc)::
 
-      >>> Group('web1', 'web2', 'db1').run('df -h')
-      {<Host>: <Result>, ...}
+      >>> result = SerialGroup('web1', 'web2').run('hostname')
+      web1
+      web2
+      >>> result
+      {<Connection host=web1>: <Result cmd='whoami' exited=0>, ...}
 
 * Python code blocks (functions/methods) targeted at individual connections::
 
-      >>> def disk_free(ctx):
-      >>>     uname = ctx.run('uname -s')
+      >>> def disk_free(c):
+      >>>     uname = c.run('uname -s', hide=True)
       >>>     if 'Linux' in uname:
       ...         command = "df -h / | tail -n1 | awk '{print $5}'"
-      ...         return ctx.run(command).stdout
+      ...         return c.run(command, hide=True).stdout.strip()
       ...     err = "No idea how to get disk space on {}!".format(uname)
-      ...     raise Exception(err)
+      ...     raise Exit(err)
       ...
-      >>> Connection('web1').execute(disk_free)
-      33%
+      >>> disk_free(Connection('web1'))
+      '33%'
 
 * Python code blocks on multiple hosts::
 
-      >>> def disk_free(ctx):
-      ...     # ...
+      >>> def disk_free(c):
+      ...     # same as above!
       ...
-      >>> Group('db1', 'db2', 'web1', 'lb1').execute(disk_free)
-      {<Host>: "33%", ...}
+      >>> {c: disk_free(c) for c in SerialGroup('web1', 'web2', 'db1')}
+      {<Connection host=web1>: '33%', <Connection host=web2>: '17%', ...}
 
 In addition to these library-oriented use cases, Fabric makes it easy to
 integrate with Invoke's command-line task functionality, invoking via a ``fab``

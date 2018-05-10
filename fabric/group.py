@@ -32,7 +32,7 @@ class Group(list):
 
     For example, when no exceptions occur, a session might look like this::
 
-        >>> group = Group('host1', 'host2')
+        >>> group = SerialGroup('host1', 'host2')
         >>> group.run("this is fine")
         {
             <Connection host='host1'>: <Result cmd='this is fine' exited=0>,
@@ -44,7 +44,7 @@ class Group(list):
     for a completed session whose command exited poorly, versus
     `socket.gaierror` for a host that had DNS problems::
 
-        >>> group = Group('host1', 'host2', 'notahost')
+        >>> group = SerialGroup('host1', 'host2', 'notahost')
         >>> group.run("will it blend?")
         {
             <Connection host='host1'>: <Result cmd='will it blend?' exited=0>,
@@ -126,17 +126,6 @@ class Group(list):
         """
         # TODO: probably best to suck it up & match actual get() sig?
         # TODO: actually implement on subclasses
-        raise NotImplementedError
-
-    def execute(self, task):
-        """
-        Execute ``task`` on all member `Connections <.Connection>`.
-
-        :returns: a `.GroupResult`.
-
-        .. versionadded:: 2.0
-        """
-        # TODO: implement as per tutorial
         raise NotImplementedError
 
 
