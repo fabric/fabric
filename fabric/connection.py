@@ -1,10 +1,15 @@
 from contextlib import contextmanager
 from threading import Event
-from invoke.vendor.six import StringIO
+try:
+    from invoke.vendor.six import StringIO
+    from invoke.vendor.decorator import decorator
+    from invoke.vendor.six import string_types
+except ImportError:
+    from six import StringIO
+    from decorator import decorator
+    from six import string_types
 import socket
 
-from invoke.vendor.decorator import decorator
-from invoke.vendor.six import string_types
 
 from invoke import Context
 from invoke.exceptions import ThreadException

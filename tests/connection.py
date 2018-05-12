@@ -1,5 +1,8 @@
 from itertools import chain, repeat
-from invoke.vendor.six import b
+try:
+    from invoke.vendor.six import b
+except ImportError:
+    from six import b
 import errno
 from os.path import join
 import socket
