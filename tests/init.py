@@ -4,8 +4,9 @@ from fabric import _version, connection, runners, group
 
 class init:
     "__init__"
+
     def version_and_version_info(self):
-        for name in ('__version_info__', '__version__'):
+        for name in ("__version_info__", "__version__"):
             assert getattr(_version, name) == getattr(fabric, name)
 
     def Connection(self):

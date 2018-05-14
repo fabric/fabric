@@ -6,7 +6,7 @@ import os
 import posixpath
 import stat
 
-from invoke.util import debug # TODO: actual logging! LOL
+from invoke.util import debug  # TODO: actual logging! LOL
 
 # TODO: figure out best way to direct folks seeking rsync, to patchwork's rsync
 # call (which needs updating to use invoke.run() & fab 2 connection methods,
@@ -87,13 +87,13 @@ class Transfer(object):
         if not remote:
             raise ValueError("Remote path must not be empty!")
         orig_remote = remote
-        remote = posixpath.join(sftp.getcwd() or sftp.normalize('.'), remote)
+        remote = posixpath.join(sftp.getcwd() or sftp.normalize("."), remote)
 
         # Massage local path:
         # - handle file-ness
         # - if path, fill with remote name if empty, & make absolute
         orig_local = local
-        is_file_like = hasattr(local, 'write') and callable(local.write)
+        is_file_like = hasattr(local, "write") and callable(local.write)
         if not local:
             local = posixpath.basename(remote)
         if not is_file_like:
@@ -174,18 +174,20 @@ class Transfer(object):
         if not local:
             raise ValueError("Local path must not be empty!")
 
-        is_file_like = hasattr(local, 'write') and callable(local.write)
+        is_file_like = hasattr(local, "write") and callable(local.write)
 
         # Massage remote path
         orig_remote = remote
         if not remote:
             if is_file_like:
-                raise ValueError("Must give non-empty remote path when local is a file-like object!") # noqa
+                raise ValueError(
+                    "Must give non-empty remote path when local is a file-like object!"  # noqa
+                )
             else:
                 remote = os.path.basename(local)
                 debug("Massaged empty remote path into {!r}".format(remote))
         prejoined_remote = remote
-        remote = posixpath.join(sftp.getcwd() or sftp.normalize('.'), remote)
+        remote = posixpath.join(sftp.getcwd() or sftp.normalize("."), remote)
         if remote != prejoined_remote:
             msg = "Massaged relative remote path {!r} into {!r}"
             debug(msg.format(prejoined_remote, remote))
@@ -195,7 +197,11 @@ class Transfer(object):
         if not is_file_like:
             local = os.path.abspath(local)
             if local != orig_local:
-                debug("Massaged relative local path {!r} into {!r}".format(orig_local, local)) # noqa
+                debug(
+                    "Massaged relative local path {!r} into {!r}".format(
+                        orig_local, local
+                    )
+                )  # noqa
 
         # Run Paramiko-level .put() (side-effects only. womp.)
         # TODO: push some of the path handling into Paramiko; it should be
