@@ -321,7 +321,6 @@ CLI arguments, options and behavior
 -----------------------------------
 
 .. list-table::
-    :header-rows: 1
     :widths: 40 10 50
 
     * - Exposure of task arguments as custom colon/comma delimited CLI
