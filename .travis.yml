@@ -39,7 +39,7 @@ install:
   # conflicting or unused-by-travis deps?
   - pip install -r dev-requirements.txt
   # Black, only on 3.6, it literally cannot install on anything else =/
-  - "[[ $TRAVIS_PYTHON_VERSION == '3.6' ]] && pip install black==18.4a4"
+  - "if [[ $TRAVIS_PYTHON_VERSION == '3.6' ]]; then pip install black==18.4a4; fi"
   # Sanity test of the Invoke layer, if that's busted everything is
   - inv --list
   # Sanity test of Fabric itself
@@ -53,7 +53,7 @@ script:
   # Fast syntax check failures for more rapid feedback to submitters
   # (Python 3.6 only; it doesn't run on anything less and there's no
   # point running it multiple times either.)
-  - "[[ $TRAVIS_PYTHON_VERSION == '3.6' ]] && inv blacken --check"
+  - "if [[ $TRAVIS_PYTHON_VERSION == '3.6' ]]; then inv blacken --check; fi"
   # I have this in my git pre-push hook, but contributors probably don't
   - flake8
   # Execute full test suite + coverage, as the new sudo-capable user
@@ -64,8 +64,7 @@ script:
   # user...
   - inv travis.sudo-run "inv integration --capture=no"
   # Websites build OK? (Not on PyPy3, Sphinx is all "who the hell are you?" =/
-  - "[[ $TRAVIS_PYTHON_VERSION != 'pypy3' ]] && inv sites"
-  - "[[ $TRAVIS_PYTHON_VERSION != 'pypy3' ]] && inv docs.doctest"
+  - "if [[ $TRAVIS_PYTHON_VERSION != 'pypy3' ]]; then inv sites docs.doctest; fi"
   # Did we break setup.py?
   - inv travis.test-installation --package=fabric --sanity="fab --version"
   # Test distribution builds.
