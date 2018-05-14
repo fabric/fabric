@@ -49,7 +49,9 @@ before_script:
   - inv travis.make-sshable
 script:
   # Fast syntax check failures for more rapid feedback to submitters
-  - inv blacken --check
+  # (Python 3.6 only; it doesn't run on anything less and there's no
+  # point running it multiple times either.)
+  - "[[ $TRAVIS_PYTHON_VERSION == '3.6' ]] && inv blacken --check"
   # I have this in my git pre-push hook, but contributors probably don't
   - flake8
   # Execute full test suite + coverage, as the new sudo-capable user
