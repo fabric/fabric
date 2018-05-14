@@ -38,6 +38,8 @@ install:
   # TODO: follow invoke and split it up a bit so we're not pulling down
   # conflicting or unused-by-travis deps?
   - pip install -r dev-requirements.txt
+  # Black, only on 3.6, it literally cannot install on anything else =/
+  - "[[ $TRAVIS_PYTHON_VERSION == '3.6' ]] && pip install black==18.4a4"
   # Sanity test of the Invoke layer, if that's busted everything is
   - inv --list
   # Sanity test of Fabric itself
