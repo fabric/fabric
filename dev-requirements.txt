@@ -1,6 +1,6 @@
 # Invoke implicitly required by self/pip install -e .
 # Invocations for common project tasks
-invocations>=0.17,<2.0
+invocations>=1.0,<2.0
 # pytest-relaxed for test organization, display etc tweaks
 pytest-relaxed==1.0.0
 pytest==3.1.2
