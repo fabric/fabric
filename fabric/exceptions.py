@@ -10,5 +10,6 @@ class GroupException(Exception):
 
     .. versionadded:: 2.0
     """
+
     def __init__(self, result):
         self.result = result

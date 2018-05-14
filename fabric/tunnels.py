@@ -29,10 +29,15 @@ class TunnelManager(ExceptionHandlingThread):
 
     .. versionadded:: 2.0
     """
-    def __init__(self,
-        local_host, local_port,
-        remote_host, remote_port,
-        transport, finished
+
+    def __init__(
+        self,
+        local_host,
+        local_port,
+        remote_host,
+        remote_port,
+        transport,
+        finished,
     ):
         super(TunnelManager, self).__init__()
         self.local_address = (local_host, local_port)
@@ -73,9 +78,7 @@ class TunnelManager(ExceptionHandlingThread):
             # Set up direct-tcpip channel on server end
             # TODO: refactor w/ what's used for gateways
             channel = self.transport.open_channel(
-                'direct-tcpip',
-                self.remote_address,
-                local_addr,
+                "direct-tcpip", self.remote_address, local_addr
             )
 
             # Set up 'worker' thread for this specific connection to our
@@ -112,6 +115,7 @@ class Tunnel(ExceptionHandlingThread):
 
     .. versionadded:: 2.0
     """
+
     def __init__(self, channel, sock, finished):
         self.channel = channel
         self.sock = sock
