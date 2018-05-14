@@ -34,9 +34,10 @@ def sftp():
     """
     mock = MockSFTP(autostart=False)
     client, mock_os = mock.start()
-    transfer = Transfer(Connection('host'))
+    transfer = Transfer(Connection("host"))
     yield transfer, client, mock_os
     # TODO: old mock_sftp() lacked any 'stop'...why? feels bad man
+
 
 @fixture
 def sftp_objs(sftp):
@@ -44,6 +45,7 @@ def sftp_objs(sftp):
     Wrapper for `sftp` which only yields the Transfer and SFTPClient.
     """
     yield sftp[:2]
+
 
 @fixture
 def transfer(sftp):
@@ -88,7 +90,7 @@ def client():
     For 'full' fake remote session interaction (i.e. stdout/err
     reading/writing, channel opens, etc) see `remote`.
     """
-    with patch('fabric.connection.SSHClient') as SSHClient:
+    with patch("fabric.connection.SSHClient") as SSHClient:
         client = SSHClient.return_value
         client.get_transport.return_value = Mock(active=True)
         yield client

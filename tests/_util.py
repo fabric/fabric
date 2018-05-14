@@ -10,9 +10,8 @@ from pytest_relaxed import trap
 from fabric.main import program as fab_program
 
 
-
-support = os.path.join(os.path.abspath(os.path.dirname(__file__)), '_support')
-config_file = os.path.abspath(os.path.join(support, 'config.yml'))
+support = os.path.join(os.path.abspath(os.path.dirname(__file__)), "_support")
+config_file = os.path.abspath(os.path.join(support, "config.yml"))
 
 
 # TODO: revert to asserts
@@ -23,16 +22,16 @@ def eq_(got, expected):
 # TODO: this could become a fixture in conftest.py, presumably, and just yield
 # stdout, allowing the tests themselves to assert more naturally
 @trap
-def expect(invocation, out, program=None, test='equals'):
+def expect(invocation, out, program=None, test="equals"):
     if program is None:
         program = fab_program
     program.run("fab {}".format(invocation), exit=False)
     output = sys.stdout.getvalue()
-    if test == 'equals':
+    if test == "equals":
         assert output == out
-    elif test == 'contains':
+    elif test == "contains":
         assert out in output
-    elif test == 'regex':
+    elif test == "regex":
         assert re.match(out, output)
     else:
         err = "Don't know how to expect that <stdout> {} <expected>!"
@@ -58,6 +57,7 @@ class Command(object):
         return ``False`` before it then returns ``True``. Default: ``0``
         (``exit_status_ready`` will return ``True`` immediately).
     """
+
     def __init__(self, cmd=None, out=b"", err=b"", in_=None, exit=0, waits=0):
         self.cmd = cmd
         self.out = out
@@ -74,13 +74,14 @@ class MockChannel(Mock):
     Turns out abusing function closures inside MockRemote to track this state
     only worked for 1 command per session!
     """
+
     def __init__(self, *args, **kwargs):
         # TODO: worth accepting strings and doing the BytesIO setup ourselves?
         # Stored privately to avoid any possible collisions ever. shrug.
-        object.__setattr__(self, '__stdout', kwargs.pop('stdout'))
-        object.__setattr__(self, '__stderr', kwargs.pop('stderr'))
+        object.__setattr__(self, "__stdout", kwargs.pop("stdout"))
+        object.__setattr__(self, "__stderr", kwargs.pop("stderr"))
         # Stdin less private so it can be asserted about
-        object.__setattr__(self, '_stdin', BytesIO())
+        object.__setattr__(self, "_stdin", BytesIO())
         super(MockChannel, self).__init__(*args, **kwargs)
 
     def _get_child_mock(self, **kwargs):
@@ -88,13 +89,13 @@ class MockChannel(Mock):
         return Mock(**kwargs)
 
     def recv(self, count):
-        return object.__getattribute__(self, '__stdout').read(count)
+        return object.__getattribute__(self, "__stdout").read(count)
 
     def recv_stderr(self, count):
-        return object.__getattribute__(self, '__stderr').read(count)
+        return object.__getattribute__(self, "__stderr").read(count)
 
     def sendall(self, data):
-        return object.__getattribute__(self, '_stdin').write(data)
+        return object.__getattribute__(self, "_stdin").write(data)
 
 
 class Session(object):
@@ -126,6 +127,7 @@ class Session(object):
             Giving ``cmd``, ``out`` etc alongside explicit ``commands`` is not
             allowed and will result in an error.
     """
+
     def __init__(
         self,
         host=None,
@@ -137,12 +139,15 @@ class Session(object):
         in_=None,
         err=None,
         exit=None,
-        waits=None
+        waits=None,
     ):
         # Sanity check
         params = (cmd or out or err or exit or waits)
         if commands and params:
-            raise ValueError("You can't give both 'commands' and individual Command parameters!") # noqa
+            raise ValueError(
+                "You can't give both 'commands' and individual "
+                "Command parameters!"
+            )  # noqa
         # Fill in values
         self.host = host
         self.user = user
@@ -153,17 +158,17 @@ class Session(object):
             # default kwarg values in this method's signature...sigh
             kwargs = {}
             if cmd is not None:
-                kwargs['cmd'] = cmd
+                kwargs["cmd"] = cmd
             if out is not None:
-                kwargs['out'] = out
+                kwargs["out"] = out
             if err is not None:
-                kwargs['err'] = err
+                kwargs["err"] = err
             if in_ is not None:
-                kwargs['in_'] = in_
+                kwargs["in_"] = in_
             if exit is not None:
-                kwargs['exit'] = exit
+                kwargs["exit"] = exit
             if waits is not None:
-                kwargs['waits'] = waits
+                kwargs["waits"] = waits
             self.commands = [Command(**kwargs)]
         if not self.commands:
             self.commands = [Command()]
@@ -187,7 +192,7 @@ class Session(object):
             needed.
         """
         client = Mock()
-        transport = client.get_transport.return_value # another Mock
+        transport = client.get_transport.return_value  # another Mock
 
         # NOTE: this originally did chain([False], repeat(True)) so that
         # get_transport().active was False initially, then True. However,
@@ -205,8 +210,7 @@ class Session(object):
             # Mock of a Channel instance, not e.g. Channel-the-class.
             # Specifically, one that can track individual state for recv*().
             channel = MockChannel(
-                stdout=BytesIO(command.out),
-                stderr=BytesIO(command.err),
+                stdout=BytesIO(command.out), stderr=BytesIO(command.err)
             )
             channel.recv_exit_status.return_value = command.exit
 
@@ -266,6 +270,7 @@ class MockRemote(object):
     expectations can call methods like `expect`, which wipe that anonymous
     Session & set up a new one instead.
     """
+
     def __init__(self):
         self.expect_sessions(Session())
 
@@ -299,7 +304,7 @@ class MockRemote(object):
         """
         # Patch SSHClient so the sessions' generated mocks can be set as its
         # return values
-        self.patcher = patcher = patch('fabric.connection.SSHClient')
+        self.patcher = patcher = patch("fabric.connection.SSHClient")
         SSHClient = patcher.start()
         # Mock clients, to be inspected afterwards during sanity-checks
         clients = []
@@ -317,7 +322,7 @@ class MockRemote(object):
         Stop patching SSHClient.
         """
         # Short circuit if we don't seem to have start()ed yet.
-        if not hasattr(self, 'patcher'):
+        if not hasattr(self, "patcher"):
             return
         # Stop patching SSHClient
         self.patcher.stop()
@@ -340,25 +345,27 @@ class MockSFTP(object):
     Used in start/stop fashion in eg doctests; wrapped in the SFTP fixtures in
     conftest.py for main use.
     """
+
     def __init__(self, autostart=True):
         if autostart:
             self.start()
 
     def start(self):
         # Set up mocks
-        self.os_patcher = patch('fabric.transfer.os')
-        self.client_patcher = patch('fabric.connection.SSHClient')
+        self.os_patcher = patch("fabric.transfer.os")
+        self.client_patcher = patch("fabric.connection.SSHClient")
         mock_os = self.os_patcher.start()
         Client = self.client_patcher.start()
         sftp = Client.return_value.open_sftp.return_value
         # Handle common filepath massage actions; tests will assume these.
         def fake_abspath(path):
-            return '/local/{}'.format(path)
+            return "/local/{}".format(path)
+
         mock_os.path.abspath.side_effect = fake_abspath
-        sftp.getcwd.return_value = '/remote'
+        sftp.getcwd.return_value = "/remote"
         # Ensure stat st_mode is a real number; Python 2 stat.S_IMODE doesn't
         # appear to care if it's handed a MagicMock, but Python 3's does (?!)
-        fake_mode = 0o644 # arbitrary real-ish mode
+        fake_mode = 0o644  # arbitrary real-ish mode
         sftp.stat.return_value.st_mode = fake_mode
         mock_os.stat.return_value.st_mode = fake_mode
         # Not super clear to me why the 'wraps' functionality in mock isn't
