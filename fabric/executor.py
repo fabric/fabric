@@ -41,7 +41,7 @@ class FabExecutor(Executor):
             # setting host lists besides "-H or 100% within-task"
             if not hosts:
                 raise NothingToDo(
-                    "Was told to run a command, but not given any hosts to run it on!" # noqa
+                    "Was told to run a command, but not given any hosts to run it on!"  # noqa
                 )
 
             def anonymous(c):
