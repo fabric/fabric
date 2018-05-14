@@ -321,7 +321,6 @@ CLI arguments, options and behavior
 -----------------------------------
 
 .. list-table::
-    :header-rows: 1
     :widths: 40 10 50
 
     * - Exposure of task arguments as custom colon/comma delimited CLI
@@ -330,6 +329,10 @@ CLI arguments, options and behavior
       - CLI arguments are now proper GNU/POSIX-style long and short flags,
         including globbing shortflags together, space or equals signs to attach
         values, optional values, and much more. See :ref:`invoking-tasks`.
+    * - Task definition names are mirrored directly on the command-line,
+        e.g for task ``def journald_logs()``, command line argument is ``fab journald_logs``
+      - Removed
+      - Tasks names now get converted from underscores to hyphens. Eg. task ``def journald_logs()`` now evaluates to ``fab journald-logs`` on the commandline.
     * - Ability to invoke multiple tasks in a single command line, e.g. ``fab
         task1 task2``
       - Ported
@@ -1082,7 +1085,7 @@ implicitly private; those are not represented here.
         CLI parsing results (including the value of :option:`--hosts`, the
         tasks requested and their args, etc) and the intent is for users to
         have access to that information.
-        
+
         However, the details for that API (e.g. exposing the executor via a
         task's `~invoke.context.Context`/`.Connection`) are still in flux.
     * - ``env.command`` noting currently executing task name (in hindsight,
@@ -1099,7 +1102,7 @@ implicitly private; those are not represented here.
       - This is now `~invoke.context.Context.command_cwds` (a list, not a
         single string, to more properly model the intended
         contextmanager-driven use case.)
-        
+
         Note that remote-vs-local context for this data isn't yet set up; see
         the notes about ``with cd`` under :ref:`upgrading-commands`.
     * - ``env.dedupe_hosts`` controlling whether duplicate hosts in merged host
