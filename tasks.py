@@ -2,6 +2,7 @@ from functools import partial
 from os import environ
 
 from invocations import travis
+from invocations.checks import blacken
 from invocations.docs import docs, www, sites, watch_docs
 from invocations.pytest import test, integration, coverage
 from invocations.packaging import release
@@ -57,6 +58,7 @@ my_release = Collection(
 )
 
 ns = Collection(
+    blacken,
     coverage,
     docs,
     integration,
@@ -68,6 +70,7 @@ ns = Collection(
     www,
 )
 ns.configure({
+    "blacken": {"folders": ["tests", "fabric"]},
     'tests': {
         # TODO: have pytest tasks honor these?
         'package': 'fabric',
