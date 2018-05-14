@@ -11,13 +11,14 @@ from fabric import Connection
 from fabric.transfer import Transfer
 
 
-
 # TODO: pull in all edge/corner case tests from fabric v1
 
 
 class Transfer_:
+
     class init:
         "__init__"
+
         def requires_connection(self):
             # Transfer() -> explodes
             try:
@@ -27,49 +28,46 @@ class Transfer_:
             else:
                 assert False, "Did not raise ArgumentError"
             # Transfer(Connection()) -> happy, exposes an attribute
-            cxn = Connection('host')
+            cxn = Connection("host")
             assert Transfer(cxn).connection is cxn
 
-
     class get:
+
         class basics:
+
             def accepts_single_remote_path_posarg(self, sftp_objs):
                 transfer, client = sftp_objs
-                transfer.get('file')
+                transfer.get("file")
                 client.get.assert_called_with(
-                    localpath='/local/file',
-                    remotepath='/remote/file',
+                    localpath="/local/file", remotepath="/remote/file"
                 )
 
             def accepts_local_and_remote_kwargs(self, sftp_objs):
                 transfer, client = sftp_objs
-                transfer.get(
-                    remote='path1',
-                    local='path2',
-                )
+                transfer.get(remote="path1", local="path2")
                 client.get.assert_called_with(
-                    remotepath='/remote/path1',
-                    localpath='/local/path2',
+                    remotepath="/remote/path1", localpath="/local/path2"
                 )
 
             def returns_rich_Result_object(self, sftp_objs):
                 transfer, client = sftp_objs
-                cxn = Connection('host')
-                result = Transfer(cxn).get('file')
-                assert result.orig_remote == 'file'
-                assert result.remote == '/remote/file'
+                cxn = Connection("host")
+                result = Transfer(cxn).get("file")
+                assert result.orig_remote == "file"
+                assert result.remote == "/remote/file"
                 assert result.orig_local is None
-                assert result.local == '/local/file'
+                assert result.local == "/local/file"
                 assert result.connection is cxn
                 # TODO: timing info
                 # TODO: bytes-transferred info
 
         class path_arg_edge_cases:
+
             def local_None_uses_remote_filename(self, transfer):
-                assert transfer.get('file').local == '/local/file'
+                assert transfer.get("file").local == "/local/file"
 
             def local_empty_string_uses_remote_filename(self, transfer):
-                assert transfer.get('file', local='').local == '/local/file'
+                assert transfer.get("file", local="").local == "/local/file"
 
             @raises(TypeError)
             def remote_arg_is_required(self, transfer):
@@ -81,18 +79,18 @@ class Transfer_:
 
             @raises(ValueError)
             def remote_arg_cannot_be_empty_string(self, transfer):
-                transfer.get('')
+                transfer.get("")
 
         class file_like_local_paths:
             "file-like local paths"
+
             def _get_to_stringio(self, sftp_objs):
                 transfer, client = sftp_objs
                 fd = StringIO()
-                result = transfer.get('file', local=fd)
+                result = transfer.get("file", local=fd)
                 # Note: getfo, not get
                 client.getfo.assert_called_with(
-                    remotepath='/remote/file',
-                    fl=fd,
+                    remotepath="/remote/file", fl=fd
                 )
                 return result, fd
 
@@ -101,10 +99,11 @@ class Transfer_:
 
             def result_contains_fd_for_local_path(self, sftp_objs):
                 result, fd = self._get_to_stringio(sftp_objs)
-                assert result.remote == '/remote/file'
+                assert result.remote == "/remote/file"
                 assert result.local is fd
 
         class mode_concerns:
+
             def setup(self):
                 self.attrs = SFTPAttributes()
                 self.attrs.st_mode = 0o100644
@@ -113,56 +112,53 @@ class Transfer_:
                 transfer, client, mock_os = sftp
                 # Attributes obj reflecting a realistic 'extended' octal mode
                 client.stat.return_value = self.attrs
-                transfer.get('file', local='meh')
+                transfer.get("file", local="meh")
                 # Expect os.chmod to be called with the scrubbed/shifted
                 # version of same.
-                mock_os.chmod.assert_called_with('/local/meh', 0o644)
+                mock_os.chmod.assert_called_with("/local/meh", 0o644)
 
             def allows_disabling_remote_mode_preservation(self, sftp):
                 transfer, client, mock_os = sftp
                 client.stat.return_value = self.attrs
-                transfer.get('file', local='meh', preserve_mode=False)
+                transfer.get("file", local="meh", preserve_mode=False)
                 assert not mock_os.chmod.called
 
-
     class put:
+
         class basics:
+
             def accepts_single_local_path_posarg(self, sftp_objs):
                 transfer, client = sftp_objs
-                transfer.put('file')
+                transfer.put("file")
                 client.put.assert_called_with(
-                    localpath='/local/file',
-                    remotepath='/remote/file',
+                    localpath="/local/file", remotepath="/remote/file"
                 )
 
             def accepts_local_and_remote_kwargs(self, sftp_objs):
                 transfer, client = sftp_objs
-                transfer.put(
-                    remote='path1',
-                    local='path2',
-                )
+                transfer.put(remote="path1", local="path2")
                 client.put.assert_called_with(
-                    remotepath='/remote/path1',
-                    localpath='/local/path2',
+                    remotepath="/remote/path1", localpath="/local/path2"
                 )
 
             def returns_rich_Result_object(self, transfer):
-                cxn = Connection('host')
-                result = Transfer(cxn).put('file')
+                cxn = Connection("host")
+                result = Transfer(cxn).put("file")
                 assert result.orig_remote is None
-                assert result.remote == '/remote/file'
-                assert result.orig_local == 'file'
-                assert result.local == '/local/file'
+                assert result.remote == "/remote/file"
+                assert result.orig_local == "file"
+                assert result.local == "/local/file"
                 assert result.connection is cxn
                 # TODO: timing info
                 # TODO: bytes-transferred info
 
         class path_arg_edge_cases:
+
             def remote_None_uses_local_filename(self, transfer):
-                assert transfer.put('file').remote == '/remote/file'
+                assert transfer.put("file").remote == "/remote/file"
 
             def remote_empty_string_uses_local_filename(self, transfer):
-                assert transfer.put('file', remote='').remote == '/remote/file'
+                assert transfer.put("file", remote="").remote == "/remote/file"
 
             @raises(ValueError)
             def remote_cant_be_empty_if_local_file_like(self, transfer):
@@ -178,18 +174,18 @@ class Transfer_:
 
             @raises(ValueError)
             def local_arg_cannot_be_empty_string(self, transfer):
-                transfer.put('')
+                transfer.put("")
 
         class file_like_local_paths:
             "file-like local paths"
+
             def _put_from_stringio(self, sftp_objs):
                 transfer, client = sftp_objs
                 fd = StringIO()
-                result = transfer.put(fd, remote='file')
+                result = transfer.put(fd, remote="file")
                 # Note: putfo, not put
                 client.putfo.assert_called_with(
-                    remotepath='/remote/file',
-                    fl=fd,
+                    remotepath="/remote/file", fl=fd
                 )
                 return result, fd
 
@@ -199,23 +195,25 @@ class Transfer_:
             def local_FLOs_are_rewound_before_putting(self, transfer):
                 fd = Mock()
                 fd.tell.return_value = 17
-                transfer.put(fd, remote='file')
+                transfer.put(fd, remote="file")
                 seek_calls = fd.seek.call_args_list
                 assert seek_calls, [call(0) == call(17)]
 
             def result_contains_fd_for_local_path(self, sftp_objs):
                 result, fd = self._put_from_stringio(sftp_objs)
-                assert result.remote == '/remote/file'
+                assert result.remote == "/remote/file"
                 assert result.local is fd
 
         class mode_concerns:
+
             def preserves_local_mode_by_default(self, sftp):
                 transfer, client, mock_os = sftp
-                mock_os.stat.return_value.st_mode = 33188 # realistic for 0o644
-                transfer.put('file')
-                client.chmod.assert_called_with('/remote/file', 0o644)
+                # This is a realistic stat for 0o644
+                mock_os.stat.return_value.st_mode = 33188
+                transfer.put("file")
+                client.chmod.assert_called_with("/remote/file", 0o644)
 
             def allows_disabling_local_mode_preservation(self, sftp_objs):
                 transfer, client = sftp_objs
-                transfer.put('file', preserve_mode=False)
+                transfer.put("file", preserve_mode=False)
                 assert not client.chmod.called

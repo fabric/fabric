@@ -16,6 +16,7 @@ from .executor import FabExecutor
 
 
 class Fab(Program):
+
     def print_version(self):
         super(Fab, self).print_version()
         print("Paramiko {}".format(paramiko))
@@ -25,28 +26,28 @@ class Fab(Program):
         core_args = super(Fab, self).core_args()
         my_args = [
             Argument(
-                names=('S', 'ssh-config'),
+                names=("S", "ssh-config"),
                 help="Path to runtime SSH config file.",
             ),
             Argument(
-                names=('H', 'hosts'),
+                names=("H", "hosts"),
                 help="Comma-separated host name(s) to execute tasks against.",
             ),
             Argument(
-                names=('i', 'identity'),
-                kind=list, # Same as OpenSSH, can give >1 key
+                names=("i", "identity"),
+                kind=list,  # Same as OpenSSH, can give >1 key
                 # TODO: automatically add hint about iterable-ness to Invoke
                 # help display machinery?
-                help="Path to runtime SSH identity (key) file. May be given multiple times.", # noqa
+                help="Path to runtime SSH identity (key) file. May be given multiple times.",  # noqa
             ),
             # TODO: worth having short flags for these prompt args?
             Argument(
-                names=('prompt-for-login-password',),
+                names=("prompt-for-login-password",),
                 kind=bool,
                 help="Request an upfront SSH-auth password prompt.",
             ),
             Argument(
-                names=('prompt-for-passphrase',),
+                names=("prompt-for-passphrase",),
                 kind=bool,
                 help="Request an upfront SSH key passphrase prompt.",
             ),
@@ -100,7 +101,7 @@ class Fab(Program):
         # NOTE: must do parent before our work, in case users want to disable
         # SSH config loading within a runtime-level conf file/flag.
         super(Fab, self).update_config(merge=False)
-        self.config.set_runtime_ssh_path(self.args['ssh-config'].value)
+        self.config.set_runtime_ssh_path(self.args["ssh-config"].value)
         self.config.load_ssh_config()
         # Load -i identity file, if given, into connect_kwargs, at overrides
         # level.
@@ -109,21 +110,21 @@ class Fab(Program):
         # data. Still feels correct; just might be cleaner to have even more
         # Config API members around this sort of thing. Shrug.
         connect_kwargs = {}
-        path = self.args['identity'].value
+        path = self.args["identity"].value
         if path is not None:
-            connect_kwargs['key_filename'] = path
+            connect_kwargs["key_filename"] = path
         # Secrets prompts that want to happen at handoff time instead of
         # later/at user-time.
         # TODO: should this become part of Invoke proper in case other
         # downstreams have need of it? E.g. a prompt Argument 'type'? We're
         # already doing a similar thing there for sudo password...
-        if self.args['prompt-for-login-password'].value:
+        if self.args["prompt-for-login-password"].value:
             prompt = "Enter login password for use with SSH auth: "
-            connect_kwargs['password'] = getpass.getpass(prompt)
-        if self.args['prompt-for-passphrase'].value:
+            connect_kwargs["password"] = getpass.getpass(prompt)
+        if self.args["prompt-for-passphrase"].value:
             prompt = "Enter passphrase for use unlocking SSH keys: "
-            connect_kwargs['passphrase'] = getpass.getpass(prompt)
-        self.config._overrides['connect_kwargs'] = connect_kwargs
+            connect_kwargs["passphrase"] = getpass.getpass(prompt)
+        self.config._overrides["connect_kwargs"] = connect_kwargs
         # Since we gave merge=False above, we must do it ourselves here. (Also
         # allows us to 'compile' our overrides manipulation.)
         self.config.merge()

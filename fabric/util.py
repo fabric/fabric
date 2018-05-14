@@ -5,12 +5,12 @@ import sys
 # Ape the half-assed logging junk from Invoke, but ensuring the logger reflects
 # our name, not theirs. (Assume most contexts will rely on Invoke itself to
 # literally enable/disable logging, for now.)
-log = logging.getLogger('fabric')
-for x in ('debug',):
+log = logging.getLogger("fabric")
+for x in ("debug",):
     globals()[x] = getattr(log, x)
 
 
-win32 = (sys.platform == 'win32')
+win32 = (sys.platform == "win32")
 
 
 def get_local_user():
@@ -24,6 +24,7 @@ def get_local_user():
     # wouldn't work. However, that's how the contributing user committed it.
     # Need an older Windows box to test it out, most likely.
     import getpass
+
     username = None
     # All Unix and most Windows systems support the getpass module.
     try:
@@ -34,10 +35,11 @@ def get_local_user():
         pass
     # Older (?) Windows systems don't support getpass well; they should
     # have the `win32` module instead.
-    except ImportError: # pragma: nocover
+    except ImportError:  # pragma: nocover
         if win32:
             import win32api
-            import win32security # noqa
-            import win32profile # noqa
+            import win32security  # noqa
+            import win32profile  # noqa
+
             username = win32api.GetUserName()
     return username
