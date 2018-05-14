@@ -52,7 +52,9 @@ def publish(
 # Better than nothing, since we haven't solved "pretend I have some other
 # task's signature" yet...
 publish.__doc__ = release.publish.__doc__
-my_release = Collection('release', release.build, release.status, publish)
+my_release = Collection(
+    'release', release.build, release.status, publish, release.prepare,
+)
 
 ns = Collection(
     coverage,
@@ -72,9 +74,13 @@ ns.configure({
         'logformat': LOG_FORMAT,
     },
     'packaging': {
+        # NOTE: this is currently for identifying the source directory. Should
+        # it get used for actual releasing, needs changing.
+        'package': 'fabric',
         'sign': True,
         'wheel': True,
         'check_desc': True,
+        'changelog_file': 'sites/www/changelog.rst',
     },
     # TODO: perhaps move this into a tertiary, non automatically loaded,
     # conf file so that both this & the code under test can reference it?
