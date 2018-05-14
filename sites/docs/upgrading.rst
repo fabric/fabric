@@ -329,10 +329,13 @@ CLI arguments, options and behavior
       - CLI arguments are now proper GNU/POSIX-style long and short flags,
         including globbing shortflags together, space or equals signs to attach
         values, optional values, and much more. See :ref:`invoking-tasks`.
-    * - Task definition names are mirrored directly on the command-line,
-        e.g for task ``def journald_logs()``, command line argument is ``fab journald_logs``
+    * - Task definition names are mirrored directly on the command-line, e.g
+        for task ``def journald_logs()``, command line argument is ``fab
+        journald_logs``
       - Removed
-      - Tasks names now get converted from underscores to hyphens. Eg. task ``def journald_logs()`` now evaluates to ``fab journald-logs`` on the commandline.
+      - Tasks names now get converted from underscores to hyphens. Eg. task
+        ``def journald_logs()`` now evaluates to ``fab journald-logs`` on the
+        commandline.
     * - Ability to invoke multiple tasks in a single command line, e.g. ``fab
         task1 task2``
       - Ported
