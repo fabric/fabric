@@ -48,6 +48,10 @@ before_script:
   # Allow us to SSH passwordless to localhost
   - inv travis.make-sshable
 script:
+  # Fast syntax check failures for more rapid feedback to submitters
+  - inv blacken --check
+  # I have this in my git pre-push hook, but contributors probably don't
+  - flake8
   # Execute full test suite + coverage, as the new sudo-capable user
   - inv travis.sudo-coverage
   # Execute integration tests too. TODO: merge under coverage...somehow
@@ -60,8 +64,6 @@ script:
   - "[[ $TRAVIS_PYTHON_VERSION != 'pypy3' ]] && inv docs.doctest"
   # Did we break setup.py?
   - inv travis.test-installation --package=fabric --sanity="fab --version"
-  # I have this in my git pre-push hook, but contributors probably don't
-  - flake8
   # Test distribution builds.
   - inv travis.test-packaging --package=fabric --sanity="fab --version"
   # Again, but as 'fabric2'
