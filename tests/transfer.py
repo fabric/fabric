@@ -1,4 +1,7 @@
-from invoke.vendor.six import StringIO
+try:
+    from invoke.vendor.six import StringIO
+except ImportError:
+    from six import StringIO
 
 from mock import Mock, call
 from pytest_relaxed import raises
