@@ -33,7 +33,7 @@ class Config(InvokeConfig):
 
     .. versionadded:: 2.0
     """
-    prefix = 'fabric'
+    prefix = "fabric"
 
     def __init__(self, *args, **kwargs):
         """
@@ -68,12 +68,12 @@ class Config(InvokeConfig):
         # Tease out our own kwargs.
         # TODO: consider moving more stuff out of __init__ and into methods so
         # there's less of this sort of splat-args + pop thing? Eh.
-        ssh_config = kwargs.pop('ssh_config', None)
-        lazy = kwargs.get('lazy', False)
-        self.set_runtime_ssh_path(kwargs.pop('runtime_ssh_path', None))
-        system_path = kwargs.pop('system_ssh_path', '/etc/ssh/ssh_config')
+        ssh_config = kwargs.pop("ssh_config", None)
+        lazy = kwargs.get("lazy", False)
+        self.set_runtime_ssh_path(kwargs.pop("runtime_ssh_path", None))
+        system_path = kwargs.pop("system_ssh_path", "/etc/ssh/ssh_config")
         self._set(_system_ssh_path=system_path)
-        self._set(_user_ssh_path=kwargs.pop('user_ssh_path', '~/.ssh/config'))
+        self._set(_user_ssh_path=kwargs.pop("user_ssh_path", "~/.ssh/config"))
 
         # Record whether we were given an explicit object (so other steps know
         # whether to bother loading from disk or not)
@@ -140,9 +140,7 @@ class Config(InvokeConfig):
         # re: recording where the data originally came from (in case anything
         # re-runs ._load_ssh_files(), for example).
         for attr in (
-            '_runtime_ssh_path',
-            '_system_ssh_path',
-            '_user_ssh_path',
+            "_runtime_ssh_path", "_system_ssh_path", "_user_ssh_path"
         ):
             setattr(new, attr, getattr(self, attr))
         # Load SSH configs, in case they weren't prior to now (e.g. a vanilla
@@ -162,10 +160,7 @@ class Config(InvokeConfig):
         # TODO: as with other spots, this implies SSHConfig needs a cleaner
         # public API re: creating and updating its core data.
         new_config._config = copy.deepcopy(self.base_ssh_config._config)
-        return dict(
-            kwargs,
-            ssh_config=new_config,
-        )
+        return dict(kwargs, ssh_config=new_config)
 
     def _load_ssh_files(self):
         """
@@ -237,27 +232,19 @@ class Config(InvokeConfig):
         defaults = InvokeConfig.global_defaults()
         ours = {
             # New settings
-            'connect_kwargs': {},
-            'forward_agent': False,
-            'gateway': None,
-            'load_ssh_configs': True,
-            'port': 22,
-            'run': {
-                'replace_env': True,
-            },
-            'runners': {
-                'remote': Remote,
-            },
-            'ssh_config_path': None,
-            'tasks': {
-                'collection_name': 'fabfile',
-            },
+            "connect_kwargs": {},
+            "forward_agent": False,
+            "gateway": None,
+            "load_ssh_configs": True,
+            "port": 22,
+            "run": {"replace_env": True},
+            "runners": {"remote": Remote},
+            "ssh_config_path": None,
+            "tasks": {"collection_name": "fabfile"},
             # TODO: this becomes an override/extend once Invoke grows execution
             # timeouts (which should be timeouts.execute)
-            'timeouts': {
-                'connect': None,
-            },
-            'user': get_local_user(),
+            "timeouts": {"connect": None},
+            "user": get_local_user(),
         }
         merge_dicts(defaults, ours)
         return defaults

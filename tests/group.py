@@ -7,31 +7,35 @@ from fabric.exceptions import GroupException
 
 
 class Group_:
+
     class init:
         "__init__"
+
         def may_be_empty(self):
             assert len(Group()) == 0
 
         def takes_splat_arg_of_host_strings(self):
-            g = Group('foo', 'bar')
-            assert g[0].host == 'foo'
-            assert g[1].host == 'bar'
+            g = Group("foo", "bar")
+            assert g[0].host == "foo"
+            assert g[1].host == "bar"
 
     class from_connections:
+
         def inits_from_iterable_of_Connections(self):
-            g = Group.from_connections((Connection('foo'), Connection('bar')))
+            g = Group.from_connections((Connection("foo"), Connection("bar")))
             assert len(g) == 2
-            assert g[1].host == 'bar'
+            assert g[1].host == "bar"
 
     def acts_like_an_iterable_of_Connections(self):
-        g = Group('foo', 'bar', 'biz')
-        assert g[0].host == 'foo'
-        assert g[-1].host == 'biz'
+        g = Group("foo", "bar", "biz")
+        assert g[0].host == "foo"
+        assert g[-1].host == "biz"
         assert len(g) == 3
         for c in g:
             assert isinstance(c, Connection)
 
     class run:
+
         @raises(NotImplementedError)
         def not_implemented_in_base_class(self):
             Group().run()
@@ -40,22 +44,27 @@ class Group_:
 def _make_serial_tester(cxns, index, args, kwargs):
     args = args[:]
     kwargs = kwargs.copy()
-    def tester(*a, **k): # Don't care about doing anything with our own args.
+
+    def tester(*a, **k):  # Don't care about doing anything with our own args.
         predecessors = cxns[:index]
         successors = cxns[index + 1:]
         for predecessor in predecessors:
             predecessor.run.assert_called_with(*args, **kwargs)
         for successor in successors:
             assert not successor.run.called
+
     return tester
 
+
 class SerialGroup_:
+
     class run:
+
         def executes_arguments_on_contents_run_serially(self):
             "executes arguments on contents' run() serially"
-            cxns = [Connection(x) for x in ('host1', 'host2', 'host3')]
+            cxns = [Connection(x) for x in ("host1", "host2", "host3")]
             args = ("command",)
-            kwargs = {'hide': True, 'warn': True}
+            kwargs = {"hide": True, "warn": True}
             for index, cxn in enumerate(cxns):
                 side_effect = _make_serial_tester(cxns, index, args, kwargs)
                 cxn.run = Mock(side_effect=side_effect)
@@ -66,9 +75,11 @@ class SerialGroup_:
                 cxn.run.assert_called_with(*args, **kwargs)
 
         def errors_in_execution_capture_and_continue_til_end(self):
-            cxns = [Mock(name=x) for x in ('host1', 'host2', 'host3')]
+            cxns = [Mock(name=x) for x in ("host1", "host2", "host3")]
+
             class OhNoz(Exception):
                 pass
+
             onoz = OhNoz()
             cxns[1].run.side_effect = onoz
             g = SerialGroup.from_connections(cxns)
@@ -82,9 +93,7 @@ class SerialGroup_:
                 cxns[0]: cxns[0].run.return_value,
                 cxns[2]: cxns[2].run.return_value,
             }
-            failed = {
-                cxns[1]: onoz,
-            }
+            failed = {cxns[1]: onoz}
             expected = succeeded.copy()
             expected.update(failed)
             assert result == expected
@@ -92,7 +101,7 @@ class SerialGroup_:
             assert result.failed == failed
 
         def returns_results_mapping(self):
-            cxns = [Mock(name=x) for x in ('host1', 'host2', 'host3')]
+            cxns = [Mock(name=x) for x in ("host1", "host2", "host3")]
             g = SerialGroup.from_connections(cxns)
             result = g.run("whatever", hide=True)
             assert isinstance(result, GroupResult)
@@ -103,16 +112,18 @@ class SerialGroup_:
 
 
 class ThreadingGroup_:
+
     def setup(self):
-        self.cxns = [Connection(x) for x in ('host1', 'host2', 'host3')]
+        self.cxns = [Connection(x) for x in ("host1", "host2", "host3")]
         self.args = ("command",)
-        self.kwargs = {'hide': True, 'warn': True}
+        self.kwargs = {"hide": True, "warn": True}
 
     class run:
-        @patch('fabric.group.Queue')
-        @patch('fabric.group.ExceptionHandlingThread')
+
+        @patch("fabric.group.Queue")
+        @patch("fabric.group.ExceptionHandlingThread")
         def executes_arguments_on_contents_run_via_threading(
-            self, Thread, Queue,
+            self, Thread, Queue
         ):
             queue = Queue.return_value
             g = ThreadingGroup.from_connections(self.cxns)
@@ -141,17 +152,17 @@ class ThreadingGroup_:
             # singleton mock object
             expected = len(self.cxns)
             for name, got in (
-                ('start', Thread.return_value.start.call_count),
-                ('join', Thread.return_value.join.call_count)
+                ("start", Thread.return_value.start.call_count),
+                ("join", Thread.return_value.join.call_count),
             ):
-                err = "Expected {} calls to ExceptionHandlingThread.{}, got {}" # noqa
+                err = "Expected {} calls to ExceptionHandlingThread.{}, got {}"  # noqa
                 err = err.format(expected, name, got)
                 assert expected, got == err
 
-        @patch('fabric.group.Queue')
+        @patch("fabric.group.Queue")
         def queue_used_to_return_results(self, Queue):
             # Regular, explicit, mocks for Connections
-            cxns = [Mock(host=x) for x in ('host1', 'host2', 'host3')]
+            cxns = [Mock(host=x) for x in ("host1", "host2", "host3")]
             # Set up Queue with enough behavior to work / assert
             queue = Queue.return_value
             # Ending w/ a True will terminate a while-not-empty loop
@@ -178,9 +189,11 @@ class ThreadingGroup_:
             # workers and tunnels), but "middle-ground" threads the user is
             # kind of expecting (and which they might expect to encounter
             # failures).
-            cxns = [Mock(host=x) for x in ('host1', 'host2', 'host3')]
+            cxns = [Mock(host=x) for x in ("host1", "host2", "host3")]
+
             class OhNoz(Exception):
                 pass
+
             onoz = OhNoz()
             cxns[1].run.side_effect = onoz
             g = ThreadingGroup.from_connections(cxns)
@@ -194,9 +207,7 @@ class ThreadingGroup_:
                 cxns[0]: cxns[0].run.return_value,
                 cxns[2]: cxns[2].run.return_value,
             }
-            failed = {
-                cxns[1]: onoz,
-            }
+            failed = {cxns[1]: onoz}
             expected = succeeded.copy()
             expected.update(failed)
             assert result == expected
@@ -205,7 +216,7 @@ class ThreadingGroup_:
 
         def returns_results_mapping(self):
             # TODO: update if/when we implement ResultSet
-            cxns = [Mock(name=x) for x in ('host1', 'host2', 'host3')]
+            cxns = [Mock(name=x) for x in ("host1", "host2", "host3")]
             g = ThreadingGroup.from_connections(cxns)
             result = g.run("whatever", hide=True)
             assert isinstance(result, GroupResult)

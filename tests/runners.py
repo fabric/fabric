@@ -14,28 +14,30 @@ CMD = "nope"
 
 # TODO: see TODO in tests/main.py above _run_fab(), this is the same thing.
 def _Connection(*args, **kwargs):
-    kwargs['config'] = Config({'run': {'in_stream': False}})
+    kwargs["config"] = Config({"run": {"in_stream": False}})
     return Connection(*args, **kwargs)
 
 
 class Remote_:
+
     def needs_handle_on_a_Connection(self):
-        c = _Connection('host')
+        c = _Connection("host")
         assert Remote(context=c).context is c
 
     class run:
+
         def calls_expected_paramiko_bits(self, remote):
             # remote mocking makes generic sanity checks like "were
             # get_transport and open_session called", but we also want to make
             # sure that exec_command got run with our arg to run().
             remote.expect(cmd=CMD)
-            c = _Connection('host')
+            c = _Connection("host")
             r = Remote(context=c)
             r.run(CMD)
 
         def writes_remote_streams_to_local_streams(self, remote):
             remote.expect(out=b"hello yes this is dog")
-            c = _Connection('host')
+            c = _Connection("host")
             r = Remote(context=c)
             fakeout = StringIO()
             r.run(CMD, out_stream=fakeout)
@@ -43,14 +45,14 @@ class Remote_:
 
         def pty_True_uses_paramiko_get_pty(self, remote):
             chan = remote.expect()
-            c = _Connection('host')
+            c = _Connection("host")
             r = Remote(context=c)
             r.run(CMD, pty=True)
             cols, rows = pty_size()
             chan.get_pty.assert_called_with(width=cols, height=rows)
 
         def return_value_is_Result_subclass_exposing_cxn_used(self, remote):
-            c = _Connection('host')
+            c = _Connection("host")
             r = Remote(context=c)
             result = r.run(CMD)
             assert isinstance(result, Result)
@@ -63,7 +65,7 @@ class Remote_:
         def channel_is_closed_normally(self, remote):
             chan = remote.expect()
             # I.e. Remote.stop() closes the channel automatically
-            r = Remote(context=_Connection('host'))
+            r = Remote(context=_Connection("host"))
             r.run(CMD)
             chan.close.assert_called_once_with()
 
@@ -73,10 +75,13 @@ class Remote_:
             # Technically is just testing invoke.Runner, but meh.
             class Oops(Exception):
                 pass
+
             class _OopsRemote(Remote):
+
                 def wait(self):
                     raise Oops()
-            r = _OopsRemote(context=_Connection('host'))
+
+            r = _OopsRemote(context=_Connection("host"))
             try:
                 r.run(CMD)
             except Oops:
@@ -90,9 +95,11 @@ class Remote_:
             # case...
             class Oops(Exception):
                 pass
+
             def oops():
                 raise Oops
-            cxn = _Connection('host')
+
+            cxn = _Connection("host")
             cxn.create_session = oops
             r = Remote(context=cxn)
             # When bug present, this will result in AttributeError because

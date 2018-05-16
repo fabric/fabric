@@ -1,5 +1,6 @@
 from contextlib import contextmanager
 from threading import Event
+
 try:
     from invoke.vendor.six import StringIO
     from invoke.vendor.decorator import decorator
@@ -243,16 +244,16 @@ class Connection(Context):
         # TODO: i.e. what is the lib use case here (and honestly in invoke too)
 
         shorthand = self.derive_shorthand(host)
-        host = shorthand['host']
-        err = "You supplied the {} via both shorthand and kwarg! Please pick one." # noqa
-        if shorthand['user'] is not None:
+        host = shorthand["host"]
+        err = "You supplied the {} via both shorthand and kwarg! Please pick one."  # noqa
+        if shorthand["user"] is not None:
             if user is not None:
-                raise ValueError(err.format('user'))
-            user = shorthand['user']
-        if shorthand['port'] is not None:
+                raise ValueError(err.format("user"))
+            user = shorthand["user"]
+        if shorthand["port"] is not None:
             if port is not None:
-                raise ValueError(err.format('port'))
-            port = shorthand['port']
+                raise ValueError(err.format("port"))
+            port = shorthand["port"]
 
         # NOTE: we load SSH config data as early as possible as it has
         # potential to affect nearly every other attribute.
@@ -262,27 +263,27 @@ class Connection(Context):
         self.original_host = host
         #: The hostname of the target server.
         self.host = host
-        if 'hostname' in self.ssh_config:
+        if "hostname" in self.ssh_config:
             # TODO: log that this occurred?
-            self.host = self.ssh_config['hostname']
+            self.host = self.ssh_config["hostname"]
 
         #: The username this connection will use to connect to the remote end.
-        self.user = user or self.ssh_config.get('user', self.config.user)
+        self.user = user or self.ssh_config.get("user", self.config.user)
         # TODO: is it _ever_ possible to give an empty user value (e.g.
         # user='')? E.g. do some SSH server specs allow for that?
 
         #: The network port to connect on.
-        self.port = port or int(self.ssh_config.get('port', self.config.port))
+        self.port = port or int(self.ssh_config.get("port", self.config.port))
 
         # Non-None values - string, Connection, even eg False - get set
         # directly; None triggers seek in config/ssh_config
         if gateway is None:
             # SSH config wins over Invoke-style config
-            if 'proxyjump' in self.ssh_config:
+            if "proxyjump" in self.ssh_config:
                 # Reverse hop1,hop2,hop3 style ProxyJump directive so we start
                 # with the final (itself non-gatewayed) hop and work up to
                 # the front (actual, supplied as our own gateway) hop
-                hops = reversed(self.ssh_config['proxyjump'].split(','))
+                hops = reversed(self.ssh_config["proxyjump"].split(","))
                 prev_gw = None
                 for hop in hops:
                     # Happily, ProxyJump uses identical format to our host
@@ -293,9 +294,9 @@ class Connection(Context):
                         cxn = Connection(hop, gateway=prev_gw)
                     prev_gw = cxn
                 gateway = prev_gw
-            elif 'proxycommand' in self.ssh_config:
+            elif "proxycommand" in self.ssh_config:
                 # Just a string, which we interpret as a proxy command..
-                gateway = self.ssh_config['proxycommand']
+                gateway = self.ssh_config["proxycommand"]
             else:
                 # Neither of those? Our config value please.
                 gateway = self.config.gateway
@@ -310,17 +311,14 @@ class Connection(Context):
             # Default to config...
             forward_agent = self.config.forward_agent
             # But if ssh_config is present, it wins
-            if 'forwardagent' in self.ssh_config:
-                # TODO: SSHConfig really, seriously needs some love here, god
-                map_ = {'yes': True, 'no': False}
-                forward_agent = map_[self.ssh_config['forwardagent']]
+            if "forwardagent" in self.ssh_config:
+                forward_agent = self.ssh_config.as_bool("forwardagent")
         #: Whether agent forwarding is enabled.
         self.forward_agent = forward_agent
 
         if connect_timeout is None:
             connect_timeout = self.ssh_config.get(
-                'connecttimeout',
-                self.config.timeouts.connect
+                "connecttimeout", self.config.timeouts.connect
             )
         if connect_timeout is not None:
             connect_timeout = int(connect_timeout)
@@ -352,33 +350,33 @@ class Connection(Context):
         # Special case: key_filenames gets merged instead of overridden.
         # TODO: probably want some sorta smart merging generally, special cases
         # are bad.
-        elif 'key_filename' in self.config.connect_kwargs:
-            kwarg_val = connect_kwargs.get('key_filename', [])
-            conf_val = self.config.connect_kwargs['key_filename']
+        elif "key_filename" in self.config.connect_kwargs:
+            kwarg_val = connect_kwargs.get("key_filename", [])
+            conf_val = self.config.connect_kwargs["key_filename"]
             # Config value comes before kwarg value (because it may contain
             # CLI flag value.)
-            connect_kwargs['key_filename'] = conf_val + kwarg_val
+            connect_kwargs["key_filename"] = conf_val + kwarg_val
 
         # SSH config identityfile values come last in the key_filenames
         # 'hierarchy'.
-        if 'identityfile' in self.ssh_config:
-            connect_kwargs.setdefault('key_filename', [])
-            connect_kwargs['key_filename'].extend(
-                self.ssh_config['identityfile']
+        if "identityfile" in self.ssh_config:
+            connect_kwargs.setdefault("key_filename", [])
+            connect_kwargs["key_filename"].extend(
+                self.ssh_config["identityfile"]
             )
 
         return connect_kwargs
 
     def __repr__(self):
         # Host comes first as it's the most common differentiator by far
-        bits = [('host', self.host)]
+        bits = [("host", self.host)]
         # TODO: maybe always show user regardless? Explicit is good...
         if self.user != self.config.user:
-            bits.append(('user', self.user))
+            bits.append(("user", self.user))
         # TODO: harder to make case for 'always show port'; maybe if it's
         # non-22 (even if config has overridden the local default)?
         if self.port != self.config.port:
-            bits.append(('port', self.port))
+            bits.append(("port", self.port))
         # NOTE: sometimes self.gateway may be eg False if someone wants to
         # explicitly override a configured non-None value (as otherwise it's
         # impossible for __init__ to tell if a None means "nothing given" or
@@ -386,10 +384,10 @@ class Connection(Context):
         # truth test and not eg "is not None".
         if self.gateway:
             # Displaying type because gw params would probs be too verbose
-            val = 'proxyjump'
+            val = "proxyjump"
             if isinstance(self.gateway, string_types):
-                val = 'proxycommand'
-            bits.append(('gw', val))
+                val = "proxycommand"
+            bits.append(("gw", val))
         return "<Connection {}>".format(
             " ".join("{}={}".format(*x) for x in bits)
         )
@@ -411,26 +409,26 @@ class Connection(Context):
         return hash(self._identity())
 
     def derive_shorthand(self, host_string):
-        user_hostport = host_string.rsplit('@', 1)
+        user_hostport = host_string.rsplit("@", 1)
         hostport = user_hostport.pop()
         user = user_hostport[0] if user_hostport and user_hostport[0] else None
 
         # IPv6: can't reliably tell where addr ends and port begins, so don't
         # try (and don't bother adding special syntax either, user should avoid
         # this situation by using port=).
-        if hostport.count(':') > 1:
+        if hostport.count(":") > 1:
             host = hostport
             port = None
         # IPv4: can split on ':' reliably.
         else:
-            host_port = hostport.rsplit(':', 1)
+            host_port = hostport.rsplit(":", 1)
             host = host_port.pop(0) or None
             port = host_port[0] if host_port and host_port[0] else None
 
         if port is not None:
             port = int(port)
 
-        return {'user': user, 'host': host, 'port': port}
+        return {"user": user, "host": host, "port": port}
 
     @property
     def is_connected(self):
@@ -460,7 +458,7 @@ class Connection(Context):
         # Short-circuit
         if self.is_connected:
             return
-        err = "Refusing to be ambiguous: connect() kwarg '{}' was given both via regular arg and via connect_kwargs!" # noqa
+        err = "Refusing to be ambiguous: connect() kwarg '{}' was given both via regular arg and via connect_kwargs!"  # noqa
         # These may not be given, period
         for key in """
             hostname
@@ -471,10 +469,10 @@ class Connection(Context):
                 raise ValueError(err.format(key))
         # These may be given one way or the other, but not both
         if (
-            'timeout' in self.connect_kwargs
+            "timeout" in self.connect_kwargs
             and self.connect_timeout is not None
         ):
-            raise ValueError(err.format('timeout'))
+            raise ValueError(err.format("timeout"))
         # No conflicts -> merge 'em together
         kwargs = dict(
             self.connect_kwargs,
@@ -483,12 +481,12 @@ class Connection(Context):
             port=self.port,
         )
         if self.gateway:
-            kwargs['sock'] = self.open_gateway()
+            kwargs["sock"] = self.open_gateway()
         if self.connect_timeout:
-            kwargs['timeout'] = self.connect_timeout
+            kwargs["timeout"] = self.connect_timeout
         # Strip out empty defaults for less noisy debugging
-        if 'key_filename' in kwargs and not kwargs['key_filename']:
-            del kwargs['key_filename']
+        if "key_filename" in kwargs and not kwargs["key_filename"]:
+            del kwargs["key_filename"]
         # Actually connect!
         self.client.connect(**kwargs)
         self.transport = self.client.get_transport()
@@ -512,7 +510,7 @@ class Connection(Context):
             ssh_conf = SSHConfig()
             dummy = "Host {}\n    ProxyCommand {}"
             ssh_conf.parse(StringIO(dummy.format(self.host, self.gateway)))
-            return ProxyCommand(ssh_conf.lookup(self.host)['proxycommand'])
+            return ProxyCommand(ssh_conf.lookup(self.host)["proxycommand"])
         # Handle inner-Connection gateway type here.
         # TODO: logging
         self.gateway.open()
@@ -525,12 +523,12 @@ class Connection(Context):
         # TODO: how best to expose timeout param? reuse general connection
         # timeout from config?
         return self.gateway.transport.open_channel(
-            kind='direct-tcpip',
+            kind="direct-tcpip",
             dest_addr=(self.host, int(self.port)),
             # NOTE: src_addr needs to be 'empty but not None' values to
             # correctly encode into a network message. Theoretically Paramiko
             # could auto-interpret None sometime & save us the trouble.
-            src_addr=('', 0),
+            src_addr=("", 0),
         )
 
     def close(self):
@@ -652,8 +650,8 @@ class Connection(Context):
         self,
         local_port,
         remote_port=None,
-        remote_host='localhost',
-        local_host='localhost',
+        remote_host="localhost",
+        local_host="localhost",
     ):
         """
         Open a tunnel connecting ``local_port`` to the server's environment.
@@ -703,10 +701,13 @@ class Connection(Context):
         # local port.
         finished = Event()
         manager = TunnelManager(
-            local_port=local_port, local_host=local_host,
-            remote_port=remote_port, remote_host=remote_host,
+            local_port=local_port,
+            local_host=local_host,
+            remote_port=remote_port,
+            remote_host=remote_host,
             # TODO: not a huge fan of handing in our transport, but...?
-            transport=self.transport, finished=finished,
+            transport=self.transport,
+            finished=finished,
         )
         manager.start()
 
@@ -748,8 +749,8 @@ class Connection(Context):
         self,
         remote_port,
         local_port=None,
-        remote_host='127.0.0.1',
-        local_host='localhost',
+        remote_host="127.0.0.1",
+        local_host="localhost",
     ):
         """
         Open a tunnel connecting ``remote_port`` to the local environment.
@@ -813,6 +814,7 @@ class Connection(Context):
         # Paramiko's API (or improve it and then do so) so that isn't
         # necessary.
         tunnels = []
+
         def callback(channel, src_addr_tup, dst_addr_tup):
             sock = socket.socket()
             # TODO: handle connection failure such that channel, etc get closed
@@ -824,14 +826,13 @@ class Connection(Context):
             tunnel.start()
             # Communication between ourselves & the Paramiko handling subthread
             tunnels.append(tunnel)
+
         # Ask Paramiko (really, the remote sshd) to call our callback whenever
         # connections are established on the remote iface/port.
         # transport.request_port_forward(remote_host, remote_port, callback)
         try:
             self.transport.request_port_forward(
-                address=remote_host,
-                port=remote_port,
-                handler=callback,
+                address=remote_host, port=remote_port, handler=callback
             )
             yield
         finally:
@@ -844,6 +845,5 @@ class Connection(Context):
                 tunnel.finished.set()
                 tunnel.join()
             self.transport.cancel_port_forward(
-                address=remote_host,
-                port=remote_port,
+                address=remote_host, port=remote_port
             )

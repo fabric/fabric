@@ -14,6 +14,7 @@ class Remote(Runner):
 
     .. versionadded:: 2.0
     """
+
     def start(self, command, shell, env):
         self.channel = self.context.create_session()
         if self.using_pty:
@@ -55,7 +56,7 @@ class Remote(Runner):
             # Submit hex ASCII character 3, aka ETX, which most Unix PTYs
             # interpret as a foreground SIGINT.
             # TODO: is there anything else we can do here to be more portable?
-            self.channel.send(u'\x03')
+            self.channel.send(u"\x03")
         else:
             raise interrupt
 
@@ -63,13 +64,12 @@ class Remote(Runner):
         return self.channel.recv_exit_status()
 
     def generate_result(self, **kwargs):
-        kwargs['connection'] = self.context
+        kwargs["connection"] = self.context
         return Result(**kwargs)
 
     def stop(self):
-        if hasattr(self, 'channel'):
+        if hasattr(self, "channel"):
             self.channel.close()
-
 
     # TODO: shit that is in fab 1 run() but could apply to invoke.Local too:
     # * command timeout control
@@ -102,8 +102,9 @@ class Result(InvokeResult):
 
     .. versionadded:: 2.0
     """
+
     def __init__(self, **kwargs):
-        connection = kwargs.pop('connection')
+        connection = kwargs.pop("connection")
         super(Result, self).__init__(**kwargs)
         self.connection = connection
 

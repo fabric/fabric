@@ -57,6 +57,7 @@ class Group(list):
 
     .. versionadded:: 2.0
     """
+
     def __init__(self, *hosts):
         """
         Create a group of connections from one or more shorthand strings.
@@ -138,6 +139,7 @@ class SerialGroup(Group):
 
     .. versionadded:: 2.0
     """
+
     def run(self, *args, **kwargs):
         results = GroupResult()
         excepted = False
@@ -157,26 +159,22 @@ def thread_worker(cxn, queue, args, kwargs):
     # TODO: namedtuple or attrs object?
     queue.put((cxn, result))
 
+
 class ThreadingGroup(Group):
     """
     Subclass of `.Group` which uses threading to execute concurrently.
 
     .. versionadded:: 2.0
     """
+
     def run(self, *args, **kwargs):
         results = GroupResult()
         queue = Queue()
         threads = []
         for cxn in self:
-            my_kwargs = dict(
-                cxn=cxn,
-                queue=queue,
-                args=args,
-                kwargs=kwargs,
-            )
+            my_kwargs = dict(cxn=cxn, queue=queue, args=args, kwargs=kwargs)
             thread = ExceptionHandlingThread(
-                target=thread_worker,
-                kwargs=my_kwargs,
+                target=thread_worker, kwargs=my_kwargs
             )
             threads.append(thread)
         for thread in threads:
@@ -205,7 +203,7 @@ class ThreadingGroup(Group):
             if wrapper is not None:
                 # Outer kwargs is Thread instantiation kwargs, inner is kwargs
                 # passed to thread target/body.
-                cxn = wrapper.kwargs['kwargs']['cxn']
+                cxn = wrapper.kwargs["kwargs"]["cxn"]
                 results[cxn] = wrapper.value
                 excepted = True
         if excepted:
@@ -233,6 +231,7 @@ class GroupResult(dict):
 
     .. versionadded:: 2.0
     """
+
     def __init__(self, *args, **kwargs):
         super(dict, self).__init__(*args, **kwargs)
         self._successes = {}
