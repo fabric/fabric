@@ -312,9 +312,7 @@ class Connection(Context):
             forward_agent = self.config.forward_agent
             # But if ssh_config is present, it wins
             if "forwardagent" in self.ssh_config:
-                # TODO: SSHConfig really, seriously needs some love here, god
-                map_ = {"yes": True, "no": False}
-                forward_agent = map_[self.ssh_config["forwardagent"]]
+                forward_agent = self.ssh_config.as_bool("forwardagent")
         #: Whether agent forwarding is enabled.
         self.forward_agent = forward_agent
 

@@ -164,8 +164,9 @@ class Connection_:
 
         class forward_agent:
 
-            def defaults_to_False(self):
-                assert Connection("host").forward_agent is False
+            def defaults_to_connection_config_value(self):
+                conn = Connection("host")
+                assert conn.forward_agent is conn.ssh_config.as_bool("forwardagent")
 
             def accepts_configuration_value(self):
                 config = Config(
