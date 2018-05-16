@@ -54,7 +54,7 @@ script:
   # NOTE: this also runs as the sudo-capable user, even if it's not necessarily
   # doing any sudo'ing itself - the sudo-capable user is also the ssh-able
   # user...
-  - inv travis.sudo-integration
+  - inv travis.sudo-run "inv integration"
   # Websites build OK? (Not on PyPy3, Sphinx is all "who the hell are you?" =/
   - "[[ $TRAVIS_PYTHON_VERSION != 'pypy3' ]] && inv sites"
   - "[[ $TRAVIS_PYTHON_VERSION != 'pypy3' ]] && inv docs.doctest"
