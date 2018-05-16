@@ -5,8 +5,8 @@ Changelog
 .. note::
     Looking for the Fabric 1.x changelog? See :doc:`/changelog-v1`.
 
-- :support:`1761` Integration tests were never added to Travis or ported to
-  pytest before 2.0's release; this has been addressed.
+- :support:`1761 backported` Integration tests were never added to Travis or
+  ported to pytest before 2.0's release; this has been addressed.
 - :support:`1745` Wrap any imports of ``invoke.vendor.*`` with
   ``try``/``except`` such that downstream packages which have removed
   ``invoke.vendor`` are still able to function by using stand-alone
