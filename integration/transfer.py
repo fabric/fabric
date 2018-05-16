@@ -4,112 +4,91 @@ import stat
 import tempfile
 from io import BytesIO
 
-from spec import Spec, ok_, eq_
+from py import path
 
 from fabric import Connection
 
 
-class Transfer_(Spec):
-    def setup(self):
-        # Apply realpath() because sometimes symlinks pop up and make life
-        # messy (e.g. /var/tmp is really /private/var/tmp on OS X)
-        self.tmpdir = os.path.realpath(tempfile.mkdtemp())
-
-    def teardown(self):
-        shutil.rmtree(self.tmpdir)
-
-    def _tmp(self, *parts):
-        return os.path.join(self.tmpdir, *parts)
-
-    def _support(self, *parts):
-        return os.path.join(os.path.dirname(__file__), '_support', *parts)
+def _support(*parts):
+    return os.path.join(os.path.dirname(__file__), '_support', *parts)
 
 
+class Transfer_:
     class get:
         def setup(self):
             self.c = Connection('localhost')
-            self.remote = self._support('file.txt')
+            self.remote = _support('file.txt')
 
-        def base_case(self):
+        def base_case(self, tmpdir):
             # Copy file from support to tempdir
-            # TODO: consider path.py for contextmanager
-            cwd = os.getcwd()
-            os.chdir(self.tmpdir)
-            try:
+            with tmpdir.as_cwd():
                 result = self.c.get(self.remote)
-            finally:
-                os.chdir(cwd)
 
             # Make sure it arrived
-            local = self._tmp('file.txt')
-            ok_(os.path.exists(local))
-            eq_(open(local).read(), "yup\n")
+            local = tmpdir.join('file.txt')
+            assert local.check()
+            assert local.read() == "yup\n"
             # Sanity check result object
-            eq_(result.remote, self.remote)
-            eq_(result.orig_remote, self.remote)
-            eq_(result.local, local)
-            eq_(result.orig_local, None)
+            assert result.remote == self.remote
+            assert result.orig_remote == self.remote
+            assert result.local == str(local)
+            assert result.orig_local == None
 
         def file_like_objects(self):
             fd = BytesIO()
             result = self.c.get(remote=self.remote, local=fd)
-            eq_(fd.getvalue(), b"yup\n")
-            eq_(result.remote, self.remote)
-            ok_(result.local is fd)
+            assert fd.getvalue() == b"yup\n"
+            assert result.remote == self.remote
+            assert result.local is fd
 
-        def mode_preservation(self):
+        def mode_preservation(self, tmpdir):
             # Use a dummy file which is given an unusual, highly unlikely to be
             # default umask, set of permissions (oct 641, aka -rw-r----x)
-            local = self._tmp('funky-local.txt')
-            remote = self._tmp('funky-remote.txt')
-            with open(remote, 'w') as fd:
-                fd.write('whatever')
-            os.chmod(remote, 0o641)
-            self.c.get(remote=remote, local=local)
-            eq_(stat.S_IMODE(os.stat(local).st_mode), 0o641)
+            local = tmpdir.join('funky-local.txt')
+            remote = tmpdir.join('funky-remote.txt')
+            remote.write('whatever')
+            remote.chmod(0o641)
+            self.c.get(remote=str(remote), local=str(local))
+            assert stat.S_IMODE(local.stat().mode) == 0o641
 
 
     class put:
         def setup(self):
             self.c = Connection('localhost')
-            self.remote = self._tmp('file.txt')
+            self.remote = path.local.mkdtemp().join('file.txt').realpath()
 
         def base_case(self):
             # Copy file from 'local' (support dir) to 'remote' (tempdir)
-            # TODO: consider path.py for contextmanager
-            cwd = os.getcwd()
-            os.chdir(self._support())
-            try:
+            local_dir = _support()
+            with path.local(local_dir).as_cwd():
+                tmpdir = self.remote.dirpath()
                 # TODO: wrap chdir at the Connection level
-                self.c.sftp().chdir(self._tmp())
+                self.c.sftp().chdir(str(tmpdir))
                 result = self.c.put('file.txt')
-            finally:
-                os.chdir(cwd)
-
             # Make sure it arrived
-            ok_(os.path.exists(self.remote))
-            eq_(open(self.remote).read(), "yup\n")
+            assert self.remote.check()
+            assert self.remote.read() == "yup\n"
             # Sanity check result object
-            eq_(result.remote, self.remote)
-            eq_(result.orig_remote, None)
-            eq_(result.local, self._support('file.txt'))
-            eq_(result.orig_local, 'file.txt')
+            assert result.remote == self.remote
+            assert result.orig_remote == None
+            assert result.local == _support('file.txt')
+            assert result.orig_local == 'file.txt'
 
         def file_like_objects(self):
             fd = BytesIO()
             fd.write(b"yup\n")
-            result = self.c.put(local=fd, remote=self.remote)
-            eq_(open(self.remote).read(), "yup\n")
-            eq_(result.remote, self.remote)
-            ok_(result.local is fd)
+            remote_str = str(self.remote)
+            result = self.c.put(local=fd, remote=remote_str)
+            assert self.remote.read() == "yup\n"
+            assert result.remote == remote_str
+            assert result.local is fd
 
-        def mode_preservation(self):
+        def mode_preservation(self, tmpdir):
             # Use a dummy file which is given an unusual, highly unlikely to be
             # default umask, set of permissions (oct 641, aka -rw-r----x)
-            local = self._tmp('funky-local.txt')
-            with open(local, 'w') as fd:
-                fd.write('whatever')
-            os.chmod(local, 0o641)
-            remote = self._tmp('funky-remote.txt')
-            self.c.put(remote=remote, local=local)
-            eq_(stat.S_IMODE(os.stat(remote).st_mode), 0o641)
+            local = tmpdir.join('funky-local.txt')
+            local.write('whatever')
+            local.chmod(0o641)
+            remote = tmpdir.join('funky-remote.txt')
+            self.c.put(remote=str(remote), local=str(local))
+            assert stat.S_IMODE(remote.stat().mode) == 0o641

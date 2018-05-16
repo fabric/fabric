@@ -4,7 +4,7 @@ from invoke.vendor.six.moves.queue import Queue
 from invoke.vendor.six.moves import zip_longest
 
 from invoke.util import ExceptionHandlingThread
-from spec import Spec, ok_, skip
+from pytest import skip
 
 from fabric import Connection
 
@@ -21,7 +21,7 @@ def _worker(queue, cxn, start, num_words, count, expected):
     queue.put((cxn, result, expected))
 
 
-class concurrency(Spec):
+class concurrency:
     # TODO: still useful to use Group API here? Where does this responsibility
     # fall between Group and Executor (e.g. phrasing this specifically as a
     # generic subcase of Invoke level task parameterization)?
@@ -40,12 +40,12 @@ class concurrency(Spec):
         # Prove no exterior connection caching, socket reuse, etc
         # NOTE: would phrase these as chained 'is not' but pep8 linter is being
         # stupid :(
-        ok_(cxn1 is not cxn2)
-        ok_(cxn2 is not cxn3)
-        ok_(cxn1.client is not cxn2.client)
-        ok_(cxn2.client is not cxn3.client)
+        assert cxn1 is not cxn2
+        assert cxn2 is not cxn3
+        assert cxn1.client is not cxn2.client
+        assert cxn2.client is not cxn3.client
         ports = [x.transport.sock.getsockname()[1] for x in self.cxns]
-        ok_(ports[0] is not ports[1] is not ports[2])
+        assert ports[0] is not ports[1] is not ports[2]
 
     def manual_threading_works_okay(self):
         # TODO: needs https://github.com/pyinvoke/invoke/issues/438 fixed
