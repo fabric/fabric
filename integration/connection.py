@@ -17,8 +17,8 @@ class Connection_:
         def open_method_generates_real_connection(self):
             c = Connection('localhost')
             c.open()
-            assert c.client.get_transport().active == True
-            assert c.is_connected == True
+            assert c.client.get_transport().active is True
+            assert c.is_connected is True
             return c
 
         def close_method_closes_connection(self):
@@ -26,8 +26,8 @@ class Connection_:
             # close
             c = self.open_method_generates_real_connection()
             c.close()
-            assert c.client.get_transport() == None
-            assert c.is_connected == False
+            assert c.client.get_transport() is None
+            assert c.is_connected is False
 
     class run:
         def simple_command_on_host(self):
@@ -37,7 +37,7 @@ class Connection_:
             result = Connection('localhost').run('echo foo', hide=True)
             assert result.stdout == "foo\n"
             assert result.exited == 0
-            assert result.ok == True
+            assert result.ok is True
 
         def simple_command_with_pty(self):
             """
@@ -53,7 +53,7 @@ class Connection_:
             assert tuple(map(int, found)), (rows == cols)
             # PTYs use \r\n, not \n, line separation
             assert "\r\n" in result.stdout
-            assert result.pty == True
+            assert result.pty is True
 
     class local:
         def wraps_invoke_run(self):
@@ -103,7 +103,8 @@ class Connection_:
             Run command via sudo, and not via sudo, on localhost
             """
             skip_outside_travis()
-            assert self.cxn.run('whoami').stdout.strip() == os.environ['LOGNAME']
+            logname = os.environ['LOGNAME']
+            assert self.cxn.run('whoami').stdout.strip() == logname
             assert self.cxn.sudo('whoami').stdout.strip() == 'root'
 
     def large_remote_commands_finish_cleanly(self):

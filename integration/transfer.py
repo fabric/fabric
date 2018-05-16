@@ -1,7 +1,5 @@
 import os
-import shutil
 import stat
-import tempfile
 from io import BytesIO
 
 from py import path
@@ -32,7 +30,7 @@ class Transfer_:
             assert result.remote == self.remote
             assert result.orig_remote == self.remote
             assert result.local == str(local)
-            assert result.orig_local == None
+            assert result.orig_local is None
 
         def file_like_objects(self):
             fd = BytesIO()
@@ -70,7 +68,7 @@ class Transfer_:
             assert self.remote.read() == "yup\n"
             # Sanity check result object
             assert result.remote == self.remote
-            assert result.orig_remote == None
+            assert result.orig_remote is None
             assert result.local == _support('file.txt')
             assert result.orig_local == 'file.txt'
 
