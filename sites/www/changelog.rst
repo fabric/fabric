@@ -7,8 +7,8 @@ Changelog
 
 - :support:`1761 backported` Integration tests were never added to Travis or
   ported to pytest before 2.0's release; this has been addressed.
-- :support:`1759` Apply the ``black`` code formatter to the codebase and engage
-  it on Travis-CI. Thanks to Chris Rose.
+- :support:`1759 backported` Apply the ``black`` code formatter to the codebase
+  and engage it on Travis-CI. Thanks to Chris Rose.
 - :support:`1745` Wrap any imports of ``invoke.vendor.*`` with
   ``try``/``except`` such that downstream packages which have removed
   ``invoke.vendor`` are still able to function by using stand-alone
