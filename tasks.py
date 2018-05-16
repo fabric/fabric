@@ -7,7 +7,7 @@ from invocations.pytest import test, integration, coverage
 from invocations.packaging import release
 from invocations.util import tmpdir
 
-from invoke import Collection, task
+from invoke import Collection, task, Call
 from invoke.util import LOG_FORMAT
 
 
@@ -56,16 +56,18 @@ my_release = Collection(
     'release', release.build, release.status, publish, release.prepare,
 )
 
+my_integration = Call(integration, kwargs=dict(capture='no'))
+
 ns = Collection(
     coverage,
     docs,
-    integration,
     my_release,
     sites,
     test,
     travis,
     watch_docs,
     www,
+    integration=my_integration,
 )
 ns.configure({
     'tests': {
