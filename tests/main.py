@@ -4,8 +4,10 @@ Tests concerned with the ``fab`` tool & how it overrides Invoke defaults.
 
 import os
 import sys
+import re
 
 from invoke.util import cd
+from invoke import run as _run_fab_as_module
 from mock import patch
 import pytest  # because WHY would you expose @skip normally? -_-
 from pytest_relaxed import raises
@@ -250,3 +252,18 @@ Third!
                 value="mypassphrase",
                 prompt="Enter passphrase for use unlocking SSH keys: ",
             )
+
+    class invoke_fab_as_python_module:
+        def check_version_on_invoking_fab_as_module(self, capsys):
+            expected_output = r"""
+Fabric .+
+Paramiko .+
+Invoke .+
+""".strip()
+            # Temporary disable of capture is required to be able to
+            # read the fabric module on invoke.run(). Thus, capsys.disabled()
+            with capsys.disabled():
+                output = _run_fab_as_module("python -m fabric --version", 
+                        hide='out')
+                assert re.match(expected_output, output.stdout)
+
