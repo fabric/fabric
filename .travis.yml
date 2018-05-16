@@ -58,6 +58,11 @@ script:
   - flake8
   # Execute full test suite + coverage, as the new sudo-capable user
   - inv travis.sudo-coverage
+  # Execute integration tests too. TODO: merge under coverage...somehow
+  # NOTE: this also runs as the sudo-capable user, even if it's not necessarily
+  # doing any sudo'ing itself - the sudo-capable user is also the ssh-able
+  # user...
+  - inv travis.sudo-run "inv integration --capture=no"
   # Websites build OK? (Not on PyPy3, Sphinx is all "who the hell are you?" =/
   - "if [[ $TRAVIS_PYTHON_VERSION != 'pypy3' ]]; then inv sites docs.doctest; fi"
   # Did we break setup.py?
