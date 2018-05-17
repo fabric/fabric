@@ -263,7 +263,6 @@ Invoke .+
             # Temporary disable of capture is required to be able to
             # read the fabric module on invoke.run(). Thus, capsys.disabled()
             with capsys.disabled():
-                output = _run_fab_as_module("python -m fabric --version", 
+                output = _run_fab_as_module("python -m fabric --version",
                         hide='out')
                 assert re.match(expected_output, output.stdout)
-
