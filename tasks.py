@@ -50,6 +50,7 @@ def publish(
         # Upload
         release.upload(c, directory, index, sign, dry_run)
 
+
 # Better than nothing, since we haven't solved "pretend I have some other
 # task's signature" yet...
 publish.__doc__ = release.publish.__doc__

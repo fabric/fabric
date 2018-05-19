@@ -357,6 +357,7 @@ class MockSFTP(object):
         mock_os = self.os_patcher.start()
         Client = self.client_patcher.start()
         sftp = Client.return_value.open_sftp.return_value
+
         # Handle common filepath massage actions; tests will assume these.
         def fake_abspath(path):
             return "/local/{}".format(path)
