@@ -47,7 +47,7 @@ def _make_serial_tester(cxns, index, args, kwargs):
 
     def tester(*a, **k):  # Don't care about doing anything with our own args.
         predecessors = cxns[:index]
-        successors = cxns[index + 1 :]
+        successors = cxns[index + 1:]
         for predecessor in predecessors:
             predecessor.run.assert_called_with(*args, **kwargs)
         for successor in successors:
@@ -155,9 +155,7 @@ class ThreadingGroup_:
                 ("start", Thread.return_value.start.call_count),
                 ("join", Thread.return_value.join.call_count),
             ):
-                err = (
-                    "Expected {} calls to ExceptionHandlingThread.{}, got {}"
-                )  # noqa
+                err = "Expected {} calls to ExceptionHandlingThread.{}, got {}"  # noqa
                 err = err.format(expected, name, got)
                 assert expected, got == err
 

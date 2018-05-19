@@ -180,15 +180,13 @@ Available tasks:
                 output = sys.stdout.getvalue()
                 # Expect pre once, 3x main, post once, as opposed to e.g. both
                 # pre and main task
-                expected = (
-                    """
+                expected = """
 First!
 Second: hostA
 Second: hostB
 Second: hostC
 Third!
 """.lstrip()
-                )
                 assert output == expected
 
     class no_hosts_flag:

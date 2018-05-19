@@ -54,10 +54,10 @@ def expect_identity(c):
 
 @task
 def expect_identities(c):
-    assert c.config.connect_kwargs["key_filename"] == [
-        "identity.key",
-        "identity2.key",
-    ]
+    assert (
+        c.config.connect_kwargs["key_filename"]
+        == ["identity.key", "identity2.key"]
+    )
 
 
 @task

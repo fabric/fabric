@@ -10,7 +10,7 @@ for x in ("debug",):
     globals()[x] = getattr(log, x)
 
 
-win32 = sys.platform == "win32"
+win32 = (sys.platform == "win32")
 
 
 def get_local_user():

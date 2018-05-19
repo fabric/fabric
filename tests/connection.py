@@ -43,8 +43,9 @@ def _select_result(obj):
     # read event happened, then quiet after. So chain a single-item iterable to
     # a repeat(). (Mock has no built-in way to do this apparently.)
     initial = [(obj,), tuple(), tuple()]
-    if isinstance(obj, Exception) or (
-        isinstance(obj, type) and issubclass(obj, Exception)
+    if (
+        isinstance(obj, Exception)
+        or (isinstance(obj, type) and issubclass(obj, Exception))
     ):
         initial = obj
     return chain([initial], repeat([tuple(), tuple(), tuple()]))
@@ -169,8 +170,7 @@ class Connection_:
             def accepts_configuration_value(self):
                 config = Config(
                     overrides={
-                        "forward_agent": True,
-                        "load_ssh_configs": False,
+                        "forward_agent": True, "load_ssh_configs": False
                     }
                 )
                 assert Connection("host", config=config).forward_agent is True
@@ -192,8 +192,7 @@ class Connection_:
             def accepts_configuration_value(self):
                 config = Config(
                     overrides={
-                        "timeouts": {"connect": 10},
-                        "load_ssh_configs": False,
+                        "timeouts": {"connect": 10}, "load_ssh_configs": False
                     }
                 )
                 assert Connection("host", config=config).connect_timeout == 10
@@ -232,8 +231,7 @@ class Connection_:
                 # namespaced...
                 vanilla = InvokeConfig(
                     overrides={
-                        "forward_agent": True,
-                        "load_ssh_configs": False,
+                        "forward_agent": True, "load_ssh_configs": False
                     }
                 )
                 cxn = Connection("host", config=vanilla)
@@ -595,9 +593,7 @@ class Connection_:
                         "host", connect_kwargs={key: value}, **kwargs
                     ).open()
                 except ValueError as e:
-                    err = (
-                        "Refusing to be ambiguous: connect() kwarg '{}' was given both via regular arg and via connect_kwargs!"
-                    )  # noqa
+                    err = "Refusing to be ambiguous: connect() kwarg '{}' was given both via regular arg and via connect_kwargs!"  # noqa
                     assert str(e) == err.format(key)
                 else:
                     assert False, "Did not raise ValueError!"

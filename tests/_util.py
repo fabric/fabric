@@ -142,7 +142,7 @@ class Session(object):
         waits=None,
     ):
         # Sanity check
-        params = cmd or out or err or exit or waits
+        params = (cmd or out or err or exit or waits)
         if commands and params:
             raise ValueError(
                 "You can't give both 'commands' and individual "
