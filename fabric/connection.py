@@ -245,7 +245,9 @@ class Connection(Context):
 
         shorthand = self.derive_shorthand(host)
         host = shorthand["host"]
-        err = "You supplied the {} via both shorthand and kwarg! Please pick one."  # noqa
+        err = (
+            "You supplied the {} via both shorthand and kwarg! Please pick one."
+        )  # noqa
         if shorthand["user"] is not None:
             if user is not None:
                 raise ValueError(err.format("user"))
@@ -460,13 +462,19 @@ class Connection(Context):
         # Short-circuit
         if self.is_connected:
             return
-        err = "Refusing to be ambiguous: connect() kwarg '{}' was given both via regular arg and via connect_kwargs!"  # noqa
+        err = (
+            "Refusing to be ambiguous: connect() kwarg '{}' was given both via regular arg and via connect_kwargs!"
+        )  # noqa
         # These may not be given, period
-        for key in """
+        for (
+            key
+        ) in (
+            """
             hostname
             port
             username
-        """.split():
+        """.split()
+        ):
             if key in self.connect_kwargs:
                 raise ValueError(err.format(key))
         # These may be given one way or the other, but not both
