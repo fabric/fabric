@@ -397,7 +397,7 @@ kwargs on all your tasks or similar.
 For a final code example, let's adapt the previous example into a ``fab`` task
 module called ``fabfile.py``::
 
-    from invoke import task
+    from fabric import task
 
     @task
     def upload_and_unpack(c):
@@ -406,7 +406,7 @@ module called ``fabfile.py``::
             c.run('tar -C /opt/mydata -xzvf /opt/mydata/myfiles.tgz')
 
 Not hard - all we did was copy our temporary task function into a file and slap
-a decorator on it. `~invoke.tasks.task` tells the CLI machinery to expose the
+a decorator on it. `~fabric.tasks.task` tells the CLI machinery to expose the
 task on the command line::
 
     $ fab --list

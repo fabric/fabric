@@ -252,10 +252,11 @@ Task functions & decorators
     * - "New" style ``@task``-decorated, module-level task functions
       - Ported
       - Largely the same, though now with superpowers - `@task
-        <invoke.tasks.task>` can still be used without any parentheses, but
-        where v1 only had a single ``task_class`` argument, Invoke has a number
-        of various namespace and parser hints as well as execution related
-        options.
+        <fabric.tasks.task>` can still be used without any parentheses, but
+        where v1 only had a single ``task_class`` argument, the new version
+        (largely based on Invoke's) has a number of various namespace and
+        parser hints, as well as execution related options (such as those
+        formerly served by ``@hosts`` and friends).
     * - Arbitrary task function arguments (i.e. ``def mytask(any, thing, at,
         all)``)
       - Ported
@@ -286,12 +287,16 @@ Task functions & decorators
         We may reinstate (in an opt-in fashion) imported module scanning later,
         since the use of explicit namespace objects still allows users control
         over the tree that results.
-    * - ``@hosts`` and ``@roles`` for determining the default list of host or
-        group-of-host targets a given task uses
+    * - ``@hosts`` for determining the default host or list of hosts a given
+        task uses
+      - Ported
+      - Reinstated as the ``hosts`` parameter of `@task <fabric.tasks.task>`.
+    * - ``@roles`` for determining the default list of group-of-host targets a
+        given task uses
       - Pending
-      - These decorators were very much in the "DSL" vein of Fabric 1 and have
-        not been prioritized for the rewrite, though they are likely to return
-        in some form, and probably sooner instead of later.
+      - See :ref:`upgrading-api` for details on the overall 'roles' concept.
+        When it returns, this will probably follow ``@hosts`` and become some
+        ``@task`` argument.
     * - ``@serial``/``@parallel``/``@runs_once``
       - Mixed
       - Parallel execution is currently offered at the API level via `.Group`
@@ -1211,7 +1216,7 @@ Here's a (slightly modified to concur with 'modern' Fabric 1 best practices)
 copy of Fabric 1's final tutorial snippet, which we will use as our test case
 for upgrading::
 
-    from fabric.api import abort, env, local, run, settings, task
+    from fabric.api import abort, env, hosts, local, run, settings, task
     from fabric.contrib.console import confirm
 
     env.hosts = ['my-server']
@@ -1248,6 +1253,11 @@ for upgrading::
             run("git pull")
             run("touch app.wsgi")
 
+    @task
+    @hosts('ci-host')
+    def ci_build():
+        run("/usr/local/bin/trigger-build.sh")
+
 We'll port this directly, meaning the result will still be ``fabfile.py``,
 though we'd like to note that writing your code in a more library-oriented
 fashion - even just as functions not wrapped in ``@task`` - can make testing
@@ -1260,16 +1270,18 @@ In modern Fabric, we don't need to import nearly as many functions, due to the
 emphasis on object methods instead of global functions. We only need the
 following:
 
+- `@task <fabric.tasks.task>`, as before, though it's now based on Invoke's
+  `@task <invoke.tasks.task>` and also replaces most other decorators like
+  ``@hosts``;
 - `~invoke.exceptions.Exit`, a friendlier way of requesting a `sys.exit`;
-- `@task <invoke.tasks.task>`, as before, but coming from Invoke as it's not
-  SSH-specific;
 - ``confirm``, which now comes from the Invocations library (also not
   SSH-specific; though Invocations is one of the descendants of
   ``fabric.contrib``, which no longer exists);
 
 ::
 
-    from invoke import task, Exit
+    from fabric import task
+    from invoke import Exit
     from invocations.console import confirm
 
 Host list
@@ -1278,19 +1290,12 @@ Host list
 The idea of a predefined global host list is gone; there is currently no direct
 replacement. Instead, we expect users to set up their own execution context,
 creating explicit `.Connection` and/or `.Group` objects as needed, even if
-that's simply by mocking v1's built-in "roles" map. For simple use cases, the
-:option:`--hosts` core option is still available.
+that's simply by mocking v1's built-in "roles" map. We expect to set up a
+modern equivalent to the concept of roles in coming feature releases.
 
-.. note::
-    This is an area under active development, so feedback is welcomed.
-
-For now, given the source snippet hardcoded a hostname of ``my-server``, we'll
-assume this fabfile will be invoked as e.g. ``fab -H my-server taskname``, and
-there will be no hardcoding within the fabfile itself.
-
-.. TODO:
-    - pre-task example
-    - true baked-in default example (requires some sort of config hook)
+For simple use cases, the :option:`--hosts` core option is still available, as
+is the ``hosts`` kwarg to `@task <fabric.tasks.task>`. For the purposes of this
+example, we're using the latter, as you'll see below.
 
 Test task
 ---------
@@ -1363,12 +1368,11 @@ Note that up to this point, nothing truly Fabric-related has been in play -
 we get to the actual deploy step, which invokes `.Connection.run` instead,
 executing remotely (on whichever host the `.Connection` has been bound to).
 
-``with cd`` is not fully implemented for the remote side of things, but we
-expect it will be soon. For now we fall back to command chaining with ``&&``.
-
 ::
 
-    @task
+    deploy_targets = ['my-server']
+
+    @task(hosts=deploy_targets)
     def deploy(c):
         code_dir = '/srv/django/myproject'
         if not c.run("test -d {}".format(code_dir), warn=True):
@@ -1376,6 +1380,40 @@ expect it will be soon. For now we fall back to command chaining with ``&&``.
             c.run(cmd.format(code_dir))
         c.run("cd {} && git pull".format(code_dir))
         c.run("cd {} && touch app.wsgi".format(code_dir))
+
+This first remote task, under Fabric 1, relied on the global host list; as
+noted above, that's gone for now, but we can use ``@task(hosts=...)`` to
+replace it in the meantime. Notice the use of a local variable to refactor;
+this is leveraging normal Python patterns to arrive at a good approximation of
+the old setup, and would scale up to multiple tasks all wanting that same
+default.
+
+.. note::
+    ``with cd`` is not fully implemented for the remote side of things, but we
+    expect it will be soon. For now we fall back to command chaining with
+    ``&&``.
+
+The second remote task is effectively a singleton - it talks to one server and
+does one thing - so in v1 it leveraged the ``@hosts`` decorator. Here, we again
+just use the ``hosts`` param in ``@task``, hardcoding the name as was done in
+the original fabfile::
+
+    @task(hosts=['ci-host'])
+    def ci_build():
+        run("/usr/local/bin/trigger-build.sh")
+    
+.. note::
+    Given the increased focus on "roll your own Connection" in modern Fabric,
+    another way to phrase this task could have been::
+
+    @task
+    def ci_build():
+        Connection('ci-host').run("/usr/local/bin/trigger-build.sh")
+
+    However, this doesn't scale up quite as neatly; the use of
+    ``@task(hosts=[...])`` goes from one to many targets as easily as extending
+    the list, whereas the manual `.Connection` would require a ``for`` loop.
+
 
 The whole thing
 ---------------
@@ -1405,7 +1443,9 @@ Now we have the entire, upgraded fabfile that will work with modern Fabric::
         commit(c)
         push(c)
 
-    @task
+    deploy_targets = ['my-server']
+
+    @task(hosts=deploy_targets)
     def deploy(c):
         code_dir = '/srv/django/myproject'
         if not c.run("test -d {}".format(code_dir), warn=True):
@@ -1413,3 +1453,7 @@ Now we have the entire, upgraded fabfile that will work with modern Fabric::
             c.run(cmd.format(code_dir))
         c.run("cd {} && git pull".format(code_dir))
         c.run("cd {} && touch app.wsgi".format(code_dir))
+
+    @task(hosts=['ci-host'])
+    def ci_build():
+        run("/usr/local/bin/trigger-build.sh")
