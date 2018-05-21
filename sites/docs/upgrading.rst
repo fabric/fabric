@@ -1409,9 +1409,9 @@ the original fabfile::
     Given the increased focus on "roll your own Connection" in modern Fabric,
     another way to phrase this task could have been::
 
-    @task
-    def ci_build():
-        Connection('ci-host').run("/usr/local/bin/trigger-build.sh")
+        @task
+        def ci_build():
+            Connection('ci-host').run("/usr/local/bin/trigger-build.sh")
 
     However, this doesn't scale up quite as neatly; the use of
     ``@task(hosts=[...])`` goes from one to many targets as easily as extending
