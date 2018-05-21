@@ -291,6 +291,8 @@ Task functions & decorators
         task uses
       - Ported
       - Reinstated as the ``hosts`` parameter of `@task <fabric.tasks.task>`.
+        Further, it can now handle dicts of `.Connection` kwargs in addition to
+        simple host strings.
     * - ``@roles`` for determining the default list of group-of-host targets a
         given task uses
       - Pending
@@ -316,9 +318,10 @@ Task functions & decorators
         some function object and the ``@task`` decorator)
       - Ported
       - While not sharing many implementation details with v1, modern Fabric
-        (via Invoke) has a publicly exposed `~invoke.tasks.Task` class, which
-        alongside `~invoke.collection.Collection` allow full programmatic
-        creation of task trees, no decorator needed.
+        has a publicly exposed `~fabric.tasks.Task` class (a light wrapper
+        around `invoke.tasks.Task`), which alongside
+        `~invoke.collection.Collection` allow full programmatic creation of
+        task trees, no decorator needed.
 
 .. _upgrading-cli:
 
