@@ -5,6 +5,19 @@ Changelog
 .. note::
     Looking for the Fabric 1.x changelog? See :doc:`/changelog-v1`.
 
+- :feature:`1772` ``@hosts`` is back -- as a `@task <fabric.tasks.task>`/`Task
+  <fabric.tasks.Task>` parameter of the same name. Acts much like a per-task
+  :option:`--hosts`, but can optionally take dicts of `.Connection` kwargs as
+  well as the typical shorthand host strings.
+
+  .. note::
+    As of this change, we are now recommending the use of the
+    new-in-this-release Fabric-level `@task <fabric.tasks.task>`/`Task
+    <fabric.tasks.Task>` API members, even if you're not using the ``hosts``
+    kwarg -- it will help future-proof your code for similar feature-adds
+    later, and just generally be less confusing than having mixed Invoke/Fabric
+    imports for these object types.
+
 - :support:`1761 backported` Integration tests were never added to Travis or
   ported to pytest before 2.0's release; this has been addressed.
 - :support:`1759 backported` Apply the ``black`` code formatter to the codebase
