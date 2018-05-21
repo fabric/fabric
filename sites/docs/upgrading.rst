@@ -1214,7 +1214,7 @@ for upgrading::
     from fabric.api import abort, env, local, run, settings, task
     from fabric.contrib.console import confirm
 
-    env.hosts = ['my_server']
+    env.hosts = ['my-server']
 
     @task
     def test():
@@ -1284,8 +1284,8 @@ that's simply by mocking v1's built-in "roles" map. For simple use cases, the
 .. note::
     This is an area under active development, so feedback is welcomed.
 
-For now, given the source snippet hardcoded a hostname of ``my_server``, we'll
-assume this fabfile will be invoked as e.g. ``fab -H my_server taskname``, and
+For now, given the source snippet hardcoded a hostname of ``my-server``, we'll
+assume this fabfile will be invoked as e.g. ``fab -H my-server taskname``, and
 there will be no hardcoding within the fabfile itself.
 
 .. TODO:
