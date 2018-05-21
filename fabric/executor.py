@@ -11,7 +11,6 @@ class FabExecutor(Executor):
     def expand_calls(self, calls, apply_hosts=True):
         # Generate new call list with per-host variants & Connections inserted
         ret = []
-        # TODO: mesh well with Invoke list-type args helper (inv #132)
         hosts = []
         host_str = self.core[0].args.hosts.value
         if apply_hosts and host_str:
