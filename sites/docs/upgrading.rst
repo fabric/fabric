@@ -1256,7 +1256,7 @@ and reusing code easier.
 Imports
 -------
 
-In this case, we don't need to import nearly as many functions, due to the
+In modern Fabric, we don't need to import nearly as many functions, due to the
 emphasis on object methods instead of global functions. We only need the
 following:
 
