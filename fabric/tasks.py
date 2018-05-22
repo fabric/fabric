@@ -44,5 +44,7 @@ def task(*args, **kwargs):
           with simple strings (e.g. statically defined IPv6 addresses) or to
           bake in more complex info (eg ``connect_timeout``, ``connect_kwargs``
           params like auth info, etc).
+
+    .. versionadded:: 2.1
     """
     pass
