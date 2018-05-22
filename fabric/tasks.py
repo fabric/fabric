@@ -17,8 +17,9 @@ def task(*args, **kwargs):
     """
     Wraps/extends Invoke's `@task <invoke.tasks.task>` with extra kwargs.
 
-    See the above API link for most details; this Fabric-specific
-    implementation adds the following additional keyword arguments:
+    See `the Invoke-level API docs <invoke.tasks.task>` for most details; this
+    Fabric-specific implementation adds the following additional keyword
+    arguments:
 
     :param hosts:
         An iterable of host-connection specifiers appropriate for eventually
