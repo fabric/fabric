@@ -1423,7 +1423,8 @@ The whole thing
 
 Now we have the entire, upgraded fabfile that will work with modern Fabric::
 
-    from invoke import task, Exit
+    from fabric import task
+    from invoke import Exit
     from invocations.console import confirm
 
     @task

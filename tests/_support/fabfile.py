@@ -1,5 +1,5 @@
-from invoke import task, Context
-from fabric import Connection
+from invoke import Context
+from fabric import task, Connection
 
 
 @task

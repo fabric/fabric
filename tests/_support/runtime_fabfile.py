@@ -1,4 +1,4 @@
-from invoke import task
+from fabric import task
 
 
 @task
