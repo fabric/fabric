@@ -1,5 +1,5 @@
 import fabric
-from fabric import _version, connection, runners, group
+from fabric import _version, connection, runners, group, tasks
 
 
 class init:
@@ -32,3 +32,9 @@ class init:
 
     def GroupResult(self):
         assert fabric.GroupResult is group.GroupResult
+
+    def task(self):
+        assert fabric.task is tasks.task
+
+    def Task(self):
+        assert fabric.Task is tasks.Task
