@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 from itertools import chain, repeat
 from io import BytesIO
 import os
@@ -12,6 +13,23 @@ from fabric.main import program as fab_program
 
 support = os.path.join(os.path.abspath(os.path.dirname(__file__)), "_support")
 config_file = os.path.abspath(os.path.join(support, "config.yml"))
+
+# TODO: move invoke's support_path + load + etc somewhere importable? or into
+# pytest-relaxed, despite it not being strictly related to that feature set?
+# ugh
+@contextmanager
+def support_path():
+    sys.path.insert(0, support)
+    try:
+        yield
+    finally:
+        sys.path.pop(0)
+
+
+def load(name):
+    with support_path():
+        imported = __import__(name)
+        return imported
 
 
 # TODO: this could become a fixture in conftest.py, presumably, and just yield
