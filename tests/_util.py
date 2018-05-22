@@ -14,11 +14,6 @@ support = os.path.join(os.path.abspath(os.path.dirname(__file__)), "_support")
 config_file = os.path.abspath(os.path.join(support, "config.yml"))
 
 
-# TODO: revert to asserts
-def eq_(got, expected):
-    assert got == expected
-
-
 # TODO: this could become a fixture in conftest.py, presumably, and just yield
 # stdout, allowing the tests themselves to assert more naturally
 @trap
@@ -251,10 +246,11 @@ class Session(object):
             channel.exec_command.assert_called_with(command.cmd or ANY)
             # Expect written stdin, if given
             if command.in_:
-                eq_(channel._stdin.getvalue(), command.in_)
+                assert channel._stdin.getvalue() == command.in_
 
         # Make sure open_session was called expected number of times.
-        eq_(transport.return_value.open_session.call_args_list, session_opens)
+        calls = transport.return_value.open_session.call_args_list
+        assert calls == session_opens
 
 
 class MockRemote(object):
