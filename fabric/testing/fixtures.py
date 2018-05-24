@@ -112,9 +112,9 @@ def client():
     - ``.is_connected`` behaves False after instantiation and before ``.open``,
       then True after ``.open``
     - ``.close`` will work normally on 1st call
-    - ``.close will behave "incorrectly" on subsequent calls (since it'll think
-      connection is still live.) Tests that check the idempotency of ``.close``
-      will need to tweak their mock mid-test.
+    - ``.close`` will behave "incorrectly" on subsequent calls (since it'll
+      think connection is still live.) Tests that check the idempotency of
+      ``.close`` will need to tweak their mock mid-test.
 
     For 'full' fake remote session interaction (i.e. stdout/err
     reading/writing, channel opens, etc) see `remote`.
