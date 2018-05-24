@@ -11,6 +11,8 @@ notices them is to import them into a ``conftest.py`` (`docs
 For example, if you intend to use the `remote` and `client` fixtures::
 
     from fabric.testing.fixtures import client, remote
+
+.. versionadded:: 2.1
 """
 
 try:
@@ -44,6 +46,8 @@ def remote():
     Yields a `.MockRemote` object (which may need to be updated via
     `.MockRemote.expect`, `.MockRemote.expect_sessions`, etc; otherwise a
     default session will be used) & calls `.MockRemote.stop` on teardown.
+
+    .. versionadded:: 2.1
     """
     remote = MockRemote()
     yield remote
@@ -60,6 +64,8 @@ def sftp():
 
     For many/most tests which only want the Transfer and/or SFTPClient objects,
     see `sftp_objs` and `transfer` which wrap this fixture.
+
+    .. versionadded:: 2.1
     """
     mock = MockSFTP(autostart=False)
     client, mock_os = mock.start()
@@ -72,6 +78,8 @@ def sftp():
 def sftp_objs(sftp):
     """
     Wrapper for `sftp` which only yields the Transfer and SFTPClient.
+
+    .. versionadded:: 2.1
     """
     yield sftp[:2]
 
@@ -80,6 +88,8 @@ def sftp_objs(sftp):
 def transfer(sftp):
     """
     Wrapper for `sftp` which only yields the Transfer object.
+
+    .. versionadded:: 2.1
     """
     yield sftp[0]
 
@@ -121,6 +131,8 @@ def client():
 
     For 'full' fake remote session interaction (i.e. stdout/err
     reading/writing, channel opens, etc) see `remote`.
+
+    .. versionadded:: 2.1
     """
     with patch("fabric.connection.SSHClient") as SSHClient:
         client = SSHClient.return_value

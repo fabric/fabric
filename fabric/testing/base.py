@@ -11,6 +11,8 @@ using them for your own testing purposes: ``pip install fabric[testing]``.
     grabbing ``fabric[pytest]`` instead, which encompasses the dependencies of
     both this module and the `fabric.testing.fixtures` module, which contains
     pytest fixtures.
+
+.. versionadded:: 2.1
 """
 
 from itertools import chain, repeat
@@ -48,6 +50,8 @@ class Command(object):
         Number of calls to the channel's ``exit_status_ready`` that should
         return ``False`` before it then returns ``True``. Default: ``0``
         (``exit_status_ready`` will return ``True`` immediately).
+
+    .. versionadded:: 2.1
     """
 
     def __init__(self, cmd=None, out=b"", err=b"", in_=None, exit=0, waits=0):
@@ -65,6 +69,8 @@ class MockChannel(Mock):
 
     Turns out abusing function closures inside MockRemote to track this state
     only worked for 1 command per session!
+
+    .. versionadded:: 2.1
     """
 
     def __init__(self, *args, **kwargs):
@@ -118,6 +124,8 @@ class Session(object):
         .. note::
             Giving ``cmd``, ``out`` etc alongside explicit ``commands`` is not
             allowed and will result in an error.
+
+    .. versionadded:: 2.1
     """
 
     def __init__(
@@ -182,6 +190,8 @@ class Session(object):
             ``None`` - this is mostly a "deferred setup" method and callers
             will just reference the above attributes (and call more methods) as
             needed.
+
+        .. versionadded:: 2.1
         """
         client = Mock()
         transport = client.get_transport.return_value  # another Mock
@@ -262,6 +272,8 @@ class MockRemote(object):
     "request & forget" pytest fixture. Users requiring detailed remote session
     expectations can call methods like `expect`, which wipe that anonymous
     Session & set up a new one instead.
+
+    .. versionadded:: 2.1
     """
 
     def __init__(self):
@@ -274,6 +286,8 @@ class MockRemote(object):
         Convenience method for creating & 'expect'ing a single `Session`.
 
         Returns the single `MockChannel` yielded by that Session.
+
+        .. versionadded:: 2.1
         """
         return self.expect_sessions(Session(*args, **kwargs))[0]
 
@@ -282,6 +296,8 @@ class MockRemote(object):
         Sets the mocked remote environment to expect the given ``sessions``.
 
         Returns a list of `MockChannel` objects, one per input `Session`.
+
+        .. versionadded:: 2.1
         """
         # First, stop the default session to clean up its state, if it seems to
         # be running.
@@ -294,6 +310,8 @@ class MockRemote(object):
     def start(self):
         """
         Start patching SSHClient with the stored sessions, returning channels.
+
+        .. versionadded:: 2.1
         """
         # Patch SSHClient so the sessions' generated mocks can be set as its
         # return values
@@ -313,6 +331,8 @@ class MockRemote(object):
     def stop(self):
         """
         Stop patching SSHClient.
+
+        .. versionadded:: 2.1
         """
         # Short circuit if we don't seem to have start()ed yet.
         if not hasattr(self, "patcher"):
@@ -323,6 +343,8 @@ class MockRemote(object):
     def sanity(self):
         """
         Run post-execution sanity checks (usually 'was X called' tests.)
+
+        .. versionadded:: 2.1
         """
         for session in self.sessions:
             # Basic sanity tests about transport, channel etc
@@ -337,6 +359,8 @@ class MockSFTP(object):
 
     Used in start/stop fashion in eg doctests; wrapped in the SFTP fixtures in
     conftest.py for main use.
+
+    .. versionadded:: 2.1
     """
 
     def __init__(self, autostart=True):
