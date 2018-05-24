@@ -43,16 +43,18 @@ def connection():
     """
     Yields a `.Connection` object with mocked methods.
 
-    Specifically, the primary API members (`.Connection.run`,
-    `.Connection.local`, etc) are replaced with ``mock.Mock`` instances.
+    Specifically:
 
-    Furthermore, ``run.in_stream`` is set to ``False`` to avoid attempts to
-    read from stdin (which typically plays poorly with pytest and other
-    capturing test runners).
+    - the hostname is set to ``"host"`` and the username to ``"user"``;
+    - the primary API members (`.Connection.run`, `.Connection.local`, etc) are
+      replaced with ``mock.Mock`` instances;
+    - the ``run.in_stream`` config option is set to ``False`` to avoid attempts
+      to read from stdin (which typically plays poorly with pytest and other
+      capturing test runners);
 
     .. versionadded:: 2.1
     """
-    c = Connection("host")
+    c = Connection(host="host", user="user")
     c.config.run.in_stream = False
     c.run = Mock()
     c.local = Mock()
