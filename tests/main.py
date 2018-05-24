@@ -14,7 +14,8 @@ from fabric.config import Config
 from fabric.main import program as fab_program
 from fabric.exceptions import NothingToDo
 
-from _util import expect, Session, support, config_file, trap
+from fabric.testing.base import Session
+from _util import expect, support, config_file, trap
 
 
 # Crappy helper to inject a test-only runtime config into test invocations.

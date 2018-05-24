@@ -2,17 +2,15 @@
 This module contains helpers/fixtures to assist in testing Fabric-driven code.
 
 It is not intended for production use, and pulls in some test-oriented
-dependencies such as `pytest <https://pytest.org>`_ and `mock
-<https://pypi.org/project/mock/>`_. You can install an 'extra' variant of
-Fabric to get these dependencies if you aren't already using them for your own
-testing purposes: ``pip install fabric[testing]``.
+dependencies such as `mock <https://pypi.org/project/mock/>`_. You can install
+an 'extra' variant of Fabric to get these dependencies if you aren't already
+using them for your own testing purposes: ``pip install fabric[testing]``.
 
 .. note::
-    Many objects in this module are `pytest fixtures
-    <https://docs.pytest.org/en/latest/fixture.html>`_ - see pytest's
-    documentation for details on use. However, you can still use the
-    foundational objects and classes (such as `MockRemote`) if your own test
-    suite isn't using pytest.
+    If you're using pytest for your test suite, you may be interested in
+    grabbing ``fabric[pytest]`` instead, which encompasses the dependencies of
+    both this module and the `fabric.testing.fixtures` module, which contains
+    pytest fixtures.
 """
 
 from itertools import chain, repeat
@@ -21,15 +19,15 @@ import os
 
 try:
     from mock import Mock, PropertyMock, call, patch, ANY
-    from pytest import fixture
 except ImportError:
     import warnings
 
-    warnings.warn("whoops", ImportWarning)
+    warning = (
+        "You appear to be missing some optional test-related dependencies;"
+        "please 'pip install fabric[testing]'."
+    )
+    warnings.warn(warning, ImportWarning)
     raise
-
-from . import Connection
-from .transfer import Transfer
 
 
 class Command(object):
@@ -256,12 +254,12 @@ class MockRemote(object):
     """
     Class representing mocked remote state.
 
-    Set up for start/stop style patching (so it can be used in situations
-    requiring setup/teardown semantics); is then wrapped by the `remote`
-    fixture.
+    By default this class is set up for start/stop style patching as opposed to
+    the more common context-manager or decorator approach; this is so it can be
+    used in situations requiring setup/teardown semantics.
 
-    Defaults to a single anonymous `Session`, so it can be used as a "request &
-    forget" pytest fixture. Users requiring detailed remote session
+    Defaults to setting up a single anonymous `Session`, so it can be used as a
+    "request & forget" pytest fixture. Users requiring detailed remote session
     expectations can call methods like `expect`, which wipe that anonymous
     Session & set up a new one instead.
     """
@@ -373,92 +371,3 @@ class MockSFTP(object):
     def stop(self):
         self.os_patcher.stop()
         self.client_patcher.stop()
-
-
-@fixture
-def remote():
-    """
-    Fixture allowing setup of a mocked remote session & access to sub-mocks.
-
-    Yields a `MockRemote` object (which may need to be updated via
-    `MockRemote.expect`, `MockRemote.expect_sessions`, etc; otherwise a default
-    session will be used) & calls `MockRemote.stop` on teardown.
-    """
-    remote = MockRemote()
-    yield remote
-    remote.stop()
-
-
-@fixture
-def sftp():
-    """
-    Fixture allowing setup of a mocked remote SFTP session.
-
-    Yields a 3-tuple of: Transfer() object, SFTPClient object, and mocked OS
-    module.
-
-    For many/most tests which only want the Transfer and/or SFTPClient objects,
-    see `sftp_objs` and `transfer` which wrap this fixture.
-    """
-    mock = MockSFTP(autostart=False)
-    client, mock_os = mock.start()
-    transfer = Transfer(Connection("host"))
-    yield transfer, client, mock_os
-    # TODO: old mock_sftp() lacked any 'stop'...why? feels bad man
-
-
-@fixture
-def sftp_objs(sftp):
-    """
-    Wrapper for `sftp` which only yields the Transfer and SFTPClient.
-    """
-    yield sftp[:2]
-
-
-@fixture
-def transfer(sftp):
-    """
-    Wrapper for `sftp` which only yields the Transfer object.
-    """
-    yield sftp[0]
-
-
-@fixture
-def client():
-    """
-    Yields a mocked-out SSHClient for testing calls to connect() & co.
-
-    It updates get_transport to return a mock that appears active on first
-    check, then inactive after, matching most tests' needs by default:
-
-    - `Connection` instantiates, with a None ``.transport``.
-    - Calls to ``.open()`` test ``.is_connected``, which returns ``False`` when
-      ``.transport`` is falsey, and so the first open will call
-      ``SSHClient.connect`` regardless.
-    - ``.open()`` then sets ``.transport`` to ``SSHClient.get_transport()``, so
-      ``Connection.transport`` is effectively
-      ``client.get_transport.return_value``.
-    - Subsequent activity will want to think the mocked SSHClient is
-      "connected", meaning we want the mocked transport's ``.active`` to be
-      ``True``.
-    - This includes ``Connection.close``, which short-circuits if
-      ``.is_connected``; having a statically ``True`` active flag means a full
-      open -> close cycle will run without error. (Only tests that double-close
-      or double-open should have issues here.)
-
-    End result is that:
-
-    - ``.is_connected`` behaves False after instantiation and before ``.open``,
-      then True after ``.open``
-    - ``.close`` will work normally on 1st call
-    - ``.close will behave "incorrectly" on subsequent calls (since it'll think
-      connection is still live.) Tests that check the idempotency of ``.close``
-      will need to tweak their mock mid-test.
-
-    For 'full' fake remote session interaction (i.e. stdout/err
-    reading/writing, channel opens, etc) see `remote`.
-    """
-    with patch("fabric.connection.SSHClient") as SSHClient:
-        client = SSHClient.return_value
-        client.get_transport.return_value = Mock(active=True)
-        yield client
