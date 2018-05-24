@@ -5,6 +5,15 @@ Changelog
 .. note::
     Looking for the Fabric 1.x changelog? See :doc:`/changelog-v1`.
 
+- :feature:`-` Exposed our previously internal test helpers for use by
+  downstream test suites, as the :ref:`fabric.testing <testing-subpackage>`
+  subpackage.
+
+  .. note::
+    As this code requires non-production dependencies, we've also updated our
+    packaging metadata to publish some setuptools "extras", ``fabric[testing]``
+    (base) and ``fabric[pytest]`` (for pytest users).
+
 - :support:`1761 backported` Integration tests were never added to Travis or
   ported to pytest before 2.0's release; this has been addressed.
 - :support:`1759 backported` Apply the ``black`` code formatter to the codebase
