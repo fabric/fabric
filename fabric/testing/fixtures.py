@@ -39,6 +39,38 @@ from .base import MockRemote, MockSFTP
 
 
 @fixture
+def connection():
+    """
+    Yields a full-featured mock `.Connection` object.
+
+    Specifically, uses a `.MockRemote` (like `remote` does; it mocks/stubs the
+    guts of any SSH related behavior) and then creates a `.Connection`, adding
+    a few more high level mocks as necessary (for example, setting
+    `.Connection.local` to a ``mock.Mock`` so you don't have to worry about
+    incidental real local subprocesses).
+
+    This is the go-to pytest fixture for most high level Fabric-related tests.
+
+    .. versionadded:: 2.1
+    """
+    # TODO: is there a nice way to just use 'remote' as a sub-fixture _without_
+    # requiring that users import it too? as-is pytest doesn't seem to "see"
+    # remote() unless you do eg 'from fabric.testing.fixtures import
+    # connection, remote' which is just ugh if all you're using is connection!
+    remote = MockRemote()
+    c = Connection("invalid-host-should-not-exist")
+    c.local = Mock()
+    yield c
+    remote.stop()
+
+
+#: A convenience rebinding of `connection`.
+#:
+#: .. versionadded:: 2.1
+cxn = connection
+
+
+@fixture
 def remote():
     """
     Fixture allowing setup of a mocked remote session & access to sub-mocks.
