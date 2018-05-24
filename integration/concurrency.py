@@ -9,13 +9,12 @@ from pytest import skip
 from fabric import Connection
 
 
-_words = '/usr/share/dict/words'
+_words = "/usr/share/dict/words"
+
 
 def _worker(queue, cxn, start, num_words, count, expected):
     tail = num_words - start
-    cmd = "tail -n {} {} | head -n {}".format(
-        tail, _words, count,
-    )
+    cmd = "tail -n {} {} | head -n {}".format(tail, _words, count)
     stdout = cxn.run(cmd, hide=True).stdout
     result = [x.strip() for x in stdout.splitlines()]
     queue.put((cxn, result, expected))
@@ -29,9 +28,9 @@ class concurrency:
     # TODO: spin up multiple temp SSHDs / Paramiko servers / ???
 
     def setup(self):
-        cxn1 = Connection('localhost')
-        cxn2 = Connection('localhost')
-        cxn3 = Connection('localhost')
+        cxn1 = Connection("localhost")
+        cxn2 = Connection("localhost")
+        cxn3 = Connection("localhost")
         self.cxns = (cxn1, cxn2, cxn3)
 
     def connections_objects_do_not_share_connection_state(self):
@@ -60,11 +59,11 @@ class concurrency:
         # stdout" sanity test
         queue = Queue()
         # TODO: skip test on Windows or find suitable alternative file
-        with codecs.open(_words, encoding='utf-8') as fd:
+        with codecs.open(_words, encoding="utf-8") as fd:
             data = [x.strip() for x in fd.readlines()]
         threads = []
         num_words = len(data)
-        chunksize = len(data) / len(self.cxns) # will be an int, which is fine
+        chunksize = len(data) / len(self.cxns)  # will be an int, which is fine
         for i, cxn in enumerate(self.cxns):
             start = i * chunksize
             end = max([start + chunksize, num_words])
@@ -82,11 +81,11 @@ class concurrency:
         for t in threads:
             t.start()
         for t in threads:
-            t.join(5) # Kinda slow, but hey, maybe the test runner is hot
+            t.join(5)  # Kinda slow, but hey, maybe the test runner is hot
         while not queue.empty():
             cxn, result, expected = queue.get(block=False)
             for resultword, expectedword in zip_longest(result, expected):
                 err = u"({2!r}, {3!r}->{4!r}) {0!r} != {1!r}".format(
-                    resultword, expectedword, cxn, expected[0], expected[-1],
+                    resultword, expectedword, cxn, expected[0], expected[-1]
                 )
                 assert resultword == expectedword, err
