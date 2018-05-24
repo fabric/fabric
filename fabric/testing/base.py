@@ -167,13 +167,13 @@ class Session(object):
 
     def generate_mocks(self):
         """
-        Sets up a mock `.SSHClient` and one or more mock `Channel` objects.
+        Mocks `~paramiko.client.SSHClient` and `~paramiko.channel.Channel`.
 
         Specifically, the client will expect itself to be connected to
         ``self.host`` (if given), the channels will be associated with the
-        client's `.Transport`, and the channels will expect/provide
-        command-execution behavior as specified on the `.Command` objects
-        supplied to this `.Session`.
+        client's `~paramiko.transport.Transport`, and the channels will
+        expect/provide command-execution behavior as specified on the
+        `.Command` objects supplied to this `.Session`.
 
         The client is then attached as ``self.client`` and the channels as
         ``self.channels``.

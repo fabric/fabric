@@ -41,9 +41,9 @@ def remote():
     """
     Fixture allowing setup of a mocked remote session & access to sub-mocks.
 
-    Yields a `MockRemote` object (which may need to be updated via
-    `MockRemote.expect`, `MockRemote.expect_sessions`, etc; otherwise a default
-    session will be used) & calls `MockRemote.stop` on teardown.
+    Yields a `.MockRemote` object (which may need to be updated via
+    `.MockRemote.expect`, `.MockRemote.expect_sessions`, etc; otherwise a
+    default session will be used) & calls `.MockRemote.stop` on teardown.
     """
     remote = MockRemote()
     yield remote
@@ -87,12 +87,15 @@ def transfer(sftp):
 @fixture
 def client():
     """
-    Yields a mocked-out SSHClient for testing calls to connect() & co.
+    Mocks `~paramiko.client.SSHClient` for testing calls to ``connect()``.
 
-    It updates get_transport to return a mock that appears active on first
-    check, then inactive after, matching most tests' needs by default:
+    Yields a mocked ``SSHClient`` instance.
 
-    - `Connection` instantiates, with a None ``.transport``.
+    This fixture updates `~paramiko.client.SSHClient.get_transport` to return a
+    mock that appears active on first check, then inactive after, matching most
+    tests' needs by default:
+
+    - `.Connection` instantiates, with a None ``.transport``.
     - Calls to ``.open()`` test ``.is_connected``, which returns ``False`` when
       ``.transport`` is falsey, and so the first open will call
       ``SSHClient.connect`` regardless.
@@ -102,7 +105,7 @@ def client():
     - Subsequent activity will want to think the mocked SSHClient is
       "connected", meaning we want the mocked transport's ``.active`` to be
       ``True``.
-    - This includes ``Connection.close``, which short-circuits if
+    - This includes `.Connection.close`, which short-circuits if
       ``.is_connected``; having a statically ``True`` active flag means a full
       open -> close cycle will run without error. (Only tests that double-close
       or double-open should have issues here.)
