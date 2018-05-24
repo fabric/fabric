@@ -176,7 +176,7 @@ class Session(object):
         supplied to this `.Session`.
 
         The client is then attached as ``self.client`` and the channels as
-        ``self.channels`.
+        ``self.channels``.
 
         :returns:
             ``None`` - this is mostly a "deferred setup" method and callers
