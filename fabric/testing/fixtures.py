@@ -52,7 +52,7 @@ def connection():
 
     .. versionadded:: 2.1
     """
-    c = Connection("invalid-host-should-not-exist")
+    c = Connection("host")
     c.config.run.in_stream = False
     c.run = Mock()
     c.local = Mock()
