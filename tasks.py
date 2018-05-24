@@ -71,7 +71,6 @@ ns = Collection(
     www,
 )
 ns.configure({
-    "blacken": {"folders": ["tests", "fabric"]},
     'tests': {
         # TODO: have pytest tasks honor these?
         'package': 'fabric',
