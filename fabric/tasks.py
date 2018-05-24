@@ -32,7 +32,7 @@ def task(*args, **kwargs):
             :option:`--hosts`: if a task decorated with this parameter is
             executed in a session where :option:`--hosts` was given, the
             CLI-driven value will win out.
-        
+
         List members may be one of:
 
         - A string appropriate for being the first positional argument to
