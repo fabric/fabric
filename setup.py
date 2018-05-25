@@ -52,6 +52,9 @@ To find out what's new in this version of Fabric, please see `the changelog
     open("README.rst").read()
 )
 
+testing_deps = ["mock>=2.0.0,<3.0"]
+pytest_deps = ["pytest>=3.2.5,<4.0"]
+
 setuptools.setup(
     name=package_name,
     version=version,
@@ -67,8 +70,8 @@ setuptools.setup(
         "cryptography>=1.1",
     ],
     extras_require={
-        "testing": ["mock>=2.0.0,<3.0"],
-        "pytest": ["pytest>=3.2.5,<4.0"],
+        "testing": testing_deps,
+        "pytest": testing_deps + pytest_deps,
     },
     packages=[package_name],
     entry_points={
