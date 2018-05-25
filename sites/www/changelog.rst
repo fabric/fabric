@@ -5,6 +5,9 @@ Changelog
 .. note::
     Looking for the Fabric 1.x changelog? See :doc:`/changelog-v1`.
 
+- :support:`- backported` Our packaging metadata lacked a proper
+  ``MANIFEST.in`` and thus some distributions were not including ancillary
+  directories like tests and documentation. This has been fixed.
 - :release:`2.0.2 <2018-05-24>`
 - :support:`1761 backported` Integration tests were never added to Travis or
   ported to pytest before 2.0's release; this has been addressed.

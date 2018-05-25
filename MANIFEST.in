@@ -1,0 +1,10 @@
+include LICENSE
+include README.rst
+include tasks.py
+recursive-include sites *
+recursive-exclude sites/*/_build *
+include dev-requirements.txt
+recursive-include tests *
+recursive-exclude tests *.pyc *.pyo
+recursive-include integration *
+recursive-exclude integration *.pyc *.pyo
