@@ -5,6 +5,7 @@ Changelog
 .. note::
     Looking for the Fabric 1.x changelog? See :doc:`/changelog-v1`.
 
+- :release:`2.0.2 <2018-05-24>`
 - :feature:`-` Exposed our previously internal test helpers for use by
   downstream test suites, as the :ref:`fabric.testing <testing-subpackage>`
   subpackage.
