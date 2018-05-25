@@ -5,6 +5,7 @@ Changelog
 .. note::
     Looking for the Fabric 1.x changelog? See :doc:`/changelog-v1`.
 
+- :release:`2.1.2 <2018-05-24>`
 - :bug:`-` Minor fix to ``extras_require`` re: having ``fabric[pytest]``
   encompass the contents of ``fabric[testing]``.
 - :release:`2.1.1 <2018-05-24>`
