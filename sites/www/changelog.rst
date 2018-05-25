@@ -9,8 +9,8 @@ Changelog
 - :bug:`-` Our packaging metadata lacked a proper ``MANIFEST.in`` and thus some
   distributions were not including ancillary directories like tests and
   documentation. This has been fixed.
-- :support:`- backported` Our ``packages=`` argument to ``setuptools.setup``
-  was too specific and did not allow for subpackages...such as the newly added
+- :bug:`-` Our ``packages=`` argument to ``setuptools.setup`` was too specific
+  and did not allow for subpackages...such as the newly added
   ``fabric.testing``. Fixed now.
 - :release:`2.1.2 <2018-05-24>`
 - :bug:`-` Minor fix to ``extras_require`` re: having ``fabric[pytest]``
