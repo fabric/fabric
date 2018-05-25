@@ -5,6 +5,9 @@ Changelog
 .. note::
     Looking for the Fabric 1.x changelog? See :doc:`/changelog-v1`.
 
+- :bug:`-` Somehow neglected to actually add ``extras_require`` to our
+  ``setup.py`` to enable ``pip install fabric[testing]`` et al. This has been
+  fixed. We hope.
 - :release:`2.1.0 <2018-05-24>`
 - :release:`2.0.2 <2018-05-24>`
 - :feature:`-` Exposed our previously internal test helpers for use by

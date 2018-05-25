@@ -66,6 +66,10 @@ setuptools.setup(
         "paramiko>=2.4",
         "cryptography>=1.1",
     ],
+    extras_require={
+        "testing": ["mock>=2.0.0,<3.0"],
+        "pytest": ["pytest>=3.2.5"],
+    },
     packages=[package_name],
     entry_points={
         "console_scripts": [
