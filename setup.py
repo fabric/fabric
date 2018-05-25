@@ -36,7 +36,7 @@ if env_wants_v2 or only_v2_present:
     package_name = "fabric2"
     binary_name = "fab2"
 packages = setuptools.find_packages(
-    include=[package_name, "{}.*".format(package_name)],
+    include=[package_name, "{}.*".format(package_name)]
 )
 
 # Version info -- read without importing
