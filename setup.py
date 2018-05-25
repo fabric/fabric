@@ -68,7 +68,7 @@ setuptools.setup(
     ],
     extras_require={
         "testing": ["mock>=2.0.0,<3.0"],
-        "pytest": ["pytest>=3.2.5"],
+        "pytest": ["pytest>=3.2.5,<4.0"],
     },
     packages=[package_name],
     entry_points={
