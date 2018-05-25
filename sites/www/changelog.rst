@@ -5,6 +5,7 @@ Changelog
 .. note::
     Looking for the Fabric 1.x changelog? See :doc:`/changelog-v1`.
 
+- :release:`2.1.3 <2018-05-24>`
 - :support:`- backported` Our packaging metadata lacked a proper
   ``MANIFEST.in`` and thus some distributions were not including ancillary
   directories like tests and documentation. This has been fixed.
