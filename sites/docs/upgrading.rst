@@ -23,8 +23,8 @@ isn't listed here, please file a ticket `on Github
     Please review the information below, including the :ref:`upgrade-specifics`
     section which contains a very detailed list, before filing bug reports!
 
-    Also see :ref:`the roadmap <roadmap>` for some notes about which pending
-    functionality is likely to get implemented first.
+    Also see :ref:`the roadmap <roadmap>` for additional notes about release
+    versioning.
 
 Why upgrade?
 ============
