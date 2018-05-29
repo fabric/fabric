@@ -140,7 +140,9 @@ class Config(InvokeConfig):
         # re: recording where the data originally came from (in case anything
         # re-runs ._load_ssh_files(), for example).
         for attr in (
-            "_runtime_ssh_path", "_system_ssh_path", "_user_ssh_path"
+            "_runtime_ssh_path",
+            "_system_ssh_path",
+            "_user_ssh_path",
         ):
             setattr(new, attr, getattr(self, attr))
         # Load SSH configs, in case they weren't prior to now (e.g. a vanilla
