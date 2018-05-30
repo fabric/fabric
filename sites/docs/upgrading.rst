@@ -149,8 +149,6 @@ insufficient.
   patch (but please check for a ticket first!)
 - **Removed**: explicitly *not* ported (no longer fits with vision, had too
   poor a maintenance-to-value ratio, etc) and unlikely to be reinstated.
-- **Mixed**: some combination of the above, such as a feature set that is
-  partly ported and partly pending.
 
 Here's a quick local table of contents for navigation purposes:
 
@@ -210,10 +208,13 @@ High level code flow and API member concerns.
         (user, host, gateway, etc) and have their own SSH client instances.
     * - Emphasis on serialized "host strings" as method of setting user, host,
         port, etc
-      - Mixed
+      - Ported/Removed
       - `.Connection` *can* accept a shorthand "host string"-like argument, but
         the primary API is now explicit user, host, port, etc keyword
         arguments.
+
+        Additionally, many arguments/settings/etc that expected a host string
+        in v1 will now expect a `.Connection` instance instead.
     * - Use of "roles" as global named lists of host strings
       - Ported
       - This need is now served by `.Group` objects (which wrap some number of
@@ -273,7 +274,7 @@ Task functions & decorators
         functions" and "class of methods"; users can more easily start with the
         former and migrate to the latter when their needs grow/change.
     * - Implicit task tree generation via import-crawling
-      - Mixed
+      - Ported/Removed
       - Namespace construction is now more explicit; for example, imported
         modules in your ``fabfile.py`` are no longer auto-scanned and
         auto-added to the task tree.
@@ -293,12 +294,14 @@ Task functions & decorators
         not been prioritized for the rewrite, though they are likely to return
         in some form, and probably sooner instead of later.
     * - ``@serial``/``@parallel``/``@runs_once``
-      - Mixed
+      - Pending/Ported
       - Parallel execution is currently offered at the API level via `.Group`
         subclasses such as `.ThreadingGroup`; however, designating entire
         sessions and/or tasks to run in parallel (or to exempt from
-        parallelism) has not been solved yet. The problem needs solving at a
-        higher level than just SSH targets, as well (see e.g. `invoke#63
+        parallelism) has not been solved yet.
+
+        The problem needs solving at a higher level than just SSH targets, as
+        well (see e.g. `invoke#63
         <https://github.com/pyinvoke/invoke/issues/63>`_.)
     * - ``execute`` for calling named tasks from other tasks while honoring
         decorators and other execution mechanics (as opposed to calling them
@@ -463,9 +466,10 @@ CLI arguments, options and behavior
       - Pending
       - See the notes around ``@parallel`` in :ref:`upgrading-tasks`.
     * - ``--port`` to set default SSH port
-      - Mixed
-      - Our gut says this is best left up to the configuration system or use of
-        the ``port`` kwarg on `.Connection`; however it may find its way back.
+      - Removed
+      - Our gut says this is best left up to the configuration system's env var
+        layer, or use of the ``port`` kwarg on `.Connection`; however it may
+        find its way back.
     * - ``r``/``--reject-unknown-hosts`` to modify Paramiko known host behavior
       - Pending
       - Not ported yet.
@@ -475,11 +479,11 @@ CLI arguments, options and behavior
         applicable to the new API and we're still feeling out whether/how they
         would work at a global or CLI level.
     * - ``--set key=value`` for setting ``fabric.state.env`` vars at runtime
-      - Mixed
+      - Removed
       - This is largely obviated by the new support for shell environment
-        variables (just do ``INVOKE_KEY=value fab mytask`` or similar), but
-        it's possible a CLI flag method of setting config values will reappear
-        later.
+        variables (just do ``INVOKE_KEY=value fab mytask`` or similar), though
+        it's remotely possible a CLI flag method of setting config values will
+        reappear later.
     * - ``-s``/``--shell`` to override default shell path
       - Removed
       - Use the configuration system for this.
@@ -502,9 +506,9 @@ CLI arguments, options and behavior
       - This is now ``-S``/``--ssh-config``.
     * - ``--system-known-hosts`` to trigger loading systemwide ``known_hosts``
         files
-      - Mixed
-      - This isn't super likely to come back as a CLI flag but it may well
-        return as a configuration value.
+      - Removed/Pending
+      - This isn't super likely to come back as its own CLI flag but it may
+        well return as a configuration value.
     * - ``-t``/``--timeout`` controlling connection timeout
       - Pending
       - Not ported yet.
@@ -512,9 +516,10 @@ CLI arguments, options and behavior
       - Pending
       - See notes in :ref:`upgrading-commands` around the ``timeout`` kwarg.
     * - ``-u``/``--user`` to set global default username
-      - Mixed
-      - Most of the time, config env vars should be used for this, but it may
-        return.
+      - Removed
+      - Most of the time, configuration (env vars for true runtime, or eg
+        user/project level config files as appropriate) should be used for
+        this, but it may return.
     * - ``-w``/``--warn-only`` to toggle warn-vs-abort behavior
       - Ported
       - Ported as-is, no changes.
@@ -567,7 +572,7 @@ differences.
         does anything users cannot do themselves using public APIs.
     * - ``fabric.context_managers.cd``/``lcd`` (and ``prefix``) allow scoped
         mutation of executed comments
-      - Mixed
+      - Ported/Pending
       - These are now methods on `~invoke.context.Context` (`Context.cd
         <invoke.context.Context.cd>`, `Context.prefix
         <invoke.context.Context.prefix>`) but need work in its subclass
@@ -588,7 +593,7 @@ differences.
         ``fabric.context_managers.hide``, ``show`` or ``quiet`` as well as the
         ``quiet`` kwarg to ``run``/``sudo``; plus
         ``utils.puts``/``fastprint``)
-      - Mixed
+      - Ported/Pending
       - The core concept of "output levels" is gone, likely to be replaced in
         the near term by a logging module (stdlib or other) which output levels
         poorly reimplemented.
@@ -693,7 +698,7 @@ below are ``sudo`` specific.
 
     * - ``shell`` / ``env.use_shell`` designating whether or not to wrap
         commands within an explicit call to e.g. ``/bin/sh -c 'real command'``
-      - Mixed
+      - Removed/Pending
       - See the note above under ``run`` for details on shell wrapping
         as a general strategy; unfortunately for ``sudo``, some sort of manual
         wrapping is still necessary for nontrivial commands (i.e. anything
@@ -886,7 +891,7 @@ Authentication
         to disable Paramiko's default key-finding behavior.)
     * - ``env.passwords`` (and ``env.sudo_passwords``) stores connection/sudo
         passwords in a dict keyed by host strings
-      - Mixed
+      - Ported/Pending
       - Each `.Connection` object may be configured with its own
         ``connect_kwargs`` given at instantiation time, allowing for per-host
         password configuration already.
@@ -985,7 +990,7 @@ page <fab-configuration>` for details.
         variables.
     * - Making locally scoped ``fabric.env`` changes via ``with
         settings(...):`` or its decorator equivalent, ``@with_settings``
-      - Mixed
+      - Ported/Pending
       - Most of the use cases surrounding ``settings`` are now served by
         the fact that `.Connection` objects keep per-host/connection state -
         the pattern of switching the implicit global context around was a
@@ -1051,7 +1056,7 @@ in the below table:
         and are sad that this is gone, let us know!
     * - ``files.*`` (e.g. ``exists``, ``append``, ``contains`` etc) for
         interrogating and modifying remote files
-      - Mixed
+      - Ported/Pending
       - Many of the more useful functions in this file have been ported to
         ``patchwork.files`` but are still in an essentially alpha state.
 
@@ -1091,7 +1096,7 @@ implicitly private; those are not represented here.
         reasonable to surface to an end user, or use `~invoke.exceptions.Exit`.
         See also :ref:`upgrading-utility`.
     * - ``env.all_hosts`` and ``env.tasks`` listing execution targets
-      - Mixed
+      - Ported/Pending
       - Fabric's `~invoke.executor.Executor` subclass stores references to all
         CLI parsing results (including the value of :option:`--hosts`, the
         tasks requested and their args, etc) and the intent is for users to
@@ -1101,7 +1106,7 @@ implicitly private; those are not represented here.
         task's `~invoke.context.Context`/`.Connection`) are still in flux.
     * - ``env.command`` noting currently executing task name (in hindsight,
         quite the misnomer...)
-      - Mixed
+      - Ported/Pending
       - See the notes for ``env.all_hosts`` above - same applies here re: user
         visibility into CLI parsing results.
     * - ``env.command_prefixes`` for visibility into (arguably also mutation
@@ -1154,7 +1159,7 @@ implicitly private; those are not represented here.
         this information.
     * - ``env.remote_interrupt`` controlling how interrupts (i.e. a local
         `KeyboardInterrupt` are caught, forwarded or other
-      - Mixed
+      - Ported/Removed
       - Invoke's interrupt capture behavior is currently "always just send the
         interrupt character to the subprocess and continue", allowing
         subprocesses to handle ``^C`` however they need to, which is an
@@ -1162,8 +1167,11 @@ implicitly private; those are not represented here.
         ``env.remote_interrupt = True``.
 
         Allowing users to change this behavior via config is not yet
-        implemented, though it is technically possible to do so by subclassing
-        and overriding `invoke.runners.Runner.send_interrupt`.
+        implemented, and may not be, depending on whether anybody needs it - it
+        was added as an option in v1 for backwards compat reasons.
+
+        It is also technically possible to change interrupt behavior by
+        subclassing and overriding `invoke.runners.Runner.send_interrupt`.
     * - ``env.roles``, ``env.roledefs`` and ``env.effective_roles``
         controlling/exposing what roles are available or currently in play
       - Pending
