@@ -391,10 +391,18 @@ CLI arguments, options and behavior
         ``-r``/``--search-root``; see :ref:`loading-collections`.
     * - ``-g``/``--gateway`` (and ``env.gateway``) for selecting a global SSH
         gateway host string
-      - Mixed
-      - Not ported, but it's possible to set this via the config system and
-        environment variables. As with most other connection params there's
-        less emphasis on these things being defined globally.
+      - Pending
+      - One can set the global ``gateway`` config option via an
+        environment variable, which at a glance would remove the need for a
+        dedicated CLI option. However, this approach only allows setting
+        string values, which in turn only get used for ``ProxyCommand``
+        style gatewaying, so it *doesn't* replace v1's ``--gateway``
+        (which took a host string and turned it into a ``ProxyJump`` style
+        gateway).
+
+        Thus, if enough users notice the lack, we'll consider a feature-add
+        that largely mimics the v1 behavior: string becomes first argument to
+        `.Connection` and that resulting object is then set as ``gateway``.
     * - ``--gss-auth``/``--gss-deleg``/``--gss-kex`` (and ``env.gss_auth``,
         ``env.gss_deleg``, ``env.gss_kex``) for GSSAPI parameter tuning
       - Pending
