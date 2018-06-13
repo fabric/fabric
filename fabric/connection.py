@@ -369,6 +369,10 @@ class Connection(Context):
                 self.ssh_config["identityfile"]
             )
 
+        gss_auth = self.ssh_config.get('gssapiauthentication', None)
+        if gss_auth and gss_auth == 'yes':
+            connect_kwargs['gss_auth'] = True
+
         return connect_kwargs
 
     def __repr__(self):
