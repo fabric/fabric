@@ -164,7 +164,10 @@ class Connection_:
         class forward_agent:
 
             def defaults_to_False(self):
-                assert Connection("host").forward_agent is False
+                # NOTE: unset ssh config loading to avoid test environment
+                # issues, e.g. users with 'Host *: ForwardAgent yes'
+                config = Config(overrides=dict(load_ssh_configs=False))
+                assert Connection("host", config=config).forward_agent is False
 
             def accepts_configuration_value(self):
                 config = Config(
