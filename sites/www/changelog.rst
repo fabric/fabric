@@ -5,6 +5,9 @@ Changelog
 .. note::
     Looking for the Fabric 1.x changelog? See :doc:`/changelog-v1`.
 
+- :bug:`1753` Set one of our test modules to skip user/system SSH config file
+  loading by default, as it was too easy to forget to do so for tests aimed at
+  related functionality. Reported by Chris Rose.
 - :release:`2.1.3 <2018-05-24>`
 - :bug:`-` Our packaging metadata lacked a proper ``MANIFEST.in`` and thus some
   distributions were not including ancillary directories like tests and

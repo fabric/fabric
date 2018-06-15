@@ -291,6 +291,9 @@ class Connection(Context):
                     # Happily, ProxyJump uses identical format to our host
                     # shorthand...
                     if prev_gw is None:
+                        # TODO: this isn't persisting config! which among other
+                        # things can lead to not honoring skipping ssh config
+                        # file loads...
                         cxn = Connection(hop)
                     else:
                         cxn = Connection(hop, gateway=prev_gw)
