@@ -19,10 +19,10 @@ from pytest_relaxed import raises
 from invoke.config import Config as InvokeConfig
 from invoke.exceptions import ThreadException
 
-from fabric.connection import Connection, Config
+from fabric import Config as Config_
 from fabric.util import get_local_user
 
-from _util import support
+from _util import support, Connection, Config
 
 
 # Remote is woven in as a config default, so must be patched there
@@ -164,18 +164,10 @@ class Connection_:
         class forward_agent:
 
             def defaults_to_False(self):
-                # NOTE: unset ssh config loading to avoid test environment
-                # issues, e.g. users with 'Host *: ForwardAgent yes'
-                config = Config(overrides=dict(load_ssh_configs=False))
-                assert Connection("host", config=config).forward_agent is False
+                assert Connection("host").forward_agent is False
 
             def accepts_configuration_value(self):
-                config = Config(
-                    overrides={
-                        "forward_agent": True,
-                        "load_ssh_configs": False,
-                    }
-                )
+                config = Config(overrides={"forward_agent": True})
                 assert Connection("host", config=config).forward_agent is True
 
             def may_be_given_as_kwarg(self):
@@ -193,12 +185,7 @@ class Connection_:
                 assert Connection("host").connect_timeout is None
 
             def accepts_configuration_value(self):
-                config = Config(
-                    overrides={
-                        "timeouts": {"connect": 10},
-                        "load_ssh_configs": False,
-                    }
-                )
+                config = Config(overrides={"timeouts": {"connect": 10}})
                 assert Connection("host", config=config).connect_timeout == 10
 
             def may_be_given_as_kwarg(self):
@@ -233,12 +220,7 @@ class Connection_:
                 # just a base case...)
                 # TODO: adjust this if we ever switch to all our settings being
                 # namespaced...
-                vanilla = InvokeConfig(
-                    overrides={
-                        "forward_agent": True,
-                        "load_ssh_configs": False,
-                    }
-                )
+                vanilla = InvokeConfig(overrides={"forward_agent": True})
                 cxn = Connection("host", config=vanilla)
                 assert cxn.forward_agent is True  # not False, which is default
 
@@ -259,9 +241,7 @@ class Connection_:
 
             def accepts_configuration_value(self):
                 gw = Connection("jumpbox")
-                config = Config(
-                    overrides={"gateway": gw, "load_ssh_configs": False}
-                )
+                config = Config(overrides={"gateway": gw})
                 # TODO: the fact that they will be eq, but _not_ necessarily be
                 # the same object, could be problematic in some cases...
                 cxn = Connection("host", config=config)
@@ -294,7 +274,7 @@ class Connection_:
                 runtime_path = join(support, "ssh_config", confname)
                 if overrides is None:
                     overrides = {}
-                return Config(
+                return Config_(
                     runtime_ssh_path=runtime_path, overrides=overrides
                 )
 
@@ -303,7 +283,7 @@ class Connection_:
                 return Connection("runtime", config=config)
 
             def effectively_blank_when_no_loaded_config(self):
-                c = Config(ssh_config=SSHConfig())
+                c = Config_(ssh_config=SSHConfig())
                 cxn = Connection("host", config=c)
                 # NOTE: paramiko always injects this even if you look up a host
                 # that has no rules, even wildcard ones.
@@ -336,7 +316,7 @@ class Connection_:
                     path = join(
                         support, "ssh_config", "overridden_hostname.conf"
                     )
-                    config = Config(runtime_ssh_path=path)
+                    config = Config_(runtime_ssh_path=path)
                     cxn = Connection("aliasname", config=config)
                     assert cxn.host == "realname"
                     assert cxn.original_host == "aliasname"
@@ -773,7 +753,7 @@ class Connection_:
                 config_kwargs["overrides"] = {
                     "connect_kwargs": {"key_filename": ["configured.key"]}
                 }
-            conf = Config(**config_kwargs)
+            conf = Config_(**config_kwargs)
             connect_kwargs = {}
             if kwarg:
                 # Stitch in connect_kwargs value

@@ -7,7 +7,9 @@ import sys
 from mock import patch, Mock, PropertyMock, call, ANY
 from pytest_relaxed import trap
 
+from fabric import Connection as Connection_, Config as Config_
 from fabric.main import program as fab_program
+from paramiko import SSHConfig
 
 
 support = os.path.join(os.path.abspath(os.path.dirname(__file__)), "_support")
@@ -378,3 +380,26 @@ class MockSFTP(object):
     def stop(self):
         self.os_patcher.stop()
         self.client_patcher.stop()
+
+
+# Locally override Connection, Config with versions that supply a dummy
+# SSHConfig and thus don't load any test-running user's own ssh_config files.
+# TODO: find a cleaner way to do this, though I don't really see any that isn't
+# adding a ton of fixtures everywhere (and thus, opening up to forgetting it
+# for new tests...)
+class Config(Config_):
+
+    def __init__(self, *args, **kwargs):
+        wat = "You're giving ssh_config explicitly, please use Config_!"
+        assert "ssh_config" not in kwargs, wat
+        # Give ssh_config explicitly -> shorter way of turning off loading
+        kwargs["ssh_config"] = SSHConfig()
+        super(Config, self).__init__(*args, **kwargs)
+
+
+class Connection(Connection_):
+
+    def __init__(self, *args, **kwargs):
+        # Make sure we're using our tweaked Config if none was given.
+        kwargs.setdefault("config", Config())
+        super(Connection, self).__init__(*args, **kwargs)
