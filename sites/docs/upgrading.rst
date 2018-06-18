@@ -406,10 +406,13 @@ CLI arguments, options and behavior
         Thus, if enough users notice the lack, we'll consider a feature-add
         that largely mimics the v1 behavior: string becomes first argument to
         `.Connection` and that resulting object is then set as ``gateway``.
-    * - ``--gss-auth``/``--gss-deleg``/``--gss-kex`` (and ``env.gss_auth``,
-        ``env.gss_deleg``, ``env.gss_kex``) for GSSAPI parameter tuning
-      - Pending
-      - Not ported yet.
+    * - ``--gss-auth``/``--gss-deleg``/``--gss-kex``
+      - Removed
+      - These didn't seem used enough to be worth porting over, especially
+        since they fall under the usual umbrella of "Paramiko-level connect
+        passthrough" covered by the ``connect_kwargs`` config option. (Which,
+        if necessary, can be set at runtime via shell environment variables,
+        like any other config value.)
     * - ``--hide``/``--show`` for tweaking output display globally
       - Removed
       - This is configurable via the config system and env vars.
