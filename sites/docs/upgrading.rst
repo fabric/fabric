@@ -352,7 +352,7 @@ CLI arguments, options and behavior
         unset the ``SSH_AUTH_SOCK`` env var.
     * - ``-A``/``--forward-agent`` for enabling agent forwarding to the remote
         end
-      - Pending/Removed
+      - Removed
       - The config and kwarg versions of this are ported, but there is
         currently no CLI flag. Usual "you can set the config value at runtime
         with a shell env variable" clause is in effect, so this *may* not get
