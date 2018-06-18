@@ -146,7 +146,8 @@ insufficient.
 - **Ported**: available already, possibly renamed or moved (frequently, moved
   into the `Invoke <http://pyinvoke.org>`_ codebase.)
 - **Pending**: would fit, but has not yet been ported, good candidate for a
-  patch (but please check for a ticket first!)
+  patch. *These entries link to the appropriate Github ticket* - please do
+  not make new ones!
 - **Removed**: explicitly *not* ported (no longer fits with vision, had too
   poor a maintenance-to-value ratio, etc) and unlikely to be reinstated.
 
@@ -289,27 +290,25 @@ Task functions & decorators
         over the tree that results.
     * - ``@hosts`` and ``@roles`` for determining the default list of host or
         group-of-host targets a given task uses
-      - Pending
+      - `Pending <https://github.com/fabric/fabric/issues/1594>`__
       - These decorators were very much in the "DSL" vein of Fabric 1 and have
         not been prioritized for the rewrite, though they are likely to return
         in some form, and probably sooner instead of later.
     * - ``@serial``/``@parallel``/``@runs_once``
-      - Pending/Ported
+      - `Pending <https://github.com/pyinvoke/invoke/issues/63>`__/Ported
       - Parallel execution is currently offered at the API level via `.Group`
         subclasses such as `.ThreadingGroup`; however, designating entire
         sessions and/or tasks to run in parallel (or to exempt from
         parallelism) has not been solved yet.
 
-        The problem needs solving at a higher level than just SSH targets, as
-        well (see e.g. `invoke#63
-        <https://github.com/pyinvoke/invoke/issues/63>`_.)
+        The problem needs solving at a higher level than just SSH targets, so
+        this links to an Invoke-level ticket.
     * - ``execute`` for calling named tasks from other tasks while honoring
         decorators and other execution mechanics (as opposed to calling them
         simply as functions)
-      - Pending
-      - This is one of the top "missing features" from the rewrite; see
-        `invoke#170 <https://github.com/pyinvoke/invoke/issues/170>`_ for
-        details.
+      - `Pending <https://github.com/pyinvoke/invoke/issues/170>`__
+      - This is one of the top "missing features" from the rewrite; link is to
+        Invoke's tracker.
     * - ``Task`` class for programmatic creation of tasks (as opposed to using
         some function object and the ``@task`` decorator)
       - Ported
@@ -344,7 +343,7 @@ CLI arguments, options and behavior
       - Ported
       - Works great!
     * - ``python -m fabric`` as stand-in for ``fab``
-      - Pending
+      - `Pending <https://github.com/fabric/fabric/pull/1766>`__
       - Should be trivial to port this over.
     * - ``-a``/``--no_agent`` for disabling automatic SSH agent key selection
       - Removed
@@ -353,7 +352,7 @@ CLI arguments, options and behavior
         unset the ``SSH_AUTH_SOCK`` env var.
     * - ``-A``/``--forward-agent`` for enabling agent forwarding to the remote
         end
-      - Pending
+      - Pending/Removed
       - The config and kwarg versions of this are ported, but there is
         currently no CLI flag. Usual "you can set the config value at runtime
         with a shell env variable" clause is in effect, so this *may* not get
@@ -370,7 +369,7 @@ CLI arguments, options and behavior
         determines which collection module name is sought by the task loader.)
     * - ``--colorize-errors`` (and ``env.colorize_errors``) to enable ANSI
         coloring of error output
-      - Pending
+      - `Pending <https://github.com/fabric/fabric/issues/101>`__
       - Very little color work has been done yet and this is one of the
         potentially missing pieces. We're unsure how often this was used in v1
         so it's possible it won't show up again, but generally, we like using
@@ -381,7 +380,7 @@ CLI arguments, options and behavior
         either "direction": ``fab -h mytask`` or ``fab mytask -h``.
     * - ``-D``/``--disable-known-hosts`` to turn off Paramiko's automatic
         loading of user-level ``known_hosts`` files
-      - Pending
+      - `Pending <https://github.com/fabric/fabric/issues/1804>`__
       - Not ported yet, probably will be.
     * - ``-e``/``--eagerly-disconnect`` (and ``env.eagerly_disconnect``) which
         tells the execution system to disconnect from hosts as soon as a task
@@ -509,7 +508,7 @@ CLI arguments, options and behavior
       - This is now ``-S``/``--ssh-config``.
     * - ``--system-known-hosts`` to trigger loading systemwide ``known_hosts``
         files
-      - Removed/Pending
+      - Removed/`Pending <https://github.com/fabric/fabric/issues/1804>`__
       - This isn't super likely to come back as its own CLI flag but it may
         well return as a configuration value.
     * - ``-t``/``--timeout`` controlling connection timeout
