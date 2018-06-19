@@ -257,15 +257,19 @@ Third!
             )
 
     class invoke_fab_as_python_module:
+
         def check_version_on_invoking_fab_as_module(self, capsys):
-            expected_output = r"""
+            expected_output = (
+                r"""
 Fabric .+
 Paramiko .+
 Invoke .+
 """.strip()
+            )
             # Temporary disable of capture is required to be able to
             # read the fabric module on invoke.run(). Thus, capsys.disabled()
             with capsys.disabled():
-                output = _run_fab_as_module("python -m fabric --version",
-                        hide='out')
+                output = _run_fab_as_module(
+                    "python -m fabric --version", hide="out"
+                )
                 assert re.match(expected_output, output.stdout)
