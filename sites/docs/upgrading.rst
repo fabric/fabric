@@ -439,8 +439,9 @@ CLI arguments, options and behavior
         mouthful but still 4 characters shorter!
     * - ``-k``/``--no-keys`` which prevents Paramiko's automatic loading of key
         files such as ``~/.ssh/id_rsa``
-      - Pending
-      - Not ported yet.
+      - Removed
+      - Use environment variables to set the ``connect_kwargs.look_for_keys``
+        config value to ``False``.
     * - ``--keepalive`` for setting network keepalive
       - Pending
       - Not ported yet.
