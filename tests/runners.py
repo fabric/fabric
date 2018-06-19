@@ -71,6 +71,7 @@ class Remote_:
 
         def channel_is_closed_on_body_exceptions(self, remote):
             chan = remote.expect()
+
             # I.e. Remote.stop() is called within a try/finally.
             # Technically is just testing invoke.Runner, but meh.
             class Oops(Exception):

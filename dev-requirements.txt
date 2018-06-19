@@ -3,12 +3,12 @@
 invocations>=1.0,<2.0
 # pytest-relaxed for test organization, display etc tweaks
 pytest-relaxed==1.0.0
-pytest==3.1.2
+pytest==3.2.5
 # pytest-cov for coverage
 pytest-cov==2.5.1
 six==1.10.0
 # Mock for test mocking
-mock==1.0.1
+mock==2.0.0
 # Linting!
 flake8==2.4.0
 # Coverage!

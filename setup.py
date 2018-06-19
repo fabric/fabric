@@ -23,24 +23,27 @@ import setuptools
 #
 # See also sites/www/installing.txt.
 
-env_wants_v2 = os.environ.get('PACKAGE_AS_FABRIC2', False)
+env_wants_v2 = os.environ.get("PACKAGE_AS_FABRIC2", False)
 
 here = os.path.abspath(os.path.dirname(__file__))
-fabric2_present = os.path.isdir(os.path.join(here, 'fabric2'))
-fabric_present = os.path.isdir(os.path.join(here, 'fabric'))
+fabric2_present = os.path.isdir(os.path.join(here, "fabric2"))
+fabric_present = os.path.isdir(os.path.join(here, "fabric"))
 only_v2_present = fabric2_present and not fabric_present
 
-package_name = 'fabric'
-binary_name = 'fab'
+package_name = "fabric"
+binary_name = "fab"
 if env_wants_v2 or only_v2_present:
-    package_name = 'fabric2'
-    binary_name = 'fab2'
+    package_name = "fabric2"
+    binary_name = "fab2"
+packages = setuptools.find_packages(
+    include=[package_name, "{}.*".format(package_name)]
+)
 
 # Version info -- read without importing
 _locals = {}
-with open(os.path.join(package_name, '_version.py')) as fp:
+with open(os.path.join(package_name, "_version.py")) as fp:
     exec(fp.read(), None, _locals)
-version = _locals['__version__']
+version = _locals["__version__"]
 
 # Frankenstein long_description: changelog note + README
 long_description = """
@@ -48,54 +51,60 @@ To find out what's new in this version of Fabric, please see `the changelog
 <http://fabfile.org/changelog.html>`_.
 
 {}
-""".format(open('README.rst').read())
+""".format(
+    open("README.rst").read()
+)
+
+testing_deps = ["mock>=2.0.0,<3.0"]
+pytest_deps = ["pytest>=3.2.5,<4.0"]
 
 setuptools.setup(
     name=package_name,
     version=version,
-    description='High level SSH command execution',
-    license='BSD',
-
+    description="High level SSH command execution",
+    license="BSD",
     long_description=long_description,
-    author='Jeff Forcier',
-    author_email='jeff@bitprophet.org',
-    url='http://fabfile.org',
-
+    author="Jeff Forcier",
+    author_email="jeff@bitprophet.org",
+    url="http://fabfile.org",
     install_requires=[
-        'invoke>=1.0,<2.0',
-        'paramiko>=2.4',
-        'cryptography>=1.1',
+        "invoke>=1.0,<2.0",
+        "paramiko>=2.4",
+        "cryptography>=1.1",
     ],
-    packages=[package_name],
+    extras_require={
+        "testing": testing_deps,
+        "pytest": testing_deps + pytest_deps,
+    },
+    packages=packages,
     entry_points={
-        'console_scripts': [
-            '{} = {}.main:program.run'.format(binary_name, package_name),
+        "console_scripts": [
+            "{} = {}.main:program.run".format(binary_name, package_name)
         ]
     },
-
     classifiers=[
-        'Development Status :: 5 - Production/Stable',
-        'Environment :: Console',
-        'Intended Audience :: Developers',
-        'Intended Audience :: System Administrators',
-        'License :: OSI Approved :: BSD License',
-        'Operating System :: POSIX',
-        'Operating System :: Unix',
-        'Operating System :: MacOS :: MacOS X',
-        'Operating System :: Microsoft :: Windows',
-        'Programming Language :: Python',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
-        'Topic :: Software Development',
-        'Topic :: Software Development :: Build Tools',
-        'Topic :: Software Development :: Libraries',
-        'Topic :: Software Development :: Libraries :: Python Modules',
-        'Topic :: System :: Clustering',
-        'Topic :: System :: Software Distribution',
-        'Topic :: System :: Systems Administration',
+        "Development Status :: 5 - Production/Stable",
+        "Environment :: Console",
+        "Intended Audience :: Developers",
+        "Intended Audience :: System Administrators",
+        "License :: OSI Approved :: BSD License",
+        "Operating System :: POSIX",
+        "Operating System :: Unix",
+        "Operating System :: MacOS :: MacOS X",
+        "Operating System :: Microsoft :: Windows",
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 2",
+        "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.4",
+        "Programming Language :: Python :: 3.5",
+        "Programming Language :: Python :: 3.6",
+        "Topic :: Software Development",
+        "Topic :: Software Development :: Build Tools",
+        "Topic :: Software Development :: Libraries",
+        "Topic :: Software Development :: Libraries :: Python Modules",
+        "Topic :: System :: Clustering",
+        "Topic :: System :: Software Distribution",
+        "Topic :: System :: Systems Administration",
     ],
 )
