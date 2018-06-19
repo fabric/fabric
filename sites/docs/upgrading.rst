@@ -468,7 +468,7 @@ CLI arguments, options and behavior
         other avenues for setting the related configuration values, so
         they're gone at least for now.
     * - ``-P``/``--parallel`` for activating global parallelism
-      - Pending
+      - `Pending <https://github.com/pyinvoke/invoke/issues/63>`__
       - See the notes around ``@parallel`` in :ref:`upgrading-tasks`.
     * - ``--port`` to set default SSH port
       - Removed
@@ -577,7 +577,7 @@ differences.
         does anything users cannot do themselves using public APIs.
     * - ``fabric.context_managers.cd``/``lcd`` (and ``prefix``) allow scoped
         mutation of executed comments
-      - Ported/Pending
+      - Ported/`Pending <https://github.com/fabric/fabric/issues/1752>`__
       - These are now methods on `~invoke.context.Context` (`Context.cd
         <invoke.context.Context.cd>`, `Context.prefix
         <invoke.context.Context.prefix>`) but need work in its subclass
@@ -598,7 +598,7 @@ differences.
         ``fabric.context_managers.hide``, ``show`` or ``quiet`` as well as the
         ``quiet`` kwarg to ``run``/``sudo``; plus
         ``utils.puts``/``fastprint``)
-      - Ported/Pending
+      - Ported/`Pending <https://github.com/pyinvoke/invoke/issues/15>`__
       - The core concept of "output levels" is gone, likely to be replaced in
         the near term by a logging module (stdlib or other) which output levels
         poorly reimplemented.
@@ -610,7 +610,7 @@ differences.
         system.
     * - ``timeout`` kwarg and the ``CommandTimeout`` exception raised when said
         command-runtime timeout was violated
-      - Pending
+      - `Pending <https://github.com/pyinvoke/invoke/issues/539>`__
       - Command timeouts have not been ported yet, but will likely be added (at
         the Invoke layer) in future.
     * - ``pty`` kwarg and ``env.always_use_pty``, controlling whether commands
@@ -648,7 +648,7 @@ differences.
         in hindsight ``in_stream``.
     * - ``capture_buffer_size`` arg & use of a ring buffer for storing captured
         stdout/stderr to limit total size
-      - Pending
+      - `Pending <https://github.com/pyinvoke/invoke/issues/344>`__
       - Existing `~invoke.runners.Runner` implementation uses regular lists for
         capture buffers, but we fully expect to upgrade this to a ring buffer
         or similar at some point.
@@ -703,7 +703,7 @@ below are ``sudo`` specific.
 
     * - ``shell`` / ``env.use_shell`` designating whether or not to wrap
         commands within an explicit call to e.g. ``/bin/sh -c 'real command'``
-      - Pending/Removed
+      - `Pending <https://github.com/pyinvoke/invoke/issues/344>`__/Removed
       - See the note above under ``run`` for details on shell wrapping
         as a general strategy; unfortunately for ``sudo``, some sort of manual
         wrapping is still necessary for nontrivial commands (i.e. anything
@@ -711,15 +711,15 @@ below are ``sudo`` specific.
         how the command string is handed off to the ``sudo`` program.
 
         We hope to upgrade ``sudo`` soon so it can perform a common-best-case,
-        no-escaping-required shell wrapping on your behalf; see `invoke#459
-        <https://github.com/pyinvoke/invoke/issues/459>`_.
+        no-escaping-required shell wrapping on your behalf; see the 'Pending'
+        link.
     * - ``user`` argument (and ``env.sudo_user``) allowing invocation via
         ``sudo -u <user>`` (instead of defaulting to root)
       - Ported
       - This is still here, and still called ``user``.
     * - ``group`` argument controlling the effective group of the sudo'd
         command
-      - Pending
+      - `Pending <https://github.com/pyinvoke/invoke/issues/540>`__
       - This has not been ported yet.
 
 ``local``
