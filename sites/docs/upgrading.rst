@@ -456,7 +456,7 @@ CLI arguments, options and behavior
       - This doesn't really fit with the way modern command execution code
         views the world, so it's gone.
     * - ``-n``/``--connection-attempts`` controlling multiple connect retries
-      - Pending
+      - `Pending <https://github.com/fabric/fabric/issues/1808>`__
       - Not ported yet.
     * - ``--no-pty`` to disable automatic PTY allocation in ``run``, etc
       - Ported
@@ -850,6 +850,9 @@ Networking
         exceptions, typically from Paramiko or the stdlib.
     * - ``env.keepalive`` for setting network keepalive value
       - `Pending <https://github.com/fabric/fabric/issues/1807>`__
+      - Not ported yet.
+    * - ``env.connection_attempts`` for setting connection retries
+      - `Pending <https://github.com/fabric/fabric/issues/1808>`__
       - Not ported yet.
 
 Authentication
