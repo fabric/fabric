@@ -443,7 +443,7 @@ CLI arguments, options and behavior
       - Use environment variables to set the ``connect_kwargs.look_for_keys``
         config value to ``False``.
     * - ``--keepalive`` for setting network keepalive
-      - Pending
+      - `Pending <https://github.com/fabric/fabric/issues/1807>`__
       - Not ported yet.
     * - ``-l``/``--list`` for listing tasks, plus ``-F``/``--list-format`` for
         tweaking list display format
@@ -848,6 +848,9 @@ Networking
         significantly more exception-friendly; situations that would raise
         ``NetworkError`` in v1 now simply become the real underlying
         exceptions, typically from Paramiko or the stdlib.
+    * - ``env.keepalive`` for setting network keepalive value
+      - `Pending <https://github.com/fabric/fabric/issues/1807>`__
+      - Not ported yet.
 
 Authentication
 --------------
