@@ -385,15 +385,17 @@ CLI arguments, options and behavior
     * - ``-e``/``--eagerly-disconnect`` (and ``env.eagerly_disconnect``) which
         tells the execution system to disconnect from hosts as soon as a task
         is done running
-      - Pending
-      - Not ported yet.
+      - Ported/`Pending <https://github.com/fabric/fabric/issues/1805>`__
+      - There's no explicit connection cache anymore, so eager disconnection
+        should be less necessary. However, investigation and potential feature
+        toggles are still pending.
     * - ``-f``/``--fabfile`` to select alternate fabfile location
       - Ported
       - This is now split up into ``-c``/``--collection`` and
         ``-r``/``--search-root``; see :ref:`loading-collections`.
     * - ``-g``/``--gateway`` (and ``env.gateway``) for selecting a global SSH
         gateway host string
-      - Pending
+      - `Pending <https://github.com/fabric/fabric/issues/1806>`__
       - One can set the global ``gateway`` config option via an
         environment variable, which at a glance would remove the need for a
         dedicated CLI option. However, this approach only allows setting
