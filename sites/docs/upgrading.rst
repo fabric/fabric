@@ -295,7 +295,7 @@ Task functions & decorators
         not been prioritized for the rewrite, though they are likely to return
         in some form, and probably sooner instead of later.
     * - ``@serial``/``@parallel``/``@runs_once``
-      - `Pending <https://github.com/pyinvoke/invoke/issues/63>`__/Ported
+      - Ported/`Pending <https://github.com/pyinvoke/invoke/issues/63>`__
       - Parallel execution is currently offered at the API level via `.Group`
         subclasses such as `.ThreadingGroup`; however, designating entire
         sessions and/or tasks to run in parallel (or to exempt from
@@ -510,7 +510,7 @@ CLI arguments, options and behavior
       - This is now ``-S``/``--ssh-config``.
     * - ``--system-known-hosts`` to trigger loading systemwide ``known_hosts``
         files
-      - Removed/`Pending <https://github.com/fabric/fabric/issues/1804>`__
+      - `Pending <https://github.com/fabric/fabric/issues/1804>`__/Removed
       - This isn't super likely to come back as its own CLI flag but it may
         well return as a configuration value.
     * - ``-t``/``--timeout`` controlling connection timeout
@@ -702,7 +702,7 @@ below are ``sudo`` specific.
 
     * - ``shell`` / ``env.use_shell`` designating whether or not to wrap
         commands within an explicit call to e.g. ``/bin/sh -c 'real command'``
-      - Removed/Pending
+      - Pending/Removed
       - See the note above under ``run`` for details on shell wrapping
         as a general strategy; unfortunately for ``sudo``, some sort of manual
         wrapping is still necessary for nontrivial commands (i.e. anything
