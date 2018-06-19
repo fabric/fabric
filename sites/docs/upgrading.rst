@@ -775,9 +775,12 @@ Utilities
       - This is now `~invoke.terminals.character_buffered`.
     * - ``docs.unwrap_tasks`` for extracting docstrings from wrapped task
         functions
-      - Pending
-      - This has not been ported yet, nor have we checked to see if it actually
-        needs to be, but we suspect a new/ported version of it may be useful.
+      - Ported
+      - v1 required using a Fabric-specific 'unwrap_tasks' helper function
+        somewhere in your Sphinx build pipeline; now you can instead just
+        enable the new `invocations.autodoc
+        <http://invocations.readthedocs.io/en/latest/api/autodoc.html>`_ Sphinx
+        mini-plugin in your extensions list; see link for details.
     * - ``network.normalize``, ``denormalize`` and ``parse_host_string``,
         ostensibly internals but sometimes exposed to users for dealing with
         host strings
