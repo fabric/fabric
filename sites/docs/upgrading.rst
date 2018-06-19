@@ -515,8 +515,9 @@ CLI arguments, options and behavior
       - This isn't super likely to come back as its own CLI flag but it may
         well return as a configuration value.
     * - ``-t``/``--timeout`` controlling connection timeout
-      - Pending
-      - Not ported yet.
+      - Ported
+      - This is now part of the direct passthrough to Paramiko-level connection
+        parameters, the ``connect_kwargs`` config value.
     * - ``-T``/``--command-timeout``
       - Pending
       - See notes in :ref:`upgrading-commands` around the ``timeout`` kwarg.
@@ -857,6 +858,10 @@ Networking
     * - ``env.connection_attempts`` for setting connection retries
       - `Pending <https://github.com/fabric/fabric/issues/1808>`__
       - Not ported yet.
+    * - ``env.timeout`` for controlling connection timeout
+      - Ported
+      - This is now controllable both via the configuration system and a direct
+        kwarg on `.Connection`.
 
 Authentication
 --------------
