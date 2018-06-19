@@ -5,6 +5,9 @@ Changelog
 .. note::
     Looking for the Fabric 1.x changelog? See :doc:`/changelog-v1`.
 
+- :feature:`1766` Reinstate support for use as ``python -m fabric``, which (as
+  in v1) now behaves identically to invoking ``fab``. Thanks to
+  ``@RupeshPatro`` for the original patchset.
 - :bug:`1753` Set one of our test modules to skip user/system SSH config file
   loading by default, as it was too easy to forget to do so for tests aimed at
   related functionality. Reported by Chris Rose.
