@@ -269,7 +269,5 @@ Paramiko .+
 Invoke .+
 """.strip()
         )
-        output = run(
-            "python -m fabric --version", hide=True, in_stream=False,
-        )
+        output = run("python -m fabric --version", hide=True, in_stream=False)
         assert re.match(expected_output, output.stdout)
