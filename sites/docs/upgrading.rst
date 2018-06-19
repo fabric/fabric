@@ -343,8 +343,8 @@ CLI arguments, options and behavior
       - Ported
       - Works great!
     * - ``python -m fabric`` as stand-in for ``fab``
-      - `Pending <https://github.com/fabric/fabric/pull/1766>`__
-      - Should be trivial to port this over.
+      - Ported
+      - Ported in 2.2
     * - ``-a``/``--no_agent`` for disabling automatic SSH agent key selection
       - Removed
       - To disable use of an agent permanently, set config value
