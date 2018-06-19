@@ -476,10 +476,10 @@ CLI arguments, options and behavior
         layer, or use of the ``port`` kwarg on `.Connection`; however it may
         find its way back.
     * - ``r``/``--reject-unknown-hosts`` to modify Paramiko known host behavior
-      - Pending
+      - `Pending <https://github.com/fabric/fabric/issues/1804>`__
       - Not ported yet.
     * - ``-R``/``--roles`` for global list-of-hosts target selection
-      - Pending
+      - `Pending <https://github.com/fabric/fabric/issues/1594>`__
       - As noted under :ref:`upgrading-api`, role lists are only partially
         applicable to the new API and we're still feeling out whether/how they
         would work at a global or CLI level.
@@ -498,7 +498,7 @@ CLI arguments, options and behavior
         No point reinventing the wheel.
     * - ``--skip-bad-hosts`` (and ``env.skip_bad_hosts``) to bypass problematic
         hosts
-      - Pending
+      - `Pending <https://github.com/fabric/fabric/issues/1809>`__
       - Not ported yet.
     * - ``--skip-unknown-tasks`` and ``env.skip_unknown_tasks`` for silently
         skipping past bogus task names on CLI invocation
@@ -519,7 +519,7 @@ CLI arguments, options and behavior
       - This is now part of the direct passthrough to Paramiko-level connection
         parameters, the ``connect_kwargs`` config value.
     * - ``-T``/``--command-timeout``
-      - Pending
+      - `Pending <https://github.com/pyinvoke/invoke/issues/539>`__
       - See notes in :ref:`upgrading-commands` around the ``timeout`` kwarg.
     * - ``-u``/``--user`` to set global default username
       - Removed
@@ -531,7 +531,7 @@ CLI arguments, options and behavior
       - Ported as-is, no changes.
     * - ``-x``/``--exclude-hosts`` (and ``env.exclude_hosts``) for excluding
         otherwise selected targets
-      - Pending
+      - `Pending <https://github.com/fabric/fabric/issues/1594>`__
       - Not ported yet, is pending an in depth rework of global (vs
         hand-instantiated) connection/group selection.
     * - ``-z``/``--pool-size`` for setting parallel-mode job queue pool size
@@ -910,7 +910,7 @@ Authentication
         to disable Paramiko's default key-finding behavior.)
     * - ``env.passwords`` (and ``env.sudo_passwords``) stores connection/sudo
         passwords in a dict keyed by host strings
-      - Ported/Pending
+      - Ported/`Pending <https://github.com/fabric/fabric/issues/4>`__
       - Each `.Connection` object may be configured with its own
         ``connect_kwargs`` given at instantiation time, allowing for per-host
         password configuration already.
@@ -1115,7 +1115,7 @@ implicitly private; those are not represented here.
         reasonable to surface to an end user, or use `~invoke.exceptions.Exit`.
         See also :ref:`upgrading-utility`.
     * - ``env.all_hosts`` and ``env.tasks`` listing execution targets
-      - Ported/Pending
+      - Ported/`Pending <https://github.com/pyinvoke/invoke/issues/443>`__
       - Fabric's `~invoke.executor.Executor` subclass stores references to all
         CLI parsing results (including the value of :option:`--hosts`, the
         tasks requested and their args, etc) and the intent is for users to
@@ -1125,7 +1125,7 @@ implicitly private; those are not represented here.
         task's `~invoke.context.Context`/`.Connection`) are still in flux.
     * - ``env.command`` noting currently executing task name (in hindsight,
         quite the misnomer...)
-      - Ported/Pending
+      - Ported/`Pending <https://github.com/pyinvoke/invoke/issues/443>`__
       - See the notes for ``env.all_hosts`` above - same applies here re: user
         visibility into CLI parsing results.
     * - ``env.command_prefixes`` for visibility into (arguably also mutation
@@ -1142,8 +1142,9 @@ implicitly private; those are not represented here.
         the notes about ``with cd`` under :ref:`upgrading-commands`.
     * - ``env.dedupe_hosts`` controlling whether duplicate hosts in merged host
         lists get deduplicated or not
-      - Pending
-      - Not ported yet.
+      - `Pending <https://github.com/fabric/fabric/issues/1594>`__
+      - Not ported yet, will probably get tackled as part of roles/host lists
+        overhaul.
     * - ``env.echo_stdin`` (undocumented) for turning off the default echoing
         of standard input
       - Ported
@@ -1157,7 +1158,7 @@ implicitly private; those are not represented here.
         `fabric.util.get_local_user`.
     * - ``env.output_prefix`` determining whether or not line-by-line
         host-string prefixes are displayed
-      - Pending
+      - `Pending <https://github.com/pyinvoke/invoke/issues/15>`_
       - Differentiating parallel stdout/err is still a work in progress; we may
         end up reusing line-by-line logging and prefixing (ideally via actual
         logging) or we may try for something cleaner such as streaming to
@@ -1193,7 +1194,7 @@ implicitly private; those are not represented here.
         subclassing and overriding `invoke.runners.Runner.send_interrupt`.
     * - ``env.roles``, ``env.roledefs`` and ``env.effective_roles``
         controlling/exposing what roles are available or currently in play
-      - Pending
+      - `Pending <https://github.com/fabric/fabric/issues/1594>`__
       - As noted in :ref:`upgrading-api`, roles as a concept were ported to
         `.Group`, but there's no central clearinghouse in which to store them.
 
@@ -1203,12 +1204,12 @@ implicitly private; those are not represented here.
         `~invoke.context.Context` attribute) will appear in early 2.x.
     * - ``env.ok_ret_codes`` for overriding the default "0 good, non-0 bad"
         error detection for subprocess commands
-      - Pending
+      - `Pending <https://github.com/pyinvoke/invoke/issues/541>`__
       - Not ported yet, but should involve some presumably minor updates to
         `invoke.runners.Runner.generate_result` and `~invoke.runners.Result`.
     * - ``env.sudo_prefix`` determining the sudo binary name + its flags used
         when creating ``sudo`` command strings
-      - Pending
+      - `Pending <https://github.com/pyinvoke/invoke/issues/540>`__
       - Sudo command construction does not currently look at the config for
         anything but the actual sudo prompt.
     * - ``env.sudo_prompt`` for setting the prompt string handed to ``sudo``
