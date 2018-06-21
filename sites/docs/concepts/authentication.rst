@@ -22,12 +22,12 @@ Private key files
 Private keys stored on-disk are probably the most common auth mechanism for
 SSH. Fabric offers multiple methods of configuring which paths to use, most of
 which end up merged into one list of paths handed to
-``SSHClient.connect(key_filenames=[...])``, in the following order:
+``SSHClient.connect(key_filename=[...])``, in the following order:
 
-- If a ``key_filenames`` key exists in the ``connect_kwargs`` argument to
+- If a ``key_filename`` key exists in the ``connect_kwargs`` argument to
   `.Connection`, they come first in the list. (This is basically the "runtime"
   option for non-CLI users.)
-- The config setting ``connect_kwargs.key_filenames`` can be set in a number of
+- The config setting ``connect_kwargs.key_filename`` can be set in a number of
   ways (as per the :doc:`config docs </concepts/configuration>`) including via
   the :option:`--identity` CLI flag (which sets the ``overrides`` level of the
   config; so when this flag is used, key filename values from other config
