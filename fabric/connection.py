@@ -354,7 +354,7 @@ class Connection(Context):
             # .connect_kwargs attributewise, but otherwise it feels better to
             # do it early instead of late.
             connect_kwargs = self.config.connect_kwargs
-        # Special case: key_filenames gets merged instead of overridden.
+        # Special case: key_filename gets merged instead of overridden.
         # TODO: probably want some sorta smart merging generally, special cases
         # are bad.
         elif "key_filename" in self.config.connect_kwargs:
@@ -364,7 +364,7 @@ class Connection(Context):
             # CLI flag value.)
             connect_kwargs["key_filename"] = conf_val + kwarg_val
 
-        # SSH config identityfile values come last in the key_filenames
+        # SSH config identityfile values come last in the key_filename
         # 'hierarchy'.
         if "identityfile" in self.ssh_config:
             connect_kwargs.setdefault("key_filename", [])
