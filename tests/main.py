@@ -28,9 +28,7 @@ def _run_fab(argstr, **kwargs):
 
 
 class Fab_:
-
     class core_program_behavior:
-
         def version_output_contains_our_name_plus_deps(self):
             expect(
                 "--version",
@@ -66,7 +64,6 @@ Invoke .+
                 expect("second", "First!\nSecond!\nThird!\n")
 
     class filenames:
-
         def loads_fabfile_not_tasks(self):
             "Loads fabfile.py, not tasks.py"
             with cd(support):
@@ -100,7 +97,6 @@ Available tasks:
                     _run_fab("expect-conf-value")
 
     class runtime_ssh_config_path:
-
         def _run(
             self,
             flag="-S",
@@ -183,19 +179,16 @@ Available tasks:
                 output = sys.stdout.getvalue()
                 # Expect pre once, 3x main, post once, as opposed to e.g. both
                 # pre and main task
-                expected = (
-                    """
+                expected = """
 First!
 Second: hostA
 Second: hostB
 Second: hostC
 Third!
 """.lstrip()
-                )
                 assert output == expected
 
     class no_hosts_flag:
-
         def calls_task_once_with_invoke_context(self):
             with cd(support):
                 _run_fab("expect-vanilla-Context")
@@ -211,7 +204,6 @@ Third!
                 _run_fab("mutate expect-mutation")
 
     class runtime_identity_file:
-
         def dash_i_supplies_default_connect_kwarg_key_filename(self):
             # NOTE: the expect-identity task in tests/_support/fabfile.py
             # performs asserts about its context's .connect_kwargs value,
@@ -229,7 +221,6 @@ Third!
                 _run_fab("-i identity.key -i identity2.key expect-identities")
 
     class secrets_prompts:
-
         @patch("fabric.main.getpass.getpass")
         def _expect_prompt(self, getpass, flag, key, value, prompt):
             getpass.return_value = value

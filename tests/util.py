@@ -10,7 +10,6 @@ from fabric.util import get_local_user
 # Basically implementation tests, because it's not feasible to do a "real" test
 # on random platforms (where we have no idea what the actual invoking user is)
 class get_local_user_:
-
     @patch("getpass.getuser")
     def defaults_to_getpass_getuser(self, getuser):
         "defaults to getpass.getuser"

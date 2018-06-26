@@ -13,9 +13,7 @@ def skip_outside_travis():
 
 
 class Connection_:
-
     class ssh_connections:
-
         def open_method_generates_real_connection(self):
             c = Connection("localhost")
             c.open()
@@ -32,7 +30,6 @@ class Connection_:
             assert c.is_connected is False
 
     class run:
-
         def simple_command_on_host(self):
             """
             Run command on localhost
@@ -59,7 +56,6 @@ class Connection_:
             assert result.pty is True
 
     class local:
-
         def wraps_invoke_run(self):
             # NOTE: most of the interesting tests about this are in
             # invoke.runners / invoke.integration.
@@ -81,7 +77,6 @@ class Connection_:
         assert result.stdout == "foo\n"
 
     class sudo:
-
         def setup(self):
             # NOTE: assumes a user configured for passworded (NOT
             # passwordless)_sudo, whose password is 'mypass', is executing the
