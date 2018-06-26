@@ -5,7 +5,6 @@ from fabric.exceptions import GroupException
 
 
 class Group_:
-
     def simple_command(self):
         group = Group("localhost", "127.0.0.1")
         result = group.run("echo foo", hide=True)

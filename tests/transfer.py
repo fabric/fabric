@@ -15,7 +15,6 @@ from fabric.transfer import Transfer
 
 
 class Transfer_:
-
     class init:
         "__init__"
 
@@ -32,9 +31,7 @@ class Transfer_:
             assert Transfer(cxn).connection is cxn
 
     class get:
-
         class basics:
-
             def accepts_single_remote_path_posarg(self, sftp_objs):
                 transfer, client = sftp_objs
                 transfer.get("file")
@@ -62,7 +59,6 @@ class Transfer_:
                 # TODO: bytes-transferred info
 
         class path_arg_edge_cases:
-
             def local_None_uses_remote_filename(self, transfer):
                 assert transfer.get("file").local == "/local/file"
 
@@ -103,7 +99,6 @@ class Transfer_:
                 assert result.local is fd
 
         class mode_concerns:
-
             def setup(self):
                 self.attrs = SFTPAttributes()
                 self.attrs.st_mode = 0o100644
@@ -124,9 +119,7 @@ class Transfer_:
                 assert not mock_os.chmod.called
 
     class put:
-
         class basics:
-
             def accepts_single_local_path_posarg(self, sftp_objs):
                 transfer, client = sftp_objs
                 transfer.put("file")
@@ -153,7 +146,6 @@ class Transfer_:
                 # TODO: bytes-transferred info
 
         class path_arg_edge_cases:
-
             def remote_None_uses_local_filename(self, transfer):
                 assert transfer.put("file").remote == "/remote/file"
 
@@ -205,7 +197,6 @@ class Transfer_:
                 assert result.local is fd
 
         class mode_concerns:
-
             def preserves_local_mode_by_default(self, sftp):
                 transfer, client, mock_os = sftp
                 # This is a realistic stat for 0o644

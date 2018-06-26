@@ -92,6 +92,7 @@ class Connection(Context):
 
     .. versionadded:: 2.0
     """
+
     # NOTE: these are initialized here to hint to invoke.Config.__setattr__
     # that they should be treated as real attributes instead of config proxies.
     # (Additionally, we're doing this instead of using invoke.Config._set() so
@@ -245,9 +246,7 @@ class Connection(Context):
 
         shorthand = self.derive_shorthand(host)
         host = shorthand["host"]
-        err = (
-            "You supplied the {} via both shorthand and kwarg! Please pick one."  # noqa
-        )
+        err = "You supplied the {} via both shorthand and kwarg! Please pick one."  # noqa
         if shorthand["user"] is not None:
             if user is not None:
                 raise ValueError(err.format("user"))
@@ -465,19 +464,13 @@ class Connection(Context):
         # Short-circuit
         if self.is_connected:
             return
-        err = (
-            "Refusing to be ambiguous: connect() kwarg '{}' was given both via regular arg and via connect_kwargs!"  # noqa
-        )
+        err = "Refusing to be ambiguous: connect() kwarg '{}' was given both via regular arg and via connect_kwargs!"  # noqa
         # These may not be given, period
-        for (
-            key
-        ) in (
-            """
+        for key in """
             hostname
             port
             username
-        """.split()
-        ):
+        """.split():
             if key in self.connect_kwargs:
                 raise ValueError(err.format(key))
         # These may be given one way or the other, but not both
