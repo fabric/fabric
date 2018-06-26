@@ -253,12 +253,10 @@ class main:
 
     def python_dash_m_acts_like_fab(self, capsys):
         # Rehash of version output test, but using 'python -m fabric'
-        expected_output = (
-            r"""
+        expected_output = r"""
 Fabric .+
 Paramiko .+
 Invoke .+
 """.strip()
-        )
         output = run("python -m fabric --version", hide=True, in_stream=False)
         assert re.match(expected_output, output.stdout)
