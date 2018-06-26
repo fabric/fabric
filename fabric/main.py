@@ -16,7 +16,6 @@ from .executor import FabExecutor
 
 
 class Fab(Program):
-
     def print_version(self):
         super(Fab, self).print_version()
         print("Paramiko {}".format(paramiko))

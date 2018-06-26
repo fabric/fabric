@@ -7,7 +7,6 @@ from fabric.exceptions import GroupException
 
 
 class Group_:
-
     class init:
         "__init__"
 
@@ -20,7 +19,6 @@ class Group_:
             assert g[1].host == "bar"
 
     class from_connections:
-
         def inits_from_iterable_of_Connections(self):
             g = Group.from_connections((Connection("foo"), Connection("bar")))
             assert len(g) == 2
@@ -35,7 +33,6 @@ class Group_:
             assert isinstance(c, Connection)
 
     class run:
-
         @raises(NotImplementedError)
         def not_implemented_in_base_class(self):
             Group().run()
@@ -58,9 +55,7 @@ def _make_serial_tester(cxns, index, args, kwargs):
 
 
 class SerialGroup_:
-
     class run:
-
         def executes_arguments_on_contents_run_serially(self):
             "executes arguments on contents' run() serially"
             cxns = [Connection(x) for x in ("host1", "host2", "host3")]
@@ -113,14 +108,12 @@ class SerialGroup_:
 
 
 class ThreadingGroup_:
-
     def setup(self):
         self.cxns = [Connection(x) for x in ("host1", "host2", "host3")]
         self.args = ("command",)
         self.kwargs = {"hide": True, "warn": True}
 
     class run:
-
         @patch("fabric.group.Queue")
         @patch("fabric.group.ExceptionHandlingThread")
         def executes_arguments_on_contents_run_via_threading(
@@ -157,8 +150,8 @@ class ThreadingGroup_:
                 ("join", Thread.return_value.join.call_count),
             ):
                 err = (
-                    "Expected {} calls to ExceptionHandlingThread.{}, got {}"  # noqa
-                )
+                    "Expected {} calls to ExceptionHandlingThread.{}, got {}"
+                )  # noqa
                 err = err.format(expected, name, got)
                 assert expected, got == err
 

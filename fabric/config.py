@@ -33,6 +33,7 @@ class Config(InvokeConfig):
 
     .. versionadded:: 2.0
     """
+
     prefix = "fabric"
 
     def __init__(self, *args, **kwargs):

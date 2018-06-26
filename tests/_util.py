@@ -43,7 +43,6 @@ def expect(invocation, out, program=None, test="equals"):
 # adding a ton of fixtures everywhere (and thus, opening up to forgetting it
 # for new tests...)
 class Config(Config_):
-
     def __init__(self, *args, **kwargs):
         wat = "You're giving ssh_config explicitly, please use Config_!"
         assert "ssh_config" not in kwargs, wat
@@ -53,7 +52,6 @@ class Config(Config_):
 
 
 class Connection(Connection_):
-
     def __init__(self, *args, **kwargs):
         # Make sure we're using our tweaked Config if none was given.
         kwargs.setdefault("config", Config())
