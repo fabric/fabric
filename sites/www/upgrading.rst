@@ -981,6 +981,8 @@ functions from v1.
         it was poorly reinventing ``rsync`` and/or the use of archival file
         tools like ye olde ``tar``+``gzip``.
 
+        For one potential workaround, see the ``rsync`` function in `patchwork
+        <https://github.com/fabric/patchwork>`_.
 
 .. _upgrading-configuration:
 
