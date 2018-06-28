@@ -1,8 +1,8 @@
 .. _upgrading:
 
-=========================
-Upgrading from Fabric 1.x
-=========================
+==================
+Upgrading from 1.x
+==================
 
 Modern Fabric (2+) represents a near-total reimplementation & reorganization of
 the software. It's been :ref:`broken in two <invoke-split-from-fabric>`,
