@@ -38,7 +38,8 @@ modern Fabric that might make upgrading worth your time.
 
 - Python 3 compatibility (specifically, we now support 2.7 and 3.4+);
 - Thread-safe - no more requirement on multiprocessing for concurrency;
-- API reorganized around `.Connection` objects instead of global module state;
+- API reorganized around `fabric.connection.Connection` objects instead of
+  global module state;
 - Command-line parser overhauled to allow for regular GNU/POSIX style flags and
   options on a per-task basis (no more ``fab mytask:weird=custom,arg=format``);
 - Task organization is more explicit and flexible / has less 'magic';
@@ -54,8 +55,8 @@ modern Fabric that might make upgrading worth your time.
   simultaneous capture & display (now applies to local subprocesses, not just
   remote), encoding control, and auto-responding;
 - Use of Paramiko's APIs for the SSH layer much more transparent - e.g.
-  `.Connection` allows control over the kwargs given to `SSHClient.connect
-  <paramiko.client.SSHClient.connect>`;
+  `fabric.connection.Connection` allows control over the kwargs given to
+  `SSHClient.connect <paramiko.client.SSHClient.connect>`;
 - Gateway/jump-host functionality offers a ``ProxyJump`` style 'native' (no
   proxy-command subprocesses) option, which can be nested infinitely;
 
@@ -204,23 +205,25 @@ High level code flow and API member concerns.
         ``env.host``, ``env.port``, ``env.user``) and call global methods which
         implicitly reference them (``run``/``sudo``/etc)
       - Removed
-      - The primary API is now properly OOP: instantiate `.Connection` objects
-        and call their methods. These objects encapsulate all connection state
-        (user, host, gateway, etc) and have their own SSH client instances.
+      - The primary API is now properly OOP: instantiate
+        `fabric.connection.Connection` objects and call their methods. These
+        objects encapsulate all connection state (user, host, gateway, etc) and
+        have their own SSH client instances.
     * - Emphasis on serialized "host strings" as method of setting user, host,
         port, etc
       - Ported/Removed
-      - `.Connection` *can* accept a shorthand "host string"-like argument, but
-        the primary API is now explicit user, host, port, etc keyword
-        arguments.
+      - `fabric.connection.Connection` *can* accept a shorthand "host
+        string"-like argument, but the primary API is now explicit user, host,
+        port, etc keyword arguments.
 
         Additionally, many arguments/settings/etc that expected a host string
-        in v1 will now expect a `.Connection` instance instead.
+        in v1 will now expect a `fabric.connection.Connection` instance instead.
     * - Use of "roles" as global named lists of host strings
       - Ported
-      - This need is now served by `.Group` objects (which wrap some number of
-        `.Connection` instances with "do a thing to all members" methods.)
-        Users can create & organize these any way they want.
+      - This need is now served by `fabric.group.Group` objects (which wrap
+        some number of `fabric.connection.Connection` instances with "do a
+        thing to all members" methods.) Users can create & organize these any
+        way they want.
 
         See the line items for ``--roles`` (:ref:`upgrading-cli`),
         ``env.roles`` (:ref:`upgrading-env`) and ``@roles``
@@ -262,10 +265,10 @@ Task functions & decorators
         all)``)
       - Ported
       - This gets its own line item because: tasks must now take a
-        `~invoke.context.Context` (vanilla Invoke) or `.Connection` (Fabric)
-        object as their first positional argument. The rest of the function
-        signature is, as before, totally up to the user & will get
-        automatically turned into CLI flags.
+        `~invoke.context.Context` (vanilla Invoke) or
+        `fabric.connection.Connection` (Fabric) object as their first
+        positional argument. The rest of the function signature is, as before,
+        totally up to the user & will get automatically turned into CLI flags.
 
         This sacrifices a small bit of the "quick DSL" of v1 in exchange for a
         cleaner, easier to understand/debug, and more user-overrideable API
@@ -296,10 +299,10 @@ Task functions & decorators
         in some form, and probably sooner instead of later.
     * - ``@serial``/``@parallel``/``@runs_once``
       - Ported/`Pending <https://github.com/pyinvoke/invoke/issues/63>`__
-      - Parallel execution is currently offered at the API level via `.Group`
-        subclasses such as `.ThreadingGroup`; however, designating entire
-        sessions and/or tasks to run in parallel (or to exempt from
-        parallelism) has not been solved yet.
+      - Parallel execution is currently offered at the API level via
+        `fabric.group.Group` subclasses such as `fabric.group.ThreadingGroup`;
+        however, designating entire sessions and/or tasks to run in parallel
+        (or to exempt from parallelism) has not been solved yet.
 
         The problem needs solving at a higher level than just SSH targets, so
         this links to an Invoke-level ticket.
@@ -406,7 +409,8 @@ CLI arguments, options and behavior
 
         Thus, if enough users notice the lack, we'll consider a feature-add
         that largely mimics the v1 behavior: string becomes first argument to
-        `.Connection` and that resulting object is then set as ``gateway``.
+        `fabric.connection.Connection` and that resulting object is then set as
+        ``gateway``.
     * - ``--gss-auth``/``--gss-deleg``/``--gss-kex``
       - Removed
       - These didn't seem used enough to be worth porting over, especially
@@ -473,8 +477,8 @@ CLI arguments, options and behavior
     * - ``--port`` to set default SSH port
       - Removed
       - Our gut says this is best left up to the configuration system's env var
-        layer, or use of the ``port`` kwarg on `.Connection`; however it may
-        find its way back.
+        layer, or use of the ``port`` kwarg on `fabric.connection.Connection`;
+        however it may find its way back.
     * - ``r``/``--reject-unknown-hosts`` to modify Paramiko known host behavior
       - `Pending <https://github.com/fabric/fabric/issues/1804>`__
       - Not ported yet.
@@ -559,10 +563,11 @@ differences.
         implementations
       - Removed
       - All command execution is now unified; all three functions (now
-        methods on `.Connection`, though ``local`` is also available as
-        `invoke.run` for standalone use) have the same underlying protocol and
-        logic (the `~invoke.runners.Runner` class hierarchy), with only
-        low-level details like process creation and pipe consumption differing.
+        methods on `fabric.connection.Connection`, though ``local`` is also
+        available as `invoke.run` for standalone use) have the same underlying
+        protocol and logic (the `~invoke.runners.Runner` class hierarchy), with
+        only low-level details like process creation and pipe consumption
+        differing.
 
         For example, in v1 ``local`` required you to choose between displaying
         and capturing subprocess output; modern ``local`` is like ``run`` and
@@ -582,8 +587,8 @@ differences.
       - These are now methods on `~invoke.context.Context` (`Context.cd
         <invoke.context.Context.cd>`, `Context.prefix
         <invoke.context.Context.prefix>`) but need work in its subclass
-        `.Connection` (quite possibly including recreating ``lcd``) so that
-        local vs remote state are separated.
+        `fabric.connection.Connection` (quite possibly including recreating
+        ``lcd``) so that local vs remote state are separated.
     * - ``fabric.context_managers.shell_env`` and its specific expression
         ``path`` (plus ``env.shell_env``, ``env.path`` and
         ``env.path_behavior``), for modifying remote environment variables
@@ -591,9 +596,9 @@ differences.
       - Ported
       - The context managers were the only way to set environment variables at
         any scope; in modern Fabric, subprocess shell environment is
-        controllable per-call (directly in `.Connection.run` and siblings
-        via an ``env`` kwarg) *and* across multiple calls (by manipulating the
-        configuration system, statically or at runtime.)
+        controllable per-call (directly in `fabric.connection.Connection.run`
+        and siblings via an ``env`` kwarg) *and* across multiple calls (by
+        manipulating the configuration system, statically or at runtime.)
     * - Controlling subprocess output & other activity display text by
         manipulating ``fabric.state.output`` (directly or via
         ``fabric.context_managers.hide``, ``show`` or ``quiet`` as well as the
@@ -689,8 +694,8 @@ differences.
 
         See the matching line items for ``local`` and ``sudo`` as their
         situations differ. (For now, because they all share the same
-        underpinnings, `.Connection.run` does accept a ``shell`` kwarg - it
-        just doesn't do anything with it.)
+        underpinnings, `fabric.connection.Connection.run` does accept a
+        ``shell`` kwarg - it just doesn't do anything with it.)
 
 ``sudo``
 ~~~~~~~~
@@ -787,8 +792,8 @@ Utilities
         host strings
       - Removed
       - As with other host-string-related tools, these are gone and serve no
-        purpose. `.Connection` is now the primary API focus and has individual
-        attributes for all "host string" components.
+        purpose. `fabric.connection.Connection` is now the primary API focus
+        and has individual attributes for all "host string" components.
     * - ``utils.indent`` for indenting/wrapping text (uncommonly used)
       - Pending
       - Not ported yet; ideally we'll just vendor a third party lib in Invoke.
@@ -802,8 +807,8 @@ Utilities
 
         There is a small chance it will return if there appears to be enough
         need; if so, it's likely to be a more generic reconnection related
-        `.Connection` method, where the user is responsible for issuing the
-        restart shell command via ``sudo`` themselves.
+        `fabric.connection.Connection` method, where the user is responsible
+        for issuing the restart shell command via ``sudo`` themselves.
     * - ``require`` for ensuring certain key(s) in ``env`` have values set,
         optionally by noting they can be ``provided_by=`` a list of setup tasks
       - Removed
@@ -829,10 +834,10 @@ Networking
 
     * - ``env.gateway`` for setting an SSH jump gateway
       - Ported
-      - This is now the ``gateway`` kwarg to `.Connection`, and -- for the
-        newly supported ``ProxyJump`` style gateways, which can be nested
-        indefinitely! -- should be another `.Connection` object instead of a
-        host string.
+      - This is now the ``gateway`` kwarg to `fabric.connection.Connection`,
+        and -- for the newly supported ``ProxyJump`` style gateways, which can
+        be nested indefinitely! -- should be another
+        `fabric.connection.Connection` object instead of a host string.
 
         (You may specify a runtime, non-SSH-config-driven
         ``ProxyCommand``-style string as the ``gateway`` kwarg instead, which
@@ -842,9 +847,9 @@ Networking
       - This continues to work as it did in v1.
     * - ``with remote_tunnel(...):`` port forwarding
       - Ported
-      - This is now `.Connection.forward_local`, since it's used to *forward* a
-        *local* port to the remote end. (Newly added is the logical inverse,
-        `.Connection.forward_remote`.)
+      - This is now `fabric.connection.Connection.forward_local`, since it's
+        used to *forward* a *local* port to the remote end. (Newly added is the
+        logical inverse, `fabric.connection.Connection.forward_remote`.)
     * - ``NetworkError`` raised on some network related errors
       - Removed
       - In v1 this was simply a (partially implemented) stepping-back from the
@@ -861,7 +866,7 @@ Networking
     * - ``env.timeout`` for controlling connection timeout
       - Ported
       - This is now controllable both via the configuration system and a direct
-        kwarg on `.Connection`.
+        kwarg on `fabric.connection.Connection`.
 
 Authentication
 --------------
@@ -870,9 +875,8 @@ Authentication
     Some ``env`` keys from v1 were simply passthroughs to Paramiko's
     `SSHClient.connect <paramiko.client.SSHClient.connect>` method. Modern
     Fabric gives you explicit control over the arguments it passes to that
-    method, via the ``connect_kwargs`` :doc:`configuration
-    </concepts/configuration>` subtree, and the below table will frequently
-    refer you to that approach.
+    method, via the ``connect_kwargs`` :ref:`configuration <fab-configuration>`
+    subtree, and the below table will frequently refer you to that approach.
 
 .. list-table::
     :widths: 40 10 50
@@ -911,13 +915,13 @@ Authentication
     * - ``env.passwords`` (and ``env.sudo_passwords``) stores connection/sudo
         passwords in a dict keyed by host strings
       - Ported/`Pending <https://github.com/fabric/fabric/issues/4>`__
-      - Each `.Connection` object may be configured with its own
-        ``connect_kwargs`` given at instantiation time, allowing for per-host
-        password configuration already.
+      - Each `fabric.connection.Connection` object may be configured with its
+        own ``connect_kwargs`` given at instantiation time, allowing for
+        per-host password configuration already.
 
         However, we expect users may want a simpler way to set configuration
-        values that are turned into implicit `.Connection` objects
-        automatically; such a feature is still pending.
+        values that are turned into implicit `fabric.connection.Connection`
+        objects automatically; such a feature is still pending.
     * - Configuring ``IdentityFile`` in one's ``ssh_config``
       - Ported
       - Still honored, along with a bunch of newly honored ``ssh_config``
@@ -937,8 +941,9 @@ functions from v1.
     * - Transferring individual files owned by the local and remote user
       - Ported
       - Basic file transfer in either direction works and is offered as
-        `.Connection.get`/`.Connection.put` (though the code is split out
-        into a separate-responsibility class, `.Transfer`.)
+        `fabric.connection.Connection.get`/`fabric.connection.Connection.put`
+        (though the code is split out into a separate-responsibility class,
+        `fabric.transfer.Transfer`.)
 
         The signature of these methods has been cleaned up compared to v1,
         though their positional-argument essence (``get(remote, local)`` and
@@ -1011,13 +1016,13 @@ page <fab-configuration>` for details.
         settings(...):`` or its decorator equivalent, ``@with_settings``
       - Ported/Pending
       - Most of the use cases surrounding ``settings`` are now served by
-        the fact that `.Connection` objects keep per-host/connection state -
-        the pattern of switching the implicit global context around was a
-        design antipattern which is now gone.
+        the fact that `fabric.connection.Connection` objects keep
+        per-host/connection state - the pattern of switching the implicit
+        global context around was a design antipattern which is now gone.
 
         The remaining such use cases have been turned into context-manager
-        methods of `.Connection` (or its parent class), or have such methods
-        pending.
+        methods of `fabric.connection.Connection` (or its parent class), or
+        have such methods pending.
     * - SSH config file loading (off by default, limited to ``~/.ssh/config``
         only unless configured to a different, single path)
       - Ported
@@ -1122,7 +1127,8 @@ implicitly private; those are not represented here.
         have access to that information.
 
         However, the details for that API (e.g. exposing the executor via a
-        task's `~invoke.context.Context`/`.Connection`) are still in flux.
+        task's `~invoke.context.Context`/`fabric.connection.Connection`) are
+        still in flux.
     * - ``env.command`` noting currently executing task name (in hindsight,
         quite the misnomer...)
       - Ported/`Pending <https://github.com/pyinvoke/invoke/issues/443>`__
@@ -1196,12 +1202,13 @@ implicitly private; those are not represented here.
         controlling/exposing what roles are available or currently in play
       - `Pending <https://github.com/fabric/fabric/issues/1594>`__
       - As noted in :ref:`upgrading-api`, roles as a concept were ported to
-        `.Group`, but there's no central clearinghouse in which to store them.
+        `fabric.group.Group`, but there's no central clearinghouse in which to
+        store them.
 
         We *may* delegate this to userland forever, but seems likely a
-        common-best-practice option (such as creating `Groups <.Group>` from
-        some configuration subtree and storing them as a
-        `~invoke.context.Context` attribute) will appear in early 2.x.
+        common-best-practice option (such as creating `Groups
+        <fabric.group.Group>` from some configuration subtree and storing them
+        as a `~invoke.context.Context` attribute) will appear in early 2.x.
     * - ``env.ok_ret_codes`` for overriding the default "0 good, non-0 bad"
         error detection for subprocess commands
       - `Pending <https://github.com/pyinvoke/invoke/issues/541>`__
@@ -1313,9 +1320,9 @@ Host list
 
 The idea of a predefined global host list is gone; there is currently no direct
 replacement. Instead, we expect users to set up their own execution context,
-creating explicit `.Connection` and/or `.Group` objects as needed, even if
-that's simply by mocking v1's built-in "roles" map. For simple use cases, the
-:option:`--hosts` core option is still available.
+creating explicit `fabric.connection.Connection` and/or `fabric.group.Group`
+objects as needed, even if that's simply by mocking v1's built-in "roles" map.
+For simple use cases, the :option:`--hosts` core option is still available.
 
 .. note::
     This is an area under active development, so feedback is welcomed.
@@ -1335,12 +1342,12 @@ The first task in the fabfile uses a good spread of the API. We'll outline the
 changes here (though again, all details are in :ref:`upgrade-specifics`):
 
 - Declaring a function as a task is nearly the same as before, but with an
-  explicit initial context argument, whose value will be a `.Connection` object
-  at runtime.
+  explicit initial context argument, whose value will be a
+  `fabric.connection.Connection` object at runtime.
 - The use of ``with settings(warn_only=True)`` can be replaced by a simple
   kwarg to the ``local`` call.
-- That ``local`` call is now a method call on the `.Connection`,
-  `.Connection.local`.
+- That ``local`` call is now a method call on the
+  `fabric.connection.Connection`, `fabric.connection.Connection.local`.
 - ``capture`` is no longer a useful argument; we can now capture and display at
   the same time, locally or remotely. If you don't actually *want* a local
   subprocess to mirror its stdout/err while it runs, you can simply say
@@ -1394,10 +1401,11 @@ Actual remote steps
 -------------------
 
 Note that up to this point, nothing truly Fabric-related has been in play -
-`.Connection.local` is just a rebinding of `Context.run
+`fabric.connection.Connection.local` is just a rebinding of `Context.run
 <invoke.context.Context.run>`, Invoke's local subprocess execution method. Now
-we get to the actual deploy step, which invokes `.Connection.run` instead,
-executing remotely (on whichever host the `.Connection` has been bound to).
+we get to the actual deploy step, which invokes
+`fabric.connection.Connection.run` instead, executing remotely (on whichever
+host the `fabric.connection.Connection` has been bound to).
 
 ``with cd`` is not fully implemented for the remote side of things, but we
 expect it will be soon. For now we fall back to command chaining with ``&&``.
