@@ -20,13 +20,8 @@ document:
 Upgrading from 1.x
 ------------------
 
-Looking to upgrade from Fabric 1.x? Use our detailed upgrade guide:
-
-.. toctree::
-    :maxdepth: 2
-
-    upgrading
-    
+Looking to upgrade from Fabric 1.x? See our :doc:`detailed upgrade guide
+<upgrading>` on the nonversioned main project site.
 
 .. _concepts-docs:
 
