@@ -95,6 +95,9 @@ ns.configure(
         # TODO: perhaps move this into a tertiary, non automatically loaded,
         # conf file so that both this & the code under test can reference it?
         # Meh.
-        "travis": {"sudo": {"user": "sudouser", "password": "mypass"}},
+        "travis": {
+            "sudo": {"user": "sudouser", "password": "mypass"},
+            "black": {"version": "18.6b4"},
+        },
     }
 )
