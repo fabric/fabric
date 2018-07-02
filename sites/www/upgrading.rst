@@ -1356,9 +1356,12 @@ Test task
 The first task in the fabfile uses a good spread of the API. We'll outline the
 changes here (though again, all details are in :ref:`upgrade-specifics`):
 
-- Declaring a function as a task is nearly the same as before, but with an
-  explicit initial context argument, whose value will be a
-  `fabric.connection.Connection` object at runtime.
+- Declaring a function as a task is nearly the same as before: use a ``@task``
+  decorator (which, in modern Fabric, can take more optional keyword arguments
+  than its predecessor, including some which replace some of v1's decorators).
+- ``@task``-wrapped functions must now take an explicit initial context
+  argument, whose value will be a `fabric.connection.Connection` object at
+  runtime.
 - The use of ``with settings(warn_only=True)`` can be replaced by a simple
   kwarg to the ``local`` call.
 - That ``local`` call is now a method call on the
@@ -1424,10 +1427,13 @@ host the `fabric.connection.Connection` has been bound to).
 
 ``with cd`` is not fully implemented for the remote side of things, but we
 expect it will be soon. For now we fall back to command chaining with ``&&``.
+And, notably, now that we care about selecting host targets, we refer to our
+earlier definition of a default host list -- ``my_hosts`` -- when declaring the
+default host list for this task.
 
 ::
 
-    @task
+    @task(hosts=my_hosts)
     def deploy(c):
         code_dir = "/srv/django/myproject"
         if not c.run("test -d {}".format(code_dir), warn=True):
@@ -1441,8 +1447,12 @@ The whole thing
 
 Now we have the entire, upgraded fabfile that will work with modern Fabric::
 
-    from invoke import task, Exit
+    from invoke import Exit
     from invocations.console import confirm
+
+    from fabric import task
+
+    my_hosts = ["my-server"]
 
     @task
     def test(c):
@@ -1464,7 +1474,7 @@ Now we have the entire, upgraded fabfile that will work with modern Fabric::
         commit(c)
         push(c)
 
-    @task
+    @task(hosts=my_hosts)
     def deploy(c):
         code_dir = "/srv/django/myproject"
         if not c.run("test -d {}".format(code_dir), warn=True):
