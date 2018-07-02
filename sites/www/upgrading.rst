@@ -690,7 +690,7 @@ differences.
     :widths: 40 10 50
 
     * - ``shell`` / ``env.use_shell`` designating whether or not to wrap
-        commands within an explicit call to e.g. ``/bin/sh -c 'real command'``;
+        commands within an explicit call to e.g. ``/bin/sh -c "real command"``;
         plus their attendant options like ``shell_escape``
       - Removed
       - Non-``sudo`` remote execution never truly required an explicit shell
@@ -715,7 +715,7 @@ below are ``sudo`` specific.
     :widths: 40 10 50
 
     * - ``shell`` / ``env.use_shell`` designating whether or not to wrap
-        commands within an explicit call to e.g. ``/bin/sh -c 'real command'``
+        commands within an explicit call to e.g. ``/bin/sh -c "real command"``
       - `Pending <https://github.com/pyinvoke/invoke/issues/344>`__/Removed
       - See the note above under ``run`` for details on shell wrapping
         as a general strategy; unfortunately for ``sudo``, some sort of manual
@@ -956,7 +956,7 @@ functions from v1.
         though their positional-argument essence (``get(remote, local)`` and
         ``put(local, remote)`` remains the same.
     * - Omit the 'destination' argument for implicit 'relative to local
-        context' behavior (e.g. ``put('local.txt')`` implicitly uploading to
+        context' behavior (e.g. ``put("local.txt")`` implicitly uploading to
         remote ``$HOME/local.txt``.)
       - Ported
       - You should probably still be explicit, because this is Python.
@@ -1266,12 +1266,12 @@ for upgrading::
     from fabric.api import abort, env, local, run, settings, task
     from fabric.contrib.console import confirm
 
-    env.hosts = ['my-server']
+    env.hosts = ["my-server"]
 
     @task
     def test():
         with settings(warn_only=True):
-            result = local('./manage.py test my_app', capture=True)
+            result = local("./manage.py test my_app", capture=True)
         if result.failed and not confirm("Tests failed. Continue anyway?"):
             abort("Aborting at user request.")
 
@@ -1291,7 +1291,7 @@ for upgrading::
 
     @task
     def deploy():
-        code_dir = '/srv/django/myproject'
+        code_dir = "/srv/django/myproject"
         with settings(warn_only=True):
             if run("test -d {}".format(code_dir)).failed:
                 cmd = "git clone user@vcshost:/path/to/repo/.git {}"
@@ -1366,7 +1366,7 @@ changes here (though again, all details are in :ref:`upgrade-specifics`):
 - ``capture`` is no longer a useful argument; we can now capture and display at
   the same time, locally or remotely. If you don't actually *want* a local
   subprocess to mirror its stdout/err while it runs, you can simply say
-  ``hide=True`` (or ``hide='stdout'`` or etc.)
+  ``hide=True`` (or ``hide="stdout"`` or etc.)
 - Result objects are pretty similar between versions; modern Fabric's results
   no longer pretend to "be" strings, but instead act more like booleans, acting
   truthy if the command exited cleanly, and falsey otherwise. In terms of
@@ -1380,7 +1380,7 @@ The result::
 
     @task
     def test(c):
-        result = c.local('./manage.py test my_app', warn=True)
+        result = c.local("./manage.py test my_app", warn=True)
         if not result and not confirm("Tests failed. Continue anyway?"):
             raise Exit("Aborting at user request.")
 
@@ -1429,7 +1429,7 @@ expect it will be soon. For now we fall back to command chaining with ``&&``.
 
     @task
     def deploy(c):
-        code_dir = '/srv/django/myproject'
+        code_dir = "/srv/django/myproject"
         if not c.run("test -d {}".format(code_dir), warn=True):
             cmd = "git clone user@vcshost:/path/to/repo/.git {}"
             c.run(cmd.format(code_dir))
@@ -1446,7 +1446,7 @@ Now we have the entire, upgraded fabfile that will work with modern Fabric::
 
     @task
     def test(c):
-        result = c.local('./manage.py test my_app', warn=True)
+        result = c.local("./manage.py test my_app", warn=True)
         if not result and not confirm("Tests failed. Continue anyway?"):
             raise Exit("Aborting at user request.")
 
@@ -1466,7 +1466,7 @@ Now we have the entire, upgraded fabfile that will work with modern Fabric::
 
     @task
     def deploy(c):
-        code_dir = '/srv/django/myproject'
+        code_dir = "/srv/django/myproject"
         if not c.run("test -d {}".format(code_dir), warn=True):
             cmd = "git clone user@vcshost:/path/to/repo/.git {}"
             c.run(cmd.format(code_dir))
