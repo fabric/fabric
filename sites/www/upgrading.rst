@@ -1327,18 +1327,24 @@ following:
 Host list
 ---------
 
-The idea of a predefined global host list is gone; there is currently no direct
-replacement. Instead, we expect users to set up their own execution context,
+The idea of a predefined *global* host list is gone; there is currently no
+direct replacement. In general, users can set up their own execution context,
 creating explicit `fabric.connection.Connection` and/or `fabric.group.Group`
-objects as needed, even if that's simply by mocking v1's built-in "roles" map.
-For simple use cases, the :option:`--hosts` core option is still available.
+objects as needed; core Fabric is in the process of building convenience
+helpers on top of this, but "create your own Connections" will always be there
+as a backstop.
+
+Speaking of convenience helpers: most of the functionality of ``fab --hosts``
+and ``@hosts`` has been ported over -- the former directly (see
+:option:`--hosts`), the latter as a `@task <fabric.tasks.task>` keyword
+argument. Thus, for now our example will be turning the global ``env.hosts``
+into a lightweight module-level variable declaration, intended for use in the
+subsequent calls to ``@task``::
+
+    my_hosts = ["my-server"]
 
 .. note::
     This is an area under active development, so feedback is welcomed.
-
-For now, given the source snippet hardcoded a hostname of ``my-server``, we'll
-assume this fabfile will be invoked as e.g. ``fab -H my-server taskname``, and
-there will be no hardcoding within the fabfile itself.
 
 .. TODO:
     - pre-task example
