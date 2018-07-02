@@ -13,10 +13,10 @@ Changelog
   .. note::
     As of this change, we are now recommending the use of the
     new-in-this-release Fabric-level `@task <fabric.tasks.task>`/`Task
-    <fabric.tasks.Task>` API members, even if you're not using the ``hosts``
-    kwarg -- it will help future-proof your code for similar feature-adds
-    later, and just generally be less confusing than having mixed Invoke/Fabric
-    imports for these object types.
+    <fabric.tasks.Task>` objects instead of their Invoke counterparts, even if
+    you're not using the ``hosts`` kwarg -- it will help future-proof your code
+    for similar feature-adds later, and generally be less confusing than having
+    mixed Invoke/Fabric imports for these object types.
 
 - :feature:`1766` Reinstate support for use as ``python -m fabric``, which (as
   in v1) now behaves identically to invoking ``fab``. Thanks to

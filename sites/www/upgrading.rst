@@ -259,9 +259,9 @@ Task functions & decorators
       - Largely the same, though now with superpowers - `@task
         <fabric.tasks.task>` can still be used without any parentheses, but
         where v1 only had a single ``task_class`` argument, the new version
-        (largely based on Invoke's) has a number of various namespace and
-        parser hints, as well as execution related options (such as those
-        formerly served by ``@hosts`` and friends).
+        (largely based on Invoke's) has a number of namespace and parser hints,
+        as well as execution related options (such as those formerly served by
+        ``@hosts`` and friends).
     * - Arbitrary task function arguments (i.e. ``def mytask(any, thing, at,
         all)``)
       - Ported
