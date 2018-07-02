@@ -19,13 +19,11 @@ def _Connection(*args, **kwargs):
 
 
 class Remote_:
-
     def needs_handle_on_a_Connection(self):
         c = _Connection("host")
         assert Remote(context=c).context is c
 
     class run:
-
         def calls_expected_paramiko_bits(self, remote):
             # remote mocking makes generic sanity checks like "were
             # get_transport and open_session called", but we also want to make
@@ -78,7 +76,6 @@ class Remote_:
                 pass
 
             class _OopsRemote(Remote):
-
                 def wait(self):
                     raise Oops()
 

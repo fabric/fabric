@@ -6,7 +6,7 @@ commands remotely over SSH, yielding useful Python objects in return::
 
     >>> from fabric import Connection
     >>> result = Connection('web1.example.com').run('uname -s')
-    >>> msg = "Ran {.command!r} on {.host}, got this stdout:\n{.stdout}"
+    >>> msg = "Ran {.command!r} on {.connection.host}, got stdout:\n{.stdout}"
     >>> print(msg.format(result))
     Ran "uname -s" on web1.example.com, got this stdout:
     Linux

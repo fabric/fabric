@@ -19,10 +19,10 @@ from pytest_relaxed import raises
 from invoke.config import Config as InvokeConfig
 from invoke.exceptions import ThreadException
 
-from fabric.connection import Connection, Config
+from fabric import Config as Config_
 from fabric.util import get_local_user
 
-from _util import support
+from _util import support, Connection, Config
 
 
 # Remote is woven in as a config default, so must be patched there
@@ -51,9 +51,7 @@ def _select_result(obj):
 
 
 class Connection_:
-
     class basic_attributes:
-
         def is_connected_defaults_to_False(self):
             assert Connection("host").is_connected is False
 
@@ -63,7 +61,6 @@ class Connection_:
             assert c.get_transport() is None
 
     class known_hosts_behavior:
-
         def defaults_to_auto_add(self):
             # TODO: change Paramiko API so this isn't a private access
             # TODO: maybe just merge with the __init__ test that is similar
@@ -73,7 +70,6 @@ class Connection_:
         "__init__"
 
         class host:
-
             @raises(TypeError)
             def is_required(self):
                 Connection()
@@ -109,7 +105,6 @@ class Connection_:
                     assert c2.port == 123
 
         class user:
-
             def defaults_to_local_user_with_no_config(self):
                 # Tautology-tastic!
                 assert Connection("host").user == get_local_user()
@@ -136,7 +131,6 @@ class Connection_:
                 assert cxn.user == "somebody"
 
         class port:
-
             def defaults_to_22_because_yup(self):
                 assert Connection("host").port == 22
 
@@ -162,17 +156,11 @@ class Connection_:
                 assert cxn.port == 123
 
         class forward_agent:
-
             def defaults_to_False(self):
                 assert Connection("host").forward_agent is False
 
             def accepts_configuration_value(self):
-                config = Config(
-                    overrides={
-                        "forward_agent": True,
-                        "load_ssh_configs": False,
-                    }
-                )
+                config = Config(overrides={"forward_agent": True})
                 assert Connection("host", config=config).forward_agent is True
 
             def may_be_given_as_kwarg(self):
@@ -185,17 +173,11 @@ class Connection_:
                 assert cxn.forward_agent is False
 
         class connect_timeout:
-
             def defaults_to_None(self):
                 assert Connection("host").connect_timeout is None
 
             def accepts_configuration_value(self):
-                config = Config(
-                    overrides={
-                        "timeouts": {"connect": 10},
-                        "load_ssh_configs": False,
-                    }
-                )
+                config = Config(overrides={"timeouts": {"connect": 10}})
                 assert Connection("host", config=config).connect_timeout == 10
 
             def may_be_given_as_kwarg(self):
@@ -230,17 +212,11 @@ class Connection_:
                 # just a base case...)
                 # TODO: adjust this if we ever switch to all our settings being
                 # namespaced...
-                vanilla = InvokeConfig(
-                    overrides={
-                        "forward_agent": True,
-                        "load_ssh_configs": False,
-                    }
-                )
+                vanilla = InvokeConfig(overrides={"forward_agent": True})
                 cxn = Connection("host", config=vanilla)
                 assert cxn.forward_agent is True  # not False, which is default
 
         class gateway:
-
             def is_optional_and_defaults_to_None(self):
                 c = Connection(host="host")
                 assert c.gateway is None
@@ -256,16 +232,13 @@ class Connection_:
 
             def accepts_configuration_value(self):
                 gw = Connection("jumpbox")
-                config = Config(
-                    overrides={"gateway": gw, "load_ssh_configs": False}
-                )
+                config = Config(overrides={"gateway": gw})
                 # TODO: the fact that they will be eq, but _not_ necessarily be
                 # the same object, could be problematic in some cases...
                 cxn = Connection("host", config=config)
                 assert cxn.gateway == gw
 
         class initializes_client:
-
             @patch("fabric.connection.SSHClient")
             def instantiates_empty_SSHClient(self, Client):
                 Connection("host")
@@ -285,13 +258,12 @@ class Connection_:
                 assert Connection("host").client is client
 
         class ssh_config:
-
             def _runtime_config(self, overrides=None, basename="runtime"):
                 confname = "{}.conf".format(basename)
                 runtime_path = join(support, "ssh_config", confname)
                 if overrides is None:
                     overrides = {}
-                return Config(
+                return Config_(
                     runtime_ssh_path=runtime_path, overrides=overrides
                 )
 
@@ -300,7 +272,7 @@ class Connection_:
                 return Connection("runtime", config=config)
 
             def effectively_blank_when_no_loaded_config(self):
-                c = Config(ssh_config=SSHConfig())
+                c = Config_(ssh_config=SSHConfig())
                 cxn = Connection("host", config=c)
                 # NOTE: paramiko always injects this even if you look up a host
                 # that has no rules, even wildcard ones.
@@ -320,7 +292,6 @@ class Connection_:
                 assert conf == expected
 
             class hostname:
-
                 def original_host_always_set(self):
                     cxn = Connection("somehost")
                     assert cxn.original_host == "somehost"
@@ -333,14 +304,13 @@ class Connection_:
                     path = join(
                         support, "ssh_config", "overridden_hostname.conf"
                     )
-                    config = Config(runtime_ssh_path=path)
+                    config = Config_(runtime_ssh_path=path)
                     cxn = Connection("aliasname", config=config)
                     assert cxn.host == "realname"
                     assert cxn.original_host == "aliasname"
                     assert cxn.port == 2222
 
             class user:
-
                 def wins_over_default(self):
                     assert self._runtime_cxn().user == "abaddon"
 
@@ -355,7 +325,6 @@ class Connection_:
                     assert cxn.user == "set"
 
             class port:
-
                 def wins_over_default(self):
                     assert self._runtime_cxn().port == 666
 
@@ -369,7 +338,6 @@ class Connection_:
                     assert cxn.port == 777
 
             class forward_agent:
-
                 def wins_over_default(self):
                     assert self._runtime_cxn().forward_agent is True
 
@@ -388,7 +356,6 @@ class Connection_:
                     assert cxn.forward_agent is False
 
             class proxy_command:
-
                 def wins_over_default(self):
                     assert self._runtime_cxn().gateway == "my gateway"
 
@@ -412,7 +379,6 @@ class Connection_:
                     assert cxn.gateway is False
 
             class proxy_jump:
-
                 def setup(self):
                     self._expected_gw = Connection("jumpuser@jumphost:373")
 
@@ -454,7 +420,6 @@ class Connection_:
                     assert outermost == Connection("jumpuser@jumphost:373")
 
             class connect_timeout:
-
                 def wins_over_default(self):
                     assert self._runtime_cxn().connect_timeout == 15
 
@@ -482,7 +447,6 @@ class Connection_:
                     assert value == ["whatever.key", "some-other.key"]
 
         class connect_kwargs:
-
             def defaults_to_empty_dict(self):
                 assert Connection("host").connect_kwargs == {}
 
@@ -538,7 +502,6 @@ class Connection_:
             assert repr(c) == template
 
     class comparison_and_hashing:
-
         def comparison_uses_host_user_and_port(self):
             # Just host
             assert Connection("host") == Connection("host")
@@ -558,7 +521,6 @@ class Connection_:
             assert hash(Connection("host")) == hash(Connection("host"))
 
     class open:
-
         def has_no_required_args_and_returns_None(self, client):
             assert Connection("host").open() is None
 
@@ -595,9 +557,7 @@ class Connection_:
                         "host", connect_kwargs={key: value}, **kwargs
                     ).open()
                 except ValueError as e:
-                    err = (
-                        "Refusing to be ambiguous: connect() kwarg '{}' was given both via regular arg and via connect_kwargs!"  # noqa
-                    )
+                    err = "Refusing to be ambiguous: connect() kwarg '{}' was given both via regular arg and via connect_kwargs!"  # noqa
                     assert str(e) == err.format(key)
                 else:
                     assert False, "Did not raise ValueError!"
@@ -770,7 +730,7 @@ class Connection_:
                 config_kwargs["overrides"] = {
                     "connect_kwargs": {"key_filename": ["configured.key"]}
                 }
-            conf = Config(**config_kwargs)
+            conf = Config_(**config_kwargs)
             connect_kwargs = {}
             if kwarg:
                 # Stitch in connect_kwargs value
@@ -789,7 +749,6 @@ class Connection_:
                 assert "key_filename" not in kwargs
 
     class close:
-
         def has_no_required_args_and_returns_None(self, client):
             c = Connection("host")
             c.open()
@@ -824,7 +783,6 @@ class Connection_:
             client.close.assert_called_once_with()
 
     class create_session:
-
         def calls_open_for_you(self, client):
             c = Connection("host")
             c.open = Mock()
@@ -882,7 +840,6 @@ class Connection_:
             assert call().run("foo") in Local.mock_calls
 
     class sudo:
-
         @patch(remote_path)
         def calls_open_for_you(self, Remote, client):
             c = Connection("host")
@@ -919,7 +876,6 @@ class Connection_:
             skip()
 
     class sftp:
-
         def returns_result_of_client_open_sftp(self, client):
             "returns result of client.open_sftp()"
             sentinel = object()
@@ -939,7 +895,6 @@ class Connection_:
             assert second is sentinel1, err.format(second)
 
     class get:
-
         @patch("fabric.connection.Transfer")
         def calls_Transfer_get(self, Transfer):
             "calls Transfer.get()"
@@ -949,7 +904,6 @@ class Connection_:
             Transfer.return_value.get.assert_called_with("meh")
 
     class put:
-
         @patch("fabric.connection.Transfer")
         def calls_Transfer_put(self, Transfer):
             "calls Transfer.put()"
@@ -959,7 +913,6 @@ class Connection_:
             Transfer.return_value.put.assert_called_with("meh")
 
     class forward_local:
-
         @patch("fabric.tunnels.select")
         @patch("fabric.tunnels.socket.socket")
         @patch("fabric.connection.SSHClient")
@@ -1045,7 +998,6 @@ class Connection_:
             )
 
         def _thread_error(self, which):
-
             class Sentinel(Exception):
                 pass
 
@@ -1081,7 +1033,6 @@ class Connection_:
             skip()
 
     class forward_remote:
-
         @patch("fabric.connection.socket.socket")
         @patch("fabric.tunnels.select")
         @patch("fabric.connection.SSHClient")

@@ -23,6 +23,7 @@ documentation site, `docs.fabfile.org <http://docs.fabfile.org>`_.
     FAQs <faq>
     installing
     installing-1.x
+    upgrading
     development
     troubleshooting
     Roadmap <roadmap>

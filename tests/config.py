@@ -12,7 +12,6 @@ from _util import support
 
 
 class Config_:
-
     def defaults_to_merger_of_global_defaults(self):
         # I.e. our global_defaults + Invoke's global_defaults
         c = Config()
@@ -163,7 +162,6 @@ class ssh_config_loading:
         method.assert_any_call(expanduser(tilded))
 
     class core_ssh_load_option_allows_skipping_ssh_config_loading:
-
         @patch.object(Config, "_load_ssh_file")
         def skips_default_paths(self, method):
             Config(overrides={"load_ssh_configs": False})
@@ -189,7 +187,6 @@ class ssh_config_loading:
             method.assert_called_once_with(self._runtime_path)
 
     class lazy_loading_and_explicit_methods:
-
         @patch.object(Config, "_load_ssh_file")
         def may_use_lazy_plus_explicit_methods_to_control_flow(self, method):
             c = Config(lazy=True)

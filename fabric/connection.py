@@ -92,6 +92,7 @@ class Connection(Context):
 
     .. versionadded:: 2.0
     """
+
     # NOTE: these are initialized here to hint to invoke.Config.__setattr__
     # that they should be treated as real attributes instead of config proxies.
     # (Additionally, we're doing this instead of using invoke.Config._set() so
@@ -245,9 +246,7 @@ class Connection(Context):
 
         shorthand = self.derive_shorthand(host)
         host = shorthand["host"]
-        err = (
-            "You supplied the {} via both shorthand and kwarg! Please pick one."  # noqa
-        )
+        err = "You supplied the {} via both shorthand and kwarg! Please pick one."  # noqa
         if shorthand["user"] is not None:
             if user is not None:
                 raise ValueError(err.format("user"))
@@ -291,6 +290,9 @@ class Connection(Context):
                     # Happily, ProxyJump uses identical format to our host
                     # shorthand...
                     if prev_gw is None:
+                        # TODO: this isn't persisting config! which among other
+                        # things can lead to not honoring skipping ssh config
+                        # file loads...
                         cxn = Connection(hop)
                     else:
                         cxn = Connection(hop, gateway=prev_gw)
@@ -351,7 +353,7 @@ class Connection(Context):
             # .connect_kwargs attributewise, but otherwise it feels better to
             # do it early instead of late.
             connect_kwargs = self.config.connect_kwargs
-        # Special case: key_filenames gets merged instead of overridden.
+        # Special case: key_filename gets merged instead of overridden.
         # TODO: probably want some sorta smart merging generally, special cases
         # are bad.
         elif "key_filename" in self.config.connect_kwargs:
@@ -361,7 +363,7 @@ class Connection(Context):
             # CLI flag value.)
             connect_kwargs["key_filename"] = conf_val + kwarg_val
 
-        # SSH config identityfile values come last in the key_filenames
+        # SSH config identityfile values come last in the key_filename
         # 'hierarchy'.
         if "identityfile" in self.ssh_config:
             connect_kwargs.setdefault("key_filename", [])
@@ -462,19 +464,13 @@ class Connection(Context):
         # Short-circuit
         if self.is_connected:
             return
-        err = (
-            "Refusing to be ambiguous: connect() kwarg '{}' was given both via regular arg and via connect_kwargs!"  # noqa
-        )
+        err = "Refusing to be ambiguous: connect() kwarg '{}' was given both via regular arg and via connect_kwargs!"  # noqa
         # These may not be given, period
-        for (
-            key
-        ) in (
-            """
+        for key in """
             hostname
             port
             username
-        """.split()
-        ):
+        """.split():
             if key in self.connect_kwargs:
                 raise ValueError(err.format(key))
         # These may be given one way or the other, but not both

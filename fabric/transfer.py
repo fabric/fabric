@@ -22,6 +22,7 @@ class Transfer(object):
 
     .. versionadded:: 2.0
     """
+
     # TODO: SFTP clear default, but how to do SCP? subclass? init kwarg?
 
     def __init__(self, connection):
@@ -255,6 +256,7 @@ class Result(object):
 
     .. versionadded:: 2.0
     """
+
     # TODO: how does this differ from put vs get? field stating which? (feels
     # meh) distinct classes differing, for now, solely by name? (also meh)
     def __init__(self, local, orig_local, remote, orig_remote, connection):

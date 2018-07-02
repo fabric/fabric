@@ -7,7 +7,6 @@ from .exceptions import NothingToDo
 
 # TODO: come up w/ a better name heh
 class FabExecutor(Executor):
-
     def expand_calls(self, calls, apply_hosts=True):
         # Generate new call list with per-host variants & Connections inserted
         ret = []

@@ -52,6 +52,18 @@ environment variable, e.g.::
     The value of the environment variable doesn't matter, as long as it is not
     empty.
 
+``fabric`` and ``fabric2`` vs ``fabric3``
+-----------------------------------------
+
+Unfortunately, the ``fabric3`` entry on PyPI is an unauthorized fork of Fabric
+1.x which we do not control. Once modern Fabric gets up to 3.x, 4.x etc, we'll
+likely continue distributing it via both ``fabric`` and ``fabric2`` for
+convenience; there will never be any official ``fabric3``, ``fabric4`` etc.
+
+In other words, ``fabric2`` is purely there to help users of 1.x cross the 2.0
+"major rewrite" barrier; future major versions will *not* be large rewrites and
+will only have small sets of backward incompatibilities.
+
 Inability to ``pip install -e`` both versions
 ---------------------------------------------
 
