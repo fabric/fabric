@@ -1,0 +1,5 @@
+============
+``executor``
+============
+
+.. automodule:: fabric.executor

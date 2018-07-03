@@ -1,12 +1,26 @@
-from invoke import Call, Executor, Task
+import invoke
+from invoke import Call, Task
 from invoke.util import debug
 
 from . import Connection
 from .exceptions import NothingToDo
 
 
-# TODO: come up w/ a better name heh
-class FabExecutor(Executor):
+class Executor(invoke.Executor):
+    """
+    `~invoke.executor.Executor` subclass which understands Fabric concepts.
+
+    Designed to work in tandem with Fabric's `@task
+    <fabric.tasks.task>`/`~fabric.tasks.Task`, and is capable of acting on
+    information stored on the resulting objects -- such as default host lists.
+
+    This class is written to be backwards compatible with vanilla Invoke-level
+    tasks, which it simply delegates to its superclass.
+
+    Please see the parent class' `documentation <invoke.executor.Executor>` for
+    details on most public API members and object lifecycle.
+    """
+
     def expand_calls(self, calls, apply_hosts=True):
         # Generate new call list with per-host variants & Connections inserted
         ret = []

@@ -45,6 +45,17 @@ def task(*args, **kwargs):
           bake in more complex info (eg ``connect_timeout``, ``connect_kwargs``
           params like auth info, etc).
 
+        These two value types *may* be mixed together in the same list, though
+        we recommend that you keep things homogenous when possible, to avoid
+        confusion when debugging.
+
+        .. note::
+            No automatic deduplication of values is performed; if you pass in
+            multiple references to the same effective target host, the wrapped
+            task will execute on that host multiple times (including making
+            separate connections).
+
     .. versionadded:: 2.1
     """
-    pass
+    # TODO: things to args/kwargs
+    return invoke.task(*args, **kwargs)

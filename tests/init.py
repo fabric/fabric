@@ -1,5 +1,5 @@
 import fabric
-from fabric import _version, connection, runners, group, tasks
+from fabric import _version, connection, runners, group, tasks, executor
 
 
 class init:
@@ -38,3 +38,6 @@ class init:
 
     def Task(self):
         assert fabric.Task is tasks.Task
+
+    def Executor(self):
+        assert fabric.Executor is executor.Executor

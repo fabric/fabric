@@ -11,8 +11,7 @@ from invoke import __version__ as invoke
 from paramiko import __version__ as paramiko
 
 from . import __version__ as fabric
-from . import Config
-from .executor import FabExecutor
+from . import Config, Executor
 
 
 class Fab(Program):
@@ -130,8 +129,5 @@ class Fab(Program):
 
 
 program = Fab(
-    name="Fabric",
-    version=fabric,
-    executor_class=FabExecutor,
-    config_class=Config,
+    name="Fabric", version=fabric, executor_class=Executor, config_class=Config
 )
