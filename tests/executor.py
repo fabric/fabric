@@ -1,13 +1,14 @@
-from invoke import Collection, Context
+from invoke import Collection, Context, Call
 from invoke.parser import ParseResult, ParserContext, Argument
 from fabric import Executor, Task, Connection
+from fabric.executor import ConnectionCall
 from fabric.exceptions import NothingToDo
 
 from mock import Mock
 from pytest import skip, raises  # noqa
 
 
-def _execute(val=None, post=None, remainder=""):
+def _get_executor(val=None, post=None, remainder=""):
     post_tasks = []
     if post is not None:
         post_tasks.append(post)
@@ -15,10 +16,16 @@ def _execute(val=None, post=None, remainder=""):
     hosts.value = val
     core_args = ParseResult([ParserContext(args=[hosts])])
     core_args.remainder = remainder
-    task = Mock()
+    task = Mock(pre=[], post=[])
     coll = Collection(mytask=Task(task, post=post_tasks))
-    executor = Executor(coll, core=core_args)
-    executor.execute("mytask")
+    return task, Executor(coll, core=core_args)
+
+
+def _execute(val=None, post=None, remainder="", invocation=None):
+    if invocation is None:
+        invocation = ["mytask"]
+    task, executor = _get_executor(val, post, remainder)
+    executor.execute(*invocation)
     return task
 
 
@@ -48,15 +55,23 @@ class Executor_:
                     _execute(remainder="whatever")
 
             def creates_anonymous_call_per_host(self):
+                # TODO: annoying to do w/o mucking around w/ our Executor class
+                # more, and that stuff wants to change semi soon anyways when
+                # we grow past --hosts; punting.
                 skip()
 
         class dedupe:
             def deduplication_not_performed(self):
-                skip()
+                task = _execute(invocation=["mytask", "mytask"])
+                assert task.call_count == 2  # not 1
 
         class parameterize:
             def always_generates_ConnectionCall_with_host_attr(self):
-                skip()
+                task, executor = _get_executor(val="host1,host2,host3")
+                calls = executor.expand_calls(calls=[Call(task)])
+                assert len(calls) == 3
+                assert all(isinstance(x, ConnectionCall) for x in calls)
+                assert [x.host for x in calls] == ["host1", "host2", "host3"]
 
 
 # TODO: add new tests for desired interpretation of @hosts-driven .hosts attrs
