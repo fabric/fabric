@@ -2,14 +2,32 @@
 
 from pytest import skip  # noqa
 
-from fabric import Task
+from fabric import Task, task
 from fabric.tasks import ConnectionCall
 
 
 class Task_:
     def accepts_Invoke_level_init_kwargs(self):
-        # Random selection of init kwargs show up in result
-        skip()
+        # Arbitrarily selected list of invoke-level kwargs...
+        def body(c, parts):
+            "I am a docstring"
+            pass
+
+        t = Task(
+            body=body,
+            name="dadbod",
+            aliases=["heavenly", "check", "shop"],
+            default=True,
+            help={"parts": "See: the sum of"},
+            iterable=["parts"],
+        )
+        assert t.body is body
+        assert t.__doc__ == "I am a docstring"
+        assert t.name == "dadbod"
+        assert "heavenly" in t.aliases
+        assert t.is_default
+        assert "parts" in t.help
+        assert "parts" in t.iterable
 
     def allows_hosts_kwarg(self):
         # NOTE: most tests are below, in @task tests
@@ -18,8 +36,26 @@ class Task_:
 
 class task_:
     def accepts_Invoke_level_kwargs(self):
-        # Random selection of kwargs show up in result
-        skip()
+        # Arbitrarily selected list of invoke-level kwargs...
+        def body(c, parts):
+            "I am a docstring"
+            pass
+
+        # Faux @task()
+        t = task(
+            name="dadbod",
+            aliases=["heavenly", "check", "shop"],
+            default=True,
+            help={"parts": "See: the sum of"},
+            iterable=["parts"],
+        )(body)
+        assert t.body is body
+        assert t.__doc__ == "I am a docstring"
+        assert t.name == "dadbod"
+        assert "heavenly" in t.aliases
+        assert t.is_default
+        assert "parts" in t.help
+        assert "parts" in t.iterable
 
     def returns_Fabric_level_Task_instance(self):
         skip()

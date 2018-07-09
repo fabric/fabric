@@ -14,6 +14,8 @@ class Task(invoke.Task):
     .. versionadded:: 2.1
     """
 
+    pass
+
 
 def task(*args, **kwargs):
     """
