@@ -6,12 +6,15 @@ from mock import Mock
 from pytest import skip  # noqa
 
 
-def _execute_task(val=None):
+def _execute_task(val=None, post=None):
+    post_tasks = []
+    if post is not None:
+        post_tasks.append(post)
     hosts = Argument(name="hosts")
     hosts.value = val
     core_args = ParseResult([ParserContext(args=[hosts])])
     task = Mock()
-    coll = Collection(mytask=Task(task))
+    coll = Collection(mytask=Task(task, post=post_tasks))
     executor = Executor(coll, core=core_args)
     executor.execute("mytask")
     return task
@@ -32,7 +35,10 @@ class Executor_:
                 assert isinstance(task.call_args[0][0], Connection)
 
             def post_tasks_happen_once_only(self):
-                skip()
+                post = Mock()
+                task = _execute_task(val="host1,host2,host3", post=Task(post))
+                assert task.call_count == 3
+                assert post.call_count == 1
 
         class remainder:
             def raises_NothingToDo_when_no_hosts(self):
