@@ -70,3 +70,9 @@ class ConnectionCall(invoke.Call):
 
     def make_context(self, config):
         return Connection(host=self.host, config=config)
+
+    def __repr__(self):
+        ret = super(ConnectionCall, self).__repr__()
+        if self.host:
+            ret = ret[:-1] + ", host='{}'>".format(self.host)
+        return ret
