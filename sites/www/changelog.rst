@@ -5,6 +5,7 @@ Changelog
 .. note::
     Looking for the Fabric 1.x changelog? See :doc:`/changelog-v1`.
 
+- :support:`-` Updated the minimum required Invoke version to ``1.1``.
 - :feature:`1772` ``@hosts`` is back -- as a `@task <fabric.tasks.task>`/`Task
   <fabric.tasks.Task>` parameter of the same name. Acts much like a per-task
   :option:`--hosts`, but can optionally take dicts of `.Connection` kwargs as

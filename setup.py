@@ -68,7 +68,7 @@ setuptools.setup(
     author_email="jeff@bitprophet.org",
     url="http://fabfile.org",
     install_requires=[
-        "invoke>=1.0,<2.0",
+        "invoke>=1.1,<2.0",
         "paramiko>=2.4",
         "cryptography>=1.1",
     ],
