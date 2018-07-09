@@ -62,6 +62,9 @@ def task(*args, **kwargs):
     .. versionadded:: 2.1
     """
     # TODO: things to args/kwargs
+    # Override klass to be our own Task, not Invoke's, unless somebody gave it
+    # explicitly.
+    kwargs.setdefault("klass", Task)
     return invoke.task(*args, **kwargs)
 
 
