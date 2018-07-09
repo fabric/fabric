@@ -2,7 +2,7 @@ import invoke
 from invoke import Call, Task
 from invoke.util import debug
 
-from . import Connection
+from .tasks import ConnectionCall
 from .exceptions import NothingToDo
 
 
@@ -88,12 +88,3 @@ class Executor(invoke.Executor):
         # TODO: might want some deduplication later on though - falls under
         # "how to mesh parameterization with pre/post/etc deduping".
         return tasks
-
-
-class ConnectionCall(Call):
-    """
-    Subclass of `invoke.tasks.Call` that generates `Connections <.Connection>`.
-    """
-
-    def make_context(self, config):
-        return Connection(host=self.host, config=config)

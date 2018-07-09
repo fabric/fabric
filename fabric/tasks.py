@@ -1,5 +1,7 @@
 import invoke
 
+from .connection import Connection
+
 
 class Task(invoke.Task):
     """
@@ -59,3 +61,12 @@ def task(*args, **kwargs):
     """
     # TODO: things to args/kwargs
     return invoke.task(*args, **kwargs)
+
+
+class ConnectionCall(invoke.Call):
+    """
+    Subclass of `invoke.tasks.Call` that generates `Connections <.Connection>`.
+    """
+
+    def make_context(self, config):
+        return Connection(host=self.host, config=config)
