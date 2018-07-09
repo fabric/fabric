@@ -61,6 +61,13 @@ class task_:
     def returns_Fabric_level_Task_instance(self):
         assert isinstance(fabric.task(Mock()), fabric.Task)
 
+    def does_not_touch_klass_kwarg_if_explicitly_given(self):
+        # Otherwise sub-subclassers would be screwed, yea?
+        class SubFabTask(fabric.Task):
+            pass
+
+        assert isinstance(fabric.task(klass=SubFabTask)(Mock()), SubFabTask)
+
     class hosts_kwarg:
         # NOTE: these don't currently test anything besides "the value given is
         # attached as .hosts" but they guard against regressions and ensures
