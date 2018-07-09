@@ -1,8 +1,9 @@
 # NOTE: named task.py, not tasks.py, to avoid some occasional pytest weirdness
 
+from mock import Mock
 from pytest import skip  # noqa
 
-from fabric import Task, task
+import fabric
 from fabric.tasks import ConnectionCall
 
 
@@ -13,7 +14,7 @@ class Task_:
             "I am a docstring"
             pass
 
-        t = Task(
+        t = fabric.Task(
             body=body,
             name="dadbod",
             aliases=["heavenly", "check", "shop"],
@@ -42,7 +43,7 @@ class task_:
             pass
 
         # Faux @task()
-        t = task(
+        t = fabric.task(
             name="dadbod",
             aliases=["heavenly", "check", "shop"],
             default=True,
@@ -58,7 +59,7 @@ class task_:
         assert "parts" in t.iterable
 
     def returns_Fabric_level_Task_instance(self):
-        skip()
+        assert isinstance(fabric.task(Mock()), fabric.Task)
 
     class hosts_kwarg:
         # NOTE: these don't currently test anything besides "the value given is
@@ -82,7 +83,7 @@ class ConnectionCall_:
             def mytask(c):
                 pass
 
-            call = ConnectionCall(Task(body=mytask))
+            call = ConnectionCall(fabric.Task(body=mytask))
             call.host = "user@host"
             expected = "<ConnectionCall 'mytask', args: (), kwargs: {}, host='user@host'>"  # noqa
             assert str(call) == expected
