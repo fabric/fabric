@@ -8,8 +8,8 @@ class Task(invoke.Task):
     Extends `invoke.tasks.Task` with knowledge of target hosts and similar.
 
     As `invoke.tasks.Task` relegates documentation responsibility to its `@task
-    <invoke.tasks.task>` expression, so we relegate most of our useful docs to
-    our own `@task <fabric.tasks.task>` - please see its docs for details.
+    <invoke.tasks.task>` expression, so we relegate most details to our version
+    of `@task <fabric.tasks.task>` - please see its docs for details.
 
     .. versionadded:: 2.1
     """
