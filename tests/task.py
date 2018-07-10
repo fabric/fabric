@@ -100,6 +100,19 @@ def _dummy(c):
 
 
 class ConnectionCall_:
+    class init:
+        "__init__"
+
+        def inherits_regular_kwargs(self):
+            t = fabric.Task(_dummy)
+            call = ConnectionCall(
+                task=t, called_as="meh", args=["5"], kwargs={"kwarg": "val"}
+            )
+            assert call.task is t
+            assert call.called_as == "meh"
+            assert call.args == ["5"]
+            assert call.kwargs["kwarg"] == "val"
+
     class str:
         "___str__"
 
