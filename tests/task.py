@@ -95,15 +95,16 @@ class task_:
             self._run([{"host": "host1"}, "user@host2"])
 
 
+def _dummy(c):
+    pass
+
+
 class ConnectionCall_:
     class str:
         "___str__"
 
         def includes_host_attribute(self):
-            def mytask(c):
-                pass
-
-            call = ConnectionCall(fabric.Task(body=mytask))
+            call = ConnectionCall(fabric.Task(body=_dummy))
             call.host = "user@host"
-            expected = "<ConnectionCall 'mytask', args: (), kwargs: {}, host='user@host'>"  # noqa
+            expected = "<ConnectionCall '_dummy', args: (), kwargs: {}, host='user@host'>"  # noqa
             assert str(call) == expected
