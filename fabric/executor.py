@@ -21,13 +21,31 @@ class Executor(invoke.Executor):
     details on most public API members and object lifecycle.
     """
 
+    def normalize_hosts(self, hosts):
+        """
+        Normalize mixed host-strings-or-kwarg-dicts into kwarg dicts only.
+
+        :param hosts:
+            Potentially heterogenous list of host connection values, as per the
+            ``hosts`` param to `.task`.
+
+        :returns: Homogenous list of Connection init kwarg dicts.
+        """
+        dicts = []
+        for value in hosts or []:
+            # Assume first posarg to Connection() if not already a dict.
+            if not isinstance(value, dict):
+                value = dict(host=value)
+            dicts.append(value)
+        return dicts
+
     def expand_calls(self, calls, apply_hosts=True):
         # Generate new call list with per-host variants & Connections inserted
         ret = []
-        hosts = []
+        cli_hosts = []
         host_str = self.core[0].args.hosts.value
         if apply_hosts and host_str:
-            hosts = host_str.split(",")
+            cli_hosts = host_str.split(",")
         for call in calls:
             if isinstance(call, Task):
                 call = Call(task=call)
@@ -38,12 +56,16 @@ class Executor(invoke.Executor):
             # TODO: roles, other non-runtime host parameterizations, etc
             # Pre-tasks get added only once, not once per host.
             ret.extend(self.expand_calls(call.pre, apply_hosts=False))
-            # Main task, per host
-            for host in hosts:
-                ret.append(self.parameterize(call, host))
-            # Deal with lack of hosts arg (acts same as `inv` in that case)
+            # Determine final desired host list based on CLI and task values
+            # (with CLI, being closer to runtime, winning) and normalize to
+            # Connection-init kwargs.
+            cxn_params = self.normalize_hosts(cli_hosts or call.hosts)
+            # Main task, per host/connection
+            for init_kwargs in cxn_params:
+                ret.append(self.parameterize(call, init_kwargs))
+            # Deal with lack of hosts list (acts same as `inv` in that case)
             # TODO: no tests for this branch?
-            if not hosts:
+            if not cxn_params:
                 ret.append(call)
             # Post-tasks added once, not once per host.
             ret.extend(self.expand_calls(call.post, apply_hosts=False))
@@ -51,7 +73,7 @@ class Executor(invoke.Executor):
         if self.core.remainder:
             # TODO: this will need to change once there are more options for
             # setting host lists besides "-H or 100% within-task"
-            if not hosts:
+            if not cli_hosts:
                 raise NothingToDo(
                     "Was told to run a command, but not given any hosts to run it on!"  # noqa
                 )
@@ -66,20 +88,29 @@ class Executor(invoke.Executor):
             # TODO: see above TODOs about non-parameterized setups, roles etc
             # TODO: will likely need to refactor that logic some more so it can
             # be used both there and here.
-            for host in hosts:
-                ret.append(self.parameterize(anon, host))
+            for init_kwargs in self.normalize_hosts(cli_hosts):
+                ret.append(self.parameterize(anon, init_kwargs))
         return ret
 
-    def parameterize(self, call, host):
+    def parameterize(self, call, connection_init_kwargs):
         """
         Parameterize a Call with its Context set to a per-host Connection.
+
+        :param call:
+            The generic `.Call` being parameterized.
+        :param connection_init_kwargs:
+            The dict of `.Connection` init params/kwargs to attach to the
+            resulting `.ConnectionCall`.
+
+        :returns:
+            `.ConnectionCall`.
         """
-        debug("Parameterizing {!r} for host {!r}".format(call, host))
-        # Generate a custom ConnectionCall that knows how to yield a Connection
-        # in its make_context(), specifically one to the host requested here.
-        clone = call.clone(into=ConnectionCall)
-        # TODO: using bag-of-attrs is mildly gross but whatever, I'll take it.
-        clone.host = host
+        msg = "Parameterizing {!r} with Connection kwargs {!r}"
+        debug(msg.format(call, connection_init_kwargs))
+        # Generate a custom ConnectionCall that has init_kwargs (used for
+        # creating the Connection at runtime) set to the requested params.
+        new_call_kwargs = dict(init_kwargs=connection_init_kwargs)
+        clone = call.clone(into=ConnectionCall, with_=new_call_kwargs)
         return clone
 
     def dedupe(self, tasks):

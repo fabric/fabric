@@ -113,6 +113,13 @@ class ConnectionCall_:
             assert call.args == ["5"]
             assert call.kwargs["kwarg"] == "val"
 
+        def extends_with_init_kwargs_kwarg(self):
+            call = ConnectionCall(
+                task=fabric.Task(_dummy),
+                init_kwargs={"host": "server", "port": 2222},
+            )
+            assert call.init_kwargs["port"] == 2222
+
     class str:
         "___str__"
 

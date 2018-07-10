@@ -50,6 +50,44 @@ class Executor_:
                 assert task.call_count == 3
                 assert post.call_count == 1
 
+        # TODO: add higher level tests somewhere too?
+        class hosts_attribute_on_task_objects:
+            def parameterization_per_host(self):
+                task = _execute(hosts_kwarg=["host1", "host2", "host3"])
+                assert task.call_count == 3
+                assert isinstance(task.call_args[0][0], Connection)
+
+            def post_tasks_happen_once_only(self):
+                post = Mock()
+                task = _execute(
+                    hosts_kwarg=["host1", "host2", "host3"], post=Task(post)
+                )
+                assert task.call_count == 3
+                assert post.call_count == 1
+
+            def may_give_Connection_kwargs_as_values(self):
+                task = _execute(
+                    hosts_kwarg=[
+                        {"host": "host1"},
+                        {"host": "host2", "user": "doge"},
+                    ]
+                )
+                assert task.call_count == 2
+                expected = [
+                    Connection("host1"),
+                    Connection("host2", user="doge"),
+                ]
+                assert [x[0][0] for x in task.call_args_list] == expected
+
+        # TODO: add higher level tests somewhere too?
+        class hosts_flag_vs_attributes:
+            def flag_wins(self):
+                task = _execute(
+                    hosts_flag="via-flag", hosts_kwarg=["via-kwarg"]
+                )
+                assert task.call_count == 1
+                assert task.call_args[0][0] == Connection(host="via-flag")
+
         class remainder:
             def raises_NothingToDo_when_no_hosts(self):
                 with raises(NothingToDo):
