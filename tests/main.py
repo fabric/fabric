@@ -188,7 +188,50 @@ Third!
 """.lstrip()
                 assert output == expected
 
-    class no_hosts_flag:
+    class hosts_task_arg_parameterizes_tasks:
+        # NOTE: many of these just rely on MockRemote's builtin
+        # "channel.exec_command called with given command string" asserts.
+
+        def single_string_is_single_exec(self, remote):
+            remote.expect(host="myhost", cmd="nope")
+            with cd(support):
+                # TODO: @task(hosts=['myhost'])
+                _run_fab("defaults-to-myhost")
+
+        def multiple_strings_is_multiple_host_args(self, remote):
+            remote.expect_sessions(
+                Session("host1", cmd="nope"), Session("host2", cmd="nope")
+            )
+            with cd(support):
+                # TODO: @task(hosts=['host1', 'host2'])
+                _run_fab("defaults-two-hosts")
+
+        def host_string_shorthand_works_ok(self, remote):
+            remote.expect(host="host1", port=1234, user="someuser")
+            with cd(support):
+                # TODO: @task(hosts=['someuser@host1:1234'])
+                _run_fab("defaults-to-host-stringlike")
+
+        def may_give_Connection_init_kwarg_dicts(self, remote):
+            remote.expect_sessions(
+                Session("host1", user="admin", cmd="nope"),
+                Session("host2", cmd="nope"),
+            )
+            with cd(support):
+                # TODO: @task(hosts=[{'host': 'host1', 'user': 'admin'},
+                # {'host': 'host2'}])
+                _run_fab("defaults-to-init-kwargs")
+
+        def may_give_mixed_value_types(self, remote):
+            remote.expect_sessions(
+                Session("host1", user="admin", cmd="nope"),
+                Session("host2", cmd="nope"),
+            )
+            with cd(support):
+                # TODO: @task(hosts=['admin@host1', {'host': 'host2'}])
+                _run_fab("defaults-to-mixed-values")
+
+    class no_hosts_flag_or_task_arg:
         def calls_task_once_with_invoke_context(self):
             with cd(support):
                 _run_fab("expect-vanilla-Context")
