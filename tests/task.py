@@ -106,7 +106,11 @@ class ConnectionCall_:
         def inherits_regular_kwargs(self):
             t = fabric.Task(_dummy)
             call = ConnectionCall(
-                task=t, called_as="meh", args=["5"], kwargs={"kwarg": "val"}
+                task=t,
+                called_as="meh",
+                args=["5"],
+                kwargs={"kwarg": "val"},
+                init_kwargs={},  # whatever
             )
             assert call.task is t
             assert call.called_as == "meh"
@@ -123,8 +127,14 @@ class ConnectionCall_:
     class str:
         "___str__"
 
-        def includes_host_attribute(self):
-            call = ConnectionCall(fabric.Task(body=_dummy))
-            call.host = "user@host"
-            expected = "<ConnectionCall '_dummy', args: (), kwargs: {}, host='user@host'>"  # noqa
+        def includes_init_kwargs_host_value(self):
+            call = ConnectionCall(
+                fabric.Task(body=_dummy),
+                init_kwargs=dict(host="host", user="user"),
+            )
+            # TODO: worth using some subset of real Connection repr() in here?
+            # For now, just stick with hostname.
+            expected = (
+                "<ConnectionCall '_dummy', args: (), kwargs: {}, host='host'>"
+            )  # noqa
             assert str(call) == expected
