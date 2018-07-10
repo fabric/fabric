@@ -13,7 +13,8 @@ def _get_executor(hosts_flag=None, hosts_kwarg=None, post=None, remainder=""):
     if post is not None:
         post_tasks.append(post)
     hosts = Argument(name="hosts")
-    hosts.value = hosts_flag
+    if hosts_flag is not None:
+        hosts.value = hosts_flag
     core_args = ParseResult([ParserContext(args=[hosts])])
     core_args.remainder = remainder
     task = Mock(pre=[], post=[])
@@ -110,4 +111,8 @@ class Executor_:
                 calls = executor.expand_calls(calls=[Call(task)])
                 assert len(calls) == 3
                 assert all(isinstance(x, ConnectionCall) for x in calls)
-                assert [x.host for x in calls] == ["host1", "host2", "host3"]
+                assert [x.init_kwargs["host"] for x in calls] == [
+                    "host1",
+                    "host2",
+                    "host3",
+                ]
