@@ -72,7 +72,7 @@ class Executor(invoke.Executor):
 
     def parameterize(self, call, host):
         """
-        Parameterize a Call with its Context set to a per-host Config.
+        Parameterize a Call with its Context set to a per-host Connection.
         """
         debug("Parameterizing {!r} for host {!r}".format(call, host))
         # Generate a custom ConnectionCall that knows how to yield a Connection
