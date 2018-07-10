@@ -14,7 +14,11 @@ class Task(invoke.Task):
     .. versionadded:: 2.1
     """
 
-    pass
+    def __init__(self, *args, **kwargs):
+        # Pull out our own kwargs before hitting super, which will TypeError on
+        # anything it doesn't know about.
+        self.hosts = kwargs.pop("hosts", None)
+        super(Task, self).__init__(*args, **kwargs)
 
 
 def task(*args, **kwargs):
@@ -61,7 +65,6 @@ def task(*args, **kwargs):
 
     .. versionadded:: 2.1
     """
-    # TODO: things to args/kwargs
     # Override klass to be our own Task, not Invoke's, unless somebody gave it
     # explicitly.
     kwargs.setdefault("klass", Task)

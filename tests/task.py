@@ -32,7 +32,7 @@ class Task_:
 
     def allows_hosts_kwarg(self):
         # NOTE: most tests are below, in @task tests
-        skip()
+        assert fabric.Task(Mock(), hosts=["user@host"]).hosts == ["user@host"]
 
 
 class task_:
@@ -72,14 +72,27 @@ class task_:
         # NOTE: these don't currently test anything besides "the value given is
         # attached as .hosts" but they guard against regressions and ensures
         # things work as documented, even if Executor is what really cares.
+        def _run(self, hosts):
+            @fabric.task(hosts=hosts)
+            def mytask(c):
+                pass
+
+            assert mytask.hosts == hosts
+
         def values_may_be_connection_first_posarg_strings(self):
-            skip()
+            self._run(["host1", "user@host2", "host3:2222"])
 
         def values_may_be_Connection_constructor_kwarg_dicts(self):
-            skip()
+            self._run(
+                [
+                    {"host": "host1"},
+                    {"host": "host2", "user": "user"},
+                    {"host": "host3", "port": 2222},
+                ]
+            )
 
         def values_may_be_mixed(self):
-            skip()
+            self._run([{"host": "host1"}, "user@host2"])
 
 
 class ConnectionCall_:
