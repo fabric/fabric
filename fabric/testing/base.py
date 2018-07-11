@@ -62,6 +62,11 @@ class Command(object):
         self.exit = exit
         self.waits = waits
 
+    def __repr__(self):
+        # TODO: just leverage attrs, maybe vendored into Invoke so we don't
+        # grow more dependencies? Ehhh
+        return "<{} cmd={!r}>".format(self.__class__.__name__, self.cmd)
+
 
 class MockChannel(Mock):
     """

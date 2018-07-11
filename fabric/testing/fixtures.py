@@ -78,12 +78,14 @@ def remote():
 
     Yields a `.MockRemote` object (which may need to be updated via
     `.MockRemote.expect`, `.MockRemote.expect_sessions`, etc; otherwise a
-    default session will be used) & calls `.MockRemote.stop` on teardown.
+    default session will be used) & calls `.MockRemote.sanity` and
+    `.MockRemote.stop` on teardown.
 
     .. versionadded:: 2.1
     """
     remote = MockRemote()
     yield remote
+    remote.sanity()
     remote.stop()
 
 

@@ -5,6 +5,9 @@ Changelog
 .. note::
     Looking for the Fabric 1.x changelog? See :doc:`/changelog-v1`.
 
+- :bug:`-` The `fabric.testing.fixtures.remote` pytest fixture was found to not
+  be properly executing expectation/sanity tests on teardown; this was an
+  oversight and has been fixed.
 - :support:`-` Updated the minimum required Invoke version to ``1.1``.
 - :feature:`1772` ``@hosts`` is back -- as a `@task <fabric.tasks.task>`/`Task
   <fabric.tasks.Task>` parameter of the same name. Acts much like a per-task
