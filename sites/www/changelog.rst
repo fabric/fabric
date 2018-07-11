@@ -5,6 +5,9 @@ Changelog
 .. note::
     Looking for the Fabric 1.x changelog? See :doc:`/changelog-v1`.
 
+- :bug:`-` The `fabric.testing.fixtures.remote` pytest fixture was found to not
+  be properly executing expectation/sanity tests on teardown; this was an
+  oversight and has been fixed.
 - :bug:`1753` Set one of our test modules to skip user/system SSH config file
   loading by default, as it was too easy to forget to do so for tests aimed at
   related functionality. Reported by Chris Rose.
