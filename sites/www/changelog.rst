@@ -5,6 +5,9 @@ Changelog
 .. note::
     Looking for the Fabric 1.x changelog? See :doc:`/changelog-v1`.
 
+- :bug:`-` The `fabric.testing.fixtures.remote` pytest fixture was found to not
+  be properly executing expectation/sanity tests on teardown; this was an
+  oversight and has been fixed.
 - :feature:`1766` Reinstate support for use as ``python -m fabric``, which (as
   in v1) now behaves identically to invoking ``fab``. Thanks to
   ``@RupeshPatro`` for the original patchset.
