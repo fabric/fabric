@@ -82,9 +82,14 @@ Available tasks:
   expect-mutation-to-fail
   expect-vanilla-Context
   first
+  hosts-are-host-stringlike
+  hosts-are-init-kwargs
+  hosts-are-mixed-values
+  hosts-are-myhost
   mutate
   second
   third
+  two-hosts
 
 """.lstrip(),
                 )
@@ -195,22 +200,19 @@ Third!
         def single_string_is_single_exec(self, remote):
             remote.expect(host="myhost", cmd="nope")
             with cd(support):
-                # TODO: @task(hosts=['myhost'])
-                _run_fab("defaults-to-myhost")
+                _run_fab("hosts-are-myhost")
 
         def multiple_strings_is_multiple_host_args(self, remote):
             remote.expect_sessions(
                 Session("host1", cmd="nope"), Session("host2", cmd="nope")
             )
             with cd(support):
-                # TODO: @task(hosts=['host1', 'host2'])
-                _run_fab("defaults-two-hosts")
+                _run_fab("two-hosts")
 
         def host_string_shorthand_works_ok(self, remote):
             remote.expect(host="host1", port=1234, user="someuser")
             with cd(support):
-                # TODO: @task(hosts=['someuser@host1:1234'])
-                _run_fab("defaults-to-host-stringlike")
+                _run_fab("hosts-are-host-stringlike")
 
         def may_give_Connection_init_kwarg_dicts(self, remote):
             remote.expect_sessions(
@@ -218,9 +220,7 @@ Third!
                 Session("host2", cmd="nope"),
             )
             with cd(support):
-                # TODO: @task(hosts=[{'host': 'host1', 'user': 'admin'},
-                # {'host': 'host2'}])
-                _run_fab("defaults-to-init-kwargs")
+                _run_fab("hosts-are-init-kwargs")
 
         def may_give_mixed_value_types(self, remote):
             remote.expect_sessions(
@@ -228,8 +228,7 @@ Third!
                 Session("host2", cmd="nope"),
             )
             with cd(support):
-                # TODO: @task(hosts=['admin@host1', {'host': 'host2'}])
-                _run_fab("defaults-to-mixed-values")
+                _run_fab("hosts-are-mixed-values")
 
     class no_hosts_flag_or_task_arg:
         def calls_task_once_with_invoke_context(self):

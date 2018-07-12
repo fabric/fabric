@@ -76,3 +76,28 @@ def second(c, show_host=False):
         print("Second: {}".format(c.host))
     else:
         print("Second!")
+
+
+@task(hosts=["myhost"])
+def hosts_are_myhost(c):
+    c.run("nope")
+
+
+@task(hosts=["host1", "host2"])
+def two_hosts(c):
+    c.run("nope")
+
+
+@task(hosts=["someuser@host1:1234"])
+def hosts_are_host_stringlike(c):
+    c.run("nope")
+
+
+@task(hosts=["admin@host1", {"host": "host2"}])
+def hosts_are_mixed_values(c):
+    c.run("nope")
+
+
+@task(hosts=[{"host": "host1", "user": "admin"}, {"host": "host2"}])
+def hosts_are_init_kwargs(c):
+    c.run("nope")
