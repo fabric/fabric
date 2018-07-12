@@ -1321,7 +1321,8 @@ following:
 
 ::
 
-    from invoke import task, Exit
+    from fabric import task
+    from invoke import Exit
     from invocations.console import confirm
 
 Host list
