@@ -5,6 +5,8 @@ Changelog
 .. note::
     Looking for the Fabric 1.x changelog? See :doc:`/changelog-v1`.
 
+- :release:`2.1.4 <2018-07-13>`
+- :release:`2.0.3 <2018-07-13>`
 - :bug:`-` The `fabric.testing.fixtures.remote` pytest fixture was found to not
   be properly executing expectation/sanity tests on teardown; this was an
   oversight and has been fixed.
