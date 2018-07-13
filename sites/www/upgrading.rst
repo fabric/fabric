@@ -296,8 +296,8 @@ Task functions & decorators
         task uses
       - Ported
       - Reinstated as the ``hosts`` parameter of `@task <fabric.tasks.task>`.
-        Further, it can now handle dicts of `.Connection` kwargs in addition to
-        simple host strings.
+        Further, it can now handle dicts of `fabric.connection.Connection`
+        kwargs in addition to simple host strings.
     * - ``@roles`` for determining the default list of group-of-host targets a
         given task uses
       - Pending
