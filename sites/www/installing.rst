@@ -153,27 +153,3 @@ downloading official releases, you have the following options:
 For information on the hows and whys of Fabric development, including which
 branches may be of interest and how you can help out, please see the
 :doc:`development` page.
-
-
-.. _pypm:
-
-ActivePython and PyPM
-=====================
-
-Windows users who already have ActiveState's `ActivePython
-<http://www.activestate.com/activepython/downloads>`_ distribution installed
-may find Fabric is best installed with `its package manager, PyPM
-<http://code.activestate.com/pypm/>`_. Below is example output from an
-installation of Fabric via ``pypm``::
-
-    C:\> pypm install fabric
-    The following packages will be installed into "%APPDATA%\Python" (2.7):
-     paramiko-2.1.1 cryptography-1.4 fabric-2.0.0
-    Get: [pypm-free.activestate.com] fabric 2.0.0
-    Get: [pypm-free.activestate.com] paramiko 2.1.1
-    Get: [pypm-free.activestate.com] cryptography 1.4
-    Installing paramiko-2.1.1
-    Installing cryptography-1.4
-    Installing fabric-2.0.0
-    Fixing script %APPDATA%\Python\Scripts\fab-script.py
-    C:\>

@@ -91,27 +91,3 @@ details.
     
     Python 2.5 is unaffected, as it requires the PyPI version of
     ``multiprocessing``, which is newer than that shipped with Python <2.6.3.
-
-
-.. _pypm-1.x:
-
-ActivePython and PyPM
-=====================
-
-Windows users who already have ActiveState's `ActivePython
-<http://www.activestate.com/activepython/downloads>`_ distribution installed
-may find Fabric is best installed with `its package manager, PyPM
-<http://code.activestate.com/pypm/>`_. Below is example output from an
-installation of Fabric via ``pypm``::
-
-    C:\> pypm install fabric
-    The following packages will be installed into "%APPDATA%\Python" (2.7):
-     paramiko-1.7.8 pycrypto-2.4 fabric-1.3.0
-    Get: [pypm-free.activestate.com] fabric 1.3.0
-    Get: [pypm-free.activestate.com] paramiko 1.7.8
-    Get: [pypm-free.activestate.com] pycrypto 2.4
-    Installing paramiko-1.7.8
-    Installing pycrypto-2.4
-    Installing fabric-1.3.0
-    Fixing script %APPDATA%\Python\Scripts\fab-script.py
-    C:\>
