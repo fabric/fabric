@@ -13,16 +13,19 @@ strongly encouraged to upgrade to 2.x when possible.
 Basic installation
 ==================
 
-Fabric is best installed via `pip <http://pip-installer.org>`_::
+Fabric is best installed via `pip <http://pip-installer.org>`_; to ensure you
+get Fabric 1 instead of the new but incompatible Fabric 2, specify ``<2.0``::
 
-    $ pip install fabric
+    $ pip install 'fabric<2.0'
 
-All advanced ``pip`` use cases work too, such as::
+All advanced ``pip`` use cases work too, such as installing the latest copy of
+the ``v1`` development branch::
 
-    $ pip install -e git+https://github.com/fabric/fabric
+    $ pip install -e 'git+https://github.com/fabric/fabric@v1#egg=fabric'
 
 Or cloning the Git repository and running::
 
+    $ git checkout v1
     $ pip install -e .
 
 within it.
@@ -32,6 +35,8 @@ are typically older and harder to support), typically called ``fabric`` or
 ``python-fabric``. E.g.::
 
     $ sudo apt-get install fabric
+
+.. note:: Make sure to confirm which major version is currently packaged!
 
 
 Dependencies
