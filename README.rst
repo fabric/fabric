@@ -4,7 +4,7 @@ What is Fabric?
 Fabric is a high level Python (2.7, 3.4+) library designed to execute shell
 commands remotely over SSH, yielding useful Python objects in return::
 
-    >>> from fabric import Connection
+    >>> from fabric.connection import Connection
     >>> result = Connection('web1.example.com').run('uname -s')
     >>> msg = "Ran {.command!r} on {.connection.host}, got stdout:\n{.stdout}"
     >>> print(msg.format(result))
