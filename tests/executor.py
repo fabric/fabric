@@ -84,7 +84,8 @@ class Executor_:
             def execution_happens_normally_without_parameterization(self):
                 body = Mock(pre=[], post=[])
                 coll = Collection(mytask=InvokeTask(body))
-                core_args = ParseResult([ParserContext()])
+                hosts = Argument(name="hosts")
+                core_args = ParseResult([ParserContext(args=[hosts])])
                 # When #1824 present, this just blows up because no .hosts attr
                 Executor(coll, core=core_args).execute("mytask")
                 assert body.call_count == 1

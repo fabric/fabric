@@ -59,7 +59,8 @@ class Executor(invoke.Executor):
             # Determine final desired host list based on CLI and task values
             # (with CLI, being closer to runtime, winning) and normalize to
             # Connection-init kwargs.
-            cxn_params = self.normalize_hosts(cli_hosts or call.hosts)
+            call_hosts = getattr(call, "hosts", None)
+            cxn_params = self.normalize_hosts(cli_hosts or call_hosts)
             # Main task, per host/connection
             for init_kwargs in cxn_params:
                 ret.append(self.parameterize(call, init_kwargs))

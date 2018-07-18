@@ -105,4 +105,5 @@ def hosts_are_init_kwargs(c):
 
 @invtask
 def vanilla_Task_works_ok(c):
-    c.run("nope")
+    assert isinstance(c, Context)
+    assert not isinstance(c, Connection)
