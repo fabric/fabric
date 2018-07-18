@@ -17,9 +17,10 @@ def _get_executor(hosts_flag=None, hosts_kwarg=None, post=None, remainder=""):
         hosts.value = hosts_flag
     core_args = ParseResult([ParserContext(args=[hosts])])
     core_args.remainder = remainder
-    task = Mock(pre=[], post=[])
-    coll = Collection(mytask=Task(task, post=post_tasks, hosts=hosts_kwarg))
-    return task, Executor(coll, core=core_args)
+    body = Mock(pre=[], post=[])
+    task = Task(body, post=post_tasks, hosts=hosts_kwarg)
+    coll = Collection(mytask=task)
+    return body, Executor(coll, core=core_args)
 
 
 def _execute(**kwargs):
