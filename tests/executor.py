@@ -51,7 +51,6 @@ class Executor_:
                 assert task.call_count == 3
                 assert post.call_count == 1
 
-        # TODO: add higher level tests somewhere too?
         class hosts_attribute_on_task_objects:
             def parameterization_per_host(self):
                 task = _execute(hosts_kwarg=["host1", "host2", "host3"])
@@ -80,7 +79,6 @@ class Executor_:
                 ]
                 assert [x[0][0] for x in task.call_args_list] == expected
 
-        # TODO: add higher level tests somewhere too?
         class hosts_flag_vs_attributes:
             def flag_wins(self):
                 task = _execute(
