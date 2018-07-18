@@ -1,4 +1,4 @@
-from invoke import Collection, Context, Call
+from invoke import Collection, Context, Call, Task as InvokeTask
 from invoke.parser import ParseResult, ParserContext, Argument
 from fabric import Executor, Task, Connection
 from fabric.executor import ConnectionCall
@@ -79,6 +79,24 @@ class Executor_:
                     Connection("host2", user="doge"),
                 ]
                 assert [x[0][0] for x in task.call_args_list] == expected
+
+        class Invoke_task_objects_without_hosts_attribute_still_work:
+            def execution_happens_normally_without_parameterization(self):
+                body = Mock(pre=[], post=[])
+                coll = Collection(mytask=InvokeTask(body))
+                core_args = ParseResult([ParserContext()])
+                # When #1824 present, this just blows up because no .hosts attr
+                Executor(coll, core=core_args).execute("mytask")
+                assert body.call_count == 1
+
+            def hosts_flag_still_triggers_parameterization(self):
+                body = Mock(pre=[], post=[])
+                coll = Collection(mytask=InvokeTask(body))
+                hosts = Argument(name="hosts")
+                hosts.value = "host1,host2,host3"
+                core_args = ParseResult([ParserContext(args=[hosts])])
+                Executor(coll, core=core_args).execute("mytask")
+                assert body.call_count == 3
 
         class hosts_flag_vs_attributes:
             def flag_wins(self):
