@@ -5,6 +5,9 @@ Changelog
 .. note::
     Looking for the Fabric 1.x changelog? See :doc:`/changelog-v1`.
 
+- :bug:`1824` The changes implementing :issue:`1772` failed to properly account
+  for backwards compatibility with Invoke-level task objects. This has been
+  fixed; thanks to ``@ilovezfs`` and others for the report.
 - :release:`2.2.0 <2018-07-13>`
 - :release:`2.1.4 <2018-07-13>`
 - :release:`2.0.3 <2018-07-13>`

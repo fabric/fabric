@@ -90,6 +90,7 @@ Available tasks:
   second
   third
   two-hosts
+  vanilla-Task-works-ok
 
 """.lstrip(),
                 )
@@ -234,6 +235,10 @@ Third!
         def calls_task_once_with_invoke_context(self):
             with cd(support):
                 _run_fab("expect-vanilla-Context")
+
+        def vanilla_Invoke_task_works_too(self):
+            with cd(support):
+                _run_fab("vanilla-Task-works-ok")
 
         @raises(NothingToDo)
         def generates_exception_if_combined_with_remainder(self):

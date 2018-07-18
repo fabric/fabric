@@ -1,4 +1,4 @@
-from invoke import Collection, Context, Call
+from invoke import Collection, Context, Call, Task as InvokeTask
 from invoke.parser import ParseResult, ParserContext, Argument
 from fabric import Executor, Task, Connection
 from fabric.executor import ConnectionCall
@@ -17,9 +17,10 @@ def _get_executor(hosts_flag=None, hosts_kwarg=None, post=None, remainder=""):
         hosts.value = hosts_flag
     core_args = ParseResult([ParserContext(args=[hosts])])
     core_args.remainder = remainder
-    task = Mock(pre=[], post=[])
-    coll = Collection(mytask=Task(task, post=post_tasks, hosts=hosts_kwarg))
-    return task, Executor(coll, core=core_args)
+    body = Mock(pre=[], post=[])
+    task = Task(body, post=post_tasks, hosts=hosts_kwarg)
+    coll = Collection(mytask=task)
+    return body, Executor(coll, core=core_args)
 
 
 def _execute(**kwargs):
@@ -51,7 +52,6 @@ class Executor_:
                 assert task.call_count == 3
                 assert post.call_count == 1
 
-        # TODO: add higher level tests somewhere too?
         class hosts_attribute_on_task_objects:
             def parameterization_per_host(self):
                 task = _execute(hosts_kwarg=["host1", "host2", "host3"])
@@ -80,7 +80,25 @@ class Executor_:
                 ]
                 assert [x[0][0] for x in task.call_args_list] == expected
 
-        # TODO: add higher level tests somewhere too?
+        class Invoke_task_objects_without_hosts_attribute_still_work:
+            def execution_happens_normally_without_parameterization(self):
+                body = Mock(pre=[], post=[])
+                coll = Collection(mytask=InvokeTask(body))
+                hosts = Argument(name="hosts")
+                core_args = ParseResult([ParserContext(args=[hosts])])
+                # When #1824 present, this just blows up because no .hosts attr
+                Executor(coll, core=core_args).execute("mytask")
+                assert body.call_count == 1
+
+            def hosts_flag_still_triggers_parameterization(self):
+                body = Mock(pre=[], post=[])
+                coll = Collection(mytask=InvokeTask(body))
+                hosts = Argument(name="hosts")
+                hosts.value = "host1,host2,host3"
+                core_args = ParseResult([ParserContext(args=[hosts])])
+                Executor(coll, core=core_args).execute("mytask")
+                assert body.call_count == 3
+
         class hosts_flag_vs_attributes:
             def flag_wins(self):
                 task = _execute(

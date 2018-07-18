@@ -1,4 +1,4 @@
-from invoke import Context
+from invoke import Context, task as invtask
 from fabric import task, Connection
 
 
@@ -101,3 +101,9 @@ def hosts_are_mixed_values(c):
 @task(hosts=[{"host": "host1", "user": "admin"}, {"host": "host2"}])
 def hosts_are_init_kwargs(c):
     c.run("nope")
+
+
+@invtask
+def vanilla_Task_works_ok(c):
+    assert isinstance(c, Context)
+    assert not isinstance(c, Connection)
