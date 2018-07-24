@@ -5,6 +5,7 @@ except ImportError:
 
 from mock import Mock, call
 from pytest_relaxed import raises
+from pytest import skip  # noqa
 from paramiko import SFTPAttributes
 
 from fabric import Connection
@@ -142,9 +143,10 @@ class Transfer_:
                 )
 
             def accepts_local_and_remote_kwargs(self, sftp_objs):
-                transfer, client = sftp_objs
+                transfer, sftp = sftp_objs
+                # NOTE: default mock stat is file-ish, so path won't be munged
                 transfer.put(local="path2", remote="path1")
-                client.put.assert_called_with(
+                sftp.put.assert_called_with(
                     localpath="/local/path2", remotepath="/remote/path1"
                 )
 
