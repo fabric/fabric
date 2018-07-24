@@ -161,6 +161,17 @@ class Transfer_:
                 # TODO: timing info
                 # TODO: bytes-transferred info
 
+        class remote_end_is_directory:
+            def appends_local_file_basename(self, sftp_objs):
+                xfer, sftp = sftp_objs
+                sftp.stat.return_value.st_mode = 0o41777
+                xfer.put(local="file.txt", remote="/dir/path/")
+                sftp.stat.assert_called_once_with("/dir/path/")
+                sftp.put.assert_called_with(
+                    localpath="/local/file.txt",
+                    remotepath="/dir/path/file.txt",
+                )
+
         class path_arg_edge_cases:
             def remote_None_uses_local_filename(self, transfer):
                 assert transfer.put("file").remote == "/remote/file"
