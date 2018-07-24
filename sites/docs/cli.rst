@@ -37,7 +37,7 @@ Options & arguments
     Typically this can be thought of as identical to ``ssh -i <path>``, i.e.
     supplying a specific, runtime private key file.
 
-    Default:: ``None``.
+    Default: ``None``.
 
 .. option:: --prompt-for-passphrase
 
