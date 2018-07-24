@@ -79,7 +79,7 @@ class Group(list):
             Added ``**kwargs`` (was previously only ``*hosts``).
         """
         # TODO: #563, #388 (could be here or higher up in Program area)
-        self.extend(map(Connection, hosts))
+        self.extend([Connection(host, **kwargs) for host in hosts])
 
     @classmethod
     def from_connections(cls, connections):
