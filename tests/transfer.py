@@ -129,9 +129,9 @@ class Transfer_:
 
             def accepts_local_and_remote_kwargs(self, sftp_objs):
                 transfer, client = sftp_objs
-                transfer.put(remote="path1", local="path2")
+                transfer.put(local="path2", remote="path1")
                 client.put.assert_called_with(
-                    remotepath="/remote/path1", localpath="/local/path2"
+                    localpath="/local/path2", remotepath="/remote/path1"
                 )
 
             def returns_rich_Result_object(self, transfer):
