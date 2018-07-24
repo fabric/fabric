@@ -29,15 +29,15 @@ Options & arguments
 
 .. option:: -i, --identity
 
-    Appends the given file path string to the ``key_filename`` value in the
-    ``connect_kwargs`` config setting (which is read by `.Connection`, and
-    eventually makes its way into Paramiko; see the docstring for `.Connection`
-    for details.)
+    Overrides the ``key_filename`` value in the ``connect_kwargs`` config
+    setting (which is read by `.Connection`, and eventually makes its way into
+    Paramiko; see the docstring for `.Connection` for details.)
 
     Typically this can be thought of as identical to ``ssh -i <path>``, i.e.
-    supplying a specific, runtime private key file.
+    supplying a specific, runtime private key file. Like ``ssh -i``, it builds
+    an iterable of strings and may be given multiple times.
 
-    Default:: ``None``.
+    Default: ``[]``.
 
 .. option:: --prompt-for-passphrase
 
