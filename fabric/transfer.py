@@ -239,7 +239,6 @@ class Transfer(object):
             # Set mode to same as local end
             # TODO: Push this down into SFTPClient sometime (requires backwards
             # incompat release.)
-            #
             if preserve_mode:
                 local_mode = os.stat(local).st_mode
                 mode = stat.S_IMODE(local_mode)
