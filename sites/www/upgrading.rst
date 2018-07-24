@@ -990,6 +990,12 @@ functions from v1.
 
         For one potential workaround, see the ``rsync`` function in `patchwork
         <https://github.com/fabric/patchwork>`_.
+    * - Remote file path tilde expansion
+      - Removed
+      - This behavior is ultimately unnecessary (one can simply leave the
+        tilde off for the same result) and had a few pernicious bugs of its
+        own, so it's gone.
+
 
 .. _upgrading-configuration:
 
