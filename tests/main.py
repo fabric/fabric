@@ -243,3 +243,20 @@ Third!
                 value="mypassphrase",
                 prompt="Enter passphrase for use unlocking SSH keys: ",
             )
+
+    class configuration_updating_and_merging:
+        def key_filename_can_be_set_via_non_override_config_levels(self):
+            # Proves/protects against #1762, where eg key_filenames gets
+            # 'reset' to an empty list. Arbitrarily uses the 'yml' level of
+            # test fixtures, which has a fabric.yml w/ a
+            # connect_kwargs.key_filename value of [private.key, other.key].
+            with cd(os.path.join(support, "yml_conf")):
+                fab_program.run("fab expect-conf-key-filename")
+
+        def key_filename_merges_with_cli_identity(self):
+            # TODO: maybe extend to the others like ssh_config too, but all
+            # those sources are tested in Connection tests already; we just
+            # want to make sure that pile of junk and this pile of junk go well
+            # together.
+            with cd(os.path.join(support, "yml_conf")):
+                fab_program.run("fab -i cli.key expect-both-key-filename")

@@ -1,1 +1,5 @@
 it_came_from: yml
+connect_kwargs:
+  key_filename:
+    - private.key
+    - other.key
