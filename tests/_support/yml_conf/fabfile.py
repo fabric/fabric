@@ -14,7 +14,7 @@ def expect_conf_key_filename(c):
 
 
 @task
-def expect_both_key_filename(c):
-    expected = ["private.key", "other.key", "cli.key"]
+def expect_cli_key_filename(c):
+    expected = ["cli.key"]
     got = c.connect_kwargs.key_filename
     assert got == expected, "{!r} != {!r}".format(got, expected)

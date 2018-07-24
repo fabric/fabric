@@ -6,9 +6,10 @@ Changelog
     Looking for the Fabric 1.x changelog? See :doc:`/changelog-v1`.
 
 - :bug:`1762` Fix problem where lower configuration levels' setting of
-  ``connect_kwargs.key_filename`` were being overwritten by the CLI-level value
-  (which defaults to an empty list) and thus erased. Both sources are now
-  merged, as intended. Reported by ``@garu57``.
+  ``connect_kwargs.key_filename`` were being overwritten by the CLI
+  ``--identity`` flag's value...even when that value was the empty list.
+  CLI-given values are supposed to win, but not quite that hard. Reported by
+  ``@garu57``.
 - :support:`1653 backported` Clarify `~fabric.transfer.Transfer` API docs
   surrounding remote file paths, such as the lack of tilde expansion (a buggy
   and ultimately unnecessary v1 feature). Thanks to ``@pint12`` for bringing it

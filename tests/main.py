@@ -253,10 +253,6 @@ Third!
             with cd(os.path.join(support, "yml_conf")):
                 fab_program.run("fab expect-conf-key-filename")
 
-        def key_filename_merges_with_cli_identity(self):
-            # TODO: maybe extend to the others like ssh_config too, but all
-            # those sources are tested in Connection tests already; we just
-            # want to make sure that pile of junk and this pile of junk go well
-            # together.
+        def cli_identity_still_overrides_when_non_empty(self):
             with cd(os.path.join(support, "yml_conf")):
-                fab_program.run("fab -i cli.key expect-both-key-filename")
+                fab_program.run("fab -i cli.key expect-cli-key-filename")
