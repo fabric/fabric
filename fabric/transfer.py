@@ -35,8 +35,15 @@ class Transfer(object):
         :param str remote:
             Remote file to download.
 
-            Must evaluate to a file (not a directory). May be relative (from
-            remote CWD, typically connecting user's ``$HOME``) or absolute.
+            May be absolute, or relative to the remote working directory.
+
+            .. note::
+                Most SFTP servers set the remote working directory to the
+                connecting user's home directory, and (unlike most shells) do
+                *not* expand tildes (``~``).
+
+                For example, instead of saying ``get("~/tmp/archive.tgz")``,
+                say ``get("tmp/archive.tgz")``.
 
         :param local:
             Local path to store downloaded file in, or a file-like object.
@@ -147,13 +154,19 @@ class Transfer(object):
             remote file path.
 
         :param str remote:
-            Remote path to which the local file will be written; is subject to
-            similar behavior as that seen by common Unix utilities or OpenSSH's
-            ``sftp`` or ``scp`` tools.
+            Remote path to which the local file will be written.
 
-            If ``None`` or another 'falsey'/empty value is given (the default),
-            the remote current working directory (typically the connecting
-            user's home directory) is assumed.
+            .. note::
+                Most SFTP servers set the remote working directory to the
+                connecting user's home directory, and (unlike most shells) do
+                *not* expand tildes (``~``).
+
+                For example, instead of saying ``put("archive.tgz",
+                "~/tmp/")``, say ``put("archive.tgz", "tmp/")``.
+
+                In addition, this means that 'falsey'/empty values (such as the
+                default value, ``None``) are allowed and result in uploading to
+                the remote home directory.
 
             .. note::
                 When ``local`` is a file-like object, ``remote`` is required

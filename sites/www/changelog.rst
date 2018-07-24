@@ -5,6 +5,10 @@ Changelog
 .. note::
     Looking for the Fabric 1.x changelog? See :doc:`/changelog-v1`.
 
+- :support:`1653 backported` Clarify `~fabric.transfer.Transfer` API docs
+  surrounding remote file paths, such as the lack of tilde expansion (a buggy
+  and ultimately unnecessary v1 feature). Thanks to ``@pint12`` for bringing it
+  up.
 - :release:`2.1.4 <2018-07-13>`
 - :release:`2.0.3 <2018-07-13>`
 - :bug:`-` The `fabric.testing.fixtures.remote` pytest fixture was found to not
