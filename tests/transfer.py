@@ -30,6 +30,20 @@ class Transfer_:
             cxn = Connection("host")
             assert Transfer(cxn).connection is cxn
 
+    class is_remote_dir:
+        def returns_bool_of_stat_ISDIR_flag(self, sftp_objs):
+            xfer, sftp = sftp_objs
+            # Default mocked st_mode is file-like (first octal digit is 1)
+            assert xfer.is_remote_dir("whatever") is False
+            # Set mode directory-ish (first octal digit is 4)
+            sftp.stat.return_value.st_mode = 0o41777
+            assert xfer.is_remote_dir("whatever") is True
+
+        def returns_False_if_stat_raises_IOError(self, sftp_objs):
+            xfer, sftp = sftp_objs
+            sftp.stat.side_effect = IOError
+            assert xfer.is_remote_dir("whatever") is False
+
     class get:
         class basics:
             def accepts_single_remote_path_posarg(self, sftp_objs):

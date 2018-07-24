@@ -32,6 +32,12 @@ class Transfer(object):
     def sftp(self):
         return self.connection.sftp()
 
+    def is_remote_dir(self, path):
+        try:
+            return stat.S_ISDIR(self.sftp.stat(path).st_mode)
+        except IOError:
+            return False
+
     def get(self, remote, local=None, preserve_mode=True):
         """
         Download a file from the current connection to the local filesystem.
