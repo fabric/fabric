@@ -244,3 +244,16 @@ Third!
                 value="mypassphrase",
                 prompt="Enter passphrase for use unlocking SSH keys: ",
             )
+
+    class configuration_updating_and_merging:
+        def key_filename_can_be_set_via_non_override_config_levels(self):
+            # Proves/protects against #1762, where eg key_filenames gets
+            # 'reset' to an empty list. Arbitrarily uses the 'yml' level of
+            # test fixtures, which has a fabric.yml w/ a
+            # connect_kwargs.key_filename value of [private.key, other.key].
+            with cd(os.path.join(support, "yml_conf")):
+                fab_program.run("fab expect-conf-key-filename")
+
+        def cli_identity_still_overrides_when_non_empty(self):
+            with cd(os.path.join(support, "yml_conf")):
+                fab_program.run("fab -i cli.key expect-cli-key-filename")

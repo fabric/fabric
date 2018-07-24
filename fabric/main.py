@@ -110,7 +110,7 @@ class Fab(Program):
         # Config API members around this sort of thing. Shrug.
         connect_kwargs = {}
         path = self.args["identity"].value
-        if path is not None:
+        if path:
             connect_kwargs["key_filename"] = path
         # Secrets prompts that want to happen at handoff time instead of
         # later/at user-time.
