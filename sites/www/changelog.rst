@@ -5,6 +5,15 @@ Changelog
 .. note::
     Looking for the Fabric 1.x changelog? See :doc:`/changelog-v1`.
 
+- :feature:`1831` Grant `~fabric.group.Group` (and subclasses) the ability to
+  take arbitrary keyword arguments and pass them onto the internal
+  `~fabric.connection.Connection` constructors. This allows code such as::
+
+    mygroup = Group('host1', 'host2', 'host3', user='admin')
+
+  which was previously impossible without manually stuffing premade
+  ``Connection`` objects into `Group.from_connections
+  <fabric.group.Group.from_connections>`.
 - :bug:`1762` Fix problem where lower configuration levels' setting of
   ``connect_kwargs.key_filename`` were being overwritten by the CLI
   ``--identity`` flag's value...even when that value was the empty list.

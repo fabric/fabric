@@ -58,13 +58,25 @@ class Group(list):
     .. versionadded:: 2.0
     """
 
-    def __init__(self, *hosts):
+    def __init__(self, *hosts, **kwargs):
         """
-        Create a group of connections from one or more shorthand strings.
+        Create a group of connections from one or more shorthand host strings.
 
         See `.Connection` for details on the format of these strings - they
         will be used as the first positional argument of `.Connection`
         constructors.
+
+        Any keyword arguments given will be forwarded directly to those
+        `.Connection` constructors as well. For example, to get a serially
+        executing group object that connects to ``admin@host1``,
+        ``admin@host2`` and ``admin@host3``, and forwards your SSH agent too::
+
+            group = SerialGroup(
+                "host1", "host2", "host3", user="admin", forward_agent=True,
+            )
+
+        .. versionchanged:: 2.3
+            Added ``**kwargs`` (was previously only ``*hosts``).
         """
         # TODO: #563, #388 (could be here or higher up in Program area)
         self.extend(map(Connection, hosts))

@@ -18,6 +18,15 @@ class Group_:
             assert g[0].host == "foo"
             assert g[1].host == "bar"
 
+        def takes_splat_kwargs_and_passes_them_to_Connections(self):
+            g = Group("foo", "bar", user="admin", forward_agent=True)
+            assert g[0].host == "foo"
+            assert g[0].user == "admin"
+            assert g[0].forward_agent is True
+            assert g[1].host == "bar"
+            assert g[1].user == "admin"
+            assert g[1].forward_agent is True
+
     class from_connections:
         def inits_from_iterable_of_Connections(self):
             g = Group.from_connections((Connection("foo"), Connection("bar")))
