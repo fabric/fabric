@@ -2,7 +2,20 @@ What is Fabric?
 ---------------
 
 Fabric is a high level Python (2.7, 3.4+) library designed to execute shell
-commands remotely over SSH, yielding useful Python objects in return::
+commands remotely over SSH, yielding useful Python objects in return:
+
+.. testsetup:: opener
+
+    mock = MockRemote()
+    # NOTE: hard to get trailing whitespace in a doctest/snippet block, so we
+    # just leave the 'real' newline off here too. Whatever.
+    mock.expect(out=b"Linux")
+
+.. testcleanup:: opener
+
+    mock.stop()
+
+.. doctest:: opener
 
     >>> from fabric import Connection
     >>> result = Connection('web1.example.com').run('uname -s')
