@@ -5,6 +5,11 @@ Changelog
 .. note::
     Looking for the Fabric 1.x changelog? See :doc:`/changelog-v1`.
 
+- :bug:`1749` Improve `~fabric.transfer.Transfer.put` behavior when uploading
+  to directory (vs file) paths, which was documented as working but had not
+  been fully implemented. The local path's basename (or file-like objects'
+  ``.name`` attribute) is now appended to the remote path in this case. Thanks
+  to Peter Uhnak for the report.
 - :bug:`1762` Fix problem where lower configuration levels' setting of
   ``connect_kwargs.key_filename`` were being overwritten by the CLI
   ``--identity`` flag's value...even when that value was the empty list.

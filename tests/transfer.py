@@ -5,6 +5,7 @@ except ImportError:
 
 from mock import Mock, call
 from pytest_relaxed import raises
+from pytest import skip  # noqa
 from paramiko import SFTPAttributes
 
 from fabric import Connection
@@ -29,6 +30,20 @@ class Transfer_:
             # Transfer(Connection()) -> happy, exposes an attribute
             cxn = Connection("host")
             assert Transfer(cxn).connection is cxn
+
+    class is_remote_dir:
+        def returns_bool_of_stat_ISDIR_flag(self, sftp_objs):
+            xfer, sftp = sftp_objs
+            # Default mocked st_mode is file-like (first octal digit is 1)
+            assert xfer.is_remote_dir("whatever") is False
+            # Set mode directory-ish (first octal digit is 4)
+            sftp.stat.return_value.st_mode = 0o41777
+            assert xfer.is_remote_dir("whatever") is True
+
+        def returns_False_if_stat_raises_IOError(self, sftp_objs):
+            xfer, sftp = sftp_objs
+            sftp.stat.side_effect = IOError
+            assert xfer.is_remote_dir("whatever") is False
 
     class get:
         class basics:
@@ -128,10 +143,11 @@ class Transfer_:
                 )
 
             def accepts_local_and_remote_kwargs(self, sftp_objs):
-                transfer, client = sftp_objs
-                transfer.put(remote="path1", local="path2")
-                client.put.assert_called_with(
-                    remotepath="/remote/path1", localpath="/local/path2"
+                transfer, sftp = sftp_objs
+                # NOTE: default mock stat is file-ish, so path won't be munged
+                transfer.put(local="path2", remote="path1")
+                sftp.put.assert_called_with(
+                    localpath="/local/path2", remotepath="/remote/path1"
                 )
 
             def returns_rich_Result_object(self, transfer):
@@ -144,6 +160,37 @@ class Transfer_:
                 assert result.connection is cxn
                 # TODO: timing info
                 # TODO: bytes-transferred info
+
+        class remote_end_is_directory:
+            def appends_local_file_basename(self, sftp_objs):
+                xfer, sftp = sftp_objs
+                sftp.stat.return_value.st_mode = 0o41777
+                xfer.put(local="file.txt", remote="/dir/path/")
+                sftp.stat.assert_called_once_with("/dir/path/")
+                sftp.put.assert_called_with(
+                    localpath="/local/file.txt",
+                    remotepath="/dir/path/file.txt",
+                )
+
+            class file_like_local_objects:
+                def name_attribute_present_appends_like_basename(
+                    self, sftp_objs
+                ):
+                    xfer, sftp = sftp_objs
+                    sftp.stat.return_value.st_mode = 0o41777
+                    local = StringIO("sup\n")
+                    local.name = "sup.txt"
+                    xfer.put(local, remote="/dir/path")
+                    sftp.putfo.assert_called_with(
+                        fl=local, remotepath="/dir/path/sup.txt"
+                    )
+
+                @raises(ValueError)
+                def no_name_attribute_raises_ValueError(self, sftp_objs):
+                    xfer, sftp = sftp_objs
+                    sftp.stat.return_value.st_mode = 0o41777
+                    local = StringIO("sup\n")
+                    xfer.put(local, remote="/dir/path")
 
         class path_arg_edge_cases:
             def remote_None_uses_local_filename(self, transfer):
