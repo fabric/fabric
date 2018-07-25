@@ -520,6 +520,16 @@ class Connection_:
         def hashing_works(self):
             assert hash(Connection("host")) == hash(Connection("host"))
 
+        def sorting_works(self):
+            # Hostname...
+            assert Connection("a-host") < Connection("b-host")
+            # User...
+            assert Connection("a-host", user="a-user") < Connection(
+                "a-host", user="b-user"
+            )
+            # then port...
+            assert Connection("a-host", port=1) < Connection("a-host", port=2)
+
     class open:
         def has_no_required_args_and_returns_None(self, client):
             assert Connection("host").open() is None

@@ -5,6 +5,10 @@ Changelog
 .. note::
     Looking for the Fabric 1.x changelog? See :doc:`/changelog-v1`.
 
+- :bug:`-` Implement ``__lt__`` on `~fabric.connection.Connection` so it can be
+  sorted; this was overlooked when implementing things like ``__eq__`` and
+  ``__hash__``. (No, sorting doesn't usually matter much for this object type,
+  but when you gotta, you gotta...)
 - :support:`1819 backported` Moved example code from the README into the Sphinx
   landing page so that we could apply doctests; includes a bunch of corrections
   to invalid example code! Thanks to Antonio Feitosa for the initial catch &
