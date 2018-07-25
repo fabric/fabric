@@ -12,4 +12,7 @@ class GroupException(Exception):
     """
 
     def __init__(self, result):
+        #: The `.GroupResult` object which would have been returned, had there
+        #: been no errors. See its docstring (and that of `.Group`) for
+        #: details.
         self.result = result

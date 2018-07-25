@@ -28,6 +28,16 @@ class Transfer(object):
     def __init__(self, connection):
         self.connection = connection
 
+    @property
+    def sftp(self):
+        return self.connection.sftp()
+
+    def is_remote_dir(self, path):
+        try:
+            return stat.S_ISDIR(self.sftp.stat(path).st_mode)
+        except IOError:
+            return False
+
     def get(self, remote, local=None, preserve_mode=True):
         """
         Download a file from the current connection to the local filesystem.
@@ -89,13 +99,13 @@ class Transfer(object):
         # instead of overwriting existing files) - this likely ties into the
         # "how to handle recursive/rsync" and "how to handle scp" questions
 
-        sftp = self.connection.sftp()
-
         # Massage remote path
         if not remote:
             raise ValueError("Remote path must not be empty!")
         orig_remote = remote
-        remote = posixpath.join(sftp.getcwd() or sftp.normalize("."), remote)
+        remote = posixpath.join(
+            self.sftp.getcwd() or self.sftp.normalize("."), remote
+        )
 
         # Massage local path:
         # - handle file-ness
@@ -115,14 +125,14 @@ class Transfer(object):
         #
         # If local appears to be a file-like object, use sftp.getfo, not get
         if is_file_like:
-            sftp.getfo(remotepath=remote, fl=local)
+            self.sftp.getfo(remotepath=remote, fl=local)
         else:
-            sftp.get(remotepath=remote, localpath=local)
+            self.sftp.get(remotepath=remote, localpath=local)
             # Set mode to same as remote end
             # TODO: Push this down into SFTPClient sometime (requires backwards
             # incompat release.)
             if preserve_mode:
-                remote_mode = sftp.stat(remote).st_mode
+                remote_mode = self.sftp.stat(remote).st_mode
                 mode = stat.S_IMODE(remote_mode)
                 os.chmod(local, mode)
         # Return something useful
@@ -180,11 +190,6 @@ class Transfer(object):
 
         .. versionadded:: 2.0
         """
-        # TODO: preserve honoring of  "name" attribute of file-like objects as
-        # in v1, so one CAN just upload to a directory? did we just make that
-        # shit up or is it an actual part of the api in newer Pythons?
-        sftp = self.connection.sftp()
-
         if not local:
             raise ValueError("Local path must not be empty!")
 
@@ -192,16 +197,41 @@ class Transfer(object):
 
         # Massage remote path
         orig_remote = remote
+        if is_file_like:
+            local_base = getattr(local, "name", None)
+        else:
+            local_base = os.path.basename(local)
         if not remote:
             if is_file_like:
                 raise ValueError(
                     "Must give non-empty remote path when local is a file-like object!"  # noqa
                 )
             else:
-                remote = os.path.basename(local)
+                remote = local_base
                 debug("Massaged empty remote path into {!r}".format(remote))
+        elif self.is_remote_dir(remote):
+            # non-empty local_base implies a) text file path or b) FLO which
+            # had a non-empty .name attribute. huzzah!
+            if local_base:
+                remote = posixpath.join(remote, local_base)
+            else:
+                if is_file_like:
+                    raise ValueError(
+                        "Can't put a file-like-object into a directory unless it has a non-empty .name attribute!"  # noqa
+                    )
+                else:
+                    # TODO: can we ever really end up here? implies we want to
+                    # reorganize all this logic so it has fewer potential holes
+                    raise ValueError(
+                        "Somehow got an empty local file basename ({!r}) when uploading to a directory ({!r})!".format(  # noqa
+                            local_base, remote
+                        )
+                    )
+
         prejoined_remote = remote
-        remote = posixpath.join(sftp.getcwd() or sftp.normalize("."), remote)
+        remote = posixpath.join(
+            self.sftp.getcwd() or self.sftp.normalize("."), remote
+        )
         if remote != prejoined_remote:
             msg = "Massaged relative remote path {!r} into {!r}"
             debug(msg.format(prejoined_remote, remote))
@@ -230,20 +260,19 @@ class Transfer(object):
             pointer = local.tell()
             try:
                 local.seek(0)
-                sftp.putfo(fl=local, remotepath=remote)
+                self.sftp.putfo(fl=local, remotepath=remote)
             finally:
                 local.seek(pointer)
         else:
             debug("Uploading {!r} to {!r}".format(local, remote))
-            sftp.put(localpath=local, remotepath=remote)
+            self.sftp.put(localpath=local, remotepath=remote)
             # Set mode to same as local end
             # TODO: Push this down into SFTPClient sometime (requires backwards
             # incompat release.)
-            #
             if preserve_mode:
                 local_mode = os.stat(local).st_mode
                 mode = stat.S_IMODE(local_mode)
-                sftp.chmod(remote, mode)
+                self.sftp.chmod(remote, mode)
         # Return something useful
         return Result(
             orig_remote=orig_remote,

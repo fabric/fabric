@@ -2,7 +2,7 @@
 # Invocations for common project tasks
 invocations>=1.0,<2.0
 # pytest-relaxed for test organization, display etc tweaks
-pytest-relaxed==1.0.0
+pytest-relaxed>=1.0.1,<1.1
 pytest==3.2.5
 # pytest-cov for coverage
 pytest-cov==2.5.1
