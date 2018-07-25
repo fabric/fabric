@@ -5,6 +5,8 @@ Changelog
 .. note::
     Looking for the Fabric 1.x changelog? See :doc:`/changelog-v1`.
 
+- :support:`1819 backported` Apply doctests to the README to catch some
+  egregious errors. Thanks to Antonio Feitosa for the initial catch & patch.
 - :bug:`1749` Improve `~fabric.transfer.Transfer.put` behavior when uploading
   to directory (vs file) paths, which was documented as working but had not
   been fully implemented. The local path's basename (or file-like objects'

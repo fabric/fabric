@@ -2,13 +2,26 @@ What is Fabric?
 ---------------
 
 Fabric is a high level Python (2.7, 3.4+) library designed to execute shell
-commands remotely over SSH, yielding useful Python objects in return::
+commands remotely over SSH, yielding useful Python objects in return:
+
+.. testsetup:: opener
+
+    mock = MockRemote()
+    # NOTE: hard to get trailing whitespace in a doctest/snippet block, so we
+    # just leave the 'real' newline off here too. Whatever.
+    mock.expect(out=b"Linux")
+
+.. testcleanup:: opener
+
+    mock.stop()
+
+.. doctest:: opener
 
     >>> from fabric import Connection
-    >>> result = Connection('web1.example.com').run('uname -s')
-    >>> msg = "Ran {.command!r} on {.connection.host}, got stdout:\n{.stdout}"
+    >>> result = Connection('web1.example.com').run('uname -s', hide=True)
+    >>> msg = "Ran {0.command!r} on {0.connection.host}, got stdout:\n{0.stdout}"
     >>> print(msg.format(result))
-    Ran "uname -s" on web1.example.com, got this stdout:
+    Ran 'uname -s' on web1.example.com, got stdout:
     Linux
 
 It builds on top of `Invoke <http://pyinvoke.org>`_ (subprocess command
@@ -28,7 +41,19 @@ How is it used?
 
 Core use cases for Fabric include (but are not limited to):
 
-* Single commands on individual hosts::
+* Single commands on individual hosts:
+
+  .. testsetup:: single-command
+  
+      from fabric import Connection
+      mock = MockRemote()
+      mock.expect(out=b"web1")
+  
+  .. testcleanup:: single-command
+  
+      mock.stop()
+  
+  .. doctest:: single-command
 
       >>> result = Connection('web1').run('hostname')
       web1
@@ -36,19 +61,50 @@ Core use cases for Fabric include (but are not limited to):
       <Result cmd='hostname' exited=0>
 
 * Single commands across multiple hosts (via varying methodologies: serial,
-  parallel, etc)::
+  parallel, etc):
 
+  .. testsetup:: multiple-hosts
+  
+      from fabric import Connection
+      mock = MockRemote()
+      mock.expect_sessions(
+          Session(host='web1', cmd='hostname', out=b'web1\n'),
+          Session(host='web2', cmd='hostname', out=b'web2\n'),
+      )
+  
+  .. testcleanup:: multiple-hosts
+  
+      mock.stop()
+  
+  .. doctest:: multiple-hosts
+
+      >>> from fabric import SerialGroup     
       >>> result = SerialGroup('web1', 'web2').run('hostname')
       web1
       web2
       >>> result
-      {<Connection host=web1>: <Result cmd='whoami' exited=0>, ...}
+      {<Connection host=web1>: <Result cmd='hostname' exited=0>, ...}
 
-* Python code blocks (functions/methods) targeted at individual connections::
+* Python code blocks (functions/methods) targeted at individual connections:
+
+  .. testsetup:: tasks
+  
+      from fabric import Connection
+      mock = MockRemote()
+      mock.expect(commands=[
+          Command("uname -s", out=b"Linux\n"),
+          Command("df -h / | tail -n1 | awk '{print $5}'", out=b'33%\n'),
+      ])
+  
+  .. testcleanup:: tasks
+  
+      mock.stop()
+  
+  .. doctest:: tasks
 
       >>> def disk_free(c):
-      >>>     uname = c.run('uname -s', hide=True)
-      >>>     if 'Linux' in uname:
+      ...     uname = c.run('uname -s', hide=True)
+      ...     if 'Linux' in uname.stdout:
       ...         command = "df -h / | tail -n1 | awk '{print $5}'"
       ...         return c.run(command, hide=True).stdout.strip()
       ...     err = "No idea how to get disk space on {}!".format(uname)
@@ -57,10 +113,41 @@ Core use cases for Fabric include (but are not limited to):
       >>> disk_free(Connection('web1'))
       '33%'
 
-* Python code blocks on multiple hosts::
+* Python code blocks on multiple hosts:
 
+  .. testsetup:: tasks-on-multiple-hosts
+  
+      from fabric import Connection, SerialGroup
+      mock = MockRemote()
+      mock.expect_sessions(
+        Session(host='web1', commands=[
+          Command("uname -s", out=b"Linux\n"),
+          Command("df -h / | tail -n1 | awk '{print $5}'", out=b'33%\n'),
+        ]),
+        Session(host='web2', commands=[
+          Command("uname -s", out=b"Linux\n"),
+          Command("df -h / | tail -n1 | awk '{print $5}'", out=b'17%\n'),
+        ]),
+        Session(host='db1', commands=[
+          Command("uname -s", out=b"Linux\n"),
+          Command("df -h / | tail -n1 | awk '{print $5}'", out=b'2%\n'),
+        ]),
+      )
+  
+  .. testcleanup:: tasks-on-multiple-hosts
+  
+      mock.stop()
+  
+  .. doctest:: tasks-on-multiple-hosts
+
+      >>> # NOTE: Same code as above!
       >>> def disk_free(c):
-      ...     # same as above!
+      ...     uname = c.run('uname -s', hide=True)
+      ...     if 'Linux' in uname.stdout:
+      ...         command = "df -h / | tail -n1 | awk '{print $5}'"
+      ...         return c.run(command, hide=True).stdout.strip()
+      ...     err = "No idea how to get disk space on {}!".format(uname)
+      ...     raise Exit(err)
       ...
       >>> {c: disk_free(c) for c in SerialGroup('web1', 'web2', 'db1')}
       {<Connection host=web1>: '33%', <Connection host=web2>: '17%', ...}
