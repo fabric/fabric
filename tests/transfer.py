@@ -172,6 +172,26 @@ class Transfer_:
                     remotepath="/dir/path/file.txt",
                 )
 
+            class file_like_local_objects:
+                def name_attribute_present_appends_like_basename(
+                    self, sftp_objs
+                ):
+                    xfer, sftp = sftp_objs
+                    sftp.stat.return_value.st_mode = 0o41777
+                    local = StringIO("sup\n")
+                    local.name = "sup.txt"
+                    xfer.put(local, remote="/dir/path")
+                    sftp.putfo.assert_called_with(
+                        fl=local, remotepath="/dir/path/sup.txt"
+                    )
+
+                @raises(ValueError)
+                def no_name_attribute_raises_ValueError(self, sftp_objs):
+                    xfer, sftp = sftp_objs
+                    sftp.stat.return_value.st_mode = 0o41777
+                    local = StringIO("sup\n")
+                    xfer.put(local, remote="/dir/path")
+
         class path_arg_edge_cases:
             def remote_None_uses_local_filename(self, transfer):
                 assert transfer.put("file").remote == "/remote/file"

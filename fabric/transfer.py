@@ -190,10 +190,6 @@ class Transfer(object):
 
         .. versionadded:: 2.0
         """
-        # TODO: preserve honoring of  "name" attribute of file-like objects as
-        # in v1, so one CAN just upload to a directory? did we just make that
-        # shit up or is it an actual part of the api in newer Pythons?
-
         if not local:
             raise ValueError("Local path must not be empty!")
 
@@ -201,14 +197,37 @@ class Transfer(object):
 
         # Massage remote path
         orig_remote = remote
+        if is_file_like:
+            local_base = getattr(local, "name", None)
+        else:
+            local_base = os.path.basename(local)
         if not remote:
             if is_file_like:
                 raise ValueError(
                     "Must give non-empty remote path when local is a file-like object!"  # noqa
                 )
             else:
-                remote = os.path.basename(local)
+                remote = local_base
                 debug("Massaged empty remote path into {!r}".format(remote))
+        elif self.is_remote_dir(remote):
+            # non-empty local_base implies a) text file path or b) FLO which
+            # had a non-empty .name attribute. huzzah!
+            if local_base:
+                remote = posixpath.join(remote, local_base)
+            else:
+                if is_file_like:
+                    raise ValueError(
+                        "Can't put a file-like-object into a directory unless it has a non-empty .name attribute!"  # noqa
+                    )
+                else:
+                    # TODO: can we ever really end up here? implies we want to
+                    # reorganize all this logic so it has fewer potential holes
+                    raise ValueError(
+                        "Somehow got an empty local file basename ({!r}) when uploading to a directory ({!r})!".format(  # noqa
+                            local_base, remote
+                        )
+                    )
+
         prejoined_remote = remote
         remote = posixpath.join(
             self.sftp.getcwd() or self.sftp.normalize("."), remote
