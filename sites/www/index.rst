@@ -106,8 +106,8 @@ Core use cases for Fabric include (but are not limited to):
       ...     err = "No idea how to get disk space on {}!".format(uname)
       ...     raise Exit(err)
       ...
-      >>> disk_free(Connection('web1'))
-      '33%'
+      >>> print(disk_free(Connection('web1')))
+      33%
 
 * Python code blocks on multiple hosts:
 
@@ -145,8 +145,11 @@ Core use cases for Fabric include (but are not limited to):
       ...     err = "No idea how to get disk space on {}!".format(uname)
       ...     raise Exit(err)
       ...
-      >>> {c: disk_free(c) for c in SerialGroup('web1', 'web2', 'db1')}
-      {<Connection host=web1>: '33%', <Connection host=web2>: '17%', ...}
+      >>> for cxn in SerialGroup('web1', 'web2', 'db1'):
+      ...    print("{}: {}".format(cxn, disk_free(cxn)))
+      <Connection host=web1>: 33%
+      <Connection host=web2>: 17%
+      <Connection host=db1>: 2%
 
 In addition to these library-oriented use cases, Fabric makes it easy to
 integrate with Invoke's command-line task functionality, invoking via a ``fab``
