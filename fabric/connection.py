@@ -409,6 +409,9 @@ class Connection(Context):
             return False
         return self._identity() == other._identity()
 
+    def __lt__(self, other):
+        return self._identity() < other._identity()
+
     def __hash__(self):
         # NOTE: this departs from Context/DataProxy, which is not usefully
         # hashable.

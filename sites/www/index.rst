@@ -85,8 +85,9 @@ Core use cases for Fabric include (but are not limited to):
       >>> result = SerialGroup('web1', 'web2').run('hostname')
       web1
       web2
-      >>> result
-      {<Connection host=web1>: <Result cmd='hostname' exited=0>, ...}
+      >>> # Sorting for consistency...it's a dict!
+      >>> sorted(result.items())
+      [(<Connection host=web1>, <Result cmd='hostname' exited=0>), ...]
 
 * Python code blocks (functions/methods) targeted at individual connections:
 
