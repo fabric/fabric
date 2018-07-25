@@ -30,13 +30,6 @@ execution and command-line features) and `Paramiko <http://paramiko.org>`_ (SSH
 protocol implementation), extending their APIs to complement one another and
 provide additional functionality.
 
-.. note::
-    Fabric users may also be interested in two *strictly optional* libraries
-    which implement best-practice user-level code: `Invocations
-    <https://invocations.readthedocs.io>`_ (Invoke-only, locally-focused CLI
-    tasks) and `Patchwork <https://fabric-patchwork.readthedocs.io>`_
-    (remote-friendly, typically shell-command-focused, utility functions).
-
 How is it used?
 ---------------
 
