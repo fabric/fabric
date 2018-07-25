@@ -18,10 +18,10 @@ commands remotely over SSH, yielding useful Python objects in return:
 .. doctest:: opener
 
     >>> from fabric import Connection
-    >>> result = Connection('web1.example.com').run('uname -s')
+    >>> result = Connection('web1.example.com').run('uname -s', hide=True)
     >>> msg = "Ran {0.command!r} on {0.connection.host}, got stdout:\n{0.stdout}"
     >>> print(msg.format(result))
-    Ran "uname -s" on web1.example.com, got this stdout:
+    Ran 'uname -s' on web1.example.com, got stdout:
     Linux
 
 It builds on top of `Invoke <http://pyinvoke.org>`_ (subprocess command
