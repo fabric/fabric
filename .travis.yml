@@ -61,7 +61,7 @@ script:
   # user...
   - inv travis.sudo-run "inv integration --capture=no"
   # Websites build OK? (Not on PyPy3, Sphinx is all "who the hell are you?" =/
-  - "if [[ $TRAVIS_PYTHON_VERSION != 'pypy3' ]]; then inv sites docs.doctest; fi"
+  - "if [[ $TRAVIS_PYTHON_VERSION != 'pypy3' ]]; then inv sites www.doctest docs.doctest; fi"
   # Did we break setup.py?
   - inv travis.test-installation --package=fabric --sanity="fab --version"
   # Test distribution builds.
