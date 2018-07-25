@@ -1,5 +1,5 @@
 import os
-from os.path import join, dirname
+from os.path import join, dirname, abspath
 from datetime import datetime
 
 import alabaster
@@ -31,6 +31,14 @@ html_theme_options = {
 html_sidebars = {
     "**": ["about.html", "navigation.html", "searchbox.html", "donate.html"]
 }
+
+# Enable & configure doctest
+extensions.append("sphinx.ext.doctest")
+# Import mock tooling from unit tests' _util.py
+doctest_path = [abspath(join(dirname(__file__), "..", "tests"))]
+doctest_global_setup = r"""
+from _util import MockRemote, MockSFTP, Session, Command
+"""
 
 on_rtd = os.environ.get("READTHEDOCS") == "True"
 on_travis = os.environ.get("TRAVIS", False)
