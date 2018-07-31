@@ -18,7 +18,7 @@ from _util import expect, Session, support, config_file, trap
 
 
 # Crappy helper to inject a test-only runtime config into test invocations.
-# TODO: consider e.g. having Invoke grow something like INVOKE_RUNTIME_CONF=xxx
+# TODO: leverage INVOKE_RUNTIME_CONFIG
 def _run_fab(argstr, **kwargs):
     cmd = "fab -f {} {}".format(config_file, argstr)
     return fab_program.run(cmd, **kwargs)
