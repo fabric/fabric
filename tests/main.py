@@ -20,6 +20,11 @@ from _util import expect, Session, support, config_file, trap
 # Designate a runtime config file intended for the test environment; it does
 # things like automatically mute stdin so test harnesses that care about stdin
 # don't get upset.
+# NOTE: this requires the test environment to have Invoke 1.1.0 or above; for
+# now this is fine as we don't do a big serious matrix, we typically use Invoke
+# master to allow testing in-dev changes.
+# TODO: if that _changes_ then we may have to rethink this so that it goes back
+# to being testable on Invoke >=1.0 instead of >=1.1...
 os.environ["INVOKE_RUNTIME_CONFIG"] = config_file
 
 
