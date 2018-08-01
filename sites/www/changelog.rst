@@ -5,6 +5,7 @@ Changelog
 .. note::
     Looking for the Fabric 1.x changelog? See :doc:`/changelog-v1`.
 
+- :release:`2.0.4 <2018-07-31>`
 - :bug:`-` Implement ``__lt__`` on `~fabric.connection.Connection` so it can be
   sorted; this was overlooked when implementing things like ``__eq__`` and
   ``__hash__``. (No, sorting doesn't usually matter much for this object type,
