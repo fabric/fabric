@@ -11,6 +11,11 @@ your question is not answered here.
     Most API examples and links are for version 2 and up; FAQs specific to
     version 1 will typically be marked as such.
 
+.. warning::
+    Many questions about shell command execution and task behavior are answered
+    on `Invoke's FAQ page <http://www.pyinvoke.org/faq.html>`_ - please check
+    there also!
+
 .. _one-shell-per-command:
 
 My (``cd``/``workon``/``export``/etc) calls don't seem to work!
