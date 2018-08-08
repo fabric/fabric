@@ -15,6 +15,19 @@ class Remote(Runner):
     .. versionadded:: 2.0
     """
 
+    def __init__(self, *args, **kwargs):
+        """
+        Thin wrapper for superclass' ``__init__``; please see it for details.
+
+        Additional keyword arguments defined here are listed below.
+
+        :param bool inline_env:
+            Whether to 'inline' shell env vars as prefixed parameters, instead
+            of trying to submit them via `.Channel.update_environment`.
+            Default:: ``False``.
+        """
+        super(Remote, self).__init__(*args, **kwargs)
+
     def start(self, command, shell, env):
         self.channel = self.context.create_session()
         if self.using_pty:

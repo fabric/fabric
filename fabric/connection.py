@@ -218,6 +218,22 @@ class Connection(Context):
 
             Default: ``config.connect_kwargs``.
 
+        :param bool inline_ssh_env:
+            Whether to send environment variables "inline" as prefixes in front
+            of command strings (``VARNAME=value mycommand here``), instead of
+            trying to submit them through the SSH protocol itself (which is the
+            default behavior). This is necessary if the remote server has a
+            restricted ``AcceptEnv`` setting (which is the common default).
+
+            The default value is the value of the ``inline_ssh_env``
+            :ref:`configuration value <default-values>` (which itself defaults
+            to ``False``).
+
+            .. note::
+                This setting has no bearing on *local* shell commands; it only
+                affects remote commands, and thus, methods like `.run` and
+                `.sudo`.
+
         :raises ValueError:
             if user or port values are given via both ``host`` shorthand *and*
             their own arguments. (We `refuse the temptation to guess`_).

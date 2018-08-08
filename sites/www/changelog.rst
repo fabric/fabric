@@ -5,6 +5,12 @@ Changelog
 .. note::
     Looking for the Fabric 1.x changelog? See :doc:`/changelog-v1`.
 
+- :feature:`1826` Add a new Boolean configuration and
+  `~fabric.connection.Connection` parameter, ``inline_ssh_env``, which (when
+  set to ``True``) changes how Fabric submits shell environment variables to
+  remote servers; this feature helps work around commonly restrictive
+  ``AcceptEnv`` settings on SSH servers. Thanks to Massimiliano Torromeo and
+  Max Arnold for the reports.
 - :release:`2.2.2 <2018-07-31>`
 - :release:`2.1.5 <2018-07-31>`
 - :release:`2.0.4 <2018-07-31>`
