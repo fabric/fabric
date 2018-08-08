@@ -592,6 +592,9 @@ class Connection(Context):
             self._agent_handler = AgentRequestHandler(channel)
         return channel
 
+    def _remote_runner(self):
+        return self.config.runners.remote(self)
+
     @opens
     def run(self, command, **kwargs):
         """
@@ -607,8 +610,7 @@ class Connection(Context):
 
         .. versionadded:: 2.0
         """
-        runner = self.config.runners.remote(self)
-        return self._run(runner, command, **kwargs)
+        return self._run(self._remote_runner(), command, **kwargs)
 
     @opens
     def sudo(self, command, **kwargs):
@@ -622,8 +624,7 @@ class Connection(Context):
 
         .. versionadded:: 2.0
         """
-        runner = self.config.runners.remote(self)
-        return self._sudo(runner, command, **kwargs)
+        return self._sudo(self._remote_runner(), command, **kwargs)
 
     def local(self, *args, **kwargs):
         """
