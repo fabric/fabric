@@ -49,6 +49,13 @@ class Remote_:
             cols, rows = pty_size()
             chan.get_pty.assert_called_with(width=cols, height=rows)
 
+        def start_sends_given_env_to_paramiko_update_environment(self, remote):
+            chan = remote.expect()
+            c = _Connection("host")
+            r = Remote(context=c)
+            r.run(CMD, pty=True, env={"FOO": "bar"})
+            chan.update_environment.assert_called_once_with({"FOO": "bar"})
+
         def return_value_is_Result_subclass_exposing_cxn_used(self, remote):
             c = _Connection("host")
             r = Remote(context=c)
