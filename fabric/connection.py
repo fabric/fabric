@@ -242,6 +242,9 @@ class Connection(Context):
         .. _refuse the temptation to guess:
             http://zen-of-python.info/
             in-the-face-of-ambiguity-refuse-the-temptation-to-guess.html#12
+
+        .. versionchanged:: 2.3
+            Added the ``inline_ssh_env`` parameter.
         """
         # NOTE: parent __init__ sets self._config; for now we simply overwrite
         # that below. If it's somehow problematic we would want to break parent

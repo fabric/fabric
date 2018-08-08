@@ -25,6 +25,9 @@ class Remote(Runner):
             Whether to 'inline' shell env vars as prefixed parameters, instead
             of trying to submit them via `.Channel.update_environment`.
             Default:: ``False``.
+
+        .. versionchanged:: 2.3
+            Added the ``inline_env`` parameter.
         """
         super(Remote, self).__init__(*args, **kwargs)
 
