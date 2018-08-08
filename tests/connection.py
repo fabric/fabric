@@ -831,6 +831,13 @@ class Connection_:
             assert c.open.called
 
         @patch(remote_path)
+        def passes_inline_env_to_Remote(self, Remote, client):
+            Connection("host").run("command")
+            assert Remote.call_args[1]["inline_env"] is False
+            Connection("host", inline_ssh_env=True).run("command")
+            assert Remote.call_args[1]["inline_env"] is True
+
+        @patch(remote_path)
         def calls_Remote_run_with_command_and_kwargs_and_returns_its_result(
             self, Remote, client
         ):
@@ -867,6 +874,13 @@ class Connection_:
             c.open = Mock()
             c.sudo("command")
             assert c.open.called
+
+        @patch(remote_path)
+        def passes_inline_env_to_Remote(self, Remote, client):
+            Connection("host").sudo("command")
+            assert Remote.call_args[1]["inline_env"] is False
+            Connection("host", inline_ssh_env=True).sudo("command")
+            assert Remote.call_args[1]["inline_env"] is True
 
         @patch(remote_path)
         def basic_invocation(self, Remote, client):
