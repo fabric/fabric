@@ -45,6 +45,7 @@ class Config_:
         assert c.connect_kwargs == {}
         assert c.timeouts.connect is None
         assert c.ssh_config_path is None
+        assert c.inline_ssh_env is False
 
     def overrides_some_Invoke_defaults(self):
         config = Config()
