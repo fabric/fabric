@@ -36,12 +36,12 @@ class Remote(Runner):
         if self.using_pty:
             rows, cols = pty_size()
             self.channel.get_pty(width=rows, height=cols)
-        # TODO: consider adding an option to conditionally turn this
-        # update_environment call into a command-string prefixing behavior
-        # instead (e.g. when one isn't able/willing to update remote server's
-        # AcceptEnv setting). OR: rely on higher-level generic command
-        # prefixing functionality, when implemented.
+        # TODO: switch to using a higher-level generic command prefixing
+        # functionality, when implemented.
         # TODO: honor SendEnv from ssh_config
+        # TODO: but if we do honor SendEnv, _should_ we honor it even when
+        # prefixing? That would depart from OpenSSH somewhat (albeit as a "what
+        # we can do that it cannot" feature...)
         self.channel.update_environment(env)
         # TODO: pass in timeout= here when invoke grows timeout functionality
         # in Runner/Local.
