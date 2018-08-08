@@ -467,6 +467,17 @@ class Connection_:
                 )
                 assert cxn.connect_kwargs == {"origin": "kwarg"}
 
+        class inline_ssh_env:
+            def defaults_to_config_value(self):
+                assert Connection("host").inline_ssh_env is False
+                config = Config({"inline_ssh_env": True})
+                assert Connection("host", config=config).inline_ssh_env is True
+
+            def may_be_given(self):
+                assert Connection("host").inline_ssh_env is False
+                cxn = Connection("host", inline_ssh_env=True)
+                assert cxn.inline_ssh_env is True
+
     class string_representation:
         "string representations"
 

@@ -130,6 +130,7 @@ class Connection(Context):
         forward_agent=None,
         connect_timeout=None,
         connect_kwargs=None,
+        inline_ssh_env=None,
     ):
         """
         Set up a new object representing a server connection.
@@ -359,6 +360,12 @@ class Connection(Context):
         #: A convenience handle onto the return value of
         #: ``self.client.get_transport()``.
         self.transport = None
+
+        if inline_ssh_env is None:
+            inline_ssh_env = self.config.inline_ssh_env
+        #: Whether to construct remote command lines with env vars prefixed
+        #: inline.
+        self.inline_ssh_env = inline_ssh_env
 
     def resolve_connect_kwargs(self, connect_kwargs):
         # Grab connect_kwargs from config if not explicitly given.
