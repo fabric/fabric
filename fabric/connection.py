@@ -233,8 +233,11 @@ class Connection(Context):
             .. warning::
                 This functionality does **not** currently perform any shell
                 escaping on your behalf! Be careful when using nontrivial
-                values. Consider using a different approach (such as actual
-                remote shell scripts) if you find this to be a problem.
+                values, and note that you can put in your own quoting,
+                backslashing etc if desired.
+
+                Consider using a different approach (such as actual
+                remote shell scripts) if you run into too many issues here.
 
             .. note::
                 This setting has no bearing on *local* shell commands; it only
