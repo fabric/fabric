@@ -230,6 +230,12 @@ class Connection(Context):
             :ref:`configuration value <default-values>` (which itself defaults
             to ``False``).
 
+            .. warning::
+                This functionality does **not** currently perform any shell
+                escaping on your behalf! Be careful when using nontrivial
+                values. Consider using a different approach (such as actual
+                remote shell scripts) if you find this to be a problem.
+
             .. note::
                 This setting has no bearing on *local* shell commands; it only
                 affects remote commands, and thus, methods like `.run` and
