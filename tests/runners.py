@@ -3,7 +3,7 @@ try:
 except ImportError:
     from six import StringIO
 
-from pytest import skip
+from pytest import skip  # noqa
 
 from invoke import pty_size, Result
 
@@ -128,15 +128,4 @@ class Remote_:
             chan = remote.expect(cmd="PATH=/opt/bin {}".format(CMD))
             r = Remote(context=_Connection("host"), inline_env=True)
             r.run(CMD, env={"PATH": "/opt/bin"})
-            assert not chan.update_environment.called
-
-        def prefixing_handles_shell_metachars_correctly(self, remote):
-            skip()  # Kicking the can for now, only do this right or not at all
-            # TODO: how many example metachars is too many?
-            # TODO: what can we delegate this to? Doing it ourselves is
-            # insanity
-            expected = r"""FOO="b*ar` \"bi(z b'az" {}""".format(CMD)
-            chan = remote.expect(cmd=expected)
-            r = Remote(context=_Connection("host"), inline_env=True)
-            r.run(CMD, env={"FOO": "b*ar` \"bi(z b'az"})
             assert not chan.update_environment.called
