@@ -851,7 +851,7 @@ class Connection_:
             # .assert_called_with()) stopped working, apparently triggered by
             # our code...somehow...after commit (roughly) 80906c7.
             # And yet, .call_args_list and its brethren work fine. Wha?
-            Remote.assert_any_call(c)
+            Remote.assert_any_call(c, inline_env=False)
             remote.run.assert_has_calls(
                 [call("command"), call("command", warn=True, hide="stderr")]
             )
@@ -893,7 +893,10 @@ class Connection_:
             # None despite call_args_list being populated. WTF. (Also,
             # Remote.return_value is two different Mocks now, despite Remote's
             # own Mock having the same ID here and in code under test. WTF!!)
-            expected = [call(cxn), call().run(cmd, watchers=ANY)]
+            expected = [
+                call(cxn, inline_env=False),
+                call().run(cmd, watchers=ANY),
+            ]
             assert Remote.mock_calls == expected
             # NOTE: we used to have a "sudo return value is literally the same
             # return value from Remote.run()" sanity check here, which is
