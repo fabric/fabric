@@ -5,6 +5,7 @@ Changelog
 .. note::
     Looking for the Fabric 1.x changelog? See :doc:`/changelog-v1`.
 
+- :release:`2.3.1 <2018-08-08>`
 - :bug:`-` Update the new functionality added for :issue:`1826` so it uses
   ``export``; without this, nontrivial shell invocations like ``command1 &&
   command2`` end up only applying the env vars to the first command.
