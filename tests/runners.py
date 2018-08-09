@@ -126,5 +126,5 @@ class Remote_:
             chan = remote.expect()
             c = _Connection("host")
             r = Remote(context=c)
-            r.run(CMD, pty=True, env={"FOO": "bar"})
+            r.run(CMD, env={"FOO": "bar"})
             chan.update_environment.assert_called_once_with({"FOO": "bar"})
