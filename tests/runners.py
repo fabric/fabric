@@ -17,6 +17,7 @@ def _Connection(*args, **kwargs):
     kwargs["config"] = Config({"run": {"in_stream": False}})
     return Connection(*args, **kwargs)
 
+
 def _runner():
     return Remote(context=_Connection("host"))
 
