@@ -17,6 +17,9 @@ def _Connection(*args, **kwargs):
     kwargs["config"] = Config({"run": {"in_stream": False}})
     return Connection(*args, **kwargs)
 
+def _runner():
+    return Remote(context=_Connection("host"))
+
 
 class Remote_:
     def needs_handle_on_a_Connection(self):
@@ -29,30 +32,23 @@ class Remote_:
             # get_transport and open_session called", but we also want to make
             # sure that exec_command got run with our arg to run().
             remote.expect(cmd=CMD)
-            c = _Connection("host")
-            r = Remote(context=c)
-            r.run(CMD)
+            _runner().run(CMD)
 
         def writes_remote_streams_to_local_streams(self, remote):
             remote.expect(out=b"hello yes this is dog")
-            c = _Connection("host")
-            r = Remote(context=c)
             fakeout = StringIO()
-            r.run(CMD, out_stream=fakeout)
+            _runner().run(CMD, out_stream=fakeout)
             assert fakeout.getvalue() == "hello yes this is dog"
 
         def pty_True_uses_paramiko_get_pty(self, remote):
             chan = remote.expect()
-            c = _Connection("host")
-            r = Remote(context=c)
-            r.run(CMD, pty=True)
+            _runner().run(CMD, pty=True)
             cols, rows = pty_size()
             chan.get_pty.assert_called_with(width=cols, height=rows)
 
         def return_value_is_Result_subclass_exposing_cxn_used(self, remote):
             c = _Connection("host")
-            r = Remote(context=c)
-            result = r.run(CMD)
+            result = Remote(context=c).run(CMD)
             assert isinstance(result, Result)
             # Mild sanity test for other Result superclass bits
             assert result.ok is True
@@ -63,8 +59,7 @@ class Remote_:
         def channel_is_closed_normally(self, remote):
             chan = remote.expect()
             # I.e. Remote.stop() closes the channel automatically
-            r = Remote(context=_Connection("host"))
-            r.run(CMD)
+            _runner().run(CMD)
             chan.close.assert_called_once_with()
 
         def channel_is_closed_on_body_exceptions(self, remote):
@@ -99,11 +94,10 @@ class Remote_:
 
             cxn = _Connection("host")
             cxn.create_session = oops
-            r = Remote(context=cxn)
             # When bug present, this will result in AttributeError because
             # Remote has no 'channel'
             try:
-                r.run(CMD)
+                Remote(context=cxn).run(CMD)
             except Oops:
                 pass
             else:
@@ -124,7 +118,5 @@ class Remote_:
     class start:
         def sends_env_to_paramiko_update_environment_by_default(self, remote):
             chan = remote.expect()
-            c = _Connection("host")
-            r = Remote(context=c)
-            r.run(CMD, env={"FOO": "bar"})
+            _runner().run(CMD, env={"FOO": "bar"})
             chan.update_environment.assert_called_once_with({"FOO": "bar"})
