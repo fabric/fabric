@@ -124,8 +124,10 @@ class Remote_:
             _runner().run(CMD, env={"FOO": "bar"})
             chan.update_environment.assert_called_once_with({"FOO": "bar"})
 
-        def uses_prefixing_when_inline_env_is_True(self, remote):
-            chan = remote.expect(cmd="DEBUG=1 PATH=/opt/bin {}".format(CMD))
+        def uses_export_prefixing_when_inline_env_is_True(self, remote):
+            chan = remote.expect(
+                cmd="export DEBUG=1 PATH=/opt/bin && {}".format(CMD)
+            )
             r = Remote(context=_Connection("host"), inline_env=True)
             r.run(CMD, env={"PATH": "/opt/bin", "DEBUG": "1"})
             assert not chan.update_environment.called

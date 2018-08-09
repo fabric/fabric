@@ -49,7 +49,10 @@ class Remote(Runner):
                 parameters = " ".join(
                     ["{}={}".format(k, v) for k, v in sorted(env.items())]
                 )
-                command = "{} {}".format(parameters, command)
+                # NOTE: we can assume 'export' and '&&' relatively safely, as
+                # sshd always brings some shell into play, even if it's just
+                # /bin/sh.
+                command = "export {} && {}".format(parameters, command)
             else:
                 self.channel.update_environment(env)
         # TODO: pass in timeout= here when invoke grows timeout functionality

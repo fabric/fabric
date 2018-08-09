@@ -221,10 +221,11 @@ class Connection(Context):
 
         :param bool inline_ssh_env:
             Whether to send environment variables "inline" as prefixes in front
-            of command strings (``VARNAME=value mycommand here``), instead of
-            trying to submit them through the SSH protocol itself (which is the
-            default behavior). This is necessary if the remote server has a
-            restricted ``AcceptEnv`` setting (which is the common default).
+            of command strings (``export VARNAME=value && mycommand here``),
+            instead of trying to submit them through the SSH protocol itself
+            (which is the default behavior). This is necessary if the remote
+            server has a restricted ``AcceptEnv`` setting (which is the common
+            default).
 
             The default value is the value of the ``inline_ssh_env``
             :ref:`configuration value <default-values>` (which itself defaults
