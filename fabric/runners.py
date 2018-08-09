@@ -37,14 +37,21 @@ class Remote(Runner):
         if self.using_pty:
             rows, cols = pty_size()
             self.channel.get_pty(width=rows, height=cols)
-        # TODO: escaping, if we can find a FOOLPROOF THIRD PARTY METHOD for
-        # doing so!
-        # TODO: switch to using a higher-level generic command prefixing
-        # functionality, when implemented.
-        # TODO: honor SendEnv from ssh_config (but if we do, _should_ we honor
-        # it even when prefixing? That would depart from OpenSSH somewhat
-        # (albeit as a "what we can do that it cannot" feature...)
-        self.channel.update_environment(env)
+        if env:
+            # TODO: honor SendEnv from ssh_config (but if we do, _should_ we
+            # honor it even when prefixing? That would depart from OpenSSH
+            # somewhat (albeit as a "what we can do that it cannot" feature...)
+            if self.inline_env:
+                # TODO: escaping, if we can find a FOOLPROOF THIRD PARTY METHOD
+                # for doing so!
+                # TODO: switch to using a higher-level generic command
+                # prefixing functionality, when implemented.
+                parameters = " ".join(
+                    ["{}={}".format(k, v) for k, v in env.items()]
+                )
+                command = "{} {}".format(parameters, command)
+            else:
+                self.channel.update_environment(env)
         # TODO: pass in timeout= here when invoke grows timeout functionality
         # in Runner/Local.
         self.channel.exec_command(command)
