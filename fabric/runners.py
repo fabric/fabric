@@ -29,6 +29,7 @@ class Remote(Runner):
         .. versionchanged:: 2.3
             Added the ``inline_env`` parameter.
         """
+        self.inline_env = kwargs.pop("inline_env", None)
         super(Remote, self).__init__(*args, **kwargs)
 
     def start(self, command, shell, env):
