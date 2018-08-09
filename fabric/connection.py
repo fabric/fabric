@@ -240,6 +240,11 @@ class Connection(Context):
                 remote shell scripts) if you run into too many issues here.
 
             .. note::
+                When serializing into prefixed ``FOO=bar`` format, we apply the
+                builtin `sorted` function to the env dictionary's keys, to
+                remove what would otherwise be ambiguous/arbitrary ordering.
+
+            .. note::
                 This setting has no bearing on *local* shell commands; it only
                 affects remote commands, and thus, methods like `.run` and
                 `.sudo`.

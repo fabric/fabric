@@ -47,7 +47,7 @@ class Remote(Runner):
                 # TODO: switch to using a higher-level generic command
                 # prefixing functionality, when implemented.
                 parameters = " ".join(
-                    ["{}={}".format(k, v) for k, v in env.items()]
+                    ["{}={}".format(k, v) for k, v in sorted(env.items())]
                 )
                 command = "{} {}".format(parameters, command)
             else:
