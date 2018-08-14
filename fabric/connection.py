@@ -47,12 +47,12 @@ class Connection(Context):
     `.Connection` has a basic "`create <__init__>`, `connect/open <open>`, `do
     work <run>`, `disconnect/close <close>`" lifecycle:
 
-    * `Instantiation <__init__>` imprints the object with its connection
+    - `Instantiation <__init__>` imprints the object with its connection
       parameters (but does **not** actually initiate the network connection).
-    * Methods like `run`, `get` etc automatically trigger a call to
+    - Methods like `run`, `get` etc automatically trigger a call to
       `open` if the connection is not active; users may of course call `open`
       manually if desired.
-    * Connections do not always need to be explicitly closed; much of the
+    - Connections do not always need to be explicitly closed; much of the
       time, Paramiko's garbage collection hooks or Python's own shutdown
       sequence will take care of things. **However**, should you encounter edge
       cases (for example, sessions hanging on exit) it's helpful to explicitly
