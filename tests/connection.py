@@ -419,6 +419,21 @@ class Connection_:
                     assert middle == Connection("jumpuser2@jumphost2:872")
                     assert outermost == Connection("jumpuser@jumphost:373")
 
+                def gateway_Connections_get_parent_connection_configs(self):
+                    conf = self._runtime_config(
+                        basename="proxyjump",
+                        overrides={"some_random_option": "a-value"},
+                    )
+                    cxn = Connection("runtime", config=conf)
+                    # Sanity
+                    assert cxn.config is conf
+                    assert cxn.gateway == self._expected_gw
+                    # Real check
+                    assert cxn.gateway.config.some_random_option == "a-value"
+                    # Prove copy not reference
+                    # TODO: would we ever WANT a reference? can't imagine...
+                    assert cxn.gateway.config is not conf
+
             class connect_timeout:
                 def wins_over_default(self):
                     assert self._runtime_cxn().connect_timeout == 15
