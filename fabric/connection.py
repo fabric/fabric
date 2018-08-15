@@ -289,7 +289,7 @@ class Connection(Context):
                 for hop in hops:
                     # Happily, ProxyJump uses identical format to our host
                     # shorthand...
-                    kwargs = dict()
+                    kwargs = dict(config=self.config.clone())
                     if prev_gw is not None:
                         kwargs["gateway"] = prev_gw
                     cxn = Connection(hop, **kwargs)
