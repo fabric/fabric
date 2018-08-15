@@ -5,6 +5,12 @@ Changelog
 .. note::
     Looking for the Fabric 1.x changelog? See :doc:`/changelog-v1`.
 
+- :bug:`1852` Grant internal `~fabric.connection.Connection` objects created
+  during ``ProxyJump`` based gateways/proxies a copy of the outer
+  ``Connection``'s configuration object. This was not previously done, which
+  among other things meant one could not fully disable SSH config file loading
+  (as the internal ``Connection`` objects would revert to the default
+  behavior). Thanks to Chris Adams for the report.
 - :release:`2.3.1 <2018-08-08>`
 - :bug:`-` Update the new functionality added for :issue:`1826` so it uses
   ``export``; without this, nontrivial shell invocations like ``command1 &&

@@ -324,13 +324,10 @@ class Connection(Context):
                 for hop in hops:
                     # Happily, ProxyJump uses identical format to our host
                     # shorthand...
-                    if prev_gw is None:
-                        # TODO: this isn't persisting config! which among other
-                        # things can lead to not honoring skipping ssh config
-                        # file loads...
-                        cxn = Connection(hop)
-                    else:
-                        cxn = Connection(hop, gateway=prev_gw)
+                    kwargs = dict(config=self.config.clone())
+                    if prev_gw is not None:
+                        kwargs["gateway"] = prev_gw
+                    cxn = Connection(hop, **kwargs)
                     prev_gw = cxn
                 gateway = prev_gw
             elif "proxycommand" in self.ssh_config:
