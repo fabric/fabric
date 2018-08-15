@@ -87,7 +87,7 @@ New default values defined by Fabric
   OpenSSH.)
 - ``gateway``: Used as the default value of the ``gateway`` kwarg for
   `.Connection`. May be any value accepted by that argument. Default: ``None``.
-- ``load_openssh_configs``: Whether to automatically seek out :ref:`SSH config
+- ``load_ssh_configs``: Whether to automatically seek out :ref:`SSH config
   files <ssh-config>`. When ``False``, no automatic loading occurs. Default:
   ``True``.
 - ``port``: TCP port number used by `.Connection` objects when not otherwise
