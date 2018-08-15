@@ -5,6 +5,9 @@ Changelog
 .. note::
     Looking for the Fabric 1.x changelog? See :doc:`/changelog-v1`.
 
+- :bug:`-` Some debug logging was reusing Invoke's logger object, generating
+  log messages "named" after ``invoke`` instead of ``fabric``. This has been
+  fixed by using Fabric's own logger everywhere instead.
 - :bug:`1852` Grant internal `~fabric.connection.Connection` objects created
   during ``ProxyJump`` based gateways/proxies a copy of the outer
   ``Connection``'s configuration object. This was not previously done, which
