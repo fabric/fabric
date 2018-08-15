@@ -5,6 +5,11 @@ Changelog
 .. note::
     Looking for the Fabric 1.x changelog? See :doc:`/changelog-v1`.
 
+- :feature:`1849` Add `Connection.from_v1
+  <fabric.connection.Connection.from_v1>` for easy creation of a modern
+  ``Connection`` object from the currently configured Fabric 1.x
+  environment. Should make upgrading piecemeal much easier for many use
+  cases.
 - :feature:`1780` Add context manager behavior to `~fabric.group.Group`, to
   match the same feature in `~fabric.connection.Connection`. Feature request by
   István Sárándi.

@@ -119,6 +119,20 @@ resident in your Python environment simultaneously.
 For details on how to obtain the ``fabric2`` version of the package, see
 :ref:`installing-as-fabric2`.
 
+Creating a ``Connection`` from your current v1 settings
+-------------------------------------------------------
+
+A useful tactic when upgrading piecemeal is to create
+`fabric.connection.Connection` objects which map to the current contents of
+Fabric 1's ``fabric.state.env`` (which is how Fabric 1 configures the "current
+connection"). This can be done at any scope and allows you to, for example,
+upgrade one function, class or module at a time while leaving the rest
+untouched.
+
+To achieve this, use an alternate class constructor: `Connection.from_v1
+<fabric.connection.Connection.from_v1>`. Please see its API docs for details &
+examples.
+
 
 .. _upgrade-specifics:
 
@@ -209,6 +223,10 @@ High level code flow and API member concerns.
         `fabric.connection.Connection` objects and call their methods. These
         objects encapsulate all connection state (user, host, gateway, etc) and
         have their own SSH client instances.
+
+        .. seealso::
+            `Connection.from_v1 <fabric.connection.Connection.from_v1>`
+
     * - Emphasis on serialized "host strings" as method of setting user, host,
         port, etc
       - Ported/Removed

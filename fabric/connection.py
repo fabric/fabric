@@ -49,6 +49,10 @@ class Connection(Context):
 
     - `Instantiation <__init__>` imprints the object with its connection
       parameters (but does **not** actually initiate the network connection).
+
+        - An alternate constructor exists for users upgrading piecemeal from
+          Fabric 1: `from_v1`.
+
     - Methods like `run`, `get` etc automatically trigger a call to
       `open` if the connection is not active; users may of course call `open`
       manually if desired.
@@ -112,6 +116,27 @@ class Connection(Context):
     transport = None
     _sftp = None
     _agent_handler = None
+
+    @classmethod
+    def from_v1(cls, env=None):
+        """
+        Alternate constructor which uses Fabric 1's ``env`` dict for settings.
+
+        May be called with no arguments, in which case this constructor
+        attempts to import Fabric 1's state module internally. Alternately, an
+        explicit ``env`` parameter exists for use when that internal import
+        seems to be failing (e.g. perhaps you have Fabric 1 installed as some
+        name other than ``fabric``).
+
+        :param env:
+            An explicit Fabric 1 ``env`` dict (technically, any
+            ``fabric.utils._AttributeDict`` instance should work) to pull
+            configuration from.
+
+            Default: ``None``, which causes an internal import of
+            ``fabric.state.env``.
+        """
+        return cls()
 
     # TODO: should "reopening" an existing Connection object that has been
     # closed, be allowed? (See e.g. how v1 detects closed/semi-closed
