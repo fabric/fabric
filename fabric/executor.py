@@ -1,8 +1,8 @@
 from invoke import Call, Executor, Task
-from invoke.util import debug
 
 from . import Connection
 from .exceptions import NothingToDo
+from .util import debug
 
 
 # TODO: come up w/ a better name heh
