@@ -175,9 +175,14 @@ class Connection(Context):
             )
         kwargs = {}
         kwargs["host"] = env.host_string
+        shorthand = derive_shorthand(env.host_string)
         kwargs["user"] = env.user
-        # Run port through int(); v1 inexplicably has a string default...
-        kwargs["port"] = int(env.port)
+        # Skip port if host string seemed to have it; otherwise we hit our own
+        # ambiguity clause in __init__. v1 would also have been doing this
+        # anyways (host string wins over other settings).
+        if not shorthand["port"]:
+            # Run port through int(); v1 inexplicably has a string default...
+            kwargs["port"] = int(env.port)
         return cls(**kwargs)
 
     # TODO: should "reopening" an existing Connection object that has been

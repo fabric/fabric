@@ -554,13 +554,18 @@ class Connection_:
                 cxn = self._cxn(host_string="localghost", user="space")
                 assert cxn.user == "space"
 
-            def port(self):
-                cxn = self._cxn(host_string="localghost", port=2222)
-                assert cxn.port == 2222
+            class port:
+                def basic(self):
+                    cxn = self._cxn(host_string="localghost", port=2222)
+                    assert cxn.port == 2222
 
-            def port_is_casted_to_int(self):
-                cxn = self._cxn(host_string="localghost", port="2222")
-                assert cxn.port == 2222
+                def casted_to_int(self):
+                    cxn = self._cxn(host_string="localghost", port="2222")
+                    assert cxn.port == 2222
+
+                def not_supplied_if_given_in_host_string(self):
+                    cxn = self._cxn(host_string="localghost:3737", port=2222)
+                    assert cxn.port == 3737
 
     class string_representation:
         "string representations"
