@@ -130,8 +130,31 @@ upgrade one function, class or module at a time while leaving the rest
 untouched.
 
 To achieve this, use an alternate class constructor: `Connection.from_v1
-<fabric.connection.Connection.from_v1>`. Please see its API docs for details &
-examples.
+<fabric.connection.Connection.from_v1>`. It can automatically import
+``fabric.state.env`` for you, or accept an explicit ``env`` dict; see its API
+docs for exactly how to call it.
+
+.. _v1-env-var-imports:
+
+Mapping of v1 ``env`` vars to modern API members
+------------------------------------------------
+
+The ``env`` vars and how they map to `~fabric.connection.Connection` arguments
+(when fed into `Connection.from_v1 <fabric.connection.Connection.from_v1>`, as
+above) are listed below:
+
+.. list-table::
+    :header-rows: 1
+
+    * - v1 ``env`` var
+      - v2+ usage
+    * - ``host_string``
+      - Given to ``Connection``'s ``host`` kwarg (which can handle host-string
+        like values, including user/port).
+    * - ``user``
+      - Given to ``Connection``'s ``user`` kwarg.
+    * - ``port``
+      - Given to ``Connection``'s ``port`` kwarg.
 
 
 .. _upgrade-specifics:

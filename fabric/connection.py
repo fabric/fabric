@@ -128,6 +128,9 @@ class Connection(Context):
         seems to be failing (e.g. perhaps you have Fabric 1 installed as some
         name other than ``fabric``).
 
+        For details on exactly which ``env`` vars are imported and what they
+        become in the new API, please see :ref:`v1-env-var-imports`.
+
         :param env:
             An explicit Fabric 1 ``env`` dict (technically, any
             ``fabric.utils._AttributeDict`` instance should work) to pull
