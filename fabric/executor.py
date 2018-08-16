@@ -1,9 +1,9 @@
 import invoke
 from invoke import Call, Task
-from invoke.util import debug
 
 from .tasks import ConnectionCall
 from .exceptions import NothingToDo
+from .util import debug
 
 
 class Executor(invoke.Executor):

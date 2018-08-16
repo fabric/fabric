@@ -419,6 +419,24 @@ class Connection_:
                     assert middle == Connection("jumpuser2@jumphost2:872")
                     assert outermost == Connection("jumpuser@jumphost:373")
 
+                def wildcards_do_not_trigger_recursion(self):
+                    # When #1850 is present, this will RecursionError.
+                    conf = self._runtime_config(basename="proxyjump_recursive")
+                    cxn = Connection("runtime.tld", config=conf)
+                    assert cxn.gateway == Connection("bastion.tld")
+                    assert cxn.gateway.gateway is None
+
+                def multihop_plus_wildcards_still_no_recursion(self):
+                    conf = self._runtime_config(
+                        basename="proxyjump_multi_recursive"
+                    )
+                    cxn = Connection("runtime.tld", config=conf)
+                    outer = cxn.gateway
+                    inner = cxn.gateway.gateway
+                    assert outer == Connection("bastion1.tld")
+                    assert inner == Connection("bastion2.tld")
+                    assert inner.gateway is None
+
                 def gateway_Connections_get_parent_connection_configs(self):
                     conf = self._runtime_config(
                         basename="proxyjump",
