@@ -518,7 +518,11 @@ class Connection_:
             # Close enough to v1 _AttributeDict...
             # Contains a copy of v1's defaults to prevent us having to do a lot
             # of .get()s...meh.
-            self.env = Lexicon(host_string=None, user="localuser", port=22)
+            # Sets a default host_string since that gets super old real quick
+            # (as it's required)
+            self.env = Lexicon(
+                host_string="localghost", user="localuser", port=22
+            )
 
         class obtaining_env:
             def defaults_to_importing_fabric_state_env(self):
@@ -533,7 +537,6 @@ class Connection_:
                 skip()
 
             def may_be_given_explicit_env_arg(self):
-                self.env.host_string = "localghost"
                 cxn = Connection.from_v1(self.env)
                 assert cxn.host == "localghost"
 
@@ -543,24 +546,24 @@ class Connection_:
                 return Connection.from_v1(self.env)
 
             def host_string(self):
-                cxn = self._cxn(host_string="localghost")
+                cxn = self._cxn()  # default is 'localghost'
                 assert cxn.host == "localghost"
 
             @raises(InvalidV1Env)
             def None_host_string_errors_usefully(self):
-                self._cxn()
+                self._cxn(host_string=None)
 
             def user(self):
-                cxn = self._cxn(host_string="localghost", user="space")
+                cxn = self._cxn(user="space")
                 assert cxn.user == "space"
 
             class port:
                 def basic(self):
-                    cxn = self._cxn(host_string="localghost", port=2222)
+                    cxn = self._cxn(port=2222)
                     assert cxn.port == 2222
 
                 def casted_to_int(self):
-                    cxn = self._cxn(host_string="localghost", port="2222")
+                    cxn = self._cxn(port="2222")
                     assert cxn.port == 2222
 
                 def not_supplied_if_given_in_host_string(self):
