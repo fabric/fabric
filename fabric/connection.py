@@ -161,6 +161,8 @@ class Connection(Context):
 
             Default: ``None``, which causes an internal import of
             ``fabric.state.env``.
+
+        .. versionadded:: 2.4
         """
         # TODO: import fabric.state.env (need good way to test it first...)
         # TODO: how to handle somebody accidentally calling this in a process
