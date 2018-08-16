@@ -357,6 +357,13 @@ class Connection(Context):
             hops = reversed(self.ssh_config["proxyjump"].split(","))
             prev_gw = None
             for hop in hops:
+                # Short-circuit if we appear to be our own proxy, which would
+                # be a RecursionError. Implies SSH config wildcards.
+                # TODO: in an ideal world we'd check user/port too in case they
+                # differ, but...seriously? They can file a PR with those extra
+                # half dozen test cases in play, E_NOTIME
+                if self.derive_shorthand(hop)["host"] == self.host:
+                    return None
                 # Happily, ProxyJump uses identical format to our host
                 # shorthand...
                 kwargs = dict(config=self.config.clone())

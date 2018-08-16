@@ -5,6 +5,10 @@ Changelog
 .. note::
     Looking for the Fabric 1.x changelog? See :doc:`/changelog-v1`.
 
+- :bug:`1850` Skip over ``ProxyJump`` configuration directives in SSH config
+  data when they would cause self-referential ``RecursionError``s (e.g. due to
+  wildcard-using ``Host`` stanzas which include the jump server itself).
+  Reported by Chris Adams.
 - :bug:`-` Some debug logging was reusing Invoke's logger object, generating
   log messages "named" after ``invoke`` instead of ``fabric``. This has been
   fixed by using Fabric's own logger everywhere instead.
