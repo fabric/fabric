@@ -511,6 +511,29 @@ class Connection_:
                 cxn = Connection("host", inline_ssh_env=True)
                 assert cxn.inline_ssh_env is True
 
+    class from_v1:
+        class obtaining_env:
+            def defaults_to_importing_fabric_state_env(self):
+                skip()
+
+            def checks_for_only_having_one_importable_fabric(self):
+                # Raises a more useful error instead of going "ImportError:
+                # no module named fabric.state" or w/e
+                skip()
+
+            def may_be_given_explicit_env_arg(self):
+                skip()
+
+        class var_mappings:
+            def host_string(self):
+                skip()
+
+            def user(self):
+                skip()
+
+            def port(self):
+                skip()
+
     class string_representation:
         "string representations"
 
