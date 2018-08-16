@@ -558,6 +558,10 @@ class Connection_:
                 cxn = self._cxn(host_string="localghost", port=2222)
                 assert cxn.port == 2222
 
+            def port_is_casted_to_int(self):
+                cxn = self._cxn(host_string="localghost", port="2222")
+                assert cxn.port == 2222
+
     class string_representation:
         "string representations"
 

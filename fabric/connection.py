@@ -151,7 +151,8 @@ class Connection(Context):
         kwargs = {}
         kwargs["host"] = env.host_string
         kwargs["user"] = env.user
-        kwargs["port"] = env.port
+        # Run port through int(); v1 inexplicably has a string default...
+        kwargs["port"] = int(env.port)
         return cls(**kwargs)
 
     # TODO: should "reopening" an existing Connection object that has been

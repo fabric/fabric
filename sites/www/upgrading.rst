@@ -154,7 +154,8 @@ above) are listed below:
     * - ``user``
       - Given to ``Connection``'s ``user`` kwarg.
     * - ``port``
-      - Given to ``Connection``'s ``port`` kwarg.
+      - Given to ``Connection``'s ``port`` kwarg. Gets casted to an integer due
+        to Fabric 1's default being a string value.
 
 
 .. _upgrade-specifics:
