@@ -11,7 +11,6 @@ except ImportError:
     from six import string_types
 import socket
 
-
 from invoke import Context
 from invoke.exceptions import ThreadException
 from paramiko.agent import AgentRequestHandler
