@@ -15,6 +15,7 @@ from paramiko import SSHConfig
 import pytest  # for mark
 from pytest import skip, param
 from pytest_relaxed import raises
+from invoke.vendor.lexicon import Lexicon
 
 from invoke.config import Config as InvokeConfig
 from invoke.exceptions import ThreadException
@@ -512,8 +513,17 @@ class Connection_:
                 assert cxn.inline_ssh_env is True
 
     class from_v1:
+        def setup(self):
+            # Close enough to v1 _AttributeDict...
+            # Contains a copy of v1's defaults to prevent us having to do a lot
+            # of .get()s...meh.
+            self.env = Lexicon(host_string=None, user="localuser", port=22)
+
         class obtaining_env:
             def defaults_to_importing_fabric_state_env(self):
+                # TODO: problematic to mock cleanly when we already have a
+                # 'fabric' module. Even trying to tweak sys.modules doesn't
+                # seem to work.
                 skip()
 
             def checks_for_only_having_one_importable_fabric(self):
@@ -522,17 +532,26 @@ class Connection_:
                 skip()
 
             def may_be_given_explicit_env_arg(self):
-                skip()
+                self.env.host_string = "localghost"
+                cxn = Connection.from_v1(self.env)
+                assert cxn.host == "localghost"
 
         class var_mappings:
+            def _cxn(self, **kwargs):
+                self.env.update(kwargs)
+                return Connection.from_v1(self.env)
+
             def host_string(self):
-                skip()
+                cxn = self._cxn(host_string="localghost")
+                assert cxn.host == "localghost"
 
             def user(self):
-                skip()
+                cxn = self._cxn(host_string="localghost", user="space")
+                assert cxn.user == "space"
 
             def port(self):
-                skip()
+                cxn = self._cxn(host_string="localghost", port=2222)
+                assert cxn.port == 2222
 
     class string_representation:
         "string representations"

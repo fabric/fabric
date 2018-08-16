@@ -139,7 +139,15 @@ class Connection(Context):
             Default: ``None``, which causes an internal import of
             ``fabric.state.env``.
         """
-        return cls()
+        # TODO: import fabric.state.env (need good way to test it first...)
+        # TODO: how to handle somebody accidentally calling this in a process
+        # where 'fabric' is fabric 2, and there's no fabric 1? Probably just a
+        # re-raise of ImportError??
+        kwargs = {}
+        kwargs["host"] = env.host_string
+        kwargs["user"] = env.user
+        kwargs["port"] = env.port
+        return cls(**kwargs)
 
     # TODO: should "reopening" an existing Connection object that has been
     # closed, be allowed? (See e.g. how v1 detects closed/semi-closed
