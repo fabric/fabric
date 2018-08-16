@@ -16,3 +16,11 @@ class GroupException(Exception):
         #: been no errors. See its docstring (and that of `.Group`) for
         #: details.
         self.result = result
+
+
+class InvalidV1Env(Exception):
+    """
+    Raised when attempting to import a Fabric 1 ``env`` which is missing data.
+    """
+
+    pass

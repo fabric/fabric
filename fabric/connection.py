@@ -20,6 +20,7 @@ from paramiko.config import SSHConfig
 from paramiko.proxy import ProxyCommand
 
 from .config import Config
+from .exceptions import InvalidV1Env
 from .transfer import Transfer
 from .tunnels import TunnelManager, Tunnel
 
@@ -143,6 +144,11 @@ class Connection(Context):
         # TODO: how to handle somebody accidentally calling this in a process
         # where 'fabric' is fabric 2, and there's no fabric 1? Probably just a
         # re-raise of ImportError??
+        # Our only requirement is a non-empty host_string
+        if not env.host_string:
+            raise InvalidV1Env(
+                "Supplied v1 env has an empty `host_string` value! Please make sure you're calling Connection.from_v1 within a connected Fabric 1 session."  # noqa
+            )
         kwargs = {}
         kwargs["host"] = env.host_string
         kwargs["user"] = env.user

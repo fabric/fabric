@@ -21,6 +21,7 @@ from invoke.config import Config as InvokeConfig
 from invoke.exceptions import ThreadException
 
 from fabric import Config as Config_
+from fabric.exceptions import InvalidV1Env
 from fabric.util import get_local_user
 
 from _util import support, Connection, Config
@@ -544,6 +545,10 @@ class Connection_:
             def host_string(self):
                 cxn = self._cxn(host_string="localghost")
                 assert cxn.host == "localghost"
+
+            @raises(InvalidV1Env)
+            def None_host_string_errors_usefully(self):
+                self._cxn()
 
             def user(self):
                 cxn = self._cxn(host_string="localghost", user="space")
