@@ -6,7 +6,7 @@ import os
 import posixpath
 import stat
 
-from invoke.util import debug  # TODO: actual logging! LOL
+from .util import debug  # TODO: actual logging! LOL
 
 # TODO: figure out best way to direct folks seeking rsync, to patchwork's rsync
 # call (which needs updating to use invoke.run() & fab 2 connection methods,
