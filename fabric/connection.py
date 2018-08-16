@@ -30,6 +30,29 @@ def opens(method, self, *args, **kwargs):
     return method(self, *args, **kwargs)
 
 
+def derive_shorthand(host_string):
+    user_hostport = host_string.rsplit("@", 1)
+    hostport = user_hostport.pop()
+    user = user_hostport[0] if user_hostport and user_hostport[0] else None
+
+    # IPv6: can't reliably tell where addr ends and port begins, so don't
+    # try (and don't bother adding special syntax either, user should avoid
+    # this situation by using port=).
+    if hostport.count(":") > 1:
+        host = hostport
+        port = None
+    # IPv4: can split on ':' reliably.
+    else:
+        host_port = hostport.rsplit(":", 1)
+        host = host_port.pop(0) or None
+        port = host_port[0] if host_port and host_port[0] else None
+
+    if port is not None:
+        port = int(port)
+
+    return {"user": user, "host": host, "port": port}
+
+
 class Connection(Context):
     """
     A connection to an SSH daemon, with methods for commands and file transfer.
@@ -506,26 +529,10 @@ class Connection(Context):
         return hash(self._identity())
 
     def derive_shorthand(self, host_string):
-        user_hostport = host_string.rsplit("@", 1)
-        hostport = user_hostport.pop()
-        user = user_hostport[0] if user_hostport and user_hostport[0] else None
-
-        # IPv6: can't reliably tell where addr ends and port begins, so don't
-        # try (and don't bother adding special syntax either, user should avoid
-        # this situation by using port=).
-        if hostport.count(":") > 1:
-            host = hostport
-            port = None
-        # IPv4: can split on ':' reliably.
-        else:
-            host_port = hostport.rsplit(":", 1)
-            host = host_port.pop(0) or None
-            port = host_port[0] if host_port and host_port[0] else None
-
-        if port is not None:
-            port = int(port)
-
-        return {"user": user, "host": host, "port": port}
+        # NOTE: used to be defined inline; preserving API call for both
+        # backwards compatibility and because it seems plausible we may want to
+        # modify behavior later, using eg config or other attributes.
+        return derive_shorthand(host_string)
 
     @property
     def is_connected(self):
