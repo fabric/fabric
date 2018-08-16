@@ -311,34 +311,12 @@ class Connection(Context):
         #: The network port to connect on.
         self.port = port or int(self.ssh_config.get("port", self.config.port))
 
-        # Non-None values - string, Connection, even eg False - get set
-        # directly; None triggers seek in config/ssh_config
-        if gateway is None:
-            # SSH config wins over Invoke-style config
-            if "proxyjump" in self.ssh_config:
-                # Reverse hop1,hop2,hop3 style ProxyJump directive so we start
-                # with the final (itself non-gatewayed) hop and work up to
-                # the front (actual, supplied as our own gateway) hop
-                hops = reversed(self.ssh_config["proxyjump"].split(","))
-                prev_gw = None
-                for hop in hops:
-                    # Happily, ProxyJump uses identical format to our host
-                    # shorthand...
-                    kwargs = dict(config=self.config.clone())
-                    if prev_gw is not None:
-                        kwargs["gateway"] = prev_gw
-                    cxn = Connection(hop, **kwargs)
-                    prev_gw = cxn
-                gateway = prev_gw
-            elif "proxycommand" in self.ssh_config:
-                # Just a string, which we interpret as a proxy command..
-                gateway = self.ssh_config["proxycommand"]
-            else:
-                # Neither of those? Our config value please.
-                gateway = self.config.gateway
+        # Gateway/proxy/bastion/jump setting: non-None values - string,
+        # Connection, even eg False - get set directly; None triggers seek in
+        # config/ssh_config
         #: The gateway `.Connection` or ``ProxyCommand`` string to be used,
         #: if any.
-        self.gateway = gateway
+        self.gateway = gateway if gateway is not None else self.get_gateway()
         # NOTE: we use string above, vs ProxyCommand obj, to avoid spinning up
         # the ProxyCommand subprocess at init time, vs open() time.
         # TODO: make paramiko.proxy.ProxyCommand lazy instead?
@@ -410,6 +388,36 @@ class Connection(Context):
             )
 
         return connect_kwargs
+
+    def get_gateway(self):
+        # SSH config wins over Invoke-style config
+        if "proxyjump" in self.ssh_config:
+            # Reverse hop1,hop2,hop3 style ProxyJump directive so we start
+            # with the final (itself non-gatewayed) hop and work up to
+            # the front (actual, supplied as our own gateway) hop
+            hops = reversed(self.ssh_config["proxyjump"].split(","))
+            prev_gw = None
+            for hop in hops:
+                # Short-circuit if we appear to be our own proxy, which would
+                # be a RecursionError. Implies SSH config wildcards.
+                # TODO: in an ideal world we'd check user/port too in case they
+                # differ, but...seriously? They can file a PR with those extra
+                # half dozen test cases in play, E_NOTIME
+                if self.derive_shorthand(hop)["host"] == self.host:
+                    return None
+                # Happily, ProxyJump uses identical format to our host
+                # shorthand...
+                kwargs = dict(config=self.config.clone())
+                if prev_gw is not None:
+                    kwargs["gateway"] = prev_gw
+                cxn = Connection(hop, **kwargs)
+                prev_gw = cxn
+            return prev_gw
+        elif "proxycommand" in self.ssh_config:
+            # Just a string, which we interpret as a proxy command..
+            return self.ssh_config["proxycommand"]
+        # Fallback: config value (may be None).
+        return self.config.gateway
 
     def __repr__(self):
         # Host comes first as it's the most common differentiator by far
