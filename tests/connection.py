@@ -524,7 +524,7 @@ class Connection_:
                 host_string="localghost",
                 user="localuser",
                 port=22,
-                key_filename=[],
+                key_filename=None,
             )
 
         def _cxn(self, **kwargs):
@@ -599,9 +599,14 @@ class Connection_:
                     cxn = self._cxn(host_string="localghost:3737", port=2222)
                     assert cxn.port == 3737
 
-            def key_filename(self):
-                cxn = self._cxn(key_filename="/some/path")
-                assert cxn.connect_kwargs["key_filename"] == "/some/path"
+            class key_filename:
+                def base(self):
+                    cxn = self._cxn(key_filename="/some/path")
+                    assert cxn.connect_kwargs["key_filename"] == "/some/path"
+
+                def unsets_if_None(self):
+                    cxn = self._cxn(key_filename=None)
+                    assert "key_filename" not in cxn.connect_kwargs
 
     class string_representation:
         "string representations"

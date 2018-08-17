@@ -194,7 +194,11 @@ class Connection(Context):
         if not shorthand["port"]:
             # Run port through int(); v1 inexplicably has a string default...
             kwargs["port"] = int(env.port)
-        connect_kwargs["key_filename"] = env.key_filename
+        # key_filename defaults to None in v1, but in v2, we expect it to be
+        # either unset, or set to a list. Thus, we only pull it over if it is
+        # not None.
+        if env.key_filename is not None:
+            connect_kwargs["key_filename"] = env.key_filename
         return cls(**kwargs)
 
     # TODO: should "reopening" an existing Connection object that has been
