@@ -521,8 +521,15 @@ class Connection_:
             # Sets a default host_string since that gets super old real quick
             # (as it's required)
             self.env = Lexicon(
-                host_string="localghost", user="localuser", port=22
+                host_string="localghost",
+                user="localuser",
+                port=22,
+                key_filename=[],
             )
+
+        def _cxn(self, **kwargs):
+            self.env.update(kwargs)
+            return Connection.from_v1(self.env)
 
         class obtaining_env:
             def defaults_to_importing_fabric_state_env(self):
@@ -540,11 +547,33 @@ class Connection_:
                 cxn = Connection.from_v1(self.env)
                 assert cxn.host == "localghost"
 
-        class var_mappings:
-            def _cxn(self, **kwargs):
-                self.env.update(kwargs)
-                return Connection.from_v1(self.env)
+        class non_env_kwargs:
+            def forwards_arbitrary_kwargs_to_init(self):
+                cxn = Connection.from_v1(
+                    self.env,
+                    connect_kwargs={"foo": "bar"},
+                    inline_ssh_env=True,
+                    connect_timeout=15,
+                )
+                assert cxn.connect_kwargs["foo"] == "bar"
+                assert cxn.inline_ssh_env is True
+                assert cxn.connect_timeout == 15
 
+            def conflicting_kwargs_are_overwritten_by_imports(self):
+                cxn = Connection.from_v1(self.env, host="not-localghost")
+                assert cxn.host == "localghost"
+
+            def connect_kwargs_are_merged_with_imported_values(self):
+                self.env["key_filename"] = "whatever"
+                cxn = Connection.from_v1(
+                    self.env, connect_kwargs={"meh": "effort"}
+                )
+                assert cxn.connect_kwargs == {
+                    "key_filename": "whatever",
+                    "meh": "effort",
+                }
+
+        class var_mappings:
             def host_string(self):
                 cxn = self._cxn()  # default is 'localghost'
                 assert cxn.host == "localghost"
@@ -569,6 +598,10 @@ class Connection_:
                 def not_supplied_if_given_in_host_string(self):
                     cxn = self._cxn(host_string="localghost:3737", port=2222)
                     assert cxn.port == 3737
+
+            def key_filename(self):
+                cxn = self._cxn(key_filename="/some/path")
+                assert cxn.connect_kwargs["key_filename"] == "/some/path"
 
     class string_representation:
         "string representations"

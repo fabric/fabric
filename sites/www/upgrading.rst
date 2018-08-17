@@ -156,6 +156,30 @@ above) are listed below:
     * - ``port``
       - Given to ``Connection``'s ``port`` kwarg. Gets casted to an integer due
         to Fabric 1's default being a string value.
+    * - ``key``
+      - **Not supported**; Fabric 1 performed extra processing on this
+        (trying a bunch of key classes to instantiate) before
+        handing it into Paramiko; modern Fabric prefers to just let you handle
+        Paramiko-level parameters directly.
+
+        If you're filling your Fabric 1 ``key`` data from a file, we recommend
+        switching to ``key_filename`` instead, which is supported.
+
+        If you're loading key data from some other source as a string, you
+        should know what type of key your data is and manually instantiate it
+        instead, then supply it to the ``connect_kwargs`` parameter. For
+        example::
+
+            from fabric.state import env
+            from fabric2 import Connection
+            from paramiko import RSAKey
+            from somewhere import load_my_key_string
+
+            pkey = RSAKey(load_my_key_string())
+            cxn = Connection.from_v1(env, connect_kwargs={"pkey": pkey})
+
+    * - ``key_filename``
+      - Placed into ``connect_kwargs.key_filename``.
 
 
 .. _upgrade-specifics:

@@ -141,7 +141,7 @@ class Connection(Context):
     _agent_handler = None
 
     @classmethod
-    def from_v1(cls, env=None):
+    def from_v1(cls, env=None, **kwargs):
         """
         Alternate constructor which uses Fabric 1's ``env`` dict for settings.
 
@@ -150,6 +150,15 @@ class Connection(Context):
         explicit ``env`` parameter exists for use when that internal import
         seems to be failing (e.g. perhaps you have Fabric 1 installed as some
         name other than ``fabric``).
+
+        All other keyword arguments are passed unmolested into the primary
+        constructor.
+
+        .. warning::
+            Supplying kwargs which are *also* translated from the imported v1
+            environment (e.g. giving an explicit ``host`` plus an env that has
+            a non-empty ``host_string``) will result in the ``env`` values
+            **overwriting** the kwarg values.
 
         For details on exactly which ``env`` vars are imported and what they
         become in the new API, please see :ref:`v1-env-var-imports`.
@@ -173,7 +182,9 @@ class Connection(Context):
             raise InvalidV1Env(
                 "Supplied v1 env has an empty `host_string` value! Please make sure you're calling Connection.from_v1 within a connected Fabric 1 session."  # noqa
             )
-        kwargs = {}
+        # TODO: detect collisions with kwargs & except instead of overwriting?
+        # (More Zen of Python compliant, but also, effort.)
+        connect_kwargs = kwargs.setdefault("connect_kwargs", {})
         kwargs["host"] = env.host_string
         shorthand = derive_shorthand(env.host_string)
         kwargs["user"] = env.user
@@ -183,6 +194,7 @@ class Connection(Context):
         if not shorthand["port"]:
             # Run port through int(); v1 inexplicably has a string default...
             kwargs["port"] = int(env.port)
+        connect_kwargs["key_filename"] = env.key_filename
         return cls(**kwargs)
 
     # TODO: should "reopening" an existing Connection object that has been
