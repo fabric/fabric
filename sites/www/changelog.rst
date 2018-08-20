@@ -5,6 +5,10 @@ Changelog
 .. note::
     Looking for the Fabric 1.x changelog? See :doc:`/changelog-v1`.
 
+- :bug:`-` Fix a bug preventing tab completion (using the Invoke-level
+  ``--complete`` flag) from completing task names correctly (behavior was to
+  act as if there were never any tasks present, even if there was a valid
+  fabfile nearby).
 - :bug:`1850` Skip over ``ProxyJump`` configuration directives in SSH config
   data when they would cause self-referential ``RecursionError``s (e.g. due to
   wildcard-using ``Host`` stanzas which include the jump server itself).
