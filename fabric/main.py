@@ -54,7 +54,16 @@ class Fab(Program):
 
     @property
     def _remainder_only(self):
-        return not self.core.unparsed and self.core.remainder
+        # No 'unparsed' (i.e. tokens intended for task contexts), and remainder
+        # (text after a double-dash) implies a contextless/taskless remainder
+        # execution of the style 'fab -H host -- command'.
+        # NOTE: must ALSO check to ensure the double dash isn't being used for
+        # tab completion machinery...
+        return (
+            not self.core.unparsed
+            and self.core.remainder
+            and not self.args.complete.value
+        )
 
     def load_collection(self):
         # Stick in a dummy Collection if it looks like we were invoked w/o any
