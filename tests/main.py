@@ -313,6 +313,22 @@ Third!
             with cd(os.path.join(support, "yml_conf")):
                 program.run("fab -i cli.key expect-cli-key-filename")
 
+    class completion:
+        # NOTE: most completion tests are in Invoke too; this is just an
+        # irritating corner case driven by Fabric's 'remainder' functionality.
+        @trap
+        def complete_flag_does_not_trigger_remainder_only_behavior(self):
+            # When bug present, 'fab --complete -- fab' fails to load any
+            # collections because it thinks it's in remainder-only,
+            # work-without-a-collection mode.
+            with cd(support):
+                program.run("fab --complete -- fab", exit=False)
+            # Cherry-picked sanity checks looking for tasks from fixture
+            # fabfile
+            output = sys.stdout.getvalue()
+            for name in ("build", "deploy", "expect-from-env"):
+                assert name in output
+
 
 class main:
     "__main__"
