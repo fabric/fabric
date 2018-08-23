@@ -170,12 +170,13 @@ above) are listed below:
         instead, then supply it to the ``connect_kwargs`` parameter. For
         example::
 
+            from io import StringIO  # or 'from StringIO' on Python 2
             from fabric.state import env
             from fabric2 import Connection
             from paramiko import RSAKey
             from somewhere import load_my_key_string
 
-            pkey = RSAKey(load_my_key_string())
+            pkey = RSAKey.from_private_key(StringIO(load_my_key_string()))
             cxn = Connection.from_v1(env, connect_kwargs={"pkey": pkey})
 
     * - ``key_filename``
