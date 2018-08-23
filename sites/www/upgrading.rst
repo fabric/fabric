@@ -141,7 +141,7 @@ Mapping of v1 ``env`` vars to modern API members
 
 The ``env`` vars and how they map to `~fabric.connection.Connection` arguments
 (when fed into `Connection.from_v1 <fabric.connection.Connection.from_v1>`, as
-above) are listed below:
+above) are listed below.
 
 .. list-table::
     :header-rows: 1
@@ -152,7 +152,7 @@ above) are listed below:
       - Given to ``Connection``'s ``host`` kwarg (which can handle host-string
         like values, including user/port).
     * - ``key``
-      - **Not supported**; Fabric 1 performed extra processing on this
+      - **Not supported**: Fabric 1 performed extra processing on this
         (trying a bunch of key classes to instantiate) before
         handing it into Paramiko; modern Fabric prefers to just let you handle
         Paramiko-level parameters directly.
