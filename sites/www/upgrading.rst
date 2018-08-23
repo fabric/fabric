@@ -151,11 +151,6 @@ above) are listed below:
     * - ``host_string``
       - Given to ``Connection``'s ``host`` kwarg (which can handle host-string
         like values, including user/port).
-    * - ``user``
-      - Given to ``Connection``'s ``user`` kwarg.
-    * - ``port``
-      - Given to ``Connection``'s ``port`` kwarg. Gets casted to an integer due
-        to Fabric 1's default being a string value.
     * - ``key``
       - **Not supported**; Fabric 1 performed extra processing on this
         (trying a bunch of key classes to instantiate) before
@@ -181,6 +176,11 @@ above) are listed below:
 
     * - ``key_filename``
       - Placed into ``connect_kwargs.key_filename``.
+    * - ``port``
+      - Given to ``Connection``'s ``port`` kwarg. Gets casted to an integer due
+        to Fabric 1's default being a string value.
+    * - ``user``
+      - Given to ``Connection``'s ``user`` kwarg.
 
 
 .. _upgrade-specifics:
