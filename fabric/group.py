@@ -55,7 +55,12 @@ class Group(list):
             <Connection host='notahost'>: gaierror(...),
         }
 
+    As with `.Connection`, `.Group` objects may be used as context managers,
+    which will automatically `.close` the object on block exit.
+
     .. versionadded:: 2.0
+    .. versionchanged:: 2.4
+        Added context manager behavior.
     """
 
     def __init__(self, *hosts, **kwargs):
@@ -150,6 +155,12 @@ class Group(list):
         """
         for cxn in self:
             cxn.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        self.close()
 
 
 class SerialGroup(Group):

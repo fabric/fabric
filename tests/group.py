@@ -46,11 +46,19 @@ class Group_:
         def not_implemented_in_base_class(self):
             Group().run()
 
-    class close:
-        def closes_all_member_connections(self):
+    class close_and_contextmanager_behavior:
+        def close_closes_all_member_connections(self):
             cxns = [Mock(name=x) for x in ("foo", "bar", "biz")]
             g = Group.from_connections(cxns)
             g.close()
+            for c in cxns:
+                c.close.assert_called_once_with()
+
+        def contextmanager_behavior_works_like_Connection(self):
+            cxns = [Mock(name=x) for x in ("foo", "bar", "biz")]
+            g = Group.from_connections(cxns)
+            with g as my_g:
+                assert my_g is g
             for c in cxns:
                 c.close.assert_called_once_with()
 

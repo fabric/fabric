@@ -5,6 +5,9 @@ Changelog
 .. note::
     Looking for the Fabric 1.x changelog? See :doc:`/changelog-v1`.
 
+- :feature:`1780` Add context manager behavior to `~fabric.group.Group`, to
+  match the same feature in `~fabric.connection.Connection`. Feature request by
+  István Sárándi.
 - :feature:`1709` Add `Group.close <fabric.group.Group.close>` to allow closing
   an entire group's worth of connections at once. Patch via Johannes Löthberg.
 - :bug:`-` Fix a bug preventing tab completion (using the Invoke-level
