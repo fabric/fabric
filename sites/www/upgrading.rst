@@ -228,6 +228,8 @@ described above) are listed below.
     * - ``timeout``
       - Config: ``timeouts.connection`` (because v1's ambiguously named
         ``timeout`` setting was, in fact, for connection timeouts).
+    * - ``use_ssh_config``
+      - Config: ``load_ssh_configs``.
     * - ``user``
       - Connection: ``user`` kwarg.
 

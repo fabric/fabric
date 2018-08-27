@@ -90,5 +90,6 @@ def faux_v1_env():
         sudo_password="nope",
         sudo_prompt=None,
         timeout=None,
+        use_ssh_config=False,
         user="localuser",
     )

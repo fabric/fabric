@@ -176,6 +176,13 @@ class Config_:
                 config = self._conf(timeout=15)
                 assert config.timeouts.connect == 15
 
+            def use_ssh_config(self):
+                # Testing both due to v1-didn't-use-None-default issues
+                config = self._conf(use_ssh_config=True)
+                assert config.load_ssh_configs is True
+                config = self._conf(use_ssh_config=False)
+                assert config.load_ssh_configs is False
+
 
 class ssh_config_loading:
     "ssh_config loading"
