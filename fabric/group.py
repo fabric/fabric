@@ -146,7 +146,8 @@ class Group(list):
         """
         Executes `.Connection.close` on all member `Connections <.Connection>`.
         """
-        raise NotImplementedError
+        for cxn in self:
+            cxn.close()
 
 
 class SerialGroup(Group):
@@ -168,10 +169,6 @@ class SerialGroup(Group):
         if excepted:
             raise GroupException(results)
         return results
-
-    def close(self):
-        for cxn in self:
-            cxn.close()
 
 
 def thread_worker(cxn, queue, args, kwargs):
@@ -229,10 +226,6 @@ class ThreadingGroup(Group):
         if excepted:
             raise GroupException(results)
         return results
-
-    def close(self):
-        for cxn in self:
-            cxn.close()
 
 
 class GroupResult(dict):
