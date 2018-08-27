@@ -82,7 +82,8 @@ class Config_:
                 skip()
 
             def may_be_given_explicit_env_arg(self):
-                config = Config.from_v1(Lexicon(sudo_password="sikrit"))
+                env = Lexicon(sudo_password="sikrit")
+                config = Config.from_v1(env=env)
                 assert config.sudo.password == "sikrit"
 
         class non_env_kwargs:
@@ -97,17 +98,36 @@ class Config_:
                 assert config.some == "value"
                 assert config._system_ssh_path == "/what/ever"
 
-            def conflicting_kwargs_are_overwritten_by_imports(self):
-                # TODO: put kwargs here? tho unlike cxn, there aren't many top
-                # level kwargs that directly map to a setting, so maybe moot?
-                config = Config.from_v1(self.env)  # TODO: is this applicable?)
-                assert config.host == "localghost"
-
         class var_mappings:
-            def sudo_password(self):
-                skip()
+            def always_use_pty(self):
+                # Testing both due to v1-didn't-use-None-default issues
+                config = self._conf(always_use_pty=True)
+                assert config.run.pty is True
+                config = self._conf(always_use_pty=False)
+                assert config.run.pty is False
 
-            # TODO: rest
+            def forward_agent(self):
+                config = self._conf(forward_agent=True)
+                assert config.forward_agent is True
+
+            def gateway(self):
+                config = self._conf(gateway="bastion.host")
+                assert config.gateway == "bastion.host"
+
+            class key_filename:
+                def base(self):
+                    config = self._conf(key_filename="/some/path")
+                    assert (
+                        config.connect_kwargs["key_filename"] == "/some/path"
+                    )
+
+                def is_not_set_if_None(self):
+                    config = self._conf(key_filename=None)
+                    assert "key_filename" not in config.connect_kwargs
+
+            def sudo_password(self):
+                config = self._conf(sudo_password="sikrit")
+                assert config.sudo.password == "sikrit"
 
 
 class ssh_config_loading:

@@ -166,10 +166,17 @@ described above) are listed below.
     :header-rows: 1
 
     * - v1 ``env`` var
-      - v2+ usage
+      - v2+ usage (prefixed with the class it ends up in)
+
+    * - ``always_use_pty``
+      - Config: ``run.pty``.
+    * - ``forward_agent``
+      - Config: ``connect_kwargs.forward_agent``.
+    * - ``gateway``
+      - Config: ``gateway``.
     * - ``host_string``
-      - Given to ``Connection``'s ``host`` kwarg (which can handle host-string
-        like values, including user/port).
+      - Connection: ``host`` kwarg (which can handle host-string like values,
+        including user/port).
     * - ``key``
       - **Not supported**: Fabric 1 performed extra processing on this
         (trying a bunch of key classes to instantiate) before
@@ -194,12 +201,21 @@ described above) are listed below.
             cxn = Connection.from_v1(env, connect_kwargs={"pkey": pkey})
 
     * - ``key_filename``
-      - Placed into ``connect_kwargs.key_filename``.
+      - Config: ``connect_kwargs.key_filename``.
     * - ``port``
-      - Given to ``Connection``'s ``port`` kwarg. Gets casted to an integer due
-        to Fabric 1's default being a string value.
+      - Connection: ``port`` kwarg. Is casted to an integer due to Fabric 1's
+        default being a string value (which is not valid in v2).
+
+        .. note::
+            Since v1's ``port`` is used both for a default *and* to store the
+            current connection state, v2 uses it to fill in the Connection
+            only, and not the Config, on assumption that it will typically be
+            the current connection state.
+
+    * - ``sudo_password``
+      - Config: ``sudo.password``.
     * - ``user``
-      - Given to ``Connection``'s ``user`` kwarg.
+      - Connection: ``user`` kwarg.
 
 
 .. _upgrade-specifics:

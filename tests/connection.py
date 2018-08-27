@@ -561,7 +561,8 @@ class Connection_:
                 Connection.from_v1(env=Lexicon(), config=Config())
                 assert not mock_Config.from_v1.called
 
-        class non_env_kwargs:
+        class additional_kwargs:
+            # I.e. as opposed to what happens to the 'env' kwarg...
             def forwards_arbitrary_kwargs_to_init(self):
                 cxn = Connection.from_v1(
                     self.env,
@@ -622,15 +623,6 @@ class Connection_:
                 def not_supplied_if_given_in_host_string(self):
                     cxn = self._cxn(host_string="localghost:3737", port=2222)
                     assert cxn.port == 3737
-
-            class key_filename:
-                def base(self):
-                    cxn = self._cxn(key_filename="/some/path")
-                    assert cxn.connect_kwargs["key_filename"] == "/some/path"
-
-                def unsets_if_None(self):
-                    cxn = self._cxn(key_filename=None)
-                    assert "key_filename" not in cxn.connect_kwargs
 
     class string_representation:
         "string representations"
