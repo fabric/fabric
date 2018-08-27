@@ -168,6 +168,10 @@ class Config_:
                 config = self._conf(sudo_password="sikrit")
                 assert config.sudo.password == "sikrit"
 
+            def sudo_prompt(self):
+                config = self._conf(sudo_prompt="password???")
+                assert config.sudo.prompt == "password???"
+
 
 class ssh_config_loading:
     "ssh_config loading"

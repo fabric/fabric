@@ -88,5 +88,6 @@ def faux_v1_env():
         ssh_config_path=None,
         # Used in a handful of sanity tests, so it gets a 'real' value. eh.
         sudo_password="nope",
+        sudo_prompt=None,
         user="localuser",
     )

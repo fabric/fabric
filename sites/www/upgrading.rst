@@ -223,6 +223,8 @@ described above) are listed below.
       - Config: ``ssh_config_path``.
     * - ``sudo_password``
       - Config: ``sudo.password``.
+    * - ``sudo_prompt``
+      - Config: ``sudo.prompt``.
     * - ``user``
       - Connection: ``user`` kwarg.
 

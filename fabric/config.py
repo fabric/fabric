@@ -102,6 +102,7 @@ class Config(InvokeConfig):
         data["connect_kwargs"].setdefault("password", passwd)
         if not data["sudo"]["password"]:
             data["sudo"]["password"] = passwd
+        data["sudo"].setdefault("prompt", env.sudo_prompt)
         # Put overrides back for real constructor and go
         kwargs["overrides"] = data
         return cls(**kwargs)
