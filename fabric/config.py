@@ -80,9 +80,9 @@ class Config(InvokeConfig):
         # overrides (due to .setdefault) but they may still be filling in empty
         # values to stomp on lower level config levels...
         data = kwargs.pop("overrides", {})
-        data.setdefault("connect_kwargs", {})
-        data.setdefault("run", {})
-        data.setdefault("sudo", {})
+        # TODO: just use a dataproxy or defaultdict??
+        for subdict in ("connect_kwargs", "run", "sudo", "timeouts"):
+            data.setdefault(subdict, {})
         # PTY use
         data["run"].setdefault("pty", env.always_use_pty)
         # Gateway
@@ -103,6 +103,7 @@ class Config(InvokeConfig):
         if not data["sudo"]["password"]:
             data["sudo"]["password"] = passwd
         data["sudo"].setdefault("prompt", env.sudo_prompt)
+        data["timeouts"].setdefault("connect", env.timeout)
         # Put overrides back for real constructor and go
         kwargs["overrides"] = data
         return cls(**kwargs)

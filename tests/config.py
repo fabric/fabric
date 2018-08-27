@@ -172,6 +172,10 @@ class Config_:
                 config = self._conf(sudo_prompt="password???")
                 assert config.sudo.prompt == "password???"
 
+            def timeout(self):
+                config = self._conf(timeout=15)
+                assert config.timeouts.connect == 15
+
 
 class ssh_config_loading:
     "ssh_config loading"

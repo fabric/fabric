@@ -225,6 +225,9 @@ described above) are listed below.
       - Config: ``sudo.password``.
     * - ``sudo_prompt``
       - Config: ``sudo.prompt``.
+    * - ``timeout``
+      - Config: ``timeouts.connection`` (because v1's ambiguously named
+        ``timeout`` setting was, in fact, for connection timeouts).
     * - ``user``
       - Connection: ``user`` kwarg.
 
