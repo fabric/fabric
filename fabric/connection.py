@@ -154,12 +154,6 @@ class Connection(Context):
         All other keyword arguments are passed unmolested into the primary
         constructor.
 
-        .. warning::
-            Supplying kwargs which are *also* translated from the imported v1
-            environment (e.g. giving an explicit ``host`` plus an env that has
-            a non-empty ``host_string``) will result in the ``env`` values
-            **overwriting** the kwarg values.
-
         For details on exactly which ``env`` vars are imported and what they
         become in the new API, please see :ref:`v1-env-var-imports`.
 
@@ -183,22 +177,24 @@ class Connection(Context):
                 "Supplied v1 env has an empty `host_string` value! Please make sure you're calling Connection.from_v1 within a connected Fabric 1 session."  # noqa
             )
         # TODO: detect collisions with kwargs & except instead of overwriting?
-        # (More Zen of Python compliant, but also, effort.)
+        # (More Zen of Python compliant, but also, effort, and also, makes it
+        # harder for users to intentionally overwrite!)
         connect_kwargs = kwargs.setdefault("connect_kwargs", {})
-        kwargs["host"] = env.host_string
+        kwargs.setdefault("host", env.host_string)
         shorthand = derive_shorthand(env.host_string)
-        kwargs["user"] = env.user
+        # TODO: don't we need to do the below skipping for user too?
+        kwargs.setdefault("user", env.user)
         # Skip port if host string seemed to have it; otherwise we hit our own
         # ambiguity clause in __init__. v1 would also have been doing this
         # anyways (host string wins over other settings).
         if not shorthand["port"]:
             # Run port through int(); v1 inexplicably has a string default...
-            kwargs["port"] = int(env.port)
+            kwargs.setdefault("port", int(env.port))
         # key_filename defaults to None in v1, but in v2, we expect it to be
         # either unset, or set to a list. Thus, we only pull it over if it is
         # not None.
         if env.key_filename is not None:
-            connect_kwargs["key_filename"] = env.key_filename
+            connect_kwargs.setdefault("key_filename", env.key_filename)
         return cls(**kwargs)
 
     # TODO: should "reopening" an existing Connection object that has been

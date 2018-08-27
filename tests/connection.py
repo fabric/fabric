@@ -573,9 +573,19 @@ class Connection_:
                 assert cxn.inline_ssh_env is True
                 assert cxn.connect_timeout == 15
 
-            def conflicting_kwargs_are_overwritten_by_imports(self):
-                cxn = Connection.from_v1(self.env, host="not-localghost")
-                assert cxn.host == "localghost"
+            def conflicting_kwargs_win_over_v1_env_values(self):
+                env = Lexicon(self.env, key_filename="meh")
+                cxn = Connection.from_v1(
+                    env,
+                    host="not-localghost",
+                    port=2222,
+                    user="remoteuser",
+                    connect_kwargs={"key_filename": "double meh"},
+                )
+                assert cxn.host == "not-localghost"
+                assert cxn.user == "remoteuser"
+                assert cxn.port == 2222
+                assert cxn.connect_kwargs["key_filename"] == "double meh"
 
             def connect_kwargs_are_merged_with_imported_values(self):
                 self.env["key_filename"] = "whatever"
