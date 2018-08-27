@@ -46,6 +46,14 @@ class Group_:
         def not_implemented_in_base_class(self):
             Group().run()
 
+    class close:
+        def closes_all_member_connections(self):
+            cxns = [Mock(name=x) for x in ("foo", "bar", "biz")]
+            g = Group.from_connections(cxns)
+            g.close()
+            for c in cxns:
+                c.close.assert_called_once_with()
+
 
 def _make_serial_tester(cxns, index, args, kwargs):
     args = args[:]
