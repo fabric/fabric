@@ -147,6 +147,18 @@ class Config_:
                 config = self._conf(no_agent=True)
                 assert config.connect_kwargs.allow_agent is False
 
+            class password:
+                def set_just_to_connect_kwargs_if_sudo_password_set(self):
+                    # NOTE: default faux env has sudo_password set already...
+                    config = self._conf(password="screaming-firehawks")
+                    passwd = config.connect_kwargs.password
+                    assert passwd == "screaming-firehawks"
+
+                def set_to_both_password_fields_if_necessary(self):
+                    config = self._conf(password="sikrit", sudo_password=None)
+                    assert config.connect_kwargs.password == "sikrit"
+                    assert config.sudo.password == "sikrit"
+
             def sudo_password(self):
                 config = self._conf(sudo_password="sikrit")
                 assert config.sudo.password == "sikrit"

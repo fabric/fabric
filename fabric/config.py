@@ -91,11 +91,16 @@ class Config(InvokeConfig):
         data.setdefault("forward_agent", env.forward_agent)
         # Key filename(s)
         if env.key_filename is not None:
-            data["connect_kwargs"]["key_filename"] = env.key_filename
+            data["connect_kwargs"].setdefault("key_filename", env.key_filename)
         # Load keys from agent?
-        data["connect_kwargs"]["allow_agent"] = not env.no_agent
+        data["connect_kwargs"].setdefault("allow_agent", not env.no_agent)
         # Sudo password
         data["sudo"].setdefault("password", env.sudo_password)
+        # Vanilla password (may be used for regular and/or sudo, depending)
+        passwd = env.password
+        data["connect_kwargs"].setdefault("password", passwd)
+        if not data["sudo"]["password"]:
+            data["sudo"]["password"] = passwd
         # Put overrides back for real constructor and go
         kwargs["overrides"] = data
         return cls(**kwargs)

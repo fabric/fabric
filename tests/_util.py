@@ -83,6 +83,7 @@ def faux_v1_env():
         host_string="localghost",
         key_filename=None,
         no_agent=False,
+        password=None,
         port=22,
         sudo_password="nope",
         user="localuser",
