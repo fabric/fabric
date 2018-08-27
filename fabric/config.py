@@ -101,6 +101,7 @@ class Config(InvokeConfig):
         data["connect_kwargs"].setdefault("password", passwd)
         if not data["sudo"]["password"]:
             data["sudo"]["password"] = passwd
+        data.setdefault("ssh_config_path", env.ssh_config_path)
         # Put overrides back for real constructor and go
         kwargs["overrides"] = data
         return cls(**kwargs)

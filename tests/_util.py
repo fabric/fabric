@@ -85,6 +85,7 @@ def faux_v1_env():
         no_agent=False,
         password=None,
         port=22,
+        ssh_config_path=None,
         sudo_password="nope",
         user="localuser",
     )

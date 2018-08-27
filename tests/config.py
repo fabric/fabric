@@ -159,6 +159,11 @@ class Config_:
                     assert config.connect_kwargs.password == "sikrit"
                     assert config.sudo.password == "sikrit"
 
+            def ssh_config_path(self):
+                self.env.ssh_config_path = "/where/ever"
+                config = Config.from_v1(self.env, lazy=True)
+                assert config.ssh_config_path == "/where/ever"
+
             def sudo_password(self):
                 config = self._conf(sudo_password="sikrit")
                 assert config.sudo.password == "sikrit"

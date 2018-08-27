@@ -219,6 +219,8 @@ described above) are listed below.
             only, and not the Config, on assumption that it will typically be
             the current connection state.
 
+    * - ``ssh_config_path``
+      - Config: ``ssh_config_path``.
     * - ``sudo_password``
       - Config: ``sudo.password``.
     * - ``user``
