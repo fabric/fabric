@@ -83,13 +83,18 @@ class Config(InvokeConfig):
         data.setdefault("connect_kwargs", {})
         data.setdefault("run", {})
         data.setdefault("sudo", {})
-        # Actual args here
+        # PTY use
         data["run"].setdefault("pty", env.always_use_pty)
+        # Gateway
         data.setdefault("gateway", env.gateway)
+        # Agent forwarding
         data.setdefault("forward_agent", env.forward_agent)
+        # Key filename(s)
         if env.key_filename is not None:
             data["connect_kwargs"]["key_filename"] = env.key_filename
+        # Load keys from agent?
         data["connect_kwargs"]["allow_agent"] = not env.no_agent
+        # Sudo password
         data["sudo"].setdefault("password", env.sudo_password)
         # Put overrides back for real constructor and go
         kwargs["overrides"] = data
