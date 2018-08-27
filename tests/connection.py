@@ -24,7 +24,7 @@ from fabric import Config as Config_
 from fabric.exceptions import InvalidV1Env
 from fabric.util import get_local_user
 
-from _util import support, Connection, Config
+from _util import support, Connection, Config, faux_v1_env
 
 
 # Remote is woven in as a config default, so must be patched there
@@ -515,17 +515,7 @@ class Connection_:
 
     class from_v1:
         def setup(self):
-            # Close enough to v1 _AttributeDict...
-            # Contains a copy of v1's defaults to prevent us having to do a lot
-            # of .get()s...meh.
-            # Sets a default host_string since that gets super old real quick
-            # (as it's required)
-            self.env = Lexicon(
-                host_string="localghost",
-                user="localuser",
-                port=22,
-                key_filename=None,
-            )
+            self.env = faux_v1_env()
 
         def _cxn(self, **kwargs):
             self.env.update(kwargs)
@@ -575,28 +565,13 @@ class Connection_:
                 assert cxn.connect_timeout == 15
 
             def conflicting_kwargs_win_over_v1_env_values(self):
-                env = Lexicon(self.env, key_filename="meh")
+                env = Lexicon(self.env)
                 cxn = Connection.from_v1(
-                    env,
-                    host="not-localghost",
-                    port=2222,
-                    user="remoteuser",
-                    connect_kwargs={"key_filename": "double meh"},
+                    env, host="not-localghost", port=2222, user="remoteuser"
                 )
                 assert cxn.host == "not-localghost"
                 assert cxn.user == "remoteuser"
                 assert cxn.port == 2222
-                assert cxn.connect_kwargs["key_filename"] == "double meh"
-
-            def connect_kwargs_are_merged_with_imported_values(self):
-                self.env["key_filename"] = "whatever"
-                cxn = Connection.from_v1(
-                    self.env, connect_kwargs={"meh": "effort"}
-                )
-                assert cxn.connect_kwargs == {
-                    "key_filename": "whatever",
-                    "meh": "effort",
-                }
 
         class var_mappings:
             def host_string(self):

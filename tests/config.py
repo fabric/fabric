@@ -10,7 +10,7 @@ from fabric.util import get_local_user
 from pytest import skip
 from mock import patch, call
 
-from _util import support
+from _util import support, faux_v1_env
 
 
 class Config_:
@@ -62,8 +62,7 @@ class Config_:
 
     class from_v1:
         def setup(self):
-            # Close enough to v1 _AttributeDict...
-            self.env = Lexicon({})
+            self.env = faux_v1_env()
 
         def _conf(self, **kwargs):
             self.env.update(kwargs)
@@ -82,21 +81,40 @@ class Config_:
                 skip()
 
             def may_be_given_explicit_env_arg(self):
-                env = Lexicon(sudo_password="sikrit")
-                config = Config.from_v1(env=env)
+                config = Config.from_v1(
+                    env=Lexicon(self.env, sudo_password="sikrit")
+                )
                 assert config.sudo.password == "sikrit"
 
-        class non_env_kwargs:
+        class additional_kwargs:
             def forwards_arbitrary_kwargs_to_init(self):
                 config = Config.from_v1(
                     self.env,
                     # Vanilla Invoke
                     overrides={"some": "value"},
                     # Fabric
-                    system_ssh_path="/what/ever/",
+                    system_ssh_path="/what/ever",
                 )
                 assert config.some == "value"
                 assert config._system_ssh_path == "/what/ever"
+
+            def subservient_to_runtime_overrides(self):
+                env = self.env
+                env.sudo_password = "from-v1"
+                config = Config.from_v1(
+                    env, overrides={"sudo": {"password": "runtime"}}
+                )
+                assert config.sudo.password == "runtime"
+
+            def connect_kwargs_also_merged_with_imported_values(self):
+                self.env["key_filename"] = "whatever"
+                conf = Config.from_v1(
+                    self.env, overrides={"connect_kwargs": {"meh": "effort"}}
+                )
+                assert conf.connect_kwargs == {
+                    "key_filename": "whatever",
+                    "meh": "effort",
+                }
 
         class var_mappings:
             def always_use_pty(self):

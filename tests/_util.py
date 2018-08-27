@@ -3,6 +3,7 @@ import os
 import re
 import sys
 
+from invoke.vendor.lexicon import Lexicon
 from pytest_relaxed import trap
 
 from fabric import Connection as Connection_, Config as Config_
@@ -69,3 +70,19 @@ class Connection(Connection_):
         # Make sure we're using our tweaked Config if none was given.
         kwargs.setdefault("config", Config())
         super(Connection, self).__init__(*args, **kwargs)
+
+
+def faux_v1_env():
+    # Close enough to v1 _AttributeDict...
+    # Contains a copy of enough of v1's defaults to prevent us having to do a
+    # lot of extra .get()s...meh
+    return Lexicon(
+        always_use_pty=True,
+        forward_agent=False,
+        gateway=None,
+        host_string="localghost",
+        key_filename=None,
+        port=22,
+        sudo_password="nope",
+        user="localuser",
+    )

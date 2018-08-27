@@ -50,7 +50,14 @@ class Config(InvokeConfig):
         name other than ``fabric``).
 
         All other keyword arguments are passed unmolested into the primary
-        constructor.
+        constructor, with the exception of ``overrides``, which is used
+        internally & will end up resembling the data from ``env`` with the
+        user-supplied overrides on top.
+
+        .. warning::
+            Because your own config overrides will win over data from ``env``,
+            make sure you only set values you *intend* to change from your v1
+            environment!
 
         For details on exactly which ``env`` vars are imported and what they
         become in the new API, please see :ref:`v1-env-var-imports`.
@@ -65,6 +72,26 @@ class Config(InvokeConfig):
 
         .. versionadded:: 2.4
         """
+        # TODO: automagic import, if we can find a way to test that
+        # Use overrides level (and preserve whatever the user may have given)
+        # TODO: we really do want arbitrary number of config levels, don't we?
+        # TODO: most of these need more care re: only filling in when they
+        # differ from the v1 default. As-is these won't overwrite runtime
+        # overrides (due to .setdefault) but they may still be filling in empty
+        # values to stomp on lower level config levels...
+        data = kwargs.pop("overrides", {})
+        data.setdefault("connect_kwargs", {})
+        data.setdefault("run", {})
+        data.setdefault("sudo", {})
+        # Actual args here
+        data["run"].setdefault("pty", env.always_use_pty)
+        data.setdefault("gateway", env.gateway)
+        data.setdefault("forward_agent", env.forward_agent)
+        if env.key_filename is not None:
+            data["connect_kwargs"]["key_filename"] = env.key_filename
+        data["sudo"].setdefault("password", env.sudo_password)
+        # Put overrides back for real constructor and go
+        kwargs["overrides"] = data
         return cls(**kwargs)
 
     def __init__(self, *args, **kwargs):
