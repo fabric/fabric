@@ -2,10 +2,12 @@ import errno
 from os.path import join, expanduser
 
 from paramiko.config import SSHConfig
+from invoke.vendor.lexicon import Lexicon
 
 from fabric import Config
 from fabric.util import get_local_user
 
+from pytest import skip
 from mock import patch, call
 
 from _util import support
@@ -57,6 +59,55 @@ class Config_:
         # NOTE: see also the integration-esque tests in tests/main.py; this
         # just tests the underlying data/attribute driving the behavior.
         assert Config().prefix == "fabric"
+
+    class from_v1:
+        def setup(self):
+            # Close enough to v1 _AttributeDict...
+            self.env = Lexicon({})
+
+        def _conf(self, **kwargs):
+            self.env.update(kwargs)
+            return Config.from_v1(self.env)
+
+        class obtaining_env:
+            def defaults_to_importing_fabric_state_env(self):
+                # TODO: problematic to mock cleanly when we already have a
+                # 'fabric' module. Even trying to tweak sys.modules doesn't
+                # seem to work.
+                skip()
+
+            def checks_for_only_having_one_importable_fabric(self):
+                # Raises a more useful error instead of going "ImportError:
+                # no module named fabric.state" or w/e
+                skip()
+
+            def may_be_given_explicit_env_arg(self):
+                config = Config.from_v1(Lexicon(sudo_password="sikrit"))
+                assert config.sudo.password == "sikrit"
+
+        class non_env_kwargs:
+            def forwards_arbitrary_kwargs_to_init(self):
+                config = Config.from_v1(
+                    self.env,
+                    # Vanilla Invoke
+                    overrides={"some": "value"},
+                    # Fabric
+                    system_ssh_path="/what/ever/",
+                )
+                assert config.some == "value"
+                assert config._system_ssh_path == "/what/ever"
+
+            def conflicting_kwargs_are_overwritten_by_imports(self):
+                # TODO: put kwargs here? tho unlike cxn, there aren't many top
+                # level kwargs that directly map to a setting, so maybe moot?
+                config = Config.from_v1(self.env)  # TODO: is this applicable?)
+                assert config.host == "localghost"
+
+        class var_mappings:
+            def sudo_password(self):
+                skip()
+
+            # TODO: rest
 
 
 class ssh_config_loading:

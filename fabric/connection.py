@@ -73,8 +73,8 @@ class Connection(Context):
     - `Instantiation <__init__>` imprints the object with its connection
       parameters (but does **not** actually initiate the network connection).
 
-        - An alternate constructor exists for users upgrading piecemeal from
-          Fabric 1: `from_v1`.
+        - An alternate constructor exists for users :ref:`upgrading piecemeal
+          from Fabric 1 <from-v1>`: `from_v1`
 
     - Methods like `run`, `get` etc automatically trigger a call to
       `open` if the connection is not active; users may of course call `open`

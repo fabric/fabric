@@ -119,20 +119,39 @@ resident in your Python environment simultaneously.
 For details on how to obtain the ``fabric2`` version of the package, see
 :ref:`installing-as-fabric2`.
 
-Creating a ``Connection`` from your current v1 settings
--------------------------------------------------------
+.. _from-v1:
 
-A useful tactic when upgrading piecemeal is to create
-`fabric.connection.Connection` objects which map to the current contents of
-Fabric 1's ``fabric.state.env`` (which is how Fabric 1 configures the "current
-connection"). This can be done at any scope and allows you to, for example,
-upgrade one function, class or module at a time while leaving the rest
-untouched.
+Creating ``Connection`` and/or ``Config`` objects from v1 settings
+------------------------------------------------------------------
 
-To achieve this, use an alternate class constructor: `Connection.from_v1
-<fabric.connection.Connection.from_v1>`. It can automatically import
-``fabric.state.env`` for you, or accept an explicit ``env`` dict; see its API
-docs for exactly how to call it.
+A common tactic when upgrading piecemeal is to generate modern Fabric objects
+whose contents match the current Fabric 1 environment. Whereas Fabric 1 stores
+*all* configuration (including the "current host") in a single place -- the
+``env`` object -- modern Fabric breaks things up into multiple (albeit
+composed) objects: `~fabric.connection.Connection` for per-connection
+parameters, and `~fabric.config.Config` for general settings and defaults.
+
+In most cases, you'll only need to generate a `~fabric.connection.Connection`
+object using the alternate class constructor `Connection.from_v1
+<fabric.connection.Connection.from_v1>`, which can take an explicit ``env``
+object or import the default one for you; see its API docs for details.
+
+A contrived example::
+
+    from fabric.api import env, run
+    from fabric2 import Connection
+
+    env.host_string = "admin@myserver"
+    run("whoami") # v1
+    cxn = Connection.from_v1(env)
+    cxn.run("whoami") # v2+
+
+By default, this constructor calls another API member -- `Config.from_v1
+<fabric.config.Config.from_v1>` -- internally on your behalf. Users who need
+tighter control over modern-style config options may opt to call that
+classmethod explicitly and hand their modified result into `Connection.from_v1
+<fabric.connection.Connection.from_v1>`, which will cause the latter to skip
+any implicit config creation.
 
 .. _v1-env-var-imports:
 
@@ -140,8 +159,8 @@ Mapping of v1 ``env`` vars to modern API members
 ------------------------------------------------
 
 The ``env`` vars and how they map to `~fabric.connection.Connection` arguments
-(when fed into `Connection.from_v1 <fabric.connection.Connection.from_v1>`, as
-above) are listed below.
+or `~fabric.config.Config` values (when fed into the ``.from_v1`` constructors
+described above) are listed below.
 
 .. list-table::
     :header-rows: 1

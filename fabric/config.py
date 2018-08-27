@@ -24,6 +24,8 @@ class Config(InvokeConfig):
     - it extends the API to account for loading ``ssh_config`` files (which are
       stored as additional attributes and have no direct relation to the
       regular config data/hierarchy.)
+    - it adds a new optional constructor, `from_v1`, which :ref:`generates
+      configuration data from Fabric 1 <from-v1>`.
 
     Intended for use with `.Connection`, as using vanilla
     `invoke.config.Config` objects would require users to manually define
