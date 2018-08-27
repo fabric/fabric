@@ -232,6 +232,8 @@ described above) are listed below.
       - Config: ``load_ssh_configs``.
     * - ``user``
       - Connection: ``user`` kwarg.
+    * - ``warn_only``
+      - Config: ``run.warn``
 
 
 .. _upgrade-specifics:

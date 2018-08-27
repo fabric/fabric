@@ -105,6 +105,7 @@ class Config(InvokeConfig):
         data["sudo"].setdefault("prompt", env.sudo_prompt)
         data["timeouts"].setdefault("connect", env.timeout)
         data.setdefault("load_ssh_configs", env.use_ssh_config)
+        data["run"].setdefault("warn", env.warn_only)
         # Put overrides back for real constructor and go
         kwargs["overrides"] = data
         return cls(**kwargs)

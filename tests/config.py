@@ -183,6 +183,13 @@ class Config_:
                 config = self._conf(use_ssh_config=False)
                 assert config.load_ssh_configs is False
 
+            def warn_only(self):
+                # Testing both due to v1-didn't-use-None-default issues
+                config = self._conf(warn_only=True)
+                assert config.run.warn is True
+                config = self._conf(warn_only=False)
+                assert config.run.warn is False
+
 
 class ssh_config_loading:
     "ssh_config loading"

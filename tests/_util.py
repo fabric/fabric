@@ -92,4 +92,5 @@ def faux_v1_env():
         timeout=None,
         use_ssh_config=False,
         user="localuser",
+        warn_only=False,
     )
