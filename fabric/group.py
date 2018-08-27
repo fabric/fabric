@@ -145,6 +145,8 @@ class Group(list):
     def close(self):
         """
         Executes `.Connection.close` on all member `Connections <.Connection>`.
+
+        .. versionadded:: 2.4
         """
         for cxn in self:
             cxn.close()
