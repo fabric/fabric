@@ -5,6 +5,8 @@ Changelog
 .. note::
     Looking for the Fabric 1.x changelog? See :doc:`/changelog-v1`.
 
+- :feature:`1709` Add `Group.close <fabric.group.Group.close>` to allow closing
+  an entire group's worth of connections at once. Patch via Johannes Löthberg.
 - :bug:`-` Fix a bug preventing tab completion (using the Invoke-level
   ``--complete`` flag) from completing task names correctly (behavior was to
   act as if there were never any tasks present, even if there was a valid
