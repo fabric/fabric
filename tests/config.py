@@ -111,10 +111,8 @@ class Config_:
                 conf = Config.from_v1(
                     self.env, overrides={"connect_kwargs": {"meh": "effort"}}
                 )
-                assert conf.connect_kwargs == {
-                    "key_filename": "whatever",
-                    "meh": "effort",
-                }
+                assert conf.connect_kwargs["key_filename"] == "whatever"
+                assert conf.connect_kwargs["meh"] == "effort"
 
         class var_mappings:
             def always_use_pty(self):
@@ -142,6 +140,12 @@ class Config_:
                 def is_not_set_if_None(self):
                     config = self._conf(key_filename=None)
                     assert "key_filename" not in config.connect_kwargs
+
+            def no_agent(self):
+                config = self._conf()
+                assert config.connect_kwargs.allow_agent is True
+                config = self._conf(no_agent=True)
+                assert config.connect_kwargs.allow_agent is False
 
             def sudo_password(self):
                 config = self._conf(sudo_password="sikrit")

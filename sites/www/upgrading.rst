@@ -202,6 +202,8 @@ described above) are listed below.
 
     * - ``key_filename``
       - Config: ``connect_kwargs.key_filename``.
+    * - ``no_agent``
+      - Config: ``connect_kwargs.allow_agent`` (inverted).
     * - ``port``
       - Connection: ``port`` kwarg. Is casted to an integer due to Fabric 1's
         default being a string value (which is not valid in v2).
