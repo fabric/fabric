@@ -538,18 +538,17 @@ class Connection_:
                 assert cxn.host == "localghost"
 
         class obtaining_config:
-            @patch("fabric.connection.Config")
-            def defaults_to_calling_Config_from_v1(self, mock_Config):
-                env = {}
-                Connection.from_v1(env)
-                mock_Config.from_v1.assert_called_once_with(env)
+            @patch("fabric.connection.Config.from_v1")
+            def defaults_to_calling_Config_from_v1(self, Config_from_v1):
+                Connection.from_v1(self.env)
+                Config_from_v1.assert_called_once_with(self.env)
 
-            @patch("fabric.connection.Config")
-            def may_be_given_config_explicitly(self, mock_Config):
+            @patch("fabric.connection.Config.from_v1")
+            def may_be_given_config_explicitly(self, Config_from_v1):
                 # Arguably a dupe of regular Connection constructor behavior,
                 # but whatever.
-                Connection.from_v1(env=Lexicon(), config=Config())
-                assert not mock_Config.from_v1.called
+                Connection.from_v1(env=self.env, config=Config())
+                assert not Config_from_v1.called
 
         class additional_kwargs:
             # I.e. as opposed to what happens to the 'env' kwarg...

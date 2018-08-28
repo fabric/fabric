@@ -195,6 +195,11 @@ class Connection(Context):
         # not None.
         if env.key_filename is not None:
             connect_kwargs.setdefault("key_filename", env.key_filename)
+        # Obtain config values, if not given, from its own from_v1
+        # NOTE: not using setdefault as we truly only want to call
+        # Config.from_v1 when necessary.
+        if "config" not in kwargs:
+            kwargs["config"] = Config.from_v1(env)
         return cls(**kwargs)
 
     # TODO: should "reopening" an existing Connection object that has been
