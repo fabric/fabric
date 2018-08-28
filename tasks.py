@@ -1,5 +1,6 @@
 from functools import partial
-from os import environ
+from os import environ, getcwd
+import sys
 
 from invocations import travis
 from invocations.checks import blacken
@@ -57,6 +58,45 @@ def publish(
         release.upload(c, directory, index, sign, dry_run)
 
 
+@task
+def sanity_test_from_v1(c):
+    """
+    Run some very quick in-process sanity tests on a dual fabric1-v-2 env.
+
+    Assumes Fabric 2+ is already installed as 'fabric2'.
+    """
+    # This cannot, by definition, work under Python 3 as Fabric 1 is not Python
+    # 3 compatible.
+    PYTHON = environ.get("TRAVIS_PYTHON_VERSION", "")
+    if PYTHON.startswith("3") or PYTHON == "pypy3":
+        return
+    c.run("pip install 'fabric<2'")
+    # Make darn sure the two copies of fabric are coming from install root, not
+    # local directory - which would result in 'fabric' always being v2!
+    for serious in (getcwd(), ""):
+        if serious in sys.path:  # because why would .remove be idempotent?!
+            sys.path.remove(serious)
+
+    from fabric.api import env
+    from fabric2 import Connection
+
+    env.gateway = "some-gateway"
+    env.no_agent = True
+    env.password = "sikrit"
+    env.user = "admin"
+    env.host_string = "localghost"
+    env.port = "2222"
+    cxn = Connection.from_v1(env)
+    config = cxn.config
+    assert config.run.pty is True
+    assert config.gateway == "some-gateway"
+    assert config.connect_kwargs.password == "sikrit"
+    assert config.sudo.password == "sikrit"
+    assert cxn.host == "localghost"
+    assert cxn.user == "admin"
+    assert cxn.port == 2222
+
+
 # Better than nothing, since we haven't solved "pretend I have some other
 # task's signature" yet...
 publish.__doc__ = release.publish.__doc__
@@ -75,6 +115,7 @@ ns = Collection(
     travis,
     watch_docs,
     www,
+    sanity_test_from_v1,
 )
 ns.configure(
     {
