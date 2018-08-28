@@ -521,21 +521,9 @@ class Connection_:
             self.env.update(kwargs)
             return Connection.from_v1(self.env)
 
-        class obtaining_env:
-            def defaults_to_importing_fabric_state_env(self):
-                # TODO: problematic to mock cleanly when we already have a
-                # 'fabric' module. Even trying to tweak sys.modules doesn't
-                # seem to work.
-                skip()
-
-            def checks_for_only_having_one_importable_fabric(self):
-                # Raises a more useful error instead of going "ImportError:
-                # no module named fabric.state" or w/e
-                skip()
-
-            def may_be_given_explicit_env_arg(self):
-                cxn = Connection.from_v1(self.env)
-                assert cxn.host == "localghost"
+        def must_be_given_explicit_env_arg(self):
+            cxn = Connection.from_v1(self.env)
+            assert cxn.host == "localghost"
 
         class obtaining_config:
             @patch("fabric.connection.Config.from_v1")

@@ -133,8 +133,8 @@ parameters, and `~fabric.config.Config` for general settings and defaults.
 
 In most cases, you'll only need to generate a `~fabric.connection.Connection`
 object using the alternate class constructor `Connection.from_v1
-<fabric.connection.Connection.from_v1>`, which can take an explicit ``env``
-object or import the default one for you; see its API docs for details.
+<fabric.connection.Connection.from_v1>`, which should be fed your appropriate
+local ``fabric.api.env`` object; see its API docs for details.
 
 A contrived example::
 

@@ -141,18 +141,17 @@ class Connection(Context):
     _agent_handler = None
 
     @classmethod
-    def from_v1(cls, env=None, **kwargs):
+    def from_v1(cls, env, **kwargs):
         """
         Alternate constructor which uses Fabric 1's ``env`` dict for settings.
 
-        May be called with no arguments, in which case this constructor
-        attempts to import Fabric 1's state module internally. Alternately, an
-        explicit ``env`` parameter exists for use when that internal import
-        seems to be failing (e.g. perhaps you have Fabric 1 installed as some
-        name other than ``fabric``).
+        All keyword arguments besides ``env`` are passed unmolested into the
+        primary constructor.
 
-        All other keyword arguments are passed unmolested into the primary
-        constructor.
+        .. warning::
+            Because your own config overrides will win over data from ``env``,
+            make sure you only set values you *intend* to change from your v1
+            environment!
 
         For details on exactly which ``env`` vars are imported and what they
         become in the new API, please see :ref:`v1-env-var-imports`.
@@ -161,9 +160,6 @@ class Connection(Context):
             An explicit Fabric 1 ``env`` dict (technically, any
             ``fabric.utils._AttributeDict`` instance should work) to pull
             configuration from.
-
-            Default: ``None``, which causes an internal import of
-            ``fabric.state.env``.
 
         .. versionadded:: 2.4
         """

@@ -7,7 +7,6 @@ from invoke.vendor.lexicon import Lexicon
 from fabric import Config
 from fabric.util import get_local_user
 
-from pytest import skip
 from mock import patch, call
 
 from _util import support, faux_v1_env
@@ -68,23 +67,11 @@ class Config_:
             self.env.update(kwargs)
             return Config.from_v1(self.env)
 
-        class obtaining_env:
-            def defaults_to_importing_fabric_state_env(self):
-                # TODO: problematic to mock cleanly when we already have a
-                # 'fabric' module. Even trying to tweak sys.modules doesn't
-                # seem to work.
-                skip()
-
-            def checks_for_only_having_one_importable_fabric(self):
-                # Raises a more useful error instead of going "ImportError:
-                # no module named fabric.state" or w/e
-                skip()
-
-            def may_be_given_explicit_env_arg(self):
-                config = Config.from_v1(
-                    env=Lexicon(self.env, sudo_password="sikrit")
-                )
-                assert config.sudo.password == "sikrit"
+        def must_be_given_explicit_env_arg(self):
+            config = Config.from_v1(
+                env=Lexicon(self.env, sudo_password="sikrit")
+            )
+            assert config.sudo.password == "sikrit"
 
         class additional_kwargs:
             def forwards_arbitrary_kwargs_to_init(self):

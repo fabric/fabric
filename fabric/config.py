@@ -39,18 +39,12 @@ class Config(InvokeConfig):
     prefix = "fabric"
 
     @classmethod
-    def from_v1(cls, env=None, **kwargs):
+    def from_v1(cls, env, **kwargs):
         """
         Alternate constructor which uses Fabric 1's ``env`` dict for settings.
 
-        May be called with no arguments, in which case this constructor
-        attempts to import Fabric 1's state module internally. Alternately, an
-        explicit ``env`` parameter exists for use when that internal import
-        seems to be failing (e.g. perhaps you have Fabric 1 installed as some
-        name other than ``fabric``).
-
-        All other keyword arguments are passed unmolested into the primary
-        constructor, with the exception of ``overrides``, which is used
+        All keyword arguments besides ``env`` are passed unmolested into the
+        primary constructor, with the exception of ``overrides``, which is used
         internally & will end up resembling the data from ``env`` with the
         user-supplied overrides on top.
 
@@ -66,9 +60,6 @@ class Config(InvokeConfig):
             An explicit Fabric 1 ``env`` dict (technically, any
             ``fabric.utils._AttributeDict`` instance should work) to pull
             configuration from.
-
-            Default: ``None``, which causes an internal import of
-            ``fabric.state.env``.
 
         .. versionadded:: 2.4
         """
