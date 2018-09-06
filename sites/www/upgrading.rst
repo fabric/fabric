@@ -1117,7 +1117,7 @@ functions from v1.
         own, so it's gone.
     * - Naming downloaded files after some aspect of the remote destination, to
         avoid overwriting during multi-server actions
-      - `Pending <https://github.com/fabric/fabric/issues/1868>`_
+      - `Pending <https://github.com/fabric/fabric/issues/1868>`__
       - This falls under the `~fabric.group.Group` family, which still needs
         some work in this regard.
 
@@ -1304,7 +1304,7 @@ implicitly private; those are not represented here.
         `fabric.util.get_local_user`.
     * - ``env.output_prefix`` determining whether or not line-by-line
         host-string prefixes are displayed
-      - `Pending <https://github.com/pyinvoke/invoke/issues/15>`_
+      - `Pending <https://github.com/pyinvoke/invoke/issues/15>`__
       - Differentiating parallel stdout/err is still a work in progress; we may
         end up reusing line-by-line logging and prefixing (ideally via actual
         logging) or we may try for something cleaner such as streaming to
