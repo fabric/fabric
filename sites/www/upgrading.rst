@@ -1118,7 +1118,7 @@ functions from v1.
     * - Naming downloaded files after some aspect of the remote destination, to
         avoid overwriting during multi-server actions
       - `Pending <https://github.com/fabric/fabric/issues/1868>`_
-      - This falls under the `fabric.group.Group` family, which still needs
+      - This falls under the `~fabric.group.Group` family, which still needs
         some work in this regard.
 
 
