@@ -1115,6 +1115,11 @@ functions from v1.
       - This behavior is ultimately unnecessary (one can simply leave the
         tilde off for the same result) and had a few pernicious bugs of its
         own, so it's gone.
+    * - Naming downloaded files after some aspect of the remote destination, to
+        avoid overwriting during multi-server actions
+      - `Pending <https://github.com/fabric/fabric/issues/1868>`_
+      - This falls under the `fabric.group.Group` family, which still needs
+        some work in this regard.
 
 
 .. _upgrading-configuration:
