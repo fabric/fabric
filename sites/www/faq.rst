@@ -34,6 +34,51 @@ name) to force Fabric to send env vars prefixed before your command strings
 instead.
 
 
+The remote shell environment doesn't match interactive shells!
+==============================================================
+
+You may find environment variables (or the behavior they trigger) differ
+interactively vs scripted via Fabric. For example, a program that's on your
+``$PATH`` when you manually ``ssh`` in might not be visible when using
+`Connection.run <fabric.connection.Connection.run>`; or special per-program env
+vars such as those for Python, pip, Java etc are not taking effect; etc.
+
+The root cause of this is typically because the SSH server runs non-interactive
+commands via a very limited shell call: ``/path/to/shell -c "command"`` (for
+example, `OpenSSH
+<https://github.com/fabric/fabric/issues/1519#issuecomment-411247228>`_). Most
+shells, when run this way, are not considered to be either **interactive** or
+**login** shells; and this then impacts which startup files get loaded.
+
+Users typically only modify shell files related to interactive operation (such
+as ``~/.bash_profile`` or ``/etc/zshrc``); such changes do not take effect when
+the SSH server is running one-off commands.
+
+To work around this, consult your shell's documentation to see if it offers any
+non-login, non-interactive config files; for example, ``zsh`` lets you
+configure ``/etc/zshrc`` or ``~/.zshenv`` for this purpose.
+
+.. note::
+    ``bash`` does not appear to offer standard non-login/non-interactive
+    startup files, even in version 4. However, it may attempt to determine if
+    it's being run by a remote-execution daemon and will apparently source
+    ``~/.bashrc`` if so; check to see if this is the case on your target
+    systems.
+
+.. note::
+    Another workaround for ``bash`` users is to reply on its ``$BASH_ENV``
+    functionality, which names a file path as the startup file to load:
+
+    - configure your SSH server to ``AcceptEnv BASH_ENV``, so that you can
+      actually set that env var for the remote session at the top level (most
+      SSH servers disallow this method by default).
+    - decide which file this should be, though if you're already modifying
+      files like ``~/.bash_profile`` or ``~/.bashrc``, you may want to just
+      point at that exact path.
+    - set the Fabric configuration value ``run.env`` to aim at the above path,
+      e.g. ``{"BASH_ENV": "~/.bash_profile"}``.
+
+
 .. _one-shell-per-command:
 
 My (``cd``/``workon``/``export``/etc) calls don't seem to work!
