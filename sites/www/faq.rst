@@ -19,8 +19,8 @@ your question is not answered here.
 
 .. _remote-env-vars-dont-work:
 
-Environment variables are not being set correctly on the remote end!
-====================================================================
+Explicitly set env variables are not being set correctly on the remote end!
+===========================================================================
 
 If your attempts to set environment variables for things like `Connection.run
 <fabric.connection.Connection.run>` appear to silently fail, you're almost
