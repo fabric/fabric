@@ -25,7 +25,7 @@ Changelog
   act as if there were never any tasks present, even if there was a valid
   fabfile nearby).
 - :bug:`1850` Skip over ``ProxyJump`` configuration directives in SSH config
-  data when they would cause self-referential ``RecursionError``s (e.g. due to
+  data when they would cause self-referential ``RecursionError`` (e.g. due to
   wildcard-using ``Host`` stanzas which include the jump server itself).
   Reported by Chris Adams.
 - :bug:`-` Some debug logging was reusing Invoke's logger object, generating
