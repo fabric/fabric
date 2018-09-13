@@ -27,9 +27,9 @@ Changelog
   (as the internal ``Connection`` objects would revert to the default
   behavior). Thanks to Chris Adams for the report.
 - :release:`2.3.1 <2018-08-08>`
-- :bug:`-` Update the new functionality added for :issue:`1826` so it uses
-  ``export``; without this, nontrivial shell invocations like ``command1 &&
-  command2`` end up only applying the env vars to the first command.
+- :bug:`- (2.3+)` Update the new functionality added for :issue:`1826` so it
+  uses ``export``; without this, nontrivial shell invocations like ``command1
+  && command2`` end up only applying the env vars to the first command.
 - :release:`2.3.0 <2018-08-08>`
 - :feature:`1826` Add a new Boolean configuration and
   `~fabric.connection.Connection` parameter, ``inline_ssh_env``, which (when
