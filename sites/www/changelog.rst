@@ -5,6 +5,10 @@ Changelog
 .. note::
     Looking for the Fabric 1.x changelog? See :doc:`/changelog-v1`.
 
+- :release:`2.3.2 <2018-09-13>`
+- :release:`2.2.3 <2018-09-13>`
+- :release:`2.1.6 <2018-09-13>`
+- :release:`2.0.5 <2018-09-13>`
 - :feature:`1849` Add `Connection.from_v1
   <fabric.connection.Connection.from_v1>` for easy creation of a modern
   ``Connection`` object from the currently configured Fabric 1.x
