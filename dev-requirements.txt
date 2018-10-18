@@ -16,7 +16,7 @@ coverage==3.7.1
 codecov==1.6.3
 # Documentation tools
 sphinx>=1.4,<1.7
-alabaster>=0.7,<2.0
+alabaster==0.7.12
 releases>=1.5,<2.0
 # Release tools
 semantic_version>=2.4,<2.5

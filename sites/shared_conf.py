@@ -21,6 +21,7 @@ html_theme_options = {
     "github_repo": "fabric",
     "travis_button": True,
     "codecov_button": True,
+    "tidelift_url": "https://tidelift.com/subscription/pkg/pypi-fabric?utm_source=pypi-fabric&utm_medium=referral&utm_campaign=docs",
     "analytics_id": "UA-18486793-1",
     "link": "#3782BE",
     "link_hover": "#3782BE",
