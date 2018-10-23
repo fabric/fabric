@@ -23,8 +23,7 @@ class FabExecutor(Executor):
             # handle intersect of dependencies+parameterization, just becomes
             # 'honor that new feature of Invoke')
             # TODO: roles, other non-runtime host parameterizations, etc
-            # Pre-tasks get added only once, not once per host.
-            ret.extend(self.expand_calls(call.pre, apply_hosts=False))
+            ret.extend(self.expand_calls(call.pre, apply_hosts=apply_hosts))
             # Main task, per host
             for host in hosts:
                 ret.append(self.parameterize(call, host))
@@ -32,8 +31,7 @@ class FabExecutor(Executor):
             # TODO: no tests for this branch?
             if not hosts:
                 ret.append(call)
-            # Post-tasks added once, not once per host.
-            ret.extend(self.expand_calls(call.post, apply_hosts=False))
+            ret.extend(self.expand_calls(call.post, apply_hosts=apply_hosts))
         # Add remainder as anonymous task
         if self.core.remainder:
             # TODO: this will need to change once there are more options for
