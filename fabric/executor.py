@@ -25,6 +25,14 @@ class Executor(invoke.Executor):
         """
         Normalize mixed host-strings-or-kwarg-dicts into kwarg dicts only.
 
+        In other words, transforms data taken from the CLI (--hosts, always
+        strings) or decorator arguments (may be strings or kwarg dicts) into
+        kwargs suitable for creating Connection instances.
+
+        Subclasses may wish to override or extend this to perform, for example,
+        database or custom config file lookups (vs this default behavior, which
+        is to simply assume that strings are 'host' kwargs).
+
         :param hosts:
             Potentially heterogenous list of host connection values, as per the
             ``hosts`` param to `.task`.
