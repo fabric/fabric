@@ -50,6 +50,11 @@ class Fab(Program):
                 kind=bool,
                 help="Request an upfront SSH key passphrase prompt.",
             ),
+            Argument(
+                names=("keepalive",),
+                kind=int,
+                help="Enables a keepalive every N seconds.",
+            ),
         ]
         return core_args + my_args
 
