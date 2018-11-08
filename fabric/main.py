@@ -138,9 +138,14 @@ class Fab(Program):
         self.config.merge()
 
 
-program = Fab(
-    name="Fabric",
-    version=fabric,
-    executor_class=FabExecutor,
-    config_class=Config,
-)
+# Mostly a concession to testing.
+def make_program():
+    return Fab(
+        name="Fabric",
+        version=fabric,
+        executor_class=FabExecutor,
+        config_class=Config,
+    )
+
+
+program = make_program()
