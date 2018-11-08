@@ -8,7 +8,7 @@ from mock import patch, Mock, PropertyMock, call, ANY
 from pytest_relaxed import trap
 
 from fabric import Connection as Connection_, Config as Config_
-from fabric.main import program as fab_program
+from fabric.main import make_program
 from paramiko import SSHConfig
 
 
@@ -26,7 +26,7 @@ def eq_(got, expected):
 @trap
 def expect(invocation, out, program=None, test="equals"):
     if program is None:
-        program = fab_program
+        program = make_program()
     program.run("fab {}".format(invocation), exit=False)
     output = sys.stdout.getvalue()
     if test == "equals":
