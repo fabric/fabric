@@ -35,7 +35,7 @@ class FabExecutor(Executor):
             # Post-tasks added once, not once per host.
             ret.extend(self.expand_calls(call.post, apply_hosts=False))
         # Add remainder as anonymous task
-        if self.core.remainder:
+        if self.core.remainder and apply_hosts:
             # TODO: this will need to change once there are more options for
             # setting host lists besides "-H or 100% within-task"
             if not hosts:
