@@ -2,6 +2,7 @@
 Changelog
 =========
 
+* :release:`1.14.1 <2018-11-27>`
 * :bug:`1341` (via :issue:`1586`) Attempt to ``rm -f`` the temporary file used
   by ``put``'s sudo mode, when exceptions are encountered; previously, the
   internal ``sudo mv`` call could potentially fail and leave the file around.
