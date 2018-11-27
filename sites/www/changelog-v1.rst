@@ -6,6 +6,62 @@ Changelog (1.x)
     This is the changelog for the legacy 1.x version of Fabric. For the current
     (2.0+) changelog, please see :doc:`the main changelog </changelog>`.
 
+* :bug:`1242` (via :issue:`1243`) `~fabric.contrib.project.rsync_project`: only
+  supply the ``-p <number>`` option to generated ``rsync`` commands when the
+  port number differs from the default; this allows removing ``--rsh`` entirely
+  most of the time, and thus enables things like using rsync's daemon mode on
+  the remote end. Reported & patched by Arnaud Rocher.
+* :bug:`1227` Remove a bash/zsh-ism from
+  `~fabric.contrib.files.upload_template` when backing up the target file,
+  preventing issues on simpler remote shells. Patch courtesy of Paul
+  Chakravarti.
+* :bug:`983` Move a ``getpass`` import inside a Windows-oriented
+  ``try``/``except ImportError`` so password prompting is less likely to
+  explode on certain systems. Thanks to ``@dongweiming`` for the patch.
+* :support:`- backported` Update packaging metadata so wheel archives include
+  the ``LICENSE`` file.
+* :release:`1.14.0 <2017-08-25>`
+* :feature:`1475` Honor ``env.timeout`` when opening new remote sessions (as
+  opposed to the initial overall connection, which already honored timeout
+  settings.) Thanks to ``@EugeniuZ`` for the report & ``@jrmsgit`` for the
+  first draft of the patch.
+
+  .. note::
+    This feature only works with Paramiko 1.14.3 and above; if your Paramiko
+    version is older, no timeout can be set, and the previous behavior will
+    occur instead.
+
+* :release:`1.13.2 <2017-04-24>`
+* :release:`1.12.2 <2017-04-24>`
+* :bug:`1542` (via :issue:`1543`) Catch Paramiko-level gateway connection
+  errors (``ChannelError``) when raising ``NetworkError``; this prevents an
+  issue where gateway related issues were being treated as authentication
+  errors. Thanks to Charlie Stanley for catch & patch.
+* :bug:`1555` Multiple simultaneous `~fabric.operations.get` and/or
+  `~fabric.operations.put` with ``use_sudo=True`` and for the same remote host
+  and path could fail unnecessarily. Thanks ``@arnimarj`` for the report and
+  Pierce Lopez for the patch.
+* :bug:`1427` (via :issue:`1428`) Locate ``.pyc`` files when searching for
+  fabfiles to load; previously we only used the presence of ``.py`` files to
+  determine whether loading should be attempted. Credit: Ray Chen.
+* :bug:`1294` fix text escaping for `~fabric.contrib.files.contains` and
+  `~fabric.contrib.files.append` which would fail if the text contained e.g.
+  ``>``. Thanks to ``@ecksun`` for report & Pierce Lopez for the patch.
+* :support:`1065 backported` Fix incorrect SSH config reference in the docs for
+  ``env.keepalive``; it corresponds to ``ServerAliveInterval``, not
+  ``ClientAliveInterval``. Credit: Harry Percival.
+* :bug:`1574` `~fabric.contrib.project.upload_project` failed for folder in
+  current directory specified without any path separator. Thanks ``@aidanmelen``
+  for the report and Pierce Lopez for the patch.
+* :support:`1590 backported` Replace a reference to ``fab`` in a test
+  subprocess, to use the ``python -m <package>`` style instead; this allows
+  ``python setup.py test`` to run the test suite without having Fabric already
+  installed. Thanks to ``@BenSturmfels`` for catch & patch.
+* :support:`- backported` Backport :issue:`1462` to 1.12.x (was previously only
+  backported to 1.13.x.)
+* :support:`1416 backported` Add explicit "Python 2 only" note to ``setup.py``
+  trove classifiers to help signal that fact to various info-gathering tools.
+  Patch courtesy of Gavin Bisesi.
 * :bug:`1526` Disable use of PTY and shell for a background command execution
   within ``contrib.sed``, preventing a small class of issues on some
   platforms/environments. Thanks to ``@doflink`` for the report and Pierce
