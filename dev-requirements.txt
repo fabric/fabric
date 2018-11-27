@@ -11,8 +11,8 @@ Fudge<1.0
 # Documentation generation
 Sphinx==1.3.4
 releases>=1.2.0,<1.4
-invoke>=0.12,<0.13
-invocations>=0.12,<0.13
+invoke==0.21.0  # Last Python 2.6 compat version
+invocations==0.20.0  # Roughly contemporary with invoke 0.21
 alabaster>=0.6.1
 semantic_version==2.4
 wheel==0.24
