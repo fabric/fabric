@@ -2,6 +2,9 @@
 Changelog
 =========
 
+* :bug:`983` Move a ``getpass`` import inside a Windows-oriented
+  ``try``/``except ImportError`` so password prompting is less likely to
+  explode on certain systems. Thanks to ``@dongweiming`` for the patch.
 * :support:`- backported` Update packaging metadata so wheel archives include
   the ``LICENSE`` file.
 * :release:`1.14.0 <2017-08-25>`
