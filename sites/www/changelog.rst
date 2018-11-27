@@ -2,6 +2,10 @@
 Changelog
 =========
 
+* :bug:`1227` Remove a bash/zsh-ism from
+  `~fabric.contrib.files.upload_template` when backing up the target file,
+  preventing issues on simpler remote shells. Patch courtesy of Paul
+  Chakravarti.
 * :bug:`983` Move a ``getpass`` import inside a Windows-oriented
   ``try``/``except ImportError`` so password prompting is less likely to
   explode on certain systems. Thanks to ``@dongweiming`` for the patch.
