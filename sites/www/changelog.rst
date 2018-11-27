@@ -2,6 +2,11 @@
 Changelog
 =========
 
+* :bug:`1242` (via :issue:`1243`) `~fabric.contrib.project.rsync_project`: only
+  supply the ``-p <number>`` option to generated ``rsync`` commands when the
+  port number differs from the default; this allows removing ``--rsh`` entirely
+  most of the time, and thus enables things like using rsync's daemon mode on
+  the remote end. Reported & patched by Arnaud Rocher.
 * :bug:`1227` Remove a bash/zsh-ism from
   `~fabric.contrib.files.upload_template` when backing up the target file,
   preventing issues on simpler remote shells. Patch courtesy of Paul
