@@ -6,6 +6,11 @@ Changelog (1.x)
     This is the changelog for the legacy 1.x version of Fabric. For the current
     (2.0+) changelog, please see :doc:`the main changelog </changelog>`.
 
+* :release:`1.14.1 <2018-11-27>`
+* :bug:`1341` (via :issue:`1586`) Attempt to ``rm -f`` the temporary file used
+  by ``put``'s sudo mode, when exceptions are encountered; previously, the
+  internal ``sudo mv`` call could potentially fail and leave the file around.
+  Thanks to Andrei Sura for the report and Uku Loskit for the fix.
 * :bug:`1242` (via :issue:`1243`) `~fabric.contrib.project.rsync_project`: only
   supply the ``-p <number>`` option to generated ``rsync`` commands when the
   port number differs from the default; this allows removing ``--rsh`` entirely
