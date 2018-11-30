@@ -10,7 +10,7 @@ six==1.10.0
 # Mock for test mocking
 mock==1.0.1
 # Linting!
-flake8==2.4.0
+flake8==3.6.0
 # Coverage!
 coverage==3.7.1
 codecov==1.6.3
