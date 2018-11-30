@@ -42,6 +42,14 @@ class Connection(Context):
     level operations with that `~paramiko.client.SSHClient` and
     `~paramiko.channel.Channel` instances generated from it.
 
+    .. _connect_kwargs:
+
+    .. note::
+        Many SSH specific options -- such as specifying private keys and
+        passphrases, timeouts, disabling SSH agents, etc -- are handled
+        directly by Paramiko and should be specified via the
+        :ref:`connect_kwargs argument <connect_kwargs-arg>` of the constructor.
+
     **Lifecycle**
 
     `.Connection` has a basic "`create <__init__>`, `connect/open <open>`, `do
@@ -206,6 +214,8 @@ class Connection(Context):
 
             Default: ``config.timeouts.connect``.
 
+        .. _connect_kwargs-arg:
+
         :param dict connect_kwargs:
             Keyword arguments handed verbatim to
             `SSHClient.connect <paramiko.client.SSHClient.connect>` (when
@@ -213,8 +223,17 @@ class Connection(Context):
 
             `.Connection` tries not to grow additional settings/kwargs of its
             own unless it is adding value of some kind; thus,
-            ``connect_kwargs`` is currently the right place to hand in
-            parameters such as ``pkey`` or ``key_filename``.
+            ``connect_kwargs`` is currently the right place to hand in paramiko
+            connection parameters such as ``pkey`` or ``key_filename``. For
+            example::
+
+                c = Connection(
+                    host="hostname",
+                    user="admin",
+                    connect_kwargs={
+                        "key_filename": "/home/myuser/.ssh/private.key",
+                    },
+                )
 
             Default: ``config.connect_kwargs``.
 
