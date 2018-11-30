@@ -100,6 +100,11 @@ instances of `invoke.runners.Result` (or subclasses thereof) exposing the sorts
 of details seen above: what was requested, what happened while the remote
 action occurred, and what the final result was.
 
+.. note::
+    Many lower-level SSH connection arguments (such as private keys and
+    timeouts) can be given directly to the SSH backend by using the
+    :ref:`connect_kwargs argument <connect_kwargs-arg>`.
+
 Superuser privileges via auto-response
 ======================================
 
