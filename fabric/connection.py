@@ -467,6 +467,11 @@ class Connection(Context):
         self.inline_ssh_env = inline_ssh_env
 
     def resolve_connect_kwargs(self, connect_kwargs):
+        if connect_kwargs and "key_filename" in connect_kwargs:
+            key_filename = connect_kwargs["key_filename"]
+            if isinstance(key_filename, string_types):
+                connect_kwargs["key_filename"] = [key_filename]
+
         # Grab connect_kwargs from config if not explicitly given.
         if connect_kwargs is None:
             # TODO: is it better to pre-empt conflicts w/ manually-handled

@@ -799,6 +799,18 @@ class Connection_:
                     ],
                     id="All sources",
                 ),
+                param(
+                    True,
+                    True,
+                    "string",
+                    [
+                        "configured.key",
+                        "kwarg.key",
+                        "ssh-config-B.key",
+                        "ssh-config-A.key",
+                    ],
+                    id="All sources, kwarg (string)",
+                ),
                 param(False, False, False, [], id="No sources"),
                 param(
                     True,
@@ -822,6 +834,13 @@ class Connection_:
                     id="Connection kwarg only",
                 ),
                 param(
+                    False,
+                    False,
+                    "string",
+                    ["kwarg.key"],
+                    id="Connection kwarg (string) only",
+                ),
+                param(
                     True,
                     True,
                     False,
@@ -836,11 +855,25 @@ class Connection_:
                     id="ssh_config + kwarg, no Invoke-level config",
                 ),
                 param(
+                    True,
+                    False,
+                    "string",
+                    ["kwarg.key", "ssh-config-B.key", "ssh-config-A.key"],
+                    id="ssh_config + kwarg (string), no Invoke-level config",
+                ),
+                param(
                     False,
                     True,
                     True,
                     ["configured.key", "kwarg.key"],
                     id="Invoke-level config + kwarg, no ssh_config",
+                ),
+                param(
+                    False,
+                    True,
+                    "string",
+                    ["configured.key", "kwarg.key"],
+                    id="Invoke-level config + kwarg (string), no ssh_config",
                 ),
             ],
         )
@@ -863,7 +896,12 @@ class Connection_:
             connect_kwargs = {}
             if kwarg:
                 # Stitch in connect_kwargs value
-                connect_kwargs = {"key_filename": ["kwarg.key"]}
+                if kwarg == "string":
+                    key_filename = "kwarg.key"
+                else:
+                    key_filename = ["kwarg.key"]
+                connect_kwargs = {"key_filename": key_filename}
+
             # Tie in all sources that were configured & open()
             Connection(
                 "runtime", config=conf, connect_kwargs=connect_kwargs
