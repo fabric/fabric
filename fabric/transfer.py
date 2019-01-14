@@ -28,17 +28,16 @@ class Transfer(object):
     def __init__(self, connection):
         self.connection = connection
 
-    @property
-    def sftp(self):
-        return self.connection.sftp()
+    def sftp(self, subsystem=None):
+        return self.connection.sftp(subsystem)
 
-    def is_remote_dir(self, path):
+    def is_remote_dir(self, path, subsystem=None):
         try:
-            return stat.S_ISDIR(self.sftp.stat(path).st_mode)
+            return stat.S_ISDIR(self.sftp(subsystem).stat(path).st_mode)
         except IOError:
             return False
 
-    def get(self, remote, local=None, preserve_mode=True):
+    def get(self, remote, local=None, preserve_mode=True, subsystem=None):
         """
         Download a file from the current connection to the local filesystem.
 
@@ -84,6 +83,12 @@ class Transfer(object):
             Whether to `os.chmod` the local file so it matches the remote
             file's mode (default: ``True``).
 
+        :param bool subsystem:
+            Specifies an sftp subsystem to use, e.g.
+            ``/usr/bin/sudo /usr/lib/openssh/sftp-server``
+            will allow files to be gotten as the root user.
+            If ``None``, use the default subsystem.
+
         :returns: A `.Result` object.
 
         .. versionadded:: 2.0
@@ -104,7 +109,9 @@ class Transfer(object):
             raise ValueError("Remote path must not be empty!")
         orig_remote = remote
         remote = posixpath.join(
-            self.sftp.getcwd() or self.sftp.normalize("."), remote
+            self.sftp(subsystem).getcwd()
+            or self.sftp(subsystem).normalize("."),
+            remote,
         )
 
         # Massage local path:
@@ -125,14 +132,14 @@ class Transfer(object):
         #
         # If local appears to be a file-like object, use sftp.getfo, not get
         if is_file_like:
-            self.sftp.getfo(remotepath=remote, fl=local)
+            self.sftp(subsystem).getfo(remotepath=remote, fl=local)
         else:
-            self.sftp.get(remotepath=remote, localpath=local)
+            self.sftp(subsystem).get(remotepath=remote, localpath=local)
             # Set mode to same as remote end
             # TODO: Push this down into SFTPClient sometime (requires backwards
             # incompat release.)
             if preserve_mode:
-                remote_mode = self.sftp.stat(remote).st_mode
+                remote_mode = self.sftp(subsystem).stat(remote).st_mode
                 mode = stat.S_IMODE(remote_mode)
                 os.chmod(local, mode)
         # Return something useful
@@ -144,7 +151,7 @@ class Transfer(object):
             connection=self.connection,
         )
 
-    def put(self, local, remote=None, preserve_mode=True):
+    def put(self, local, remote=None, preserve_mode=True, subsystem=None):
         """
         Upload a file from the local filesystem to the current connection.
 
@@ -186,6 +193,12 @@ class Transfer(object):
             Whether to ``chmod`` the remote file so it matches the local file's
             mode (default: ``True``).
 
+        :param bool subsystem:
+            Specifies an sftp subsystem to use, e.g.
+            ``/usr/bin/sudo /usr/lib/openssh/sftp-server``
+            will allow files to be put as the root user.
+            If ``None``, use the default subsystem.
+
         :returns: A `.Result` object.
 
         .. versionadded:: 2.0
@@ -209,7 +222,7 @@ class Transfer(object):
             else:
                 remote = local_base
                 debug("Massaged empty remote path into {!r}".format(remote))
-        elif self.is_remote_dir(remote):
+        elif self.is_remote_dir(remote, subsystem):
             # non-empty local_base implies a) text file path or b) FLO which
             # had a non-empty .name attribute. huzzah!
             if local_base:
@@ -230,7 +243,9 @@ class Transfer(object):
 
         prejoined_remote = remote
         remote = posixpath.join(
-            self.sftp.getcwd() or self.sftp.normalize("."), remote
+            self.sftp(subsystem).getcwd()
+            or self.sftp(subsystem).normalize("."),
+            remote,
         )
         if remote != prejoined_remote:
             msg = "Massaged relative remote path {!r} into {!r}"
@@ -260,19 +275,19 @@ class Transfer(object):
             pointer = local.tell()
             try:
                 local.seek(0)
-                self.sftp.putfo(fl=local, remotepath=remote)
+                self.sftp(subsystem).putfo(fl=local, remotepath=remote)
             finally:
                 local.seek(pointer)
         else:
             debug("Uploading {!r} to {!r}".format(local, remote))
-            self.sftp.put(localpath=local, remotepath=remote)
+            self.sftp(subsystem).put(localpath=local, remotepath=remote)
             # Set mode to same as local end
             # TODO: Push this down into SFTPClient sometime (requires backwards
             # incompat release.)
             if preserve_mode:
                 local_mode = os.stat(local).st_mode
                 mode = stat.S_IMODE(local_mode)
-                self.sftp.chmod(remote, mode)
+                self.sftp(subsystem).chmod(remote, mode)
         # Return something useful
         return Result(
             orig_remote=orig_remote,

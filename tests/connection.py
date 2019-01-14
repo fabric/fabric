@@ -1029,8 +1029,9 @@ class Connection_:
             assert Connection("host").sftp() == sentinel
             client.open_sftp.assert_called_with()
 
-        def lazily_caches_result(self, client):
-            sentinel1, sentinel2 = object(), object()
+        @patch("fabric.connection.SFTPClient")
+        def lazily_caches_result(self, SFTPClient, client):
+            sentinel1, sentinel2, sentinel3 = object(), object(), object()
             client.open_sftp.side_effect = [sentinel1, sentinel2]
             cxn = Connection("host")
             first = cxn.sftp()
@@ -1039,6 +1040,12 @@ class Connection_:
             assert first is sentinel1, err.format(first)
             second = cxn.sftp()
             assert second is sentinel1, err.format(second)
+            SFTPClient.return_value = sentinel3
+            subsystem = "/usr/bin/sudo /usr/lib/openssh/sftp-server"
+            third = cxn.sftp(subsystem=subsystem)
+            assert third is sentinel3, err.format(third)
+            fourth = cxn.sftp(subsystem=subsystem)
+            assert fourth is sentinel3, err.format(fourth)
 
     class get:
         @patch("fabric.connection.Transfer")
