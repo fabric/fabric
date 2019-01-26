@@ -244,33 +244,35 @@ class Config(InvokeConfig):
         # InvokeConfig.load_files? re: having a _found attribute for each that
         # determines whether to load or skip
         if self._runtime_ssh_path is not None:
-            path = self._runtime_ssh_path
-            # Manually blow up like open() (_load_ssh_file normally doesn't)
-            if not os.path.exists(path):
-                msg = "No such file or directory: {!r}".format(path)
-                raise IOError(errno.ENOENT, msg)
-            self._load_ssh_file(os.path.expanduser(path))
+            self._load_ssh_file(self._runtime_ssh_path, optional=False)
         elif self.load_ssh_configs:
             for path in (self._user_ssh_path, self._system_ssh_path):
-                self._load_ssh_file(os.path.expanduser(path))
+                self._load_ssh_file(path)
 
-    def _load_ssh_file(self, path):
+    def _load_ssh_file(self, path, optional=True):
         """
         Attempt to open and parse an SSH config file at ``path``.
 
-        Does nothing if ``path`` is not a path to a valid file.
+        Does nothing if ``path`` is not a path to a valid file unless
+        ``optional`` is set to ``False``. Tilde character (``~``) in ``path`` is
+        replaced by current user's home directory (via `~os.path.expanduser`).
 
         :returns: ``None``.
         """
-        if os.path.isfile(path):
+        static_path = os.path.expanduser(path)
+        if os.path.isfile(static_path):
             old_rules = len(self.base_ssh_config._config)
-            with open(path) as fd:
+            with open(static_path) as fd:
                 self.base_ssh_config.parse(fd)
             new_rules = len(self.base_ssh_config._config)
             msg = "Loaded {} new ssh_config rules from {!r}"
             debug(msg.format(new_rules - old_rules, path))
-        else:
+        elif optional:
             debug("File not found, skipping")
+        else:
+            # Manually blow up like open()
+            msg = "No such file or directory: {!r}".format(path)
+            raise IOError(errno.ENOENT, msg)
 
     @staticmethod
     def global_defaults():
