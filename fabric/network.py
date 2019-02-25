@@ -676,9 +676,9 @@ def needs_host(func):
     commands, this decorator will also end up prompting the user once per
     command (in the case where multiple commands have no hosts set, of course.)
     """
-    from fabric.state import env
     @wraps(func)
     def host_prompting_wrapper(*args, **kwargs):
+        from fabric.state import env
         while not env.get('host_string', False):
             handle_prompt_abort("the target host connection string")
             host_string = raw_input("No hosts found. Please specify (single)"
