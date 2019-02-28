@@ -103,10 +103,10 @@ Dependencies
 In order for Fabric's installation to succeed, you will need the following:
 
 * the Python programming language, versions 2.7 or 3.4+;
-* the `Invoke <http://pyinvoke.org>`_ command-running and task-execution
+* the `Invoke <https://www.pyinvoke.org>`_ command-running and task-execution
   library;
-* and the `Paramiko <http://paramiko.org>`_ SSH library (as well as its own
-  dependencies; see `its install docs <http://paramiko.org/installing.html>`_.)
+* and the `Paramiko <https://www.paramiko.org>`_ SSH library (as well as its own
+  dependencies; see `its install docs <https://www.paramiko.org/installing.html>`_.)
 
 Development dependencies
 ------------------------
@@ -132,14 +132,14 @@ Source code checkouts
 =====================
 
 The Fabric developers manage the project's source code with the `Git
-<http://git-scm.com>`_ DVCS. To follow Fabric's development via Git instead of
+<https://git-scm.com>`_ DVCS. To follow Fabric's development via Git instead of
 downloading official releases, you have the following options:
 
 * Clone the canonical repository straight from `the Fabric organization's
   repository on Github <https://github.com/fabric/fabric>`_ (cloning
   instructions available on that page).
 * Make your own fork of the Github repository by making a Github account,
-  visiting `fabric/fabric <http://github.com/fabric/fabric>`_ and clicking the
+  visiting `fabric/fabric <https://github.com/fabric/fabric>`_ and clicking the
   "fork" button.
 
 .. note::

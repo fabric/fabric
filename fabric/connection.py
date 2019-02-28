@@ -359,7 +359,7 @@ class Connection(Context):
             their own arguments. (We `refuse the temptation to guess`_).
 
         .. _refuse the temptation to guess:
-            http://zen-of-python.info/
+            https://zen-of-python.info/
             in-the-face-of-ambiguity-refuse-the-temptation-to-guess.html#12
 
         .. versionchanged:: 2.3

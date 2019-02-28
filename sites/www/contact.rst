@@ -12,7 +12,7 @@ Mailing list
 ------------
 
 The best way to get help with using Fabric is via the `fab-user mailing list
-<http://lists.nongnu.org/mailman/listinfo/fab-user>`_ (currently hosted at
+<https://lists.nongnu.org/mailman/listinfo/fab-user>`_ (currently hosted at
 ``nongnu.org``.) The Fabric developers do their best to reply promptly, and the
 list contains an active community of other Fabric users and contributors as
 well.

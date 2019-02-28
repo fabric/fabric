@@ -261,7 +261,7 @@ enough users request it or use cases are made that workarounds are
 insufficient.
 
 - **Ported**: available already, possibly renamed or moved (frequently, moved
-  into the `Invoke <http://pyinvoke.org>`_ codebase.)
+  into the `Invoke <https://www.pyinvoke.org>`_ codebase.)
 - **Pending**: would fit, but has not yet been ported, good candidate for a
   patch. *These entries link to the appropriate Github ticket* - please do
   not make new ones!
@@ -912,7 +912,7 @@ Utilities
       - v1 required using a Fabric-specific 'unwrap_tasks' helper function
         somewhere in your Sphinx build pipeline; now you can instead just
         enable the new `invocations.autodoc
-        <http://invocations.readthedocs.io/en/latest/api/autodoc.html>`_ Sphinx
+        <https://invocations.readthedocs.io/en/latest/api/autodoc.html>`_ Sphinx
         mini-plugin in your extensions list; see link for details.
     * - ``network.normalize``, ``denormalize`` and ``parse_host_string``,
         ostensibly internals but sometimes exposed to users for dealing with

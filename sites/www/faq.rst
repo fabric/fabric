@@ -13,7 +13,7 @@ your question is not answered here.
 
 .. warning::
     Many questions about shell command execution and task behavior are answered
-    on `Invoke's FAQ page <http://www.pyinvoke.org/faq.html>`_ - please check
+    on `Invoke's FAQ page <https://www.pyinvoke.org/faq.html>`_ - please check
     there also!
 
 

@@ -7,7 +7,7 @@ fabric[pytest]``.
 
 The simplest way to get these fixtures loaded into your test suite so Pytest
 notices them is to import them into a ``conftest.py`` (`docs
-<http://pytest.readthedocs.io/en/latest/fixture.html#conftest-py-sharing-fixture-functions>`_).
+<https://pytest.readthedocs.io/en/latest/fixture.html#conftest-py-sharing-fixture-functions>`_).
 For example, if you intend to use the `remote` and `client` fixtures::
 
     from fabric.testing.fixtures import client, remote

@@ -27,8 +27,8 @@ commands remotely over SSH, yielding useful Python objects in return:
     Ran 'uname -s' on web1.example.com, got stdout:
     Linux
 
-It builds on top of `Invoke <http://pyinvoke.org>`_ (subprocess command
-execution and command-line features) and `Paramiko <http://paramiko.org>`_ (SSH
+It builds on top of `Invoke <https://www.pyinvoke.org>`_ (subprocess command
+execution and command-line features) and `Paramiko <https://www.paramiko.org>`_ (SSH
 protocol implementation), extending their APIs to complement one another and
 provide additional functionality.
 
@@ -47,15 +47,15 @@ Core use cases for Fabric include (but are not limited to):
 * Single commands on individual hosts:
 
   .. testsetup:: single-command
-  
+
       from fabric import Connection
       mock = MockRemote()
       mock.expect(out=b"web1")
-  
+
   .. testcleanup:: single-command
-  
+
       mock.stop()
-  
+
   .. doctest:: single-command
 
       >>> result = Connection('web1').run('hostname')
@@ -67,21 +67,21 @@ Core use cases for Fabric include (but are not limited to):
   parallel, etc):
 
   .. testsetup:: multiple-hosts
-  
+
       from fabric import Connection
       mock = MockRemote()
       mock.expect_sessions(
           Session(host='web1', cmd='hostname', out=b'web1\n'),
           Session(host='web2', cmd='hostname', out=b'web2\n'),
       )
-  
+
   .. testcleanup:: multiple-hosts
-  
+
       mock.stop()
-  
+
   .. doctest:: multiple-hosts
 
-      >>> from fabric import SerialGroup     
+      >>> from fabric import SerialGroup
       >>> result = SerialGroup('web1', 'web2').run('hostname')
       web1
       web2
@@ -92,18 +92,18 @@ Core use cases for Fabric include (but are not limited to):
 * Python code blocks (functions/methods) targeted at individual connections:
 
   .. testsetup:: tasks
-  
+
       from fabric import Connection
       mock = MockRemote()
       mock.expect(commands=[
           Command("uname -s", out=b"Linux\n"),
           Command("df -h / | tail -n1 | awk '{print $5}'", out=b'33%\n'),
       ])
-  
+
   .. testcleanup:: tasks
-  
+
       mock.stop()
-  
+
   .. doctest:: tasks
 
       >>> def disk_free(c):
@@ -120,7 +120,7 @@ Core use cases for Fabric include (but are not limited to):
 * Python code blocks on multiple hosts:
 
   .. testsetup:: tasks-on-multiple-hosts
-  
+
       from fabric import Connection, SerialGroup
       mock = MockRemote()
       mock.expect_sessions(
@@ -137,11 +137,11 @@ Core use cases for Fabric include (but are not limited to):
           Command("df -h / | tail -n1 | awk '{print $5}'", out=b'2%\n'),
         ]),
       )
-  
+
   .. testcleanup:: tasks-on-multiple-hosts
-  
+
       mock.stop()
-  
+
   .. doctest:: tasks-on-multiple-hosts
 
       >>> # NOTE: Same code as above!
@@ -172,7 +172,7 @@ binary stub:
 * Multiple tasks may be given in a single CLI session, e.g. ``fab build
   deploy``;
 * Much more - all other Invoke functionality is supported - see `its
-  documentation <http://docs.pyinvoke.org>`_ for details.
+  documentation <https://docs.pyinvoke.org>`_ for details.
 
 I'm a user of Fabric 1, how do I upgrade?
 -----------------------------------------
@@ -190,7 +190,7 @@ changelog, contribution guidelines, development roadmap, news/blog, and so
 forth.
 
 Detailed conceptual and API documentation can be found at our code
-documentation site, `docs.fabfile.org <http://docs.fabfile.org>`_.
+documentation site, `docs.fabfile.org <https://docs.fabfile.org>`_.
 
 
 .. toctree::

@@ -5,7 +5,7 @@ Development roadmap
 ===================
 
 This document outlines Fabric's intended development path. Please make sure
-you're reading `the latest version <http://fabfile.org/roadmap.html>`_ of this
+you're reading `the latest version <https://www.fabfile.org/roadmap.html>`_ of this
 document, and also see the page about :ref:`upgrading <upgrading>` if you are
 migrating from version 1 to versions 2 or above.
 
@@ -33,8 +33,8 @@ Modern Fabric versions (2+) receive active feature and bugfix development:
 
 .. note::
     Many features that you may use via Fabric will only need development in the
-    libraries Fabric wraps -- `Invoke <http://pyinvoke.org>`_ and `Paramiko
-    <http://paramiko.org>`_ -- and unless Fabric itself needs changes to match,
+    libraries Fabric wraps -- `Invoke <https://www.pyinvoke.org>`_ and `Paramiko
+    <https://www.paramiko.org>`_ -- and unless Fabric itself needs changes to match,
     you can often get new features by upgrading only one of the three. Make
     sure to check the other projects' changelogs periodically!
 

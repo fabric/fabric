@@ -46,7 +46,7 @@ In order for Fabric's installation to succeed, you will need four primary pieces
 
 * the Python programming language;
 * the ``setuptools`` packaging/installation library;
-* the Python `Paramiko <http://paramiko.org>`_ SSH library;
+* the Python `Paramiko <https://www.paramiko.org>`_ SSH library;
 * and Paramiko's dependency, `Cryptography <https://cryptography.io>`_.
 
 and, if using parallel execution mode,
@@ -59,7 +59,7 @@ gotchas.
 Python
 ------
 
-Fabric requires `Python <http://python.org>`_ version 2.5+.
+Fabric requires `Python <https://www.python.org>`_ version 2.5+.
 
 setuptools
 ----------
@@ -88,6 +88,6 @@ details.
     If you encounter this problem, either use ``env.pool_size`` / ``-z`` to
     limit the amount of concurrency, or upgrade to Python
     >=2.6.3.
-    
+
     Python 2.5 is unaffected, as it requires the PyPI version of
     ``multiprocessing``, which is newer than that shipped with Python <2.6.3.

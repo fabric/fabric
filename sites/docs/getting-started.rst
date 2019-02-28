@@ -14,7 +14,7 @@ Fabric composes a couple of other libraries as well as providing its own layer
 on top; user code will most often import from the ``fabric`` package, but
 you'll sometimes import directly from ``invoke`` or ``paramiko`` too:
 
-- `Invoke <https://pyinvoke.org>`_  implements CLI parsing, task organization,
+- `Invoke <https://www.pyinvoke.org>`_  implements CLI parsing, task organization,
   and shell command execution (a generic framework plus specific implementation
   for local commands.)
 
@@ -24,7 +24,7 @@ you'll sometimes import directly from ``invoke`` or ``paramiko`` too:
     - Fabric users will frequently import Invoke objects, in cases where Fabric
       itself has no need to subclass or otherwise modify what Invoke provides.
 
-- `Paramiko <https://paramiko.org>`_ implements low/mid level SSH
+- `Paramiko <https://www.paramiko.org>`_ implements low/mid level SSH
   functionality - SSH and SFTP sessions, key management, etc.
 
     - Fabric mostly uses this under the hood; users will only rarely import
@@ -276,7 +276,7 @@ parameterized with a `.Connection` object from the caller, to encourage reuse::
     def upload_and_unpack(c):
         c.put('myfiles.tgz', '/opt/mydata')
         c.run('tar -C /opt/mydata -xzvf /opt/mydata/myfiles.tgz')
-        
+
 As you'll see below, such functions can be handed to other API methods to
 enable more complex use cases as well.
 
@@ -298,7 +298,7 @@ straightforward approach could be to iterate over a list or tuple of
     web1: Linux
     web2: Linux
     mac1: Darwin
-    
+
 This approach works, but as use cases get more complex it can be
 useful to think of a collection of hosts as a single object. Enter `.Group`, a
 class wrapping one-or-more `.Connection` objects and offering a similar API;

@@ -63,7 +63,7 @@ its own username, port number, and so forth. (This includes ``gateway`` itself
 ----------------
 
 The traditional OpenSSH command-line client has long offered a ``ProxyCommand``
-directive (see `man ssh_config <http://man.openbsd.org/ssh_config>`_), which
+directive (see `man ssh_config <https://man.openbsd.org/ssh_config>`_), which
 pipes the inner connection's input and output through an arbitrary local
 subprocess.
 
