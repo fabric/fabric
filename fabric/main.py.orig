@@ -309,12 +309,6 @@ def parse_options():
         help="Force sudo password prompt up-front"
     )
 
-    parser.add_option('-S', '--sudo',
-        action='store_true',
-        default=False,
-        help="Use sudo instead of run for -- command"
-    )
-
     # List Fab commands found in loaded fabfiles/source files
     parser.add_option('-l', '--list',
         action='store_true',
@@ -732,11 +726,7 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
         # Generate remainder command and insert into commands, commands_to_run
         if remainder_command:
             r = '<remainder>'
-            if options.sudo :
-                options.initial_password_prompt = True
-                state.commands[r] = lambda: api.sudo(remainder_command)
-            else :
-                state.commands[r] = lambda: api.run(remainder_command)
+            state.commands[r] = lambda: api.run(remainder_command)
             commands_to_run.append((r, [], {}, [], [], []))
 
         # Ditto for a default, if found
