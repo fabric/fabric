@@ -33,7 +33,7 @@ Modern Fabric versions (2+) receive active feature and bugfix development:
 
 .. note::
     Many features that you may use via Fabric will only need development in the
-    libraries Fabric wraps -- `Invoke <http://pyinvoke.org>`_ and `Paramiko
+    libraries Fabric wraps -- `Invoke <https://www.pyinvoke.org>`_ and `Paramiko
     <http://paramiko.org>`_ -- and unless Fabric itself needs changes to match,
     you can often get new features by upgrading only one of the three. Make
     sure to check the other projects' changelogs periodically!

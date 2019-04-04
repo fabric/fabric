@@ -53,7 +53,7 @@ inv_www_target = join(
     dirname(__file__), "..", "..", "invoke", "sites", "www", "_build"
 )
 if not on_dev:
-    inv_www_target = "http://pyinvoke.org/"
+    inv_www_target = "https://www.pyinvoke.org/"
 # Paramiko (docs)
 para_target = join(
     dirname(__file__), "..", "..", "paramiko", "sites", "docs", "_build"

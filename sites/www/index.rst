@@ -27,7 +27,7 @@ commands remotely over SSH, yielding useful Python objects in return:
     Ran 'uname -s' on web1.example.com, got stdout:
     Linux
 
-It builds on top of `Invoke <http://pyinvoke.org>`_ (subprocess command
+It builds on top of `Invoke <https://www.pyinvoke.org>`_ (subprocess command
 execution and command-line features) and `Paramiko <http://paramiko.org>`_ (SSH
 protocol implementation), extending their APIs to complement one another and
 provide additional functionality.
