@@ -88,7 +88,7 @@ Changelog (1.x)
   .. warning::
     If you are upgrading an existing environment, the install dependencies have
     changed; please see Paramiko's installation docs for details:
-    http://www.paramiko.org/installing.html
+    https://www.paramiko.org/installing.html
 
 * :release:`1.12.1 <2016-12-05>`
 * :release:`1.11.3 <2016-12-05>`

@@ -28,7 +28,7 @@ commands remotely over SSH, yielding useful Python objects in return:
     Linux
 
 It builds on top of `Invoke <https://www.pyinvoke.org>`_ (subprocess command
-execution and command-line features) and `Paramiko <http://paramiko.org>`_ (SSH
+execution and command-line features) and `Paramiko <https://www.paramiko.org>`_ (SSH
 protocol implementation), extending their APIs to complement one another and
 provide additional functionality.
 

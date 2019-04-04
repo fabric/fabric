@@ -24,7 +24,7 @@ you'll sometimes import directly from ``invoke`` or ``paramiko`` too:
     - Fabric users will frequently import Invoke objects, in cases where Fabric
       itself has no need to subclass or otherwise modify what Invoke provides.
 
-- `Paramiko <https://paramiko.org>`_ implements low/mid level SSH
+- `Paramiko <https://www.paramiko.org>`_ implements low/mid level SSH
   functionality - SSH and SFTP sessions, key management, etc.
 
     - Fabric mostly uses this under the hood; users will only rarely import

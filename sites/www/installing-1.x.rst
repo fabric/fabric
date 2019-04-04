@@ -46,7 +46,7 @@ In order for Fabric's installation to succeed, you will need four primary pieces
 
 * the Python programming language;
 * the ``setuptools`` packaging/installation library;
-* the Python `Paramiko <http://paramiko.org>`_ SSH library;
+* the Python `Paramiko <https://www.paramiko.org>`_ SSH library;
 * and Paramiko's dependency, `Cryptography <https://cryptography.io>`_.
 
 and, if using parallel execution mode,
