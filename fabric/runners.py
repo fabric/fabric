@@ -66,6 +66,9 @@ class Remote(Runner):
     def _write_proc_stdin(self, data):
         return self.channel.sendall(data)
 
+    def close_proc_stdin(self):
+        return self.channel.shutdown_write()
+
     @property
     def process_is_finished(self):
         return self.channel.exit_status_ready()
