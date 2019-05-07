@@ -14,7 +14,7 @@ Fabric composes a couple of other libraries as well as providing its own layer
 on top; user code will most often import from the ``fabric`` package, but
 you'll sometimes import directly from ``invoke`` or ``paramiko`` too:
 
-- `Invoke <https://pyinvoke.org>`_  implements CLI parsing, task organization,
+- `Invoke <https://www.pyinvoke.org>`_  implements CLI parsing, task organization,
   and shell command execution (a generic framework plus specific implementation
   for local commands.)
 
