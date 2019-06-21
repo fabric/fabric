@@ -1,3 +1,4 @@
+import types
 from os.path import join
 from datetime import datetime
 
@@ -42,3 +43,21 @@ templates_path = ['_templates']
 exclude_trees = ['_build']
 source_suffix = '.rst'
 default_role = 'obj'
+
+
+
+# Restore decorated functions so that autodoc inspects the right arguments
+def unwrap_decorated_functions():
+    from fabric import operations, context_managers
+    for module in [context_managers, operations]:
+        for name, obj in vars(module).iteritems():
+            if (
+                # Only function objects - just in case some real object showed
+                # up that had .undecorated
+                isinstance(obj, types.FunctionType)
+                # Has our .undecorated 'cache' of the real object
+                and hasattr(obj, 'undecorated')
+            ):
+                setattr(module, name, obj.undecorated)
+
+unwrap_decorated_functions()
