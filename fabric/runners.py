@@ -32,7 +32,7 @@ class Remote(Runner):
         self.inline_env = kwargs.pop("inline_env", None)
         super(Remote, self).__init__(*args, **kwargs)
 
-    def start(self, command, shell, env):
+    def start(self, command, shell, env, command_timeout=None):
         self.channel = self.context.create_session()
         if self.using_pty:
             rows, cols = pty_size()
@@ -55,8 +55,8 @@ class Remote(Runner):
                 command = "export {} && {}".format(parameters, command)
             else:
                 self.channel.update_environment(env)
-        # TODO: pass in timeout= here when invoke grows timeout functionality
-        # in Runner/Local.
+
+        self.channel.settimeout(command_timeout)
         self.channel.exec_command(command)
 
     def read_proc_stdout(self, num_bytes):
