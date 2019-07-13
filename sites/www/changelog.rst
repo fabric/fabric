@@ -5,6 +5,13 @@ Changelog
 .. note::
     Looking for the Fabric 1.x changelog? See :doc:`/changelog-v1`.
 
+- :support:`-` Removed unnecessary Cryptography version pin from packaging
+  metadata; this was an artifact from early development (largely a concession
+  to specific macOS versions) and at this point in time, only Paramiko's own
+  direct dependency specification should matter.
+
+  This is unlikely to affect anybody's install, since Paramiko has required
+  newer Cryptography versions for a number of years now.
 - :feature:`-` Allow specifying connection timeouts (already available via
   `~fabric.connection.Connection` constructor argument and configuration
   option) on the command-line, via :option:`-t/--connect-timeout <-t>`.
