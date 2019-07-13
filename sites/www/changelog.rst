@@ -5,6 +5,15 @@ Changelog
 .. note::
     Looking for the Fabric 1.x changelog? See :doc:`/changelog-v1`.
 
+- :bug:`- major` Anonymous/'remainder' subprocess execution (eg ``fab -H host
+  -- command``, as opposed to the use of `Connection.run
+  <fabric.connection.Connection.run>` inside tasks) was explicitly specifying
+  ``in_stream=False`` under the hood; this was leftover from early development
+  (a concession to the test suite) and wasn't doing anything besides
+  frustrating programs which read from stdin.
+
+  It has been removed; ``cat 'text' | fab -H somehost -- reads-from-stdin`` (or
+  similar use cases) should work again.
 - :support:`-` Removed unnecessary Cryptography version pin from packaging
   metadata; this was an artifact from early development (largely a concession
   to specific macOS versions) and at this point in time, only Paramiko's own

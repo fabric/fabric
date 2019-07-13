@@ -88,10 +88,7 @@ class Executor(invoke.Executor):
                 )
 
             def anonymous(c):
-                # TODO: how to make all our tests configure in_stream=False?
-                # TODO: doesn't this preclude users wanting to submit stdin to
-                # remainder commands?
-                c.run(self.core.remainder, in_stream=False)
+                c.run(self.core.remainder)
 
             anon = Call(Task(body=anonymous))
             # TODO: see above TODOs about non-parameterized setups, roles etc
