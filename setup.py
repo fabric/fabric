@@ -70,7 +70,6 @@ setuptools.setup(
     install_requires=[
         "invoke>=1.1,<2.0",
         "paramiko>=2.4",
-        "cryptography>=1.1",
     ],
     extras_require={
         "testing": testing_deps,
