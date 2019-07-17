@@ -94,10 +94,10 @@ as lists. Future versions may add a typecasting system to make this easier.
 Local commands
 ==============
 
-As used above, ``fab`` only really saves a couple lines of
-``if __name__ == "__main__"`` boilerplate. It's mostly designed for use with
-Fabric's API, which contains functions (or **operations**) for executing shell
-commands, transferring files, and so forth.
+As used in the examples shown so far, ``fab`` only really saves a couple lines of
+``if __name__ == "__main__"`` boilerplate. Properly utilised, it is designed 
+for use with Fabric's API, which contains functions (or **operations**) for executing 
+shell commands, transferring files, and so forth.
 
 Let's build a hypothetical Web application fabfile. This example scenario is
 as follows: The Web application is managed via Git on a remote host
