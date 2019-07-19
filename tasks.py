@@ -5,7 +5,7 @@ import sys
 from invocations import travis
 from invocations.checks import blacken
 from invocations.docs import docs, www, sites, watch_docs
-from invocations.pytest import test, integration, coverage
+from invocations.pytest import test, integration as integration_, coverage
 from invocations.packaging import release
 from invocations.util import tmpdir
 
@@ -95,6 +95,25 @@ def sanity_test_from_v1(c):
     assert cxn.host == "localghost"
     assert cxn.user == "admin"
     assert cxn.port == 2222
+
+
+# TODO: as usual, this just wants a good pattern for "that other task, with a
+# tweaked default arg value"
+@task
+def integration(
+    c,
+    opts=None,
+    pty=True,
+    x=False,
+    k=None,
+    verbose=True,
+    color=True,
+    capture="no",
+    module=None,
+):
+    return integration_(
+        c, opts, pty, x, k, verbose, color, capture, module,
+    )
 
 
 # Better than nothing, since we haven't solved "pretend I have some other
