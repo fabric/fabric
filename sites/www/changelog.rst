@@ -5,6 +5,16 @@ Changelog
 .. note::
     Looking for the Fabric 1.x changelog? See :doc:`/changelog-v1`.
 
+- :feature:`1985` Add support for explicitly closing remote subprocess' stdin
+  when local stdin sees an EOF, by implementing a new command-runner method
+  used by Invoke ``>= 1.3``; this prevents remote programs that 'follow'
+  stdin from blocking forever.
+
+  .. note::
+    Versions of Invoke older than 1.3 will not cause any errors in Fabric, but
+    as they lack support for this behavior, affected subprocesses may block
+    until you upgrade your Invoke.
+
 - :bug:`- major` Anonymous/'remainder' subprocess execution (eg ``fab -H host
   -- command``, as opposed to the use of `Connection.run
   <fabric.connection.Connection.run>` inside tasks) was explicitly specifying
