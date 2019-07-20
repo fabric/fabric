@@ -1,7 +1,7 @@
 DEPRECRECATED
 =============
 
-The excellent (Fabric)[http://www.fabfile.org/] now finally supports Python3,
+The excellent `Fabric <http://www.fabfile.org/>`_ now finally supports Python3,
 there is thus no longer a use for this project. Please use mainline Fabric
 instead.
 
