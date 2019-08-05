@@ -1,7 +1,8 @@
 import os
+import time
 
-from invoke import pty_size
-from pytest import skip
+from invoke import pty_size, CommandTimedOut
+from pytest import skip, raises
 
 from fabric import Connection, Config
 
@@ -116,3 +117,18 @@ class Connection_:
         # When bug present, # lines received is significantly fewer than the
         # true count in the file (by thousands).
         assert len(lines) == len(words)
+
+    class command_timeout:
+        def setup(self):
+            self.cxn = Connection("localhost")
+
+        def does_not_raise_exception_when_under_timeout(self):
+            assert self.cxn.run("sleep 1", timeout=3)
+
+        def raises_exception_when_over_timeout(self):
+            with raises(CommandTimedOut) as info:
+                start = time.time()
+                self.cxn.run("sleep 5", timeout=1)
+                elapsed = time.time() - start
+            assert info.value.timeout == 1
+            assert elapsed <= 2  # Fudge time for overhead
