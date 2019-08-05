@@ -32,7 +32,7 @@ class Remote(Runner):
         self.inline_env = kwargs.pop("inline_env", None)
         super(Remote, self).__init__(*args, **kwargs)
 
-    def start(self, command, shell, env, command_timeout=None):
+    def start(self, command, shell, env, timeout=None):
         self.channel = self.context.create_session()
         if self.using_pty:
             rows, cols = pty_size()
@@ -56,7 +56,7 @@ class Remote(Runner):
             else:
                 self.channel.update_environment(env)
 
-        self.channel.settimeout(command_timeout)
+        self.channel.settimeout(timeout)
         self.channel.exec_command(command)
 
     def read_proc_stdout(self, num_bytes):
@@ -100,7 +100,6 @@ class Remote(Runner):
             self.channel.close()
 
     # TODO: shit that is in fab 1 run() but could apply to invoke.Local too:
-    # * command timeout control
     # * see rest of stuff in _run_command/_execute in operations.py...there is
     # a bunch that applies generally like optional exit codes, etc
 
