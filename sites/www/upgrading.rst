@@ -655,6 +655,7 @@ CLI arguments, options and behavior
         ambiguous re: connect vs command timeout.
     * - ``-T``/``--command-timeout``
       - Ported
+      - Implemented in Invoke and preserved in ``fab`` under the same name.
     * - ``-u``/``--user`` to set global default username
       - Removed
       - Most of the time, configuration (env vars for true runtime, or eg
