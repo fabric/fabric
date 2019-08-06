@@ -18,15 +18,6 @@ Options & arguments
     <prompt-for-sudo-password>` -- from Invoke, which handles sudo autoresponse
     concerns.
 
-.. option:: -S, --ssh-config
-
-    Takes a path to load as a runtime SSH config file. See :ref:`ssh-config`.
-
-.. option:: -t, --connect-timeout
-
-    Takes an integer of seconds after which connection should time out.
-    Supplies the default value for the ``timeouts.connect`` config setting.
-
 .. option:: -H, --hosts
 
     Takes a comma-separated string listing hostnames against which tasks
@@ -44,13 +35,6 @@ Options & arguments
 
     Default: ``[]``.
 
-.. option:: --prompt-for-passphrase
-
-    Causes Fabric to prompt 'up front' for a value to store as the
-    ``connect_kwargs.passphrase`` config setting (used by Paramiko to decrypt
-    private key files.) Useful if you do not want to configure such values in
-    on-disk conf files or via shell environment variables.
-
 .. option:: --prompt-for-login-password
 
     Causes Fabric to prompt 'up front' for a value to store as the
@@ -58,6 +42,22 @@ Options & arguments
     authenticating via passwords and, in some versions, also used for key
     passphrases.) Useful if you do not want to configure such values in on-disk
     conf files or via shell environment variables.
+
+.. option:: --prompt-for-passphrase
+
+    Causes Fabric to prompt 'up front' for a value to store as the
+    ``connect_kwargs.passphrase`` config setting (used by Paramiko to decrypt
+    private key files.) Useful if you do not want to configure such values in
+    on-disk conf files or via shell environment variables.
+
+.. option:: -S, --ssh-config
+
+    Takes a path to load as a runtime SSH config file. See :ref:`ssh-config`.
+
+.. option:: -t, --connect-timeout
+
+    Takes an integer of seconds after which connection should time out.
+    Supplies the default value for the ``timeouts.connect`` config setting.
 
 
 Seeking & loading tasks

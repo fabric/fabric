@@ -24,10 +24,6 @@ class Fab(Program):
         core_args = super(Fab, self).core_args()
         my_args = [
             Argument(
-                names=("S", "ssh-config"),
-                help="Path to runtime SSH config file.",
-            ),
-            Argument(
                 names=("H", "hosts"),
                 help="Comma-separated host name(s) to execute tasks against.",
             ),
@@ -48,6 +44,10 @@ class Fab(Program):
                 names=("prompt-for-passphrase",),
                 kind=bool,
                 help="Request an upfront SSH key passphrase prompt.",
+            ),
+            Argument(
+                names=("S", "ssh-config"),
+                help="Path to runtime SSH config file.",
             ),
             Argument(
                 names=("t", "connect-timeout"),
