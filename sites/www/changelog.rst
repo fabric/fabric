@@ -5,6 +5,7 @@ Changelog
 .. note::
     Looking for the Fabric 1.x changelog? See :doc:`/changelog-v1`.
 
+- :release:`2.5.0 <2019-08-06>`
 - :support:`-` Update minimum Invoke version requirement to ``>=1.3``.
 - :feature:`1985` Add support for explicitly closing remote subprocess' stdin
   when local stdin sees an EOF, by implementing a new command-runner method
