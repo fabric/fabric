@@ -997,7 +997,7 @@ Networking
       - `Pending <https://github.com/fabric/fabric/issues/1808>`__
       - Not ported yet.
     * - ``env.timeout`` for controlling connection (and sometimes command
-      execution) timeout
+        execution) timeout
       - Ported
       - Connection timeout is now controllable both via the configuration
         system (as ``timeouts.connect``) and a direct kwarg on
