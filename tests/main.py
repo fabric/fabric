@@ -79,6 +79,7 @@ Available tasks:
   basic-run
   build
   deploy
+  expect-connect-timeout
   expect-from-env
   expect-identities
   expect-identity
@@ -257,6 +258,17 @@ Third!
             # behavior added in pyinvoke/invoke#309
             with cd(support):
                 make_program().run("fab mutate expect-mutation")
+
+    class connect_timeout:
+        def dash_t_supplies_default_connect_timeout(self):
+            with cd(support):
+                make_program().run("fab -t 5 expect-connect-timeout")
+
+        def double_dash_connect_timeout_also_works(self):
+            with cd(support):
+                make_program().run(
+                    "fab --connect-timeout 5 expect-connect-timeout"
+                )
 
     class runtime_identity_file:
         def dash_i_supplies_default_connect_kwarg_key_filename(self):

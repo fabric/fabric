@@ -61,6 +61,11 @@ def expect_identities(c):
 
 
 @task
+def expect_connect_timeout(c):
+    assert c.config.connect_kwargs["timeout"] == 5
+
+
+@task
 def first(c):
     print("First!")
 

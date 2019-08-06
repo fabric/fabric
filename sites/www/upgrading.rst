@@ -651,11 +651,10 @@ CLI arguments, options and behavior
         well return as a configuration value.
     * - ``-t``/``--timeout`` controlling connection timeout
       - Ported
-      - This is now part of the direct passthrough to Paramiko-level connection
-        parameters, the ``connect_kwargs`` config value.
+      - It's now ``-t``/``--connect-timeout`` as ``--timeout`` was technically
+        ambiguous re: connect vs command timeout.
     * - ``-T``/``--command-timeout``
-      - `Pending <https://github.com/pyinvoke/invoke/issues/539>`__
-      - See notes in :ref:`upgrading-commands` around the ``timeout`` kwarg.
+      - Ported
     * - ``-u``/``--user`` to set global default username
       - Removed
       - Most of the time, configuration (env vars for true runtime, or eg
@@ -747,9 +746,11 @@ differences.
         system.
     * - ``timeout`` kwarg and the ``CommandTimeout`` exception raised when said
         command-runtime timeout was violated
-      - `Pending <https://github.com/pyinvoke/invoke/issues/539>`__
-      - Command timeouts have not been ported yet, but will likely be added (at
-        the Invoke layer) in future.
+      - Ported
+      - Primarily lives at the Invoke layer now, but applies to all command
+        execution, local or remote; see the ``timeout`` argument to
+        `~invoke.runners.Runner.run` and its related configuration value and
+        CLI flag.
     * - ``pty`` kwarg and ``env.always_use_pty``, controlling whether commands
         run in a pseudo-terminal or are invoked directly
       - Ported
@@ -994,10 +995,14 @@ Networking
     * - ``env.connection_attempts`` for setting connection retries
       - `Pending <https://github.com/fabric/fabric/issues/1808>`__
       - Not ported yet.
-    * - ``env.timeout`` for controlling connection timeout
+    * - ``env.timeout`` for controlling connection (and sometimes command
+      execution) timeout
       - Ported
-      - This is now controllable both via the configuration system and a direct
-        kwarg on `fabric.connection.Connection`.
+      - Connection timeout is now controllable both via the configuration
+        system (as ``timeouts.connect``) and a direct kwarg on
+        `fabric.connection.Connection`. Command execution timeout is its own
+        setting now, ``timeouts.command`` and a ``timeout`` kwarg to ``run``
+        and friends.
 
 Authentication
 --------------

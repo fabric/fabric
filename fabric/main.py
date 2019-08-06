@@ -49,6 +49,11 @@ class Fab(Program):
                 kind=bool,
                 help="Request an upfront SSH key passphrase prompt.",
             ),
+            Argument(
+                names=("t", "connect-timeout"),
+                kind=int,
+                help="Specifies default connection timeout, in seconds.",
+            ),
         ]
         return core_args + my_args
 
@@ -120,6 +125,10 @@ class Fab(Program):
         path = self.args["identity"].value
         if path:
             connect_kwargs["key_filename"] = path
+        # Ditto for connect timeout
+        timeout = self.args["connect-timeout"].value
+        if timeout:
+            connect_kwargs["timeout"] = timeout
         # Secrets prompts that want to happen at handoff time instead of
         # later/at user-time.
         # TODO: should this become part of Invoke proper in case other

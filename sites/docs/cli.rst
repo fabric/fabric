@@ -22,6 +22,11 @@ Options & arguments
 
     Takes a path to load as a runtime SSH config file. See :ref:`ssh-config`.
 
+.. option:: -t, --connect-timeout
+
+    Takes an integer of seconds after which connection should time out.
+    Supplies the default value for the ``timeouts.connect`` config setting.
+
 .. option:: -H, --hosts
 
     Takes a comma-separated string listing hostnames against which tasks
