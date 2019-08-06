@@ -5,6 +5,9 @@ Changelog
 .. note::
     Looking for the Fabric 1.x changelog? See :doc:`/changelog-v1`.
 
+- :feature:`-` Allow specifying connection timeouts (already available via
+  `~fabric.connection.Connection` constructor argument and configuration
+  option) on the command-line, via :option:`-t/--connect-timeout <-t>`.
 - :feature:`1989` Reinstate command timeouts, by supporting the implementation
   of that feature in Invoke (`pyinvoke/invoke#539
   <https://github.com/pyinvoke/invoke/issues/539>`_). Thanks to Israel Fruchter
