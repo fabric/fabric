@@ -3,6 +3,7 @@ try:
 except ImportError:
     from six import StringIO
 
+from mock import Mock
 from pytest import skip  # noqa
 
 from invoke import pty_size, Result
@@ -131,3 +132,9 @@ class Remote_:
             r = Remote(context=_Connection("host"), inline_env=True)
             r.run(CMD, env={"PATH": "/opt/bin", "DEBUG": "1"})
             assert not chan.update_environment.called
+
+    def kill_closes_the_channel(self):
+        runner = _runner()
+        runner.channel = Mock()
+        runner.kill()
+        runner.channel.close.assert_called_once_with()

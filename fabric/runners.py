@@ -55,8 +55,6 @@ class Remote(Runner):
                 command = "export {} && {}".format(parameters, command)
             else:
                 self.channel.update_environment(env)
-
-        self.channel.settimeout(timeout)
         self.channel.exec_command(command)
 
     def read_proc_stdout(self, num_bytes):
@@ -98,6 +96,14 @@ class Remote(Runner):
     def stop(self):
         if hasattr(self, "channel"):
             self.channel.close()
+
+    def kill(self):
+        # Just close the channel immediately, which is about as close as we can
+        # get to a local SIGKILL unfortunately.
+        # TODO: consider _also_ calling .send_interrupt() and only doing this
+        # after another few seconds; but A) kinda fragile/complex and B) would
+        # belong in invoke.Runner anyways?
+        self.channel.close()
 
     # TODO: shit that is in fab 1 run() but could apply to invoke.Local too:
     # * see rest of stuff in _run_command/_execute in operations.py...there is

@@ -129,6 +129,8 @@ class Connection_:
             with raises(CommandTimedOut) as info:
                 start = time.time()
                 self.cxn.run("sleep 5", timeout=1)
-                elapsed = time.time() - start
+            elapsed = time.time() - start
             assert info.value.timeout == 1
-            assert elapsed <= 2  # Fudge time for overhead
+            # Catch scenarios where we except but don't actually shut down
+            # early (w/ a bit of fudge time for overhead)
+            assert elapsed <= 2
