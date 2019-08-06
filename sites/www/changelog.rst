@@ -13,16 +13,15 @@ Changelog
 - :bug:`- major` Anonymous/'remainder' subprocess execution (eg ``fab -H host
   -- command``, as opposed to the use of `Connection.run
   <fabric.connection.Connection.run>` inside tasks) was explicitly specifying
-  ``in_stream=False`` under the hood; this was leftover from early development
-  (a concession to the test suite) and wasn't doing anything besides
-  frustrating programs which read from stdin.
+  ``in_stream=False`` (i.e. "disconnect from stdin") under the hood; this was
+  leftover from early development and prevented use of interactive (or other
+  stdin-reading) programs via this avenue.
 
   It has been removed; ``cat 'text' | fab -H somehost -- reads-from-stdin`` (or
   similar use cases) should work again.
 - :support:`-` Removed unnecessary Cryptography version pin from packaging
-  metadata; this was an artifact from early development (largely a concession
-  to specific macOS versions) and at this point in time, only Paramiko's own
-  direct dependency specification should matter.
+  metadata; this was an artifact from early development. At this point in
+  time, only Paramiko's own direct dependency specification should matter.
 
   This is unlikely to affect anybody's install, since Paramiko has required
   newer Cryptography versions for a number of years now.
