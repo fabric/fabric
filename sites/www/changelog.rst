@@ -5,16 +5,11 @@ Changelog
 .. note::
     Looking for the Fabric 1.x changelog? See :doc:`/changelog-v1`.
 
+- :support:`-` Update minimum Invoke version requirement to ``>=1.3``.
 - :feature:`1985` Add support for explicitly closing remote subprocess' stdin
   when local stdin sees an EOF, by implementing a new command-runner method
-  used by Invoke ``>= 1.3``; this prevents remote programs that 'follow'
-  stdin from blocking forever.
-
-  .. note::
-    Versions of Invoke older than 1.3 will not cause any errors in Fabric, but
-    as they lack support for this behavior, affected subprocesses may block
-    until you upgrade your Invoke.
-
+  recently added to Invoke; this prevents remote programs that 'follow' stdin
+  from blocking forever.
 - :bug:`- major` Anonymous/'remainder' subprocess execution (eg ``fab -H host
   -- command``, as opposed to the use of `Connection.run
   <fabric.connection.Connection.run>` inside tasks) was explicitly specifying
@@ -38,10 +33,6 @@ Changelog
   of that feature in Invoke (`pyinvoke/invoke#539
   <https://github.com/pyinvoke/invoke/issues/539>`_). Thanks to Israel Fruchter
   for report and early patchset.
-
-  .. warning::
-    This change bumps the Invoke version requirement to ``>=1.3``.
-
 - :release:`2.4.0 <2018-09-13>`
 - :release:`2.3.2 <2018-09-13>`
 - :release:`2.2.3 <2018-09-13>`
