@@ -5,6 +5,14 @@ Changelog
 .. note::
     Looking for the Fabric 1.x changelog? See :doc:`/changelog-v1`.
 
+- :feature:`1989` Reinstate command timeouts, by supporting the implementation
+  of that feature in Invoke (`pyinvoke/invoke#539
+  <https://github.com/pyinvoke/invoke/issues/539>`_). Thanks to Israel Fruchter
+  for report and early patchset.
+
+  .. warning::
+    This change bumps the Invoke version requirement to ``>=1.3``.
+
 - :release:`2.4.0 <2018-09-13>`
 - :release:`2.3.2 <2018-09-13>`
 - :release:`2.2.3 <2018-09-13>`
