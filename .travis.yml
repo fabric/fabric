@@ -15,7 +15,10 @@ matrix:
   # pypy3 (as of 2.4.0) has a wacky arity issue in its source loader. Allow it
   # to fail until we can test on, and require, PyPy3.3+. See
   # pyinvoke/invoke#358.
+  # NOTE: both pypy flavors are weirdly unstable on Travis nowadays, even
+  # pre-test-run.
   allow_failures:
+    - python: pypy
     - python: pypy3
   # Disabled per https://github.com/travis-ci/travis-ci/issues/1696
   # fast_finish: true
