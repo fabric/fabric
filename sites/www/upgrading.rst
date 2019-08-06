@@ -170,6 +170,10 @@ described above) are listed below.
 
     * - ``always_use_pty``
       - Config: ``run.pty``.
+    * - ``command_timeout``
+      - Config: ``timeouts.command``; timeouts are now their own config
+        subtree, whereas in v1 it was possible for the ambiguous ``timeout``
+        setting -- see below -- to work for either connect OR command timeouts.
     * - ``forward_agent``
       - Config: ``connect_kwargs.forward_agent``.
     * - ``gateway``
@@ -226,8 +230,8 @@ described above) are listed below.
     * - ``sudo_prompt``
       - Config: ``sudo.prompt``.
     * - ``timeout``
-      - Config: ``timeouts.connection`` (because v1's ambiguously named
-        ``timeout`` setting was, in fact, for connection timeouts).
+      - Config: ``timeouts.connection``, for connection timeouts, or
+        ``timeouts.command`` for command timeouts (see above).
     * - ``use_ssh_config``
       - Config: ``load_ssh_configs``.
     * - ``user``
