@@ -116,7 +116,7 @@ ns.configure(
         # Meh.
         "travis": {
             "sudo": {"user": "sudouser", "password": "mypass"},
-            "black": {"version": "18.6b4"},
+            "black": {"version": "19.3b0"},
         },
     }
 )
