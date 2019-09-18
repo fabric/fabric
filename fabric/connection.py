@@ -231,7 +231,7 @@ class Connection(Context):
                     host="hostname",
                     user="admin",
                     connect_kwargs={
-                        "key_filename": "/home/myuser/.ssh/private.key",
+                        "key_filename": ["/home/myuser/.ssh/private.key"],
                     },
                 )
 
