@@ -3,7 +3,6 @@ try:
 except ImportError:
     from six import StringIO
 
-from os.path import isdir
 from mock import Mock, call
 from pytest_relaxed import raises
 from pytest import skip  # noqa
@@ -58,14 +57,9 @@ class Transfer_:
             def accepts_local_and_remote_kwargs(self, sftp_objs):
                 transfer, client = sftp_objs
                 transfer.get(remote="path1", local="path2")
-                if is_dir("/local/path2"):
-                    client.get.assert_called_with(
-                        remotepath="/remote/path1", localpath="/local/path2/path1"
-                    )
-                else:
-                    client.get.assert_called_with(
-                        remotepath="/remote/path1", localpath="/local/path2"
-                    )
+                client.get.assert_called_with(
+                    remotepath="/remote/path1", localpath="/local/path2"
+                )
 
             def returns_rich_Result_object(self, sftp_objs):
                 transfer, client = sftp_objs
