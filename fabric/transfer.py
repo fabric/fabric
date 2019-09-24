@@ -116,8 +116,8 @@ class Transfer(object):
             local = posixpath.basename(remote)
         if not is_file_like:
             local = os.path.abspath(local)
-            if os.path.isdir(local):
-                local = posixpath.join(local, posixpath.basename(remote))
+            # if os.path.isdir(local):
+            #     local = posixpath.join(local, posixpath.basename(remote))
 
         # Run Paramiko-level .get() (side-effects only. womp.)
         # TODO: push some of the path handling into Paramiko; it should be
