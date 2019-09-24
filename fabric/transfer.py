@@ -114,6 +114,9 @@ class Transfer(object):
         is_file_like = hasattr(local, "write") and callable(local.write)
         if not local:
             local = posixpath.basename(remote)
+        elif os.path.isdir(local):
+            local = os.path.join(local, posixpath.basename(remote))
+
         if not is_file_like:
             local = os.path.abspath(local)
 
@@ -196,6 +199,12 @@ class Transfer(object):
         is_file_like = hasattr(local, "write") and callable(local.write)
 
         # Massage remote path
+        home = self.sftp.normalize(".")
+
+        # Expand tildes
+        if remote.startswith('~'):
+            remote = remote.replace('~', home, 1)
+
         orig_remote = remote
         if is_file_like:
             local_base = getattr(local, "name", None)
@@ -230,7 +239,7 @@ class Transfer(object):
 
         prejoined_remote = remote
         remote = posixpath.join(
-            self.sftp.getcwd() or self.sftp.normalize("."), remote
+            self.sftp.getcwd() or home, remote
         )
         if remote != prejoined_remote:
             msg = "Massaged relative remote path {!r} into {!r}"
