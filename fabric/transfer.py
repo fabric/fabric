@@ -201,10 +201,6 @@ class Transfer(object):
         # Massage remote path
         home = self.sftp.normalize(".")
 
-        # Expand tildes
-        if remote.startswith('~'):
-            remote = remote.replace('~', home, 1)
-
         orig_remote = remote
         if is_file_like:
             local_base = getattr(local, "name", None)
@@ -218,24 +214,28 @@ class Transfer(object):
             else:
                 remote = local_base
                 debug("Massaged empty remote path into {!r}".format(remote))
-        elif self.is_remote_dir(remote):
-            # non-empty local_base implies a) text file path or b) FLO which
-            # had a non-empty .name attribute. huzzah!
-            if local_base:
-                remote = posixpath.join(remote, local_base)
-            else:
-                if is_file_like:
-                    raise ValueError(
-                        "Can't put a file-like-object into a directory unless it has a non-empty .name attribute!"  # noqa
-                    )
+        else:
+            # Expand tildes
+            if remote.startswith('~'):
+                remote = remote.replace('~', home, 1)
+            if self.is_remote_dir(remote):
+                # non-empty local_base implies a) text file path or b) FLO which
+                # had a non-empty .name attribute. huzzah!
+                if local_base:
+                    remote = posixpath.join(remote, local_base)
                 else:
-                    # TODO: can we ever really end up here? implies we want to
-                    # reorganize all this logic so it has fewer potential holes
-                    raise ValueError(
-                        "Somehow got an empty local file basename ({!r}) when uploading to a directory ({!r})!".format(  # noqa
-                            local_base, remote
+                    if is_file_like:
+                        raise ValueError(
+                            "Can't put a file-like-object into a directory unless it has a non-empty .name attribute!"  # noqa
                         )
-                    )
+                    else:
+                        # TODO: can we ever really end up here? implies we want to
+                        # reorganize all this logic so it has fewer potential holes
+                        raise ValueError(
+                            "Somehow got an empty local file basename ({!r}) when uploading to a directory ({!r})!".format(  # noqa
+                                local_base, remote
+                            )
+                        )
 
         prejoined_remote = remote
         remote = posixpath.join(
