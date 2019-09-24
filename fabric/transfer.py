@@ -115,7 +115,7 @@ class Transfer(object):
         if not local:
             local = posixpath.basename(remote)
         elif not is_file_like and os.path.isdir(local):
-            local = os.path.join(local, posixpath.basename(remote))
+            local = posixpath.join(local, posixpath.basename(remote))
         if not is_file_like:
             local = os.path.abspath(local)
 
