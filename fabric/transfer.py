@@ -114,7 +114,7 @@ class Transfer(object):
         is_file_like = hasattr(local, "write") and callable(local.write)
         if not local:
             local = posixpath.basename(remote)
-        elif os.path.isdir(local):
+        elif not is_file_like and os.path.isdir(local):
             local = os.path.join(local, posixpath.basename(remote))
         if not is_file_like:
             local = os.path.abspath(local)
