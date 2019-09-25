@@ -50,10 +50,10 @@ class Transfer(object):
             .. note::
                 Most SFTP servers set the remote working directory to the
                 connecting user's home directory, and (unlike most shells) do
-                *not* expand tildes (``~``).
+                expand tildes (``~``).
 
-                For example, instead of saying ``get("~/tmp/archive.tgz")``,
-                say ``get("tmp/archive.tgz")``.
+                For example, ``get("~/tmp/archive.tgz")``, equals to
+                ``get("tmp/archive.tgz")``.
 
         :param local:
             Local path to store downloaded file in, or a file-like object.
@@ -99,13 +99,18 @@ class Transfer(object):
         # instead of overwriting existing files) - this likely ties into the
         # "how to handle recursive/rsync" and "how to handle scp" questions
 
+        home = self.sftp.normalize(".")
+
         # Massage remote path
         if not remote:
             raise ValueError("Remote path must not be empty!")
+
+        # Expand home directory markers (tildes, etc)
+        if remote.startswith("~"):
+            remote = remote.replace("~", home, 1)
+
         orig_remote = remote
-        remote = posixpath.join(
-            self.sftp.getcwd() or self.sftp.normalize("."), remote
-        )
+        remote = posixpath.join(self.sftp.getcwd() or home, remote)
 
         # Massage local path:
         # - handle file-ness
@@ -171,10 +176,10 @@ class Transfer(object):
             .. note::
                 Most SFTP servers set the remote working directory to the
                 connecting user's home directory, and (unlike most shells) do
-                *not* expand tildes (``~``).
+                expand tildes (``~``).
 
-                For example, instead of saying ``put("archive.tgz",
-                "~/tmp/")``, say ``put("archive.tgz", "tmp/")``.
+                For example, ``put("archive.tgz", "~/tmp/")``, equals to
+                ``put("archive.tgz", "tmp/")``.
 
                 In addition, this means that 'falsey'/empty values (such as the
                 default value, ``None``) are allowed and result in uploading to
@@ -215,8 +220,8 @@ class Transfer(object):
                 debug("Massaged empty remote path into {!r}".format(remote))
         else:
             # Expand tildes
-            if remote.startswith('~'):
-                remote = remote.replace('~', home, 1)
+            if remote.startswith("~"):
+                remote = remote.replace("~", home, 1)
             if self.is_remote_dir(remote):
                 # non-empty local_base implies a) text file path or b) FLO
                 # which had a non-empty .name attribute. huzzah!
@@ -238,9 +243,7 @@ class Transfer(object):
                         )
 
         prejoined_remote = remote
-        remote = posixpath.join(
-            self.sftp.getcwd() or home, remote
-        )
+        remote = posixpath.join(self.sftp.getcwd() or home, remote)
         if remote != prejoined_remote:
             msg = "Massaged relative remote path {!r} into {!r}"
             debug(msg.format(prejoined_remote, remote))
