@@ -1,9 +1,7 @@
 import os
 import stat
 from io import BytesIO
-
 from py import path
-
 from fabric import Connection
 
 
