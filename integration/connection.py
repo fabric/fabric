@@ -1,10 +1,7 @@
 import os
-
 from invoke import pty_size
 from pytest import skip
-
 from fabric import Connection, Config
-
 
 # TODO: use pytest markers
 def skip_outside_travis():
