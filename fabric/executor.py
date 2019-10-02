@@ -78,6 +78,8 @@ class FabExecutor(Executor):
 class ConnectionCall(Call):
     """
     Subclass of `invoke.tasks.Call` that generates `Connections <.Connection>`.
+    
+    :param Call: 
     """
 
     def make_context(self, config):
