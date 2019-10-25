@@ -253,7 +253,7 @@ For example, say you had an archive file you wanted to upload:
     >>> print("Uploaded {0.local} to {0.remote}".format(result))
     Uploaded /local/myfiles.tgz to /opt/mydata/
 
-These methods typically follow the behavior of ``cp`` and ``scp``/``sftp`` in
+These methods typically follow the behavior of ``cp`` and ``sftp`` in
 terms of argument evaluation - for example, in the above snippet, we omitted
 the filename part of the remote path argument.
 

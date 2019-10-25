@@ -1,5 +1,5 @@
 """
-File transfer via SFTP and/or SCP.
+File transfer via SFTP.
 """
 
 import os
@@ -64,7 +64,7 @@ class Transfer(object):
 
             **If a string is given**, it should be a path to a local directory
             or file and is subject to similar behavior as that seen by common
-            Unix utilities or OpenSSH's ``sftp`` or ``scp`` tools.
+            Unix utilities or OpenSSH's ``sftp`` tool.
 
             For example, if the local path is a directory, the remote path's
             base filename will be added onto it (so ``get('foo/bar/file.txt',
