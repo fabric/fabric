@@ -880,3 +880,6 @@ class Connection(Context):
             self.transport.cancel_port_forward(
                 address=remote_host, port=remote_port
             )
+
+    def is_remote_dir(self, path):
+        return Transfer(self).is_remote_dir(path)
