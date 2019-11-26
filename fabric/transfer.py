@@ -330,10 +330,10 @@ class GroupTransfer(object):
         self.group = group
 
     def put(self, *args, **kwargs):
-        return self.group._operation('put', *args, **kwargs)
+        return self.group.put(*args, **kwargs)
 
     def is_remote_dir(self, *args, **kwargs):
-        return self.group._operation('is_remote_dir', *args, **kwargs)
+        return self.group.is_remote_dir(*args, **kwargs)
 
     def get(self, remote):
         """
