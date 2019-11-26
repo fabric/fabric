@@ -322,3 +322,25 @@ class Result(object):
 
     # TODO: ensure str/repr makes it easily differentiable from run() or
     # local() result objects (and vice versa).
+
+
+class GroupTransfer(object):
+
+    def __init__(self, group):
+        self.group = group
+
+    def put(self, *args, **kwargs):
+        return self.group._operation('put', *args, **kwargs)
+
+    def is_remote_dir(self, *args, **kwargs):
+        return self.group._operation('is_remote_dir', *args, **kwargs)
+
+    def get(self, remote):
+        """
+        TODO: What should the return format be?
+         - GroupResult[str, str]
+         - GroupResult[str, FileIO]
+         - ask for a local directory to write to?
+         - callback
+        """
+        raise NotImplementedError()
