@@ -120,16 +120,15 @@ class Group(list):
 
     # TODO: mirror Connection's close()?
 
-    def get(self, *args, **kwargs):
+    def get(self, remote):
         """
-        Executes `.Connection.get` on all member `Connections <.Connection>`.
-
-        :returns: a `.GroupResult`.
-
-        .. versionadded:: 2.0
+        TODO: What should the return format be?
+         - GroupResult[str, str]
+         - GroupResult[str, FileIO]
+         - ask for a local directory to write to?
+         - callback
         """
-        # TODO: probably best to suck it up & match actual get() sig?
-        return self._operation('get', *args, **kwargs)
+        raise NotImplementedError()
 
     def put(self, *args, **kwargs):
         """
