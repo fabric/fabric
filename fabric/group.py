@@ -105,7 +105,7 @@ class Group(list):
         # TODO: or keep going w/ a "return or except", but the object is
         # largely similar (if not identical) in both situations, with the
         # exception just being the signal that Shit Broke?
-        raise NotImplementedError
+        return self._operation('run', *args, **kwargs)
 
     # TODO: how to handle sudo? Probably just an inner worker method that takes
     # the method name to actually call (run, sudo, etc)?
@@ -129,8 +129,39 @@ class Group(list):
         .. versionadded:: 2.0
         """
         # TODO: probably best to suck it up & match actual get() sig?
-        # TODO: actually implement on subclasses
-        raise NotImplementedError
+        return self._operation('get', *args, **kwargs)
+
+    def put(self, *args, **kwargs):
+        """
+        Executes `.Connection.put` on all member `Connections <.Connection>`.
+
+        :returns: a `.GroupResult`.
+
+        .. versionadded:: 2.X
+        """
+        # TODO: probably best to suck it up & match actual put() sig?
+        return self._operation('put', *args, **kwargs)
+
+    def is_remote_dir(self, *args, **kwargs):
+        """
+        Executes `.Connection.is_remote_dir` on all member `Connections <.Connection>`.
+
+        :returns: a `.GroupResult`.
+
+        .. versionadded:: 2.X
+        """
+        # TODO: probably best to suck it up & match actual is_remote_dir() sig?
+        return self._operation('is_remote_dir', *args, **kwargs)
+
+    def _operation(self, operation, *args, **kwargs):
+        """
+        Executes `.Connection.<operation>` on all member `Connections <.Connection>`.
+
+        Leaves the parallelization up to the Group Implementation
+
+        :returns: a `.GroupResult`.
+        """
+        raise NotImplementedError()
 
 
 class SerialGroup(Group):
@@ -140,12 +171,13 @@ class SerialGroup(Group):
     .. versionadded:: 2.0
     """
 
-    def run(self, *args, **kwargs):
+    def _operation(self, operation, *args, **kwargs):
         results = GroupResult()
         excepted = False
         for cxn in self:
             try:
-                results[cxn] = cxn.run(*args, **kwargs)
+                func = getattr(cxn, operation)
+                results[cxn] = func(*args, **kwargs)
             except Exception as e:
                 results[cxn] = e
                 excepted = True
@@ -154,8 +186,9 @@ class SerialGroup(Group):
         return results
 
 
-def thread_worker(cxn, queue, args, kwargs):
-    result = cxn.run(*args, **kwargs)
+def thread_worker(cxn, operation, queue, args, kwargs):
+    func = getattr(cxn, operation)
+    result = func(*args, **kwargs)
     # TODO: namedtuple or attrs object?
     queue.put((cxn, result))
 
@@ -167,12 +200,12 @@ class ThreadingGroup(Group):
     .. versionadded:: 2.0
     """
 
-    def run(self, *args, **kwargs):
+    def _operation(self, operation, *args, **kwargs):
         results = GroupResult()
         queue = Queue()
         threads = []
         for cxn in self:
-            my_kwargs = dict(cxn=cxn, queue=queue, args=args, kwargs=kwargs)
+            my_kwargs = dict(cxn=cxn, queue=queue, args=args, kwargs=kwargs, operation=operation)
             thread = ExceptionHandlingThread(
                 target=thread_worker, kwargs=my_kwargs
             )
