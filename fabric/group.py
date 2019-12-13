@@ -124,6 +124,16 @@ class Group(list):
         # exception just being the signal that Shit Broke?
         raise NotImplementedError
 
+    def call(self, function, *args, **kwargs):
+        """
+        Executes `function` over all member `Connections <.Connection>`.
+
+        :returns: a `.GroupResult`.
+
+        .. versionadded:: 2.0
+        """
+        raise NotImplementedError
+
     # TODO: how to handle sudo? Probably just an inner worker method that takes
     # the method name to actually call (run, sudo, etc)?
 
@@ -183,9 +193,28 @@ class SerialGroup(Group):
             raise GroupException(results)
         return results
 
+    def call(self, function, *args, **kwargs):  # same as .run with `function`
+        results = GroupResult()
+        excepted = False
+        for cxn in self:
+            try:
+                results[cxn] = function(cxn, *args, **kwargs)
+            except Exception as e:
+                results[cxn] = e
+                excepted = True
+        if excepted:
+            raise GroupException(results)
+        return results
+
 
 def thread_worker(cxn, queue, args, kwargs):
     result = cxn.run(*args, **kwargs)
+    # TODO: namedtuple or attrs object?
+    queue.put((cxn, result))
+
+
+def thread_worker_function(cxn, queue, function, args, kwargs):
+    result = function(cxn, *args, **kwargs)
     # TODO: namedtuple or attrs object?
     queue.put((cxn, result))
 
@@ -205,6 +234,55 @@ class ThreadingGroup(Group):
             my_kwargs = dict(cxn=cxn, queue=queue, args=args, kwargs=kwargs)
             thread = ExceptionHandlingThread(
                 target=thread_worker, kwargs=my_kwargs
+            )
+            threads.append(thread)
+        for thread in threads:
+            thread.start()
+        for thread in threads:
+            # TODO: configurable join timeout
+            # TODO: (in sudo's version) configurability around interactive
+            # prompting resulting in an exception instead, as in v1
+            thread.join()
+        # Get non-exception results from queue
+        while not queue.empty():
+            # TODO: io-sleep? shouldn't matter if all threads are now joined
+            cxn, result = queue.get(block=False)
+            # TODO: outstanding musings about how exactly aggregate results
+            # ought to ideally operate...heterogenous obj like this, multiple
+            # objs, ??
+            results[cxn] = result
+        # Get exceptions from the threads themselves.
+        # TODO: in a non-thread setup, this would differ, e.g.:
+        # - a queue if using multiprocessing
+        # - some other state-passing mechanism if using e.g. coroutines
+        # - ???
+        excepted = False
+        for thread in threads:
+            wrapper = thread.exception()
+            if wrapper is not None:
+                # Outer kwargs is Thread instantiation kwargs, inner is kwargs
+                # passed to thread target/body.
+                cxn = wrapper.kwargs["kwargs"]["cxn"]
+                results[cxn] = wrapper.value
+                excepted = True
+        if excepted:
+            raise GroupException(results)
+        return results
+
+    def call(self, function, *args, **kwargs):  # same as .run with function
+        results = GroupResult()
+        queue = Queue()
+        threads = []
+        for cxn in self:
+            my_kwargs = dict(
+                cxn=cxn,
+                queue=queue,
+                function=function,
+                args=args,
+                kwargs=kwargs,
+            )
+            thread = ExceptionHandlingThread(
+                target=thread_worker_function, kwargs=my_kwargs
             )
             threads.append(thread)
         for thread in threads:
