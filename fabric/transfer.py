@@ -38,7 +38,7 @@ class Transfer(object):
         except IOError:
             return False
 
-    def get(self, remote, local=None, preserve_mode=True):
+    def get(self, remote, local=None, preserve_mode=True, callback=None):
         """
         Download a file from the current connection to the local filesystem.
 
@@ -84,6 +84,10 @@ class Transfer(object):
             Whether to `os.chmod` the local file so it matches the remote
             file's mode (default: ``True``).
 
+        :param callback:
+            optional callback function (form: func(int, int)) that accepts the bytes
+            transferred so far and the total bytes to be transferred
+
         :returns: A `.Result` object.
 
         .. versionadded:: 2.0
@@ -93,7 +97,6 @@ class Transfer(object):
         # TODO: handle v1's string interpolation bits, especially the default
         # one, or at least think about how that would work re: split between
         # single and multiple server targets.
-        # TODO: callback support
         # TODO: how best to allow changing the behavior/semantics of
         # remote/local (e.g. users might want 'safer' behavior that complains
         # instead of overwriting existing files) - this likely ties into the
@@ -125,9 +128,9 @@ class Transfer(object):
         #
         # If local appears to be a file-like object, use sftp.getfo, not get
         if is_file_like:
-            self.sftp.getfo(remotepath=remote, fl=local)
+            self.sftp.getfo(remotepath=remote, fl=local, callback=callback)
         else:
-            self.sftp.get(remotepath=remote, localpath=local)
+            self.sftp.get(remotepath=remote, localpath=local, callback=callback)
             # Set mode to same as remote end
             # TODO: Push this down into SFTPClient sometime (requires backwards
             # incompat release.)
