@@ -19,10 +19,10 @@ from pytest_relaxed import raises
 from invoke.config import Config as InvokeConfig
 from invoke.exceptions import ThreadException
 
-from fabric import Config as Config_
+from fabric import Config, Connection
 from fabric.util import get_local_user
 
-from _util import support, Connection, Config
+from _util import support
 
 
 # Remote is woven in as a config default, so must be patched there
@@ -263,7 +263,7 @@ class Connection_:
                 runtime_path = join(support, "ssh_config", confname)
                 if overrides is None:
                     overrides = {}
-                return Config_(
+                return Config(
                     runtime_ssh_path=runtime_path, overrides=overrides
                 )
 
@@ -272,7 +272,7 @@ class Connection_:
                 return Connection("runtime", config=config)
 
             def effectively_blank_when_no_loaded_config(self):
-                c = Config_(ssh_config=SSHConfig())
+                c = Config(ssh_config=SSHConfig())
                 cxn = Connection("host", config=c)
                 # NOTE: paramiko always injects this even if you look up a host
                 # that has no rules, even wildcard ones.
@@ -304,7 +304,7 @@ class Connection_:
                     path = join(
                         support, "ssh_config", "overridden_hostname.conf"
                     )
-                    config = Config_(runtime_ssh_path=path)
+                    config = Config(runtime_ssh_path=path)
                     cxn = Connection("aliasname", config=config)
                     assert cxn.host == "realname"
                     assert cxn.original_host == "aliasname"
@@ -773,7 +773,7 @@ class Connection_:
                 config_kwargs["overrides"] = {
                     "connect_kwargs": {"key_filename": ["configured.key"]}
                 }
-            conf = Config_(**config_kwargs)
+            conf = Config(**config_kwargs)
             connect_kwargs = {}
             if kwarg:
                 # Stitch in connect_kwargs value
