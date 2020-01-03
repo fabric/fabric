@@ -71,9 +71,7 @@ def integration(
     capture="no",
     module=None,
 ):
-    return integration_(
-        c, opts, pty, x, k, verbose, color, capture, module,
-    )
+    return integration_(c, opts, pty, x, k, verbose, color, capture, module)
 
 
 # Better than nothing, since we haven't solved "pretend I have some other
