@@ -115,5 +115,6 @@ def no_user_ssh_config():
         if path == expanduser("~/.ssh/config"):
             return False
         return isfile(path)
+
     with patch("fabric.config.os.path.isfile", no_config_for_you):
         yield
