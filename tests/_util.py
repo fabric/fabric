@@ -5,9 +5,7 @@ import sys
 
 from pytest_relaxed import trap
 
-from fabric import Connection as Connection_, Config as Config_
 from fabric.main import make_program
-from paramiko import SSHConfig
 
 
 support = os.path.join(os.path.abspath(os.path.dirname(__file__)), "_support")
