@@ -1,6 +1,8 @@
 from contextlib import contextmanager
 from io import StringIO
 from threading import Event
+import logging
+import os.path
 import socket
 
 from decorator import decorator
@@ -140,7 +142,7 @@ class Connection(Context):
     transport = None
     _sftp = None
     _agent_handler = None
-    default_host_key_policy = None
+    default_host_key_policy = AutoAddPolicy
 
     @classmethod
     def from_v1(cls, env, **kwargs):
@@ -457,7 +459,12 @@ class Connection(Context):
         #: The `paramiko.client.SSHClient` instance this connection wraps.
         client = SSHClient()
         if self.default_host_key_policy is not None:
+            logging.debug('host key policy: %s', self.default_host_key_policy)
             client.set_missing_host_key_policy(self.default_host_key_policy())
+        known_hosts = self.ssh_config.get('UserKnownHostsFile'.lower(),
+                                          '~/.ssh/known_hosts')
+        logging.debug('loading host keys from %s', known_hosts)
+        client.load_host_keys(os.path.expanduser(known_hosts))
         self.client = client
 
         #: A convenience handle onto the return value of
