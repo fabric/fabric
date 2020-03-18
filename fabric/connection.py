@@ -464,7 +464,9 @@ class Connection(Context):
         known_hosts = self.ssh_config.get('UserKnownHostsFile'.lower(),
                                           '~/.ssh/known_hosts')
         logging.debug('loading host keys from %s', known_hosts)
-        client.load_host_keys(os.path.expanduser(known_hosts))
+        # multiple keys, seperated by whitespace, can be provided
+        for filename in known_hosts.split():
+            client.load_host_keys(os.path.expanduser(filename))
         self.client = client
 
         #: A convenience handle onto the return value of
