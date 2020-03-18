@@ -461,8 +461,9 @@ class Connection(Context):
                                           '~/.ssh/known_hosts')
         logging.debug('loading host keys from %s', known_hosts)
         # multiple keys, seperated by whitespace, can be provided
-        for filename in known_hosts.split():
-            client.load_host_keys(os.path.expanduser(filename))
+        for filename in [os.path.expanduser(f) for f in known_hosts.split()]:
+            if os.path.exists(filename):
+                client.load_host_keys(filename)
         self.client = client
 
         #: A convenience handle onto the return value of
