@@ -140,7 +140,7 @@ class Connection(Context):
     transport = None
     _sftp = None
     _agent_handler = None
-    default_host_key_policy = AutoAddPolicy
+    default_host_key_policy = None
 
     @classmethod
     def from_v1(cls, env, **kwargs):
