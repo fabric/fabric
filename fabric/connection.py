@@ -147,6 +147,7 @@ class Connection(Context):
     transport = None
     _sftp = None
     _agent_handler = None
+    default_host_key_policy = AutoAddPolicy
 
     @classmethod
     def from_v1(cls, env, **kwargs):
@@ -451,7 +452,8 @@ class Connection(Context):
 
         #: The `paramiko.client.SSHClient` instance this connection wraps.
         client = SSHClient()
-        client.set_missing_host_key_policy(AutoAddPolicy())
+        if self.default_host_key_policy is not None:
+            client.set_missing_host_key_policy(self.default_host_key_policy())
         self.client = client
 
         #: A convenience handle onto the return value of
