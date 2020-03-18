@@ -48,20 +48,20 @@ inv_target = join(
     dirname(__file__), "..", "..", "invoke", "sites", "docs", "_build"
 )
 if not on_dev:
-    inv_target = "http://docs.pyinvoke.org/en/latest/"
+    inv_target = "https://docs.pyinvoke.org/en/latest/"
 inv_www_target = join(
     dirname(__file__), "..", "..", "invoke", "sites", "www", "_build"
 )
 if not on_dev:
-    inv_www_target = "http://pyinvoke.org/"
+    inv_www_target = "https://www.pyinvoke.org/"
 # Paramiko (docs)
 para_target = join(
     dirname(__file__), "..", "..", "paramiko", "sites", "docs", "_build"
 )
 if not on_dev:
-    para_target = "http://docs.paramiko.org/en/latest/"
+    para_target = "https://docs.paramiko.org/en/latest/"
 intersphinx_mapping = {
-    "python": ("http://docs.python.org/", None),
+    "python": ("https://docs.python.org/", None),
     "invoke": (inv_target, None),
     "invoke_www": (inv_www_target, None),
     "paramiko": (para_target, None),
