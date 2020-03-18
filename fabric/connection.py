@@ -1,5 +1,6 @@
 from contextlib import contextmanager
 from threading import Event
+import logging
 
 try:
     from invoke.vendor.six import StringIO
@@ -9,6 +10,7 @@ except ImportError:
     from six import StringIO
     from decorator import decorator
     from six import string_types
+import os.path
 import socket
 
 from invoke import Context
@@ -147,7 +149,7 @@ class Connection(Context):
     transport = None
     _sftp = None
     _agent_handler = None
-    default_host_key_policy = None
+    default_host_key_policy = AutoAddPolicy
 
     @classmethod
     def from_v1(cls, env, **kwargs):
@@ -453,7 +455,12 @@ class Connection(Context):
         #: The `paramiko.client.SSHClient` instance this connection wraps.
         client = SSHClient()
         if self.default_host_key_policy is not None:
+            logging.debug('host key policy: %s', self.default_host_key_policy)
             client.set_missing_host_key_policy(self.default_host_key_policy())
+        known_hosts = self.ssh_config.get('UserKnownHostsFile'.lower(),
+                                          '~/.ssh/known_hosts')
+        logging.debug('loading host keys from %s', known_hosts)
+        client.load_host_keys(os.path.expanduser(known_hosts))
         self.client = client
 
         #: A convenience handle onto the return value of
