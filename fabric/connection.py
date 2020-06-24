@@ -1,5 +1,6 @@
 from contextlib import contextmanager
 from threading import Event
+from warnings import warn
 
 try:
     from invoke.vendor.six import StringIO
@@ -718,6 +719,11 @@ class Connection(Context):
 
         .. versionadded:: 2.0
         """
+        if 'shell' in kwargs:
+            warn(
+                'Connection.run ignores the shell argument. See upgrade documentation.',
+                DeprecationWarning
+            )
         return self._run(self._remote_runner(), command, **kwargs)
 
     @opens
