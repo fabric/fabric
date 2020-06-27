@@ -30,7 +30,7 @@ class Fab(Program):
             ),
             Argument(
                 names=("H", "hosts"),
-                help="Comma-separated host name(s) to execute tasks against.",
+                help="Comma-separated host name(s) to execute tasks against. Able to insert user: 'root@xx.xx.xx.xx'",
             ),
             Argument(
                 names=("i", "identity"),
