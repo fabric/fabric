@@ -224,14 +224,15 @@ class Connection(Context):
             `.Connection` tries not to grow additional settings/kwargs of its
             own unless it is adding value of some kind; thus,
             ``connect_kwargs`` is currently the right place to hand in paramiko
-            connection parameters such as ``pkey`` or ``key_filename``. For
+            connection parameters such as ``pkey`` or ``key_filename``.Note:
+            The ``key_filename`` expects a list. For
             example::
 
                 c = Connection(
                     host="hostname",
                     user="admin",
                     connect_kwargs={
-                        "key_filename": "/home/myuser/.ssh/private.key",
+                        "key_filename": ["/home/myuser/.ssh/private.key"],
                     },
                 )
 
