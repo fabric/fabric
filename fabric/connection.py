@@ -23,6 +23,7 @@ from .config import Config
 from .transfer import Transfer
 from .tunnels import TunnelManager, Tunnel
 
+import os
 
 @decorator
 def opens(method, self, *args, **kwargs):
@@ -362,7 +363,7 @@ class Connection(Context):
         if "identityfile" in self.ssh_config:
             connect_kwargs.setdefault("key_filename", [])
             connect_kwargs["key_filename"].extend(
-                self.ssh_config["identityfile"]
+                [ identity_file for identity_file in self.ssh_config["identityfile"] if os.path.exists(identity_file) ]
             )
 
         return connect_kwargs
