@@ -362,9 +362,11 @@ class Connection(Context):
         # 'hierarchy'.
         if "identityfile" in self.ssh_config:
             connect_kwargs.setdefault("key_filename", [])
-            connect_kwargs["key_filename"].extend(
-                [ identity_file for identity_file in self.ssh_config["identityfile"] if os.path.exists(identity_file) ]
-            )
+            identity_files = []
+            for identity_file in self.ssh_config["identityfile"]:
+                if os.path.exists(identity_file):
+                    identity_files += [identity_file]
+            connect_kwargs["key_filename"].extend(identity_files)
 
         return connect_kwargs
 
