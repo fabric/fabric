@@ -20,6 +20,10 @@ import setuptools
 # look in fabric/, not fabric2/
 # - thus, we use a different test that looks locally to see if only one dir
 # is present, and that overrides the env var test.
+# TODO: suspect all the above goes out the window because pyproject; we will
+# just end up distributing two differently behaving dists, one that only knows
+# of itself as fabric and the other fabric2? (because poetry will be generating
+# automatic setup.py's when building sdists, which will have none of this)
 #
 # See also sites/www/installing.txt.
 
@@ -40,20 +44,11 @@ packages = setuptools.find_packages(
 )
 
 # Version info -- read without importing
+# TODO: flip verison.py to use importlib-metadata
 _locals = {}
 with open(os.path.join(package_name, "_version.py")) as fp:
     exec(fp.read(), None, _locals)
 version = _locals["__version__"]
-
-# Frankenstein long_description: changelog note + README
-long_description = """
-To find out what's new in this version of Fabric, please see `the changelog
-<http://fabfile.org/changelog.html>`_.
-
-{}
-""".format(
-    open("README.rst").read()
-)
 
 testing_deps = ["mock>=2.0.0,<3.0"]
 pytest_deps = ["pytest>=3.2.5,<4.0"]
@@ -75,6 +70,7 @@ setuptools.setup(
     packages=packages,
     entry_points={
         "console_scripts": [
+            # TODO: how do? literally sed the file when building ?? lmao
             "{} = {}.main:program.run".format(binary_name, package_name)
         ]
     },
