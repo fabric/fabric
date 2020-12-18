@@ -1,25 +1,23 @@
 language: python
 sudo: required
-dist: trusty
+dist: Xenial
 cache:
   directories:
     - $HOME/.cache/pip
 python:
   - "2.7"
-  - "3.4"
   - "3.5"
   - "3.6"
+  - "3.7"
   - "pypy"
-  - "pypy3"
+  - "pypy3.5"
 matrix:
-  # pypy3 (as of 2.4.0) has a wacky arity issue in its source loader. Allow it
-  # to fail until we can test on, and require, PyPy3.3+. See
-  # pyinvoke/invoke#358.
   allow_failures:
-    - python: pypy3
+    - python: pypy
   # Disabled per https://github.com/travis-ci/travis-ci/issues/1696
   # fast_finish: true
 install:
+  - pip install -U pip
   # TODO: real test matrix with at least some cells combining different invoke
   # and/or paramiko versions, released versions, etc
   # Invoke from master for parity
@@ -27,7 +25,7 @@ install:
   # And invocations, ditto
   - "pip install -e git+https://github.com/pyinvoke/invocations#egg=invocations"
   # Paramiko ditto
-  - "pip install -e git+https://github.com/paramiko/paramiko#egg=paramiko"
+  - "pip install paramiko"
   # Self
   - pip install -e .
   # Limit setuptools as some newer versions have Issues(tm). This needs doing
