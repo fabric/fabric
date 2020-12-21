@@ -11,12 +11,10 @@ python:
   - "3.8"
   - "3.9"
   - "pypy3"
-matrix:
+jobs:
   allow_failures:
     - python: "3.8"
     - python: "3.9"
-  # Disabled per https://github.com/travis-ci/travis-ci/issues/1696
-  # fast_finish: true
 install:
   - "pip install --upgrade pip"
   # TODO: real test matrix with at least some cells combining different invoke
