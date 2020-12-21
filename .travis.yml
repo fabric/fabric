@@ -13,7 +13,8 @@ python:
   - "pypy3"
 matrix:
   allow_failures:
-    - python: pypy3
+    - python: "3.8"
+    - python: "3.9"
   # Disabled per https://github.com/travis-ci/travis-ci/issues/1696
   # fast_finish: true
 install:
