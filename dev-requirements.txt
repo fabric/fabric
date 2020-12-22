@@ -1,26 +1,28 @@
 # Invoke implicitly required by self/pip install -e .
 # Invocations for common project tasks
-invocations
+invocations>=1.0,<2.0
 # Invoke from git, temporarily?
 -e git+https://github.com/pyinvoke/invoke#egg=invoke
 # pytest-relaxed for test organization, display etc tweaks
-pytest-relaxed
-pytest
+pytest-relaxed==1.1.5
+pytest==4.6.10
+pytest==4.6.10; python_version < '3.0'
+pytest==6.2.1; python_version >= '3.0'
 # pytest-cov for coverage
-pytest-cov
-six
+pytest-cov==2.10.1
+six==1.15.0
 # Mock for test mocking
-mock
+mock==3.0.5
 # Linting!
-flake8
+flake8==3.8.4
 # Coverage!
-coverage
-codecov
+coverage==5.3.1
+codecov==2.1.11
 # Documentation tools
-sphinx
-alabaster
-releases
+sphinx==1.8.5
+alabaster==1.8.5
+releases==1.6.3
 # Release tools
-semantic_version
-wheel
-twine
+semantic_version==2.6.0
+wheel==0.36.2
+twine==1.15.0
