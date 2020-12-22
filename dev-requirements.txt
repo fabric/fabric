@@ -5,7 +5,6 @@ invocations>=1.0,<2.0
 -e git+https://github.com/pyinvoke/invoke#egg=invoke
 # pytest-relaxed for test organization, display etc tweaks
 pytest-relaxed==1.1.5
-pytest==4.6.10
 pytest==4.6.10; python_version < '3.0'
 pytest==6.2.1; python_version >= '3.0'
 # pytest-cov for coverage
