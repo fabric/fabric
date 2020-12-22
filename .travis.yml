@@ -11,9 +11,6 @@ python:
   - "3.8"
   - "3.9"
   - "pypy3"
-jobs:
-  allow_failures:
-    - python: "pypy3"
 install:
   - "pip install --upgrade pip setuptools wheel"
   # TODO: real test matrix with at least some cells combining different invoke
