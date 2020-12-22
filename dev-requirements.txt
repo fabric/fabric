@@ -19,7 +19,7 @@ codecov==2.1.11
 # Documentation tools
 sphinx==1.8.5
 alabaster==0.7.12
-releases==1.6.3
+releases>=1.5,<2.0
 # Release tools
 semantic_version==2.6.0
 wheel==0.36.2
