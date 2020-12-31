@@ -74,9 +74,9 @@ script:
   - pip uninstall -y fabric
   - "PACKAGE_AS_FABRIC2=yes inv travis.test-packaging --package=fabric2 --sanity=\"fab2 --version\""
   - inv sanity-test-from-v1
-after_success:
+#after_success:
   # Upload coverage data to codecov
-  - codecov
+  #- codecov
 notifications:
   irc:
     channels: "irc.freenode.org#fabric"
