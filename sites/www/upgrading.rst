@@ -842,7 +842,7 @@ below are ``sudo`` specific.
 
     * - ``shell`` / ``env.use_shell`` designating whether or not to wrap
         commands within an explicit call to e.g. ``/bin/sh -c "real command"``
-      - `Pending <https://github.com/pyinvoke/invoke/issues/344>`__/Removed
+      - `Pending <https://github.com/pyinvoke/invoke/issues/459>`__/Removed
       - See the note above under ``run`` for details on shell wrapping
         as a general strategy; unfortunately for ``sudo``, some sort of manual
         wrapping is still necessary for nontrivial commands (i.e. anything
