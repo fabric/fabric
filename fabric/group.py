@@ -107,21 +107,10 @@ class Group(list):
 
         .. versionadded:: 2.0
         """
-        # TODO: probably best to suck it up & match actual run() sig?
         # TODO: how to change method of execution across contents? subclass,
         # kwargs, additional methods, inject an executor? Doing subclass for
         # now, but not 100% sure it's the best route.
         # TODO: also need way to deal with duplicate connections (see THOUGHTS)
-        # TODO: and errors - probably FailureSet? How to handle other,
-        # regular, non Failure, exceptions though? Still need an aggregate
-        # exception type either way, whether it is FailureSet or what...
-        # TODO: OTOH, users may well want to be able to operate on the hosts
-        # that did not fail (esp if failure % is low) so we really _do_ want
-        # something like a result object mixing success and failure, or maybe a
-        # golang style two-tuple of successes and failures?
-        # TODO: or keep going w/ a "return or except", but the object is
-        # largely similar (if not identical) in both situations, with the
-        # exception just being the signal that Shit Broke?
         raise NotImplementedError
 
     # TODO: how to handle sudo? Probably just an inner worker method that takes
@@ -133,7 +122,9 @@ class Group(list):
 
     # TODO: local? Invoke wants ability to do that on its own though, which
     # would be distinct from Group. (May want to switch Group to use that,
-    # though, whatever it ends up being?)
+    # though, whatever it ends up being? Eg many cases where you do want to do
+    # some local thing either N times identically, or parameterized by remote
+    # cxn values)
 
     def get(self, *args, **kwargs):
         """
