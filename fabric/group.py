@@ -214,8 +214,6 @@ class ThreadingGroup(Group):
             thread.start()
         for thread in threads:
             # TODO: configurable join timeout
-            # TODO: (in sudo's version) configurability around interactive
-            # prompting resulting in an exception instead, as in v1
             thread.join()
         # Get non-exception results from queue
         while not queue.empty():
