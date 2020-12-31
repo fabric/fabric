@@ -5,6 +5,11 @@ Changelog
 .. note::
     Looking for the Fabric 1.x changelog? See :doc:`/changelog-v1`.
 
+- :feature:`1810` Add `put <fabric.group.Group.put>`/`get
+  <fabric.group.Group.get>` support to `~fabric.group.Group`.
+- :feature:`1999` Add `sudo <fabric.group.Group.sudo>` support to
+  `~fabric.group.Group`. Thanks to Bonnie Hardin for the report and to Winston
+  Nolan for an early patchset.
 - :release:`2.5.0 <2019-08-06>`
 - :support:`-` Update minimum Invoke version requirement to ``>=1.3``.
 - :feature:`1985` Add support for explicitly closing remote subprocess' stdin

@@ -1,5 +1,5 @@
 from mock import Mock, patch, call
-from pytest_relaxed import raises
+from pytest import mark, raises
 
 from fabric import Connection, Group, SerialGroup, ThreadingGroup, GroupResult
 from fabric.group import thread_worker
@@ -63,7 +63,7 @@ class Group_:
                 c.close.assert_called_once_with()
 
 
-def _make_serial_tester(cxns, index, args, kwargs):
+def _make_serial_tester(method, cxns, index, args, kwargs):
     args = args[:]
     kwargs = kwargs.copy()
 
@@ -72,47 +72,49 @@ def _make_serial_tester(cxns, index, args, kwargs):
         predecessors = cxns[:car]
         successors = cxns[cdr:]
         for predecessor in predecessors:
-            predecessor.run.assert_called_with(*args, **kwargs)
+            getattr(predecessor, method).assert_called_with(*args, **kwargs)
         for successor in successors:
-            assert not successor.run.called
+            assert not getattr(successor, method).called
 
     return tester
 
 
 class SerialGroup_:
-    class run:
-        def executes_arguments_on_contents_run_serially(self):
+    class run_and_sudo:
+        @mark.parametrize('method', ('run', 'sudo'))
+        def executes_arguments_on_contents_run_serially(self, method):
             "executes arguments on contents' run() serially"
             cxns = [Connection(x) for x in ("host1", "host2", "host3")]
             args = ("command",)
             kwargs = {"hide": True, "warn": True}
             for index, cxn in enumerate(cxns):
-                side_effect = _make_serial_tester(cxns, index, args, kwargs)
-                cxn.run = Mock(side_effect=side_effect)
+                side_effect = _make_serial_tester(method, cxns, index, args, kwargs)
+                setattr(cxn, method, Mock(side_effect=side_effect))
             g = SerialGroup.from_connections(cxns)
-            g.run(*args, **kwargs)
+            getattr(g, method)(*args, **kwargs)
             # Sanity check, e.g. in case none of them were actually run
             for cxn in cxns:
-                cxn.run.assert_called_with(*args, **kwargs)
+                getattr(cxn, method).assert_called_with(*args, **kwargs)
 
-        def errors_in_execution_capture_and_continue_til_end(self):
+        @mark.parametrize('method', ('run', 'sudo'))
+        def errors_in_execution_capture_and_continue_til_end(self, method):
             cxns = [Mock(name=x) for x in ("host1", "host2", "host3")]
 
             class OhNoz(Exception):
                 pass
 
             onoz = OhNoz()
-            cxns[1].run.side_effect = onoz
+            getattr(cxns[1], method).side_effect = onoz
             g = SerialGroup.from_connections(cxns)
             try:
-                g.run("whatever", hide=True)
+                getattr(g, method)("whatever", hide=True)
             except GroupException as e:
                 result = e.result
             else:
                 assert False, "Did not raise GroupException!"
             succeeded = {
-                cxns[0]: cxns[0].run.return_value,
-                cxns[2]: cxns[2].run.return_value,
+                cxns[0]: getattr(cxns[0], method).return_value,
+                cxns[2]: getattr(cxns[2], method).return_value,
             }
             failed = {cxns[1]: onoz}
             expected = succeeded.copy()
@@ -121,12 +123,13 @@ class SerialGroup_:
             assert result.succeeded == succeeded
             assert result.failed == failed
 
-        def returns_results_mapping(self):
+        @mark.parametrize('method', ('run', 'sudo'))
+        def returns_results_mapping(self, method):
             cxns = [Mock(name=x) for x in ("host1", "host2", "host3")]
             g = SerialGroup.from_connections(cxns)
-            result = g.run("whatever", hide=True)
+            result = getattr(g, method)("whatever", hide=True)
             assert isinstance(result, GroupResult)
-            expected = {x: x.run.return_value for x in cxns}
+            expected = {x: getattr(x, method).return_value for x in cxns}
             assert result == expected
             assert result.succeeded == expected
             assert result.failed == {}

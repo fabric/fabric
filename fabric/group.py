@@ -113,8 +113,16 @@ class Group(list):
         # TODO: also need way to deal with duplicate connections (see THOUGHTS)
         raise NotImplementedError
 
-    # TODO: how to handle sudo? Probably just an inner worker method that takes
-    # the method name to actually call (run, sudo, etc)?
+    def sudo(self, *args, **kwargs):
+        """
+        Executes `.Connection.sudo` on all member `Connections <.Connection>`.
+
+        :returns: a `.GroupResult`.
+
+        .. versionadded:: 2.6
+        """
+        # TODO: see run() TODOs
+        raise NotImplementedError
 
     # TODO: this all needs to mesh well with similar strategies applied to
     # entire tasks - so that may still end up factored out into Executors or
@@ -132,10 +140,8 @@ class Group(list):
 
         :returns: a `.GroupResult`.
 
-        .. versionadded:: 2.0
+        .. versionadded:: 2.6
         """
-        # TODO: probably best to suck it up & match actual get() sig?
-        # TODO: actually implement on subclasses
         raise NotImplementedError
 
     def close(self):
@@ -161,18 +167,24 @@ class SerialGroup(Group):
     .. versionadded:: 2.0
     """
 
-    def run(self, *args, **kwargs):
+    def _do(self, method, *args, **kwargs):
         results = GroupResult()
         excepted = False
         for cxn in self:
             try:
-                results[cxn] = cxn.run(*args, **kwargs)
+                results[cxn] = getattr(cxn, method)(*args, **kwargs)
             except Exception as e:
                 results[cxn] = e
                 excepted = True
         if excepted:
             raise GroupException(results)
         return results
+
+    def run(self, *args, **kwargs):
+        return self._do('run', *args, **kwargs)
+
+    def sudo(self, *args, **kwargs):
+        return self._do('sudo', *args, **kwargs)
 
 
 def thread_worker(cxn, queue, args, kwargs):
