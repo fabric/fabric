@@ -138,7 +138,19 @@ class Group(list):
         """
         Executes `.Connection.get` on all member `Connections <.Connection>`.
 
-        :returns: a `.GroupResult`.
+        .. note::
+            This method changes one behavior over e.g. directly calling
+            `.Connection.get` on a ``for`` loop of connections: the implied
+            default value for the ``local`` parameter when none is given is
+            ``"{host}/"``, which triggers use of local path parameterization
+            based on each connection's target hostname.
+
+            Thus, unless you override ``local`` yourself, a copy of the
+            downloaded file will be stored in (relative) directories named
+            after each host in the group.
+
+        :returns:
+            a `.GroupResult` whose values are `.transfer.Result` instances.
 
         .. versionadded:: 2.6
         """

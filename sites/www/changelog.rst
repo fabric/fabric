@@ -5,6 +5,17 @@ Changelog
 .. note::
     Looking for the Fabric 1.x changelog? See :doc:`/changelog-v1`.
 
+- :feature:`-` When the ``local`` path argument to
+  `Transfer.get <fabric.transfer.Transfer.get>` contains nonexistent
+  directories, they are now created instead of raising an error.
+- :feature:`1868` Ported another feature from v1: interpolating local path
+  arguments in  `Transfer.get <fabric.transfer.Transfer.get>` with connection
+  and remote filepath attributes.
+
+  For example, ``cxn.get(remote="/var/log/foo.log",
+  local="{host}/{filename}")`` is now feasible for storing a file in
+  per-host-named directories or files, and in fact `Group.get
+  <fabric.group.Group.get>` does this by default.
 - :feature:`1810` Add `put <fabric.group.Group.put>`/`get
   <fabric.group.Group.get>` support to `~fabric.group.Group`.
 - :feature:`1999` Add `sudo <fabric.group.Group.sudo>` support to

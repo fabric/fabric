@@ -40,7 +40,7 @@ class Transfer(object):
 
     def get(self, remote, local=None, preserve_mode=True):
         """
-        Download a file from the current connection to the local filesystem.
+        Copy a file from wrapped connection's host to the local filesystem.
 
         :param str remote:
             Remote file to download.
@@ -60,7 +60,8 @@ class Transfer(object):
 
             **If None or another 'falsey'/empty value is given** (the default),
             the remote file is downloaded to the current working directory (as
-            seen by `os.getcwd`) using its remote filename.
+            seen by `os.getcwd`) using its remote filename. (This is equivalent
+            to giving ``"{file}"``; see the below subsection on interpolation.)
 
             **If a string is given**, it should be a path to a local directory
             or file and is subject to similar behavior as that seen by common
@@ -71,11 +72,21 @@ class Transfer(object):
             '/tmp/')`` would result in creation or overwriting of
             ``/tmp/file.txt``).
 
+            This path will be interpolated with the following parameters, using
+            `str.format`:
+
+            - host
+            - user
+            - port
+            - other cxn
+            - remote file (also make sure to reflect above)
+            - remote dir?
+            - other remote?
+
             .. note::
-                When dealing with nonexistent file paths, normal Python file
-                handling concerns come into play - for example, a ``local``
-                path containing non-leaf directories which do not exist, will
-                typically result in an `OSError`.
+                If nonexistent directories are present in this path (including
+                the final path component, if it ends in `os.sep`) they will be
+                created.
 
             **If a file-like object is given**, the contents of the remote file
             are simply written into it.
@@ -87,12 +98,14 @@ class Transfer(object):
         :returns: A `.Result` object.
 
         .. versionadded:: 2.0
+        .. versionchanged:: 2.6
+            Added ``local`` path interpolation of connection & remote file
+            attributes.
+        .. versionchanged:: 2.6
+            Create missing ``local`` directories automatically.
         """
         # TODO: how does this API change if we want to implement
         # remote-to-remote file transfer? (Is that even realistic?)
-        # TODO: handle v1's string interpolation bits, especially the default
-        # one, or at least think about how that would work re: split between
-        # single and multiple server targets.
         # TODO: callback support
         # TODO: how best to allow changing the behavior/semantics of
         # remote/local (e.g. users might want 'safer' behavior that complains
