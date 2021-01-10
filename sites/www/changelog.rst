@@ -5,6 +5,10 @@ Changelog
 .. note::
     Looking for the Fabric 1.x changelog? See :doc:`/changelog-v1`.
 
+- :bug:`-` Fix a handful of issues in `fabric.testing`'s handling and mocking
+  of SFTP local paths and ``os.path`` members; this should remove some
+  occasional "useless Mocks" as well as hewing closer to the real behavior of
+  things like ``os.path.abspath`` re: path normalization.
 - :feature:`-` When the ``local`` path argument to
   `Transfer.get <fabric.transfer.Transfer.get>` contains nonexistent
   directories, they are now created instead of raising an error.

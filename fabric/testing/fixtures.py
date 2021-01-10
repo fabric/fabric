@@ -15,6 +15,8 @@ For example, if you intend to use the `remote` and `client` fixtures::
 .. versionadded:: 2.1
 """
 
+import os
+
 try:
     from pytest import fixture
     from mock import patch, Mock
@@ -104,6 +106,7 @@ def sftp():
     """
     mock = MockSFTP(autostart=False)
     client, mock_os = mock.start()
+    # Regular ol transfer to save some time
     transfer = Transfer(Connection("host"))
     yield transfer, client, mock_os
     # TODO: old mock_sftp() lacked any 'stop'...why? feels bad man

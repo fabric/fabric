@@ -382,7 +382,9 @@ class MockSFTP(object):
 
         # Handle common filepath massage actions; tests will assume these.
         def fake_abspath(path):
-            return "/local/{}".format(path)
+            # Run normpath to avoid tests not seeing abspath wrinkles (like
+            # trailing slash chomping)
+            return "/local/{}".format(os.path.normpath(path))
 
         mock_os.path.abspath.side_effect = fake_abspath
         sftp.getcwd.return_value = "/remote"
@@ -392,8 +394,10 @@ class MockSFTP(object):
         sftp.stat.return_value.st_mode = fake_mode
         mock_os.stat.return_value.st_mode = fake_mode
         # Not super clear to me why the 'wraps' functionality in mock isn't
-        # working for this :(
-        mock_os.path.basename.side_effect = os.path.basename
+        # working for this :( reinstate a bunch of os(.path) so it still works
+        mock_os.sep = os.sep
+        for name in ("basename", "split", "join", "normpath"):
+            getattr(mock_os.path, name).side_effect = getattr(os.path, name)
         # Return the sftp and OS mocks for use by decorator use case.
         return sftp, mock_os
 
