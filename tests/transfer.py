@@ -1,3 +1,5 @@
+from os.path import sep
+
 try:
     from invoke.vendor.six import StringIO
 except ImportError:
@@ -6,6 +8,7 @@ except ImportError:
 from mock import Mock, call
 from pytest_relaxed import raises
 from pytest import skip  # noqa
+from pytest import mark
 from paramiko import SFTPAttributes
 
 from fabric import Connection
@@ -132,6 +135,25 @@ class Transfer_:
                 client.stat.return_value = self.attrs
                 transfer.get("file", local="meh", preserve_mode=False)
                 assert not mock_os.chmod.called
+
+        class local_directory_creation:
+            def without_trailing_slash_means_leaf_file(self, sftp):
+                transfer, client, mock_os = sftp
+                transfer.get(remote="file", local="top/middle/leaf")
+                client.get.assert_called_with(
+                    localpath="/local/top/middle/leaf",
+                    remotepath="/remote/file",
+                )
+                mock_os.makedirs.assert_called_with("/local/top/middle")
+
+            def with_trailing_slash_means_mkdir_entire_arg(self, sftp):
+                transfer, client, mock_os = sftp
+                transfer.get(remote="file", local="top/middle/leaf/")
+                client.get.assert_called_with(
+                    localpath="/local/top/middle/leaf/file",
+                    remotepath="/remote/file",
+                )
+                mock_os.makedirs.assert_called_with("/local/top/middle/leaf/")
 
     class put:
         class basics:

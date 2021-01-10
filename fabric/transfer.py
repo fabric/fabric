@@ -120,15 +120,27 @@ class Transfer(object):
             self.sftp.getcwd() or self.sftp.normalize("."), remote
         )
 
-        # Massage local path:
-        # - handle file-ness
-        # - if path, fill with remote name if empty, & make absolute
+        # Massage local path
         orig_local = local
         is_file_like = hasattr(local, "write") and callable(local.write)
+        remote_filename = posixpath.basename(remote)
         if not local:
-            local = posixpath.basename(remote)
+            local = remote_filename
         if not is_file_like:
             local = os.path.abspath(local)
+            # Must treat dir vs file paths differently, lest we erroneously
+            # mkdir what was intended as a filename, and so that non-empty
+            # dir-like paths still get remote filename tacked on.
+            if local.endswith(os.sep):
+                dir_path = local
+                local = os.path.join(local, remote_filename)
+            else:
+                dir_path, _ = os.path.split(local)
+            os.makedirs(dir_path)
+            # TODO: reimplement makedirs in manner allowing us to track what
+            # was created so we can revert if transfer fails.
+            # TODO: Alternately, transfer to temp location and then move, but
+            # that's basically inverse of v1's sudo-put which gets messy
 
         # Run Paramiko-level .get() (side-effects only. womp.)
         # TODO: push some of the path handling into Paramiko; it should be
