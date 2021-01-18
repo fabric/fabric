@@ -1127,9 +1127,8 @@ functions from v1.
         own, so it's gone.
     * - Naming downloaded files after some aspect of the remote destination, to
         avoid overwriting during multi-server actions
-      - `Pending <https://github.com/fabric/fabric/issues/1868>`__
-      - This falls under the `~fabric.group.Group` family, which still needs
-        some work in this regard.
+      - Ported
+      - Added back (to `fabric.transfer.Transfer.get`) in Fabric 2.6.
 
 
 .. _upgrading-configuration:

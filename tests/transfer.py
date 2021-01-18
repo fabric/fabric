@@ -95,6 +95,25 @@ class Transfer_:
             def remote_arg_cannot_be_empty_string(self, transfer):
                 transfer.get("")
 
+        class local_arg_interpolation:
+            def connection_params(self, transfer):
+                result = transfer.get("somefile", "{user}@{host}-{port}")
+                expected = "/local/{}@host-22".format(transfer.connection.user)
+                assert result.local == expected
+
+            def connection_params_as_dir(self, transfer):
+                result = transfer.get("somefile", "{host}/")
+                assert result.local == "/local/host/somefile"
+
+            def remote_path_posixpath_bits(self, transfer):
+                result = transfer.get(
+                    "parent/mid/leaf",
+                    "foo/{dirname}/bar/{basename}"
+                )
+                # Recall that test harness sets remote apparent cwd as
+                # /remote/, thus dirname is /remote/parent/mid
+                assert result.local == "/local/foo/remote/parent/mid/bar/leaf"
+
         class file_like_local_paths:
             "file-like local paths"
 

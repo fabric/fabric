@@ -17,7 +17,7 @@ Changelog
   and remote filepath attributes.
 
   For example, ``cxn.get(remote="/var/log/foo.log",
-  local="{host}/{filename}")`` is now feasible for storing a file in
+  local="{host}/{basename}")`` is now feasible for storing a file in
   per-host-named directories or files, and in fact `Group.get
   <fabric.group.Group.get>` does this by default.
 - :feature:`1810` Add `put <fabric.group.Group.put>`/`get

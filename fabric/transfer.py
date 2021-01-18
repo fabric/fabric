@@ -61,7 +61,8 @@ class Transfer(object):
             **If None or another 'falsey'/empty value is given** (the default),
             the remote file is downloaded to the current working directory (as
             seen by `os.getcwd`) using its remote filename. (This is equivalent
-            to giving ``"{file}"``; see the below subsection on interpolation.)
+            to giving ``"{basename}"``; see the below subsection on
+            interpolation.)
 
             **If a string is given**, it should be a path to a local directory
             or file and is subject to similar behavior as that seen by common
@@ -72,21 +73,23 @@ class Transfer(object):
             '/tmp/')`` would result in creation or overwriting of
             ``/tmp/file.txt``).
 
-            This path will be interpolated with the following parameters, using
-            `str.format`:
+            This path will be **interpolated** with some useful parameters,
+            using `str.format`:
 
-            - host
-            - user
-            - port
-            - other cxn
-            - remote file (also make sure to reflect above)
-            - remote dir?
-            - other remote?
+            - The `.Connection` object's ``host``, ``user`` and ``port``
+              attributes.
+            - The ``basename`` and ``dirname`` of the ``remote`` path, as
+              derived by `os.path` (specifically, its ``posixpath`` flavor, so
+              that the resulting values are useful on remote POSIX-compatible
+              SFTP servers even if the local client is Windows).
+            - Thus, for example, ``"/some/path/{user}@{host}/{basename}"`` will
+              yield different local paths depending on the properties of both
+              the connection and the remote path.
 
             .. note::
                 If nonexistent directories are present in this path (including
                 the final path component, if it ends in `os.sep`) they will be
-                created.
+                created automatically using `os.makedirs`.
 
             **If a file-like object is given**, the contents of the remote file
             are simply written into it.
@@ -126,8 +129,16 @@ class Transfer(object):
         remote_filename = posixpath.basename(remote)
         if not local:
             local = remote_filename
+        # Path-driven local downloads need interpolation, abspath'ing &
+        # directory creation
         if not is_file_like:
-            local = os.path.abspath(local)
+            local = os.path.abspath(local.format(
+                host=self.connection.host,
+                user=self.connection.user,
+                port=self.connection.port,
+                dirname=posixpath.dirname(remote),
+                basename=remote_filename,
+            ))
             # Must treat dir vs file paths differently, lest we erroneously
             # mkdir what was intended as a filename, and so that non-empty
             # dir-like paths still get remote filename tacked on.
@@ -136,6 +147,7 @@ class Transfer(object):
                 local = os.path.join(local, remote_filename)
             else:
                 dir_path, _ = os.path.split(local)
+            local = os.path.normpath(local)
             os.makedirs(dir_path)
             # TODO: reimplement makedirs in manner allowing us to track what
             # was created so we can revert if transfer fails.
