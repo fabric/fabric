@@ -12,6 +12,10 @@ Changelog
 - :feature:`-` When the ``local`` path argument to
   `Transfer.get <fabric.transfer.Transfer.get>` contains nonexistent
   directories, they are now created instead of raising an error.
+
+  .. warning::
+    This change introduces a new runtime dependency: ``pathlib2``.
+
 - :feature:`1868` Ported another feature from v1: interpolating local path
   arguments in  `Transfer.get <fabric.transfer.Transfer.get>` with connection
   and remote filepath attributes.

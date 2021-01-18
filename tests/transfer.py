@@ -5,7 +5,7 @@ try:
 except ImportError:
     from six import StringIO
 
-from mock import Mock, call
+from mock import Mock, call, patch
 from pytest_relaxed import raises
 from pytest import skip  # noqa
 from pytest import mark
@@ -107,8 +107,7 @@ class Transfer_:
 
             def remote_path_posixpath_bits(self, transfer):
                 result = transfer.get(
-                    "parent/mid/leaf",
-                    "foo/{dirname}/bar/{basename}"
+                    "parent/mid/leaf", "foo/{dirname}/bar/{basename}"
                 )
                 # Recall that test harness sets remote apparent cwd as
                 # /remote/, thus dirname is /remote/parent/mid
@@ -156,23 +155,31 @@ class Transfer_:
                 assert not mock_os.chmod.called
 
         class local_directory_creation:
-            def without_trailing_slash_means_leaf_file(self, sftp):
-                transfer, client, mock_os = sftp
+            @patch("fabric.transfer.Path")
+            def without_trailing_slash_means_leaf_file(self, Path, sftp_objs):
+                transfer, client = sftp_objs
                 transfer.get(remote="file", local="top/middle/leaf")
                 client.get.assert_called_with(
                     localpath="/local/top/middle/leaf",
                     remotepath="/remote/file",
                 )
-                mock_os.makedirs.assert_called_with("/local/top/middle")
+                Path.assert_called_with("top/middle")
+                Path.return_value.mkdir.assert_called_with(
+                    parents=True, exist_ok=True
+                )
 
-            def with_trailing_slash_means_mkdir_entire_arg(self, sftp):
-                transfer, client, mock_os = sftp
+            @patch("fabric.transfer.Path")
+            def with_trailing_slash_means_mkdir_entire_arg(self, Path, sftp_objs):
+                transfer, client = sftp_objs
                 transfer.get(remote="file", local="top/middle/leaf/")
                 client.get.assert_called_with(
                     localpath="/local/top/middle/leaf/file",
                     remotepath="/remote/file",
                 )
-                mock_os.makedirs.assert_called_with("/local/top/middle/leaf/")
+                Path.assert_called_with("top/middle/leaf/")
+                Path.return_value.mkdir.assert_called_with(
+                    parents=True, exist_ok=True
+                )
 
     class put:
         class basics:

@@ -6,6 +6,8 @@ import os
 import posixpath
 import stat
 
+from pathlib import Path
+
 from .util import debug  # TODO: actual logging! LOL
 
 # TODO: figure out best way to direct folks seeking rsync, to patchwork's rsync
@@ -132,13 +134,13 @@ class Transfer(object):
         # Path-driven local downloads need interpolation, abspath'ing &
         # directory creation
         if not is_file_like:
-            local = os.path.abspath(local.format(
+            local = local.format(
                 host=self.connection.host,
                 user=self.connection.user,
                 port=self.connection.port,
                 dirname=posixpath.dirname(remote),
                 basename=remote_filename,
-            ))
+            )
             # Must treat dir vs file paths differently, lest we erroneously
             # mkdir what was intended as a filename, and so that non-empty
             # dir-like paths still get remote filename tacked on.
@@ -147,10 +149,11 @@ class Transfer(object):
                 local = os.path.join(local, remote_filename)
             else:
                 dir_path, _ = os.path.split(local)
-            local = os.path.normpath(local)
-            os.makedirs(dir_path)
-            # TODO: reimplement makedirs in manner allowing us to track what
-            # was created so we can revert if transfer fails.
+            local = os.path.abspath(local)
+            Path(dir_path).mkdir(parents=True, exist_ok=True)
+            # TODO: reimplement mkdir (or otherwise write a testing function)
+            # allowing us to track what was created so we can revert if
+            # transfer fails.
             # TODO: Alternately, transfer to temp location and then move, but
             # that's basically inverse of v1's sudo-put which gets messy
 
