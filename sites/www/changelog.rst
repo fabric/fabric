@@ -5,8 +5,9 @@ Changelog
 .. note::
     Looking for the Fabric 1.x changelog? See :doc:`/changelog-v1`.
 
-- :bug:`-` Fix a handful of issues in `fabric.testing`'s handling and mocking
-  of SFTP local paths and ``os.path`` members; this should remove some
+- :bug:`- major` Fix a handful of issues in the handling and
+  mocking of SFTP local paths and ``os.path`` members within
+  :ref:`fabric.testing <testing-subpackage>`; this should remove some
   occasional "useless Mocks" as well as hewing closer to the real behavior of
   things like ``os.path.abspath`` re: path normalization.
 - :feature:`-` When the ``local`` path argument to
@@ -16,14 +17,13 @@ Changelog
   .. warning::
     This change introduces a new runtime dependency: ``pathlib2``.
 
-- :feature:`1868` Ported another feature from v1: interpolating local path
-  arguments in  `Transfer.get <fabric.transfer.Transfer.get>` with connection
+- :feature:`1868` Ported a feature from v1: interpolating the local path
+  argument in  `Transfer.get <fabric.transfer.Transfer.get>` with connection
   and remote filepath attributes.
 
-  For example, ``cxn.get(remote="/var/log/foo.log",
-  local="{host}/{basename}")`` is now feasible for storing a file in
-  per-host-named directories or files, and in fact `Group.get
-  <fabric.group.Group.get>` does this by default.
+  For example, ``cxn.get(remote="/var/log/foo.log", local="{host}/")`` is now
+  feasible for storing a file in per-host-named directories or files, and in
+  fact `Group.get <fabric.group.Group.get>` does this by default.
 - :feature:`1810` Add `put <fabric.group.Group.put>`/`get
   <fabric.group.Group.get>` support to `~fabric.group.Group`.
 - :feature:`1999` Add `sudo <fabric.group.Group.sudo>` support to
