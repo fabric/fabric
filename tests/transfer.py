@@ -169,7 +169,9 @@ class Transfer_:
                 )
 
             @patch("fabric.transfer.Path")
-            def with_trailing_slash_means_mkdir_entire_arg(self, Path, sftp_objs):
+            def with_trailing_slash_means_mkdir_entire_arg(
+                self, Path, sftp_objs
+            ):
                 transfer, client = sftp_objs
                 transfer.get(remote="file", local="top/middle/leaf/")
                 client.get.assert_called_with(

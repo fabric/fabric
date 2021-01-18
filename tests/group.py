@@ -81,14 +81,16 @@ def _make_serial_tester(method, cxns, index, args, kwargs):
 
 class SerialGroup_:
     class run_and_sudo:
-        @mark.parametrize('method', ('run', 'sudo'))
+        @mark.parametrize("method", ("run", "sudo"))
         def executes_arguments_on_contents_run_serially(self, method):
             "executes arguments on contents' run() serially"
             cxns = [Connection(x) for x in ("host1", "host2", "host3")]
             args = ("command",)
             kwargs = {"hide": True, "warn": True}
             for index, cxn in enumerate(cxns):
-                side_effect = _make_serial_tester(method, cxns, index, args, kwargs)
+                side_effect = _make_serial_tester(
+                    method, cxns, index, args, kwargs
+                )
                 setattr(cxn, method, Mock(side_effect=side_effect))
             g = SerialGroup.from_connections(cxns)
             getattr(g, method)(*args, **kwargs)
@@ -96,7 +98,7 @@ class SerialGroup_:
             for cxn in cxns:
                 getattr(cxn, method).assert_called_with(*args, **kwargs)
 
-        @mark.parametrize('method', ('run', 'sudo'))
+        @mark.parametrize("method", ("run", "sudo"))
         def errors_in_execution_capture_and_continue_til_end(self, method):
             cxns = [Mock(name=x) for x in ("host1", "host2", "host3")]
 
@@ -123,7 +125,7 @@ class SerialGroup_:
             assert result.succeeded == succeeded
             assert result.failed == failed
 
-        @mark.parametrize('method', ('run', 'sudo'))
+        @mark.parametrize("method", ("run", "sudo"))
         def returns_results_mapping(self, method):
             cxns = [Mock(name=x) for x in ("host1", "host2", "host3")]
             g = SerialGroup.from_connections(cxns)

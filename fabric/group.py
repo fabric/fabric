@@ -141,9 +141,9 @@ class Group(list):
         .. note::
             This method changes one behavior over e.g. directly calling
             `.Connection.get` on a ``for`` loop of connections: the implied
-            default value for the ``local`` parameter when none is given is
-            ``"{host}/"``, which triggers use of local path parameterization
-            based on each connection's target hostname.
+            default value for the ``local`` parameter is ``"{host}/"``, which
+            triggers use of local path parameterization based on each
+            connection's target hostname.
 
             Thus, unless you override ``local`` yourself, a copy of the
             downloaded file will be stored in (relative) directories named
@@ -193,10 +193,10 @@ class SerialGroup(Group):
         return results
 
     def run(self, *args, **kwargs):
-        return self._do('run', *args, **kwargs)
+        return self._do("run", *args, **kwargs)
 
     def sudo(self, *args, **kwargs):
-        return self._do('sudo', *args, **kwargs)
+        return self._do("sudo", *args, **kwargs)
 
 
 def thread_worker(cxn, queue, args, kwargs):
