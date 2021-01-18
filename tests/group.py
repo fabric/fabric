@@ -41,10 +41,11 @@ class Group_:
         for c in g:
             assert isinstance(c, Connection)
 
-    class run:
-        @raises(NotImplementedError)
-        def not_implemented_in_base_class(self):
-            Group().run()
+    @mark.parametrize("method", ("run", "sudo", "put", "get"))
+    def abstract_methods_not_implemented(self, method):
+        group = Group()
+        with raises(NotImplementedError):
+            getattr(group, method)()
 
     class close_and_contextmanager_behavior:
         def close_closes_all_member_connections(self):
@@ -143,11 +144,12 @@ class ThreadingGroup_:
         self.args = ("command",)
         self.kwargs = {"hide": True, "warn": True}
 
-    class run:
+    class run_and_sudo:
+        @mark.parametrize("method", ("run", "sudo"))
         @patch("fabric.group.Queue")
         @patch("fabric.group.ExceptionHandlingThread")
         def executes_arguments_on_contents_run_via_threading(
-            self, Thread, Queue
+            self, Thread, Queue, method
         ):
             queue = Queue.return_value
             g = ThreadingGroup.from_connections(self.cxns)
@@ -155,7 +157,7 @@ class ThreadingGroup_:
             # end up with 'exceptions' that cause errors due to all being the
             # same.
             Thread.return_value.exception.return_value = None
-            g.run(*self.args, **self.kwargs)
+            getattr(g, method)(*self.args, **self.kwargs)
             # Testing that threads were used the way we expect is mediocre but
             # I honestly can't think of another good way to assert "threading
             # was used & concurrency occurred"...
@@ -165,6 +167,7 @@ class ThreadingGroup_:
                     kwargs=dict(
                         cxn=cxn,
                         queue=queue,
+                        method=method,
                         args=self.args,
                         kwargs=self.kwargs,
                     ),
@@ -185,20 +188,21 @@ class ThreadingGroup_:
                 err = err.format(expected, name, got)
                 assert expected, got == err
 
+        @mark.parametrize("method", ("run", "sudo"))
         @patch("fabric.group.Queue")
-        def queue_used_to_return_results(self, Queue):
+        def queue_used_to_return_results(self, Queue, method):
             # Regular, explicit, mocks for Connections
             cxns = [Mock(host=x) for x in ("host1", "host2", "host3")]
             # Set up Queue with enough behavior to work / assert
             queue = Queue.return_value
             # Ending w/ a True will terminate a while-not-empty loop
             queue.empty.side_effect = (False, False, False, True)
-            fakes = [(x, x.run.return_value) for x in cxns]
+            fakes = [(x, getattr(x, method).return_value) for x in cxns]
             queue.get.side_effect = fakes[:]
             # Execute & inspect results
             g = ThreadingGroup.from_connections(cxns)
-            results = g.run(*self.args, **self.kwargs)
-            expected = {x: x.run.return_value for x in cxns}
+            results = getattr(g, method)(*self.args, **self.kwargs)
+            expected = {x: getattr(x, method).return_value for x in cxns}
             assert results == expected
             # Make sure queue was used as expected within worker &
             # ThreadingGroup.run()
@@ -208,7 +212,8 @@ class ThreadingGroup_:
             gets = [call(block=False) for _ in cxns]
             queue.get.assert_has_calls(gets)
 
-        def bubbles_up_errors_within_threads(self):
+        @mark.parametrize("method", ("run", "sudo"))
+        def bubbles_up_errors_within_threads(self, method):
             # TODO: I feel like this is the first spot where a raw
             # ThreadException might need tweaks, at least presentation-wise,
             # since we're no longer dealing with truly background threads (IO
@@ -221,17 +226,17 @@ class ThreadingGroup_:
                 pass
 
             onoz = OhNoz()
-            cxns[1].run.side_effect = onoz
+            getattr(cxns[1], method).side_effect = onoz
             g = ThreadingGroup.from_connections(cxns)
             try:
-                g.run(*self.args, **self.kwargs)
+                getattr(g, method)(*self.args, **self.kwargs)
             except GroupException as e:
                 result = e.result
             else:
                 assert False, "Did not raise GroupException!"
             succeeded = {
-                cxns[0]: cxns[0].run.return_value,
-                cxns[2]: cxns[2].run.return_value,
+                cxns[0]: getattr(cxns[0], method).return_value,
+                cxns[2]: getattr(cxns[2], method).return_value,
             }
             failed = {cxns[1]: onoz}
             expected = succeeded.copy()
@@ -240,13 +245,14 @@ class ThreadingGroup_:
             assert result.succeeded == succeeded
             assert result.failed == failed
 
-        def returns_results_mapping(self):
+        @mark.parametrize("method", ("run", "sudo"))
+        def returns_results_mapping(self, method):
             # TODO: update if/when we implement ResultSet
             cxns = [Mock(name=x) for x in ("host1", "host2", "host3")]
             g = ThreadingGroup.from_connections(cxns)
-            result = g.run("whatever", hide=True)
+            result = getattr(g, method)("whatever", hide=True)
             assert isinstance(result, GroupResult)
-            expected = {x: x.run.return_value for x in cxns}
+            expected = {x: getattr(x, method).return_value for x in cxns}
             assert result == expected
             assert result.succeeded == expected
             assert result.failed == {}

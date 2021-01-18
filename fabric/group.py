@@ -18,8 +18,8 @@ class Group(list):
         concrete subclasses (such as `.SerialGroup` or `.ThreadingGroup`) or
         you'll get ``NotImplementedError`` on most of the methods.
 
-    Most methods in this class mirror those of `.Connection`, taking the same
-    arguments; however their return values and exception-raising behavior
+    Most methods in this class wrap those of `.Connection` and will accept the
+    same arguments; however their return values and exception-raising behavior
     differs:
 
     - Return values are dict-like objects (`.GroupResult`) mapping
@@ -99,6 +99,11 @@ class Group(list):
         group.extend(connections)
         return group
 
+    def _do(self, method, *args, **kwargs):
+        # TODO: rename this something public & commit to an API for user
+        # subclasses
+        raise NotImplementedError
+
     def run(self, *args, **kwargs):
         """
         Executes `.Connection.run` on all member `Connections <.Connection>`.
@@ -111,7 +116,7 @@ class Group(list):
         # kwargs, additional methods, inject an executor? Doing subclass for
         # now, but not 100% sure it's the best route.
         # TODO: also need way to deal with duplicate connections (see THOUGHTS)
-        raise NotImplementedError
+        return self._do("run", *args, **kwargs)
 
     def sudo(self, *args, **kwargs):
         """
@@ -122,7 +127,7 @@ class Group(list):
         .. versionadded:: 2.6
         """
         # TODO: see run() TODOs
-        raise NotImplementedError
+        return self._do("sudo", *args, **kwargs)
 
     # TODO: this all needs to mesh well with similar strategies applied to
     # entire tasks - so that may still end up factored out into Executors or
@@ -133,6 +138,22 @@ class Group(list):
     # though, whatever it ends up being? Eg many cases where you do want to do
     # some local thing either N times identically, or parameterized by remote
     # cxn values)
+
+    def put(self, *args, **kwargs):
+        """
+        Executes `.Connection.put` on all member `Connections <.Connection>`.
+
+        This is a straightforward application: aside from whatever the concrete
+        group subclass does for concurrency or lack thereof, the effective
+        result is like running a loop over the connections and calling their
+        ``put`` method.
+
+        :returns:
+            a `.GroupResult` whose values are `.transfer.Result` instances.
+
+        .. versionadded:: 2.6
+        """
+        return self._do("put", *args, **kwargs)
 
     def get(self, *args, **kwargs):
         """
@@ -154,7 +175,8 @@ class Group(list):
 
         .. versionadded:: 2.6
         """
-        raise NotImplementedError
+        # TODO: modify local kwarg as described
+        return self._do("put", *args, **kwargs)
 
     def close(self):
         """
@@ -192,15 +214,9 @@ class SerialGroup(Group):
             raise GroupException(results)
         return results
 
-    def run(self, *args, **kwargs):
-        return self._do("run", *args, **kwargs)
 
-    def sudo(self, *args, **kwargs):
-        return self._do("sudo", *args, **kwargs)
-
-
-def thread_worker(cxn, queue, args, kwargs):
-    result = cxn.run(*args, **kwargs)
+def thread_worker(cxn, queue, method, args, kwargs):
+    result = getattr(cxn, method)(*args, **kwargs)
     # TODO: namedtuple or attrs object?
     queue.put((cxn, result))
 
@@ -212,14 +228,20 @@ class ThreadingGroup(Group):
     .. versionadded:: 2.0
     """
 
-    def run(self, *args, **kwargs):
+    def _do(self, method, *args, **kwargs):
         results = GroupResult()
         queue = Queue()
         threads = []
         for cxn in self:
-            my_kwargs = dict(cxn=cxn, queue=queue, args=args, kwargs=kwargs)
             thread = ExceptionHandlingThread(
-                target=thread_worker, kwargs=my_kwargs
+                target=thread_worker,
+                kwargs=dict(
+                    cxn=cxn,
+                    queue=queue,
+                    method=method,
+                    args=args,
+                    kwargs=kwargs,
+                ),
             )
             threads.append(thread)
         for thread in threads:
