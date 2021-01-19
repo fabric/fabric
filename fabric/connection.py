@@ -300,9 +300,11 @@ class Connection(Context):
 
             Default: ``config.timeouts.connect``.
 
-        .. _connect_kwargs-arg:
 
         :param dict connect_kwargs:
+
+            .. _connect_kwargs-arg:
+
             Keyword arguments handed verbatim to
             `SSHClient.connect <paramiko.client.SSHClient.connect>` (when
             `.open` is called).
