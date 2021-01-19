@@ -20,7 +20,7 @@ class Group(list):
 
     Most methods in this class wrap those of `.Connection` and will accept the
     same arguments; however their return values and exception-raising behavior
-    differs:
+    differ:
 
     - Return values are dict-like objects (`.GroupResult`) mapping
       `.Connection` objects to the return value for the respective connections:
@@ -160,23 +160,34 @@ class Group(list):
         Executes `.Connection.get` on all member `Connections <.Connection>`.
 
         .. note::
-            This method changes one behavior over e.g. directly calling
-            `.Connection.get` on a ``for`` loop of connections: the implied
-            default value for the ``local`` parameter is ``"{host}/"``, which
-            triggers use of local path parameterization based on each
-            connection's target hostname.
+            This method changes some behaviors over e.g. directly calling
+            `.Connection.get` on a ``for`` loop of connections; the biggest is
+            that the implied default value for the ``local`` parameter is
+            ``"{host}/"``, which triggers use of local path parameterization
+            based on each connection's target hostname.
 
             Thus, unless you override ``local`` yourself, a copy of the
             downloaded file will be stored in (relative) directories named
             after each host in the group.
+
+        .. warning::
+            Using file-like objects as the ``local`` argument is not currently
+            supported, as it would be equivalent to supplying that same object
+            to a series of individual ``get()`` calls.
 
         :returns:
             a `.GroupResult` whose values are `.transfer.Result` instances.
 
         .. versionadded:: 2.6
         """
-        # TODO: modify local kwarg as described
-        return self._do("put", *args, **kwargs)
+        # TODO: consider a backwards incompat change after we drop Py2 that
+        # just makes a lot of these kwarg-only methods? then below could become
+        # kwargs.setdefault() if desired.
+        # TODO: do we care enough to handle explicitly given, yet falsey,
+        # values? it's a lot more complexity for a corner case.
+        if len(args) < 2 and "local" not in kwargs:
+            kwargs["local"] = "{host}/"
+        return self._do("get", *args, **kwargs)
 
     def close(self):
         """
