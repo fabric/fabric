@@ -376,8 +376,10 @@ class MockSFTP(object):
         # Set up mocks
         self.os_patcher = patch("fabric.transfer.os")
         self.client_patcher = patch("fabric.connection.SSHClient")
+        self.path_patcher = patch("fabric.transfer.Path")
         mock_os = self.os_patcher.start()
         Client = self.client_patcher.start()
+        self.path_patcher.start()
         sftp = Client.return_value.open_sftp.return_value
 
         # Handle common filepath massage actions; tests will assume these.
@@ -404,3 +406,4 @@ class MockSFTP(object):
     def stop(self):
         self.os_patcher.stop()
         self.client_patcher.stop()
+        self.path_patcher.stop()
