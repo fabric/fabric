@@ -5,6 +5,7 @@ Changelog
 .. note::
     Looking for the Fabric 1.x changelog? See :doc:`/changelog-v1`.
 
+- :release:`2.6.0 <2021-01-18>`
 - :bug:`- major` Fix a handful of issues in the handling and
   mocking of SFTP local paths and ``os.path`` members within
   :ref:`fabric.testing <testing-subpackage>`; this should remove some
