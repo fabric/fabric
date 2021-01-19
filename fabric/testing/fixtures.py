@@ -15,8 +15,6 @@ For example, if you intend to use the `remote` and `client` fixtures::
 .. versionadded:: 2.1
 """
 
-import os
-
 try:
     from pytest import fixture
     from mock import patch, Mock

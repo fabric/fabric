@@ -1,5 +1,3 @@
-from os.path import sep
-
 try:
     from invoke.vendor.six import StringIO
 except ImportError:
@@ -8,7 +6,6 @@ except ImportError:
 from mock import Mock, call, patch
 from pytest_relaxed import raises
 from pytest import skip  # noqa
-from pytest import mark
 from paramiko import SFTPAttributes
 
 from fabric import Connection

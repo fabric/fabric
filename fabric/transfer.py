@@ -6,7 +6,10 @@ import os
 import posixpath
 import stat
 
-from pathlib import Path
+try:
+    from pathlib import Path
+except ImportError:
+    from pathlib2 import Path
 
 from .util import debug  # TODO: actual logging! LOL
 
