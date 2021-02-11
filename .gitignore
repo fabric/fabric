@@ -19,3 +19,5 @@ tox.ini
 htmlcov
 .cache
 env/
+.project
+.pydevproject
