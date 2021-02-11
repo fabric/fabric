@@ -18,3 +18,4 @@ tox.ini
 .idea/
 htmlcov
 .cache
+env/
