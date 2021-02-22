@@ -308,7 +308,6 @@ class Config(InvokeConfig):
             "inline_ssh_env": False,
             "load_ssh_configs": True,
             "port": 22,
-            "run": {"replace_env": True},
             "runners": {"remote": Remote},
             "ssh_config_path": None,
             "tasks": {"collection_name": "fabfile"},
