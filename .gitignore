@@ -21,3 +21,4 @@ htmlcov
 env/
 .project
 .pydevproject
+.settings/
