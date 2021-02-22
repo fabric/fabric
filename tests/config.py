@@ -50,8 +50,6 @@ class Config_:
 
     def overrides_some_Invoke_defaults(self):
         config = Config()
-        # This value defaults to False in Invoke proper.
-        assert config.run.replace_env is True
         assert config.tasks.collection_name == "fabfile"
 
     def uses_Fabric_prefix(self):
