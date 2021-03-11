@@ -29,7 +29,18 @@ class Remote_:
     def needs_handle_on_a_Connection(self):
         c = _Connection("host")
         assert Remote(context=c).context is c
-
+    
+    class env:
+        def replaces_when_replace_env_True(self, remote):
+            env = _runner().run(CMD, env={"JUST": "ME"}, replace_env=True).env
+            assert env == {"JUST": "ME"}
+    
+        def augments_when_replace_env_False(self, remote):
+            env = _runner().run(CMD, env={"JUST": "ME"}, replace_env=False).env
+            assert 'PATH' in env # assuming this will be in every test environment
+            assert 'JUST' in env
+            assert env['JUST'] == 'ME'
+    
     class run:
         def calls_expected_paramiko_bits(self, remote):
             # remote mocking makes generic sanity checks like "were
