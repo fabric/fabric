@@ -46,9 +46,9 @@ Default configuration values
 Overrides of Invoke-level defaults
 ----------------------------------
 
-- ``run.replace_env``: ``True``, instead of ``False``, so that remote commands
-  run with a 'clean', empty environment instead of inheriting a copy of the
-  current process' environment.
+- ``run.replace_env``: defaults to ``True``, instead of ``False``, so that
+  remote commands run with a 'clean', empty environment instead of inheriting
+  a copy of the current process' environment.
 
   This is for security purposes: leaking local environment data remotely by
   default would be unsanitary. It's also compatible with the behavior of
