@@ -5,6 +5,13 @@ Changelog
 .. note::
     Looking for the Fabric 1.x changelog? See :doc:`/changelog-v1`.
 
+- :bug:`2142 major` Update `~fabric.connection.Connection` temporarily so that
+  it doesn't incidentally apply ``replace_env=True`` to local shell commands,
+  only remote ones. On Windows under Python 3.7+, this was causing local
+  commands to fail due to lack of some environment variables. Future updates
+  will cleanly separate the config tree for remote vs local methods.
+
+  Thanks to Bartosz Lachowicz for the report and David JM Emmett for the patch.
 - :release:`2.6.0 <2021-01-18>`
 - :bug:`- major` Fix a handful of issues in the handling and
   mocking of SFTP local paths and ``os.path`` members within

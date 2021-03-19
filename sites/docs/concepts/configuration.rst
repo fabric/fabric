@@ -57,6 +57,11 @@ Overrides of Invoke-level defaults
   .. seealso::
     The warning under `paramiko.channel.Channel.set_environment_variable`.
 
+  .. note::
+    This is currently accomplished with a keyword argument override, as the
+    config setting itself was applying to both ``run`` and ``local``. Future
+    updates will ensure the two methods use separate config values.
+
 Extensions to Invoke-level defaults
 -----------------------------------
 
