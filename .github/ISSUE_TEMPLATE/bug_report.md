@@ -7,6 +7,11 @@ assignees: ''
 
 ---
 
+**Due diligence**
+Please try searching the issue tracker for your problem if you haven't already!
+If you find related issues that aren't an exact match, feel free to continue
+making a report, and link to those issues.
+
 **Describe the bug**
 A clear and concise description of what the bug is.
 
@@ -18,7 +23,7 @@ Steps to reproduce the behaviour (please attach a minimal example):
 **Expected behaviour**
 A clear and concise description of what you expected to happen.
 
-**Environment** ([see also](https://www.contribution-guide.org/))
+**Environment**
 Make sure your report gets the attention it deserves: bug reports with missing
 information may be ignored or punted back to you, delaying a fix. The below
 constitutes a bare minimum; more info is almost always better:
@@ -28,6 +33,9 @@ alternative interpreter such as PyPy?
 - What operating system are you using both client & server-side?
 - Are you using OpenSSH server or something else?
 - Which version or versions of the software are you using?
+  - Have you already tried the latest release?
+  - Have you, or can you, try some older releases to pin down where the bug
+  appeared?
 - How can the developers recreate the bug on their end? If possible, include a
   copy of your code, the command you used to invoke it, and the full output of
   your run (if applicable.)
