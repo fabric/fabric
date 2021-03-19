@@ -56,11 +56,11 @@ class Remote(Runner):
             else:
                 self.channel.update_environment(env)
         self.channel.exec_command(command)
-    
+
     def run(self, command, **kwargs):
-        kwargs.setdefault('replace_env', True)
-        return Runner.run(self, command, **kwargs)
-    
+        kwargs.setdefault("replace_env", True)
+        return super(Remote, self).run(command, **kwargs)
+
     def read_proc_stdout(self, num_bytes):
         return self.channel.recv(num_bytes)
 
