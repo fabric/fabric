@@ -1236,7 +1236,12 @@ def local(command, capture=False, shell=None):
     if p.returncode not in env.ok_ret_codes:
         out.failed = True
         msg = "local() encountered an error (return code %s) while executing '%s'" % (p.returncode, command)
-        error(message=msg, stdout=out, stderr=err)
+        # error()'s logic for appending the stdout and stderr to message assumes the caller has already printed
+        # them if they are to-be shown.  While this assumption is correct for run(), it is not for local(capture=True).
+        # So, if capture=True, we temporarily hide stdout and stderr so that error() will think they should
+        # be included in the error message.
+        with settings(hide('stdout', 'stderr') if capture else None):
+            error(message=msg, stdout=out, stderr=err)
     out.succeeded = not out.failed
     # If we were capturing, this will be a string; otherwise it will be None.
     return out
