@@ -291,7 +291,7 @@ straightforward approach could be to iterate over a list or tuple of
 
     >>> from fabric import Connection
     >>> for host in ('web1', 'web2', 'mac1'):
-    >>>     result = Connection(host).run('uname -s')
+    ...     result = Connection(host).run('uname -s')
     ...     print("{}: {}".format(host, result.stdout.strip()))
     ...
     ...
