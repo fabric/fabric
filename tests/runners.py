@@ -3,7 +3,7 @@ try:
 except ImportError:
     from six import StringIO
 
-from mock import Mock
+from mock import Mock, patch
 from pytest import skip  # noqa
 
 from invoke import pty_size, Result
@@ -56,12 +56,6 @@ class Remote_:
             fakeout = StringIO()
             _runner().run(CMD, out_stream=fakeout)
             assert fakeout.getvalue() == "hello yes this is dog"
-
-        def pty_True_uses_paramiko_get_pty(self, remote):
-            chan = remote.expect()
-            _runner().run(CMD, pty=True)
-            cols, rows = pty_size()
-            chan.get_pty.assert_called_with(width=cols, height=rows)
 
         def return_value_is_Result_subclass_exposing_cxn_used(self, remote):
             c = _Connection("host")
@@ -119,6 +113,36 @@ class Remote_:
                 pass
             else:
                 assert False, "Weird, Oops never got raised..."
+
+        class pty_True:
+            def uses_paramiko_get_pty_with_local_size(self, remote):
+                chan = remote.expect()
+                _runner().run(CMD, pty=True)
+                cols, rows = pty_size()
+                chan.get_pty.assert_called_with(width=cols, height=rows)
+
+            @patch("fabric.runners.signal")
+            def no_SIGWINCH_means_no_handler(self, signal, remote):
+                delattr(signal, "SIGWINCH")
+                remote.expect()
+                _runner().run(CMD, pty=True)
+                assert not signal.signal.called
+
+            @patch("fabric.runners.signal")
+            def SIGWINCH_handled_when_present(self, signal, remote):
+                remote.expect()
+                runner = _runner()
+                runner.run(CMD, pty=True)
+                signal.signal.assert_called_once_with(
+                    signal.SIGWINCH, runner.handle_window_change
+                )
+
+            def window_change_handler_uses_resize_pty(self):
+                runner = _runner()
+                runner.channel = Mock()
+                runner.handle_window_change(None, None)
+                cols, rows = pty_size()
+                runner.channel.resize_pty.assert_called_once_with(cols, rows)
 
         # TODO: how much of Invoke's tests re: the upper level run() (re:
         # things like returning Result, behavior of Result, etc) to

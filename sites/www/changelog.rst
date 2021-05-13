@@ -5,6 +5,9 @@ Changelog
 .. note::
     Looking for the Fabric 1.x changelog? See :doc:`/changelog-v1`.
 
+- :feature:`-` Forward local terminal resizes to the remote end, when
+  applicable. (For the technical: this means we now turn ``SIGWINCH`` into SSH
+  ``window-change`` messages.)
 - :bug:`2142 major` Update `~fabric.connection.Connection` temporarily so that
   it doesn't incidentally apply ``replace_env=True`` to local shell commands,
   only remote ones. On Windows under Python 3.7+, this was causing local

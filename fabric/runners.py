@@ -1,3 +1,5 @@
+import signal
+
 from invoke import Runner, pty_size, Result as InvokeResult
 
 
@@ -35,8 +37,13 @@ class Remote(Runner):
     def start(self, command, shell, env, timeout=None):
         self.channel = self.context.create_session()
         if self.using_pty:
-            rows, cols = pty_size()
-            self.channel.get_pty(width=rows, height=cols)
+            # Set initial size to match local size
+            cols, rows = pty_size()
+            self.channel.get_pty(width=cols, height=rows)
+            # If platform supports, also respond to SIGWINCH (window change) by
+            # sending the sshd a window-change message to update
+            if hasattr(signal, "SIGWINCH"):
+                signal.signal(signal.SIGWINCH, self.handle_window_change)
         if env:
             # TODO: honor SendEnv from ssh_config (but if we do, _should_ we
             # honor it even when prefixing? That would depart from OpenSSH
@@ -111,6 +118,14 @@ class Remote(Runner):
         # after another few seconds; but A) kinda fragile/complex and B) would
         # belong in invoke.Runner anyways?
         self.channel.close()
+
+    def handle_window_change(self, signum, frame):
+        """
+        Respond to a `signal.SIGWINCH` (as a standard signal handler).
+
+        Sends a window resize command via Paramiko channel method.
+        """
+        self.channel.resize_pty(*pty_size())
 
     # TODO: shit that is in fab 1 run() but could apply to invoke.Local too:
     # * see rest of stuff in _run_command/_execute in operations.py...there is
