@@ -67,6 +67,25 @@ class Command(object):
         # grow more dependencies? Ehhh
         return "<{} cmd={!r}>".format(self.__class__.__name__, self.cmd)
 
+    def expect_execution(self, channel):
+        """
+        Assert that the ``channel`` was used to run this command.
+
+        .. versionadded:: 2.7
+        """
+        channel.exec_command.assert_called_with(self.cmd or ANY)
+
+
+class ShellCommand(Command):
+    """
+    A pseudo-command that expects an interactive shell to be executed.
+
+    .. versionadded:: 2.7
+    """
+
+    def expect_execution(self, channel):
+        channel.invoke_shell.assert_called_once_with()
+
 
 class MockChannel(Mock):
     """
@@ -254,8 +273,8 @@ class Session(object):
         for channel, command in zip(self.channels, self.commands):
             # Expect an open_session for each command exec
             session_opens.append(call())
-            # Expect that the channel gets an exec_command
-            channel.exec_command.assert_called_with(command.cmd or ANY)
+            # Expect that the channel gets an exec_command or etc
+            command.expect_execution(channel=channel)
             # Expect written stdin, if given
             if command.in_:
                 assert channel._stdin.getvalue() == command.in_

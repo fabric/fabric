@@ -1,8 +1,14 @@
 import os
 import time
 
+try:
+    from invoke.vendor.six import StringIO
+except ImportError:
+    from six import StringIO
+
 from invoke import pty_size, CommandTimedOut
 from pytest import skip, raises
+from pytest_relaxed import trap
 
 from fabric import Connection, Config
 
@@ -54,6 +60,20 @@ class Connection_:
             assert tuple(map(int, found)), rows == cols
             # PTYs use \r\n, not \n, line separation
             assert "\r\n" in result.stdout
+            assert result.pty is True
+
+    class shell:
+        @trap
+        def base_case(self):
+            result = Connection("localhost").shell(
+                in_stream=StringIO("exit\n")
+            )
+            assert result.command is None
+            # Will also include any shell prompt, etc but just looking for the
+            # mirrored input is most test-env-agnostic way to spot check...
+            assert "exit" in result.stdout
+            assert result.stderr == ""
+            assert result.exited == 0
             assert result.pty is True
 
     class local:

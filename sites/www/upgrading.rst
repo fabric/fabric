@@ -804,10 +804,10 @@ differences.
     * - ``open_shell`` for obtaining interactive-friendly remote shell sessions
         (something that ``run`` historically was bad at )
       - Ported
-      - Technically "removed", but only because the new version of
-        ``run`` is vastly improved and can deal with interactive sessions at
-        least as well as the old ``open_shell`` did, if not moreso.
-        ``c.run("/my/favorite/shell", pty=True)`` should be all you need.
+      - Not only is the new version of ``run`` vastly improved and able to deal
+        with interactive sessions at least as well as the old ``open_shell``
+        (provided you supply ``pty=True``), but for corner cases there's also a
+        direct port: `~fabric.connection.Connection.shell`.
 
 ``run``
 ~~~~~~~
@@ -877,6 +877,28 @@ See the 'general' notes at top of this section for most details about the new
         `os.execve` (or similar) is used instead of `subprocess.Popen`.
         Behavior is much the same: no shell wrapping (as in legacy ``run``),
         just informing the operating system what actual program to run.
+
+``open_shell``
+~~~~~~~~~~~~~~
+
+As noted in the main list, this is now `~fabric.connection.Connection.shell`,
+and behaves similarly to ``open_shell`` (exit codes, if any, are ignored; a PTY
+is assumed; etc). It has some improvements too, such as a return value (which
+is slightly lacking compared to that from `~fabric.connection.Connection.run`
+but still a big improvement over ``None``).
+
+.. list-table::
+    :widths: 40 10 50
+
+    * - ``command`` optional kwarg allowing 'prefilling' the input stream with
+        a specific command string plus newline
+      - Removed
+      - If you needed this, you should instead try the modern version of
+        `~fabric.connection.Connection.run`, which is equally capable of
+        interaction as `~fabric.connection.Connection.shell` but takes a
+        command to execute. There's a small chance we'll add this back later if
+        anybody misses it (there's a few corner cases that could possibly want
+        it).
 
 .. _upgrading-utility:
 

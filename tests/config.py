@@ -2,9 +2,10 @@ import errno
 from os.path import join, expanduser
 
 from paramiko.config import SSHConfig
+from invoke import Local
 from invoke.vendor.lexicon import Lexicon
 
-from fabric import Config
+from fabric import Config, Remote, RemoteShell
 from fabric.util import get_local_user
 
 from mock import patch, call
@@ -51,6 +52,12 @@ class Config_:
     def overrides_some_Invoke_defaults(self):
         config = Config()
         assert config.tasks.collection_name == "fabfile"
+
+    def amends_Invoke_runners_map(self):
+        config = Config()
+        assert config.runners == dict(
+            remote=Remote, remote_shell=RemoteShell, local=Local
+        )
 
     def uses_Fabric_prefix(self):
         # NOTE: see also the integration-esque tests in tests/main.py; this

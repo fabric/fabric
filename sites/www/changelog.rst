@@ -5,6 +5,20 @@ Changelog
 .. note::
     Looking for the Fabric 1.x changelog? See :doc:`/changelog-v1`.
 
+- :feature:`-` Add `~fabric.connection.Connection.shell`, a belated port of
+  the v1 ``open_shell()`` feature.
+
+  - This wasn't needed initially, as the modern implementation of
+    `~fabric.connection.Connection.run` is as good or better for full
+    interaction than ``open_shell()`` was, provided you're happy supplying a
+    specific shell to execute.
+  - `~fabric.connection.Connection.shell` serves the corner case where you
+    *aren't* happy doing that, eg when you're speaking to network appliances or
+    other targets which are not typical Unix server environments.
+  - Like ``open_shell()``, this new method is primarily for interactive use,
+    and has a slightly less useful return value. See its API docs for more
+    details.
+
 - :feature:`-` Forward local terminal resizes to the remote end, when
   applicable. (For the technical: this means we now turn ``SIGWINCH`` into SSH
   ``window-change`` messages.)
