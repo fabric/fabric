@@ -8,7 +8,7 @@ from pytest import skip  # noqa
 
 from invoke import pty_size, Result
 
-from fabric import Config, Connection, Remote
+from fabric import Config, Connection, Remote, RemoteShell
 
 
 # On most systems this will explode if actually executed as a shell command;
@@ -170,8 +170,22 @@ class Remote_:
             r.run(CMD, env={"PATH": "/opt/bin", "DEBUG": "1"})
             assert not chan.update_environment.called
 
+    def send_start_message_sends_exec_command(self):
+        runner = Remote(context=None)
+        runner.channel = Mock()
+        runner.send_start_message(command="whatever")
+        runner.channel.exec_command.assert_called_once_with("whatever")
+
     def kill_closes_the_channel(self):
         runner = _runner()
         runner.channel = Mock()
         runner.kill()
         runner.channel.close.assert_called_once_with()
+
+
+class RemoteShell_:
+    def send_start_message_sends_invoke_shell(self):
+        runner = RemoteShell(context=None)
+        runner.channel = Mock()
+        runner.send_start_message(command=None)
+        runner.channel.invoke_shell.assert_called_once_with()
