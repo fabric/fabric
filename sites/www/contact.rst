@@ -38,10 +38,8 @@ To file new bugs or search existing ones, you may visit Fabric's `Github Issues
 
 .. _irc:
 
-IRC
----
+Blog posts
+----------
 
-We maintain a semi-official IRC channel at ``#fabric`` on Freenode
-(``irc://irc.freenode.net``) where the developers and other users may be found.
-As always with IRC, we can't promise immediate responses, but some folks keep
-logs of the channel and will try to get back to you when they can.
+The developer posts occasional (but usually important) news on his blog; there
+is a dedicated Fabric category: http://bitprophet.org/categories/fabric/
