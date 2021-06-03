@@ -67,7 +67,11 @@ setuptools.setup(
     author="Jeff Forcier",
     author_email="jeff@bitprophet.org",
     url="http://fabfile.org",
-    install_requires=["invoke>=1.3,<2.0", "paramiko>=2.4", "pathlib2"],
+    install_requires=[
+        "invoke>=1.3,<2.0",
+        "paramiko>=2.4",
+        'pathlib2; python_version < "3.4"',
+    ],
     extras_require={
         "testing": testing_deps,
         "pytest": testing_deps + pytest_deps,
