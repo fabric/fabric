@@ -3,7 +3,12 @@ try:
 except ImportError:
     from six import StringIO
 
-from mock import Mock, call, patch
+from sys import version_info
+
+if version_info >= (3, 6):
+    from unittest.mock import Mock, call, patch
+else:
+    from mock import Mock, call, patch
 from pytest_relaxed import raises
 from pytest import skip  # noqa
 from paramiko import SFTPAttributes

@@ -2,10 +2,14 @@
 from fabric.testing.fixtures import client, remote, sftp, sftp_objs, transfer
 
 from os.path import isfile, expanduser
+from sys import version_info
 
 from pytest import fixture
 
-from mock import patch
+if version_info >= (3, 6):
+    from unittest.mock import patch
+else:
+    from mock import patch
 
 
 # TODO: does this want to end up in the public fixtures module too?

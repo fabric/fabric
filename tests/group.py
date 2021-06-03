@@ -1,4 +1,9 @@
-from mock import Mock, patch, call
+from sys import version_info
+
+if version_info >= (3, 6):
+    from unittest.mock import Mock, patch, call
+else:
+    from mock import Mock, patch, call
 from pytest import mark, raises
 
 from fabric import Connection, Group, SerialGroup, ThreadingGroup, GroupResult

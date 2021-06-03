@@ -4,11 +4,15 @@ Tests concerned with the ``fab`` tool & how it overrides Invoke defaults.
 
 import os
 import sys
+from sys import version_info
 import re
 
 from invoke import run
 from invoke.util import cd
-from mock import patch
+if version_info >= (3, 6):
+    from unittest.mock import patch
+else:
+    from mock import patch
 import pytest  # because WHY would you expose @skip normally? -_-
 from pytest_relaxed import raises
 

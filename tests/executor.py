@@ -4,7 +4,12 @@ from fabric import Executor, Task, Connection
 from fabric.executor import ConnectionCall
 from fabric.exceptions import NothingToDo
 
-from mock import Mock
+from sys import version_info
+
+if version_info >= (3, 6):
+    from unittest.mock import Mock
+else:
+    from mock import Mock
 from pytest import skip, raises  # noqa
 
 

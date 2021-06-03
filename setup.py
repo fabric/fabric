@@ -55,7 +55,7 @@ To find out what's new in this version of Fabric, please see `the changelog
     open("README.rst").read()
 )
 
-testing_deps = ["mock>=2.0.0,<3.0"]
+testing_deps = ['mock>=2.0.0,<3.0; python_version < "3.6"']
 pytest_deps = ["pytest>=3.2.5,<4.0"]
 
 setuptools.setup(

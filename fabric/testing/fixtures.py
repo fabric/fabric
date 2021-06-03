@@ -15,9 +15,14 @@ For example, if you intend to use the `remote` and `client` fixtures::
 .. versionadded:: 2.1
 """
 
+from sys import version_info
+
 try:
     from pytest import fixture
-    from mock import patch, Mock
+    if version_info >= (3, 6):
+        from unittest.mock import patch, Mock
+    else:
+        from mock import patch, Mock
 except ImportError:
     import warnings
 

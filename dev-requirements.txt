@@ -10,7 +10,7 @@ pytest==3.2.5
 pytest-cov==2.5.1
 six==1.10.0
 # Mock for test mocking
-mock==2.0.0
+mock==2.0.0; python_version < "3.6"
 # Linting!
 flake8==3.6.0
 # Coverage!

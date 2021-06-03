@@ -3,7 +3,12 @@ try:
 except ImportError:
     from six import StringIO
 
-from mock import Mock, patch
+from sys import version_info
+
+if version_info >= (3, 6):
+    from unittest.mock import Mock, patch
+else:
+    from mock import Mock, patch
 from pytest import skip  # noqa
 
 from invoke import pty_size, Result

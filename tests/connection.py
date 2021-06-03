@@ -7,9 +7,13 @@ except ImportError:
 import errno
 from os.path import join
 import socket
+from sys import version_info
 import time
 
-from mock import patch, Mock, call, ANY
+if version_info >= (3, 6):
+    from unittest.mock import patch, Mock, call, ANY
+else:
+    from mock import patch, Mock, call, ANY
 from paramiko.client import SSHClient, AutoAddPolicy
 from paramiko import SSHConfig
 import pytest  # for mark
