@@ -3,7 +3,10 @@ import os
 import re
 import sys
 
-from invoke.vendor.lexicon import Lexicon
+try:
+    from invoke.vendor.lexicon import Lexicon
+except ImportError:
+    from lexicon import Lexicon
 from pytest_relaxed import trap
 
 from fabric.main import make_program

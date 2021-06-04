@@ -2,7 +2,10 @@ import errno
 from os.path import join, expanduser
 
 from paramiko.config import SSHConfig
-from invoke.vendor.lexicon import Lexicon
+try:
+    from invoke.vendor.lexicon import Lexicon
+except ImportError:
+    from lexicon import Lexicon
 
 from fabric import Config
 from fabric.util import get_local_user
