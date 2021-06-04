@@ -2,14 +2,15 @@
 
 from sys import version_info
 
+from pytest import skip  # noqa
+
+import fabric  # noqa: E402
+from fabric.tasks import ConnectionCall
+
 if version_info >= (3, 6):
     from unittest.mock import Mock
 else:
     from mock import Mock
-from pytest import skip  # noqa
-
-import fabric
-from fabric.tasks import ConnectionCall
 
 
 class Task_:

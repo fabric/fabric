@@ -6,11 +6,12 @@ from fabric.exceptions import NothingToDo
 
 from sys import version_info
 
+from pytest import skip, raises  # noqa
+
 if version_info >= (3, 6):
     from unittest.mock import Mock
 else:
     from mock import Mock
-from pytest import skip, raises  # noqa
 
 
 def _get_executor(hosts_flag=None, hosts_kwarg=None, post=None, remainder=""):

@@ -9,10 +9,6 @@ import re
 
 from invoke import run
 from invoke.util import cd
-if version_info >= (3, 6):
-    from unittest.mock import patch
-else:
-    from mock import patch
 import pytest  # because WHY would you expose @skip normally? -_-
 from pytest_relaxed import raises
 
@@ -22,6 +18,11 @@ from fabric.exceptions import NothingToDo
 
 from fabric.testing.base import Session
 from _util import expect, support, config_file, trap
+
+if version_info >= (3, 6):
+    from unittest.mock import patch
+else:
+    from mock import patch
 
 
 # Designate a runtime config file intended for the test environment; it does

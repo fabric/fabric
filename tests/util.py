@@ -2,14 +2,14 @@
 Tests testing the fabric.util module, not utils for the tests!
 """
 
+from fabric.util import get_local_user
+
 from sys import version_info
 
 if version_info >= (3, 6):
     from unittest.mock import patch
 else:
     from mock import patch
-
-from fabric.util import get_local_user
 
 
 # Basically implementation tests, because it's not feasible to do a "real" test

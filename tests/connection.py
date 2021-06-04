@@ -10,10 +10,6 @@ import socket
 from sys import version_info
 import time
 
-if version_info >= (3, 6):
-    from unittest.mock import patch, Mock, call, ANY
-else:
-    from mock import patch, Mock, call, ANY
 from paramiko.client import SSHClient, AutoAddPolicy
 from paramiko import SSHConfig
 import pytest  # for mark
@@ -29,6 +25,11 @@ from fabric.exceptions import InvalidV1Env
 from fabric.util import get_local_user
 
 from _util import support, faux_v1_env
+
+if version_info >= (3, 6):
+    from unittest.mock import patch, Mock, call, ANY
+else:
+    from mock import patch, Mock, call, ANY
 
 
 # Remote is woven in as a config default, so must be patched there
