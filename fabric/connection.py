@@ -665,7 +665,7 @@ class Connection(Context):
 
     def put(self, *args, **kwargs):
         """
-        Put a remote file (or file-like object) to the remote filesystem.
+        Put a local file (or file-like object) to the remote filesystem.
 
         Simply a wrapper for `.Transfer.put`. Please see its documentation for
         all details.
