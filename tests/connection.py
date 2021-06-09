@@ -2,8 +2,10 @@ from itertools import chain, repeat
 
 try:
     from invoke.vendor.six import b
+    from invoke.vendor.lexicon import Lexicon
 except ImportError:
     from six import b
+    from lexicon import Lexicon
 import errno
 from os.path import join
 import socket
@@ -15,7 +17,6 @@ from paramiko import SSHConfig
 import pytest  # for mark
 from pytest import skip, param
 from pytest_relaxed import raises
-from invoke.vendor.lexicon import Lexicon
 
 from invoke.config import Config as InvokeConfig
 from invoke.exceptions import ThreadException
