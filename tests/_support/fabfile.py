@@ -62,12 +62,18 @@ def expect_identities(c):
 
 @task
 def first(c):
-    print("First!")
+    if hasattr(c, "host"):
+        print("First: {}".format(c.host))
+    else:
+        print("First!")
 
 
 @task
 def third(c):
-    print("Third!")
+    if hasattr(c, "host"):
+        print("Third: {}".format(c.host))
+    else:
+        print("Third!")
 
 
 @task(pre=[first], post=[third])

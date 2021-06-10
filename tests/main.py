@@ -185,11 +185,15 @@ Available tasks:
                 # Expect pre once, 3x main, post once, as opposed to e.g. both
                 # pre and main task
                 expected = """
-First!
+First: hostA
+First: hostB
+First: hostC
 Second: hostA
 Second: hostB
 Second: hostC
-Third!
+Third: hostA
+Third: hostB
+Third: hostC
 """.lstrip()
                 assert output == expected
 
