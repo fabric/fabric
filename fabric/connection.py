@@ -703,7 +703,9 @@ class Connection(Context):
         return channel
 
     def _remote_runner(self):
-        return self.config.runners.remote(self, inline_env=self.inline_ssh_env)
+        return self.config.runners.remote(
+            context=self, inline_env=self.inline_ssh_env
+        )
 
     @opens
     def run(self, command, **kwargs):
