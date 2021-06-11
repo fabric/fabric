@@ -200,6 +200,7 @@ class Transfer_:
                 # NOTE: default mock stat is file-ish, so path won't be munged
                 transfer.put(local="path2", remote="path1")
                 sftp.put.assert_called_with(
+                    callback=None,
                     localpath="/local/path2", remotepath="/remote/path1"
                 )
 
@@ -221,6 +222,7 @@ class Transfer_:
                 xfer.put(local="file.txt", remote="/dir/path/")
                 sftp.stat.assert_called_once_with("/dir/path/")
                 sftp.put.assert_called_with(
+                    callback=None,
                     localpath="/local/file.txt",
                     remotepath="/dir/path/file.txt",
                 )
@@ -235,6 +237,7 @@ class Transfer_:
                     local.name = "sup.txt"
                     xfer.put(local, remote="/dir/path")
                     sftp.putfo.assert_called_with(
+                        callback=None,
                         fl=local, remotepath="/dir/path/sup.txt"
                     )
 
