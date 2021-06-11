@@ -51,6 +51,7 @@ class Transfer_:
                 transfer, client = sftp_objs
                 transfer.get("file")
                 client.get.assert_called_with(
+                    callback=None,
                     localpath="/local/file", remotepath="/remote/file"
                 )
 
@@ -58,6 +59,7 @@ class Transfer_:
                 transfer, client = sftp_objs
                 transfer.get(remote="path1", local="path2")
                 client.get.assert_called_with(
+                    callback=None,
                     remotepath="/remote/path1", localpath="/local/path2"
                 )
 
@@ -119,6 +121,7 @@ class Transfer_:
                 result = transfer.get("file", local=fd)
                 # Note: getfo, not get
                 client.getfo.assert_called_with(
+                    callback=None,
                     remotepath="/remote/file", fl=fd
                 )
                 return result, fd
@@ -157,6 +160,7 @@ class Transfer_:
                 transfer, client = sftp_objs
                 transfer.get(remote="file", local="top/middle/leaf")
                 client.get.assert_called_with(
+                    callback=None,
                     localpath="/local/top/middle/leaf",
                     remotepath="/remote/file",
                 )
@@ -172,6 +176,7 @@ class Transfer_:
                 transfer, client = sftp_objs
                 transfer.get(remote="file", local="top/middle/leaf/")
                 client.get.assert_called_with(
+                    callback=None,
                     localpath="/local/top/middle/leaf/file",
                     remotepath="/remote/file",
                 )
@@ -186,6 +191,7 @@ class Transfer_:
                 transfer, client = sftp_objs
                 transfer.put("file")
                 client.put.assert_called_with(
+                    callback=None,
                     localpath="/local/file", remotepath="/remote/file"
                 )
 
@@ -271,6 +277,7 @@ class Transfer_:
                 result = transfer.put(fd, remote="file")
                 # Note: putfo, not put
                 client.putfo.assert_called_with(
+                    callback=None,
                     remotepath="/remote/file", fl=fd
                 )
                 return result, fd
