@@ -674,6 +674,7 @@ class Connection(Context):
             # correctly encode into a network message. Theoretically Paramiko
             # could auto-interpret None sometime & save us the trouble.
             src_addr=("", 0),
+            timeout=self.connect_timeout,
         )
 
     def close(self):
