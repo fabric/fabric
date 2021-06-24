@@ -5,7 +5,7 @@ Changelog
 .. note::
     Looking for the Fabric 1.x changelog? See :doc:`/changelog-v1`.
 
-- :feature:`-` Added parmiko's callback parameters for sftp get and put
+- :feature:`-` Added paramiko's callback parameters for sftp get and put
    operations, allowing to get progress information.
 - :feature:`-` Forward local terminal resizes to the remote end, when
   applicable. (For the technical: this means we now turn ``SIGWINCH`` into SSH
