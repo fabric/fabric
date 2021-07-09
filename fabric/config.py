@@ -248,6 +248,7 @@ class Config(InvokeConfig):
             # timeouts (which should be timeouts.execute)
             "timeouts": {"connect": None},
             "user": get_local_user(),
+            "keepalive": 0,
         }
         merge_dicts(defaults, ours)
         return defaults

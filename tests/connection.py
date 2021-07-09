@@ -500,6 +500,24 @@ class Connection_:
                 )
                 assert cxn.connect_kwargs == {"origin": "kwarg"}
 
+        class keepalive_kwargs:
+            def defaults_to_empty_dict(self):
+                assert Connection("host").keepalive == 0
+
+            def may_be_given_explicitly(self):
+                cxn = Connection("host", keepalive=3)
+                assert cxn.keepalive == 3
+
+            def may_be_configured(self):
+                c = Config(overrides={"keepalive": 3})
+                cxn = Connection("host", config=c)
+                assert cxn.keepalive == 3
+
+            def kwarg_wins_over_config(self):
+                c = Config(overrides={"keepalive": 3})
+                cxn = Connection("host", keepalive=5, config=c)
+                assert cxn.keepalive == 5
+
     class string_representation:
         "string representations"
 
@@ -683,6 +701,11 @@ class Connection_:
             # Expect result of that as sock arg to connect()
             sock_arg = client.connect.call_args[1]["sock"]
             assert sock_arg is moxy.return_value
+
+        def transport_set_keepalive(self, client):
+            "Set keepalive value"
+            Connection("host", keepalive=3).open()
+            client.get_transport().set_keepalive.assert_called_with(3)
 
         # TODO: all the various connect-time options such as agent forwarding,
         # host acceptance policies, how to auth, etc etc. These are all aspects

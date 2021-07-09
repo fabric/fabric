@@ -116,6 +116,7 @@ class Connection(Context):
     forward_agent = None
     connect_timeout = None
     connect_kwargs = None
+    keepalive = None
     client = None
     transport = None
     _sftp = None
@@ -138,6 +139,7 @@ class Connection(Context):
         forward_agent=None,
         connect_timeout=None,
         connect_kwargs=None,
+        keepalive=None,
     ):
         """
         Set up a new object representing a server connection.
@@ -244,6 +246,9 @@ class Connection(Context):
         .. _refuse the temptation to guess:
             http://zen-of-python.info/
             in-the-face-of-ambiguity-refuse-the-temptation-to-guess.html#12
+
+        :param int keepalive:
+            Keepalive SSH connection time.
         """
         # NOTE: parent __init__ sets self._config; for now we simply overwrite
         # that below. If it's somehow problematic we would want to break parent
@@ -328,6 +333,10 @@ class Connection(Context):
         #: Keyword arguments given to `paramiko.client.SSHClient.connect` when
         #: `open` is called.
         self.connect_kwargs = self.resolve_connect_kwargs(connect_kwargs)
+
+        if keepalive is None:
+            keepalive = self.config.keepalive
+        self.keepalive = keepalive
 
         #: The `paramiko.client.SSHClient` instance this connection wraps.
         client = SSHClient()
@@ -523,6 +532,9 @@ class Connection(Context):
         # Actually connect!
         self.client.connect(**kwargs)
         self.transport = self.client.get_transport()
+
+        if self.keepalive:
+            self.transport.set_keepalive(self.keepalive)
 
     def open_gateway(self):
         """
