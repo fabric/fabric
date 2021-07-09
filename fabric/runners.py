@@ -40,6 +40,13 @@ class Remote(Runner):
     def _write_proc_stdin(self, data):
         return self.channel.sendall(data)
 
+    def _echo_cmd(self, command):
+        """
+        Overrides :py:meth:`invoke.runners.runner._echo_cmd` and prefixes the
+        current hostname to the output
+        """
+        print("\033[1;37m[{}] {}\033[0m".format(self.context.host, command))
+
     @property
     def process_is_finished(self):
         return self.channel.exit_status_ready()
