@@ -15,6 +15,9 @@ class init:
     def Remote(self):
         assert fabric.Remote is runners.Remote
 
+    def RemoteShell(self):
+        assert fabric.RemoteShell is runners.RemoteShell
+
     def Result(self):
         assert fabric.Result is runners.Result
 

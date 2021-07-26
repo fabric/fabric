@@ -1,9 +1,10 @@
 from itertools import chain, repeat
 
 try:
-    from invoke.vendor.six import b
+    from invoke.vendor.six import b, StringIO
 except ImportError:
-    from six import b
+    from six import b, StringIO
+
 import errno
 from os.path import join
 import socket
@@ -12,7 +13,7 @@ import time
 from mock import patch, Mock, call, ANY
 from paramiko.client import SSHClient, AutoAddPolicy
 from paramiko import SSHConfig
-import pytest  # for mark
+import pytest  # for mark, internal raises
 from pytest import skip, param
 from pytest_relaxed import raises
 from invoke.vendor.lexicon import Lexicon
@@ -29,6 +30,7 @@ from _util import support, faux_v1_env
 
 # Remote is woven in as a config default, so must be patched there
 remote_path = "fabric.config.Remote"
+remote_shell_path = "fabric.config.RemoteShell"
 
 
 def _select_result(obj):
@@ -950,8 +952,6 @@ class Connection_:
             self, Remote, client
         ):
             remote = Remote.return_value
-            sentinel = object()
-            remote.run.return_value = sentinel
             c = Connection("host")
             r1 = c.run("command")
             r2 = c.run("command", warn=True, hide="stderr")
@@ -959,12 +959,76 @@ class Connection_:
             # .assert_called_with()) stopped working, apparently triggered by
             # our code...somehow...after commit (roughly) 80906c7.
             # And yet, .call_args_list and its brethren work fine. Wha?
-            Remote.assert_any_call(c, inline_env=False)
+            Remote.assert_any_call(context=c, inline_env=False)
             remote.run.assert_has_calls(
                 [call("command"), call("command", warn=True, hide="stderr")]
             )
             for r in (r1, r2):
-                assert r is sentinel
+                assert r is remote.run.return_value
+
+    class shell:
+        def setup(self):
+            self.defaults = Config.global_defaults()["run"]
+
+        @patch(remote_shell_path)
+        def calls_RemoteShell_run_with_all_kwargs_and_returns_its_result(
+            self, RemoteShell, client
+        ):
+            remote = RemoteShell.return_value
+            cxn = Connection("host")
+            kwargs = dict(
+                env={"foo": "bar"},
+                replace_env=True,
+                encoding="utf-16",
+                in_stream=StringIO("meh"),
+                watchers=["meh"],
+            )
+            result = cxn.shell(**kwargs)
+            RemoteShell.assert_any_call(context=cxn)
+            assert remote.run.call_count == 1
+            # Expect explicit use of default values for all kwarg-settings
+            # besides what shell() itself tweaks
+            expected = dict(self.defaults, pty=True, command=None, **kwargs)
+            assert remote.run.call_args[1] == expected
+            assert result is remote.run.return_value
+
+        def raises_TypeError_for_disallowed_kwargs(self, client):
+            for key in self.defaults.keys():
+                if key in (
+                    "env",
+                    "replace_env",
+                    "encoding",
+                    "in_stream",
+                    "watchers",
+                ):
+                    continue
+                with pytest.raises(
+                    TypeError,
+                    match=r"unexpected keyword arguments: \['{}'\]".format(
+                        key
+                    ),
+                ):
+                    Connection("host").shell(**{key: "whatever"})
+
+        @patch(remote_shell_path)
+        def honors_config_system_for_allowed_kwargs(self, RemoteShell, client):
+            remote = RemoteShell.return_value
+            allowed = dict(
+                env={"foo": "bar"},
+                replace_env=True,
+                encoding="utf-16",
+                in_stream="sentinel",
+                watchers=["sentinel"],
+            )
+            ignored = dict(echo=True, hide="foo")  # Spot check
+            config = Config({"run": dict(allowed, **ignored)})
+            cxn = Connection("host", config=config)
+            cxn.shell()
+            kwargs = remote.run.call_args[1]
+            for key, value in allowed.items():
+                assert kwargs[key] == value
+            for key, value in ignored.items():
+                assert kwargs[key] == self.defaults[key]
 
     class local:
         # NOTE: most tests for this functionality live in Invoke's runner
@@ -1002,7 +1066,7 @@ class Connection_:
             # Remote.return_value is two different Mocks now, despite Remote's
             # own Mock having the same ID here and in code under test. WTF!!)
             expected = [
-                call(cxn, inline_env=False),
+                call(context=cxn, inline_env=False),
                 call().run(cmd, watchers=ANY),
             ]
             assert Remote.mock_calls == expected

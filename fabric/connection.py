@@ -703,7 +703,9 @@ class Connection(Context):
         return channel
 
     def _remote_runner(self):
-        return self.config.runners.remote(self, inline_env=self.inline_ssh_env)
+        return self.config.runners.remote(
+            context=self, inline_env=self.inline_ssh_env
+        )
 
     @opens
     def run(self, command, **kwargs):
@@ -735,6 +737,85 @@ class Connection(Context):
         .. versionadded:: 2.0
         """
         return self._sudo(self._remote_runner(), command, **kwargs)
+
+    @opens
+    def shell(self, **kwargs):
+        """
+        Run an interactive login shell on the remote end, as with ``ssh``.
+
+        This method is intended strictly for use cases where you can't know
+        what remote shell to invoke, or are connecting to a non-POSIX-server
+        environment such as a network appliance or other custom SSH server.
+        Nearly every other use case, including interactively-focused ones, will
+        be better served by using `run` plus an explicit remote shell command
+        (eg ``bash``).
+
+        `shell` has the following differences in behavior from `run`:
+
+        - It still returns a `~invoke.runners.Result` instance, but the object
+          will have a less useful set of attributes than with `run` or `local`:
+
+            - ``command`` will be ``None``, as there is no such input argument.
+            - ``stdout`` will contain a full record of the session, including
+              all interactive input, as that is echoed back to the user. This
+              can be useful for logging but is much less so for doing
+              programmatic things after the method returns.
+            - ``stderr`` will always be empty (same as `run` when
+              ``pty==True``).
+            - ``pty`` will always be True (because one was automatically used).
+            - ``exited`` and similar attributes will only reflect the overall
+              session, which may vary by shell or appliance but often has no
+              useful relationship with the internally executed commands' exit
+              codes.
+
+        - This method behaves as if ``warn`` is set to ``True``: even if the
+          remote shell exits uncleanly, no exception will be raised.
+        - A pty is always allocated remotely, as with ``pty=True`` under `run`.
+        - The ``inline_env`` setting is ignored, as there is no default shell
+          command to add the parameters to (and no guarantee the remote end
+          even is a shell!)
+
+        It supports **only** the following kwargs, which behave identically to
+        their counterparts in `run` unless otherwise stated:
+
+        - ``encoding``
+        - ``env``
+        - ``in_stream`` (useful in niche cases, but make sure regular `run`
+          with this argument isn't more suitable!)
+        - ``replace_env``
+        - ``watchers`` (note that due to pty echoing your stdin back to stdout,
+          a watcher will see your input as well as program stdout!)
+
+        Those keyword arguments also honor the ``run.*`` configuration tree, as
+        in `run`/`sudo`.
+
+        :returns: `Result`
+
+        :raises:
+            `.ThreadException` (if the background I/O threads encountered
+            exceptions other than `.WatcherError`).
+
+        .. versionadded:: 2.7
+        """
+        runner = self.config.runners.remote_shell(context=self)
+        # Reinstate most defaults as explicit kwargs to ensure user's config
+        # doesn't make this mode break horribly. Then override a few that need
+        # to change, like pty.
+        allowed = ("encoding", "env", "in_stream", "replace_env", "watchers")
+        new_kwargs = {}
+        for key, value in self.config.global_defaults()["run"].items():
+            if key in allowed:
+                # Use allowed kwargs if given, otherwise also fill them from
+                # defaults
+                new_kwargs[key] = kwargs.pop(key, self.config.run[key])
+            else:
+                new_kwargs[key] = value
+        new_kwargs.update(pty=True)
+        # At this point, any leftover kwargs would be ignored, so yell instead
+        if kwargs:
+            err = "shell() got unexpected keyword arguments: {!r}"
+            raise TypeError(err.format(list(kwargs.keys())))
+        return runner.run(command=None, **new_kwargs)
 
     def local(self, *args, **kwargs):
         """

@@ -5,7 +5,7 @@ import os
 from invoke.config import Config as InvokeConfig, merge_dicts
 from paramiko.config import SSHConfig
 
-from .runners import Remote
+from .runners import Remote, RemoteShell
 from .util import get_local_user, debug
 
 
@@ -308,7 +308,7 @@ class Config(InvokeConfig):
             "inline_ssh_env": False,
             "load_ssh_configs": True,
             "port": 22,
-            "runners": {"remote": Remote},
+            "runners": {"remote": Remote, "remote_shell": RemoteShell},
             "ssh_config_path": None,
             "tasks": {"collection_name": "fabfile"},
             # TODO: this becomes an override/extend once Invoke grows execution
