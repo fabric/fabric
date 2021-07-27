@@ -10,8 +10,8 @@ from invoke import Argument, Collection, Program
 from invoke import __version__ as invoke
 from paramiko import __version__ as paramiko
 
-from . import __version__ as fabric
-from . import Config, Executor
+from fabric import __version__ as fabric
+from fabric import Config, Executor
 
 
 class Fab(Program):

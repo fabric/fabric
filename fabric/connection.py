@@ -18,10 +18,10 @@ from paramiko.client import SSHClient, AutoAddPolicy
 from paramiko.config import SSHConfig
 from paramiko.proxy import ProxyCommand
 
-from .config import Config
-from .exceptions import InvalidV1Env
-from .transfer import Transfer
-from .tunnels import TunnelManager, Tunnel
+from fabric.config import Config
+from fabric.exceptions import InvalidV1Env
+from fabric.transfer import Transfer
+from fabric.tunnels import TunnelManager, Tunnel
 
 
 @decorator

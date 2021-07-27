@@ -5,8 +5,8 @@ import os
 from invoke.config import Config as InvokeConfig, merge_dicts
 from paramiko.config import SSHConfig
 
-from .runners import Remote, RemoteShell
-from .util import get_local_user, debug
+from fabric.runners import Remote, RemoteShell
+from fabric.util import get_local_user, debug
 
 
 class Config(InvokeConfig):

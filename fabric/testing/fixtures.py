@@ -28,14 +28,14 @@ except ImportError:
     warnings.warn(warning, ImportWarning)
     raise
 
-from .. import Connection
-from ..transfer import Transfer
+from fabric import Connection
+from fabric.transfer import Transfer
 
 # TODO: if we find a lot of people somehow ending up _with_ pytest but
 # _without_ mock and other deps from testing.base, consider doing the
 # try/except here too. But, really?
 
-from .base import MockRemote, MockSFTP
+from fabric.testing.base import MockRemote, MockSFTP
 
 
 @fixture

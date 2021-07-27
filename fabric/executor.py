@@ -1,9 +1,9 @@
 import invoke
 from invoke import Call, Task
 
-from .tasks import ConnectionCall
-from .exceptions import NothingToDo
-from .util import debug
+from fabric.tasks import ConnectionCall
+from fabric.exceptions import NothingToDo
+from fabric.util import debug
 
 
 class Executor(invoke.Executor):

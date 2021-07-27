@@ -1,6 +1,6 @@
 import invoke
 
-from .connection import Connection
+from fabric.connection import Connection
 
 
 class Task(invoke.Task):

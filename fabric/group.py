@@ -5,8 +5,8 @@ except ImportError:
 
 from invoke.util import ExceptionHandlingThread
 
-from .connection import Connection
-from .exceptions import GroupException
+from fabric.connection import Connection
+from fabric.exceptions import GroupException
 
 
 class Group(list):
