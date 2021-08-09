@@ -44,6 +44,18 @@ class Remote(Runner):
     def process_is_finished(self):
         return self.channel.exit_status_ready()
 
+    def kill(self):
+        """
+        Forcibly terminate the subprocess.
+
+        Typically only used by the timeout functionality.
+
+        This is often a "best-effort" attempt, e.g. remote subprocesses often
+        must settle for simply shutting down the local side of the network
+        connection and hoping the remote end eventually gets the message.
+        """
+        self.send_interrupt(u"\x03")
+
     def send_interrupt(self, interrupt):
         # NOTE: in v1, we just reraised the KeyboardInterrupt unless a PTY was
         # present; this seems to have been because without a PTY, the
