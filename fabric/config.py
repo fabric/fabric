@@ -60,7 +60,7 @@ class Config(InvokeConfig):
             ``~/.ssh/config``.
 
         :param bool lazy:
-            Has the same meaning as the parent class' ``lazy``, but additionall
+            Has the same meaning as the parent class' ``lazy``, but additionally
             controls whether SSH config file loading is deferred (requires
             manually calling `load_ssh_config` sometime.) For example, one may
             need to wait for user input before calling `set_runtime_ssh_path`,
