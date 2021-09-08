@@ -665,8 +665,6 @@ class Connection(Context):
         # needs...
         # TODO: and the inverse? allow users to supply their own socket/like
         # object they got via $WHEREEVER?
-        # TODO: how best to expose timeout param? reuse general connection
-        # timeout from config?
         return self.gateway.transport.open_channel(
             kind="direct-tcpip",
             dest_addr=(self.host, int(self.port)),
@@ -674,6 +672,7 @@ class Connection(Context):
             # correctly encode into a network message. Theoretically Paramiko
             # could auto-interpret None sometime & save us the trouble.
             src_addr=("", 0),
+            timeout=self.connect_timeout,
         )
 
     def close(self):
