@@ -9,6 +9,11 @@ you're reading `the latest version <http://fabfile.org/roadmap.html>`_ of this
 document, and also see the page about :ref:`upgrading <upgrading>` if you are
 migrating from version 1 to versions 2 or above.
 
+.. seealso::
+    The primary project maintainer keeps an overall `roadmap
+    <http://bitprophet.org/projects#roadmap>`_ on his website, which can help
+    contextualize when Fabric may get its next update.
+
 Fabric 2 and above
 ==================
 
