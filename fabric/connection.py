@@ -21,7 +21,7 @@ from paramiko.proxy import ProxyCommand
 from .config import Config
 from .exceptions import InvalidV1Env
 from .transfer import Transfer
-from .tunnels import TunnelManager, Tunnel
+from .tunnels import _socket_server, TunnelSockManager, Tunnel
 
 
 @decorator
@@ -868,8 +868,6 @@ class Connection(Context):
         """
         return Transfer(self).put(*args, **kwargs)
 
-    # TODO: yield the socket for advanced users? Other advanced use cases
-    # (perhaps factor out socket creation itself)?
     # TODO: probably push some of this down into Paramiko
     @contextmanager
     @opens
@@ -915,59 +913,64 @@ class Connection(Context):
             ``localhost`` (i.e., the host this `.Connection` is connected to.)
 
         :returns:
-            Nothing; this method is only useful as a context manager affecting
-            local operating system state.
+            A context manager of the listening server socket.
+            Useful for assigning and retrieving an unused port::
+
+                with (
+                    Connection('my-db-server')
+                    .foward_local(local_port=0, remote_port=8888)
+                ) as sock:
+                    port = sock.getsockname()[1]
 
         .. versionadded:: 2.0
         """
         if not remote_port:
             remote_port = local_port
 
-        # TunnelManager does all of the work, sitting in the background (so we
+        # TunnelSockManager does all of the work, sitting in the background (so we
         # can yield) and spawning threads every time somebody connects to our
         # local port.
         finished = Event()
-        manager = TunnelManager(
-            local_port=local_port,
-            local_host=local_host,
-            remote_port=remote_port,
-            remote_host=remote_host,
-            # TODO: not a huge fan of handing in our transport, but...?
-            transport=self.transport,
-            finished=finished,
-        )
-        manager.start()
+        with _socket_serve((local_host, local_port)) as sock:
+            manager = _TunnelSockManager(
+                sock=sock,
+                remote_address=(remote_host, remote_port),
+                # TODO: not a huge fan of handing in our transport, but...?
+                transport=transport,
+                finished=finished,
+            )
+            manager.start()
 
-        # Return control to caller now that things ought to be operational
-        try:
-            yield
-        # Teardown once user exits block
-        finally:
-            # Signal to manager that it should close all open tunnels
-            finished.set()
-            # Then wait for it to do so
-            manager.join()
-            # Raise threading errors from within the manager, which would be
-            # one of:
-            # - an inner ThreadException, which was created by the manager on
-            # behalf of its Tunnels; this gets directly raised.
-            # - some other exception, which would thus have occurred in the
-            # manager itself; we wrap this in a new ThreadException.
-            # NOTE: in these cases, some of the metadata tracking in
-            # ExceptionHandlingThread/ExceptionWrapper/ThreadException (which
-            # is useful when dealing with multiple nearly-identical sibling IO
-            # threads) is superfluous, but it doesn't feel worth breaking
-            # things up further; we just ignore it for now.
-            wrapper = manager.exception()
-            if wrapper is not None:
-                if wrapper.type is ThreadException:
-                    raise wrapper.value
-                else:
-                    raise ThreadException([wrapper])
+            # Return control to caller now that things ought to be operational
+            try:
+                yield sock
+            # Teardown once user exits block
+            finally:
+                # Signal to manager that it should close all open tunnels
+                finished.set()
+                # Then wait for it to do so
+                manager.join()
+                # Raise threading errors from within the manager, which would be
+                # one of:
+                # - an inner ThreadException, which was created by the manager on
+                # behalf of its Tunnels; this gets directly raised.
+                # - some other exception, which would thus have occurred in the
+                # manager itself; we wrap this in a new ThreadException.
+                # NOTE: in these cases, some of the metadata tracking in
+                # ExceptionHandlingThread/ExceptionWrapper/ThreadException (which
+                # is useful when dealing with multiple nearly-identical sibling IO
+                # threads) is superfluous, but it doesn't feel worth breaking
+                # things up further; we just ignore it for now.
+                wrapper = manager.exception()
+                if wrapper is not None:
+                    if wrapper.type is ThreadException:
+                        raise wrapper.value
+                    else:
+                        raise ThreadException([wrapper])
 
-            # TODO: cancel port forward on transport? Does that even make sense
-            # here (where we used direct-tcpip) vs the opposite method (which
-            # is what uses forward-tcpip)?
+                # TODO: cancel port forward on transport? Does that even make sense
+                # here (where we used direct-tcpip) vs the opposite method (which
+                # is what uses forward-tcpip)?
 
     # TODO: probably push some of this down into Paramiko
     @contextmanager
