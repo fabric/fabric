@@ -87,18 +87,18 @@ class Connection(Context):
     - Methods like `run`, `get` etc automatically trigger a call to
       `open` if the connection is not active; users may of course call `open`
       manually if desired.
-    - Connections do not always need to be explicitly closed; much of the
-      time, Paramiko's garbage collection hooks or Python's own shutdown
-      sequence will take care of things. **However**, should you encounter edge
-      cases (for example, sessions hanging on exit) it's helpful to explicitly
-      close connections when you're done with them.
+    - It's best to explicitly close your connections when done using them. This
+      can be accomplished by manually calling `close`, or by using the object
+      as a contextmanager::
 
-      This can be accomplished by manually calling `close`, or by using the
-      object as a contextmanager::
+          with Connection('host') as c:
+             c.run('command')
+             c.put('file')
 
-        with Connection('host') as c:
-            c.run('command')
-            c.put('file')
+      .. warning::
+          While Fabric (and Paramiko) attempt to register connections for
+          automatic garbage collection, it's not currently safe to rely on that
+          feature, as it can lead to end-of-process hangs and similar behavior.
 
     .. note::
         This class rebinds `invoke.context.Context.run` to `.local` so both
