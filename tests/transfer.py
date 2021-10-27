@@ -3,13 +3,19 @@ try:
 except ImportError:
     from six import StringIO
 
-from mock import Mock, call, patch
+from sys import version_info
+
 from pytest_relaxed import raises
 from pytest import skip  # noqa
 from paramiko import SFTPAttributes
 
 from fabric import Connection
 from fabric.transfer import Transfer
+
+if version_info >= (3, 6):
+    from unittest.mock import Mock, call, patch
+else:
+    from mock import Mock, call, patch
 
 
 # TODO: pull in all edge/corner case tests from fabric v1

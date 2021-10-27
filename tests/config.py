@@ -1,5 +1,6 @@
 import errno
 from os.path import join, expanduser
+from sys import version_info
 
 from paramiko.config import SSHConfig
 from invoke import Local
@@ -8,9 +9,12 @@ from invoke.vendor.lexicon import Lexicon
 from fabric import Config, Remote, RemoteShell
 from fabric.util import get_local_user
 
-from mock import patch, call
-
 from _util import support, faux_v1_env
+
+if version_info >= (3, 6):
+    from unittest.mock import patch, call
+else:
+    from mock import patch, call
 
 
 class Config_:

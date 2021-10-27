@@ -3,12 +3,18 @@ try:
 except ImportError:
     from six import StringIO
 
-from mock import Mock, patch
+from sys import version_info
+
 from pytest import skip  # noqa
 
 from invoke import pty_size, Result
 
 from fabric import Config, Connection, Remote, RemoteShell
+
+if version_info >= (3, 6):
+    from unittest.mock import Mock, patch
+else:
+    from mock import Mock, patch
 
 
 # On most systems this will explode if actually executed as a shell command;

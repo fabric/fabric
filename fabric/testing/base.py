@@ -18,9 +18,13 @@ using them for your own testing purposes: ``pip install fabric[testing]``.
 from itertools import chain, repeat
 from io import BytesIO
 import os
+from sys import version_info
 
 try:
-    from mock import Mock, PropertyMock, call, patch, ANY
+    if version_info >= (3, 6):
+        from unittest.mock import Mock, PropertyMock, call, patch, ANY
+    else:
+        from mock import Mock, PropertyMock, call, patch, ANY
 except ImportError:
     import warnings
 

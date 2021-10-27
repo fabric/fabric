@@ -1,10 +1,16 @@
 # NOTE: named task.py, not tasks.py, to avoid some occasional pytest weirdness
 
-from mock import Mock
+from sys import version_info
+
 from pytest import skip  # noqa
 
-import fabric
+import fabric  # noqa: E402
 from fabric.tasks import ConnectionCall
+
+if version_info >= (3, 6):
+    from unittest.mock import Mock
+else:
+    from mock import Mock
 
 
 class Task_:
