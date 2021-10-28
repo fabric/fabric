@@ -2,6 +2,7 @@ import os
 import stat
 from io import BytesIO
 
+from mock import Mock
 from py import path
 
 from fabric import Connection
@@ -31,6 +32,19 @@ class Transfer_:
             assert result.orig_remote == self.remote
             assert result.local == str(local)
             assert result.orig_local is None
+
+        def progress_callback(self, tmpdir):
+            # Copy file from support to tempdir
+            mock = Mock()
+            with tmpdir.as_cwd():
+                result = self.c.get(self.remote, callback=mock.method)
+
+            # Make sure it arrived
+            local = tmpdir.join("file.txt")
+            assert local.check()
+            assert local.read() == "yup\n"
+            assert result.remote == self.remote
+            mock.method.assert_called()
 
         def file_like_objects(self):
             fd = BytesIO()
@@ -70,6 +84,24 @@ class Transfer_:
             assert result.orig_remote is None
             assert result.local == _support("file.txt")
             assert result.orig_local == "file.txt"
+
+        def progress_callback(self):
+            # Copy file from 'local' (support dir) to 'remote' (tempdir)
+            local_dir = _support()
+            mock = Mock()
+
+            with path.local(local_dir).as_cwd():
+                tmpdir = self.remote.dirpath()
+                # TODO: wrap chdir at the Connection level
+                self.c.sftp().chdir(str(tmpdir))
+
+                result = self.c.put("file.txt", callback=mock.method)
+
+            # Make sure it arrived
+            assert self.remote.check()
+            assert self.remote.read() == "yup\n"
+            assert result.remote == self.remote
+            mock.method.assert_called()
 
         def file_like_objects(self):
             fd = BytesIO()

@@ -5,6 +5,9 @@ Changelog
 .. note::
     Looking for the Fabric 1.x changelog? See :doc:`/changelog-v1`.
 
+- :feature:`-` Added paramiko's callback parameters for sftp get and put
+   operations, allowing to get progress information.
+
 - :feature:`-` Add `~fabric.connection.Connection.shell`, a belated port of
   the v1 ``open_shell()`` feature.
 
