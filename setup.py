@@ -56,7 +56,7 @@ To find out what's new in this version of Fabric, please see `the changelog
 )
 
 testing_deps = ["mock>=2.0.0,<3.0"]
-pytest_deps = ["pytest>=3.2.5,<4.0"]
+pytest_deps = ["pytest>=3.2.5"]
 
 setuptools.setup(
     name=package_name,
