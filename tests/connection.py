@@ -892,6 +892,24 @@ class Connection_:
             c.close()
             client.close.assert_called_with()
 
+        def calls_SFTPClient_close(self, client):
+            "calls paramiko.SFTPClient.close()"
+            c = Connection("host")
+            c.open()
+            sftp_client = c.sftp()
+            assert c._sftp is not None
+            c.close()
+            assert c._sftp is None
+            sftp_client.close.assert_called_with()
+
+        def calls_SFTPClient_close_not_called_if_not_open(self, client):
+            "calls paramiko.SFTPClient.close()"
+            c = Connection("host")
+            c.open()
+            assert c._sftp is None
+            c.close()
+            assert c._sftp is None
+
         @patch("fabric.connection.AgentRequestHandler")
         def calls_agent_handler_close_if_enabled(self, Handler, client):
             c = Connection("host", forward_agent=True)
