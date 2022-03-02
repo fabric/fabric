@@ -68,7 +68,7 @@ setuptools.setup(
     author_email="jeff@bitprophet.org",
     url="http://fabfile.org",
     project_urls={
-        'Source': 'https://github.com/fabric/fabric',
+        "Source": "https://github.com/fabric/fabric",
     },
     install_requires=["invoke>=1.3,<2.0", "paramiko>=2.4", "pathlib2"],
     extras_require={
