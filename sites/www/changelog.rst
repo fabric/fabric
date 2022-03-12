@@ -5,6 +5,14 @@ Changelog
 .. note::
     Looking for the Fabric 1.x changelog? See :doc:`/changelog-v1`.
 
+.. warning::
+    Keep in mind that Fabric is largely a thin wrapper around `Paramiko
+    <https://paramiko.org/changelog.html>`_  and `Invoke
+    <https://pyinvoke.org/changelog.html>`_ - just because Fabric itself hasn't
+    had a release in a while doesn't mean its capabilities aren't improving!
+    Click those projects' names in this paragraph to visit their changelogs and
+    see what you might get if you upgrade your dependencies.
+
 - :feature:`-` Add `~fabric.connection.Connection.shell`, a belated port of
   the v1 ``open_shell()`` feature.
 
