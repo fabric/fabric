@@ -1,8 +1,6 @@
 # Invoke implicitly required by self/pip install -e .
 # Invocations for common project tasks
 invocations==2.4.0
-# Invoke from git, temporarily?
--e git+https://github.com/pyinvoke/invoke#egg=invoke
 # pytest-relaxed for test organization, display etc tweaks
 pytest-relaxed>=1.0.1,<1.1
 pytest==3.2.5
