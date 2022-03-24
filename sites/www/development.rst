@@ -3,7 +3,7 @@ Development
 ===========
 
 The Fabric development team is headed by `Jeff Forcier
-<http://bitprophet.org>`_, aka ``bitprophet``.  However, dozens of other
+<https://bitprophet.org>`_, aka ``bitprophet``.  However, dozens of other
 developers pitch in by submitting patches and ideas via `GitHub issues and pull
 requests <https://github.com/fabric/fabric>`_, :ref:`IRC <irc>` or the `mailing
 list <http://lists.nongnu.org/mailman/listinfo/fab-user>`_.
@@ -25,8 +25,8 @@ There are a number of ways to get involved with Fabric:
   `ticket tracker`_ first, though,
   when submitting feature ideas.)
 * **Report bugs or submit feature requests.** We follow `contribution-guide.org
-  <http://contribution-guide.org>`_'s guidelines, so please check them out before
-  visiting the `ticket tracker`_.
+  <https://contribution-guide.org>`_'s guidelines, so please check them out
+  before visiting the `ticket tracker`_.
 
 .. _ticket tracker: https://github.com/fabric/fabric/issues
 
