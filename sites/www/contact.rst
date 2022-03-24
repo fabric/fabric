@@ -42,4 +42,4 @@ Blog posts
 ----------
 
 The developer posts occasional (but usually important) news on his blog; there
-is a dedicated Fabric category: http://bitprophet.org/categories/fabric/
+is a dedicated Fabric category: https://bitprophet.org/categories/fabric/

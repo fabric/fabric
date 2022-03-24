@@ -5,13 +5,13 @@ Development roadmap
 ===================
 
 This document outlines Fabric's intended development path. Please make sure
-you're reading `the latest version <http://fabfile.org/roadmap.html>`_ of this
+you're reading `the latest version <https://fabfile.org/roadmap.html>`_ of this
 document, and also see the page about :ref:`upgrading <upgrading>` if you are
 migrating from version 1 to versions 2 or above.
 
 .. seealso::
     The primary project maintainer keeps an overall `roadmap
-    <http://bitprophet.org/projects#roadmap>`_ on his website, which can help
+    <https://bitprophet.org/projects#roadmap>`_ on his website, which can help
     contextualize when Fabric may get its next update.
 
 Fabric 2 and above
@@ -38,8 +38,8 @@ Modern Fabric versions (2+) receive active feature and bugfix development:
 
 .. note::
     Many features that you may use via Fabric will only need development in the
-    libraries Fabric wraps -- `Invoke <http://pyinvoke.org>`_ and `Paramiko
-    <http://paramiko.org>`_ -- and unless Fabric itself needs changes to match,
+    libraries Fabric wraps -- `Invoke <https://pyinvoke.org>`_ and `Paramiko
+    <https://paramiko.org>`_ -- and unless Fabric itself needs changes to match,
     you can often get new features by upgrading only one of the three. Make
     sure to check the other projects' changelogs periodically!
 

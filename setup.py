@@ -48,7 +48,7 @@ version = _locals["__version__"]
 # Frankenstein long_description: changelog note + README
 long_description = """
 To find out what's new in this version of Fabric, please see `the changelog
-<http://fabfile.org/changelog.html>`_.
+<https://fabfile.org/changelog.html>`_.
 
 {}
 """.format(
@@ -66,7 +66,7 @@ setuptools.setup(
     long_description=long_description,
     author="Jeff Forcier",
     author_email="jeff@bitprophet.org",
-    url="http://fabfile.org",
+    url="https://fabfile.org",
     install_requires=["invoke>=1.3,<2.0", "paramiko>=2.4", "pathlib2"],
     extras_require={
         "testing": testing_deps,

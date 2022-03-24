@@ -6,7 +6,7 @@ Installing
     Users looking to install Fabric 1.x should see :doc:`installing-1.x`.
     However, :doc:`upgrading <upgrading>` to 2.x is strongly recommended.
 
-Fabric is best installed via `pip <http://pip-installer.org>`_::
+Fabric is best installed via `pip <https://pip-installer.org>`_::
 
     $ pip install fabric
 
@@ -103,10 +103,10 @@ Dependencies
 In order for Fabric's installation to succeed, you will need the following:
 
 * the Python programming language, versions 2.7 or 3.4+;
-* the `Invoke <http://pyinvoke.org>`_ command-running and task-execution
+* the `Invoke <https://pyinvoke.org>`_ command-running and task-execution
   library;
-* and the `Paramiko <http://paramiko.org>`_ SSH library (as well as its own
-  dependencies; see `its install docs <http://paramiko.org/installing.html>`_.)
+* and the `Paramiko <https://paramiko.org>`_ SSH library (as well as its own
+  dependencies; see `its install docs <https://paramiko.org/installing.html>`_.)
 
 Development dependencies
 ------------------------
@@ -139,7 +139,7 @@ downloading official releases, you have the following options:
   repository on Github <https://github.com/fabric/fabric>`_ (cloning
   instructions available on that page).
 * Make your own fork of the Github repository by making a Github account,
-  visiting `fabric/fabric <http://github.com/fabric/fabric>`_ and clicking the
+  visiting `fabric/fabric <https://github.com/fabric/fabric>`_ and clicking the
   "fork" button.
 
 .. note::
