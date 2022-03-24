@@ -1,3 +1,5 @@
 [run]
 branch = True
-include = fabric/*
+include =
+    fabric/*
+    tests/*
