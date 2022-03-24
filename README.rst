@@ -1,3 +1,21 @@
+|version| |python| |license| |ci| |coverage|
+
+.. |version| image:: https://img.shields.io/pypi/v/fabric
+    :target: https://pypi.org/project/fabric/
+    :alt: PyPI - Package Version
+.. |python| image:: https://img.shields.io/pypi/pyversions/fabric
+    :target: https://pypi.org/project/fabric/
+    :alt: PyPI - Python Version
+.. |license| image:: https://img.shields.io/pypi/l/fabric
+    :target: https://github.com/fabric/fabric/blob/main/LICENSE
+    :alt: PyPI - License
+.. |ci| image:: https://img.shields.io/circleci/build/github/fabric/fabric/main
+    :target: https://app.circleci.com/pipelines/github/fabric/fabric
+    :alt: CircleCI
+.. |coverage| image:: https://img.shields.io/codecov/c/gh/fabric/fabric
+    :target: https://app.codecov.io/gh/fabric/fabric
+    :alt: Codecov
+
 Welcome to Fabric!
 ==================
 
