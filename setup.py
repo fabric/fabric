@@ -67,6 +67,14 @@ setuptools.setup(
     author="Jeff Forcier",
     author_email="jeff@bitprophet.org",
     url="https://fabfile.org",
+    project_urls={
+        "Docs": "https://docs.fabfile.org",
+        "Source": "https://github.com/fabric/fabric",
+        "Issues": "https://github.com/fabric/fabric/issues",
+        "Changelog": "https://www.fabfile.org/changelog.html",
+        "CI": "https://app.circleci.com/pipelines/github/fabric/fabric",
+        "Twitter": "https://twitter.com/pyfabric",
+    },
     install_requires=["invoke>=1.3,<2.0", "paramiko>=2.4", "pathlib2"],
     extras_require={
         "testing": testing_deps,
