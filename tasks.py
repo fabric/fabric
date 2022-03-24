@@ -5,7 +5,11 @@ import sys
 from invocations import travis
 from invocations.checks import blacken
 from invocations.docs import docs, www, sites, watch_docs
-from invocations.pytest import test, integration as integration_, coverage
+from invocations.pytest import (
+    test,
+    integration as integration_,
+    coverage as coverage_,
+)
 from invocations.packaging import release
 from invocations.util import tmpdir
 
@@ -112,6 +116,24 @@ def integration(
     module=None,
 ):
     return integration_(c, opts, pty, x, k, verbose, color, capture, module)
+
+
+# NOTE: copied from invoke's tasks.py
+@task
+def coverage(c, report="term", opts="", codecov=False):
+    """
+    Run pytest in coverage mode. See `invocations.pytest.coverage` for details.
+    """
+    # Use our own test() instead of theirs.
+    # Also add integration test so this always hits both.
+    coverage_(
+        c,
+        report=report,
+        opts=opts,
+        tester=test,
+        additional_testers=[integration],
+        codecov=codecov,
+    )
 
 
 # Better than nothing, since we haven't solved "pretend I have some other

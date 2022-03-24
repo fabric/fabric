@@ -1,6 +1,6 @@
 # Invoke implicitly required by self/pip install -e .
 # Invocations for common project tasks
-invocations>=1.0,<2.0
+invocations==2.4.0
 # Invoke from git, temporarily?
 -e git+https://github.com/pyinvoke/invoke#egg=invoke
 # pytest-relaxed for test organization, display etc tweaks
@@ -22,5 +22,3 @@ alabaster==0.7.12
 releases>=1.5,<2.0
 # Release tools
 semantic_version>=2.4,<2.5
-wheel==0.24
-twine==1.11.0
