@@ -2,6 +2,7 @@ import os
 from os.path import join, dirname, abspath
 from datetime import datetime
 
+from invocations.environment import in_ci
 import alabaster
 
 
@@ -19,8 +20,8 @@ html_theme_options = {
     "description": "Pythonic remote execution",
     "github_user": "fabric",
     "github_repo": "fabric",
-    "travis_button": True,
-    "codecov_button": True,
+    "travis_button": False,  # Circle now
+    "codecov_button": False,  # README badge now
     "tidelift_url": "https://tidelift.com/subscription/pkg/pypi-fabric?utm_source=pypi-fabric&utm_medium=referral&utm_campaign=docs",
     "analytics_id": "UA-18486793-1",
     "link": "#3782BE",
@@ -40,8 +41,7 @@ from fabric.testing.base import MockRemote, MockSFTP, Session, Command
 """
 
 on_rtd = os.environ.get("READTHEDOCS") == "True"
-on_travis = os.environ.get("TRAVIS", False)
-on_dev = not (on_rtd or on_travis)
+on_dev = not (on_rtd or in_ci())
 
 # Invoke (docs + www)
 inv_target = join(
