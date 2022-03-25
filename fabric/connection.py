@@ -793,11 +793,12 @@ class Connection(Context):
         Those keyword arguments also honor the ``run.*`` configuration tree, as
         in `run`/`sudo`.
 
-        :returns: `Result`
+        :returns: `~invoke.runners.Result`
 
         :raises:
-            `.ThreadException` (if the background I/O threads encountered
-            exceptions other than `.WatcherError`).
+            `~invoke.exceptions.ThreadException` (if the background I/O threads
+            encountered exceptions other than
+            `~invoke.exceptions.WatcherError`).
 
         .. versionadded:: 2.7
         """
