@@ -66,11 +66,11 @@ class Connection_:
         @trap
         def base_case(self):
             result = Connection("localhost").shell(
-                in_stream=StringIO("exit\n")
+                # Some extra newlines to make sure it doesn't get split up by
+                # motd/prompt
+                in_stream=StringIO("\n\nexit\n")
             )
             assert result.command is None
-            # Will also include any shell prompt, etc but just looking for the
-            # mirrored input is most test-env-agnostic way to spot check...
             assert "exit" in result.stdout
             assert result.stderr == ""
             assert result.exited == 0

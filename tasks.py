@@ -2,7 +2,7 @@ from functools import partial
 from os import environ, getcwd
 import sys
 
-from invocations import travis
+from invocations import ci
 from invocations.checks import blacken
 from invocations.docs import docs, www, sites, watch_docs
 from invocations.pytest import (
@@ -63,14 +63,16 @@ def publish(
 
 
 @task
-def sanity_test_from_v1(c):
+def safety_test_v1_to_v2_shim(c):
     """
-    Run some very quick in-process sanity tests on a dual fabric1-v-2 env.
+    Run some very quick in-process safety checks on a dual fabric1-v-2 env.
 
     Assumes Fabric 2+ is already installed as 'fabric2'.
     """
     # This cannot, by definition, work under Python 3 as Fabric 1 is not Python
     # 3 compatible.
+    # TODO: once the final Fabric 1 release is out w/ 3.x compat, fix this up
+    # and add to CI
     PYTHON = environ.get("TRAVIS_PYTHON_VERSION", "")
     if PYTHON.startswith("3") or PYTHON == "pypy3":
         return
@@ -145,24 +147,19 @@ my_release = Collection(
 
 ns = Collection(
     blacken,
+    ci,
     coverage,
     docs,
     integration,
     my_release,
     sites,
     test,
-    travis,
     watch_docs,
     www,
-    sanity_test_from_v1,
+    safety_test_v1_to_v2_shim,
 )
 ns.configure(
     {
-        "tests": {
-            # TODO: have pytest tasks honor these?
-            "package": "fabric",
-            "logformat": LOG_FORMAT,
-        },
         "packaging": {
             # NOTE: this is currently for identifying the source directory.
             # Should it get used for actual releasing, needs changing.
@@ -171,13 +168,6 @@ ns.configure(
             "wheel": True,
             "check_desc": True,
             "changelog_file": "sites/www/changelog.rst",
-        },
-        # TODO: perhaps move this into a tertiary, non automatically loaded,
-        # conf file so that both this & the code under test can reference it?
-        # Meh.
-        "travis": {
-            "sudo": {"user": "sudouser", "password": "mypass"},
-            "black": {"version": "18.6b4"},
         },
     }
 )
