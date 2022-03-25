@@ -2,7 +2,7 @@ version: 2.1
 
 
 orbs:
-  orb: invocations/orb@1.1.0
+  orb: invocations/orb@1.2.0
 
 
 jobs:
@@ -10,7 +10,6 @@ jobs:
   coverage:
     executor:
       name: orb/default
-      version: "3.6"
     steps:
       - orb/setup
       # Integration suite requires sudo, ssh
@@ -19,12 +18,7 @@ jobs:
       - run: sudo apt update
       - run: sudo apt install -y openssh-server wamerican-large
       - run: sudo /etc/init.d/ssh start
-      # Split up coverage generation (under sudo for integration suite) and
-      # compiling/uploading (wants to be as main user)
-      # TODO: this may want pushing into orb eh
-      - run: inv ci.sudo-run 'inv coverage'
-      - run: coverage xml
-      - run: codecov
+      - orb/sudo-coverage
       - orb/debug
 
 
@@ -36,15 +30,15 @@ workflows:
       - orb/format:
           name: Style check
       - coverage:
-          name: Test 3.6
+          name: Test
       - orb/test-release:
           name: Release test
       - orb/test:
           name: Test << matrix.version >>
-          requires: ["Test 3.6"]
+          requires: ["Test"]
           matrix:
             parameters:
               version: ["3.7", "3.8", "3.9"]
       - orb/docs:
           name: "Docs"
-          requires: ["Test 3.6"]
+          requires: ["Test"]
