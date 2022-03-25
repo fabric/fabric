@@ -11,7 +11,7 @@ migrating from version 1 to versions 2 or above.
 
 .. seealso::
     The primary project maintainer keeps an overall `roadmap
-    <https://bitprophet.org/projects#roadmap>`_ on his website, which can help
+    <https://bitprophet.org/projects#roadmap>`__ on his website, which can help
     contextualize when Fabric may get its next update.
 
 Fabric 2 and above
