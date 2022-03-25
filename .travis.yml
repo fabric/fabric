@@ -1,9 +1,0 @@
-before_script:
-  # Allow us to SSH passwordless to localhost
-  - inv travis.make-sshable
-  # Test distribution builds.
-  - inv travis.test-packaging --package=fabric --sanity="fab --version"
-  # Again, but as 'fabric2'
-  - rm -rf tmp
-  - pip uninstall -y fabric
-  - "PACKAGE_AS_FABRIC2=yes inv travis.test-packaging --package=fabric2 --sanity=\"fab2 --version\""
