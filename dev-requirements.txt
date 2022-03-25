@@ -10,8 +10,9 @@ pytest-cov==2.5.1
 six==1.10.0
 # Mock for test mocking
 mock==2.0.0
-# Linting!
+# Formatting!
 flake8==3.6.0
+black==18.6b4
 # Coverage!
 coverage==5.3.1
 codecov==2.1.11
