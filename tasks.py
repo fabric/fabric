@@ -14,7 +14,6 @@ from invocations.packaging import release
 from invocations.util import tmpdir
 
 from invoke import Collection, task
-from invoke.util import LOG_FORMAT
 
 
 # Neuter the normal release.publish task to prevent accidents, then reinstate
@@ -168,6 +167,6 @@ ns.configure(
             "wheel": True,
             "check_desc": True,
             "changelog_file": "sites/www/changelog.rst",
-        },
+        }
     }
 )
