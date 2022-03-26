@@ -13,6 +13,8 @@ Changelog
     Click those projects' names in this paragraph to visit their changelogs and
     see what you might get if you upgrade your dependencies.
 
+- :support:`-` Overhaul administrative metadata and migrate to Circle-CI from
+  Travis-CI.
 - :feature:`-` Add `~fabric.connection.Connection.shell`, a belated port of
   the v1 ``open_shell()`` feature.
 
