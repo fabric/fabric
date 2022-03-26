@@ -13,6 +13,7 @@ Changelog
     Click those projects' names in this paragraph to visit their changelogs and
     see what you might get if you upgrade your dependencies.
 
+- :release:`2.7.0 <2022-03-25>`
 - :support:`-` Overhaul administrative metadata and migrate to Circle-CI from
   Travis-CI.
 - :feature:`-` Add `~fabric.connection.Connection.shell`, a belated port of
