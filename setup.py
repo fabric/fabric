@@ -45,16 +45,6 @@ with open(os.path.join(package_name, "_version.py")) as fp:
     exec(fp.read(), None, _locals)
 version = _locals["__version__"]
 
-# Frankenstein long_description: changelog note + README
-long_description = """
-To find out what's new in this version of Fabric, please see `the changelog
-<https://fabfile.org/changelog.html>`_.
-
-{}
-""".format(
-    open("README.rst").read()
-)
-
 testing_deps = ["mock>=2.0.0,<3.0"]
 pytest_deps = ["pytest>=3.2.5,<4.0"]
 
@@ -63,7 +53,7 @@ setuptools.setup(
     version=version,
     description="High level SSH command execution",
     license="BSD",
-    long_description=long_description,
+    long_description=open("README.rst").read(),
     author="Jeff Forcier",
     author_email="jeff@bitprophet.org",
     url="https://fabfile.org",
