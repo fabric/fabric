@@ -1,5 +1,12 @@
-Welcome to Fabric!
-==================
+.. include:: ../../README.rst
+
+This website covers project information for Fabric such as the changelog,
+contribution guidelines, and so forth. Detailed usage and API documentation can
+be found at our code documentation site, `docs.fabfile.org
+<https://docs.fabfile.org>`_.
+
+Please see below for a high level intro, or the navigation on the left for the
+rest of the site content.
 
 What is Fabric?
 ---------------
