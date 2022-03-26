@@ -26,6 +26,8 @@ command-line features) and `Paramiko <https://paramiko.org>`_ (SSH protocol
 implementation), extending their APIs to complement one another and provide
 additional functionality.
 
-For a high level introduction, including example code, please see
-`our main project website <https://fabfile.org>`_; or for detailed API docs, see
-`the versioned API website <https://docs.fabfile.org>`_.
+To find out what's new in this version of Fabric, please see `the changelog
+<https://fabfile.org/changelog.html#{}>`_.
+
+The project maintainer keeps a `roadmap
+<https://bitprophet.org/projects#roadmap>`_ on his website.
