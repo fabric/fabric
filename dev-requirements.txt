@@ -1,7 +1,7 @@
 # Us, of course
 -e .
 # Invocations for common project tasks
-invocations==2.5.0
+invocations==2.6.0
 # pytest-relaxed for test organization, display etc tweaks
 pytest-relaxed>=1.0.1,<1.1
 pytest==3.2.5
