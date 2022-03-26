@@ -7,6 +7,7 @@ except ImportError:
     from six import StringIO
 
 from invoke import pty_size, CommandTimedOut
+from invocations.environment import in_ci
 from pytest import skip, raises
 from pytest_relaxed import trap
 
@@ -14,8 +15,8 @@ from fabric import Connection, Config
 
 
 # TODO: use pytest markers
-def skip_outside_travis():
-    if not os.environ.get("TRAVIS", False):
+def skip_outside_ci():
+    if not in_ci():
         skip()
 
 
@@ -111,14 +112,14 @@ class Connection_:
             """
             Run command via sudo on host localhost
             """
-            skip_outside_travis()
+            skip_outside_ci()
             assert self.cxn.sudo("whoami").stdout.strip() == "root"
 
         def mixed_sudo_and_normal_commands(self):
             """
             Run command via sudo, and not via sudo, on localhost
             """
-            skip_outside_travis()
+            skip_outside_ci()
             logname = os.environ["LOGNAME"]
             assert self.cxn.run("whoami").stdout.strip() == logname
             assert self.cxn.sudo("whoami").stdout.strip() == "root"
