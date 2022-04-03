@@ -96,7 +96,7 @@ def test_abort_message_only_printed_once():
         result = local("python -m fabric.__main__ -f tests/support/aborts.py kaboom", capture=True)
     # When error in #1318 is present, this has an extra "It burns!" at end of
     # stderr string.
-    eq_(result.stderr, "Fatal error: It burns!\n\nAborting.")
+    assert_contains("Fatal error: It burns!\n\nAborting.", result.stderr)
 
 @mock_streams('stderr')
 @with_patched_object(output, 'aborts', True)
