@@ -1,18 +1,3 @@
-DEPRECRECATED
-=============
-
-The excellent `Fabric <http://www.fabfile.org/>`_ now finally supports Python3,
-there is thus no longer a use for this project. Please use mainline Fabric
-instead.
-
-No really, deprecated
-=====================
-
-Read above.
-
-What it said here before
-========================
-
 Fabric3 is a Python (2.7 or 3.4+) library and command-line tool for
 streamlining the use of SSH for application deployment or systems
 administration tasks. This is a fork of the original
