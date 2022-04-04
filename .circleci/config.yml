@@ -1,0 +1,31 @@
+version: 2.1
+
+orbs:
+  orb: invocations/orb@1.0.2
+
+
+jobs:
+  test:
+    parameters:
+      # Python interpreter version
+      version:
+        type: string
+    executor:
+      name: orb/default
+      version: "<< parameters.version >>"
+    steps:
+      - orb/setup
+      - run: pip install -e .
+      - run: fab test
+      - orb/debug
+
+
+workflows:
+  main:
+    jobs:
+      - test:
+          name: Test << matrix.version >>
+          matrix:
+            parameters:
+              # NOTE: 3.9 onwards don't work with fudge and thus our v1 test suite
+              version: ["3.6", "3.7", "3.8"]
