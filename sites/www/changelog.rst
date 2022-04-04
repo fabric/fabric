@@ -2,6 +2,25 @@
 Changelog
 =========
 
+* :release:`1.14.1 <2018-11-27>`
+* :bug:`1341` (via :issue:`1586`) Attempt to ``rm -f`` the temporary file used
+  by ``put``'s sudo mode, when exceptions are encountered; previously, the
+  internal ``sudo mv`` call could potentially fail and leave the file around.
+  Thanks to Andrei Sura for the report and Uku Loskit for the fix.
+* :bug:`1242` (via :issue:`1243`) `~fabric.contrib.project.rsync_project`: only
+  supply the ``-p <number>`` option to generated ``rsync`` commands when the
+  port number differs from the default; this allows removing ``--rsh`` entirely
+  most of the time, and thus enables things like using rsync's daemon mode on
+  the remote end. Reported & patched by Arnaud Rocher.
+* :bug:`1227` Remove a bash/zsh-ism from
+  `~fabric.contrib.files.upload_template` when backing up the target file,
+  preventing issues on simpler remote shells. Patch courtesy of Paul
+  Chakravarti.
+* :bug:`983` Move a ``getpass`` import inside a Windows-oriented
+  ``try``/``except ImportError`` so password prompting is less likely to
+  explode on certain systems. Thanks to ``@dongweiming`` for the patch.
+* :support:`- backported` Update packaging metadata so wheel archives include
+  the ``LICENSE`` file.
 * :release:`1.14.0 <2017-08-25>`
 * :feature:`1475` Honor ``env.timeout`` when opening new remote sessions (as
   opposed to the initial overall connection, which already honored timeout
