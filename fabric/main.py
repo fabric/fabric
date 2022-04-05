@@ -9,7 +9,7 @@ The other callables defined in this module are internal only. Anything useful
 to individuals leveraging Fabric as a library, should be kept elsewhere.
 """
 import getpass
-from collections import Mapping
+from six.moves.collections_abc import Mapping
 import inspect
 from optparse import OptionParser
 import os
