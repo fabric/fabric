@@ -2,6 +2,7 @@
 Changelog
 =========
 
+* :release:`1.15.0 <2022-04-07>`
 * :support:`-` Merge the longstanding ``fabric3`` fork back into our v1 branch
   so users who'd rather port Fabric 1.x code to Python 3 before upgrading to
   Fabric 2.x, are able to do so in a "blessed" manner.
@@ -28,7 +29,6 @@ Changelog
     Python3.
       - Please note that it was removed with good reason, we do not encourage
         you use it.
-
 
 * :release:`1.14.1 <2018-11-27>`
 * :bug:`1341` (via :issue:`1586`) Attempt to ``rm -f`` the temporary file used
