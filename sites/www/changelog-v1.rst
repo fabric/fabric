@@ -6,6 +6,34 @@ Changelog (1.x)
     This is the changelog for the legacy 1.x version of Fabric. For the current
     (2.0+) changelog, please see :doc:`the main changelog </changelog>`.
 
+* :release:`1.15.0 <2022-04-07>`
+* :support:`-` Merge the longstanding ``fabric3`` fork back into our v1 branch
+  so users who'd rather port Fabric 1.x code to Python 3 before upgrading to
+  Fabric 2.x, are able to do so in a "blessed" manner.
+
+  This change includes making sure that the delta between the fork and our v1
+  branch still functions correctly & passes tests on both interpreters. It also
+  includes a basic CircleCI configuration to test on 3.6, 3.7 and 3.8, not that
+  we expect to be hosting many future commits on this side...
+
+  Major major thanks to Mathias Ertl for his work on the fork, all the
+  contributors on his side of the house during that time, and to Zachary Vance
+  for getting the reconciliation process rolling.
+
+  The changes folded in as part of this work (mostly taken from Mathias'
+  changelog) are as follows:
+
+  - Installation now requires Paramiko 1.17.0 or later.
+  - Fix ``UnicodeDecodeError`` when receiving remote data.
+  - Clean up imports in main code base and test suite.
+  - Add Python 2/3/3.5 classifiers in ``setup.py``.
+  - Replace ``fabric.utils.RingBuffer`` with ``collections.deque`` from stdlib.
+  - Under Python 3, Fabric implements its own version of ``contextlib.nested``
+    based on ``contextlib.ExitStack``, since it's no longer available in
+    Python3.
+      - Please note that it was removed with good reason, we do not encourage
+        you use it.
+
 * :release:`1.14.1 <2018-11-27>`
 * :bug:`1341` (via :issue:`1586`) Attempt to ``rm -f`` the temporary file used
   by ``put``'s sudo mode, when exceptions are encountered; previously, the
