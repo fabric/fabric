@@ -5,7 +5,10 @@ from os.path import isfile, expanduser
 
 from pytest import fixture
 
-from mock import patch
+try:
+    from unittest.mock import patch
+except ImportError:
+    from mock import patch
 
 
 # TODO: does this want to end up in the public fixtures module too?

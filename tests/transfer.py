@@ -3,7 +3,10 @@ try:
 except ImportError:
     from six import StringIO
 
-from mock import Mock, call, patch
+try:
+    from unittest.mock import Mock, call, patch
+except ImportError:
+    from mock import Mock, call, patch
 from pytest_relaxed import raises
 from pytest import skip  # noqa
 from paramiko import SFTPAttributes
