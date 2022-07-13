@@ -83,7 +83,7 @@ class concurrency:
         for t in threads:
             t.join(5)  # Kinda slow, but hey, maybe the test runner is hot
         while not queue.empty():
-            cxn, result, expected = queue.get(block=False)
+            cxn, result, expected = queue.get()
             for resultword, expectedword in zip_longest(result, expected):
                 err = u"({2!r}, {3!r}->{4!r}) {0!r} != {1!r}".format(
                     resultword, expectedword, cxn, expected[0], expected[-1]

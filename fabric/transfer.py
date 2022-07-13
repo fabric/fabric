@@ -43,7 +43,7 @@ class Transfer(object):
         except IOError:
             return False
 
-    def get(self, remote, local=None, preserve_mode=True):
+    def get(self, remote, local=None, preserve_mode=True, callback=None):
         """
         Copy a file from wrapped connection's host to the local filesystem.
 
@@ -168,9 +168,9 @@ class Transfer(object):
         #
         # If local appears to be a file-like object, use sftp.getfo, not get
         if is_file_like:
-            self.sftp.getfo(remotepath=remote, fl=local)
+            self.sftp.getfo(remotepath=remote, fl=local, callback=callback)
         else:
-            self.sftp.get(remotepath=remote, localpath=local)
+            self.sftp.get(remotepath=remote, localpath=local, callback=callback)
             # Set mode to same as remote end
             # TODO: Push this down into SFTPClient sometime (requires backwards
             # incompat release.)
@@ -187,7 +187,7 @@ class Transfer(object):
             connection=self.connection,
         )
 
-    def put(self, local, remote=None, preserve_mode=True):
+    def put(self, local, remote=None, preserve_mode=True, callback=None):
         """
         Upload a file from the local filesystem to the current connection.
 
@@ -303,12 +303,12 @@ class Transfer(object):
             pointer = local.tell()
             try:
                 local.seek(0)
-                self.sftp.putfo(fl=local, remotepath=remote)
+                self.sftp.putfo(fl=local, remotepath=remote, callback=callback)
             finally:
                 local.seek(pointer)
         else:
             debug("Uploading {!r} to {!r}".format(local, remote))
-            self.sftp.put(localpath=local, remotepath=remote)
+            self.sftp.put(localpath=local, remotepath=remote, callback=callback)
             # Set mode to same as local end
             # TODO: Push this down into SFTPClient sometime (requires backwards
             # incompat release.)
