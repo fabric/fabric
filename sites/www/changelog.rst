@@ -5,6 +5,12 @@ Changelog
 .. note::
     Looking for the Fabric 1.x changelog? See :doc:`/changelog-v1`.
 
+- :bug:`1924` (also :issue:`2007`) Overhaul behavior and testing re: merging
+  together different sources for the ``key_filename`` parameter in
+  ``Connection.connect_kwargs``. This fixes a number of type-related errors
+  (string objects have no ``extend`` attribute, cannot add lists to strings,
+  etc). Thanks to Joey Dumont, Joseph Conti, and Jared Punzel for the reports;
+  and to Kyle Meyer for submitting an early version of the patch.
 - :release:`2.6.0 <2021-01-18>`
 - :bug:`- major` Fix a handful of issues in the handling and
   mocking of SFTP local paths and ``os.path`` members within
