@@ -900,7 +900,12 @@ class Connection_:
                     True,
                     "config.key",
                     "kwarg.key",
-                    ["config.key", "kwarg.key", "ssh-config-B.key", "ssh-config-A.key"],
+                    [
+                        "config.key",
+                        "kwarg.key",
+                        "ssh-config-B.key",
+                        "ssh-config-A.key",
+                    ],
                     id="ssh_config, string Invoke config, string kwarg",
                 ),
             ],
