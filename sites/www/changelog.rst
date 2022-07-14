@@ -13,6 +13,7 @@ Changelog
     Click those projects' names in this paragraph to visit their changelogs and
     see what you might get if you upgrade your dependencies.
 
+- :release:`2.7.1 <2022-07-14>`
 - :bug:`1924` (also :issue:`2007`) Overhaul behavior and testing re: merging
   together different sources for the ``key_filename`` parameter in
   ``Connection.connect_kwargs``. This fixes a number of type-related errors
