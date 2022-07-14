@@ -467,33 +467,33 @@ class Connection(Context):
         self.inline_ssh_env = inline_ssh_env
 
     def resolve_connect_kwargs(self, connect_kwargs):
-        # Grab connect_kwargs from config if not explicitly given.
-        if connect_kwargs is None:
-            # TODO: is it better to pre-empt conflicts w/ manually-handled
-            # connect() kwargs (hostname, username, etc) here or in open()?
-            # We're doing open() for now in case e.g. someone manually modifies
-            # .connect_kwargs attributewise, but otherwise it feels better to
-            # do it early instead of late.
-            connect_kwargs = self.config.connect_kwargs
-        # Special case: key_filename gets merged instead of overridden.
-        # TODO: probably want some sorta smart merging generally, special cases
-        # are bad.
-        elif "key_filename" in self.config.connect_kwargs:
-            kwarg_val = connect_kwargs.get("key_filename", [])
-            conf_val = self.config.connect_kwargs["key_filename"]
-            # Config value comes before kwarg value (because it may contain
-            # CLI flag value.)
-            connect_kwargs["key_filename"] = conf_val + kwarg_val
+        # TODO: is it better to pre-empt conflicts w/ manually-handled
+        # connect() kwargs (hostname, username, etc) here or in open()? We're
+        # doing open() for now in case e.g. someone manually modifies
+        # .connect_kwargs attributewise, but otherwise it feels better to do it
+        # early instead of late.
+        constructor_kwargs = connect_kwargs or {}
+        config_kwargs = self.config.connect_kwargs
+        constructor_keys = constructor_kwargs.get("key_filename", [])
+        config_keys = config_kwargs.get("key_filename", [])
+        ssh_config_keys = self.ssh_config.get("identityfile", [])
 
-        # SSH config identityfile values come last in the key_filename
-        # 'hierarchy'.
-        if "identityfile" in self.ssh_config:
-            connect_kwargs.setdefault("key_filename", [])
-            connect_kwargs["key_filename"].extend(
-                self.ssh_config["identityfile"]
-            )
+        # Default data: constructor if given, config otherwise
+        final_kwargs = constructor_kwargs or config_kwargs
 
-        return connect_kwargs
+        # Key filename: merge, in order, config (which includes CLI flags),
+        # then constructor kwargs, and finally SSH config file data.
+        # Make sure all are normalized to list as well!
+        final_keys = []
+        for value in (config_keys, constructor_keys, ssh_config_keys):
+            if isinstance(value, string_types):
+                value = [value]
+            final_keys.extend(value)
+        # Only populate if non-empty.
+        if final_keys:
+            final_kwargs["key_filename"] = final_keys
+
+        return final_kwargs
 
     def get_gateway(self):
         # SSH config wins over Invoke-style config
