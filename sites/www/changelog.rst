@@ -13,6 +13,12 @@ Changelog
     Click those projects' names in this paragraph to visit their changelogs and
     see what you might get if you upgrade your dependencies.
 
+- :bug:`1924` (also :issue:`2007`) Overhaul behavior and testing re: merging
+  together different sources for the ``key_filename`` parameter in
+  ``Connection.connect_kwargs``. This fixes a number of type-related errors
+  (string objects have no ``extend`` attribute, cannot add lists to strings,
+  etc). Thanks to Joey Dumont, Joseph Conti, and Jared Punzel for the reports;
+  and to Kyle Meyer for submitting an early version of the patch.
 - :release:`2.7.0 <2022-03-25>`
 - :support:`-` Overhaul administrative metadata and migrate to Circle-CI from
   Travis-CI.
