@@ -10,7 +10,10 @@ from os.path import join
 import socket
 import time
 
-from mock import patch, Mock, call, ANY
+try:
+    from unittest.mock import patch, Mock, call, ANY
+except ImportError:
+    from mock import patch, Mock, call, ANY
 from paramiko.client import SSHClient, AutoAddPolicy
 from paramiko import SSHConfig
 import pytest  # for mark, internal raises

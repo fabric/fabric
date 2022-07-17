@@ -8,7 +8,10 @@ from invoke.vendor.lexicon import Lexicon
 from fabric import Config, Remote, RemoteShell
 from fabric.util import get_local_user
 
-from mock import patch, call
+try:
+    from unittest.mock import patch, call
+except ImportError:
+    from mock import patch, call
 
 from _util import support, faux_v1_env
 

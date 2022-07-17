@@ -4,7 +4,10 @@ from fabric import Executor, Task, Connection
 from fabric.executor import ConnectionCall
 from fabric.exceptions import NothingToDo
 
-from mock import Mock
+try:
+    from unittest.mock import Mock
+except ImportError:
+    from mock import Mock
 from pytest import skip, raises  # noqa
 
 

@@ -9,7 +9,7 @@ pytest==3.2.5
 pytest-cov==2.5.1
 six==1.10.0
 # Mock for test mocking
-mock==2.0.0
+mock==2.0.0;python_version<='3.3'
 # Formatting!
 flake8==3.6.0
 black==18.6b4

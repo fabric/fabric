@@ -8,7 +8,11 @@ import re
 
 from invoke import run
 from invoke.util import cd
-from mock import patch
+
+try:
+    from unittest.mock import patch
+except ImportError:
+    from mock import patch
 import pytest  # because WHY would you expose @skip normally? -_-
 from pytest_relaxed import raises
 
