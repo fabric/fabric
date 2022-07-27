@@ -1,5 +1,5 @@
 from contextlib import contextmanager
-from threading import Event
+from threading import Event, Lock
 
 try:
     from invoke.vendor.six import StringIO
@@ -147,6 +147,7 @@ class Connection(Context):
     transport = None
     _sftp = None
     _agent_handler = None
+    _connection_lock = None
 
     @classmethod
     def from_v1(cls, env, **kwargs):
@@ -466,6 +467,9 @@ class Connection(Context):
         #: inline.
         self.inline_ssh_env = inline_ssh_env
 
+        # This lock is used by open()
+        self._connection_lock = Lock()
+
     def resolve_connect_kwargs(self, connect_kwargs):
         # TODO: is it better to pre-empt conflicts w/ manually-handled
         # connect() kwargs (hostname, username, etc) here or in open()? We're
@@ -600,41 +604,42 @@ class Connection(Context):
 
         .. versionadded:: 2.0
         """
-        # Short-circuit
-        if self.is_connected:
-            return
-        err = "Refusing to be ambiguous: connect() kwarg '{}' was given both via regular arg and via connect_kwargs!"  # noqa
-        # These may not be given, period
-        for key in """
-            hostname
-            port
-            username
-        """.split():
-            if key in self.connect_kwargs:
-                raise ValueError(err.format(key))
-        # These may be given one way or the other, but not both
-        if (
-            "timeout" in self.connect_kwargs
-            and self.connect_timeout is not None
-        ):
-            raise ValueError(err.format("timeout"))
-        # No conflicts -> merge 'em together
-        kwargs = dict(
-            self.connect_kwargs,
-            username=self.user,
-            hostname=self.host,
-            port=self.port,
-        )
-        if self.gateway:
-            kwargs["sock"] = self.open_gateway()
-        if self.connect_timeout:
-            kwargs["timeout"] = self.connect_timeout
-        # Strip out empty defaults for less noisy debugging
-        if "key_filename" in kwargs and not kwargs["key_filename"]:
-            del kwargs["key_filename"]
-        # Actually connect!
-        self.client.connect(**kwargs)
-        self.transport = self.client.get_transport()
+        with self._connection_lock:
+            # Short-circuit
+            if self.is_connected:
+                return
+            err = "Refusing to be ambiguous: connect() kwarg '{}' was given both via regular arg and via connect_kwargs!"  # noqa
+            # These may not be given, period
+            for key in """
+                hostname
+                port
+                username
+            """.split():
+                if key in self.connect_kwargs:
+                    raise ValueError(err.format(key))
+            # These may be given one way or the other, but not both
+            if (
+                "timeout" in self.connect_kwargs
+                and self.connect_timeout is not None
+            ):
+                raise ValueError(err.format("timeout"))
+            # No conflicts -> merge 'em together
+            kwargs = dict(
+                self.connect_kwargs,
+                username=self.user,
+                hostname=self.host,
+                port=self.port,
+            )
+            if self.gateway:
+                kwargs["sock"] = self.open_gateway()
+            if self.connect_timeout:
+                kwargs["timeout"] = self.connect_timeout
+            # Strip out empty defaults for less noisy debugging
+            if "key_filename" in kwargs and not kwargs["key_filename"]:
+                del kwargs["key_filename"]
+            # Actually connect!
+            self.client.connect(**kwargs)
+            self.transport = self.client.get_transport()
 
     def open_gateway(self):
         """
