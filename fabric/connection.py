@@ -681,6 +681,11 @@ class Connection(Context):
         Terminate the network connection to the remote end, if open.
 
         If no connection is open, this method does nothing.
+        
+        Note this does not block until an open connection actually closes. If
+        the SSH server cannot accept multiple connections (e.g. OpenSSH
+        sshd -d) your code will need to wait a few moments before making a
+        second connection.
 
         .. versionadded:: 2.0
         """
