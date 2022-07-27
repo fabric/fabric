@@ -1,5 +1,5 @@
 import errno
-from os.path import join, expanduser
+from os.path import join
 
 from paramiko.config import SSHConfig
 from invoke import Local
@@ -225,12 +225,12 @@ class ssh_config_loading:
     @patch.object(Config, "_load_ssh_file")
     def when_runtime_path_given_other_paths_are_not_sought(self, method):
         Config(runtime_ssh_path=self._runtime_path)
-        method.assert_called_once_with(self._runtime_path)
+        method.assert_called_once_with(self._runtime_path, optional=False)
 
     @patch.object(Config, "_load_ssh_file")
     def runtime_path_can_be_given_via_config_itself(self, method):
         Config(overrides={"ssh_config_path": self._runtime_path})
-        method.assert_called_once_with(self._runtime_path)
+        method.assert_called_once_with(self._runtime_path, optional=False)
 
     def runtime_path_does_not_die_silently(self):
         try:
@@ -246,7 +246,7 @@ class ssh_config_loading:
     def default_file_paths_match_openssh(self, method):
         Config()
         method.assert_has_calls(
-            [call(expanduser("~/.ssh/config")), call("/etc/ssh/ssh_config")]
+            [call("~/.ssh/config"), call("/etc/ssh/ssh_config")]
         )
 
     def system_path_loads_ok(self):
@@ -271,21 +271,6 @@ class ssh_config_loading:
         # Expect the user value (321), not the system one (123)
         assert c.base_ssh_config.lookup("shared")["port"] == "321"
 
-    @patch.object(Config, "_load_ssh_file")
-    @patch("fabric.config.os.path.exists", lambda x: True)
-    def runtime_path_subject_to_user_expansion(self, method):
-        # TODO: other expansion types? no real need for abspath...
-        tilded = "~/probably/not/real/tho"
-        Config(runtime_ssh_path=tilded)
-        method.assert_called_once_with(expanduser(tilded))
-
-    @patch.object(Config, "_load_ssh_file")
-    def user_path_subject_to_user_expansion(self, method):
-        # TODO: other expansion types? no real need for abspath...
-        tilded = "~/probably/not/real/tho"
-        Config(user_ssh_path=tilded)
-        method.assert_any_call(expanduser(tilded))
-
     class core_ssh_load_option_allows_skipping_ssh_config_loading:
         @patch.object(Config, "_load_ssh_file")
         def skips_default_paths(self, method):
@@ -309,7 +294,7 @@ class ssh_config_loading:
             )
             # Expect that loader method did still run (and, as usual, that
             # it did not load any other files)
-            method.assert_called_once_with(self._runtime_path)
+            method.assert_called_once_with(self._runtime_path, optional=False)
 
     class lazy_loading_and_explicit_methods:
         @patch.object(Config, "_load_ssh_file")
@@ -318,4 +303,4 @@ class ssh_config_loading:
             assert not method.called
             c.set_runtime_ssh_path(self._runtime_path)
             c.load_ssh_config()
-            method.assert_called_once_with(self._runtime_path)
+            method.assert_called_once_with(self._runtime_path, optional=False)

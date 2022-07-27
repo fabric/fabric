@@ -140,7 +140,9 @@ Available tasks:
             # that plus a few more pairs of calls against the default files
             # (which is what happens when clone() isn't preserving the
             # already-parsed/loaded SSHConfig)
-            method.assert_called_once_with("ssh_config/runtime.conf")
+            method.assert_called_once_with(
+                "ssh_config/runtime.conf", optional=False
+            )
 
     class hosts_flag_parameterizes_tasks:
         # NOTE: many of these just rely on MockRemote's builtin
