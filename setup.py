@@ -46,7 +46,7 @@ with open(os.path.join(package_name, "_version.py")) as fp:
 version = _locals["__version__"]
 
 testing_deps = ["mock>=2.0.0,<3.0"]
-pytest_deps = ["pytest>=3.2.5,<4.0"]
+pytest_deps = ["pytest>=3.2.5"]
 
 setuptools.setup(
     name=package_name,
