@@ -801,6 +801,18 @@ class Connection_:
                     ],
                     id="All sources",
                 ),
+                param(
+                    True,
+                    True,
+                    "kwarg.key",
+                    [
+                        "configured.key",
+                        "kwarg.key",
+                        "ssh-config-B.key",
+                        "ssh-config-A.key",
+                    ],
+                    id="All sources, kwarg (string)",
+                ),
                 param(False, False, False, [], id="No sources"),
                 param(
                     True,
@@ -824,6 +836,13 @@ class Connection_:
                     id="Connection kwarg only",
                 ),
                 param(
+                    False,
+                    False,
+                    "kwarg.key",
+                    ["kwarg.key"],
+                    id="Connection kwarg (string) only",
+                ),
+                param(
                     True,
                     True,
                     False,
@@ -838,11 +857,58 @@ class Connection_:
                     id="ssh_config + kwarg, no Invoke-level config",
                 ),
                 param(
+                    True,
+                    False,
+                    "kwarg.key",
+                    ["kwarg.key", "ssh-config-B.key", "ssh-config-A.key"],
+                    id="ssh_config + kwarg (string), no Invoke-level config",
+                ),
+                param(
                     False,
                     True,
                     True,
                     ["configured.key", "kwarg.key"],
                     id="Invoke-level config + kwarg, no ssh_config",
+                ),
+                param(
+                    False,
+                    True,
+                    "kwarg.key",
+                    ["configured.key", "kwarg.key"],
+                    id="Invoke-level config + kwarg (string), no ssh_config",
+                ),
+                param(
+                    True,
+                    "string.key",
+                    False,
+                    ["string.key", "ssh-config-B.key", "ssh-config-A.key"],
+                    id="ssh_config, string Invoke config, no kwarg",
+                ),
+                param(
+                    False,
+                    "string.key",
+                    True,
+                    ["string.key", "kwarg.key"],
+                    id="no ssh_config, string Invoke config, list kwarg",
+                ),
+                param(
+                    False,
+                    "config.key",
+                    "kwarg.key",
+                    ["config.key", "kwarg.key"],
+                    id="no ssh_config, string Invoke config, string kwarg",
+                ),
+                param(
+                    True,
+                    "config.key",
+                    "kwarg.key",
+                    [
+                        "config.key",
+                        "kwarg.key",
+                        "ssh-config-B.key",
+                        "ssh-config-A.key",
+                    ],
+                    id="ssh_config, string Invoke config, string kwarg",
                 ),
             ],
         )
@@ -854,18 +920,22 @@ class Connection_:
                     support, "ssh_config", "runtime_identity.conf"
                 )
             if invoke:
+                # Assume string value if not literal True
+                value = ["configured.key"] if invoke is True else invoke
                 # Use overrides config level to mimic --identity use NOTE: (the
                 # fact that --identity is an override, and thus overrides eg
                 # invoke config file values is part of invoke's config test
                 # suite)
                 config_kwargs["overrides"] = {
-                    "connect_kwargs": {"key_filename": ["configured.key"]}
+                    "connect_kwargs": {"key_filename": value}
                 }
             conf = Config(**config_kwargs)
             connect_kwargs = {}
             if kwarg:
-                # Stitch in connect_kwargs value
-                connect_kwargs = {"key_filename": ["kwarg.key"]}
+                # Assume string value if not literal True
+                value = ["kwarg.key"] if kwarg is True else kwarg
+                connect_kwargs = {"key_filename": value}
+
             # Tie in all sources that were configured & open()
             Connection(
                 "runtime", config=conf, connect_kwargs=connect_kwargs
