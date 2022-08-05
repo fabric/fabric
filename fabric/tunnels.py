@@ -68,6 +68,9 @@ class TunnelManager(ExceptionHandlingThread):
                 tun_sock, local_addr = sock.accept()
                 # Set TCP_NODELAY to match OpenSSH's forwarding socket behavior
                 tun_sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+            except BlockingIOError:
+                time.sleep(0.01)
+                continue
             except socket.error as e:
                 if e.errno is errno.EAGAIN:
                     # TODO: make configurable
