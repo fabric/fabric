@@ -376,7 +376,7 @@ go that route instead::
 
 The only convenience this final approach lacks is a useful analogue to
 `.Group.run` - if you want to track the results of all the
-``upload_and_unpack`` call as an aggregate, you have to do that yourself. Look
+``upload-and-unpack`` call as an aggregate, you have to do that yourself. Look
 to future feature releases for more in this space!
 
 
@@ -417,17 +417,17 @@ task on the command line::
     $ fab --list
     Available tasks:
 
-      upload_and_unpack
+      upload-and-unpack
 
 Then, when ``fab`` actually invokes a task, it knows how to stitch together
 arguments controlling target servers, and run the task once per server. To run
 the task once on a single server::
 
-    $ fab -H web1 upload_and_unpack
+    $ fab -H web1 upload-and-unpack
 
 When this occurs, ``c`` inside the task is set, effectively, to
 ``Connection("web1")`` - as in earlier examples. Similarly, you can give more
 than one host, which runs the task multiple times, each time with a different
 `.Connection` instance handed in::
 
-    $ fab -H web1,web2,web3 upload_and_unpack
+    $ fab -H web1,web2,web3 upload-and-unpack
