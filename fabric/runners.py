@@ -1,3 +1,4 @@
+import os
 import signal
 
 from invoke import Runner, pty_size, Result as InvokeResult
@@ -39,7 +40,12 @@ class Remote(Runner):
         if self.using_pty:
             # Set initial size to match local size
             cols, rows = pty_size()
-            self.channel.get_pty(width=cols, height=rows)
+            get_pty_kwargs = {}
+            if "TERM" in env:
+                get_pty_kwargs.update(term=env["TERM"])
+            elif "TERM" in os.environ:
+                get_pty_kwargs.update(term=os.environ["TERM"])
+            self.channel.get_pty(width=cols, height=rows, **get_pty_kwargs)
             # If platform supports, also respond to SIGWINCH (window change) by
             # sending the sshd a window-change message to update
             if hasattr(signal, "SIGWINCH"):
