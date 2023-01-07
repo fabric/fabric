@@ -1,9 +1,6 @@
 from itertools import chain, repeat
 
-try:
-    from invoke.vendor.six import b, StringIO
-except ImportError:
-    from six import b, StringIO
+from io import StringIO
 
 import errno
 from os.path import join
@@ -1213,7 +1210,7 @@ class Connection_:
             listener_sock = Mock(name="listener_sock")
             if listener_exception:
                 listener_sock.bind.side_effect = listener_exception
-            data = b("Some data")
+            data = "Some data".encode()
             tunnel_sock = Mock(name="tunnel_sock", recv=lambda n: data)
             local_addr = Mock()
             transport = client.get_transport.return_value

@@ -1,15 +1,12 @@
 from contextlib import contextmanager
+from io import StringIO
 from threading import Event
+import socket
 
 try:
-    from invoke.vendor.six import StringIO
     from invoke.vendor.decorator import decorator
-    from invoke.vendor.six import string_types
 except ImportError:
-    from six import StringIO
     from decorator import decorator
-    from six import string_types
-import socket
 
 from invoke import Context
 from invoke.exceptions import ThreadException
@@ -486,7 +483,7 @@ class Connection(Context):
         # Make sure all are normalized to list as well!
         final_keys = []
         for value in (config_keys, constructor_keys, ssh_config_keys):
-            if isinstance(value, string_types):
+            if isinstance(value, str):
                 value = [value]
             final_keys.extend(value)
         # Only populate if non-empty.
@@ -543,7 +540,7 @@ class Connection(Context):
         if self.gateway:
             # Displaying type because gw params would probs be too verbose
             val = "proxyjump"
-            if isinstance(self.gateway, string_types):
+            if isinstance(self.gateway, str):
                 val = "proxycommand"
             bits.append(("gw", val))
         return "<Connection {}>".format(
@@ -648,7 +645,7 @@ class Connection(Context):
         .. versionadded:: 2.0
         """
         # ProxyCommand is faster to set up, so do it first.
-        if isinstance(self.gateway, string_types):
+        if isinstance(self.gateway, str):
             # Leverage a dummy SSHConfig to ensure %h/%p/etc are parsed.
             # TODO: use real SSH config once loading one properly is
             # implemented.

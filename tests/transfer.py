@@ -1,7 +1,4 @@
-try:
-    from invoke.vendor.six import StringIO
-except ImportError:
-    from six import StringIO
+from io import StringIO
 
 from unittest.mock import Mock, call, patch
 from pytest_relaxed import raises

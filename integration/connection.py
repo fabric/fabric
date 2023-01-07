@@ -1,10 +1,7 @@
 import os
 import time
 
-try:
-    from invoke.vendor.six import StringIO
-except ImportError:
-    from six import StringIO
+from io import StringIO
 
 from invoke import pty_size, CommandTimedOut
 from invocations.environment import in_ci

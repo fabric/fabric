@@ -1,7 +1,4 @@
-try:
-    from invoke.vendor.six.moves.queue import Queue
-except ImportError:
-    from six.moves.queue import Queue
+from queue import Queue
 
 from invoke.util import ExceptionHandlingThread
 

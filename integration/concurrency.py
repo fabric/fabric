@@ -1,7 +1,6 @@
 import codecs
-
-from invoke.vendor.six.moves.queue import Queue
-from invoke.vendor.six.moves import zip_longest
+from itertools import zip_longest
+from queue import Queue
 
 from invoke.util import ExceptionHandlingThread
 from pytest import skip
