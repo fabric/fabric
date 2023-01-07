@@ -111,6 +111,7 @@ class Remote(Runner):
         return Result(**kwargs)
 
     def stop(self):
+        super()
         if hasattr(self, "channel"):
             self.channel.close()
 
