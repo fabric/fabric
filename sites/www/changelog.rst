@@ -13,6 +13,13 @@ Changelog
     Click those projects' names in this paragraph to visit their changelogs and
     see what you might get if you upgrade your dependencies.
 
+- :support:`-` Drop support for Python <3.6, including Python 2.
+
+  .. warning::
+    This is a backwards incompatible change if you are not yet on Python 3.6 or
+    above; however, pip shouldn't offer you this version of Fabric as long as
+    your pip version understands ``python_requires`` metadata.
+
 - :release:`2.7.1 <2022-07-14>`
 - :bug:`1924` (also :issue:`2007`) Overhaul behavior and testing re: merging
   together different sources for the ``key_filename`` parameter in
