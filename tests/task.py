@@ -134,7 +134,5 @@ class ConnectionCall_:
             )
             # TODO: worth using some subset of real Connection repr() in here?
             # For now, just stick with hostname.
-            expected = (
-                "<ConnectionCall '_dummy', args: (), kwargs: {}, host='host'>"
-            )  # noqa
+            expected = "<ConnectionCall '_dummy', args: (), kwargs: {}, host='host'>"  # noqa
             assert str(call) == expected

@@ -222,9 +222,7 @@ class ThreadingGroup_:
             ("start", Thread.return_value.start.call_count),
             ("join", Thread.return_value.join.call_count),
         ):
-            err = (
-                "Expected {} calls to ExceptionHandlingThread.{}, got {}"
-            )  # noqa
+            err = "Expected {} calls to ExceptionHandlingThread.{}, got {}"  # noqa
             err = err.format(expected, name, got)
             assert expected, got == err
 

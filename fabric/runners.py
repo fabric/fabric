@@ -99,7 +99,7 @@ class Remote(Runner):
             # Submit hex ASCII character 3, aka ETX, which most Unix PTYs
             # interpret as a foreground SIGINT.
             # TODO: is there anything else we can do here to be more portable?
-            self.channel.send(u"\x03")
+            self.channel.send("\x03")
         else:
             raise interrupt
 
