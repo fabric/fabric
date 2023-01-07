@@ -20,7 +20,7 @@ from io import BytesIO
 import os
 
 try:
-    from mock import Mock, PropertyMock, call, patch, ANY
+    from unittest.mock import Mock, PropertyMock, call, patch, ANY
 except ImportError:
     import warnings
 

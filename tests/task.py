@@ -1,6 +1,6 @@
 # NOTE: named task.py, not tasks.py, to avoid some occasional pytest weirdness
 
-from mock import Mock
+from unittest.mock import Mock
 from pytest import skip  # noqa
 
 import fabric

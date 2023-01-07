@@ -1,4 +1,4 @@
-from mock import Mock, patch, call
+from unittest.mock import Mock, patch, call
 from pytest import mark, raises
 
 from fabric import Connection, Group, SerialGroup, ThreadingGroup, GroupResult

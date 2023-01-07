@@ -17,7 +17,7 @@ For example, if you intend to use the `remote` and `client` fixtures::
 
 try:
     from pytest import fixture
-    from mock import patch, Mock
+    from unittest.mock import patch, Mock
 except ImportError:
     import warnings
 

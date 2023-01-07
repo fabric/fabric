@@ -2,7 +2,7 @@
 Tests testing the fabric.util module, not utils for the tests!
 """
 
-from mock import patch
+from unittest.mock import patch
 
 from fabric.util import get_local_user
 
