@@ -1,24 +1,20 @@
 # Us, of course
 -e .
+# TODO: REMOVEME
+invoke @ git+https://github.com/pyinvoke/invoke@main
 # Invocations for common project tasks
-invocations==2.6.0
+invocations>=3.0.1
 # pytest-relaxed for test organization, display etc tweaks
-pytest-relaxed>=1.0.1,<1.1
-pytest==3.2.5
+pytest-relaxed>=2
 # pytest-cov for coverage
-pytest-cov==2.5.1
-six==1.10.0
-# Mock for test mocking
-mock==2.0.0
-# Formatting!
-flake8==3.6.0
-black==18.6b4
+pytest-cov>=4
+# Formatting
+# Flake8 5.x seems to have an odd importlib-metadata incompatibility?
+flake8>=4,<5
+black>=22.8,<22.9
 # Coverage!
-coverage==5.3.1
-codecov==2.1.11
+coverage>=6.2,<7
+codecov==2.1.12
 # Documentation tools
-sphinx>=1.4,<1.7
+releases>=2
 alabaster==0.7.12
-releases>=1.5,<2.0
-# Release tools
-semantic_version>=2.4,<2.5

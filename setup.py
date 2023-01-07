@@ -45,9 +45,6 @@ with open(os.path.join(package_name, "_version.py")) as fp:
     exec(fp.read(), None, _locals)
 version = _locals["__version__"]
 
-testing_deps = ["mock>=2.0.0,<3.0"]
-pytest_deps = ["pytest>=3.2.5,<4.0"]
-
 setuptools.setup(
     name=package_name,
     version=version,
@@ -65,10 +62,13 @@ setuptools.setup(
         "CI": "https://app.circleci.com/pipelines/github/fabric/fabric",
         "Twitter": "https://twitter.com/pyfabric",
     },
-    install_requires=["invoke>=1.3,<2.0", "paramiko>=2.4", "pathlib2"],
+    install_requires=["invoke>=2.0", "paramiko>=2.4"],
     extras_require={
-        "testing": testing_deps,
-        "pytest": testing_deps + pytest_deps,
+        # For folks who want to use fabric.testing package, eg
+        # MockRemote/MockSFTP
+        "testing": [],  # no longer (for now?) needs anything special
+        # For folks who want to use fabric.testing.fixtures' pytest fixtures
+        "pytest": ["pytest>=7"],
     },
     packages=packages,
     entry_points={
