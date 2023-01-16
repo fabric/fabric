@@ -1,7 +1,7 @@
 # Us, of course
 -e .
 # TODO: REMOVEME
-invoke @ git+https://github.com/pyinvoke/invoke@main
+invoke>=2.0
 # Invocations for common project tasks
 invocations>=3.0.1
 # pytest-relaxed for test organization, display etc tweaks
