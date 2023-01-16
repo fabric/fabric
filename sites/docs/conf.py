@@ -8,7 +8,11 @@ from shared_conf import *
 
 # Enable & configure autodoc
 extensions.append("sphinx.ext.autodoc")
-autodoc_default_flags = ["members", "special-members"]
+# Autodoc settings
+autodoc_default_options = {
+    "members": True,
+    "special-members": True,
+}
 
 # Default is 'local' building, but reference the public WWW site when building
 # under RTD.
