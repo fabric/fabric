@@ -1,4 +1,4 @@
-from os import environ, getcwd
+from os import getcwd
 import sys
 
 from invocations import ci
@@ -21,13 +21,6 @@ def safety_test_v1_to_v2_shim(c):
 
     Assumes Fabric 2+ is already installed as 'fabric2'.
     """
-    # This cannot, by definition, work under Python 3 as Fabric 1 is not Python
-    # 3 compatible.
-    # TODO: once the final Fabric 1 release is out w/ 3.x compat, fix this up
-    # and add to CI
-    PYTHON = environ.get("TRAVIS_PYTHON_VERSION", "")
-    if PYTHON.startswith("3") or PYTHON == "pypy3":
-        return
     c.run("pip install 'fabric<2'")
     # Make darn sure the two copies of fabric are coming from install root, not
     # local directory - which would result in 'fabric' always being v2!

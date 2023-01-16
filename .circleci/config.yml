@@ -21,6 +21,24 @@ jobs:
       - orb/sudo-coverage
       - orb/debug
 
+  v1_to_v2_shim:
+    executor:
+      name: orb/default
+    steps:
+      - orb/setup
+      # nuke our default -e install of self, which will be non-2-suffixed
+      - run: pip uninstall -y fabric
+      # NOTE: no -e, just to be safe
+      - run: "PACKAGE_AS_FABRIC2=y pip install ."
+      # Safety check: we installed as fabric2
+      - run: "pip list | grep -i fabric2"
+      # Nab latest fabric1 from pypi
+      - run: "pip install fabric\\<2"
+      # Environment setup
+      - run: "mkdir -p ~/.ssh && touch ~/.ssh/config"
+      # Run the v1 shim test task
+      - run: "inv safety-test-v1-to-v2-shim"
+
 
 workflows:
   main:
@@ -38,7 +56,10 @@ workflows:
           requires: ["Test"]
           matrix:
             parameters:
-              version: ["3.7", "3.8", "3.9"]
+              version: ["3.7", "3.8", "3.9", "3.10", "3.11"]
       - orb/docs:
           name: "Docs"
+          requires: ["Test"]
+      - v1_to_v2_shim:
+          name: "v1-to-v2 shim test"
           requires: ["Test"]
