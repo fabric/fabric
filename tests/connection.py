@@ -503,14 +503,16 @@ class Connection_:
 
         class inline_ssh_env:
             def defaults_to_config_value(self):
-                assert Connection("host").inline_ssh_env is False
-                config = Config({"inline_ssh_env": True})
-                assert Connection("host", config=config).inline_ssh_env is True
+                assert Connection("host").inline_ssh_env is True
+                config = Config({"inline_ssh_env": False})
+                assert (
+                    Connection("host", config=config).inline_ssh_env is False
+                )
 
             def may_be_given(self):
-                assert Connection("host").inline_ssh_env is False
-                cxn = Connection("host", inline_ssh_env=True)
-                assert cxn.inline_ssh_env is True
+                assert Connection("host").inline_ssh_env is True
+                cxn = Connection("host", inline_ssh_env=False)
+                assert cxn.inline_ssh_env is False
 
     class from_v1:
         def setup(self):
@@ -543,11 +545,11 @@ class Connection_:
                 cxn = Connection.from_v1(
                     self.env,
                     connect_kwargs={"foo": "bar"},
-                    inline_ssh_env=True,
+                    inline_ssh_env=False,
                     connect_timeout=15,
                 )
                 assert cxn.connect_kwargs["foo"] == "bar"
-                assert cxn.inline_ssh_env is True
+                assert cxn.inline_ssh_env is False
                 assert cxn.connect_timeout == 15
 
             def conflicting_kwargs_win_over_v1_env_values(self):
@@ -1010,9 +1012,9 @@ class Connection_:
         @patch(remote_path)
         def passes_inline_env_to_Remote(self, Remote, client):
             Connection("host").run("command")
-            assert Remote.call_args[1]["inline_env"] is False
-            Connection("host", inline_ssh_env=True).run("command")
             assert Remote.call_args[1]["inline_env"] is True
+            Connection("host", inline_ssh_env=False).run("command")
+            assert Remote.call_args[1]["inline_env"] is False
 
         @patch(remote_path)
         def calls_Remote_run_with_command_and_kwargs_and_returns_its_result(
@@ -1026,7 +1028,7 @@ class Connection_:
             # .assert_called_with()) stopped working, apparently triggered by
             # our code...somehow...after commit (roughly) 80906c7.
             # And yet, .call_args_list and its brethren work fine. Wha?
-            Remote.assert_any_call(context=c, inline_env=False)
+            Remote.assert_any_call(context=c, inline_env=True)
             remote.run.assert_has_calls(
                 [call("command"), call("command", warn=True, hide="stderr")]
             )
@@ -1117,9 +1119,9 @@ class Connection_:
         @patch(remote_path)
         def passes_inline_env_to_Remote(self, Remote, client):
             Connection("host").sudo("command")
-            assert Remote.call_args[1]["inline_env"] is False
-            Connection("host", inline_ssh_env=True).sudo("command")
             assert Remote.call_args[1]["inline_env"] is True
+            Connection("host", inline_ssh_env=False).sudo("command")
+            assert Remote.call_args[1]["inline_env"] is False
 
         @patch(remote_path)
         def basic_invocation(self, Remote, client):
@@ -1133,7 +1135,7 @@ class Connection_:
             # Remote.return_value is two different Mocks now, despite Remote's
             # own Mock having the same ID here and in code under test. WTF!!)
             expected = [
-                call(context=cxn, inline_env=False),
+                call(context=cxn, inline_env=True),
                 call().run(cmd, watchers=ANY),
             ]
             assert Remote.mock_calls == expected

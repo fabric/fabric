@@ -13,6 +13,16 @@ Changelog
     Click those projects' names in this paragraph to visit their changelogs and
     see what you might get if you upgrade your dependencies.
 
+- :feature:`-` Change the default configuration value for ``inline_ssh_env``
+  from ``False`` to ``True``, to better align with the practicalities of common
+  SSH server configurations.
+
+  .. warning::
+    This change is backwards incompatible if you were using
+    environment-variable-setting kwargs or config settings, such as
+    ``Connection.run(command, env={'SOME': 'ENV VARS'})``, and were not already
+    explicitly specifying the value of ``inline_ssh_env``.
+
 - :support:`-` Drop support for Python <3.6, including Python 2.
 
   .. warning::

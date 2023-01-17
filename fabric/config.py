@@ -304,8 +304,7 @@ class Config(InvokeConfig):
             "connect_kwargs": {},
             "forward_agent": False,
             "gateway": None,
-            # TODO 3.0: change to True and update all docs accordingly.
-            "inline_ssh_env": False,
+            "inline_ssh_env": True,
             "load_ssh_configs": True,
             "port": 22,
             "runners": {"remote": Remote, "remote_shell": RemoteShell},

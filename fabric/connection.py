@@ -324,15 +324,19 @@ class Connection(Context):
 
         :param bool inline_ssh_env:
             Whether to send environment variables "inline" as prefixes in front
-            of command strings (``export VARNAME=value && mycommand here``),
-            instead of trying to submit them through the SSH protocol itself
-            (which is the default behavior). This is necessary if the remote
-            server has a restricted ``AcceptEnv`` setting (which is the common
-            default).
+            of command strings (``export VARNAME=value && mycommand here``;
+            this is the default behavior), or submit them through the SSH
+            protocol itself.
 
-            The default value is the value of the ``inline_ssh_env``
-            :ref:`configuration value <default-values>` (which itself defaults
-            to ``False``).
+            In Fabric 2.x this defaulted to ``False`` (try using the protocol
+            behavior), but in 3.x it changed to ``True`` due to the simple fact
+            that most remote servers are deployed with a restricted
+            ``AcceptEnv`` setting, making use of the protocol approach
+            non-viable.
+
+            The actual default value is the value of the ``inline_ssh_env``
+            :ref:`configuration value <default-values>` (which, as above,
+            currently defaults to ``True``).
 
             .. warning::
                 This functionality does **not** currently perform any shell
@@ -363,6 +367,11 @@ class Connection(Context):
 
         .. versionchanged:: 2.3
             Added the ``inline_ssh_env`` parameter.
+
+        .. versionchanged:: 3.0
+            ``inline_ssh_env`` still defaults to the config value, but said
+            config value has now changed and defaults to ``True``, not
+            ``False``.
         """
         # NOTE: parent __init__ sets self._config; for now we simply overwrite
         # that below. If it's somehow problematic we would want to break parent

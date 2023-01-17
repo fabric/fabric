@@ -99,7 +99,7 @@ New default values defined by Fabric
   specified. Default: ``22``.
 - ``inline_ssh_env``: Boolean serving as global default for the value of
   `.Connection`'s ``inline_ssh_env`` parameter; see its docs for details.
-  Default: ``False``.
+  Default: ``True``.
 - ``ssh_config_path``: Runtime SSH config path; see :ref:`ssh-config`. Default:
   ``None``.
 - ``timeouts``: Various timeouts, specifically:

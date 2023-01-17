@@ -26,10 +26,13 @@ class Remote(Runner):
         :param bool inline_env:
             Whether to 'inline' shell env vars as prefixed parameters, instead
             of trying to submit them via `.Channel.update_environment`.
-            Default:: ``False``.
+            Default: ``True``.
 
         .. versionchanged:: 2.3
             Added the ``inline_env`` parameter.
+        .. versionchanged:: 3.0
+            Changed the default value of ``inline_env`` from ``False`` to
+            ``True``.
         """
         self.inline_env = kwargs.pop("inline_env", None)
         super().__init__(*args, **kwargs)
