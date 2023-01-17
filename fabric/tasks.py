@@ -18,7 +18,7 @@ class Task(invoke.Task):
         # Pull out our own kwargs before hitting super, which will TypeError on
         # anything it doesn't know about.
         self.hosts = kwargs.pop("hosts", None)
-        super(Task, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
 
 def task(*args, **kwargs):
@@ -88,7 +88,7 @@ class ConnectionCall(invoke.Call):
             wrapped task is executed. Default: ``None``.
         """
         init_kwargs = kwargs.pop("init_kwargs")  # , None)
-        super(ConnectionCall, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.init_kwargs = init_kwargs
 
     def clone_kwargs(self):
@@ -97,7 +97,7 @@ class ConnectionCall(invoke.Call):
         # without getting too crazy on the metaprogramming/over-engineering?
         # Maybe something attrs library can help with (re: declaring "These are
         # my bag-of-attributes attributes I want common stuff done to/with")
-        kwargs = super(ConnectionCall, self).clone_kwargs()
+        kwargs = super().clone_kwargs()
         kwargs["init_kwargs"] = self.init_kwargs
         return kwargs
 
@@ -110,7 +110,7 @@ class ConnectionCall(invoke.Call):
         return Connection(**kwargs)
 
     def __repr__(self):
-        ret = super(ConnectionCall, self).__repr__()
+        ret = super().__repr__()
         if self.init_kwargs:
             ret = ret[:-1] + ", host='{}'>".format(self.init_kwargs["host"])
         return ret

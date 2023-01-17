@@ -16,12 +16,12 @@ from . import Config, Executor
 
 class Fab(Program):
     def print_version(self):
-        super(Fab, self).print_version()
+        super().print_version()
         print("Paramiko {}".format(paramiko))
         print("Invoke {}".format(invoke))
 
     def core_args(self):
-        core_args = super(Fab, self).core_args()
+        core_args = super().core_args()
         my_args = [
             Argument(
                 names=("H", "hosts"),
@@ -84,13 +84,13 @@ class Fab(Program):
             # honor the real "lives by task coll"?
             self.collection = Collection()
         else:
-            super(Fab, self).load_collection()
+            super().load_collection()
 
     def no_tasks_given(self):
         # As above, neuter the usual "hey you didn't give me any tasks, let me
         # print help for you" behavior, if necessary.
         if not self._remainder_only:
-            super(Fab, self).no_tasks_given()
+            super().no_tasks_given()
 
     def create_config(self):
         # Create config, as parent does, but with lazy=True to avoid our own
@@ -112,7 +112,7 @@ class Fab(Program):
         # Note runtime SSH path, if given, and load SSH configurations.
         # NOTE: must do parent before our work, in case users want to disable
         # SSH config loading within a runtime-level conf file/flag.
-        super(Fab, self).update_config(merge=False)
+        super().update_config(merge=False)
         self.config.set_runtime_ssh_path(self.args["ssh-config"].value)
         self.config.load_ssh_config()
         # Load -i identity file, if given, into connect_kwargs, at overrides

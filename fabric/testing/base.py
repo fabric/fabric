@@ -104,7 +104,7 @@ class MockChannel(Mock):
         object.__setattr__(self, "__stderr", kwargs.pop("stderr"))
         # Stdin less private so it can be asserted about
         object.__setattr__(self, "_stdin", BytesIO())
-        super(MockChannel, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def _get_child_mock(self, **kwargs):
         # Don't return our own class on sub-mocks.

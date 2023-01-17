@@ -305,7 +305,7 @@ class GroupResult(dict):
     """
 
     def __init__(self, *args, **kwargs):
-        super(dict, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._successes = {}
         self._failures = {}
 

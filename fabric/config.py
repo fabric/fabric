@@ -156,7 +156,7 @@ class Config(InvokeConfig):
 
         # Now that our own attributes have been prepared & kwargs yanked, we
         # can fall up into parent __init__()
-        super(Config, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         # And finally perform convenience non-lazy bits if needed
         if not lazy:
@@ -202,7 +202,7 @@ class Config(InvokeConfig):
         # .base_ssh_config ourselves. Similarly, there's no need to worry about
         # how the SSH config paths may be inaccurate until below; nothing will
         # be referencing them.
-        new = super(Config, self).clone(*args, **kwargs)
+        new = super().clone(*args, **kwargs)
         # Copy over our custom attributes, so that the clone still resembles us
         # re: recording where the data originally came from (in case anything
         # re-runs ._load_ssh_files(), for example).
@@ -220,7 +220,7 @@ class Config(InvokeConfig):
 
     def _clone_init_kwargs(self, *args, **kw):
         # Parent kwargs
-        kwargs = super(Config, self)._clone_init_kwargs(*args, **kw)
+        kwargs = super()._clone_init_kwargs(*args, **kw)
         # Transmit our internal SSHConfig via explicit-obj kwarg, thus
         # bypassing any file loading. (Our extension of clone() above copies
         # over other attributes as well so that the end result looks consistent

@@ -32,7 +32,7 @@ class Remote(Runner):
             Added the ``inline_env`` parameter.
         """
         self.inline_env = kwargs.pop("inline_env", None)
-        super(Remote, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def start(self, command, shell, env, timeout=None):
         self.channel = self.context.create_session()
@@ -69,7 +69,7 @@ class Remote(Runner):
 
     def run(self, command, **kwargs):
         kwargs.setdefault("replace_env", True)
-        return super(Remote, self).run(command, **kwargs)
+        return super().run(command, **kwargs)
 
     def read_proc_stdout(self, num_bytes):
         return self.channel.recv(num_bytes)
@@ -169,7 +169,7 @@ class Result(InvokeResult):
 
     def __init__(self, **kwargs):
         connection = kwargs.pop("connection")
-        super(Result, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.connection = connection
 
     # TODO: have useful str/repr differentiation from invoke.Result,

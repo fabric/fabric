@@ -39,7 +39,7 @@ class TunnelManager(ExceptionHandlingThread):
         transport,
         finished,
     ):
-        super(TunnelManager, self).__init__()
+        super().__init__()
         self.local_address = (local_host, local_port)
         self.remote_address = (remote_host, remote_port)
         self.transport = transport
@@ -122,7 +122,7 @@ class Tunnel(ExceptionHandlingThread):
         self.finished = finished
         self.socket_chunk_size = 1024
         self.channel_chunk_size = 1024
-        super(Tunnel, self).__init__()
+        super().__init__()
 
     def _run(self):
         try:
