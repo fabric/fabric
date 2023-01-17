@@ -689,11 +689,13 @@ class Connection(Context):
         If no connection is open, this method does nothing.
 
         .. versionadded:: 2.0
+        .. versionchanged:: 3.0
+            Now closes SFTP sessions too (2.x required manually doing so).
         """
-        if self._sftp:
+        if self._sftp is not None:
             self._sftp.close()
             self._sftp = None
-        
+
         if self.is_connected:
             self.client.close()
             if self.forward_agent and self._agent_handler is not None:
