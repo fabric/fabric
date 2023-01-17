@@ -15,9 +15,10 @@ For example, if you intend to use the `remote` and `client` fixtures::
 .. versionadded:: 2.1
 """
 
+from unittest.mock import patch, Mock
+
 try:
     from pytest import fixture
-    from unittest.mock import patch, Mock
 except ImportError:
     import warnings
 
@@ -30,10 +31,6 @@ except ImportError:
 
 from .. import Connection
 from ..transfer import Transfer
-
-# TODO: if we find a lot of people somehow ending up _with_ pytest but
-# _without_ mock and other deps from testing.base, consider doing the
-# try/except here too. But, really?
 
 from .base import MockRemote, MockSFTP
 

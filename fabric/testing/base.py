@@ -19,17 +19,7 @@ from itertools import chain, repeat
 from io import BytesIO
 import os
 
-try:
-    from unittest.mock import Mock, PropertyMock, call, patch, ANY
-except ImportError:
-    import warnings
-
-    warning = (
-        "You appear to be missing some optional test-related dependencies;"
-        "please 'pip install fabric[testing]'."
-    )
-    warnings.warn(warning, ImportWarning)
-    raise
+from unittest.mock import Mock, PropertyMock, call, patch, ANY
 
 
 class Command:
