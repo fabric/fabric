@@ -684,9 +684,11 @@ class Connection(Context):
 
     def close(self):
         """
-        Terminate the network connection to the remote end, if open. If any SFTP sessions are open, they will also be closed.
+        Terminate the network connection to the remote end, if open.
 
-        If no connection is open, this method does nothing.
+        If any SFTP sessions are open, they will also be closed.
+
+        If no connection or SFTP session is open, this method does nothing.
 
         .. versionadded:: 2.0
         .. versionchanged:: 3.0
