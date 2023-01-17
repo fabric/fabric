@@ -409,8 +409,8 @@ class MockSFTP(object):
 
         mock_os.path.abspath.side_effect = fake_abspath
         sftp.getcwd.return_value = "/remote"
-        # Ensure stat st_mode is a real number; Python 2 stat.S_IMODE doesn't
-        # appear to care if it's handed a MagicMock, but Python 3's does (?!)
+        # Ensure stat st_mode is a real number; Python 3's stat.S_IMODE doesn't
+        # like just being handed a MagicMock?
         fake_mode = 0o644  # arbitrary real-ish mode
         sftp.stat.return_value.st_mode = fake_mode
         mock_os.stat.return_value.st_mode = fake_mode

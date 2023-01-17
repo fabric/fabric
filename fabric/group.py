@@ -177,9 +177,8 @@ class Group(list):
 
         .. versionadded:: 2.6
         """
-        # TODO: consider a backwards incompat change after we drop Py2 that
-        # just makes a lot of these kwarg-only methods? then below could become
-        # kwargs.setdefault() if desired.
+        # TODO 4.0: consider making many of these into kwarg-only methods? then
+        # below could become kwargs.setdefault() if desired.
         # TODO: do we care enough to handle explicitly given, yet falsey,
         # values? it's a lot more complexity for a corner case.
         if len(args) < 2 and "local" not in kwargs:

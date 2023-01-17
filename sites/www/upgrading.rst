@@ -36,7 +36,6 @@ modern Fabric that might make upgrading worth your time.
     These are all listed in the rest of the doc too, so if you're already sold,
     just skip there.
 
-- Python 3 compatibility (specifically, we now support 2.7 and 3.4+);
 - Thread-safe - no more requirement on multiprocessing for concurrency;
 - API reorganized around `fabric.connection.Connection` objects instead of
   global module state;
@@ -195,7 +194,7 @@ described above) are listed below.
         instead, then supply it to the ``connect_kwargs`` parameter. For
         example::
 
-            from io import StringIO  # or 'from StringIO' on Python 2
+            from io import StringIO
             from fabric.state import env
             from fabric2 import Connection
             from paramiko import RSAKey
@@ -282,9 +281,6 @@ Here's a quick local table of contents for navigation purposes:
 General / conceptual
 --------------------
 
-- Modern Fabric is fully Python 3 compatible; as a cost, Python 2.5 support (a
-  longstanding feature of Fabric 1) has been dropped - in fact, we've dropped
-  support for anything older than Python 2.7.
 - The CLI task-oriented workflow remains a primary design goal, but the library
   use case is no longer a second-class citizen; instead, the library
   functionality has been designed first, with the CLI/task features built on
