@@ -69,8 +69,7 @@ intersphinx_mapping = {
 
 # Regular settings
 project = "Fabric"
-year = datetime.now().year
-copyright = "%d Jeff Forcier" % year
+copyright = f"{datetime.now().year} Jeff Forcier"
 master_doc = "index"
 templates_path = ["_templates"]
 exclude_trees = ["_build"]
