@@ -13,6 +13,10 @@ Changelog
     Click those projects' names in this paragraph to visit their changelogs and
     see what you might get if you upgrade your dependencies.
 
+- :bug:`1981 major` (fixed in :issue:`2195`) Automatically close any open SFTP
+  session during `fabric.connection.Connection.close`; this avoids issues
+  encountered upon re-opening a previously-closed connection object. Thanks to
+  Alexander Bodnya for the report and David JM Emmett for the patch.
 - :feature:`-` Change the default configuration value for ``inline_ssh_env``
   from ``False`` to ``True``, to better align with the practicalities of common
   SSH server configurations.
