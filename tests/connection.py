@@ -1223,6 +1223,7 @@ class Connection_:
             # fire once & raise EAGAIN after)
             listener_sock.accept.side_effect = chain(
                 [(tunnel_sock, local_addr)],
+                # TODO: should this become BlockingIOError too?
                 repeat(socket.error(errno.EAGAIN, "nothing yet")),
             )
             obj = tunnel_sock if tunnel_exception is None else tunnel_exception

@@ -235,11 +235,12 @@ class ssh_config_loading:
     def runtime_path_does_not_die_silently(self):
         try:
             Config(runtime_ssh_path="sure/thing/boss/whatever/you/say")
-        except IOError as e:
+        except FileNotFoundError as e:
             assert "No such file or directory" in str(e)
             assert e.errno == errno.ENOENT
+            assert e.filename == "sure/thing/boss/whatever/you/say"
         else:
-            assert False, "Bad runtime path didn't raise IOError!"
+            assert False, "Bad runtime path didn't raise error!"
 
     # TODO: skip on windows
     @patch.object(Config, "_load_ssh_file")

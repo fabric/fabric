@@ -5,7 +5,6 @@ If you're looking for simple, end-user-focused connection forwarding, please
 see `.Connection`, e.g. `.Connection.forward_local`.
 """
 
-import errno
 import select
 import socket
 import time
@@ -68,12 +67,10 @@ class TunnelManager(ExceptionHandlingThread):
                 tun_sock, local_addr = sock.accept()
                 # Set TCP_NODELAY to match OpenSSH's forwarding socket behavior
                 tun_sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-            except socket.error as e:
-                if e.errno is errno.EAGAIN:
-                    # TODO: make configurable
-                    time.sleep(0.01)
-                    continue
-                raise
+            except BlockingIOError:  # ie errno.EAGAIN
+                # TODO: make configurable
+                time.sleep(0.01)
+                continue
 
             # Set up direct-tcpip channel on server end
             # TODO: refactor w/ what's used for gateways
