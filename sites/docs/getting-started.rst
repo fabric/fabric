@@ -191,8 +191,7 @@ library/shell user performs their own `getpass`-based password prompt:
 
 .. testsetup:: sudo
 
-    from __future__ import print_function
-    from mock import patch
+    from unittest.mock import patch
     gp_patcher = patch('getpass.getpass', side_effect=lambda x: print(x))
     gp_patcher.start()
     mock = MockRemote()

@@ -2,9 +2,9 @@
 This module contains helpers/fixtures to assist in testing Fabric-driven code.
 
 It is not intended for production use, and pulls in some test-oriented
-dependencies such as `mock <https://pypi.org/project/mock/>`_. You can install
-an 'extra' variant of Fabric to get these dependencies if you aren't already
-using them for your own testing purposes: ``pip install fabric[testing]``.
+dependencies as needed. You can install an 'extra' variant of Fabric to get
+these dependencies if you aren't already using them for your own testing
+purposes: ``pip install fabric[testing]``.
 
 .. note::
     If you're using pytest for your test suite, you may be interested in
