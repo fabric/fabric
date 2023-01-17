@@ -1,6 +1,6 @@
 # Us, of course
 -e .
-# TODO: REMOVEME
+paramiko @ git+https://github.com/paramiko/paramiko@3.0
 invoke>=2.0
 # Invocations for common project tasks
 invocations>=3.0.1
