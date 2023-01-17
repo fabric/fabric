@@ -13,6 +13,11 @@ autodoc_default_options = {
     "members": True,
     "special-members": True,
 }
+# TODO: consider documenting things like Remote.run usefully and
+# re-enabling this? new as of sphinx 1.7 and NOT the old behavior, so very
+# surprising in a bunch of spots right now, where it pulls in Invoke
+# docstrings that then have bad refs and so on.
+autodoc_inherit_docstrings = False
 
 # Default is 'local' building, but reference the public WWW site when building
 # under RTD.
