@@ -18,7 +18,7 @@ from .util import debug  # TODO: actual logging! LOL
 # course.
 
 
-class Transfer(object):
+class Transfer:
     """
     `.Connection`-wrapping class responsible for managing file upload/download.
 
@@ -323,7 +323,7 @@ class Transfer(object):
         )
 
 
-class Result(object):
+class Result:
     """
     A container for information about the result of a file transfer.
 

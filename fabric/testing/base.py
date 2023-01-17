@@ -32,7 +32,7 @@ except ImportError:
     raise
 
 
-class Command(object):
+class Command:
     """
     Data record specifying params of a command execution to mock/expect.
 
@@ -120,7 +120,7 @@ class MockChannel(Mock):
         return object.__getattribute__(self, "_stdin").write(data)
 
 
-class Session(object):
+class Session:
     """
     A mock remote session of a single connection and 1 or more command execs.
 
@@ -284,7 +284,7 @@ class Session(object):
         assert calls == session_opens
 
 
-class MockRemote(object):
+class MockRemote:
     """
     Class representing mocked remote state.
 
@@ -377,7 +377,7 @@ class MockRemote(object):
 
 # TODO: unify with the stuff in paramiko itself (now in its tests/conftest.py),
 # they're quite distinct and really shouldn't be.
-class MockSFTP(object):
+class MockSFTP:
     """
     Class managing mocked SFTP remote state.
 
