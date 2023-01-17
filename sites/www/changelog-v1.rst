@@ -31,6 +31,7 @@ Changelog (1.x)
   - Under Python 3, Fabric implements its own version of ``contextlib.nested``
     based on ``contextlib.ExitStack``, since it's no longer available in
     Python3.
+
       - Please note that it was removed with good reason, we do not encourage
         you use it.
 
