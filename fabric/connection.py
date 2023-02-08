@@ -7,7 +7,7 @@ from decorator import decorator
 from invoke import Context
 from invoke.exceptions import ThreadException
 from paramiko.agent import AgentRequestHandler
-from paramiko.client import SSHClient, AutoAddPolicy
+from paramiko.client import RejectPolicy, SSHClient, WarningPolicy
 from paramiko.config import SSHConfig
 from paramiko.proxy import ProxyCommand
 
@@ -217,6 +217,7 @@ class Connection(Context):
         connect_timeout=None,
         connect_kwargs=None,
         inline_ssh_env=None,
+        accept_missing_ssh_key=None,
     ):
         """
         Set up a new object representing a server connection.
@@ -368,6 +369,11 @@ class Connection(Context):
             ``inline_ssh_env`` still defaults to the config value, but said
             config value has now changed and defaults to ``True``, not
             ``False``.
+
+        .. versionchanged:: 4.0
+            ``accept_missing_ssh_key`` defaults to ``False`` you can restore
+              the old behaviour of automatically accepting missing ssh keys
+              by setting this to ``True``.
         """
         # NOTE: parent __init__ sets self._config; for now we simply overwrite
         # that below. If it's somehow problematic we would want to break parent
@@ -455,7 +461,11 @@ class Connection(Context):
 
         #: The `paramiko.client.SSHClient` instance this connection wraps.
         client = SSHClient()
-        client.set_missing_host_key_policy(AutoAddPolicy())
+        client.load_system_host_keys()
+        if accept_missing_ssh_key:
+            client.set_missing_host_key_policy(WarningPolicy())
+        else:
+            client.set_missing_host_key_policy(RejectPolicy())
         self.client = client
 
         #: A convenience handle onto the return value of
