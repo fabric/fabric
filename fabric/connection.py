@@ -676,6 +676,7 @@ class Connection(Context):
         return self.gateway.transport.open_channel(
             kind="direct-tcpip",
             dest_addr=(self.host, int(self.port)),
+            timeout=self.connect_timeout,
             # NOTE: src_addr needs to be 'empty but not None' values to
             # correctly encode into a network message. Theoretically Paramiko
             # could auto-interpret None sometime & save us the trouble.
