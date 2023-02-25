@@ -380,7 +380,7 @@ class Connection_:
                     assert cxn.gateway is False
 
             class proxy_jump:
-                def setup(self):
+                def setup_method(self):
                     self._expected_gw = Connection("jumpuser@jumphost:373")
 
                 def wins_over_default(self):
@@ -515,7 +515,7 @@ class Connection_:
                 assert cxn.inline_ssh_env is False
 
     class from_v1:
-        def setup(self):
+        def setup_method(self):
             self.env = faux_v1_env()
 
         def _cxn(self, **kwargs):
@@ -1054,7 +1054,7 @@ class Connection_:
                 assert r is remote.run.return_value
 
     class shell:
-        def setup(self):
+        def setup_method(self):
             self.defaults = Config.global_defaults()["run"]
 
         @patch(remote_shell_path)
