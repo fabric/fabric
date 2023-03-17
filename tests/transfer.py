@@ -259,6 +259,15 @@ class Transfer_:
             def local_arg_cannot_be_empty_string(self, transfer):
                 transfer.put("")
 
+        class local_arg_interpolation:
+            def connection_params(self, transfer):
+                local = "{user}@{host}-{original_host}-{port}/somefile"
+                result = transfer.put(local, "remote/")
+                expected = "/local/{}@host-host-22/somefile".format(
+                    transfer.connection.user
+                )
+                assert result.local == expected
+
         class file_like_local_paths:
             "file-like local paths"
 
