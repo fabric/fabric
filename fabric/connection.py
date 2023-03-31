@@ -459,7 +459,7 @@ class Connection(Context):
         self.client = client
 
         #: A convenience handle onto the return value of
-        #: ``self.client.get_transport()``.
+        #: ``self.client.get_transport()`` (after connection time).
         self.transport = None
 
         if inline_ssh_env is None:
