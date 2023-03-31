@@ -6,12 +6,12 @@ Changelog
     Looking for the Fabric 1.x changelog? See :doc:`/changelog-v1`.
 
 .. warning::
-    Keep in mind that Fabric is largely a thin wrapper around `Paramiko
+    Keep in mind that Fabric is largely a wrapper around `Paramiko
     <https://paramiko.org/changelog.html>`_  and `Invoke
-    <https://pyinvoke.org/changelog.html>`_ - just because Fabric itself hasn't
-    had a release in a while doesn't mean its capabilities aren't improving!
-    Click those projects' names in this paragraph to visit their changelogs and
-    see what you might get if you upgrade your dependencies.
+    <https://pyinvoke.org/changelog.html>`_ - Fabric's capabilities can often
+    improve simply by upgrading your copies of those libraries! Click their
+    names in this paragraph to visit their changelogs and see what you might get
+    if you upgrade your dependencies.
 
 - :release:`3.0.0 <2023-01-20>`
 - :bug:`1981 major` (fixed in :issue:`2195`) Automatically close any open SFTP
