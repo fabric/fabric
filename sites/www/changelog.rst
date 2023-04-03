@@ -13,6 +13,22 @@ Changelog
     names in this paragraph to visit their changelogs and see what you might get
     if you upgrade your dependencies.
 
+- :feature:`-` (`Paramiko #387
+  <https://github.com/paramiko/paramiko/issues/387>`_) Create a new
+  `~fabric.connection.Connection` subclass,
+  `~fabric.connection.CompatConnection`, which eschews use of Paramiko's
+  ``SSHClient`` in favor of natively implementing a set of configuration &
+  authentication behaviors much closer in nature to OpenSSH's client.
+
+  This new connection flow is also significantly more flexible than the old
+  approach, and finally, it raises a new ``SSHException`` subclass which offers
+  transparency into exactly what auth methods were tried, in what order, and
+  how each of them failed.
+
+  The new class is (mostly) API-compatible with its parent, and so it is
+  suggested to import it as a drop-in replacement (``from fabric import
+  CompatConnection as Connection``). There are a few minor caveats, documented
+  in the new class' API docs.
 - :release:`3.0.0 <2023-01-20>`
 - :bug:`1981 major` (fixed in :issue:`2195`) Automatically close any open SFTP
   session during `fabric.connection.Connection.close`; this avoids issues
