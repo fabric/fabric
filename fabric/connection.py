@@ -377,7 +377,73 @@ class Connection(Context):
         # that below. If it's somehow problematic we would want to break parent
         # __init__ up in a manner that is more cleanly overrideable.
         super().__init__(config=config)
+        self._set_config(config)
+        self._set_connection_values(host)
 
+        # Gateway/proxy/bastion/jump setting: non-None values - string,
+        # Connection, even eg False - get set directly; None triggers seek in
+        # config/ssh_config
+        #: The gateway `.Connection` or ``ProxyCommand`` string to be used,
+        #: if any.
+        self.gateway = gateway if gateway is not None else self.get_gateway()
+        # NOTE: we use string above, vs ProxyCommand obj, to avoid spinning up
+        # the ProxyCommand subprocess at init time, vs open() time.
+        # TODO: make paramiko.proxy.ProxyCommand lazy instead?
+
+        self._set_forward_agent(forward_agent)
+
+        if connect_timeout is None:
+            connect_timeout = self.ssh_config.get(
+                "connecttimeout", self.config.timeouts.connect
+            )
+        if connect_timeout is not None:
+            connect_timeout = int(connect_timeout)
+        #: Connection timeout
+        self.connect_timeout = connect_timeout
+
+        #: Keyword arguments given to `paramiko.client.SSHClient.connect` when
+        #: `open` is called.
+        self.connect_kwargs = self.resolve_connect_kwargs(connect_kwargs)
+
+        #: The `paramiko.client.SSHClient` instance this connection wraps.
+        client = SSHClient()
+        # TODO: make any sense to add this to the overhaul? probably not,
+        # orthogonal-enough...
+        # TODO: OTOH, https://github.com/fabric/fabric/issues/2071 makes the
+        # good point that especially when paired with lack of loading keys at
+        # all, it's not great. So we should consider changing this to match
+        # OpenSSH's default behavior if the user is opting into the new flow.
+        # Question is, how much friction will that add to the average use case?
+        # And do we want to be updating the user's known_hosts file? (Feels
+        # like yes tho???)
+        # TODO: hopefully we can just call this again in a subclass? or use a
+        # kwarg? idk. lol.
+        client.set_missing_host_key_policy(AutoAddPolicy())
+        # TODO: but this would probably go away now
+        self.client = client
+
+        #: A convenience handle onto the return value of
+        #: ``self.client.get_transport()`` (after connection time).
+        self.transport = None
+
+        if inline_ssh_env is None:
+            inline_ssh_env = self.config.inline_ssh_env
+        #: Whether to construct remote command lines with env vars prefixed
+        #: inline.
+        self.inline_ssh_env = inline_ssh_env
+
+    def _set_config(self, config):
+        """
+        Responsible for overwriting self._config with a fabric.Config
+        """
+        # TODO 4.0: can't we simply throw a fabric.Config into the
+        # super().__init__()?? at time of writing I don't see why Invoke would
+        # care; it does not introspect the config object at all.
+        # TODO: the "#:" bit below wasn't appearing in the docs correctly even
+        # before being moved into a subroutine. Unclear why, others like
+        # 'gateway' worked ok.
+        # TODO: maybe test to see if mypy-style type annotations help smooth
+        # this over?
         #: The .Config object referenced when handling default values (for e.g.
         #: user or port, when not explicitly given) or deciding how to behave.
         if config is None:
@@ -391,7 +457,11 @@ class Connection(Context):
         # TODO: when/how to run load_files, merge, load_shell_env, etc?
         # TODO: i.e. what is the lib use case here (and honestly in invoke too)
 
-        shorthand = self.derive_shorthand(host)
+    def _set_connection_values(self, host):
+        """
+        Responsible for setting self.{user,host,port}.
+        """
+        shorthand = derive_shorthand(host)
         host = shorthand["host"]
         err = "You supplied the {} via both shorthand and kwarg! Please pick one."  # noqa
         if shorthand["user"] is not None:
@@ -423,16 +493,10 @@ class Connection(Context):
         #: The network port to connect on.
         self.port = port or int(self.ssh_config.get("port", self.config.port))
 
-        # Gateway/proxy/bastion/jump setting: non-None values - string,
-        # Connection, even eg False - get set directly; None triggers seek in
-        # config/ssh_config
-        #: The gateway `.Connection` or ``ProxyCommand`` string to be used,
-        #: if any.
-        self.gateway = gateway if gateway is not None else self.get_gateway()
-        # NOTE: we use string above, vs ProxyCommand obj, to avoid spinning up
-        # the ProxyCommand subprocess at init time, vs open() time.
-        # TODO: make paramiko.proxy.ProxyCommand lazy instead?
-
+    def _set_forward_agent(self, forward_agent):
+        """
+        Responsible for setting self.forward_agent.
+        """
         if forward_agent is None:
             # Default to config...
             forward_agent = self.config.forward_agent
@@ -443,34 +507,6 @@ class Connection(Context):
                 forward_agent = map_[self.ssh_config["forwardagent"]]
         #: Whether agent forwarding is enabled.
         self.forward_agent = forward_agent
-
-        if connect_timeout is None:
-            connect_timeout = self.ssh_config.get(
-                "connecttimeout", self.config.timeouts.connect
-            )
-        if connect_timeout is not None:
-            connect_timeout = int(connect_timeout)
-        #: Connection timeout
-        self.connect_timeout = connect_timeout
-
-        #: Keyword arguments given to `paramiko.client.SSHClient.connect` when
-        #: `open` is called.
-        self.connect_kwargs = self.resolve_connect_kwargs(connect_kwargs)
-
-        #: The `paramiko.client.SSHClient` instance this connection wraps.
-        client = SSHClient()
-        client.set_missing_host_key_policy(AutoAddPolicy())
-        self.client = client
-
-        #: A convenience handle onto the return value of
-        #: ``self.client.get_transport()`` (after connection time).
-        self.transport = None
-
-        if inline_ssh_env is None:
-            inline_ssh_env = self.config.inline_ssh_env
-        #: Whether to construct remote command lines with env vars prefixed
-        #: inline.
-        self.inline_ssh_env = inline_ssh_env
 
     def resolve_connect_kwargs(self, connect_kwargs):
         # TODO: is it better to pre-empt conflicts w/ manually-handled
@@ -579,6 +615,7 @@ class Connection(Context):
         # NOTE: used to be defined inline; preserving API call for both
         # backwards compatibility and because it seems plausible we may want to
         # modify behavior later, using eg config or other attributes.
+        # TODO 4.0: this seems needlessly complicated! just nix it.
         return derive_shorthand(host_string)
 
     @property
@@ -639,6 +676,11 @@ class Connection(Context):
         if "key_filename" in kwargs and not kwargs["key_filename"]:
             del kwargs["key_filename"]
         # Actually connect!
+        # TODO: main overhaul point obvy - just end up with a connected
+        # transport, and return the new "how DID we authenticate?" object
+        # (probably? or set it as an attr? both?)
+        # TODO: so apparently we never load system host keys (which also seems
+        # to mean: your user host keys, lol)?
         self.client.connect(**kwargs)
         self.transport = self.client.get_transport()
 
@@ -699,6 +741,8 @@ class Connection(Context):
             self._sftp = None
 
         if self.is_connected:
+            # TODO: another overhaul point - just clone what's in sshclient
+            # probs?
             self.client.close()
             if self.forward_agent and self._agent_handler is not None:
                 self._agent_handler.close()
@@ -858,6 +902,7 @@ class Connection(Context):
         .. versionadded:: 2.0
         """
         if self._sftp is None:
+            # TODO: overhaul point
             self._sftp = self.client.open_sftp()
         return self._sftp
 
