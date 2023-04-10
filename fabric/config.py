@@ -300,6 +300,11 @@ class Config(InvokeConfig):
         # It wouldn't actually simplify this code any, but it would make it
         # easier for users to determine what came from which library/repo.
         defaults = InvokeConfig.global_defaults()
+        # TODO 4.0: this is already a mess, strongly consider a new 'ssh'
+        # subtree because otherwise it's guessing where, or whether, 'ssh' is
+        # in the setting name! i.e. 'inline_ssh_env' -> ssh.use_inline_env,
+        # 'load_ssh_configs' -> ssh.load_configs, 'ssh_config_path' ->
+        # ssh.config_path, etc
         ours = {
             # New settings
             "connect_kwargs": {},
