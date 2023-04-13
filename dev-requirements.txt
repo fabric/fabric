@@ -14,7 +14,6 @@ flake8>=4,<5
 black>=22.8,<22.9
 # Coverage!
 coverage>=6.2,<7
-codecov==2.1.12
 # Documentation tools
 releases>=2
 alabaster==0.7.13
