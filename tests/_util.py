@@ -47,6 +47,8 @@ def expect(invocation, out, program=None, test="equals"):
     else:
         err = "Don't know how to expect that <stdout> {} <expected>!"
         assert False, err.format(test)
+    # Safety check: no stderr
+    assert not sys.stderr.getvalue()
 
 
 def faux_v1_env():
