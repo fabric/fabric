@@ -13,6 +13,10 @@ Changelog
     Click those projects' names in this paragraph to visit their changelogs and
     see what you might get if you upgrade your dependencies.
 
+- :bug:`2241` A typo prevented Fabric's command runner from properly calling
+  its superclass ``stop()`` method, which in tandem with a related Invoke bug
+  meant messy or long shutdowns in many scenarios. Thanks to Orlando
+  Rodríguez for report and initial patch.
 - :release:`3.0.0 <2023-01-20>`
 - :bug:`1981 major` (fixed in :issue:`2195`) Automatically close any open SFTP
   session during `fabric.connection.Connection.close`; this avoids issues

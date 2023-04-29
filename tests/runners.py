@@ -3,7 +3,7 @@ from io import StringIO
 from unittest.mock import Mock, patch
 from pytest import skip  # noqa
 
-from invoke import pty_size, Result
+from invoke import pty_size, Result, Runner
 
 from fabric import Config, Connection, Remote, RemoteShell
 
@@ -89,6 +89,12 @@ class Remote_:
                 chan.close.assert_called_once_with()
             else:
                 assert False, "Runner failed to raise exception!"
+
+        def stop_calls_super_correctly(self, remote):
+            # RE: #2241
+            Runner.stop = Mock()
+            _runner().run(CMD)
+            Runner.stop.assert_called_once_with()
 
         def channel_close_skipped_when_channel_not_even_made(self):
             # I.e. if obtaining self.channel doesn't even happen (i.e. if
