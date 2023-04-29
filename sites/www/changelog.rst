@@ -13,6 +13,7 @@ Changelog
     Click those projects' names in this paragraph to visit their changelogs and
     see what you might get if you upgrade your dependencies.
 
+- :release:`3.0.1 <2023-04-29>`
 - :bug:`2241` A typo prevented Fabric's command runner from properly calling
   its superclass ``stop()`` method, which in tandem with a related Invoke bug
   meant messy or long shutdowns in many scenarios. Thanks to Orlando
