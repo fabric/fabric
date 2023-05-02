@@ -9,6 +9,7 @@ import re
 from invoke import run
 from invoke.util import cd
 from unittest.mock import patch
+from paramiko.agent import AgentKey, Message
 import pytest  # because WHY would you expose @skip normally? -_-
 from pytest_relaxed import raises
 
@@ -53,6 +54,30 @@ Invoke .+
         def executes_remainder_as_anonymous_task(self, remote):
             remote.expect(host="myhost", cmd="whoami")
             make_program().run("fab -H myhost -- whoami", exit=False)
+
+        @patch("paramiko.agent.Agent.get_keys")
+        def can_list_agent_keys(self, get_keys):
+            agent_keys = []
+            for type_, bits, comment in (
+                ("ecdsa", b"dummy", "woody"),
+                ("rsa", b"ventriloquist", "bob"),
+                ("ed25519", b"stagehand", "smith"),
+            ):
+                # Looks like a pubkey blob from an agent
+                m = Message()
+                m.add_string(type_)
+                m.add_string(bits)
+                agent_keys.append(
+                    AgentKey(agent=None, blob=bytes(m), comment=comment)
+                )
+
+            get_keys.return_value = agent_keys
+            expected = """
+0 SHA256:r7SOU1pAlEWmRE57Swf0OQHg9tlYicKaLx2DxGbDVk8 woody (ECDSA)
+0 SHA256:2qZYGN+eIVfmhwpQUMje7uG4+7tZquM5LBwNaHCBsqg bob (RSA)
+0 SHA256:4seJT+aN1aTPIudGupnXsZ1z20r+GCIAAKEA4MHnwvA smith (ED25519)
+""".lstrip()
+            expect("--list-agent-keys", expected)
 
         def uses_FABRIC_env_prefix(self, environ):
             environ["FABRIC_RUN_ECHO"] = "1"

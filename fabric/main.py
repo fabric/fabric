@@ -6,9 +6,9 @@ Builds on top of Invoke's core functionality for same.
 
 import getpass
 
-from invoke import Argument, Collection, Program
+from invoke import Argument, Collection, Exit, Program
 from invoke import __version__ as invoke
-from paramiko import __version__ as paramiko
+from paramiko import __version__ as paramiko, Agent
 
 from . import __version__ as fabric
 from . import Config, Executor
@@ -33,6 +33,11 @@ class Fab(Program):
                 # TODO: automatically add hint about iterable-ness to Invoke
                 # help display machinery?
                 help="Path to runtime SSH identity (key) file. May be given multiple times.",  # noqa
+            ),
+            Argument(
+                names=("list-agent-keys",),
+                kind=bool,
+                help="Display ssh-agent key list, and exit.",
             ),
             # TODO: worth having short flags for these prompt args?
             Argument(
@@ -144,6 +149,23 @@ class Fab(Program):
         # Since we gave merge=False above, we must do it ourselves here. (Also
         # allows us to 'compile' our overrides manipulation.)
         self.config.merge()
+
+    # TODO: make this an explicit hookpoint in Invoke, i.e. some default-noop
+    # method called at the end of parse_core() that we can override here
+    # instead of doing this.
+    def parse_core(self, *args, **kwargs):
+        super().parse_core(*args, **kwargs)
+        if self.args["list-agent-keys"].value:
+            for key in Agent().get_keys():
+                real = key.inner_key
+                tpl = "{} {} {} ({})"
+                print(tpl.format(
+                    key.get_bits(),
+                    key.fingerprint,
+                    key.comment,
+                    key.algorithm_name,
+                ))
+            raise Exit
 
 
 # Mostly a concession to testing.

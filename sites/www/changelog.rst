@@ -13,6 +13,11 @@ Changelog
     names in this paragraph to visit their changelogs and see what you might get
     if you upgrade your dependencies.
 
+- :feature:`-` Add a new CLI flag to ``fab``, ``fab --list-agent-keys``, which
+  will attempt to connect to your local SSH agent and print a key list,
+  similarly to ``ssh-add -l``. This is mostly useful for expectations-checking
+  Fabric and Paramiko's agent functionality, or for situations where you might
+  not have ``ssh-add`` handy.
 - :bug:`2263 major` Explicitly add our dependency on ``decorator`` to
   ``setup.py`` instead of using Invoke's old, now removed, vendored copy of
   same. This allows Fabric to happily use Invoke 2.1 and above. Thanks to Luke
