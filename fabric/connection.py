@@ -3,11 +3,7 @@ from io import StringIO
 from threading import Event
 import socket
 
-try:
-    from invoke.vendor.decorator import decorator
-except ImportError:
-    from decorator import decorator
-
+from decorator import decorator
 from invoke import Context
 from invoke.exceptions import ThreadException
 from paramiko.agent import AgentRequestHandler
