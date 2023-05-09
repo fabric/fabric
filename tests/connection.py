@@ -651,8 +651,9 @@ class Connection_:
             assert Connection("a-host", port=1) < Connection("a-host", port=2)
 
     class open:
-        def has_no_required_args_and_returns_None(self, client):
-            assert Connection("host").open() is None
+        def has_no_required_args_and_returns_value_of_connect(self, client):
+            retval = Connection("host").open()
+            assert retval is client.connect.return_value
 
         def calls_SSHClient_connect(self, client):
             "calls paramiko.SSHClient.connect() with correct args"

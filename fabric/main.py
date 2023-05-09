@@ -5,6 +5,7 @@ Builds on top of Invoke's core functionality for same.
 """
 
 import getpass
+from pathlib import Path
 
 from invoke import Argument, Collection, Exit, Program
 from invoke import __version__ as invoke
@@ -122,14 +123,16 @@ class Fab(Program):
         self.config.load_ssh_config()
         # Load -i identity file, if given, into connect_kwargs, at overrides
         # level.
-        # TODO: this feels a little gross, but since the parent has already
-        # called load_overrides, this is best we can do for now w/o losing
-        # data. Still feels correct; just might be cleaner to have even more
-        # Config API members around this sort of thing. Shrug.
         connect_kwargs = {}
-        path = self.args["identity"].value
-        if path:
-            connect_kwargs["key_filename"] = path
+        paths = self.args["identity"].value
+        if paths:
+            connect_kwargs["key_filename"] = paths
+            # New, non-sshclient based config location
+            # Also new: Path! (which we couldn't use above until paramiko knew
+            # about it)
+            self.config._overrides["authentication"] = dict(
+                identities=[Path(x) for x in paths]
+            )
         # Ditto for connect timeout
         timeout = self.args["connect-timeout"].value
         if timeout:
@@ -145,6 +148,11 @@ class Fab(Program):
         if self.args["prompt-for-passphrase"].value:
             prompt = "Enter passphrase for use unlocking SSH keys: "
             connect_kwargs["passphrase"] = getpass.getpass(prompt)
+        # TODO: this (directly manipulating _overrides) feels a little gross,
+        # but since the parent has already called load_overrides, this is best
+        # we can do for now w/o losing data. Still feels correct; just might be
+        # cleaner to have even more Config API members around this sort of
+        # thing. Shrug.
         self.config._overrides["connect_kwargs"] = connect_kwargs
         # Since we gave merge=False above, we must do it ourselves here. (Also
         # allows us to 'compile' our overrides manipulation.)
@@ -156,15 +164,19 @@ class Fab(Program):
     def parse_core(self, *args, **kwargs):
         super().parse_core(*args, **kwargs)
         if self.args["list-agent-keys"].value:
-            for key in Agent().get_keys():
-                real = key.inner_key
+            keys = Agent().get_keys()
+            for key in keys:
                 tpl = "{} {} {} ({})"
-                print(tpl.format(
-                    key.get_bits(),
-                    key.fingerprint,
-                    key.comment,
-                    key.algorithm_name,
-                ))
+                # TODO: _could_ use new PKey.__repr__ but I like the mimicry of
+                # OpenSSH ssh-add -l for now...
+                print(
+                    tpl.format(
+                        key.get_bits(),
+                        key.fingerprint,
+                        key.comment,
+                        key.algorithm_name,
+                    )
+                )
             raise Exit
 
 

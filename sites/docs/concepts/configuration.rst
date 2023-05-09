@@ -82,11 +82,18 @@ New default values defined by Fabric
     core configuration**, so make sure you're aware of whether you're loading
     such files (or :ref:`disable them to be sure <disabling-ssh-config>`).
 
+- ``authentication``: Authentication-related options.
+
+    - ``strategy_class``: If given (defaults to ``None``), must be a subclass
+      of `~paramiko.auth_strategy.AuthStrategy`; when not ``None``, triggers
+      use of this new Paramiko authentication framework -- see
+      :doc:`/concepts/authentication` for what this means, including how it
+      relates to ``connect_kwargs``.
+
 - ``connect_kwargs``: Keyword arguments (`dict`) given to `SSHClient.connect
   <paramiko.client.SSHClient.connect>` when `.Connection` performs that method
-  call. This is the primary configuration vector for many SSH-related options,
-  such as selecting private keys, toggling forwarding of SSH agents, etc.
-  Default: ``{}``.
+  call. This is often a way of supplying options Fabric has no native setting
+  for. Default: ``{}``.
 - ``forward_agent``: Whether to attempt forwarding of your local SSH
   authentication agent to the remote end. Default: ``False`` (same as in
   OpenSSH.)

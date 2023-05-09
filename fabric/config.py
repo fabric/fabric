@@ -287,6 +287,9 @@ class Config(InvokeConfig):
         defaults, see our own config docs at :ref:`default-values`.
 
         .. versionadded:: 2.0
+        .. versionchanged:: 3.1
+            Added the ``authentication`` settings section, plus sub-attributes
+            such as ``authentication.strategy_class``.
         """
         # TODO: hrm should the run-related things actually be derived from the
         # runner_class? E.g. Local defines local stuff, Remote defines remote
@@ -306,7 +309,10 @@ class Config(InvokeConfig):
         # 'load_ssh_configs' -> ssh.load_configs, 'ssh_config_path' ->
         # ssh.config_path, etc
         ours = {
-            # New settings
+            "authentication": {
+                "identities": [],
+                "strategy_class": None,
+            },
             "connect_kwargs": {},
             "forward_agent": False,
             "gateway": None,

@@ -5,3 +5,4 @@ from .runners import Remote, RemoteShell, Result
 from .group import Group, SerialGroup, ThreadingGroup, GroupResult
 from .tasks import task, Task
 from .executor import Executor
+from .auth import OpenSSHAuthStrategy

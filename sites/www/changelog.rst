@@ -13,6 +13,22 @@ Changelog
     names in this paragraph to visit their changelogs and see what you might get
     if you upgrade your dependencies.
 
+- :feature:`-` Implement opt-in support for Paramiko's :ref:`new authentication
+  functionality <auth-flow>`, as follows:
+
+  - Now requires Paramiko 3.2 or above. This should be backwards compatible if
+    you are already on Fabric 3.0 or above.
+  - Added a new module and class, `fabric.auth.OpenSSHAuthStrategy`, which
+    leverages aforementioned new Paramiko functionality to marry loaded SSH
+    config files with Fabric-level and runtime-level parameters, arriving at
+    what should be OpenSSH-client-compatible authentication behavior. See its
+    API docs for details.
+  - Added a new :doc:`configuration setting </concepts/configuration>`,
+    ``authentication.strategy_class``, which defaults to ``None``, but can be
+    set to ``OpenSSHAuthStrategy`` to opt-in to the new behavior.
+
+  .. warning:: This feature is **EXPERIMENTAL** and subject to change!
+
 - :feature:`-` Add a new CLI flag to ``fab``, ``fab --list-agent-keys``, which
   will attempt to connect to your local SSH agent and print a key list,
   similarly to ``ssh-add -l``. This is mostly useful for expectations-checking

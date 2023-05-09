@@ -600,7 +600,14 @@ class Connection(Context):
         `SSHClient.connect <paramiko.client.SSHClient.connect>`. (For details,
         see :doc:`the configuration docs </concepts/configuration>`.)
 
+        :returns:
+            The result of the internal call to `.SSHClient.connect`, if
+            performing an initial connection; ``None`` otherwise.
+
         .. versionadded:: 2.0
+        .. versionchanged:: 3.1
+            Now returns the inner Paramiko connect call's return value instead
+            of always returning the implicit ``None``.
         """
         # Short-circuit
         if self.is_connected:
@@ -634,9 +641,30 @@ class Connection(Context):
         # Strip out empty defaults for less noisy debugging
         if "key_filename" in kwargs and not kwargs["key_filename"]:
             del kwargs["key_filename"]
+        auth_strategy_class = self.authentication.strategy_class
+        if auth_strategy_class is not None:
+            # Pop connect_kwargs related to auth to avoid giving Paramiko
+            # conflicting signals.
+            for key in (
+                "allow_agent",
+                "key_filename",
+                "look_for_keys",
+                "passphrase",
+                "password",
+                "pkey",
+                "username",
+            ):
+                kwargs.pop(key, None)
+
+            kwargs["auth_strategy"] = auth_strategy_class(
+                ssh_config=self.ssh_config,
+                fabric_config=self.config,
+                username=self.user,
+            )
         # Actually connect!
-        self.client.connect(**kwargs)
+        result = self.client.connect(**kwargs)
         self.transport = self.client.get_transport()
+        return result
 
     def open_gateway(self):
         """

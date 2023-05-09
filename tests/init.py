@@ -1,5 +1,5 @@
 import fabric
-from fabric import _version, connection, runners, group, tasks, executor
+from fabric import _version, connection, runners, group, tasks, executor, auth
 
 
 class init:
@@ -44,3 +44,6 @@ class init:
 
     def Executor(self):
         assert fabric.Executor is executor.Executor
+
+    def OpenSSHAuthStrategy(self):
+        assert fabric.OpenSSHAuthStrategy is auth.OpenSSHAuthStrategy
