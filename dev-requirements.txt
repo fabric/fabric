@@ -3,7 +3,7 @@
 paramiko>=3.0
 invoke>=2.0
 # Invocations for common project tasks
-invocations>=3.1.0
+invocations>=3.2.0
 # pytest-relaxed for test organization, display etc tweaks
 pytest-relaxed>=2
 # pytest-cov for coverage

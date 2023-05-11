@@ -2,7 +2,7 @@ from os import getcwd
 import sys
 
 from invocations import ci
-from invocations.checks import blacken
+from invocations import checks
 from invocations.docs import docs, www, sites, watch_docs
 from invocations.pytest import (
     test,
@@ -84,7 +84,8 @@ def coverage(c, report="term", opts="", codecov=False):
 
 
 ns = Collection(
-    blacken,
+    checks.blacken,  # backwards compat
+    checks,
     ci,
     coverage,
     docs,
