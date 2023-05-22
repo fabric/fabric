@@ -153,16 +153,23 @@ class OpenSSHAuthStrategy(AuthStrategy):
         # Then all agent keys, first ones that were also mentioned in configs,
         # then 'new' ones not found in configs.
         deferred_agent_keys = []
-        config_pkeys = [x.pkey for x in config_keys]
         for key in agent_keys:
-            if key in config_pkeys:
+            config_index = None
+            for i, config_key in enumerate(config_keys):
+                if config_key.pkey == key:
+                    config_index = i
+                    break
+            if config_index:
                 yield InMemoryPrivateKey(username=self.username, pkey=key)
+                # Nuke so it doesn't get re-yielded by regular conf keys bit
+                del config_keys[config_index]
             else:
                 deferred_agent_keys.append(key)
         for key in deferred_agent_keys:
             yield InMemoryPrivateKey(username=self.username, pkey=key)
         for source in cli_keys:
             yield source
+        # This will now be just the config-borne keys that were NOT in agent
         for source in config_keys:
             yield source
 
