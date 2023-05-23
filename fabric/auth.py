@@ -190,7 +190,3 @@ class OpenSSHAuthStrategy(AuthStrategy):
         """
         # TODO: bare try/except here as "best effort"? ugh
         self.agent.close()
-
-    def __del__(self):
-        # Insurance for us never actually getting authenticate() called.
-        self.close()
