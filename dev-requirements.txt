@@ -8,6 +8,8 @@ invocations>=3.2.0
 pytest-relaxed>=2
 # pytest-cov for coverage
 pytest-cov>=4
+# Delicious print() alternative
+icecream>=2.1
 # Formatting
 # Flake8 5.x seems to have an odd importlib-metadata incompatibility?
 flake8>=4,<5

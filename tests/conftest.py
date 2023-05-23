@@ -1,11 +1,16 @@
 # flake8: noqa
-from fabric.testing.fixtures import client, remote, sftp, sftp_objs, transfer
-
 from os.path import isfile, expanduser
+from unittest.mock import patch
 
 from pytest import fixture
 
-from unittest.mock import patch
+# Set up icecream globally for convenience.
+from icecream import install as install_icecream
+
+from fabric.testing.fixtures import client, remote, sftp, sftp_objs, transfer
+
+
+install_icecream()
 
 
 # TODO: does this want to end up in the public fixtures module too?
