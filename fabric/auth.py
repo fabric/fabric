@@ -166,7 +166,7 @@ class OpenSSHAuthStrategy(AuthStrategy):
         for source in config_keys:
             yield source
 
-    def get_sources(self, transport):
+    def get_sources(self):
         # TODO: initial none-auth + tracking the response's allowed types.
         # however, SSHClient never did this deeply, and there's no guarantee a
         # server _will_ send anything but "any" anyways...
