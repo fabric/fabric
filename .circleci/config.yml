@@ -21,6 +21,9 @@ jobs:
       - orb/sudo-coverage
       - orb/debug
 
+  # TODO: when we feel safe nuking this, also fix up fabric/__init__.py to make
+  # the 'auth' module import non-conditional (and update setup.py to require
+  # paramiko>=3.2)
   v1_to_v2_shim:
     executor:
       name: orb/default
