@@ -13,6 +13,7 @@ Changelog
     names in this paragraph to visit their changelogs and see what you might get
     if you upgrade your dependencies.
 
+- :release:`3.1.0 <2023-05-25>`
 - :feature:`-` Implement opt-in support for Paramiko 3.2's
   `~paramiko.auth_strategy.AuthStrategy` machinery, as follows:
 
