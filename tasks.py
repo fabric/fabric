@@ -103,7 +103,7 @@ ns.configure(
             # NOTE: this is currently for identifying the source directory.
             # Should it get used for actual releasing, needs changing.
             "package": "fabric",
-            "sign": True,
+            "sign": False,
             "wheel": True,
             "check_desc": True,
             "changelog_file": "sites/www/changelog.rst",
