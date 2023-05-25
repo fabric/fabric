@@ -13,27 +13,36 @@ Changelog
     names in this paragraph to visit their changelogs and see what you might get
     if you upgrade your dependencies.
 
-- :feature:`-` Implement opt-in support for Paramiko's :ref:`new authentication
-  functionality <auth-flow>`, as follows:
+- :feature:`-` Implement opt-in support for Paramiko 3.2's
+  `~paramiko.auth_strategy.AuthStrategy` machinery, as follows:
 
-  - Now requires Paramiko 3.2 or above. This should be backwards compatible if
-    you are already on Fabric 3.0 or above.
   - Added a new module and class, `fabric.auth.OpenSSHAuthStrategy`, which
     leverages aforementioned new Paramiko functionality to marry loaded SSH
     config files with Fabric-level and runtime-level parameters, arriving at
     what should be OpenSSH-client-compatible authentication behavior. See its
     API docs for details.
-  - Added a new :doc:`configuration setting </concepts/configuration>`,
-    ``authentication.strategy_class``, which defaults to ``None``, but can be
-    set to ``OpenSSHAuthStrategy`` to opt-in to the new behavior.
+  - Added new :ref:`configuration settings <fab-configuration>`:
 
-  .. warning:: This feature is **EXPERIMENTAL** and subject to change!
+    - ``authentication.strategy_class``, which defaults to ``None``, but can be
+      set to ``OpenSSHAuthStrategy`` to opt-in to the new behavior.
+    - ``authentication.identities``, which defaults to the empty list, and can
+      be a list of private key paths for use by the new strategy class.
+
+  .. warning::
+    This feature is **EXPERIMENTAL**, **incomplete**, and subject to change!
+
+    (For example, it lacks passphrase support, and doesn't implement 100% of
+    all auth sources yet, focusing mostly on private keys and
+    interactive-password.)
 
 - :feature:`-` Add a new CLI flag to ``fab``, ``fab --list-agent-keys``, which
   will attempt to connect to your local SSH agent and print a key list,
   similarly to ``ssh-add -l``. This is mostly useful for expectations-checking
   Fabric and Paramiko's agent functionality, or for situations where you might
   not have ``ssh-add`` handy.
+
+  .. warning:: This feature requires Paramiko 3.2 or above.
+
 - :bug:`2263 major` Explicitly add our dependency on ``decorator`` to
   ``setup.py`` instead of using Invoke's old, now removed, vendored copy of
   same. This allows Fabric to happily use Invoke 2.1 and above. Thanks to Luke

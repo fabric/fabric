@@ -64,6 +64,7 @@ class OpenSSHAuthStrategy(AuthStrategy):
         Extends superclass with additional inputs.
 
         Specifically:
+
         - ``fabric_config``, a `fabric.Config` instance for the current
           session.
         - ``username``, which is unified by our intended caller so we don't
