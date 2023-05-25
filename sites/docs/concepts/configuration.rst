@@ -84,11 +84,14 @@ New default values defined by Fabric
 
 - ``authentication``: Authentication-related options.
 
+    - ``identities``: A list of private key paths (`str` or `pathlib.Path`) to
+      use for authentication. This is filled in by :option:`fab -i <-i>` as
+      well.
     - ``strategy_class``: If given (defaults to ``None``), must be a subclass
       of `~paramiko.auth_strategy.AuthStrategy`; when not ``None``, triggers
-      use of this new Paramiko authentication framework -- see
-      :doc:`/concepts/authentication` for what this means, including how it
-      relates to ``connect_kwargs``.
+      use of this new Paramiko authentication framework. Fabric 3.1 ships with
+      `~fabric.auth.OpenSSHAuthStrategy`; see its API doc entry for how this
+      interacts with things like ``connect_kwargs``.
 
 - ``connect_kwargs``: Keyword arguments (`dict`) given to `SSHClient.connect
   <paramiko.client.SSHClient.connect>` when `.Connection` performs that method

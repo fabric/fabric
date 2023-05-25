@@ -33,6 +33,10 @@ Options & arguments
     supplying a specific, runtime private key file. Like ``ssh -i``, it builds
     an iterable of strings and may be given multiple times.
 
+    New in version 3.1: this also ends up in the ``authentication.identities``
+    :doc:`configuration value </concepts/configuration>` and will be referenced
+    by `fabric.auth.OpenSSHAuthStrategy`, if in use.
+
     Default: ``[]``.
 
 .. option:: --prompt-for-login-password

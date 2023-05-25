@@ -17,6 +17,11 @@ class OpenSSHAuthStrategy(AuthStrategy):
     """
     Auth strategy that tries very hard to act like the OpenSSH client.
 
+    .. warning::
+        As of version 3.1, this class is **EXPERIMENTAL** and **incomplete**.
+        It works best with passphraseless (eg ssh-agent) private key auth for
+        now and will grow more features in future releases.
+
     For example, it accepts a `~paramiko.config.SSHConfig` and uses any
     relevant ``IdentityFile`` directives from that object, along with keys from
     your home directory and any local SSH agent. Keys specified at runtime are
@@ -28,6 +33,8 @@ class OpenSSHAuthStrategy(AuthStrategy):
     to match the documented/observed behavior of OpenSSH. Please see the `ssh
     <https://man.openbsd.org/ssh>`_ and `ssh_config
     <https://man.openbsd.org/ssh_config>`_ man pages for more information.
+
+    .. versionadded:: 3.1
     """
 
     # Skimming openssh code (ssh.c and sshconnect2.c) gives us the following
