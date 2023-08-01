@@ -1,7 +1,5 @@
 # Us, of course
 -e .
-# TODO: nuke after release
-paramiko @ git+https://github.com/paramiko/paramiko@387-auth-mark-ii
 invoke>=2.0
 # Invocations for common project tasks
 invocations>=3.2.0
