@@ -65,7 +65,7 @@ def faux_v1_env():
         password=None,
         port=22,
         ssh_config_path=None,
-        # Used in a handful of sanity tests, so it gets a 'real' value. eh.
+        # Used in a handful of safety tests, so it gets a 'real' value. eh.
         sudo_password="nope",
         sudo_prompt=None,
         timeout=None,

@@ -15,11 +15,13 @@ purposes: ``pip install fabric[testing]``.
 .. versionadded:: 2.1
 """
 
+import os
 from itertools import chain, repeat
 from io import BytesIO
-import os
-
 from unittest.mock import Mock, PropertyMock, call, patch, ANY
+
+from deprecated.sphinx import deprecated
+from deprecated.classic import deprecated as deprecated_no_docstring
 
 
 class Command:
@@ -155,7 +157,7 @@ class Session:
         exit=None,
         waits=None,
     ):
-        # Sanity check
+        # Safety check
         params = cmd or out or err or exit or waits
         if commands and params:
             raise ValueError(
@@ -244,7 +246,14 @@ class Session:
         self.client = client
         self.channels = channels
 
+    @deprecated_no_docstring(
+        version="3.2",
+        reason="This method has been renamed to `safety_check` & will be removed in 4.0",
+    )
     def sanity_check(self):
+        return self.safety_check()
+
+    def safety_check(self):
         # Per-session we expect a single transport get
         transport = self.client.get_transport
         transport.assert_called_once_with()
@@ -331,7 +340,7 @@ class MockRemote:
         # return values
         self.patcher = patcher = patch("fabric.connection.SSHClient")
         SSHClient = patcher.start()
-        # Mock clients, to be inspected afterwards during sanity-checks
+        # Mock clients, to be inspected afterwards during safety-checks
         clients = []
         for session in self.sessions:
             session.generate_mocks()
@@ -354,15 +363,26 @@ class MockRemote:
         # Stop patching SSHClient
         self.patcher.stop()
 
+    @deprecated(
+        version="3.2",
+        reason="This method has been renamed to `safety` & will be removed in 4.0",
+    )
     def sanity(self):
         """
         Run post-execution sanity checks (usually 'was X called' tests.)
 
         .. versionadded:: 2.1
         """
+        return self.safety()
+
+    def safety(self):
+        """
+        Run post-execution safety checks (eg ensuring expected calls happened).
+
+        .. versionadded:: 3.2
+        """
         for session in self.sessions:
-            # Basic sanity tests about transport, channel etc
-            session.sanity_check()
+            session.safety_check()
 
 
 # TODO: unify with the stuff in paramiko itself (now in its tests/conftest.py),

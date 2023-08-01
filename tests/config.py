@@ -297,7 +297,7 @@ class ssh_config_loading:
         def does_not_affect_explicit_object(self, method):
             sc = SSHConfig()
             c = Config(ssh_config=sc, overrides={"load_ssh_configs": False})
-            # Implicit loading still doesn't happen...sanity check
+            # Implicit loading still doesn't happen...safety check
             assert not method.called
             # Real test: the obj we passed in is present as usual
             assert c.base_ssh_config is sc

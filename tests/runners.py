@@ -42,7 +42,7 @@ class Remote_:
 
     class run:
         def calls_expected_paramiko_bits(self, remote):
-            # remote mocking makes generic sanity checks like "were
+            # remote mocking makes generic safety checks like "were
             # get_transport and open_session called", but we also want to make
             # sure that exec_command got run with our arg to run().
             remote.expect(cmd=CMD)
@@ -58,7 +58,7 @@ class Remote_:
             c = _Connection("host")
             result = Remote(context=c).run(CMD)
             assert isinstance(result, Result)
-            # Mild sanity test for other Result superclass bits
+            # Mild safety check for other Result superclass bits
             assert result.ok is True
             assert result.exited == 0
             # Test the attr our own subclass adds

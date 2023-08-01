@@ -86,7 +86,7 @@ Invoke .+
 
         def basic_pre_and_post_tasks_still_work(self):
             with cd(support):
-                # Sanity
+                # Safety
                 expect("first", "First!\n")
                 expect("third", "Third!\n")
                 # Real test
@@ -366,7 +366,7 @@ Third!
             # work-without-a-collection mode.
             with cd(support):
                 make_program().run("fab --complete -- fab", exit=False)
-            # Cherry-picked sanity checks looking for tasks from fixture
+            # Cherry-picked safety checks looking for tasks from fixture
             # fabfile
             output = sys.stdout.getvalue()
             for name in ("build", "deploy", "expect-from-env"):
