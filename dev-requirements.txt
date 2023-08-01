@@ -18,3 +18,4 @@ coverage>=6.2,<7
 # Documentation tools
 releases>=2
 alabaster==0.7.13
+deprecated>=1.2.14,<2

@@ -55,7 +55,7 @@ class concurrency:
         # Specifically, cut up the local (usually 100k's long) words dict into
         # per-thread chunks, then read those chunks via shell command, as a
         # crummy "make sure each thread isn't polluting things like stored
-        # stdout" sanity test
+        # stdout" safety test
         queue = Queue()
         # TODO: skip test on Windows or find suitable alternative file
         with codecs.open(_words, encoding="utf-8") as fd:

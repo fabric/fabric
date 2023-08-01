@@ -444,7 +444,7 @@ class Connection_:
                         overrides={"some_random_option": "a-value"},
                     )
                     cxn = Connection("runtime", config=conf)
-                    # Sanity
+                    # Safety
                     assert cxn.config is conf
                     assert cxn.gateway == self._expected_gw
                     # Real check
@@ -1159,7 +1159,7 @@ class Connection_:
             ]
             assert Remote.mock_calls == expected
             # NOTE: we used to have a "sudo return value is literally the same
-            # return value from Remote.run()" sanity check here, which is
+            # return value from Remote.run()" safety check here, which is
             # completely impossible now thanks to the above issue.
 
         def per_host_password_works_as_expected(self):

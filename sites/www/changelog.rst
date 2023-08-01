@@ -13,6 +13,11 @@ Changelog
     names in this paragraph to visit their changelogs and see what you might get
     if you upgrade your dependencies.
 
+- :support:`-` Language update: applied `s/sanity/safety/g` to the codebase
+  (with the few actual API members using the term now marked deprecated & new
+  ones added in the meantime, mostly in `fabric.testing`).
+- :support:`-` Added a new runtime dependency on the `Deprecated
+  <https://pypi.org/project/Deprecated/>`_ library.
 - :release:`3.1.0 <2023-05-25>`
 - :feature:`-` Implement opt-in support for Paramiko 3.2's
   `~paramiko.auth_strategy.AuthStrategy` machinery, as follows:
