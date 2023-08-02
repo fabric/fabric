@@ -289,12 +289,14 @@ class MockRemote:
 
     By default this class is set up for start/stop style patching as opposed to
     the more common context-manager or decorator approach; this is so it can be
-    used in situations requiring setup/teardown semantics.
+    used in situations requiring setup/teardown semantics (such as inside a
+    `pytest fixture <fabric.testing.fixtures>`).
 
-    Defaults to setting up a single anonymous `Session`, so it can be used as a
-    "request & forget" pytest fixture. Users requiring detailed remote session
-    expectations can call methods like `expect`, which wipe that anonymous
-    Session & set up a new one instead.
+    By default, this class creates a single anonymous/internal `Session`, for
+    convenience (eg mocking out SSH functionality as a safety measure). Users
+    requiring detailed remote session expectations can call methods like
+    `expect` or `expect_sessions`, which wipe that anonymous Session & set up a
+    new one instead.
 
     .. versionadded:: 2.1
     """
