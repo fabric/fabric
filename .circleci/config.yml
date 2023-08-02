@@ -21,6 +21,15 @@ jobs:
       - orb/sudo-coverage
       - orb/debug
 
+  doctests:
+    executor:
+      name: orb/default
+    steps:
+      - orb/setup
+      - run: inv www.doctest docs.doctest
+      - orb/debug
+
+
   # TODO: when we feel safe nuking this, also fix up fabric/__init__.py to make
   # the 'auth' module import non-conditional (and update setup.py to require
   # paramiko>=3.2)
@@ -63,6 +72,9 @@ workflows:
       - orb/docs:
           name: "Docs"
           requires: ["Test"]
+      - doctests:
+          name: Doctests
+          requires: ["Docs"]
       - v1_to_v2_shim:
           name: "v1-to-v2 shim test"
           requires: ["Test"]
