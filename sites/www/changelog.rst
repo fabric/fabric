@@ -13,6 +13,23 @@ Changelog
     names in this paragraph to visit their changelogs and see what you might get
     if you upgrade your dependencies.
 
+- :feature:`-` Enhanced `fabric.testing` in ways large and small:
+
+    - Backwards-compatibly merged the functionality of
+      `~fabric.testing.base.MockSFTP` into `~fabric.testing.base.MockRemote`
+      (may be opted-into by instantiating the latter with ``enable_sftp=True``)
+      so you can mock out both SSH *and* SFTP functionality in the same test,
+      which was previously impossible. It also means you can use this in a
+      Pytest autouse fixture to prevent any tests from accidentally hitting the
+      network!
+    - A new pytest fixture, `~fabric.testing.fixtures.remote_with_sftp`, has
+      been added which leverages the previous bullet point (an all-in-one
+      fixture suitable for, eg, preventing any incidental ssh/sftp attempts
+      during test execution).
+    - A pile of documentation and test enhancements (yes, testing our testing
+      helpers is a thing).
+    - TKTKTK: general log/diff check
+
 - :support:`-` Language update: applied `s/sanity/safety/g` to the codebase
   (with the few actual API members using the term now marked deprecated & new
   ones added in the meantime, mostly in `fabric.testing`).

@@ -239,7 +239,7 @@ For example, say you had an archive file you wanted to upload:
 
 .. testsetup:: transfers
 
-    mock = MockSFTP()
+    mock = MockRemote(enable_sftp=True)
 
 .. testcleanup:: transfers
 

@@ -24,6 +24,10 @@ from deprecated.sphinx import deprecated
 from deprecated.classic import deprecated as deprecated_no_docstring
 
 
+# TODO 4.0: reorganize harder (eg building blocks in one module, central
+# classes in another?)
+
+
 class Command:
     """
     Data record specifying params of a command execution to mock/expect.
@@ -141,7 +145,17 @@ class Session:
             Giving ``cmd``, ``out`` etc alongside explicit ``commands`` is not
             allowed and will result in an error.
 
+    :param bool enable_sftp: Whether to enable basic SFTP mocking support.
+
+    :param transfers:
+        None if no transfers to expect; otherwise, should be a list of dicts of
+        the form ``{"method": "get|put", **kwargs}`` where ``**kwargs`` are the
+        kwargs expected in the relevant `~paramiko.sftp_client.SFTPClient`
+        method. (eg: ``{"method": "put", "localpath": "/some/path"}``)
+
     .. versionadded:: 2.1
+    .. versionchanged:: 3.2
+        Added the ``enable_sftp`` and ``transfers`` parameters.
     """
 
     def __init__(
@@ -156,6 +170,8 @@ class Session:
         err=None,
         exit=None,
         waits=None,
+        enable_sftp=False,
+        transfers=None,
     ):
         # Safety check
         params = cmd or out or err or exit or waits
@@ -188,6 +204,8 @@ class Session:
             self.commands = [Command(**kwargs)]
         if not self.commands:
             self.commands = [Command()]
+        self._enable_sftp = enable_sftp
+        self.transfers = transfers
 
     def generate_mocks(self):
         """
@@ -243,12 +261,44 @@ class Session:
         # open_session() is called.
         transport.open_session.side_effect = channels
 
+        # SFTP, if enabled
+        if self._enable_sftp:
+            self._start_sftp(client)
+
         self.client = client
         self.channels = channels
 
+    def _start_sftp(self, client):
+        # Patch os module for local stat and similar
+        self.os_patcher = patch("fabric.transfer.os")
+        mock_os = self.os_patcher.start()
+        # Patch Path class inside transfer.py to prevent real fs touchery
+        self.path_patcher = patch("fabric.transfer.Path")
+        self.path_patcher.start()
+        self.sftp = sftp = client.open_sftp.return_value
+
+        # Handle common filepath massage actions; tests will assume these.
+        def fake_abspath(path):
+            # Run normpath to avoid tests not seeing abspath wrinkles (like
+            # trailing slash chomping)
+            return "/local/{}".format(os.path.normpath(path))
+
+        mock_os.path.abspath.side_effect = fake_abspath
+        sftp.getcwd.return_value = "/remote"
+        # Ensure stat st_mode is a real number; Python 3's stat.S_IMODE doesn't
+        # like just being handed a MagicMock?
+        fake_mode = 0o644  # arbitrary real-ish mode
+        sftp.stat.return_value.st_mode = fake_mode
+        mock_os.stat.return_value.st_mode = fake_mode
+        # Not super clear to me why the 'wraps' functionality in mock isn't
+        # working for this :( reinstate a bunch of os(.path) so it still works
+        mock_os.sep = os.sep
+        for name in ("basename", "split", "join", "normpath"):
+            getattr(mock_os.path, name).side_effect = getattr(os.path, name)
+
     @deprecated_no_docstring(
         version="3.2",
-        reason="This method has been renamed to `safety_check` & will be removed in 4.0",
+        reason="This method has been renamed to `safety_check` & will be removed in 4.0",  # noqa
     )
     def sanity_check(self):
         return self.safety_check()
@@ -282,29 +332,55 @@ class Session:
         calls = transport.return_value.open_session.call_args_list
         assert calls == session_opens
 
+        # SFTP transfers
+        for transfer in self.transfers or []:
+            method_name = transfer.pop("method")
+            method = getattr(self.sftp, method_name)
+            method.assert_any_call(**transfer)
+
+    def stop(self):
+        """
+        Stop any internal per-session mocks.
+
+        .. versionadded:: 3.2
+        """
+        if hasattr(self, "os_patcher"):
+            self.os_patcher.stop()
+        if hasattr(self, "path_patcher"):
+            self.path_patcher.stop()
+
 
 class MockRemote:
     """
-    Class representing mocked remote state.
+    Class representing mocked remote SSH/SFTP state.
 
-    By default this class is set up for start/stop style patching as opposed to
-    the more common context-manager or decorator approach; this is so it can be
-    used in situations requiring setup/teardown semantics (such as inside a
-    `pytest fixture <fabric.testing.fixtures>`).
+    It supports stop/start style patching (useful for doctests) but then wraps
+    that in a more convenient/common contextmanager pattern (useful in most
+    other situations). The latter is also leveraged by the
+    `fabric.testing.fixtures` module, recommended if you're using pytest.
 
-    By default, this class creates a single anonymous/internal `Session`, for
+    Note that the `expect` and `expect_sessions` methods automatically call
+    `start`, so you won't normally need to do so by hand.
+
+    By default, a single anonymous/internal `Session` is created, for
     convenience (eg mocking out SSH functionality as a safety measure). Users
     requiring detailed remote session expectations can call methods like
     `expect` or `expect_sessions`, which wipe that anonymous Session & set up a
     new one instead.
 
     .. versionadded:: 2.1
+    .. versionchanged:: 3.2
+        Added the ``enable_sftp`` init kwarg to enable mocking both SSH and
+        SFTP at the same time.
+    .. versionchanged:: 3.2
+        Added contextmanager semantics to the class, so you don't have to
+        remember to call `safety`/`stop`.
     """
 
-    def __init__(self):
-        self.expect_sessions(Session())
-
-    # TODO: make it easier to assume single session w/ >1 command?
+    # TODO 4.0: delete enable_sftp and make its behavior default
+    def __init__(self, enable_sftp=False):
+        self._enable_sftp = enable_sftp
+        self.expect_sessions(Session(enable_sftp=enable_sftp))
 
     def expect(self, *args, **kwargs):
         """
@@ -314,6 +390,7 @@ class MockRemote:
 
         .. versionadded:: 2.1
         """
+        kwargs.setdefault("enable_sftp", self._enable_sftp)
         return self.expect_sessions(Session(*args, **kwargs))[0]
 
     def expect_sessions(self, *sessions):
@@ -332,6 +409,8 @@ class MockRemote:
         # And start patching again, returning mocked channels
         return self.start()
 
+    # TODO 4.0: definitely clean this up once the SFTP bit isn't opt-in, doing
+    # that backwards compatibly was real gross
     def start(self):
         """
         Start patching SSHClient with the stored sessions, returning channels.
@@ -348,10 +427,13 @@ class MockRemote:
             session.generate_mocks()
             clients.append(session.client)
         # Each time the mocked SSHClient class is instantiated, it will
-        # yield one of our mocked clients (w/ mocked transport & channel)
-        # generated above.
+        # yield one of our mocked clients (w/ mocked transport & channel, and
+        # optionally SFTP subclient) generated above.
         SSHClient.side_effect = clients
-        return list(chain.from_iterable(x.channels for x in self.sessions))
+        sessions = list(chain.from_iterable(x.channels for x in self.sessions))
+        # TODO: in future we _may_ want to change this so it returns SFTP file
+        # data as well?
+        return sessions
 
     def stop(self):
         """
@@ -364,10 +446,13 @@ class MockRemote:
             return
         # Stop patching SSHClient
         self.patcher.stop()
+        # Also ask all sessions to stop any of their self-owned mocks
+        for session in self.sessions:
+            session.stop()
 
     @deprecated(
         version="3.2",
-        reason="This method has been renamed to `safety` & will be removed in 4.0",
+        reason="This method has been renamed to `safety` & will be removed in 4.0",  # noqa
     )
     def sanity(self):
         """
@@ -386,9 +471,20 @@ class MockRemote:
         for session in self.sessions:
             session.safety_check()
 
+    def __enter__(self):
+        return self
 
-# TODO: unify with the stuff in paramiko itself (now in its tests/conftest.py),
-# they're quite distinct and really shouldn't be.
+    def __exit__(self, *exc):
+        try:
+            self.safety()
+        finally:
+            self.stop()
+
+
+@deprecated(
+    version="3.2",
+    reason="This class has been merged with `MockRemote` which can now handle SFTP mocking too. Please switch to it!",  # noqa
+)
 class MockSFTP:
     """
     Class managing mocked SFTP remote state.
