@@ -13,6 +13,7 @@ Changelog
     names in this paragraph to visit their changelogs and see what you might get
     if you upgrade your dependencies.
 
+- :release:`3.2.0 <2023-08-06>`
 - :feature:`-` Enhanced `fabric.testing` in ways large and small:
 
     - Backwards-compatibly merged the functionality of
