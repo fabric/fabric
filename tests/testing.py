@@ -14,7 +14,14 @@ from unittest.mock import Mock, patch
 
 from fabric import Connection
 from fabric.testing.base import MockRemote
-from pytest import raises
+from pytest import raises, fixture
+
+
+@fixture(autouse=True)
+def no_stdin():
+    # Just neuter primary stdin read (making it return real bytes tho)
+    with patch("fabric.runners.Remote.read_our_stdin", return_value=b""):
+        yield
 
 
 class MockRemote_:
@@ -23,7 +30,7 @@ class MockRemote_:
         def prevents_real_ssh_connectivity_via_paramiko_guts(self, socket):
             with MockRemote():
                 cxn = Connection(host="host")
-                cxn.run("nope", in_stream=False)
+                cxn.run("nope")
                 # High level mock...
                 assert isinstance(cxn.client, Mock)
                 # ...prevented low level connectivity (would have been at least
@@ -58,7 +65,7 @@ class MockRemote_:
             with MockRemote(enable_sftp=True) as mr:
                 mr.expect(cmd="whoami")
                 cxn = Connection(host="whatevs")
-                cxn.run("whoami", in_stream=False)
+                cxn.run("whoami")
                 # Safety: can call sftp stuff w/o expect()ing it, should noop
                 # instead of exploding
                 cxn.put("whatevs")
@@ -76,7 +83,7 @@ class MockRemote_:
                     ],
                 )
                 cxn = Connection(host="host")
-                cxn.run("rm file", in_stream=False)
+                cxn.run("rm file")
                 cxn.put("whatevs")
 
         def safety_checks_work(self):
@@ -94,6 +101,6 @@ class MockRemote_:
                     cxn = Connection(host="host")
                     # Satisfy the less rigorous default expectations for
                     # commands
-                    cxn.run("rm file", in_stream=False)
+                    cxn.run("rm file")
                     # Oh no! The wrong put()!
                     cxn.put("onoz")
