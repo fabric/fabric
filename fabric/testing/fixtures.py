@@ -68,6 +68,23 @@ def connection():
 cxn = connection
 
 
+# TODO 4.0: remove old remote() and make this the new remote()
+@fixture
+def remote_with_sftp():
+    """
+    Like `remote`, but with ``enable_sftp=True``.
+
+    To access the internal mocked SFTP client (eg for asserting SFTP
+    functionality was called), note that the returned `MockRemote` object has a
+    ``.sftp`` attribute when created in this mode.
+    """
+    # NOTE: recall that by default an instantiated MockRemote has a single
+    # internal anonymous session; so these fixtures are useful for autouse
+    # guardrails.
+    with MockRemote(enable_sftp=True) as remote:
+        yield remote
+
+
 @fixture
 def remote():
     """
