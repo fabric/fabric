@@ -180,6 +180,8 @@ class Session:
                 "You can't give both 'commands' and individual "
                 "Command parameters!"
             )  # noqa
+        # Early test for "did user actually request expectations?"
+        self.guard_only = not (commands or cmd or transfers)
         # Fill in values
         self.host = host
         self.user = user
@@ -304,6 +306,11 @@ class Session:
         return self.safety_check()
 
     def safety_check(self):
+        # Short-circuit if user didn't give any expectations; otherwise our
+        # assumptions below will be inaccurately violated and explode.
+        if self.guard_only:
+            return
+
         # Per-session we expect a single transport get
         transport = self.client.get_transport
         transport.assert_called_once_with()
