@@ -13,6 +13,10 @@ Changelog
     names in this paragraph to visit their changelogs and see what you might get
     if you upgrade your dependencies.
 
+- :release:`3.2.1 <2023-08-06>`
+- :bug:`-` Neglected to actually add ``deprecated`` to our runtime dependency
+  specification (it was still in our development dependencies). This has been
+  fixed.
 - :release:`3.2.0 <2023-08-06>`
 - :feature:`-` Enhanced `fabric.testing` in ways large and small:
 
