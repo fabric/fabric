@@ -10,7 +10,7 @@ would be in here more than you can shake a buffalo at (see:
 https://en.wikipedia.org/wiki/Buffalo_buffalo_Buffalo_buffalo_buffalo_buffalo_Buffalo_buffalo)
 """
 
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 from fabric import Connection
 from fabric.testing.base import MockRemote
@@ -18,6 +18,26 @@ from pytest import raises
 
 
 class MockRemote_:
+    class mocks_by_default:
+        @patch("paramiko.transport.socket")
+        def prevents_real_ssh_connectivity_via_paramiko_guts(self, socket):
+            with MockRemote():
+                cxn = Connection(host="host")
+                cxn.run("nope", in_stream=False)
+                # High level mock...
+                assert isinstance(cxn.client, Mock)
+                # ...prevented low level connectivity (would have been at least
+                # one socket.socket() and one .connect() on result of same)
+                assert not socket.mock_calls
+
+        def does_not_run_safety_checks_when_nothing_really_expected(self):
+            with MockRemote():
+                cxn = Connection(host="host")
+                assert isinstance(cxn.client, Mock)
+                # NOTE: no run() or etc!
+            # Would explode with old behavior due to always asserting transport
+            # and connect method calls.
+
     class contextmanager_behavior:
         def calls_safety_and_stop_on_exit_with_try_finally(self):
             mr = MockRemote()
