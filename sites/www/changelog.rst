@@ -16,19 +16,20 @@ Changelog
 - :release:`3.2.2 <2023-08-30>`
 - :bug:`2204` The signal handling functionality added in Fabric 2.6 caused
   unrecoverable tracebacks when invoked from inside a thread (such as the use
-  of `fabric.groups.ThreadingGroup`) under certain interpreter versions. This
+  of `fabric.group.ThreadingGroup`) under certain interpreter versions. This
   has been fixed by simply refusing to register signal handlers when not in the
   main thread. Thanks to Francesco Giordano and others for the reports.
-- :bug:`-` `fabric.runners.Runner` failed to properly deregister its
-  ``SIGWINCH`` signal handler when `fabric.runners.Runner.close` is called; in
-  rare situations this could cause tracebacks when the Python process receives
-  ``SIGWINCH`` while no remote session is active. This has been fixed.
+- :bug:`-` `fabric.runners.Remote` failed to properly deregister its
+  ``SIGWINCH`` signal handler on shutdown; in rare situations this could cause
+  tracebacks when the Python process receives ``SIGWINCH`` while no remote
+  session is active. This has been fixed.
 - :release:`3.2.1 <2023-08-06>`
 - :bug:`-` Neglected to actually add ``deprecated`` to our runtime dependency
   specification (it was still in our development dependencies). This has been
   fixed.
 - :release:`3.2.0 <2023-08-06>`
-- :feature:`-` Enhanced `fabric.testing` in ways large and small:
+- :feature:`-` Enhanced :ref:`fabric.testing <testing-subpackage>` in ways
+  large and small:
 
     - Backwards-compatibly merged the functionality of
       `~fabric.testing.base.MockSFTP` into `~fabric.testing.base.MockRemote`
@@ -44,9 +45,10 @@ Changelog
     - A pile of documentation and test enhancements (yes, testing our testing
       helpers is a thing).
 
-- :support:`-` Language update: applied `s/sanity/safety/g` to the codebase
+- :support:`-` Language update: applied ``s/sanity/safety/g`` to the codebase
   (with the few actual API members using the term now marked deprecated & new
-  ones added in the meantime, mostly in `fabric.testing`).
+  ones added in the meantime, mostly in :ref:`fabric.testing
+  <testing-subpackage>`).
 - :support:`-` Added a new runtime dependency on the `Deprecated
   <https://pypi.org/project/Deprecated/>`_ library.
 - :release:`3.1.0 <2023-05-25>`
