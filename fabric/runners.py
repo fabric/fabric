@@ -1,6 +1,14 @@
 import signal
+import threading
 
 from invoke import Runner, pty_size, Result as InvokeResult
+
+
+def cares_about_SIGWINCH():
+    return (
+        hasattr(signal, "SIGWINCH")
+        and threading.current_thread() is threading.main_thread()
+    )
 
 
 class Remote(Runner):
@@ -45,7 +53,7 @@ class Remote(Runner):
             self.channel.get_pty(width=cols, height=rows)
             # If platform supports, also respond to SIGWINCH (window change) by
             # sending the sshd a window-change message to update
-            if hasattr(signal, "SIGWINCH"):
+            if cares_about_SIGWINCH():
                 signal.signal(signal.SIGWINCH, self.handle_window_change)
         if env:
             # TODO: honor SendEnv from ssh_config (but if we do, _should_ we
@@ -117,7 +125,7 @@ class Remote(Runner):
         super().stop()
         if hasattr(self, "channel"):
             self.channel.close()
-        if hasattr(signal, "SIGWINCH"):
+        if cares_about_SIGWINCH():
             signal.signal(signal.SIGWINCH, signal.SIG_DFL)
 
     def kill(self):

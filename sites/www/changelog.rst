@@ -13,6 +13,11 @@ Changelog
     names in this paragraph to visit their changelogs and see what you might get
     if you upgrade your dependencies.
 
+- :bug:`2204` The signal handling functionality added in Fabric 2.6 caused
+  unrecoverable tracebacks when invoked from inside a thread (such as the use
+  of `fabric.groups.ThreadingGroup`) under certain interpreter versions. This
+  has been fixed by simply refusing to register signal handlers when not in the
+  main thread. Thanks to Francesco Giordano and others for the reports.
 - :bug:`-` `fabric.runners.Runner` failed to properly deregister its
   ``SIGWINCH`` signal handler when `fabric.runners.Runner.close` is called; in
   rare situations this could cause tracebacks when the Python process receives

@@ -145,6 +145,17 @@ class Remote_:
                     ]
                 )
 
+            @patch("fabric.runners.signal")
+            @patch("fabric.runners.threading")
+            def SIGWINCH_not_handled_in_subthreads(
+                self, threading, signal, remote
+            ):
+                remote.expect()
+                threading.current_thread.return_value = "not main"
+                runner = _runner()
+                runner.run(CMD, pty=True)
+                assert not signal.signal.called
+
             def window_change_handler_uses_resize_pty(self):
                 runner = _runner()
                 runner.channel = Mock()
