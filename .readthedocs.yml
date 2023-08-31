@@ -10,7 +10,6 @@ python:
   version: 3.7
   install:
     - requirements: dev-requirements.txt
-  system_packages: false
 
 # NOTE: leaving sphinx.* alone as there's currently no way to differ the conf
 # file used based on project (so cannot differentiate between www and docs).
