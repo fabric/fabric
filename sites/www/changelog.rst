@@ -13,6 +13,10 @@ Changelog
     names in this paragraph to visit their changelogs and see what you might get
     if you upgrade your dependencies.
 
+- :bug:`-` `fabric.runners.Runner` failed to properly deregister its
+  ``SIGWINCH`` signal handler when `fabric.runners.Runner.close` is called; in
+  rare situations this could cause tracebacks when the Python process receives
+  ``SIGWINCH`` while no remote session is active. This has been fixed.
 - :release:`3.2.1 <2023-08-06>`
 - :bug:`-` Neglected to actually add ``deprecated`` to our runtime dependency
   specification (it was still in our development dependencies). This has been

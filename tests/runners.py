@@ -1,6 +1,6 @@
 from io import StringIO
 
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, patch, call
 from pytest import skip  # noqa
 
 from invoke import pty_size, Result, Runner
@@ -136,8 +136,13 @@ class Remote_:
                 remote.expect()
                 runner = _runner()
                 runner.run(CMD, pty=True)
-                signal.signal.assert_called_once_with(
-                    signal.SIGWINCH, runner.handle_window_change
+                signal.signal.assert_has_calls(
+                    [
+                        # Setup
+                        call(signal.SIGWINCH, runner.handle_window_change),
+                        # Teardown
+                        call(signal.SIGWINCH, signal.SIG_DFL),
+                    ]
                 )
 
             def window_change_handler_uses_resize_pty(self):

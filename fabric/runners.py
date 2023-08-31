@@ -117,6 +117,8 @@ class Remote(Runner):
         super().stop()
         if hasattr(self, "channel"):
             self.channel.close()
+        if hasattr(signal, "SIGWINCH"):
+            signal.signal(signal.SIGWINCH, signal.SIG_DFL)
 
     def kill(self):
         # Just close the channel immediately, which is about as close as we can
