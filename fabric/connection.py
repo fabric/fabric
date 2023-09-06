@@ -9,7 +9,7 @@ from decorator import decorator
 from invoke import Context
 from invoke.exceptions import ThreadException
 from paramiko.agent import AgentRequestHandler
-from paramiko.client import SSHClient, AutoAddPolicy
+from paramiko.client import SSHClient, RejectPolicy
 from paramiko.config import SSHConfig
 from paramiko.proxy import ProxyCommand
 
@@ -142,7 +142,7 @@ class Connection(Context):
     transport = None
     _sftp = None
     _agent_handler = None
-    default_host_key_policy = AutoAddPolicy
+    default_host_key_policy = RejectPolicy
 
     @classmethod
     def from_v1(cls, env, **kwargs):
