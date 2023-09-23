@@ -11,6 +11,5 @@ python:
   install:
     - requirements: dev-requirements.txt
 
-# NOTE: leaving sphinx.* alone as there's currently no way to differ the conf
-# file used based on project (so cannot differentiate between www and docs).
-# The web UI setting for that SHOULD take precedence?
+sphinx:
+  configuration: sites/docs/conf.py
