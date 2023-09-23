@@ -1,0 +1,15 @@
+version: 2
+
+build:
+  # Specific version of RTD docker image that's new enough to have Rust around
+  # (so Cryptography can build from source if needed).
+  # See https://github.com/readthedocs/readthedocs-docker-images
+  image: "7.0"
+
+python:
+  version: 3.7
+  install:
+    - requirements: dev-requirements.txt
+
+sphinx:
+  configuration: sites/www/conf.py
