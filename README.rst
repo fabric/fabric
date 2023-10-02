@@ -53,3 +53,9 @@ You can list available tasks using:
 .. code-block:: bash
 
    fab -l
+
+Roadmap
+-------
+
+The project maintainer keeps a `roadmap
+<https://bitprophet.org/projects#roadmap>`_ on his website.
