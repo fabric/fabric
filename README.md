@@ -1,5 +1,3 @@
-|version| |python| |license| |ci| |coverage|
-
 Welcome to Fabric! 🚀
 ======================
 
