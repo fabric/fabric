@@ -200,6 +200,15 @@ class Transfer:
                 upload a nonexistent ``local`` path will typically result in an
                 `OSError`.
 
+            This path will be **interpolated** with some useful parameters,
+            using `str.format`:
+
+            - The `.Connection` object's ``host``, ``original_host``, ``user``
+              and ``port`` attributes.
+            - Thus, for example, ``"/some/path/{user}@{host}/"`` will
+              yield different local paths depending on the properties of
+              the connection.
+
             **If a file-like object is given**, its contents are written to the
             remote file path.
 
@@ -279,6 +288,14 @@ class Transfer:
         # Massage local path
         orig_local = local
         if not is_file_like:
+            local = local.format(
+                host=self.connection.host,
+                user=self.connection.user,
+                port=self.connection.port,
+                original_host=getattr(
+                    self.connection, "original_host", self.connection.host
+                ),
+            )
             local = os.path.abspath(local)
             if local != orig_local:
                 debug(
