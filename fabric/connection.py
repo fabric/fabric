@@ -1,13 +1,15 @@
 from contextlib import contextmanager
 from io import StringIO
 from threading import Event
+import logging
+import os.path
 import socket
 
 from decorator import decorator
 from invoke import Context
 from invoke.exceptions import ThreadException
 from paramiko.agent import AgentRequestHandler
-from paramiko.client import SSHClient, AutoAddPolicy
+from paramiko.client import SSHClient, RejectPolicy
 from paramiko.config import SSHConfig
 from paramiko.proxy import ProxyCommand
 
@@ -140,6 +142,7 @@ class Connection(Context):
     transport = None
     _sftp = None
     _agent_handler = None
+    default_host_key_policy = RejectPolicy
 
     @classmethod
     def from_v1(cls, env, **kwargs):
@@ -454,9 +457,8 @@ class Connection(Context):
         self.connect_kwargs = self.resolve_connect_kwargs(connect_kwargs)
 
         #: The `paramiko.client.SSHClient` instance this connection wraps.
-        client = SSHClient()
-        client.set_missing_host_key_policy(AutoAddPolicy())
-        self.client = client
+        self.client = SSHClient()
+        self.setup_ssh_client()
 
         #: A convenience handle onto the return value of
         #: ``self.client.get_transport()`` (after connection time).
@@ -467,6 +469,21 @@ class Connection(Context):
         #: Whether to construct remote command lines with env vars prefixed
         #: inline.
         self.inline_ssh_env = inline_ssh_env
+
+    def setup_ssh_client(self):
+        if self.default_host_key_policy is not None:
+            logging.debug("host key policy: %s", self.default_host_key_policy)
+            self.client.set_missing_host_key_policy(
+                self.default_host_key_policy()
+            )
+        known_hosts = self.ssh_config.get(
+            "UserKnownHostsFile".lower(), "~/.ssh/known_hosts"
+        )
+        logging.debug("loading host keys from %s", known_hosts)
+        # multiple keys, seperated by whitespace, can be provided
+        for filename in [os.path.expanduser(f) for f in known_hosts.split()]:
+            if os.path.exists(filename):
+                self.client.load_host_keys(filename)
 
     def resolve_connect_kwargs(self, connect_kwargs):
         # TODO: is it better to pre-empt conflicts w/ manually-handled

@@ -245,7 +245,7 @@ class Connection_:
                 Connection("host")
                 Client.assert_called_once_with()
 
-            @patch("fabric.connection.AutoAddPolicy")
+            @patch("fabric.connection.Connection.default_host_key_policy")
             def sets_missing_host_key_policy(self, Policy, client):
                 # TODO: should make the policy configurable early on
                 sentinel = Mock()
