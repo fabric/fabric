@@ -7,7 +7,7 @@ from decorator import decorator
 from invoke import Context
 from invoke.exceptions import ThreadException
 from paramiko.agent import AgentRequestHandler
-from paramiko.client import SSHClient, AutoAddPolicy
+from paramiko.client import SSHClient, RejectPolicy
 from paramiko.config import SSHConfig
 from paramiko.proxy import ProxyCommand
 
@@ -455,7 +455,7 @@ class Connection(Context):
 
         #: The `paramiko.client.SSHClient` instance this connection wraps.
         client = SSHClient()
-        client.set_missing_host_key_policy(AutoAddPolicy())
+        client.set_missing_host_key_policy(RejectPolicy())
         self.client = client
 
         #: A convenience handle onto the return value of
