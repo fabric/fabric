@@ -100,9 +100,7 @@ class Transfer_:
                 assert result.local == "/local/host/somefile"
 
             def remote_path_posixpath_bits(self, transfer):
-                result = transfer.get(
-                    "parent/mid/leaf", "foo/{dirname}/bar/{basename}"
-                )
+                result = transfer.get("parent/mid/leaf", "foo/{dirname}/bar/{basename}")
                 # Recall that test harness sets remote apparent cwd as
                 # /remote/, thus dirname is /remote/parent/mid
                 assert result.local == "/local/foo/remote/parent/mid/bar/leaf"
