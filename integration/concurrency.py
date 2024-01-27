@@ -26,7 +26,7 @@ class concurrency:
 
     # TODO: spin up multiple temp SSHDs / Paramiko servers / ???
 
-    def setup(self):
+    def setup_method(self):
         cxn1 = Connection("localhost")
         cxn2 = Connection("localhost")
         cxn3 = Connection("localhost")
