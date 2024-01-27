@@ -78,8 +78,8 @@ class Transfer:
             This path will be **interpolated** with some useful parameters,
             using `str.format`:
 
-            - The `.Connection` object's ``host``, ``user`` and ``port``
-              attributes.
+            - The `.Connection` object's ``host``, ``original_host``, ``user``
+              and ``port`` attributes.
             - The ``basename`` and ``dirname`` of the ``remote`` path, as
               derived by `os.path` (specifically, its ``posixpath`` flavor, so
               that the resulting values are useful on remote POSIX-compatible
@@ -138,6 +138,9 @@ class Transfer:
                 host=self.connection.host,
                 user=self.connection.user,
                 port=self.connection.port,
+                original_host=getattr(
+                    self.connection, "original_host", self.connection.host
+                ),
                 dirname=posixpath.dirname(remote),
                 basename=remote_filename,
             )
