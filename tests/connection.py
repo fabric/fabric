@@ -8,7 +8,7 @@ import socket
 import time
 
 from unittest.mock import patch, Mock, call, ANY
-from paramiko.client import SSHClient, RejectPolicy, WarningPolicy
+from paramiko.client import SSHClient, RejectPolicy
 from paramiko import SSHConfig
 import pytest  # for mark, internal raises
 from pytest import skip, param
@@ -255,7 +255,7 @@ class Connection_:
                 set_policy.assert_called_once_with(sentinel)
 
             @patch("fabric.connection.WarningPolicy")
-            def sets_missing_host_key_policy_permit_missing(self, Policy, client):
+            def sets_missing_host_key_policy_permit(self, Policy, client):
                 sentinel = Mock()
                 Policy.return_value = sentinel
                 Connection("host", accept_missing_ssh_key=True)

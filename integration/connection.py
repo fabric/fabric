@@ -20,7 +20,7 @@ def skip_outside_ci():
 class Connection_:
     class ssh_connections:
         def open_method_generates_real_connection(self):
-            c = Connection("localhost")
+            c = Connection("localhost", accept_missing_ssh_key=True)
             c.open()
             assert c.client.get_transport().active is True
             assert c.is_connected is True
@@ -39,7 +39,9 @@ class Connection_:
             """
             Run command on localhost
             """
-            result = Connection("localhost").run("echo foo", hide=True)
+            result = Connection("localhost", accept_missing_ssh_key=True).run(
+                "echo foo", hide=True
+            )
             assert result.stdout == "foo\n"
             assert result.exited == 0
             assert result.ok is True
@@ -50,7 +52,7 @@ class Connection_:
             """
             # Most Unix systems should have stty, which asplodes when not run
             # under a pty, and prints useful info otherwise
-            result = Connection("localhost").run(
+            result = Connection("localhost", accept_missing_ssh_key=True).run(
                 "stty size", hide=True, pty=True
             )
             found = result.stdout.strip().split()
@@ -63,7 +65,8 @@ class Connection_:
     class shell:
         @trap
         def base_case(self):
-            result = Connection("localhost").shell(
+            result = Connection("localhost",
+                                accept_missing_ssh_key=True).shell(
                 # Some extra newlines to make sure it doesn't get split up by
                 # motd/prompt
                 in_stream=StringIO("\n\nexit\n")
@@ -78,7 +81,7 @@ class Connection_:
         def wraps_invoke_run(self):
             # NOTE: most of the interesting tests about this are in
             # invoke.runners / invoke.integration.
-            cxn = Connection("localhost")
+            cxn = Connection("localhost", accept_missing_ssh_key=True)
             result = cxn.local("echo foo", hide=True)
             assert result.stdout == "foo\n"
             assert not cxn.is_connected  # meh way of proving it didn't use SSH
@@ -87,7 +90,7 @@ class Connection_:
         """
         Run command truly locally, and over SSH via localhost
         """
-        cxn = Connection("localhost")
+        cxn = Connection("localhost", accept_missing_ssh_key=True)
         result = cxn.local("echo foo", hide=True)
         assert result.stdout == "foo\n"
         assert not cxn.is_connected  # meh way of proving it didn't use SSH yet
@@ -103,7 +106,10 @@ class Connection_:
             config = Config(
                 {"sudo": {"password": "mypass"}, "run": {"hide": True}}
             )
-            self.cxn = Connection("localhost", config=config)
+            self.cxn = Connection(
+                "localhost",
+                config=config,
+                accept_missing_ssh_key=True)
 
         def sudo_command(self):
             """
@@ -127,7 +133,7 @@ class Connection_:
         # code but one that only really manifests when doing stuff over the
         # network. Yay computers!
         path = "/usr/share/dict/words"
-        cxn = Connection("localhost")
+        cxn = Connection("localhost", accept_missing_ssh_key=True)
         with open(path) as fd:
             words = [x.strip() for x in fd.readlines()]
         stdout = cxn.run("cat {}".format(path), hide=True).stdout
@@ -138,7 +144,7 @@ class Connection_:
 
     class command_timeout:
         def setup(self):
-            self.cxn = Connection("localhost")
+            self.cxn = Connection("localhost", accept_missing_ssh_key=True)
 
         def does_not_raise_exception_when_under_timeout(self):
             assert self.cxn.run("sleep 1", timeout=3)

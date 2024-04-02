@@ -8,6 +8,7 @@ from invoke import Context
 from invoke.exceptions import ThreadException
 from paramiko.agent import AgentRequestHandler
 from paramiko.client import RejectPolicy, SSHClient, WarningPolicy
+from paramiko.client import AutoAddPolicy  # noqa: F401
 from paramiko.config import SSHConfig
 from paramiko.proxy import ProxyCommand
 

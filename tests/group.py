@@ -47,7 +47,12 @@ class Group_:
 
     class from_connections:
         def inits_from_iterable_of_Connections(self):
-            g = Group.from_connections((Connection("foo"), Connection("bar")))
+            g = Group.from_connections(
+                (
+                    Connection("foo", accept_missing_ssh_key=True),
+                    Connection("bar", accept_missing_ssh_key=True),
+                )
+            )
             assert len(g) == 2
             assert g[1].host == "bar"
 
@@ -126,7 +131,8 @@ class SerialGroup_:
     @mark.parametrize("method", ALL_METHODS)
     def executes_arguments_on_contents_run_serially(self, method):
         "executes arguments on contents' run() serially"
-        cxns = [Connection(x) for x in ("host1", "host2", "host3")]
+        cxns = [Connection(x, accept_missing_ssh_key=True)
+                for x in ("host1", "host2", "host3")]
         args = ARGS_BY_METHOD[method]
         kwargs = KWARGS_BY_METHOD[method]
         for index, cxn in enumerate(cxns):
@@ -181,7 +187,13 @@ class SerialGroup_:
 
 class ThreadingGroup_:
     def setup(self):
-        self.cxns = [Connection(x) for x in ("host1", "host2", "host3")]
+        self.cxns = [
+            Connection(
+                x,
+                accept_missing_ssh_key=True) for x in (
+                "host1",
+                "host2",
+                "host3")]
 
     @mark.parametrize("method", ALL_METHODS)
     @patch("fabric.group.Queue")
