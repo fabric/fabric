@@ -25,7 +25,7 @@ class Transfer_:
             else:
                 assert False, "Did not raise ArgumentError"
             # Transfer(Connection()) -> happy, exposes an attribute
-            cxn = Connection("host")
+            cxn = Connection("host", accept_missing_ssh_key=True)
             assert Transfer(cxn).connection is cxn
 
     class is_remote_dir:
@@ -60,7 +60,7 @@ class Transfer_:
 
             def returns_rich_Result_object(self, sftp_objs):
                 transfer, client = sftp_objs
-                cxn = Connection("host")
+                cxn = Connection("host", accept_missing_ssh_key=True)
                 result = Transfer(cxn).get("file")
                 assert result.orig_remote == "file"
                 assert result.remote == "/remote/file"
@@ -195,7 +195,7 @@ class Transfer_:
                 )
 
             def returns_rich_Result_object(self, transfer):
-                cxn = Connection("host")
+                cxn = Connection("host", accept_missing_ssh_key=True)
                 result = Transfer(cxn).put("file")
                 assert result.orig_remote is None
                 assert result.remote == "/remote/file"

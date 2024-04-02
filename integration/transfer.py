@@ -14,7 +14,7 @@ def _support(*parts):
 class Transfer_:
     class get:
         def setup(self):
-            self.c = Connection("localhost")
+            self.c = Connection("localhost", accept_missing_ssh_key=True)
             self.remote = _support("file.txt")
 
         def base_case(self, tmpdir):
@@ -51,7 +51,7 @@ class Transfer_:
 
     class put:
         def setup(self):
-            self.c = Connection("localhost")
+            self.c = Connection("localhost", accept_missing_ssh_key=True)
             self.remote = path.local.mkdtemp().join("file.txt").realpath()
 
         def base_case(self):

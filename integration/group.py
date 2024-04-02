@@ -6,13 +6,13 @@ from fabric.exceptions import GroupException
 
 class Group_:
     def simple_command(self):
-        group = Group("localhost", "127.0.0.1")
+        group = Group("localhost", "127.0.0.1", accept_missing_ssh_key=True)
         result = group.run("echo foo", hide=True)
         outs = [x.stdout.strip() for x in result.values()]
         assert ["foo", "foo"] == outs
 
     def failed_command(self):
-        group = Group("localhost", "127.0.0.1")
+        group = Group("localhost", "127.0.0.1", accept_missing_ssh_key=True)
         try:
             group.run("lolnope", hide=True)
         except GroupException as e:
@@ -25,7 +25,8 @@ class Group_:
             assert False, "Did not raise GroupException!"
 
     def excepted_command(self):
-        group = Group("nopebadhost1", "nopebadhost2")
+        group = Group("nopebadhost1", "nopebadhost2",
+                      accept_missing_ssh_key=True)
         try:
             group.run("lolnope", hide=True)
         except GroupException as e:

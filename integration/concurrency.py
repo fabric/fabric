@@ -27,9 +27,9 @@ class concurrency:
     # TODO: spin up multiple temp SSHDs / Paramiko servers / ???
 
     def setup(self):
-        cxn1 = Connection("localhost")
-        cxn2 = Connection("localhost")
-        cxn3 = Connection("localhost")
+        cxn1 = Connection("localhost", accept_missing_ssh_key=True)
+        cxn2 = Connection("localhost", accept_missing_ssh_key=True)
+        cxn3 = Connection("localhost", accept_missing_ssh_key=True)
         self.cxns = (cxn1, cxn2, cxn3)
 
     def connections_objects_do_not_share_connection_state(self):
