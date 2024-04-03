@@ -49,7 +49,8 @@ setuptools.setup(
     name=package_name,
     version=version,
     description="High level SSH command execution",
-    license="BSD",
+    license="BSD-2-Clause",
+    license_files=["LICENSE"],
     long_description=open("README.rst").read(),
     author="Jeff Forcier",
     author_email="jeff@bitprophet.org",
@@ -62,13 +63,13 @@ setuptools.setup(
         "CI": "https://app.circleci.com/pipelines/github/fabric/fabric",
         "Twitter": "https://twitter.com/pyfabric",
     },
-    python_requres=">=3.6",
-    install_requires=[
-        "invoke>=2.0",
-        "paramiko>=2.4",
-        "decorator>=5",
-        "deprecated>=1.2",
-    ],
+    #python_requres=">=3.6",
+    #install_requires=[
+    #    "invoke>=2.0",
+    #    "paramiko>=2.4",
+    #    "decorator>=5",
+    #    "deprecated>=1.2",
+    #],
     extras_require={
         # For folks who want to use fabric.testing package, eg
         # MockRemote/MockSFTP
