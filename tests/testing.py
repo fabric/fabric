@@ -9,8 +9,12 @@ And thank goodness we're not using vanilla unittest/pytest or the word "test"
 would be in here more than you can shake a buffalo at (see:
 https://en.wikipedia.org/wiki/Buffalo_buffalo_Buffalo_buffalo_buffalo_buffalo_Buffalo_buffalo)
 """
+import sys
 
-from unittest.mock import Mock, patch
+if sys.version_info[0] == 2:
+    from mock import Mock, patch
+else:
+    from unittest.mock import Mock, patch
 
 from fabric import Connection
 from fabric.testing.base import MockRemote

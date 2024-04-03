@@ -1,6 +1,12 @@
-from queue import Queue
+import sys
+
+if sys.version_info[0] == 2:
+    from Queue import Queue
+else:
+    from queue import Queue
 
 from invoke.util import ExceptionHandlingThread
+from six import iteritems
 
 from .connection import Connection
 from .exceptions import GroupException
@@ -283,7 +289,7 @@ class ThreadingGroup(Group):
         return results
 
 
-class GroupResult(dict):
+class GroupResult(Group):
     """
     Collection of results and/or exceptions arising from `.Group` methods.
 
@@ -305,9 +311,10 @@ class GroupResult(dict):
     """
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super(Group, self).__init__(*args, **kwargs)
         self._successes = {}
         self._failures = {}
+        self.d = kwargs
 
     def _bifurcate(self):
         # Short-circuit to avoid reprocessing every access.
@@ -315,7 +322,7 @@ class GroupResult(dict):
             return
         # TODO: if we ever expect .succeeded/.failed to be useful before a
         # GroupResult is fully initialized, this needs to become smarter.
-        for key, value in self.items():
+        for key, value in iteritems(self.d):
             if isinstance(value, BaseException):
                 self._failures[key] = value
             else:
