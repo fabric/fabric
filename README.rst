@@ -16,8 +16,12 @@
     :target: https://app.codecov.io/gh/fabric/fabric
     :alt: Codecov
 
-Welcome to Fabric!
-==================
+======
+Fabric
+======
+
+Overview
+========
 
 Fabric is a high level Python (2.7, 3.4+) library designed to execute shell
 commands remotely over SSH, yielding useful Python objects in return. It builds
@@ -26,8 +30,64 @@ command-line features) and `Paramiko <https://paramiko.org>`_ (SSH protocol
 implementation), extending their APIs to complement one another and provide
 additional functionality.
 
+Features
+========
+
+- Execute local and remote shell commands
+- Streamlined file transfer operations
+- Parallel execution of tasks across multiple hosts
+- Prompt handling for interactive scripts
+- Integration with local and remote Python environments
+
+Installation
+============
+
+You can install Fabric using pip:
+
+.. code-block:: bash
+
+    pip install fabric
+
+Quick Start
+===========
+
+Here's a simple example to get you started:
+
+.. code-block:: python
+
+    from fabric import Connection
+
+    # Connect to a remote server
+    c = Connection('user@host')
+
+    # Run a command
+    result = c.run('uname -s')
+    print(f"OS: {result.stdout.strip()}")
+
+    # Transfer a file
+    c.put('local_file.txt', 'remote_file.txt')
+
+Documentation
+=============
+
+For more detailed information, check out the `official Fabric documentation <http://docs.fabfile.org/>`_.
+
+Use Cases
+=========
+
+- Automating deployment processes
+- Executing maintenance tasks on remote servers
+- Configuring multiple servers simultaneously
+- Running database migrations
+- Restarting services across multiple hosts
+
 To find out what's new in this version of Fabric, please see `the changelog
 <https://fabfile.org/changelog.html#{}>`_.
 
 The project maintainer keeps a `roadmap
 <https://bitprophet.org/projects#roadmap>`_ on his website.
+
+Support
+=======
+
+If you encounter any issues or have questions, please file an issue on the `GitHub issue tracker <https://github.com/fabric/fabric/issues>`_.
