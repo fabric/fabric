@@ -48,24 +48,73 @@ You can install Fabric using pip:
 
     pip install fabric
 
-Quick Start
-===========
+Quickstart
+=================
 
-Here's a simple example to get you started:
+Installation
+------------
+
+.. code-block:: bash
+
+   pip install fabric
+
+Basic Usage
+-----------
 
 .. code-block:: python
 
-    from fabric import Connection
+   from fabric import Connection
 
-    # Connect to a remote server
-    c = Connection('user@host')
+   c = Connection('webserver')
+   result = c.run('uname -s')
+   print(result.stdout)
 
-    # Run a command
-    result = c.run('uname -s')
-    print(f"OS: {result.stdout.strip()}")
+Key Concepts
+------------
 
-    # Transfer a file
-    c.put('local_file.txt', 'remote_file.txt')
+- ``Connection``: Represents an SSH connection
+- ``run()``: Execute commands remotely
+- ``put()`/``get()``: Transfer files
+
+Sudo Commands
+-------------
+
+.. code-block:: python
+
+   c.sudo('apt-get update', password='mypassword')
+
+Multiple Servers
+----------------
+
+.. code-block:: python
+
+   from fabric import SerialGroup
+
+   results = SerialGroup('web1', 'web2', 'web3').run('uname -s')
+   for conn, result in results.items():
+       print(f"{conn.host}: {result.stdout.strip()}")
+
+Fabric CLI
+----------
+
+Create ``fabfile.py``:
+
+.. code-block:: python
+
+   from fabric import task
+
+   @task
+   def deploy(c):
+       c.run('git pull')
+       c.run('touch app.wsgi')
+
+Run tasks:
+
+.. code-block:: bash
+
+   fab -H webserver deploy
+
+For more details, see the full Fabric documentation.
 
 Documentation
 =============
