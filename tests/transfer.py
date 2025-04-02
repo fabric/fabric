@@ -46,6 +46,7 @@ class Transfer_:
         class basics:
             def accepts_single_remote_path_posarg(self, sftp_objs):
                 transfer, client = sftp_objs
+                client.normalize.side_effect = lambda p: p
                 transfer.get("file")
                 client.get.assert_called_with(
                     localpath="/local/file", remotepath="/remote/file"
@@ -53,6 +54,7 @@ class Transfer_:
 
             def accepts_local_and_remote_kwargs(self, sftp_objs):
                 transfer, client = sftp_objs
+                client.normalize.side_effect = lambda p: p
                 transfer.get(remote="path1", local="path2")
                 client.get.assert_called_with(
                     remotepath="/remote/path1", localpath="/local/path2"
@@ -61,6 +63,7 @@ class Transfer_:
             def returns_rich_Result_object(self, sftp_objs):
                 transfer, client = sftp_objs
                 cxn = Connection("host")
+                client.normalize.side_effect = lambda p: p
                 result = Transfer(cxn).get("file")
                 assert result.orig_remote == "file"
                 assert result.remote == "/remote/file"
@@ -71,10 +74,14 @@ class Transfer_:
                 # TODO: bytes-transferred info
 
         class path_arg_edge_cases:
-            def local_None_uses_remote_filename(self, transfer):
+            def local_None_uses_remote_filename(self, sftp_objs):
+                transfer, client = sftp_objs
+                client.normalize.side_effect = lambda p: p
                 assert transfer.get("file").local == "/local/file"
 
-            def local_empty_string_uses_remote_filename(self, transfer):
+            def local_empty_string_uses_remote_filename(self, sftp_objs):
+                transfer, client = sftp_objs
+                client.normalize.side_effect = lambda p: p
                 assert transfer.get("file", local="").local == "/local/file"
 
             @raises(TypeError)
@@ -95,11 +102,15 @@ class Transfer_:
                 expected = "/local/{}@host-22".format(transfer.connection.user)
                 assert result.local == expected
 
-            def connection_params_as_dir(self, transfer):
+            def connection_params_as_dir(self, sftp_objs):
+                transfer, client = sftp_objs
+                client.normalize.side_effect = lambda p: p
                 result = transfer.get("somefile", "{host}/")
                 assert result.local == "/local/host/somefile"
 
-            def remote_path_posixpath_bits(self, transfer):
+            def remote_path_posixpath_bits(self, sftp_objs):
+                transfer, client = sftp_objs
+                client.normalize.side_effect = lambda p: p
                 result = transfer.get(
                     "parent/mid/leaf", "foo/{dirname}/bar/{basename}"
                 )
@@ -112,6 +123,7 @@ class Transfer_:
 
             def _get_to_stringio(self, sftp_objs):
                 transfer, client = sftp_objs
+                client.normalize.side_effect = lambda p: p
                 fd = StringIO()
                 result = transfer.get("file", local=fd)
                 # Note: getfo, not get
@@ -135,6 +147,7 @@ class Transfer_:
 
             def preserves_remote_mode_by_default(self, sftp):
                 transfer, client, mock_os = sftp
+                client.normalize.side_effect = lambda p: p
                 # Attributes obj reflecting a realistic 'extended' octal mode
                 client.stat.return_value = self.attrs
                 transfer.get("file", local="meh")
@@ -144,6 +157,7 @@ class Transfer_:
 
             def allows_disabling_remote_mode_preservation(self, sftp):
                 transfer, client, mock_os = sftp
+                client.normalize.side_effect = lambda p: p
                 client.stat.return_value = self.attrs
                 transfer.get("file", local="meh", preserve_mode=False)
                 assert not mock_os.chmod.called
@@ -152,6 +166,7 @@ class Transfer_:
             @patch("fabric.transfer.Path")
             def without_trailing_slash_means_leaf_file(self, Path, sftp_objs):
                 transfer, client = sftp_objs
+                client.normalize.side_effect = lambda p: p
                 transfer.get(remote="file", local="top/middle/leaf")
                 client.get.assert_called_with(
                     localpath="/local/top/middle/leaf",
@@ -167,6 +182,7 @@ class Transfer_:
                 self, Path, sftp_objs
             ):
                 transfer, client = sftp_objs
+                client.normalize.side_effect = lambda p: p
                 transfer.get(remote="file", local="top/middle/leaf/")
                 client.get.assert_called_with(
                     localpath="/local/top/middle/leaf/file",
@@ -181,6 +197,7 @@ class Transfer_:
         class basics:
             def accepts_single_local_path_posarg(self, sftp_objs):
                 transfer, client = sftp_objs
+                client.normalize.side_effect = lambda p: p
                 transfer.put("file")
                 client.put.assert_called_with(
                     localpath="/local/file", remotepath="/remote/file"
@@ -189,13 +206,16 @@ class Transfer_:
             def accepts_local_and_remote_kwargs(self, sftp_objs):
                 transfer, sftp = sftp_objs
                 # NOTE: default mock stat is file-ish, so path won't be munged
+                sftp.normalize.side_effect = lambda p: p
                 transfer.put(local="path2", remote="path1")
                 sftp.put.assert_called_with(
                     localpath="/local/path2", remotepath="/remote/path1"
                 )
 
-            def returns_rich_Result_object(self, transfer):
+            def returns_rich_Result_object(self, sftp_objs):
+                transfer, client = sftp_objs
                 cxn = Connection("host")
+                client.normalize.side_effect = lambda p: p
                 result = Transfer(cxn).put("file")
                 assert result.orig_remote is None
                 assert result.remote == "/remote/file"
@@ -209,6 +229,7 @@ class Transfer_:
             def appends_local_file_basename(self, sftp_objs):
                 xfer, sftp = sftp_objs
                 sftp.stat.return_value.st_mode = 0o41777
+                sftp.normalize.side_effect = lambda p: p
                 xfer.put(local="file.txt", remote="/dir/path/")
                 sftp.stat.assert_called_once_with("/dir/path/")
                 sftp.put.assert_called_with(
@@ -222,6 +243,7 @@ class Transfer_:
                 ):
                     xfer, sftp = sftp_objs
                     sftp.stat.return_value.st_mode = 0o41777
+                    sftp.normalize.side_effect = lambda p: p
                     local = StringIO("sup\n")
                     local.name = "sup.txt"
                     xfer.put(local, remote="/dir/path")
@@ -233,14 +255,19 @@ class Transfer_:
                 def no_name_attribute_raises_ValueError(self, sftp_objs):
                     xfer, sftp = sftp_objs
                     sftp.stat.return_value.st_mode = 0o41777
+                    sftp.normalize.side_effect = lambda p: p
                     local = StringIO("sup\n")
                     xfer.put(local, remote="/dir/path")
 
         class path_arg_edge_cases:
-            def remote_None_uses_local_filename(self, transfer):
+            def remote_None_uses_local_filename(self, sftp_objs):
+                transfer, client = sftp_objs
+                client.normalize.side_effect = lambda p: p
                 assert transfer.put("file").remote == "/remote/file"
 
-            def remote_empty_string_uses_local_filename(self, transfer):
+            def remote_empty_string_uses_local_filename(self, sftp_objs):
+                transfer, client = sftp_objs
+                client.normalize.side_effect = lambda p: p
                 assert transfer.put("file", remote="").remote == "/remote/file"
 
             @raises(ValueError)
@@ -264,6 +291,7 @@ class Transfer_:
 
             def _put_from_stringio(self, sftp_objs):
                 transfer, client = sftp_objs
+                client.normalize.side_effect = lambda p: p
                 fd = StringIO()
                 result = transfer.put(fd, remote="file")
                 # Note: putfo, not put
@@ -292,10 +320,12 @@ class Transfer_:
                 transfer, client, mock_os = sftp
                 # This is a realistic stat for 0o644
                 mock_os.stat.return_value.st_mode = 33188
+                client.normalize.side_effect = lambda p: p
                 transfer.put("file")
                 client.chmod.assert_called_with("/remote/file", 0o644)
 
             def allows_disabling_local_mode_preservation(self, sftp_objs):
                 transfer, client = sftp_objs
+                client.normalize.side_effect = lambda p: p
                 transfer.put("file", preserve_mode=False)
                 assert not client.chmod.called
