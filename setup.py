@@ -62,7 +62,7 @@ setuptools.setup(
         "CI": "https://app.circleci.com/pipelines/github/fabric/fabric",
         "Twitter": "https://twitter.com/pyfabric",
     },
-    python_requres=">=3.6",
+    python_requires=">=3.6",
     install_requires=[
         "invoke>=2.0",
         "paramiko>=2.4",
