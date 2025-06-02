@@ -1,3 +1,5 @@
+from typing import Any, Callable
+
 import invoke
 
 from .connection import Connection
@@ -21,7 +23,7 @@ class Task(invoke.Task):
         super().__init__(*args, **kwargs)
 
 
-def task(*args, **kwargs):
+def task(*args: Any, **kwargs: Any) -> Callable:
     """
     Wraps/extends Invoke's `@task <invoke.tasks.task>` with extra kwargs.
 
