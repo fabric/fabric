@@ -4,6 +4,8 @@ invoke>=2.0
 # Invocations for common project tasks
 invocations>=3.2.0
 # pytest-relaxed for test organization, display etc tweaks
+# (and pytest <8, which breaks pytest-relaxed, seemingly)
+pytest<8
 pytest-relaxed>=2.0.1
 # pytest-cov for coverage
 pytest-cov>=4
