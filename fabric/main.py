@@ -5,7 +5,12 @@ Builds on top of Invoke's core functionality for same.
 """
 
 import getpass
-from pathlib import Path
+import sys
+
+if sys.version_info[0] == 2:
+    from pathlib2 import Path
+else:
+    from pathlib import Path
 
 from invoke import Argument, Collection, Exit, Program
 from invoke import __version__ as invoke
