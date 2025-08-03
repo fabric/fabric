@@ -122,7 +122,8 @@ class Transfer:
             raise ValueError("Remote path must not be empty!")
         orig_remote = remote
         remote = posixpath.join(
-            self.sftp.getcwd() or self.sftp.normalize("."), remote
+            self.sftp.getcwd() or self.sftp.normalize("."),
+            self.sftp.normalize(remote),
         )
 
         # Massage local path
@@ -270,7 +271,8 @@ class Transfer:
 
         prejoined_remote = remote
         remote = posixpath.join(
-            self.sftp.getcwd() or self.sftp.normalize("."), remote
+            self.sftp.getcwd() or self.sftp.normalize("."),
+            self.sftp.normalize(remote),
         )
         if remote != prejoined_remote:
             msg = "Massaged relative remote path {!r} into {!r}"
