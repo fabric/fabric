@@ -441,9 +441,7 @@ class Connection(Context):
         self.forward_agent = forward_agent
 
         if connect_timeout is None:
-            connect_timeout = self.ssh_config.get(
-                "connecttimeout", self.config.timeouts.connect
-            )
+            connect_timeout = self.ssh_config.get("connecttimeout", self.config.timeouts.connect)
         if connect_timeout is not None:
             connect_timeout = int(connect_timeout)
         #: Connection timeout
@@ -894,7 +892,7 @@ class Connection(Context):
 
         .. versionadded:: 2.0
         """
-        return Transfer(self).get(*args, **kwargs)
+        return Transfer(self).get(**kwargs)
 
     def put(self, *args, **kwargs):
         """

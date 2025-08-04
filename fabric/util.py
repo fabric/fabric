@@ -43,3 +43,4 @@ def get_local_user():
 
             username = win32api.GetUserName()
     return username
+
