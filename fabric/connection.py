@@ -726,6 +726,7 @@ class Connection(Context):
             self.client.close()
             if self.forward_agent and self._agent_handler is not None:
                 self._agent_handler.close()
+        self._sftp = None
 
     def __enter__(self):
         return self
