@@ -756,6 +756,36 @@ class Connection_:
             kwargs = open_channel.call_args[1]
             assert kwargs["kind"] == "direct-tcpip"
             assert kwargs["dest_addr"], "host" == 22
+            assert kwargs["timeout"] is None
+            # Expect result of that channel open as sock arg to connect()
+            sock_arg = mock_main.connect.call_args[1]["sock"]
+            assert sock_arg is open_channel.return_value
+
+        # NOTE: does more involved stuff so can't use "client" fixture
+        @patch("fabric.connection.SSHClient")
+        def uses_timeout_on_the_gateway_io(self, Client):
+            "uses Connection gateway as 'sock' arg to SSHClient.connect"
+            # Setup
+            mock_gw = Mock()
+            mock_main = Mock()
+            Client.side_effect = [mock_gw, mock_main]
+            # connect_timeout=7 here to be explicit and to
+            # distinguish from the timeout for the main connection
+            gw = Connection("otherhost", connect_timeout=7)
+            gw.open = Mock(wraps=gw.open)
+            main = Connection("host", gateway=gw, connect_timeout=12)
+            main.open()
+            # Expect gateway is also open()'d
+            gw.open.assert_called_once_with()
+
+            # Expect direct-tcpip channel open on 1st client
+            open_channel = mock_gw.get_transport.return_value.open_channel
+            kwargs = open_channel.call_args[1]
+
+            assert kwargs["kind"] == "direct-tcpip"
+            assert kwargs["dest_addr"], "host" == 22
+            # This should match the connect_timeout of the outer Connection
+            assert kwargs["timeout"] == 12
             # Expect result of that channel open as sock arg to connect()
             sock_arg = mock_main.connect.call_args[1]["sock"]
             assert sock_arg is open_channel.return_value
