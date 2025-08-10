@@ -275,7 +275,7 @@ parameterized with a `.Connection` object from the caller, to encourage reuse::
     def upload_and_unpack(c):
         c.put('myfiles.tgz', '/opt/mydata')
         c.run('tar -C /opt/mydata -xzvf /opt/mydata/myfiles.tgz')
-        
+
 As you'll see below, such functions can be handed to other API methods to
 enable more complex use cases as well.
 
@@ -297,7 +297,7 @@ straightforward approach could be to iterate over a list or tuple of
     web1: Linux
     web2: Linux
     mac1: Darwin
-    
+
 This approach works, but as use cases get more complex it can be
 useful to think of a collection of hosts as a single object. Enter `.Group`, a
 class wrapping one-or-more `.Connection` objects and offering a similar API;
@@ -430,3 +430,8 @@ than one host, which runs the task multiple times, each time with a different
 `.Connection` instance handed in::
 
     $ fab -H web1,web2,web3 upload_and_unpack
+
+The way a `.Connection` is created from a host string like ``web1`` may be
+customized by overriding `~fabric.executor.Executor.normalize_hosts`. The
+accompanying :doc:`configuration value </concepts/configuration>` is
+``tasks.executor_class``.
