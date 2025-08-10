@@ -511,7 +511,7 @@ class Connection(Context):
                 # TODO: in an ideal world we'd check user/port too in case they
                 # differ, but...seriously? They can file a PR with those extra
                 # half dozen test cases in play, E_NOTIME
-                if self.derive_shorthand(hop)["host"] == self.host:
+                if self.derive_shorthand(hop)["host"] in (self.host, self.original_host):
                     return None
                 # Happily, ProxyJump uses identical format to our host
                 # shorthand...
