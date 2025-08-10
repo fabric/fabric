@@ -8,7 +8,7 @@ import socket
 import time
 
 from unittest.mock import patch, Mock, call, ANY
-from paramiko.client import SSHClient, AutoAddPolicy
+from paramiko.client import SSHClient, RejectPolicy
 from paramiko import SSHConfig
 import pytest  # for mark, internal raises
 from pytest import skip, param
@@ -65,7 +65,7 @@ class Connection_:
         def defaults_to_auto_add(self):
             # TODO: change Paramiko API so this isn't a private access
             # TODO: maybe just merge with the __init__ test that is similar
-            assert isinstance(Connection("host").client._policy, AutoAddPolicy)
+            assert isinstance(Connection("host").client._policy, RejectPolicy)
 
     class init:
         "__init__"
@@ -245,7 +245,7 @@ class Connection_:
                 Connection("host")
                 Client.assert_called_once_with()
 
-            @patch("fabric.connection.AutoAddPolicy")
+            @patch("fabric.connection.Connection.default_host_key_policy")
             def sets_missing_host_key_policy(self, Policy, client):
                 # TODO: should make the policy configurable early on
                 sentinel = Mock()
