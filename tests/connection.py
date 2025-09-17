@@ -775,8 +775,8 @@ class Connection_:
 
         def test_get_timeout(monkeypatch):
             conn = Connection("host")
-            
-            def fake_get(*args,**kwargs):
+
+            def fake_get(*args, **kwargs):
                 time.sleep(0.01)
                 return"done"
             monkeypatch.setattr(Transfer, "get", fake_get)
@@ -785,8 +785,8 @@ class Connection_:
 
         def test_put_timeout(monkeypatch):
             conn = Connection("host")
-            
-            def fake_put(*args,**kwargs):
+
+            def fake_put(*args, **kwargs):
                 time.sleep(0.01)
                 return"done"
             monkeypatch.setattr(Transfer, "put", fake_put)
