@@ -1426,6 +1426,7 @@ def test_get_timeout(monkeypatch):
     result = conn.get("dummy_file", timeout=1)
     assert result == "done"
 
+
 def test_put_timeout(monkeypatch):
     conn = Connection("host")
 
