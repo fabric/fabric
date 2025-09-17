@@ -21,6 +21,7 @@ from invoke.exceptions import ThreadException
 from fabric import Config, Connection
 from fabric.exceptions import InvalidV1Env
 from fabric.util import get_local_user
+from fabric.connection import Transfer
 
 from _util import support, faux_v1_env
 
@@ -773,22 +774,24 @@ class Connection_:
             assert sock_arg is moxy.return_value
 
         def test_get_timeout(monkeypatch):
-            conn=Connection("host")
+            conn = Connection("host")
+            
             def fake_get(*args,**kwargs):
                 time.sleep(0.01)
                 return"done"
-            monkeypatch.setattr(Transfer,"get",fake_get)
+            monkeypatch.setattr(Transfer, "get", fake_get)
             with pytest.raises(TimeoutError):
-                conn.get("dummy_file",timeout=0.001)
+                conn.get("dummy_file", timeout=0.001)
 
         def test_put_timeout(monkeypatch):
-            conn=Connection("host")
+            conn = Connection("host")
+            
             def fake_put(*args,**kwargs):
                 time.sleep(0.01)
                 return"done"
-            monkeypatch.setattr(Transfer,"put",fake_put)
+            monkeypatch.setattr(Transfer, "put", fake_put)
             with pytest.raises(TimeoutError):
-                conn.put("dummy_file",timeout=0.001)
+                conn.put("dummy_file", timeout=0.001)
 
         # TODO: all the various connect-time options such as agent forwarding,
         # host acceptance policies, how to auth, etc etc. These are all aspects
