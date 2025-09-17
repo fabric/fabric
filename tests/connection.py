@@ -1423,7 +1423,8 @@ def test_get_timeout(monkeypatch):
     monkeypatch.setattr(Transfer, "get", fake_get)
     with pytest.raises(TimeoutError):
         conn.get("dummy_file", timeout=0.001)
-
+    result = conn.get("dummy_file", timeout=1)
+    assert result == "done"
 
 def test_put_timeout(monkeypatch):
     conn = Connection("host")
@@ -1435,3 +1436,6 @@ def test_put_timeout(monkeypatch):
     monkeypatch.setattr(Transfer, "put", fake_put)
     with pytest.raises(TimeoutError):
         conn.put("dummy_file", timeout=0.001)
+    result = conn.put("dummy_file", timeout=1)
+    assert result == "done"
+
