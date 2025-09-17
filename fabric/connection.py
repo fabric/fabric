@@ -906,7 +906,7 @@ class Connection(Context):
             elapsed = time.time() - start
             if elapsed > timeout:
                 raise TimeoutError(
-                    f"get() took {elapsed:.2f}s, "               
+                    f"get() took {elapsed:.2f}s, "
                     f"exceeded timeout={timeout}s"
                 )
         return result
