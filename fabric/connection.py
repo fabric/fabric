@@ -906,7 +906,7 @@ class Connection(Context):
             elapsed = time.time() - start
             if elapsed > timeout:
                 raise TimeoutError(f"get() took {elapsed:.2f}s, "
-                                   "exceeded timeout={timeout}s")
+                                   f"exceeded timeout={timeout}s")
         return result
 
     def put(self, *args, **kwargs):
@@ -929,7 +929,7 @@ class Connection(Context):
             elapsed = time.time() - start
             if elapsed > timeout:
                 raise TimeoutError(f"put() took {elapsed:.2f}s, "
-                                   "exceeded timeout={timeout}s")
+                                   f"exceeded timeout={timeout}s")
         return result
 
     # TODO: yield the socket for advanced users? Other advanced use cases
