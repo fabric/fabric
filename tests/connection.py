@@ -1439,4 +1439,3 @@ def test_put_timeout(monkeypatch):
         conn.put("dummy_file", timeout=0.001)
     result = conn.put("dummy_file", timeout=1)
     assert result == "done"
-
