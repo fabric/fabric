@@ -2,6 +2,7 @@ from contextlib import contextmanager
 from io import StringIO
 from threading import Event
 import socket
+import time
 
 from decorator import decorator
 from invoke import Context
@@ -900,14 +901,12 @@ class Connection(Context):
         """
         timeout = kwargs.pop("timeout", None)
         start = time.time()
-    
         result = Transfer(self).get(*args, **kwargs)
-    
         if timeout is not None:
             elapsed = time.time() - start
             if elapsed > timeout:
-                raise TimeoutError(f"get() took {elapsed:.2f}s, exceeded timeout={timeout}s")
-    
+                raise TimeoutError(f"get() took {elapsed:.2f}s, "
+                                   "exceeded timeout={timeout}s")
         return result
 
     def put(self, *args, **kwargs):
@@ -925,14 +924,12 @@ class Connection(Context):
         """
         timeout = kwargs.pop("timeout", None)
         start = time.time()
-    
         result = Transfer(self).put (*args, **kwargs)
-    
         if timeout is not None:
             elapsed = time.time() - start
             if elapsed > timeout:
-                raise TimeoutError(f"put() took {elapsed:.2f}s, exceeded timeout={timeout}s")
-    
+                raise TimeoutError(f"put() took {elapsed:.2f}s, "
+                                   "exceeded timeout={timeout}s")
         return result
 
     # TODO: yield the socket for advanced users? Other advanced use cases
