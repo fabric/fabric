@@ -900,10 +900,10 @@ class Connection(Context):
         .. versionchanged:: 2.x
         """
         timeout = kwargs.pop("timeout", None)
-        start = time.time()
+        start = time.monotonic()
         result = Transfer(self).get(*args, **kwargs)
         if timeout is not None:
-            elapsed = time.time() - start
+            elapsed = time.monotonic() - start
             if elapsed > timeout:
                 raise TimeoutError(
                     f"get() took {elapsed:.2f}s, "
@@ -925,10 +925,10 @@ class Connection(Context):
         .. versionchanged:: 2.x
         """
         timeout = kwargs.pop("timeout", None)
-        start = time.time()
+        start = time.monotonic()
         result = Transfer(self).put(*args, **kwargs)
         if timeout is not None:
-            elapsed = time.time() - start
+            elapsed = time.monotonic() - start
             if elapsed > timeout:
                 raise TimeoutError(
                     f"put() took {elapsed:.2f}s, "
