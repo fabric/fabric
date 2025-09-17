@@ -2,6 +2,7 @@ from contextlib import contextmanager
 from io import StringIO
 from threading import Event
 import socket
+import time
 
 from decorator import decorator
 from invoke import Context
@@ -892,20 +893,48 @@ class Connection(Context):
         Simply a wrapper for `.Transfer.get`. Please see its documentation for
         all details.
 
+        Supports a `timeout` kwarg (in seconds). If provided, raises a
+        TimeoutError if the operation takes longer than the specified time.
+
         .. versionadded:: 2.0
+        .. versionchanged:: 2.x
         """
-        return Transfer(self).get(*args, **kwargs)
+        timeout = kwargs.pop("timeout", None)
+        start = time.monotonic()
+        result = Transfer(self).get(*args, **kwargs)
+        if timeout is not None:
+            elapsed = time.monotonic() - start
+            if elapsed > timeout:
+                raise TimeoutError(
+                    f"get() took {elapsed:.2f}s, "
+                    f"exceeded timeout={timeout}s"
+                )
+        return result
 
     def put(self, *args, **kwargs):
         """
-        Put a local file (or file-like object) to the remote filesystem.
+        Put a local file (or file-like object) in the remote filesystem.
 
         Simply a wrapper for `.Transfer.put`. Please see its documentation for
         all details.
 
+        Supports a `timeout` kwarg (in seconds). If provided, raises a
+        TimeoutError if the operation takes longer than the specified time.
+
         .. versionadded:: 2.0
+        .. versionchanged:: 2.x
         """
-        return Transfer(self).put(*args, **kwargs)
+        timeout = kwargs.pop("timeout", None)
+        start = time.monotonic()
+        result = Transfer(self).put(*args, **kwargs)
+        if timeout is not None:
+            elapsed = time.monotonic() - start
+            if elapsed > timeout:
+                raise TimeoutError(
+                    f"put() took {elapsed:.2f}s, "
+                    f"exceeded timeout={timeout}s"
+                )
+        return result
 
     # TODO: yield the socket for advanced users? Other advanced use cases
     # (perhaps factor out socket creation itself)?
