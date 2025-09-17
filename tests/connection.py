@@ -778,7 +778,8 @@ class Connection_:
 
             def fake_get(*args, **kwargs):
                 time.sleep(0.01)
-                return"done"
+                return "done"
+
             monkeypatch.setattr(Transfer, "get", fake_get)
             with pytest.raises(TimeoutError):
                 conn.get("dummy_file", timeout=0.001)
@@ -788,7 +789,8 @@ class Connection_:
 
             def fake_put(*args, **kwargs):
                 time.sleep(0.01)
-                return"done"
+                return "done"
+
             monkeypatch.setattr(Transfer, "put", fake_put)
             with pytest.raises(TimeoutError):
                 conn.put("dummy_file", timeout=0.001)
