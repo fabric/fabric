@@ -924,7 +924,7 @@ class Connection(Context):
         """
         timeout = kwargs.pop("timeout", None)
         start = time.time()
-        result = Transfer(self).put (*args, **kwargs)
+        result = Transfer(self).put(*args, **kwargs)
         if timeout is not None:
             elapsed = time.time() - start
             if elapsed > timeout:
