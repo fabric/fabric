@@ -1412,6 +1412,7 @@ class Connection_:
         def listener_errors_bubble_up(self):
             skip()
 
+
 def test_get_timeout(monkeypatch):
     conn = Connection("host")
 
@@ -1422,6 +1423,7 @@ def test_get_timeout(monkeypatch):
     monkeypatch.setattr(Transfer, "get", fake_get)
     with pytest.raises(TimeoutError):
         conn.get("dummy_file", timeout=0.001)
+
 
 def test_put_timeout(monkeypatch):
     conn = Connection("host")
