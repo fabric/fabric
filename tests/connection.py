@@ -453,6 +453,15 @@ class Connection_:
                     # TODO: would we ever WANT a reference? can't imagine...
                     assert cxn.gateway.config is not conf
 
+                def none_value_disables_proxy_jump(self):
+                    conf = self._runtime_config(
+                        basename="proxyjump",
+                    )
+                    cxn = Connection("nojump", config=conf)
+                    assert cxn.config is conf
+                    # `none` correctly disables the proxy jump
+                    assert cxn.gateway is None
+
             class connect_timeout:
                 def wins_over_default(self):
                     assert self._runtime_cxn().connect_timeout == 15
