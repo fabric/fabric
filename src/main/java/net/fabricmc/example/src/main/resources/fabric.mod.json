@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "spidermod",
+  "version": "1.0.0",
+  "name": "Giant Spider Boss",
+  "description": "Spider King Boss x5 size",
+  "authors": [ "Me" ],
+  "contact": { "homepage": "https://fabricmc.net" },
+  "license": "CC0-1.0",
+  "icon": "assets/spidermod/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [ "net.fabricmc.example.ExampleMod" ],
+    "client": [ "net.fabricmc.example.ExampleMod" ]
+  },
+  "depends": {
+    "fabricloader": ">=0.14.21",
+    "minecraft": "~1.20.1",
+    "java": ">=17",
+    "fabric-api": "*"
+  }
+}
