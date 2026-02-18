@@ -989,12 +989,12 @@ class Connection_:
             # to run multiple handlers at once
             Handler.return_value.close.assert_called_once_with()
 
-        def short_circuits_if_not_connected(self, client):
+        def cleans_up_transport_even_if_not_connected(self, client):
             c = Connection("host")
-            # Won't trigger close() on client because it'll already think it's
-            # closed (due to no .transport & the behavior of .is_connected)
+            # Always calls client.close() to clean up transport threads
+            # even after a failed authentication where is_connected is False.
             c.close()
-            assert not client.close.called
+            client.close.assert_called_once_with()
 
         def class_works_as_a_closing_contextmanager(self, client):
             with Connection("host") as c:
