@@ -1,6 +1,7 @@
 from contextlib import contextmanager
 from io import StringIO
 from threading import Event
+import inspect
 import socket
 
 from decorator import decorator
@@ -44,6 +45,31 @@ def derive_shorthand(host_string):
         port = int(port)
 
     return {"user": user, "host": host, "port": port}
+
+
+def _get_invoke_context_config():
+    """
+    Try to retrieve the config from the current Invoke Context in the call stack.
+
+    This allows Connection objects to inherit configuration from the task's
+    context, including project-level fabric.yml settings.
+
+    Returns the config object if a Context is found in the call stack, or None
+    if no Context is found.
+    """
+    try:
+        for frame_info in inspect.stack():
+            frame_locals = frame_info.frame.f_locals
+            # Check for common context variable names used in tasks
+            for ctx_name in ("ctx", "context"):
+                if ctx_name in frame_locals:
+                    obj = frame_locals[ctx_name]
+                    if isinstance(obj, Context):
+                        return obj.config
+    except Exception:
+        # If anything goes wrong during inspection, just return None
+        pass
+    return None
 
 
 class Connection(Context):
@@ -377,7 +403,12 @@ class Connection(Context):
         #: The .Config object referenced when handling default values (for e.g.
         #: user or port, when not explicitly given) or deciding how to behave.
         if config is None:
-            config = Config()
+            # Try to get config from the current Invoke context to inherit
+            # project-level configuration (e.g., from fabric.yml).
+            config = _get_invoke_context_config()
+            if config is None:
+                # No context found, create a fresh config
+                config = Config()
         # Handle 'vanilla' Invoke config objects, which need cloning 'into' one
         # of our own Configs (which grants the new defaults, etc, while not
         # squashing them if the Invoke-level config already accounted for them)
