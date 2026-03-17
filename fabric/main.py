@@ -5,6 +5,7 @@ Builds on top of Invoke's core functionality for same.
 """
 
 import getpass
+import os
 from pathlib import Path
 
 from invoke import Argument, Collection, Exit, Program
@@ -107,6 +108,11 @@ class Fab(Program):
         # skips loading system/global invoke-type conf files) so we manually do
         # that here to match upstream behavior.
         self.config.load_base_conf_files()
+        # Load project-level configuration files from the current working
+        # directory. This allows settings like search_root to be respected when
+        # searching for the collection.
+        self.config.set_project_location(os.getcwd())
+        self.config.load_project()
         # And merge again so that data is available.
         # TODO: really need to either A) stop giving fucks about calling
         # merge() "too many times", or B) make merge() itself determine whether
