@@ -65,7 +65,7 @@ setuptools.setup(
     python_requres=">=3.6",
     install_requires=[
         "invoke>=2.0",
-        "paramiko>=2.4",
+        "paramiko>=3.2.0",
         "decorator>=5",
         "deprecated>=1.2",
     ],
