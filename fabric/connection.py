@@ -1,20 +1,20 @@
+import socket
 from contextlib import contextmanager
 from io import StringIO
 from threading import Event
-import socket
 
 from decorator import decorator
 from invoke import Context
 from invoke.exceptions import ThreadException
 from paramiko.agent import AgentRequestHandler
-from paramiko.client import SSHClient, AutoAddPolicy
+from paramiko.client import AutoAddPolicy, SSHClient
 from paramiko.config import SSHConfig
 from paramiko.proxy import ProxyCommand
 
 from .config import Config
 from .exceptions import InvalidV1Env
 from .transfer import Transfer
-from .tunnels import TunnelManager, Tunnel
+from .tunnels import Tunnel, TunnelManager
 
 
 @decorator
@@ -217,6 +217,7 @@ class Connection(Context):
         connect_timeout=None,
         connect_kwargs=None,
         inline_ssh_env=None,
+        remainder=None,
     ):
         """
         Set up a new object representing a server connection.
@@ -353,6 +354,12 @@ class Connection(Context):
                 affects remote commands, and thus, methods like `.run` and
                 `.sudo`.
 
+        :param str remainder:
+            Mirrors the same parameter from `invoke.context.Context` - is a
+            method of informing called tasks that the CLI parser saw an
+            explicitly marked "don't parse me" segment of text. See
+            :ref:`remainder`.
+
         :raises ValueError:
             if user or port values are given via both ``host`` shorthand *and*
             their own arguments. (We `refuse the temptation to guess`_).
@@ -372,7 +379,7 @@ class Connection(Context):
         # NOTE: parent __init__ sets self._config; for now we simply overwrite
         # that below. If it's somehow problematic we would want to break parent
         # __init__ up in a manner that is more cleanly overrideable.
-        super().__init__(config=config)
+        super().__init__(config=config, remainder=remainder)
 
         #: The .Config object referenced when handling default values (for e.g.
         #: user or port, when not explicitly given) or deciding how to behave.
@@ -548,9 +555,7 @@ class Connection(Context):
             if isinstance(self.gateway, str):
                 val = "proxycommand"
             bits.append(("gw", val))
-        return "<Connection {}>".format(
-            " ".join("{}={}".format(*x) for x in bits)
-        )
+        return "<Connection {}>".format(" ".join("{}={}".format(*x) for x in bits))
 
     def _identity(self):
         # TODO: consider including gateway and maybe even other init kwargs?
@@ -622,10 +627,7 @@ class Connection(Context):
             if key in self.connect_kwargs:
                 raise ValueError(err.format(key))
         # These may be given one way or the other, but not both
-        if (
-            "timeout" in self.connect_kwargs
-            and self.connect_timeout is not None
-        ):
+        if "timeout" in self.connect_kwargs and self.connect_timeout is not None:
             raise ValueError(err.format("timeout"))
         # No conflicts -> merge 'em together
         kwargs = dict(
@@ -741,9 +743,7 @@ class Connection(Context):
         return channel
 
     def _remote_runner(self):
-        return self.config.runners.remote(
-            context=self, inline_env=self.inline_ssh_env
-        )
+        return self.config.runners.remote(context=self, inline_env=self.inline_ssh_env)
 
     @opens
     def run(self, command, **kwargs):
@@ -1110,6 +1110,4 @@ class Connection(Context):
             for tunnel in tunnels:
                 tunnel.finished.set()
                 tunnel.join()
-            self.transport.cancel_port_forward(
-                address=remote_host, port=remote_port
-            )
+            self.transport.cancel_port_forward(address=remote_host, port=remote_port)

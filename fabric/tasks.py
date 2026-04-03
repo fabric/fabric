@@ -101,12 +101,15 @@ class ConnectionCall(invoke.Call):
         kwargs["init_kwargs"] = self.init_kwargs
         return kwargs
 
-    def make_context(self, config):
-        kwargs = self.init_kwargs
-        # TODO: what about corner case of a decorator giving config in a hosts
-        # kwarg member?! For now let's stomp on it, and then if somebody runs
-        # into it, we can identify the use case & decide how best to deal.
-        kwargs["config"] = config
+    def make_context(self, config, core_parse_result):
+        # TODO: updating this for Invoke 3 exposes that we probs need to add
+        # another intermediary subroutine so we can phrase our logic as
+        # "parent's context-making kwargs fed to our context subclass".
+        # TODO: or does it make sense to fold this into init_kwargs? I don't
+        # entirely recall why Fabric grew that but Invoke itself did not.
+        kwargs = dict(
+            self.init_kwargs, config=config, remainder=core_parse_result.remainder
+        )
         return Connection(**kwargs)
 
     def __repr__(self):
