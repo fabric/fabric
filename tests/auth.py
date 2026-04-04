@@ -1,6 +1,11 @@
+import sys
 from getpass import getpass
-from pathlib import Path
-from unittest.mock import Mock, patch
+if sys.version_info[0] == 2:
+    from pathlib2 import Path
+    from mock import Mock, patch
+else:
+    from pathlib import Path
+    from unittest.mock import Mock, patch
 
 from invoke.vendor.lexicon import Lexicon
 from pytest import raises, fixture

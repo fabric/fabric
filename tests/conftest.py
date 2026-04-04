@@ -1,6 +1,10 @@
 # flake8: noqa
+import sys
 from os.path import isfile, expanduser
-from unittest.mock import patch
+if sys.version_info[0] == 2:
+    from mock import patch
+else:
+    from unittest.mock import patch
 
 from pytest import fixture
 

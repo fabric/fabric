@@ -5,8 +5,12 @@ File transfer via SFTP and/or SCP.
 import os
 import posixpath
 import stat
+import sys
 
-from pathlib import Path
+if sys.version_info[0] == 2:
+    from pathlib2 import Path
+else:
+    from pathlib import Path
 
 from .util import debug  # TODO: actual logging! LOL
 

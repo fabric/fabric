@@ -1,6 +1,10 @@
+import sys
 from functools import partial
 from getpass import getpass
-from pathlib import Path
+if sys.version_info[0] == 2:
+    from pathlib2 import Path
+else:
+    from pathlib import Path
 
 from paramiko import Agent, PKey
 from paramiko.auth_strategy import (
@@ -130,10 +134,10 @@ class OpenSSHAuthStrategy(AuthStrategy):
         # At this point, if we've still got no keys or certs, look in the
         # default user locations.
         if not any((config_certs, config_keys, cli_certs, cli_keys)):
-            user_ssh = Path.home() / f"{'' if win32 else '.'}ssh"
+            user_ssh = Path.home().joinpath("{}ssh".format('' if win32 else '.'))
             # This is the same order OpenSSH documents as using.
             for type_ in ("rsa", "ecdsa", "ed25519", "dsa"):
-                path = user_ssh / f"id_{type_}"
+                path = Path(user_ssh).joinpath("id_{type_}".format(type_=type_))
                 try:
                     key = PKey.from_path(path)
                 except FileNotFoundError:
