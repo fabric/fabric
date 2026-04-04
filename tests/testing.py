@@ -79,6 +79,7 @@ class MockRemote_:
                             method="put",
                             localpath="/local/whatevs",
                             remotepath="/remote/whatevs",
+                            callback=None,
                         )
                     ],
                 )
@@ -95,6 +96,7 @@ class MockRemote_:
                                 method="put",
                                 localpath="/local/whatevs",
                                 remotepath="/remote/whatevs",
+                                callback=None,
                             )
                         ],
                     )

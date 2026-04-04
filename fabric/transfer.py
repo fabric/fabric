@@ -40,7 +40,7 @@ class Transfer:
         except IOError:
             return False
 
-    def get(self, remote, local=None, preserve_mode=True):
+    def get(self, remote, local=None, preserve_mode=True, callback=None):
         """
         Copy a file from wrapped connection's host to the local filesystem.
 
@@ -99,6 +99,11 @@ class Transfer:
         :param bool preserve_mode:
             Whether to `os.chmod` the local file so it matches the remote
             file's mode (default: ``True``).
+
+        :param callback:
+            Optional callback function (func(int, inc)) accepting the number of
+            already transferred bytes and the total number of bytes for the
+            current operation.
 
         :returns: A `.Result` object.
 
@@ -165,9 +170,13 @@ class Transfer:
         #
         # If local appears to be a file-like object, use sftp.getfo, not get
         if is_file_like:
-            self.sftp.getfo(remotepath=remote, fl=local)
+            self.sftp.getfo(remotepath=remote, fl=local, callback=callback)
         else:
-            self.sftp.get(remotepath=remote, localpath=local)
+            self.sftp.get(
+                remotepath=remote,
+                localpath=local,
+                callback=callback,
+            )
             # Set mode to same as remote end
             # TODO: Push this down into SFTPClient sometime (requires backwards
             # incompat release.)
@@ -184,7 +193,7 @@ class Transfer:
             connection=self.connection,
         )
 
-    def put(self, local, remote=None, preserve_mode=True):
+    def put(self, local, remote=None, preserve_mode=True, callback=None):
         """
         Upload a file from the local filesystem to the current connection.
 
@@ -225,6 +234,11 @@ class Transfer:
         :param bool preserve_mode:
             Whether to ``chmod`` the remote file so it matches the local file's
             mode (default: ``True``).
+
+        :param callback:
+            Optional callback function (func(int, inc)) accepting the number of
+            already transferred bytes and the total number of bytes for the
+            current operation.
 
         :returns: A `.Result` object.
 
@@ -300,12 +314,16 @@ class Transfer:
             pointer = local.tell()
             try:
                 local.seek(0)
-                self.sftp.putfo(fl=local, remotepath=remote)
+                self.sftp.putfo(fl=local, remotepath=remote, callback=callback)
             finally:
                 local.seek(pointer)
         else:
             debug("Uploading {!r} to {!r}".format(local, remote))
-            self.sftp.put(localpath=local, remotepath=remote)
+            self.sftp.put(
+                localpath=local,
+                remotepath=remote,
+                callback=callback,
+            )
             # Set mode to same as local end
             # TODO: Push this down into SFTPClient sometime (requires backwards
             # incompat release.)
