@@ -13,6 +13,8 @@ Changelog
     names in this paragraph to visit their changelogs and see what you might get
     if you upgrade your dependencies.
 
+- :support:`- backported` Tweak packaging metadata to reflect that Invoke 3.0
+  has a backwards incompatible API change that we can't use yet.
 - :release:`3.2.2 <2023-08-30>`
 - :bug:`2204` The signal handling functionality added in Fabric 2.6 caused
   unrecoverable tracebacks when invoked from inside a thread (such as the use
