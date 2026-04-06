@@ -555,7 +555,9 @@ class Connection(Context):
             if isinstance(self.gateway, str):
                 val = "proxycommand"
             bits.append(("gw", val))
-        return "<Connection {}>".format(" ".join("{}={}".format(*x) for x in bits))
+        return "<Connection {}>".format(
+            " ".join("{}={}".format(*x) for x in bits)
+        )
 
     def _identity(self):
         # TODO: consider including gateway and maybe even other init kwargs?
@@ -627,7 +629,10 @@ class Connection(Context):
             if key in self.connect_kwargs:
                 raise ValueError(err.format(key))
         # These may be given one way or the other, but not both
-        if "timeout" in self.connect_kwargs and self.connect_timeout is not None:
+        if (
+            "timeout" in self.connect_kwargs
+            and self.connect_timeout is not None
+        ):
             raise ValueError(err.format("timeout"))
         # No conflicts -> merge 'em together
         kwargs = dict(
@@ -743,7 +748,9 @@ class Connection(Context):
         return channel
 
     def _remote_runner(self):
-        return self.config.runners.remote(context=self, inline_env=self.inline_ssh_env)
+        return self.config.runners.remote(
+            context=self, inline_env=self.inline_ssh_env
+        )
 
     @opens
     def run(self, command, **kwargs):
@@ -1110,4 +1117,6 @@ class Connection(Context):
             for tunnel in tunnels:
                 tunnel.finished.set()
                 tunnel.join()
-            self.transport.cancel_port_forward(address=remote_host, port=remote_port)
+            self.transport.cancel_port_forward(
+                address=remote_host, port=remote_port
+            )

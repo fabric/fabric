@@ -108,7 +108,9 @@ class ConnectionCall(invoke.Call):
         # TODO: or does it make sense to fold this into init_kwargs? I don't
         # entirely recall why Fabric grew that but Invoke itself did not.
         kwargs = dict(
-            self.init_kwargs, config=config, remainder=core_parse_result.remainder
+            self.init_kwargs,
+            config=config,
+            remainder=core_parse_result.remainder,
         )
         return Connection(**kwargs)
 
