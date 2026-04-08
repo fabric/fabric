@@ -2,7 +2,7 @@
 -e .
 invoke>=3.0
 # Invocations for common project tasks
-invocations>=3.2.0
+invocations>=3.2.0,<4.0
 # pytest-relaxed for test organization, display etc tweaks
 # (and pytest <8, which breaks pytest-relaxed, seemingly)
 pytest<8
