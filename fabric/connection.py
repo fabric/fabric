@@ -10,6 +10,7 @@ from paramiko.agent import AgentRequestHandler
 from paramiko.client import AutoAddPolicy, SSHClient
 from paramiko.config import SSHConfig
 from paramiko.proxy import ProxyCommand
+from paramiko.sftp_client import SFTPClient
 
 from .config import Config
 from .exceptions import InvalidV1Env
@@ -877,7 +878,7 @@ class Connection(Context):
         return super().run(*args, **kwargs)
 
     @opens
-    def sftp(self):
+    def sftp(self, subsystem=None):
         """
         Return a `~paramiko.sftp_client.SFTPClient` object.
 
@@ -889,8 +890,15 @@ class Connection(Context):
         .. versionadded:: 2.0
         """
         if self._sftp is None:
-            self._sftp = self.client.open_sftp()
-        return self._sftp
+            self._sftp = {}
+        if subsystem not in self._sftp:
+            if subsystem is None:
+                self._sftp[subsystem] = self.client.open_sftp()
+            else:
+                channel = self.create_session()
+                channel.exec_command(subsystem)
+                self._sftp[subsystem] = SFTPClient(channel)
+        return self._sftp[subsystem]
 
     def get(self, *args, **kwargs):
         """
