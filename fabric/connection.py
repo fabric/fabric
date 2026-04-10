@@ -730,9 +730,12 @@ class Connection(Context):
             self._sftp = None
 
         if self.is_connected:
-            self.client.close()
             if self.forward_agent and self._agent_handler is not None:
                 self._agent_handler.close()
+
+        # Always close the client to clean up transport threads, even
+        # after a failed authentication where is_connected is False.
+        self.client.close()
 
     def __enter__(self):
         return self
