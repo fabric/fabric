@@ -87,7 +87,7 @@ class TunnelManager(ExceptionHandlingThread):
             tunnels.append(tunnel)
 
         exceptions = []
-        # Propogate shutdown signal to all tunnels & wait for closure
+        # Propagate shutdown signal to all tunnels & wait for closure
         # TODO: would be nice to have some output or at least logging here,
         # especially for "sets up a handful of tunnels" use cases like
         # forwarding nontrivial HTTP traffic.
