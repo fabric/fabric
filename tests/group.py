@@ -180,7 +180,7 @@ class SerialGroup_:
 
 
 class ThreadingGroup_:
-    def setup(self):
+    def setup_method(self):
         self.cxns = [Connection(x) for x in ("host1", "host2", "host3")]
 
     @mark.parametrize("method", ALL_METHODS)

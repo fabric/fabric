@@ -96,7 +96,7 @@ class Connection_:
         assert result.stdout == "foo\n"
 
     class sudo:
-        def setup(self):
+        def setup_method(self):
             # NOTE: assumes a user configured for passworded (NOT
             # passwordless)_sudo, whose password is 'mypass', is executing the
             # test suite. I.e. our travis-ci setup.
@@ -137,7 +137,7 @@ class Connection_:
         assert len(lines) == len(words)
 
     class command_timeout:
-        def setup(self):
+        def setup_method(self):
             self.cxn = Connection("localhost")
 
         def does_not_raise_exception_when_under_timeout(self):

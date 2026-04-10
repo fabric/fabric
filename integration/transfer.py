@@ -13,7 +13,7 @@ def _support(*parts):
 
 class Transfer_:
     class get:
-        def setup(self):
+        def setup_method(self):
             self.c = Connection("localhost")
             self.remote = _support("file.txt")
 
@@ -50,7 +50,7 @@ class Transfer_:
             assert stat.S_IMODE(local.stat().mode) == 0o641
 
     class put:
-        def setup(self):
+        def setup_method(self):
             self.c = Connection("localhost")
             self.remote = path.local.mkdtemp().join("file.txt").realpath()
 

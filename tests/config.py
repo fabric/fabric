@@ -65,7 +65,7 @@ class Config_:
         assert Config().prefix == "fabric"
 
     class from_v1:
-        def setup(self):
+        def setup_method(self):
             self.env = faux_v1_env()
 
         def _conf(self, **kwargs):

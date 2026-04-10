@@ -129,7 +129,7 @@ class Transfer_:
                 assert result.local is fd
 
         class mode_concerns:
-            def setup(self):
+            def setup_method(self):
                 self.attrs = SFTPAttributes()
                 self.attrs.st_mode = 0o100644
 
