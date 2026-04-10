@@ -91,8 +91,11 @@ class Transfer_:
 
         class local_arg_interpolation:
             def connection_params(self, transfer):
-                result = transfer.get("somefile", "{user}@{host}-{port}")
-                expected = "/local/{}@host-22".format(transfer.connection.user)
+                remote = "{user}@{host}-{original_host}-{port}"
+                result = transfer.get("somefile", remote)
+                expected = "/local/{}@host-host-22".format(
+                    transfer.connection.user
+                )
                 assert result.local == expected
 
             def connection_params_as_dir(self, transfer):
