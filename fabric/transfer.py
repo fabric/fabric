@@ -248,7 +248,7 @@ class Transfer:
                 )
             else:
                 remote = local_base
-                debug("Massaged empty remote path into {!r}".format(remote))
+                debug("Massaged empty remote path into %r", remote)
         elif self.is_remote_dir(remote):
             # non-empty local_base implies a) text file path or b) FLO which
             # had a non-empty .name attribute. huzzah!
@@ -273,8 +273,8 @@ class Transfer:
             self.sftp.getcwd() or self.sftp.normalize("."), remote
         )
         if remote != prejoined_remote:
-            msg = "Massaged relative remote path {!r} into {!r}"
-            debug(msg.format(prejoined_remote, remote))
+            msg = "Massaged relative remote path %r into %r"
+            debug(msg, prejoined_remote, remote)
 
         # Massage local path
         orig_local = local
@@ -282,10 +282,10 @@ class Transfer:
             local = os.path.abspath(local)
             if local != orig_local:
                 debug(
-                    "Massaged relative local path {!r} into {!r}".format(
-                        orig_local, local
-                    )
-                )  # noqa
+                    "Massaged relative local path %r into %r",
+                    orig_local,
+                    local,
+                )
 
         # Run Paramiko-level .put() (side-effects only. womp.)
         # TODO: push some of the path handling into Paramiko; it should be
@@ -295,8 +295,8 @@ class Transfer:
         #
         # If local appears to be a file-like object, use sftp.putfo, not put
         if is_file_like:
-            msg = "Uploading file-like object {!r} to {!r}"
-            debug(msg.format(local, remote))
+            msg = "Uploading file-like object %r to %r"
+            debug(msg, local, remote)
             pointer = local.tell()
             try:
                 local.seek(0)
@@ -304,7 +304,7 @@ class Transfer:
             finally:
                 local.seek(pointer)
         else:
-            debug("Uploading {!r} to {!r}".format(local, remote))
+            debug("Uploading %r to %r", local, remote)
             self.sftp.put(localpath=local, remotepath=remote)
             # Set mode to same as local end
             # TODO: Push this down into SFTPClient sometime (requires backwards

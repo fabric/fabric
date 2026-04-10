@@ -111,8 +111,8 @@ class Executor(invoke.Executor):
         :returns:
             `.ConnectionCall`.
         """
-        msg = "Parameterizing {!r} with Connection kwargs {!r}"
-        debug(msg.format(call, connection_init_kwargs))
+        msg = "Parameterizing %r with Connection kwargs %r"
+        debug(msg, call, connection_init_kwargs)
         # Generate a custom ConnectionCall that has init_kwargs (used for
         # creating the Connection at runtime) set to the requested params.
         new_call_kwargs = dict(init_kwargs=connection_init_kwargs)
