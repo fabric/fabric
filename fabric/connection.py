@@ -507,6 +507,10 @@ class Connection(Context):
     def get_gateway(self):
         # SSH config wins over Invoke-style config
         if "proxyjump" in self.ssh_config:
+            # `none` is a special value that disables the proxy jump
+            # https://man.openbsd.org/OpenBSD-current/man5/ssh_config.5#ProxyJump
+            if self.ssh_config["proxyjump"] == "none":
+                return None
             # Reverse hop1,hop2,hop3 style ProxyJump directive so we start
             # with the final (itself non-gatewayed) hop and work up to
             # the front (actual, supplied as our own gateway) hop
