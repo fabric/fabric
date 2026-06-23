@@ -1182,15 +1182,32 @@ class Connection_:
             client.open_sftp.assert_called_with()
 
         def lazily_caches_result(self, client):
-            sentinel1, sentinel2 = object(), object()
+            sentinel1, sentinel2 = Mock(), Mock()
+            for s in (sentinel1, sentinel2):
+                s.sock.closed = False
             client.open_sftp.side_effect = [sentinel1, sentinel2]
             cxn = Connection("host")
             first = cxn.sftp()
-            # TODO: why aren't we just asserting about calls of open_sftp???
-            err = "{0!r} wasn't the sentinel object()!"
+            err = "{0!r} wasn't the sentinel Mock!"
             assert first is sentinel1, err.format(first)
             second = cxn.sftp()
             assert second is sentinel1, err.format(second)
+
+        def reopens_when_cached_sftp_socket_closed(self, client):
+            # Repro of GH-2367: if user code calls .close() on the cached
+            # SFTPClient, the next Connection.sftp() must open a fresh one
+            # rather than returning the dead client.
+            first, second = Mock(), Mock()
+            client.open_sftp.side_effect = [first, second]
+            first.sock.closed = False
+            second.sock.closed = False
+            cxn = Connection("host")
+            assert cxn.sftp() is first
+            # Simulate user closing the underlying socket
+            first.sock.closed = True
+            assert cxn.sftp() is second
+            # And still cache while the new socket stays open
+            assert cxn.sftp() is second
 
     class get:
         @patch("fabric.connection.Transfer")
