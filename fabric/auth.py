@@ -9,8 +9,34 @@ from paramiko.auth_strategy import (
     InMemoryPrivateKey,
     OnDiskPrivateKey,
 )
+from paramiko.pkey import UnknownKeyType
+from paramiko.ssh_exception import (
+    PasswordRequiredException,
+    SSHException,
+)
 
-from .util import win32
+from .util import win32, debug
+
+# Errors we treat as "skip this identity file" when scanning identity paths.
+# PKey.from_path can raise:
+#   FileNotFoundError       — path doesn't exist
+#   OSError                 — permission denied, is-a-directory, etc.
+#   ValueError              — malformed PEM bytes / wrong password
+#   UnknownKeyType          — backend doesn't recognize the key type
+#   PasswordRequiredException — encrypted key, no password supplied
+#   SSHException            — other paramiko parse/load failures
+# Together these cover every "this file isn't a usable private key" case, so
+# we silently skip rather than crash an entire connection attempt because one
+# of the configured identities (or one of the default ~/.ssh/id_* files) is
+# bad. Users who care can enable fabric debug logging to see the cause.
+_SKIP_KEY_ERRORS = (
+    FileNotFoundError,
+    OSError,
+    ValueError,
+    UnknownKeyType,
+    PasswordRequiredException,
+    SSHException,
+)
 
 
 class OpenSSHAuthStrategy(AuthStrategy):
@@ -99,7 +125,8 @@ class OpenSSHAuthStrategy(AuthStrategy):
         for path in self.config.authentication.identities:
             try:
                 key = PKey.from_path(path)
-            except FileNotFoundError:
+            except _SKIP_KEY_ERRORS as exc:
+                debug(f"skipping identity {path!r}: {exc}")
                 continue
             source = OnDiskPrivateKey(
                 username=self.username,
@@ -118,7 +145,8 @@ class OpenSSHAuthStrategy(AuthStrategy):
         for path in self.ssh_config.get("identityfile", []):
             try:
                 key = PKey.from_path(path)
-            except FileNotFoundError:
+            except _SKIP_KEY_ERRORS as exc:
+                debug(f"skipping ssh_config IdentityFile {path!r}: {exc}")
                 continue
             source = OnDiskPrivateKey(
                 username=self.username,
@@ -136,7 +164,8 @@ class OpenSSHAuthStrategy(AuthStrategy):
                 path = user_ssh / f"id_{type_}"
                 try:
                     key = PKey.from_path(path)
-                except FileNotFoundError:
+                except _SKIP_KEY_ERRORS as exc:
+                    debug(f"skipping default key {path!r}: {exc}")
                     continue
                 source = OnDiskPrivateKey(
                     username=self.username,

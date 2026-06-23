@@ -126,6 +126,29 @@ class OpenSSHAuthStrategy_:
                 assert keys[0].pkey is key
                 assert keys[0].path == "ed25519.key"
 
+            def silently_skips_malformed_and_encrypted_keys(self, fake):
+                from paramiko.pkey import UnknownKeyType
+                from paramiko.ssh_exception import PasswordRequiredException, SSHException
+
+                key = Mock()
+                # Order matters: rsa.key raises ValueError (bad PEM),
+                # ed25519.key raises UnknownKeyType, ecdsa.key raises
+                # PasswordRequiredException, and the second rsa is a good key.
+                fake.PKey.from_path.side_effect = [
+                    ValueError("bad PEM"),
+                    UnknownKeyType(key_bytes=b"junk", key_type=str),
+                    PasswordRequiredException(),
+                    SSHException("parse failure"),
+                    key,
+                ]
+                strat = _strategy(
+                    py_keys=["rsa1.key", "ed25519.key", "ecdsa.key", "rsa2.key", "good.key"]
+                )
+                keys = list(strat.get_pubkeys())
+                assert len(keys) == 1
+                assert keys[0].pkey is key
+                assert keys[0].path == "good.key"
+
         class ssh_config:
             def loads_identityfile_key(self, fake):
                 strat = _strategy(ssh_keys=["rsa.key"])
@@ -146,6 +169,29 @@ class OpenSSHAuthStrategy_:
                 assert len(keys) == 1
                 assert keys[0].pkey is key
                 assert keys[0].path == "ed25519.key"
+
+            def silently_skips_malformed_and_encrypted_keys(self, fake):
+                from paramiko.pkey import UnknownKeyType
+                from paramiko.ssh_exception import PasswordRequiredException, SSHException
+
+                key = Mock()
+                # Order matters: rsa.key raises ValueError (bad PEM),
+                # ed25519.key raises UnknownKeyType, ecdsa.key raises
+                # PasswordRequiredException, and the second rsa is a good key.
+                fake.PKey.from_path.side_effect = [
+                    ValueError("bad PEM"),
+                    UnknownKeyType(key_bytes=b"junk", key_type=str),
+                    PasswordRequiredException(),
+                    SSHException("parse failure"),
+                    key,
+                ]
+                strat = _strategy(
+                    ssh_keys=["rsa1.key", "ed25519.key", "ecdsa.key", "rsa2.key", "good.key"]
+                )
+                keys = list(strat.get_pubkeys())
+                assert len(keys) == 1
+                assert keys[0].pkey is key
+                assert keys[0].path == "good.key"
 
         class implicit_user_home_locations:
             def loads_all_four_known_key_types(self, fake):
@@ -180,6 +226,26 @@ class OpenSSHAuthStrategy_:
                         "id_dsa",
                     ]
                 ]
+
+            def silently_skips_malformed_and_encrypted_keys(self, fake):
+                from paramiko.pkey import UnknownKeyType
+                from paramiko.ssh_exception import PasswordRequiredException, SSHException
+
+                key = Mock()
+                # Order matters: rsa.key raises ValueError (bad PEM),
+                # ed25519.key raises UnknownKeyType, ecdsa.key raises
+                # PasswordRequiredException, and the second rsa is a good key.
+                fake.PKey.from_path.side_effect = [
+                    ValueError("bad PEM"),
+                    UnknownKeyType(key_bytes=b"junk", key_type=str),
+                    PasswordRequiredException(),
+                    key,
+                ]
+                strat = _strategy()
+                keys = list(strat.get_pubkeys())
+                assert len(keys) == 1
+                assert keys[0].pkey is key
+                assert keys[0].path is not None
 
             def does_not_load_if_config_based_keys_given(self, fake):
                 strat = _strategy(py_keys=["rsa.key"])
