@@ -886,9 +886,13 @@ class Connection(Context):
         and state (such as that managed by
         `~paramiko.sftp_client.SFTPClient.chdir`) will be preserved.
 
+        If the cached SFTP client's underlying socket has been closed (e.g. by
+        an explicit ``close()`` call from user code), a fresh client will be
+        opened on the next access instead of returning the dead one.
+
         .. versionadded:: 2.0
         """
-        if self._sftp is None:
+        if self._sftp is None or self._sftp.sock.closed:
             self._sftp = self.client.open_sftp()
         return self._sftp
 
