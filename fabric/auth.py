@@ -167,7 +167,7 @@ class OpenSSHAuthStrategy(AuthStrategy):
                 if config_key.pkey == key:
                     config_index = i
                     break
-            if config_index:
+            if config_index is not None:
                 yield InMemoryPrivateKey(username=self.username, pkey=key)
                 # Nuke so it doesn't get re-yielded by regular conf keys bit
                 del config_keys[config_index]
