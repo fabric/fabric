@@ -275,3 +275,48 @@ class OpenSSHAuthStrategy_:
             keys = list(strat.get_pubkeys())
             # Order check!
             assert [x.pkey for x in keys] == expected_keys
+
+        def handles_agent_key_matching_first_config_entry(self, fake):
+            # Regression: `if config_index:` is falsy when the match is at
+            # position 0, so the match was missed and the key ended up yielded
+            # twice (once as a deferred agent key, then again from the
+            # leftover config_keys loop at the end). Confirm the index-0
+            # case is handled correctly.
+            class FaKey(PKey):
+                def __init__(self, name):
+                    self._name = name
+                    self.public_blob = None
+
+                @property
+                def _fields(self):
+                    return [self._name, self.public_blob]
+
+                @property
+                def fingerprint(self):
+                    return self._name
+
+            agent_conf = FaKey("agent-conf.key")
+            agent_noconf = FaKey("agent-noconf.key")
+            catalog = {k._name: k for k in (agent_conf, agent_noconf)}
+
+            def get_key(name):
+                return catalog[name]
+
+            fake.PKey.from_path.side_effect = get_key
+            fake.Agent.return_value.get_keys.return_value = [
+                agent_noconf,
+                # agent_conf is the FIRST entry in config_keys below.
+                agent_conf,
+            ]
+            # NB: `agent-conf.key` is listed first in ssh_keys so it ends up
+            # at index 0 of config_keys inside get_pubkeys.
+            strat = _strategy(ssh_keys=["agent-conf.key"])
+            keys = list(strat.get_pubkeys())
+            # The agent-conf.key should be yielded exactly once, as an
+            # InMemoryPrivateKey (because it was also in the agent), not
+            # twice and not as a leftover OnDiskPrivateKey at the end.
+            assert [k.pkey._name for k in keys] == [
+                "agent-conf.key",
+                "agent-noconf.key",
+            ]
+            assert all(isinstance(k, InMemoryPrivateKey) for k in keys)
