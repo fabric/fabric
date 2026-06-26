@@ -16,6 +16,29 @@ from .exceptions import InvalidV1Env
 from .transfer import Transfer
 from .tunnels import Tunnel, TunnelManager
 
+# OpenSSH pseudo-boolean values accepted for ssh_config options like
+# ``ForwardAgent``. The set covers both the legacy ``yes``/``no`` form (which
+# is what OpenSSH's ssh(5) man page still documents for most boolean options)
+# and the modern ``true``/``false``/``ask``/``confirm`` form used by
+# ``ssh -o ForwardAgent=...`` and copied verbatim by paramiko's ``SSHConfig``.
+_SSH_CONFIG_TRUE = frozenset({"yes", "true", "ask", "confirm"})
+
+
+def _ssh_config_bool(value):
+    """
+    Convert an OpenSSH pseudo-boolean value (as returned by
+    ``paramiko.config.SSHConfig``) to a Python ``bool``.
+
+    Recognises ``yes``/``true``/``ask``/``confirm`` as truthy and everything
+    else (including ``no``/``false`` and unknown values) as falsy, matching
+    paramiko's own ``SSHConfig.get_boolean`` convention. Passing a non-string
+    is treated as falsy rather than raising, so a misconfigured ssh_config
+    cannot blow up ``Connection.__init__``.
+    """
+    if isinstance(value, str):
+        return value.lower() in _SSH_CONFIG_TRUE
+    return bool(value)
+
 
 @decorator
 def opens(method, self, *args, **kwargs):
@@ -442,8 +465,7 @@ class Connection(Context):
             # But if ssh_config is present, it wins
             if "forwardagent" in self.ssh_config:
                 # TODO: SSHConfig really, seriously needs some love here, god
-                map_ = {"yes": True, "no": False}
-                forward_agent = map_[self.ssh_config["forwardagent"]]
+                forward_agent = _ssh_config_bool(self.ssh_config["forwardagent"])
         #: Whether agent forwarding is enabled.
         self.forward_agent = forward_agent
 
