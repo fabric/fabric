@@ -6,8 +6,7 @@ import sys
 # our name, not theirs. (Assume most contexts will rely on Invoke itself to
 # literally enable/disable logging, for now.)
 log = logging.getLogger("fabric")
-for x in ("debug",):
-    globals()[x] = getattr(log, x)
+debug = log.debug  # direct binding; the old globals() loop was needlessly opaque
 
 
 win32 = sys.platform == "win32"
