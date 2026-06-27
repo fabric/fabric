@@ -306,15 +306,22 @@ class GroupResult(dict):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._successes = {}
-        self._failures = {}
+        self._successes = None
+        self._failures = None
+
+    def __setitem__(self, key, value):
+        # Invalidate cache so .succeeded/.failed stay consistent after mutation.
+        super().__setitem__(key, value)
+        self._successes = None
+        self._failures = None
 
     def _bifurcate(self):
-        # Short-circuit to avoid reprocessing every access.
-        if self._successes or self._failures:
+        # None (not {}) as sentinel: an all-success result leaves _failures={} (falsey),
+        # so the old "if self._successes or self._failures" short-circuit was unreliable.
+        if self._successes is not None:
             return
-        # TODO: if we ever expect .succeeded/.failed to be useful before a
-        # GroupResult is fully initialized, this needs to become smarter.
+        self._successes = {}
+        self._failures = {}
         for key, value in self.items():
             if isinstance(value, BaseException):
                 self._failures[key] = value

@@ -17,6 +17,14 @@ from .util import debug  # TODO: actual logging! LOL
 # any recursive get/put to it? Requires users to have rsync available of
 # course.
 
+# Computed once at import; avoids rebuilding the tuple on every get() call.
+_LOCAL_SEPS = (os.sep, os.altsep) if os.altsep else (os.sep,)
+
+
+def _is_file_like(obj):
+    # Single definition avoids the check drifting between get() and put().
+    return hasattr(obj, "write") and callable(obj.write)
+
 
 class Transfer:
     """
@@ -127,7 +135,7 @@ class Transfer:
 
         # Massage local path
         orig_local = local
-        is_file_like = hasattr(local, "write") and callable(local.write)
+        is_file_like = _is_file_like(local)
         remote_filename = posixpath.basename(remote)
         if not local:
             local = remote_filename
@@ -144,7 +152,7 @@ class Transfer:
             # Must treat dir vs file paths differently, lest we erroneously
             # mkdir what was intended as a filename, and so that non-empty
             # dir-like paths still get remote filename tacked on.
-            if local.endswith(os.sep):
+            if local.endswith(_LOCAL_SEPS):
                 dir_path = local
                 local = os.path.join(local, remote_filename)
             else:
@@ -233,7 +241,7 @@ class Transfer:
         if not local:
             raise ValueError("Local path must not be empty!")
 
-        is_file_like = hasattr(local, "write") and callable(local.write)
+        is_file_like = _is_file_like(local)
 
         # Massage remote path
         orig_remote = remote
@@ -360,5 +368,8 @@ class Result:
         #: The `.Connection` object this result was obtained from.
         self.connection = connection
 
-    # TODO: ensure str/repr makes it easily differentiable from run() or
-    # local() result objects (and vice versa).
+    def __repr__(self):
+        # Distinguishes this from invoke.runners.Result in logs/debugger output.
+        return "<transfer.Result local={!r} remote={!r}>".format(
+            self.local, self.remote
+        )

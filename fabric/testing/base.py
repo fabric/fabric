@@ -283,7 +283,7 @@ class Session:
         def fake_abspath(path):
             # Run normpath to avoid tests not seeing abspath wrinkles (like
             # trailing slash chomping)
-            return "/local/{}".format(os.path.normpath(path))
+            return "/local/{}".format(os.path.normpath(path).replace("\\", "/"))
 
         mock_os.path.abspath.side_effect = fake_abspath
         sftp.getcwd.return_value = "/remote"
@@ -520,7 +520,7 @@ class MockSFTP:
         def fake_abspath(path):
             # Run normpath to avoid tests not seeing abspath wrinkles (like
             # trailing slash chomping)
-            return "/local/{}".format(os.path.normpath(path))
+            return "/local/{}".format(os.path.normpath(path).replace("\\", "/"))
 
         mock_os.path.abspath.side_effect = fake_abspath
         sftp.getcwd.return_value = "/remote"

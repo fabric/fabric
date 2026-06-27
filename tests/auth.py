@@ -1,6 +1,7 @@
 from getpass import getpass
 from pathlib import Path
 from unittest.mock import Mock, patch
+from fabric.util import win32
 
 from invoke.vendor.lexicon import Lexicon
 from pytest import raises, fixture
@@ -151,8 +152,9 @@ class OpenSSHAuthStrategy_:
             def loads_all_four_known_key_types(self, fake):
                 strat = _strategy()
                 keys = list(strat.get_pubkeys())
+                ssh_dir = f"{'' if win32 else '.'}ssh"
                 assert [x.path for x in keys] == [
-                    Path.home() / ".ssh" / key
+                    Path.home() / ssh_dir / key
                     for key in [
                         "id_rsa",
                         "id_ecdsa",
@@ -171,8 +173,9 @@ class OpenSSHAuthStrategy_:
                 ]
                 strat = _strategy()
                 keys = list(strat.get_pubkeys())
+                ssh_dir = f"{'' if win32 else '.'}ssh"
                 assert [x.path for x in keys] == [
-                    Path.home() / ".ssh" / key
+                    Path.home() / ssh_dir / key
                     for key in [
                         # "id_rsa",  # not found
                         "id_ecdsa",
