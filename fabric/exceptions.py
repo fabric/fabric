@@ -17,6 +17,14 @@ class GroupException(Exception):
         #: details.
         self.result = result
 
+    def __str__(self):
+        # Without this, str(e) returns "" because args is empty — tracebacks become useless.
+        failed = self.result.failed
+        lines = ["{} hosts failed:".format(len(failed))]
+        for cxn, exc in failed.items():
+            lines.append("  {}: {!r}".format(cxn, exc))
+        return "\n".join(lines)
+
 
 class InvalidV1Env(Exception):
     """
