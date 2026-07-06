@@ -23,11 +23,35 @@ from fabric.exceptions import InvalidV1Env
 from fabric.util import get_local_user
 
 from _util import support, faux_v1_env
+from fabric.connection import _ssh_config_bool
 
 
 # Remote is woven in as a config default, so must be patched there
 remote_path = "fabric.config.Remote"
 remote_shell_path = "fabric.config.RemoteShell"
+
+
+class TestSshConfigBool:
+    def test_true(self):
+        assert _ssh_config_bool("true") is True
+
+    def test_false(self):
+        assert _ssh_config_bool("false") is False
+
+    def test_yes(self):
+        assert _ssh_config_bool("yes") is True
+
+    def test_no(self):
+        assert _ssh_config_bool("no") is False
+
+    def test_ask(self):
+        assert _ssh_config_bool("ask") is True
+
+    def test_confirm(self):
+        assert _ssh_config_bool("confirm") is True
+
+    def test_yes_upper(self):
+        assert _ssh_config_bool("YES") is True
 
 
 def _select_result(obj):
@@ -156,6 +180,55 @@ class Connection_:
                 cxn = Connection("host:123", config=config)
                 assert cxn.port == 123
 
+            def raises_clear_error_for_non_numeric_shorthand_port(self):
+                try:
+                    Connection("host:notaport")
+                except ValueError as e:
+                    msg = str(e)
+                    assert "port" in msg
+                    assert "notaport" in msg
+                    assert "invalid literal for int()" not in msg
+                else:
+                    raise AssertionError("ValueError not raised")
+
+            def raises_clear_error_for_non_numeric_config_port(self):
+                try:
+                    Connection(
+                        "host",
+                        config=Config(overrides={"port": "not-a-port"}),
+                    )
+                except ValueError as e:
+                    msg = str(e)
+                    assert "port" in msg
+                    assert "not-a-port" in msg
+                    assert "invalid literal for int()" not in msg
+                else:
+                    raise AssertionError("ValueError not raised")
+
+            def raises_clear_error_for_bool_config_port(self):
+                try:
+                    Connection(
+                        "host", config=Config(overrides={"port": True})
+                    )
+                except ValueError as e:
+                    msg = str(e)
+                    assert "port" in msg
+                    assert "bool" in msg
+                else:
+                    raise AssertionError("ValueError not raised")
+
+            def raises_clear_error_for_list_config_port(self):
+                try:
+                    Connection(
+                        "host", config=Config(overrides={"port": [22]})
+                    )
+                except ValueError as e:
+                    msg = str(e)
+                    assert "port" in msg
+                    assert "list" in msg
+                else:
+                    raise AssertionError("ValueError not raised")
+
         class forward_agent:
             def defaults_to_False(self):
                 assert Connection("host").forward_agent is False
@@ -173,6 +246,35 @@ class Connection_:
                 cxn = Connection("host", forward_agent=False, config=config)
                 assert cxn.forward_agent is False
 
+            def _ssh_conf(self, value):
+                ssh = SSHConfig()
+                ssh.parse(StringIO("Host *\n    ForwardAgent {}\n".format(value)))
+                return Config(ssh_config=ssh)
+
+            def ssh_config_true_enables_forwarding(self):
+                config = self._ssh_conf("true")
+                assert Connection("host", config=config).forward_agent is True
+
+            def ssh_config_false_disables_forwarding(self):
+                config = self._ssh_conf("false")
+                assert Connection("host", config=config).forward_agent is False
+
+            @pytest.mark.parametrize(
+                "value,expected",
+                [
+                    ("yes", True),
+                    ("no", False),
+                    ("true", True),
+                    ("false", False),
+                    ("ask", True),
+                    ("confirm", True),
+                    ("YES", True),
+                ],
+            )
+            def ssh_config_pseudo_boolean(self, value, expected):
+                config = self._ssh_conf(value)
+                assert Connection("host", config=config).forward_agent is expected
+
         class connect_timeout:
             def defaults_to_None(self):
                 assert Connection("host").connect_timeout is None
@@ -189,6 +291,39 @@ class Connection_:
                 config = Config(overrides={"timeouts": {"connect": 20}})
                 cxn = Connection("host", connect_timeout=100, config=config)
                 assert cxn.connect_timeout == 100
+
+            def raises_clear_error_for_non_numeric_config_connect_timeout(
+                self,
+            ):
+                try:
+                    Connection(
+                        "host",
+                        config=Config(
+                            overrides={"timeouts": {"connect": "ten"}}
+                        ),
+                    )
+                except ValueError as e:
+                    msg = str(e)
+                    assert "connect_timeout" in msg
+                    assert "ten" in msg
+                    assert "invalid literal for int()" not in msg
+                else:
+                    raise AssertionError("ValueError not raised")
+
+            def raises_clear_error_for_bool_config_connect_timeout(self):
+                try:
+                    Connection(
+                        "host",
+                        config=Config(
+                            overrides={"timeouts": {"connect": True}}
+                        ),
+                    )
+                except ValueError as e:
+                    msg = str(e)
+                    assert "connect_timeout" in msg
+                    assert "bool" in msg
+                else:
+                    raise AssertionError("ValueError not raised")
 
         class config:
             # NOTE: behavior local to Config itself is tested in its own test
