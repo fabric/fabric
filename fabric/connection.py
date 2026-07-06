@@ -40,6 +40,43 @@ def _ssh_config_bool(value):
     return bool(value)
 
 
+def _to_int(value, name):
+    """
+    Coerce a config-derived numeric value to ``int`` while naming the source.
+
+    Used to turn SSH/config string settings (port, connect_timeout, ...) into
+    the ``int`` form ``Connection`` expects, producing a clear ``ValueError``
+    when the value is unparseable so users see which setting is at fault
+    rather than a bare stdlib ``int()`` message.
+
+    ``name`` is the user-facing label of the setting (e.g. ``"port"``) and is
+    included in the error message. ``value`` may be ``None`` (returns
+    ``None``), an ``int`` (returned unchanged), a numeric ``str`` (parsed), or
+    anything else; non-numeric strings and unsupported types raise
+    ``ValueError`` whose message names ``value`` and the offending setting.
+    """
+    if value is None:
+        return None
+    if isinstance(value, bool):
+        # ``bool`` is a subclass of ``int`` and would otherwise silently round
+        # to 0/1; flag it explicitly so a config typo doesn't go unnoticed.
+        raise ValueError(
+            f"Connection {name} must be a number, got bool: {value!r}"
+        )
+    if isinstance(value, int):
+        return value
+    if isinstance(value, str):
+        try:
+            return int(value)
+        except ValueError:
+            raise ValueError(
+                f"Connection {name} must be a numeric string, got {value!r}"
+            ) from None
+    raise ValueError(
+        f"Connection {name} must be a number, got {type(value).__name__}: {value!r}"
+    )
+
+
 @decorator
 def opens(method, self, *args, **kwargs):
     self.open()
@@ -64,7 +101,7 @@ def derive_shorthand(host_string):
         port = host_port[0] if host_port and host_port[0] else None
 
     if port is not None:
-        port = int(port)
+        port = _to_int(port, "port (shorthand)")
 
     return {"user": user, "host": host, "port": port}
 
@@ -208,8 +245,8 @@ class Connection(Context):
         # ambiguity clause in __init__. v1 would also have been doing this
         # anyways (host string wins over other settings).
         if not shorthand["port"]:
-            # Run port through int(); v1 inexplicably has a string default...
-            kwargs.setdefault("port", int(env.port))
+            # Run port through _to_int; v1 inexplicably has a string default...
+            kwargs.setdefault("port", _to_int(env.port, "port (v1 env)"))
         # key_filename defaults to None in v1, but in v2, we expect it to be
         # either unset, or set to a list. Thus, we only pull it over if it is
         # not None.
@@ -447,7 +484,9 @@ class Connection(Context):
         # user='')? E.g. do some SSH server specs allow for that?
 
         #: The network port to connect on.
-        self.port = port or int(self.ssh_config.get("port", self.config.port))
+        self.port = port or _to_int(
+            self.ssh_config.get("port", self.config.port), "port"
+        )
 
         # Gateway/proxy/bastion/jump setting: non-None values - string,
         # Connection, even eg False - get set directly; None triggers seek in
@@ -474,7 +513,7 @@ class Connection(Context):
                 "connecttimeout", self.config.timeouts.connect
             )
         if connect_timeout is not None:
-            connect_timeout = int(connect_timeout)
+            connect_timeout = _to_int(connect_timeout, "connect_timeout")
         #: Connection timeout
         self.connect_timeout = connect_timeout
 

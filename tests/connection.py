@@ -180,6 +180,55 @@ class Connection_:
                 cxn = Connection("host:123", config=config)
                 assert cxn.port == 123
 
+            def raises_clear_error_for_non_numeric_shorthand_port(self):
+                try:
+                    Connection("host:notaport")
+                except ValueError as e:
+                    msg = str(e)
+                    assert "port" in msg
+                    assert "notaport" in msg
+                    assert "invalid literal for int()" not in msg
+                else:
+                    raise AssertionError("ValueError not raised")
+
+            def raises_clear_error_for_non_numeric_config_port(self):
+                try:
+                    Connection(
+                        "host",
+                        config=Config(overrides={"port": "not-a-port"}),
+                    )
+                except ValueError as e:
+                    msg = str(e)
+                    assert "port" in msg
+                    assert "not-a-port" in msg
+                    assert "invalid literal for int()" not in msg
+                else:
+                    raise AssertionError("ValueError not raised")
+
+            def raises_clear_error_for_bool_config_port(self):
+                try:
+                    Connection(
+                        "host", config=Config(overrides={"port": True})
+                    )
+                except ValueError as e:
+                    msg = str(e)
+                    assert "port" in msg
+                    assert "bool" in msg
+                else:
+                    raise AssertionError("ValueError not raised")
+
+            def raises_clear_error_for_list_config_port(self):
+                try:
+                    Connection(
+                        "host", config=Config(overrides={"port": [22]})
+                    )
+                except ValueError as e:
+                    msg = str(e)
+                    assert "port" in msg
+                    assert "list" in msg
+                else:
+                    raise AssertionError("ValueError not raised")
+
         class forward_agent:
             def defaults_to_False(self):
                 assert Connection("host").forward_agent is False
@@ -242,6 +291,39 @@ class Connection_:
                 config = Config(overrides={"timeouts": {"connect": 20}})
                 cxn = Connection("host", connect_timeout=100, config=config)
                 assert cxn.connect_timeout == 100
+
+            def raises_clear_error_for_non_numeric_config_connect_timeout(
+                self,
+            ):
+                try:
+                    Connection(
+                        "host",
+                        config=Config(
+                            overrides={"timeouts": {"connect": "ten"}}
+                        ),
+                    )
+                except ValueError as e:
+                    msg = str(e)
+                    assert "connect_timeout" in msg
+                    assert "ten" in msg
+                    assert "invalid literal for int()" not in msg
+                else:
+                    raise AssertionError("ValueError not raised")
+
+            def raises_clear_error_for_bool_config_connect_timeout(self):
+                try:
+                    Connection(
+                        "host",
+                        config=Config(
+                            overrides={"timeouts": {"connect": True}}
+                        ),
+                    )
+                except ValueError as e:
+                    msg = str(e)
+                    assert "connect_timeout" in msg
+                    assert "bool" in msg
+                else:
+                    raise AssertionError("ValueError not raised")
 
         class config:
             # NOTE: behavior local to Config itself is tested in its own test
