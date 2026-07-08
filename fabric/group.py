@@ -261,7 +261,7 @@ class ThreadingGroup(Group):
             # TODO: io-sleep? shouldn't matter if all threads are now joined
             cxn, result = queue.get(block=False)
             # TODO: outstanding musings about how exactly aggregate results
-            # ought to ideally operate...heterogenous obj like this, multiple
+            # ought to ideally operate...heterogeneous obj like this, multiple
             # objs, ??
             results[cxn] = result
         # Get exceptions from the threads themselves.

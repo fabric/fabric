@@ -54,7 +54,7 @@ def task(*args, **kwargs):
           params like auth info, etc).
 
         These two value types *may* be mixed together in the same list, though
-        we recommend that you keep things homogenous when possible, to avoid
+        we recommend that you keep things homogeneous when possible, to avoid
         confusion when debugging.
 
         .. note::

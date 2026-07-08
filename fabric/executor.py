@@ -34,10 +34,10 @@ class Executor(invoke.Executor):
         is to simply assume that strings are 'host' kwargs).
 
         :param hosts:
-            Potentially heterogenous list of host connection values, as per the
+            Potentially heterogeneous list of host connection values, as per the
             ``hosts`` param to `.task`.
 
-        :returns: Homogenous list of Connection init kwarg dicts.
+        :returns: Homogeneous list of Connection init kwarg dicts.
         """
         dicts = []
         for value in hosts or []:
