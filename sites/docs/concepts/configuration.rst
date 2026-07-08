@@ -219,7 +219,7 @@ Proxying
 
   - Nested-style ``ProxyJump``, i.e. ``user1@hop1.host,user2@hop2.host,...``,
     will result in an appropriate series of nested ``gateway`` values under the
-    hood - as if the user had manually specified ``Connecton(...,
+    hood - as if the user had manually specified ``Connection(...,
     gateway=Connection('user1@hop1.host',
     gateway=Connection('user2@hop2.host', gateway=...)))``.
 
