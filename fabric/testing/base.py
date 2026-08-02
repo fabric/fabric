@@ -287,6 +287,7 @@ class Session:
 
         mock_os.path.abspath.side_effect = fake_abspath
         sftp.getcwd.return_value = "/remote"
+        sftp.normalize.side_effect = lambda p: p
         # Ensure stat st_mode is a real number; Python 3's stat.S_IMODE doesn't
         # like just being handed a MagicMock?
         fake_mode = 0o644  # arbitrary real-ish mode
