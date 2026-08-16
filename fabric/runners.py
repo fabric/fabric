@@ -1,3 +1,4 @@
+import shlex
 import signal
 import threading
 
@@ -60,12 +61,13 @@ class Remote(Runner):
             # honor it even when prefixing? That would depart from OpenSSH
             # somewhat (albeit as a "what we can do that it cannot" feature...)
             if self.inline_env:
-                # TODO: escaping, if we can find a FOOLPROOF THIRD PARTY METHOD
-                # for doing so!
                 # TODO: switch to using a higher-level generic command
                 # prefixing functionality, when implemented.
                 parameters = " ".join(
-                    ["{}={}".format(k, v) for k, v in sorted(env.items())]
+                    [
+                        "{}={}".format(shlex.quote(k), shlex.quote(v))
+                        for k, v in sorted(env.items())
+                    ]
                 )
                 # NOTE: we can assume 'export' and '&&' relatively safely, as
                 # sshd always brings some shell into play, even if it's just

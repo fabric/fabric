@@ -189,6 +189,17 @@ class Remote_:
             r.run(CMD, env={"PATH": "/opt/bin", "DEBUG": "1"})
             assert not chan.update_environment.called
 
+        def quotes_env_values_when_inline_env_is_True(self, remote):
+            # https://github.com/fabric/fabric/issues/2364 -- env values must
+            # be shell-escaped, otherwise crafted values can execute arbitrary
+            # commands (e.g. "X=a; echo INJECTED #").
+            chan = remote.expect(
+                cmd="export X='a; echo INJECTED #' && {}".format(CMD)
+            )
+            r = Remote(context=_Connection("host"), inline_env=True)
+            r.run(CMD, env={"X": "a; echo INJECTED #"})
+            assert not chan.update_environment.called
+
     def send_start_message_sends_exec_command(self):
         runner = Remote(context=None)
         runner.channel = Mock()
