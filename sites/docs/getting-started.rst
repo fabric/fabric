@@ -83,7 +83,7 @@ example:
     'web1'
 
 Meet `.Connection`, which represents an SSH connection and provides the core of
-Fabric's API, such as `~.Connection.run`. `.Connection` objects need at least a
+Fabric's API, such as the `~.Connection.run` method. `.Connection` objects need at least a
 hostname to be created successfully, and may be further parameterized by
 username and/or port number. You can give these explicitly via args/kwargs::
 
