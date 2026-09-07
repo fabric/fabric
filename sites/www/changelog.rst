@@ -13,6 +13,9 @@ Changelog
     names in this paragraph to visit their changelogs and see what you might get
     if you upgrade your dependencies.
 
+- :feature:`2326` Accept string-returning path-like objects, such as
+  `pathlib.Path`, as local download paths in `~fabric.transfer.Transfer.get`.
+  Thanks to sandeep-gh for the report and Jerry-val for the patch.
 - :release:`3.2.3 <2026-04-05>`
 - :support:`- backported` Tweak packaging metadata to reflect that Invoke 3.0
   has a backwards incompatible API change that we can't use yet.

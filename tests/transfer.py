@@ -1,4 +1,5 @@
 from io import StringIO
+from pathlib import Path
 
 from unittest.mock import Mock, call, patch
 from pytest_relaxed import raises
@@ -58,6 +59,31 @@ class Transfer_:
                     remotepath="/remote/path1", localpath="/local/path2"
                 )
 
+            def accepts_local_pathlib_path(self, sftp_objs):
+                transfer, client = sftp_objs
+                local = Path("downloads/file.txt")
+                result = transfer.get("file", local=local)
+                client.get.assert_called_with(
+                    remotepath="/remote/file",
+                    localpath="/local/downloads/file.txt",
+                )
+                assert result.local == "/local/downloads/file.txt"
+                assert result.orig_local is local
+
+            def accepts_local_pathlike_object(self, sftp_objs):
+                class LocalPath:
+                    def __fspath__(self):
+                        return "downloads/file.txt"
+
+                transfer, client = sftp_objs
+                local = LocalPath()
+                result = transfer.get("file", local=local)
+                client.get.assert_called_with(
+                    remotepath="/remote/file",
+                    localpath="/local/downloads/file.txt",
+                )
+                assert result.orig_local is local
+
             def returns_rich_Result_object(self, sftp_objs):
                 transfer, client = sftp_objs
                 cxn = Connection("host")
@@ -90,6 +116,12 @@ class Transfer_:
                 transfer.get("")
 
         class local_arg_interpolation:
+            def pathlib_path(self, transfer):
+                local = Path("{host}/{basename}")
+                result = transfer.get("parent/file.txt", local=local)
+                assert result.local == "/local/host/file.txt"
+                assert result.orig_local is local
+
             def connection_params(self, transfer):
                 result = transfer.get("somefile", "{user}@{host}-{port}")
                 expected = "/local/{}@host-22".format(transfer.connection.user)
@@ -179,6 +211,17 @@ class Transfer_:
 
     class put:
         class basics:
+            def accepts_local_pathlib_path(self, sftp_objs):
+                transfer, client = sftp_objs
+                local = Path("uploads/file.txt")
+                result = transfer.put(local)
+                client.put.assert_called_with(
+                    localpath="/local/uploads/file.txt",
+                    remotepath="/remote/file.txt",
+                )
+                assert result.local == "/local/uploads/file.txt"
+                assert result.orig_local is local
+
             def accepts_single_local_path_posarg(self, sftp_objs):
                 transfer, client = sftp_objs
                 transfer.put("file")
