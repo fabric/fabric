@@ -6,6 +6,7 @@ import os
 import posixpath
 import stat
 
+from os import fspath
 from pathlib import Path
 
 from .util import debug  # TODO: actual logging! LOL
@@ -96,6 +97,10 @@ class Transfer:
             **If a file-like object is given**, the contents of the remote file
             are simply written into it.
 
+            **If a path-like object is given** (such as `pathlib.Path`), it is
+            converted with `os.fspath` and processed like a string, including
+            interpolation. Its ``__fspath__`` method must return a string.
+
         :param bool preserve_mode:
             Whether to `os.chmod` the local file so it matches the remote
             file's mode (default: ``True``).
@@ -108,6 +113,8 @@ class Transfer:
             attributes.
         .. versionchanged:: 2.6
             Create missing ``local`` directories automatically.
+        .. versionchanged:: 4.0
+            Accept string-returning path-like objects for ``local``.
         """
         # TODO: how does this API change if we want to implement
         # remote-to-remote file transfer? (Is that even realistic?)
@@ -134,7 +141,7 @@ class Transfer:
         # Path-driven local downloads need interpolation, abspath'ing &
         # directory creation
         if not is_file_like:
-            local = local.format(
+            local = fspath(local).format(
                 host=self.connection.host,
                 user=self.connection.user,
                 port=self.connection.port,
@@ -193,6 +200,9 @@ class Transfer:
 
             **If a string is given**, it should be a path to a local (regular)
             file (not a directory).
+
+            String-returning path-like objects (such as `pathlib.Path`) are
+            also accepted and processed like string paths.
 
             .. note::
                 When dealing with nonexistent file paths, normal Python file
