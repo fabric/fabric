@@ -1323,6 +1323,31 @@ class Connection_:
         def tunnel_errors_bubble_up(self):
             self._thread_error("tunnel")
 
+        @patch("fabric.tunnels.select")
+        @patch("fabric.tunnels.socket.socket")
+        @patch("fabric.connection.SSHClient")
+        def listener_closes_despite_tunnel_error(self, Client, mocket, select):
+            # Regression test for #2290: when a tunnel worker raises, the
+            # ThreadException still bubbles up, and the listener socket is
+            # still closed so the forwarded local port can be reused.
+            class Sentinel(Exception):
+                pass
+
+            listener_sock = Mock(name="listener_sock")
+            tunnel_sock = Mock(name="tunnel_sock")
+            local_addr = Mock()
+            mocket.return_value = listener_sock
+            listener_sock.accept.side_effect = chain(
+                [(tunnel_sock, local_addr)],
+                repeat(socket.error(errno.EAGAIN, "nothing yet")),
+            )
+            select.select.side_effect = _select_result(Sentinel)
+            with pytest.raises(ThreadException):
+                with Connection("host").forward_local(local_port=1234):
+                    time.sleep(0.015)
+            time.sleep(0.015)
+            listener_sock.close.assert_called_once_with()
+
         def tunnel_manager_errors_bubble_up(self):
             self._thread_error("listener")
 

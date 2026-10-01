@@ -13,6 +13,11 @@ Changelog
     names in this paragraph to visit their changelogs and see what you might get
     if you upgrade your dependencies.
 
+- :bug:`2290` Fix a listener leak in local port forwarding: when a tunnel
+  worker thread raised (surfaced as a ``ThreadException`` on context manager
+  exit), the local listener socket was never closed, leaving the forwarded
+  port bound and unusable. The listener is now always closed on teardown,
+  while the worker's exception still propagates.
 - :release:`3.2.3 <2026-04-05>`
 - :support:`- backported` Tweak packaging metadata to reflect that Invoke 3.0
   has a backwards incompatible API change that we can't use yet.

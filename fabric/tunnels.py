@@ -91,19 +91,21 @@ class TunnelManager(ExceptionHandlingThread):
         # TODO: would be nice to have some output or at least logging here,
         # especially for "sets up a handful of tunnels" use cases like
         # forwarding nontrivial HTTP traffic.
-        for tunnel in tunnels:
-            tunnel.finished.set()
-            tunnel.join()
-            wrapper = tunnel.exception()
-            if wrapper:
-                exceptions.append(wrapper)
+        try:
+            for tunnel in tunnels:
+                tunnel.finished.set()
+                tunnel.join()
+                wrapper = tunnel.exception()
+                if wrapper:
+                    exceptions.append(wrapper)
+        finally:
+            # All we have left to close is our own sock. This must happen
+            # even when tunnels raised, otherwise the listener stays bound
+            # and the forwarded port cannot be reused (#2290).
+            sock.close()
         # Handle exceptions
         if exceptions:
             raise ThreadException(exceptions)
-
-        # All we have left to close is our own sock.
-        # TODO: use try/finally?
-        sock.close()
 
 
 class Tunnel(ExceptionHandlingThread):
