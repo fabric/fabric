@@ -20,8 +20,7 @@ from itertools import chain, repeat
 from io import BytesIO
 from unittest.mock import Mock, PropertyMock, call, patch, ANY
 
-from deprecated.sphinx import deprecated
-from deprecated.classic import deprecated as deprecated_no_docstring
+from typing_extensions import deprecated
 
 
 # TODO 4.0: reorganize harder (eg building blocks in one module, central
@@ -298,9 +297,8 @@ class Session:
         for name in ("basename", "split", "join", "normpath"):
             getattr(mock_os.path, name).side_effect = getattr(os.path, name)
 
-    @deprecated_no_docstring(
-        version="3.2",
-        reason="This method has been renamed to `safety_check` & will be removed in 4.0",  # noqa
+    @deprecated(
+        "This method has been renamed to `safety_check` & will be removed in 4.0",  # noqa
     )
     def sanity_check(self):
         return self.safety_check()
@@ -458,14 +456,14 @@ class MockRemote:
             session.stop()
 
     @deprecated(
-        version="3.2",
-        reason="This method has been renamed to `safety` & will be removed in 4.0",  # noqa
+        "This method has been renamed to `safety` & will be removed in 4.0",
     )
     def sanity(self):
         """
         Run post-execution sanity checks (usually 'was X called' tests.)
 
         .. versionadded:: 2.1
+        .. deprecated:: 3.2
         """
         return self.safety()
 
@@ -489,8 +487,7 @@ class MockRemote:
 
 
 @deprecated(
-    version="3.2",
-    reason="This class has been merged with `MockRemote` which can now handle SFTP mocking too. Please switch to it!",  # noqa
+    "This class has been merged with `MockRemote` which can now handle SFTP mocking too. Please switch to it!",  # noqa
 )
 class MockSFTP:
     """
@@ -500,6 +497,7 @@ class MockSFTP:
     conftest.py for main use.
 
     .. versionadded:: 2.1
+    .. deprecated:: 3.2
     """
 
     def __init__(self, autostart=True):

@@ -67,7 +67,7 @@ setuptools.setup(
         "invoke >= 3.0",
         "paramiko>=2.4",
         "decorator>=5",
-        "deprecated>=1.2",
+        "typing_extensions>=4.5.0",  # Introduces the deprecated decorator
     ],
     extras_require={
         # For folks who want to use fabric.testing package, eg
