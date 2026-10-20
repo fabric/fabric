@@ -888,7 +888,7 @@ class Connection(Context):
 
         .. versionadded:: 2.0
         """
-        if self._sftp is None:
+        if self._sftp is None or self._sftp.sock.closed:
             self._sftp = self.client.open_sftp()
         return self._sftp
 

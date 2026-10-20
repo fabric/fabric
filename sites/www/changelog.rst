@@ -13,6 +13,12 @@ Changelog
     names in this paragraph to visit their changelogs and see what you might get
     if you upgrade your dependencies.
 
+- :bug:`2367` `fabric.connection.Connection.sftp` memoizes its SFTP client,
+  but never checked whether the cached client had since been closed (e.g. via
+  calling its own ``close`` method), causing every subsequent call to hand back
+  the same unusable client. It now opens a new SFTP client when the cached
+  one's channel is closed. Thanks to ``@mmtawous`` for the report and
+  ``@cristianchiriac`` for the patch.
 - :release:`3.2.3 <2026-04-05>`
 - :support:`- backported` Tweak packaging metadata to reflect that Invoke 3.0
   has a backwards incompatible API change that we can't use yet.

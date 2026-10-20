@@ -1176,13 +1176,16 @@ class Connection_:
     class sftp:
         def returns_result_of_client_open_sftp(self, client):
             "returns result of client.open_sftp()"
-            sentinel = object()
+            sentinel = Mock()
+            sentinel.sock.closed = False
             client.open_sftp.return_value = sentinel
             assert Connection("host").sftp() == sentinel
             client.open_sftp.assert_called_with()
 
         def lazily_caches_result(self, client):
-            sentinel1, sentinel2 = object(), object()
+            sentinel1, sentinel2 = Mock(), Mock()
+            sentinel1.sock.closed = False
+            sentinel2.sock.closed = False
             client.open_sftp.side_effect = [sentinel1, sentinel2]
             cxn = Connection("host")
             first = cxn.sftp()
@@ -1191,6 +1194,20 @@ class Connection_:
             assert first is sentinel1, err.format(first)
             second = cxn.sftp()
             assert second is sentinel1, err.format(second)
+
+        def recreates_client_if_cached_one_was_closed(self, client):
+            "reopens the SFTP client if the cached one's socket got closed"
+            sentinel1, sentinel2 = Mock(), Mock()
+            sentinel1.sock.closed = False
+            sentinel2.sock.closed = False
+            client.open_sftp.side_effect = [sentinel1, sentinel2]
+            cxn = Connection("host")
+            first = cxn.sftp()
+            assert first is sentinel1
+            # Simulate the caller closing the SFTP client themselves
+            sentinel1.sock.closed = True
+            second = cxn.sftp()
+            assert second is sentinel2
 
     class get:
         @patch("fabric.connection.Transfer")
