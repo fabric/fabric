@@ -43,21 +43,26 @@ class TunnelManager(ExceptionHandlingThread):
         self.remote_address = (remote_host, remote_port)
         self.transport = transport
         self.finished = finished
+        # Set when the local port is listening, or when setting it up failed.
+        self.ready = Event()
 
     def _run(self):
         # Track each tunnel that gets opened during our lifetime
         tunnels = []
 
         # Set up OS-level listener socket on forwarded port
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        # TODO: why do we want REUSEADDR exactly? and is it portable?
-        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        # NOTE: choosing to deal with nonblocking semantics and a fast loop,
-        # versus an older approach which blocks & expects outer scope to cause
-        # a socket exception by close()ing the socket.
-        sock.setblocking(0)
-        sock.bind(self.local_address)
-        sock.listen(1)
+        try:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            # TODO: why do we want REUSEADDR exactly? and is it portable?
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            # NOTE: choosing to deal with nonblocking semantics and a fast
+            # loop, versus an older approach which blocks & expects outer scope
+            # to cause a socket exception by close()ing the socket.
+            sock.setblocking(0)
+            sock.bind(self.local_address)
+            sock.listen(1)
+        finally:
+            self.ready.set()
 
         while not self.finished.is_set():
             # Main loop-wait: accept connections on the local listener

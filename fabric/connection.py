@@ -983,6 +983,8 @@ class Connection(Context):
             finished=finished,
         )
         manager.start()
+        # Wait until the local port is listening
+        manager.ready.wait()
 
         # Return control to caller now that things ought to be operational
         try:

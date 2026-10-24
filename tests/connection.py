@@ -1326,6 +1326,16 @@ class Connection_:
         def tunnel_manager_errors_bubble_up(self):
             self._thread_error("listener")
 
+        @patch("fabric.tunnels.socket.socket")
+        @patch("fabric.connection.SSHClient")
+        def waits_for_listening_port_before_yielding(self, Client, mocket):
+            # Make the listener slow to come up
+            listener_sock = mocket.return_value
+            listener_sock.bind.side_effect = lambda addr: time.sleep(0.1)
+            listener_sock.accept.side_effect = BlockingIOError
+            with Connection("host").forward_local(local_port=1234):
+                listener_sock.listen.assert_called_once_with(1)
+
         # TODO: these require additional refactoring of _forward_local to be
         # more like the decorators in _util
         def multiple_tunnels_can_be_open_at_once(self):
