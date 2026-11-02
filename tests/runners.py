@@ -221,6 +221,7 @@ class Remote_:
         else:
             assert False, "expected OSError to propagate"
 
+
 class RemoteShell_:
     def send_start_message_sends_invoke_shell(self):
         runner = RemoteShell(context=None)
