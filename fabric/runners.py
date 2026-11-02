@@ -89,7 +89,16 @@ class Remote(Runner):
         return self.channel.recv_stderr(num_bytes)
 
     def _write_proc_stdin(self, data):
-        return self.channel.sendall(data)
+        # Mirror invoke.Local: if the remote already closed the channel (e.g.
+        # the command exited without consuming stdin), sendall raises OSError
+        # "Socket is closed". Swallow that the same way Local ignores Broken
+        # pipe - there is nothing useful we can do with the leftover input.
+        # See issue #2351.
+        try:
+            return self.channel.sendall(data)
+        except OSError as e:
+            if "closed" not in str(e).lower() and "Broken pipe" not in str(e):
+                raise
 
     def close_proc_stdin(self):
         return self.channel.shutdown_write()

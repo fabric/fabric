@@ -201,6 +201,26 @@ class Remote_:
         runner.kill()
         runner.channel.close.assert_called_once_with()
 
+    def write_proc_stdin_swallows_closed_socket(self):
+        # Issue #2351: remote exits without reading stdin -> channel closed.
+        runner = _runner()
+        runner.channel = Mock()
+        runner.channel.sendall.side_effect = OSError("Socket is closed")
+        # Must not raise - same contract as invoke.Local + Broken pipe.
+        runner._write_proc_stdin(b"leftover")
+        runner.channel.sendall.assert_called_once_with(b"leftover")
+
+    def write_proc_stdin_reraises_unrelated_OSError(self):
+        runner = _runner()
+        runner.channel = Mock()
+        runner.channel.sendall.side_effect = OSError("No route to host")
+        try:
+            runner._write_proc_stdin(b"data")
+        except OSError as e:
+            assert "No route to host" in str(e)
+        else:
+            assert False, "expected OSError to propagate"
+
 
 class RemoteShell_:
     def send_start_message_sends_invoke_shell(self):
